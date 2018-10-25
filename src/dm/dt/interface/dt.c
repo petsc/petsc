@@ -274,7 +274,7 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
   Input Parameters:
 + q  - The PetscQuadrature object
 . dim - The spatial dimension
-, Nc - The number of components
+. Nc - The number of components
 . npoints - The number of quadrature points
 . points - The coordinates of each quadrature point
 - weights - The weight of each quadrature point

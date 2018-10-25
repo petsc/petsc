@@ -12,24 +12,6 @@ static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void *ptr)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_SETJMP_H) && !defined(PETSC_MISSING_SIGPIPE)
-#include <setjmp.h>
-#include <signal.h>
-
-#if defined(PETSC_HAVE_WINDOWS_H)
-#define DEV_NULL "NUL"
-#else
-#define DEV_NULL "/dev/null"
-#endif
-
-static jmp_buf PetscGLVisSigPipeJmpBuf;
-
-static void PetscGLVisSigPipeHandler(PETSC_UNUSED int sig)
-{
-  longjmp(PetscGLVisSigPipeJmpBuf,1);
-}
-#endif
-
 /* the main function to visualize vectors using GLVis */
 PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
 {
@@ -40,6 +22,7 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
   PetscViewerGLVisType   socktype;
   void                   *userctx;
   PetscInt               i,nfields,*spacedim;
+  PetscBool              pause = PETSC_FALSE;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -99,51 +82,34 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
   }
 
   /* TODO callback to user routine to disable/enable subdomains */
-  for (i=0;i<nfields;i++) {
+  for (i=0; i<nfields; i++) {
     PetscObject dm;
     PetscViewer view;
 
     ierr = PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm",&dm);CHKERRQ(ierr);
     ierr = PetscViewerGLVisGetWindow_Private(viewer,i,&view);CHKERRQ(ierr);
     if (!view) continue; /* socket window has been closed */
-    if (socktype == PETSC_VIEWER_GLVIS_DUMP) {
+    if (socktype == PETSC_VIEWER_GLVIS_SOCKET) {
+      PetscMPIInt size,rank;
+      const char *name;
+
+      ierr = MPI_Comm_size(PetscObjectComm(dm),&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm(dm),&rank);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject)Ufield[i],&name);CHKERRQ(ierr);
+
+      ierr = PetscGLVisCollectiveBegin(PetscObjectComm(dm),&view);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(view,"parallel %d %d\nsolution\n",size,rank);CHKERRQ(ierr);
       ierr = PetscObjectView(dm,view);CHKERRQ(ierr);
       ierr = VecView(Ufield[i],view);CHKERRQ(ierr);
+      ierr = PetscViewerGLVisInitWindow_Private(view,PETSC_FALSE,spacedim[i],name);CHKERRQ(ierr);
+      ierr = PetscGLVisCollectiveEnd(PetscObjectComm(dm),&view);CHKERRQ(ierr);
+      if (view) pause = PETSC_TRUE; /* at least one window is connected */
     } else {
-      /* It may happen that the user has closed the GLVis window */
-#if defined(PETSC_HAVE_SETJMP_H) && !defined(PETSC_MISSING_SIGPIPE)
-      void (*sighdl)(int) = signal(SIGPIPE,PetscGLVisSigPipeHandler);
-      if (!setjmp(PetscGLVisSigPipeJmpBuf)) {
-#endif
-        PetscMPIInt size,rank;
-        const char *name;
-
-        ierr = MPI_Comm_size(PetscObjectComm(dm),&size);CHKERRQ(ierr);
-        ierr = MPI_Comm_rank(PetscObjectComm(dm),&rank);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(view,"parallel %D %D\nsolution\n",size,rank);CHKERRQ(ierr);
-        ierr = PetscObjectView(dm,view);CHKERRQ(ierr);
-        ierr = VecView(Ufield[i],view);CHKERRQ(ierr);
-        ierr = PetscObjectGetName((PetscObject)Ufield[i],&name);CHKERRQ(ierr);
-        ierr = PetscViewerGLVisInitWindow_Private(view,PETSC_FALSE,spacedim[i],name);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SETJMP_H) && !defined(PETSC_MISSING_SIGPIPE)
-      } else {
-        FILE     *sock,*null = fopen(DEV_NULL,"w");
-        PetscInt readonly;
-
-        ierr = VecLockGet(Ufield[i],&readonly);CHKERRQ(ierr);
-        if (readonly) {
-          ierr = VecLockPop(Ufield[i]);CHKERRQ(ierr);
-        }
-        ierr = PetscViewerASCIIGetPointer(view,&sock);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISetFILE(view,null);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-        (void)fclose(sock);
-      }
-      (void)signal(SIGPIPE,sighdl);
-#endif
+      ierr = PetscObjectView(dm,view);CHKERRQ(ierr);
+      ierr = VecView(Ufield[i],view);CHKERRQ(ierr);
     }
     ierr = PetscViewerGLVisRestoreWindow_Private(viewer,i,&view);CHKERRQ(ierr);
   }
-  ierr = PetscViewerGLVisPause_Private(viewer);CHKERRQ(ierr);
+  if (pause) {ierr = PetscViewerGLVisPause_Private(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

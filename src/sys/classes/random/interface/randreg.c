@@ -119,6 +119,7 @@ PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*functio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PetscRandomList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

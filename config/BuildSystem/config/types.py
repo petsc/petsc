@@ -281,7 +281,7 @@ void (*signal())();
       if not self.argDB['with-batch']:
         self.pushLanguage('C')
         if self.checkRun(includes, body) and os.path.exists(filename):
-          f    = file(filename)
+          f    = open(filename)
           size = int(f.read())
           f.close()
           os.remove(filename)
@@ -329,7 +329,7 @@ void (*signal())();
       bits = self.argDB['known-bits-per-byte']
     elif not self.argDB['with-batch']:
       if self.checkRun(includes, body) and os.path.exists(filename):
-        f    = file(filename)
+        f    = open(filename)
         bits = int(f.read())
         f.close()
         os.remove(filename)
@@ -393,7 +393,8 @@ void (*signal())();
       self.executeTest(self.checkFortranKind)
     self.executeTest(self.checkConst)
     self.executeTest(self.checkEndian)
-    map(lambda type: self.executeTest(self.checkSizeof, type), ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t'])
+    for t in ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t']:
+      self.executeTest(self.checkSizeof, t)
     self.executeTest(self.checkBitsPerByte)
     self.executeTest(self.checkVisibility)
     return

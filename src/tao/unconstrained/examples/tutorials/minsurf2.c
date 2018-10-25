@@ -786,7 +786,7 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
    test:
       suffix: 2
       nsize: 2
-      args: -tao_smonitor -tao_type nls -ksp_max_it 15 -tao_gatol 1.e-4
+      args: -tao_smonitor -tao_type nls -tao_nls_ksp_max_it 15 -tao_gatol 1.e-4
       filter: grep -v "nls ksp"
       requires: !single
 

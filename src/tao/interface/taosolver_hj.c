@@ -290,6 +290,52 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 }
 
 /*@C
+   TaoComputeResidualJacobian - Computes the least-squares residual Jacobian matrix that has been
+   set with TaoSetResidualJacobianRoutine().
+
+   Collective on Tao
+
+   Input Parameters:
++  tao - the Tao solver context
+-  X   - input vector
+
+   Output Parameters:
++  J    - Jacobian matrix
+-  Jpre - Preconditioning matrix
+
+   Notes:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the minimization solvers.
+
+   TaoComputeResidualJacobian() is typically used within least-squares
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
+
+.seealso: TaoComputeResidual(), TaoSetResidualJacobianRoutine()
+@*/
+PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID,2);
+  PetscCheckSameComm(tao,1,X,2);
+  if (!tao->ops->computeresidualjacobian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetResidualJacobian() first");
+  ++tao->njac;
+  ierr = VecLockPush(X);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
+  PetscStackPush("Tao user least-squares residual Jacobian function");
+  ierr = (*tao->ops->computeresidualjacobian)(tao,X,J,Jpre,tao->user_lsjacP);CHKERRQ(ierr);
+  PetscStackPop;
+  ierr = PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
+  ierr = VecLockPop(X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    TaoComputeJacobianState - Computes the Jacobian matrix that has been
    set with TaoSetJacobianStateRoutine().
 
@@ -433,6 +479,64 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
     ierr = PetscObjectReference((PetscObject)Jpre);CHKERRQ(ierr);
     ierr = MatDestroy(&tao->jacobian_pre);CHKERRQ(ierr);
     tao->jacobian_pre=Jpre;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TaoSetJacobianResidualRoutine - Sets the function to compute the least-squares residual Jacobian as well as the 
+   location to store the matrix.
+
+   Logically collective on Tao
+
+   Input Parameters:
++  tao  - the Tao context
+.  J    - Matrix used for the jacobian
+.  Jpre - Matrix that will be used operated on by preconditioner, can be same as J
+.  func - Jacobian evaluation routine
+-  ctx  - [optional] user-defined context for private data for the
+          Jacobian evaluation routine (may be NULL)
+
+   Calling sequence of func:
+$    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
+
++  tao  - the Tao  context
+.  x    - input vector
+.  J    - Jacobian matrix
+.  Jpre - preconditioning matrix, usually the same as J
+-  ctx  - [optional] user-defined Jacobian context
+
+   Level: intermediate
+@*/
+PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  if (J) {
+    PetscValidHeaderSpecific(J,MAT_CLASSID,2);
+    PetscCheckSameComm(tao,1,J,2);
+  }
+  if (Jpre) {
+    PetscValidHeaderSpecific(Jpre,MAT_CLASSID,3);
+    PetscCheckSameComm(tao,1,Jpre,3);
+  }
+  if (ctx) {
+    tao->user_lsjacP = ctx;
+  }
+  if (func) {
+    tao->ops->computeresidualjacobian = func;
+  }
+  if (J) {
+    ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+    ierr = MatDestroy(&tao->ls_jac);CHKERRQ(ierr);
+    tao->ls_jac = J;
+  }
+  if (Jpre) {
+    ierr = PetscObjectReference((PetscObject)Jpre);CHKERRQ(ierr);
+    ierr = MatDestroy(&tao->ls_jac_pre);CHKERRQ(ierr);
+    tao->ls_jac_pre=Jpre;
   }
   PetscFunctionReturn(0);
 }

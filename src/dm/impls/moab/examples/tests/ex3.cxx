@@ -159,3 +159,25 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return 0;
 }
+
+/*TEST
+
+     build:
+       requires: moab
+
+     test:
+       args: -debug -n 2 -dim 2 -levels 2 -simplex
+       filter:  grep -v "DM_0x*"
+
+     test:
+       args: -debug -n 2 -dim 3 -levels 2
+       filter:  grep -v "DM_0x*"
+       suffix: 1_2
+
+     test:
+       args: -debug -n 2 -dim 3 -ghost 1 -levels 2
+       filter:  grep -v "DM_0x*"
+       nsize: 2
+       suffix: 2_1
+
+TEST*/

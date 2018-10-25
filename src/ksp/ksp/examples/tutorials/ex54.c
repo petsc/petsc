@@ -40,15 +40,16 @@ int main(int argc,char **args)
   ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
   ierr = MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
   ierr = MatSetType(Amat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Amat,81,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(comm,&Pmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Pmat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
   ierr = MatSetType(Pmat,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pmat,81,NULL,57,NULL);CHKERRQ(ierr);
-
-  ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Pmat);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Pmat,81,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Pmat,81,NULL,57,NULL);CHKERRQ(ierr);
 
   /* vectors */
   ierr = MatCreateVecs(Amat,&bb,&xx);CHKERRQ(ierr);

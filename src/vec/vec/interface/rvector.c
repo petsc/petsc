@@ -14,7 +14,7 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   const PetscScalar *x;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_OFFLOAD_CPU || vec->valid_GPU_array == PETSC_OFFLOAD_BOTH)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
@@ -1267,45 +1267,42 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   PetscValidPointer(Y,3);
   if (X->ops->getsubvector) {
     ierr = (*X->ops->getsubvector)(X,is,&Z);CHKERRQ(ierr);
-  } else {                      /* Default implementation currently does no caching */
+  } else { /* Default implementation currently does no caching */
     PetscInt  gstart,gend,start;
     PetscBool contiguous,gcontiguous;
     ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
     ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-    if (gcontiguous) {          /* We can do a no-copy implementation */
-      PetscInt    n,N,bs;
-      PetscMPIInt size;
-      PetscInt    state;
+    if (gcontiguous) { /* We can do a no-copy implementation */
+      PetscInt n,N,bs;
+      PetscInt state;
 
+      ierr = ISGetSize(is,&N);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
       if (n%bs || bs == 1 || !n) bs = -1; /* Do not decide block size if we do not have to */
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
       ierr = VecLockGet(X,&state);CHKERRQ(ierr);
       if (state) {
         const PetscScalar *x;
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-        if (size == 1) {
-          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,(PetscScalar*)x+start,&Z);CHKERRQ(ierr);
-        } else {
-          ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,(PetscScalar*)x+start,&Z);CHKERRQ(ierr);
-        }
-        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+        ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
+        ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
+        ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
+        ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
         ierr = VecLockPush(Z);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
       } else {
         PetscScalar *x;
         ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-        if (size == 1) {
-          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x+start,&Z);CHKERRQ(ierr);
-        } else {
-          ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x+start,&Z);CHKERRQ(ierr);
-        }
+        ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
+        ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
+        ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
+        ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
         ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
       }
-    } else {                    /* Have to create a scatter and do a copy */
+    } else { /* Have to create a scatter and do a copy */
       VecScatter scatter;
       PetscInt   n,N;
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
@@ -1313,7 +1310,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = VecCreate(PetscObjectComm((PetscObject)is),&Z);CHKERRQ(ierr);
       ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
       ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
-      ierr = VecScatterCreate(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
+      ierr = VecScatterCreateWithData(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)Z,"VecGetSubVector_Scatter",(PetscObject)scatter);CHKERRQ(ierr);
@@ -1581,7 +1578,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   VecLocked(x,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
 #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
@@ -1590,7 +1587,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
       } else
 #endif
       {
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
 #endif
       }
@@ -1602,7 +1599,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
       } else
 #endif
       {
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDAAllocateCheckHost(x);CHKERRQ(ierr);
 #endif
       }
@@ -1610,7 +1607,9 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 #endif
     *a = *((PetscScalar**)x->data);
   } else {
-    ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
+    if (x->ops->getarray) {
+      ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot get array for vector type \"%s\"",((PetscObject)x)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1649,7 +1648,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
 #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
@@ -1658,7 +1657,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
       } else
 #endif
       {
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
 #endif
       }
@@ -1804,7 +1803,7 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     x->valid_GPU_array = PETSC_OFFLOAD_CPU;
 #endif
   } else {

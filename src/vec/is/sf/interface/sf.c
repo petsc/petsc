@@ -845,7 +845,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
    directly. Since multi satisfies the stronger condition that each entry in the global space has exactly one incoming
    edge, it is a candidate for future optimization that might involve its removal.
 
-.seealso: PetscSFSetGraph(), PetscSFGatherBegin(), PetscSFScatterBegin()
+.seealso: PetscSFSetGraph(), PetscSFGatherBegin(), PetscSFScatterBegin(), PetscSFComputeMultiRootOriginalNumbering()
 @*/
 PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 {
@@ -1210,6 +1210,49 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
     sf->degreeknown = PETSC_TRUE;
   }
   *degree = sf->degree;
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+   PetscSFComputeMultiRootOriginalNumbering - Returns original numbering of multi-roots (roots of multi-SF returned by PetscSFGetMultiSF()). Each multi-root is assigned index of its original root.
+
+   Collective
+
+   Input Arguments:
++  sf - star forest
+-  degree - degree of each root vertex, computed with PetscSFComputeDegreeBegin()/PetscSFComputeDegreeEnd()
+
+   Output Arguments:
+.  mRootsOrigNumbering - original indices of multi-roots; length of the array is equal to the number of multi-roots (roots of multi-SF)
+
+   Level: developer
+
+.seealso: PetscSFComputeDegreeBegin(), PetscSFComputeDegreeEnd(), PetscSFGetMultiSF()
+@*/
+PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscInt degree[], PetscInt *mRootsOrigNumbering[])
+{
+  PetscSF             msf;
+  PetscInt            i, j, k, nroots, nmroots;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (nroots) PetscValidIntPointer(degree,2);
+  PetscValidPointer(mRootsOrigNumbering,3);
+  ierr = PetscSFGetMultiSF(sf,&msf);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(msf, &nmroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nmroots, mRootsOrigNumbering);CHKERRQ(ierr);
+  for (i=0,j=0,k=0; i<nroots; i++) {
+    if (!degree[i]) continue;
+    for (j=0; j<degree[i]; j++,k++) {
+      (*mRootsOrigNumbering)[k] = i;
+    }
+  }
+#if defined(PETSC_USE_DEBUG)
+  if (PetscUnlikely(k != nmroots)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sanity check fail");
+#endif
   PetscFunctionReturn(0);
 }
 

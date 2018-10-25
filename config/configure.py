@@ -9,11 +9,11 @@ petsc_arch = ''
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
 
-if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 6:
-  print('*******************************************************************************')
-  print('*       Python2 version 2.6 or higher is required to run ./configure          *')
-  print('*          Try: "python2.7 ./configure" or "python2.6 ./configure"            *')
-  print('*******************************************************************************')
+if sys.version_info < (2,6):
+  print('************************************************************************')
+  print('*      Python version 2.6+ or 3.4+ is required to run ./configure      *')
+  print('*         Try: "python2.7 ./configure" or "python3 ./configure"        *')
+  print('************************************************************************')
   sys.exit(4)
 
 def check_for_option_mistakes(opts):
@@ -200,7 +200,7 @@ def chkwinf90():
 
 def chkdosfiles():
   # cygwin - but not a hg clone - so check one of files in bin dir
-  if "\r\n" in open(os.path.join('lib','petsc','bin','petscmpiexec'),"rb").read():
+  if b"\r\n" in open(os.path.join('lib','petsc','bin','petscmpiexec'),"rb").read():
     print('===============================================================================')
     print(' *** Scripts are in DOS mode. Was winzip used to extract petsc sources?    ****')
     print(' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****')
@@ -384,7 +384,7 @@ def petsc_configure(configure_options):
   sys.path.insert(0, configDir)
   import config.base
   import config.framework
-  import cPickle
+  import pickle
 
   framework = None
   try:
@@ -393,7 +393,7 @@ def petsc_configure(configure_options):
     framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
-    framework.argDB['configureCache'] = cPickle.dumps(framework)
+    framework.argDB['configureCache'] = pickle.dumps(framework)
     framework.printSummary()
     framework.argDB.save(force = True)
     framework.logClear()

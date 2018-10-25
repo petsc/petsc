@@ -4,17 +4,22 @@
 !     when MPI_Abort() is called directly by CHKERRQ(ierr);
 !
 
+#include <petscconf.h>
+#if defined(PETSC_HAVE_MPIUNI)
+#include "petsc/mpiuni/mpiunifdef.h"
+#endif
+
       subroutine MPIU_Abort(comm,ierr)
       implicit none
-
-#include      <../src/sys/f90-mod/petscsys.h>
-
       integer comm,ierr,nierr
 
       call MPI_Abort(comm,ierr,nierr)
 
       return
       end
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
+#endif
 
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
       integer function PetscCommandArgumentCount()

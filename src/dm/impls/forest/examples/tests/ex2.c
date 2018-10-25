@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     PetscInt ids[]   = {1, 2, 3, 4, 5, 6};
 
     ierr = DMGetDS(base,&prob);CHKERRQ(ierr);
-    ierr = PetscDSAddBoundary(prob,PETSC_TRUE, "bc", "marker", 0, 1, comps, useFV ? (void(*)()) bc_func_fv : (void(*)()) funcs[0], 2 * dim, ids, useFV ? (void *) &bcCtx : NULL);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob,DM_BC_ESSENTIAL, "bc", "marker", 0, 1, comps, useFV ? (void(*)(void)) bc_func_fv : (void(*)(void)) funcs[0], 2 * dim, ids, useFV ? (void *) &bcCtx : NULL);CHKERRQ(ierr);
   }
   ierr = AddIdentityLabel(base);CHKERRQ(ierr);
   ierr = DMViewFromOptions(base,NULL,"-dm_base_view");CHKERRQ(ierr);
@@ -210,3 +210,31 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+     test:
+       suffix: 2d
+       args: -petscspace_poly_tensor -petscspace_degree 2 -dim 2
+       nsize: 3
+       requires: p4est
+
+     test:
+       suffix: 2d_fv
+       args: -use_fv -linear -dim 2 -dm_forest_partition_overlap 1
+       nsize: 3
+       requires: p4est
+
+     test:
+       suffix: 3d
+       args: -petscspace_poly_tensor -petscspace_degree 1 -dim 3
+       nsize: 3
+       requires: p4est
+
+     test:
+       suffix: 3d_fv
+       args: -use_fv -linear -dim 3 -dm_forest_partition_overlap 1
+       nsize: 3
+       requires: p4est
+
+TEST*/

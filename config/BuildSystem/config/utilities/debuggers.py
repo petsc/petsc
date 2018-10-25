@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from __future__ import generators
-import user
 import config.base
 import os
 
@@ -42,7 +41,7 @@ class Configure(config.base.Configure):
       import re
       if self.argDB['with-batch']: return
       self.addDefine('USE_DBX_DEBUGGER', 1)
-      f = file('conftest', 'w')
+      f = open('conftest', 'w')
       f.write('quit\n')
       f.close()
       foundOption = 0

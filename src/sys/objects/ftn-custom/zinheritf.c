@@ -27,7 +27,6 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectcompose_(PetscObject *obj, char *name
   char *n1;
 
   FIXCHAR(name,len,n1);
-  CHKFORTRANNULLOBJECTDEREFERENCE(ptr);
   *ierr = PetscObjectCompose(*obj, n1, *ptr);
   FREECHAR(name,n1);
 }

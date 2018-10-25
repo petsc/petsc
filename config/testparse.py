@@ -125,7 +125,7 @@ def parseLoopArgs(varset):
   Given:   String containing loop variables
   Return: tuple containing separate/shared and string of loop vars
   """
-  keynm=varset.split("{{")[0].strip()
+  keynm=varset.split("{{")[0].strip().lstrip('-')
   if not keynm.strip(): keynm='nsize'
   lvars=varset.split('{{')[1].split('}')[0]
   suffx=varset.split('{{')[1].split('}')[1]
@@ -346,7 +346,10 @@ def parseTest(testStr,srcfile,verbosity):
     if not var in acceptedkeys: raise Exception("Not a defined key: "+var+" from:  "+line)
     # Start by seeing if we are in a subtest
     if line.startswith(" "):
-      subdict[subtestname][var]=val
+      if var in subdict[subtestname]:
+        subdict[subtestname][var]+=" "+val 
+      else: 
+        subdict[subtestname][var]=val
       if not indentlevel: indentlevel=indentcount
       #if indentlevel!=indentcount: print("Error in indentation:", ln)
     # Determine subtest name and make dict

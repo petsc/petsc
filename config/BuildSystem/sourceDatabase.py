@@ -33,7 +33,7 @@ import os
 import re
 import time
 
-import cPickle
+import pickle
 
 try:
   from hashlib import md5 as new_md5
@@ -148,10 +148,10 @@ class SourceDB (dict, logger.Logger):
   def getChecksum(source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''
-    if isinstance(source, file):
+    if hasattr(source, 'close'):
       f = source
     else:
-      f = file(source)
+      f = open(source)
     m = new_md5()
     size = chunkSize
     buf  = f.read(size)
@@ -221,7 +221,7 @@ class SourceDB (dict, logger.Logger):
       (checksum, mtime, timestamp, dependencies) = self[source]
       newDep = []
       try:
-        file = file(source)
+        file = open(source)
       except IOError as e:
         if e.errno == errno.ENOENT:
           del self[source]
@@ -256,8 +256,8 @@ class SourceDB (dict, logger.Logger):
     if os.path.exists(filename):
       self.clear()
       self.logPrint('Loading source database from '+filename, 2, 'sourceDB')
-      dbFile = file(filename)
-      newDB  = cPickle.load(dbFile)
+      dbFile = open(filename)
+      newDB  = pickle.load(dbFile)
       dbFile.close()
       self.update(newDB)
     else:
@@ -272,8 +272,8 @@ class SourceDB (dict, logger.Logger):
     filename = str(self.filename)
     if os.path.exists(os.path.dirname(filename)):
       self.logPrint('Saving source database in '+filename, 2, 'sourceDB')
-      dbFile = file(filename, 'w')
-      cPickle.dump(self, dbFile)
+      dbFile = open(filename, 'w')
+      pickle.dump(self, dbFile)
       dbFile.close()
       self.isDirty = 0
     else:
@@ -310,7 +310,7 @@ class DependencyAnalyzer (logger.Logger):
     return matchName
 
   def getNeighbors(self, source):
-    file = file(source)
+    file = open(source)
     adj  = []
     for line in file:
       match = self.includeRE.match(line)
@@ -344,8 +344,8 @@ if __name__ == '__main__':
       print('sourceDatabase.py <database filename> [insert | remove] <filename>')
     else:
       if os.path.exists(sys.argv[1]):
-        dbFile   = file(sys.argv[1])
-        sourceDB = cPickle.load(dbFile)
+        dbFile   = open(sys.argv[1])
+        sourceDB = pickle.load(dbFile)
         dbFile.close()
       else:
         sys.exit('Could not load source database from '+sys.argv[1])
@@ -362,7 +362,7 @@ if __name__ == '__main__':
         else:
           sourceDB.logPrint('Matching regular expression '+sys.argv[3]+' over source database', 1, 'sourceDB')
           removeRE = re.compile(sys.argv[3])
-          removes  = filter(removeRE.match, sourceDB.keys())
+          removes  = list(filter(removeRE.match, sourceDB.keys()))
           for source in removes:
             self.logPrint('Removing '+source, 3, 'sourceDB')
             del self.sourceDB[source]

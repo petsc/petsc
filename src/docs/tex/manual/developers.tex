@@ -9,20 +9,20 @@
 
 \usepackage{fancyhdr,lastpage}
 \pagestyle{fancy}
-\rhead{PETSc 3.9 \today}
+\rhead{PETSc 3.10 \today}
 
 \begin{document}
 
 \pagestyle{empty}
 \hspace{-.65in}\includegraphics{ArgonneLogo}
-\hfill  {\large {\bf ANL-18/18 Rev 3.9}}
+\hfill  {\large {\bf ANL-18/18 Rev 3.10}}
 
 \vspace*{2in}
 \noindent {\huge{\bf PETSc Developers Guide}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.9}}
+\noindent {\Large{\it Revision 3.10}}
 
 \vspace*{1in}
 \noindent \\
@@ -38,14 +38,14 @@
 \centerline{\includegraphics{ArgonneReportTemplate2018Page2}}
 \newpage
 
-\hfill {\large {\bf ANL-18/18 Rev 3.9}}
+\hfill {\large {\bf ANL-18/18 Rev 3.10}}
 
 \vspace*{2in}
 \noindent {\LARGE{\bf PETSc Developers Manual}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.9}}
+\noindent {\Large{\it Revision 3.10}}
 
 \vspace*{0.5in}
 \noindent Prepared by \\
@@ -295,12 +295,6 @@ but instead write
 \begin{lstlisting}
 ierr = func(a,22.0);CHKERRQ(ierr);
 \end{lstlisting}
-\item The format strings in PETSc ASCI output routines, such as \lstinline{PetscPrintf}, take a \%D for all PETSc variables of
-type \lstinline{PetscInt}, not a \%d.
-\item All arguments of type \lstinline{PetscReal} to PETSc ASCI output routines, such as \lstinline{PetscPrintf}, must be cast to \lstinline{double}, for example,
-\begin{lstlisting}
-PetscPrintf(PETSC_COMM_WORLD,``Norm %g\n'',(double)norm);
-\end{lstlisting}
 \end{enumerate}
 
 
@@ -382,6 +376,12 @@ PETSC_DEPRECATED("Use NewFunction (since v3.9)") PetscErrorCode OldFunction();
 \end{lstlisting}
 The old function or type, with the deprecation warning, should remain for at least one major release. The function or type's manual page should be updated (see \ref{sec:manpageformat}, item \ref{item:manpagelevel}).
 \item Before removing or renaming an options database key, \lstinline{PetscOptionsDeprecated()} should be used for at least one major release.
+\item The format strings in PETSc ASCII output routines, such as \lstinline{PetscPrintf}, take a \lstinline{%D} for all PETSc variables of
+    type \lstinline{PetscInt}, not a \lstinline{%d}.
+\item All arguments of type \lstinline{PetscReal} to PETSc ASCII output routines, such as \lstinline{PetscPrintf}, must be cast to \lstinline{double}, for example,
+\begin{lstlisting}
+PetscPrintf(PETSC_COMM_WORLD,``Norm %g\n'',(double)norm);
+\end{lstlisting}
 \end{enumerate}
 
 \section{Formatted Comments}

@@ -105,8 +105,8 @@ PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecCUDAAllocateCheckHost(xin);
-  ierr = VecCUDAAllocateCheckHost(yin);
+  ierr = VecCUDAAllocateCheckHost(xin);CHKERRQ(ierr);
+  ierr = VecCUDAAllocateCheckHost(yin);CHKERRQ(ierr);
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);

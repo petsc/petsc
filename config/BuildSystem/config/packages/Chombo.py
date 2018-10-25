@@ -103,15 +103,22 @@ class Configure(config.package.Package):
         output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
 
         #run make -p to get library (config) namen
-        poutput,perr,pret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make vars | egrep ^config', timeout=2500, log = self.log)
+        poutput,perr,pret = config.package.Package.executeShellCommand('make vars', cwd=os.path.join(self.packageDir,'lib'), timeout=2500, log = self.log)
         config_value=None
-        ind = poutput.find('config=')
-        if ind != 0:
+        for line in poutput.splitlines():
+          if line.startswith('config='):
+            config_value = line.split('=')[1]
+            break
+        if config_value is None:
           raise RuntimeError('Error running make on Chombo: config value not found')
-        config_value=poutput.split('=')[1]
         self.logPrint('Chombo installed using config=%s\n'%config_value)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make clean && make lib', timeout=2500, log = self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+self.installSudo+'&& cp -f lib/lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f lib/include/*.H '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
+        import glob
+        output,err,ret = config.package.Package.executeShellCommandSeq(
+          ['make clean',
+           'make lib',
+           self.installSudo+'cp -f lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,''),
+           self.installSudo+'cp -f include/*.H '+os.path.join(self.installDir,self.includedir,'')
+          ], cwd=os.path.join(self.packageDir,'lib'), timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on Chombo: '+str(e))
 

@@ -1,4 +1,7 @@
-import urlparse
+try:
+  import urlparse
+except ImportError:
+  from urllib import parse as urlparse
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['hg', 'ssh'])
 

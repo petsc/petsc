@@ -275,9 +275,9 @@ static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
    European FP7 Project on EXascale Algorithms and Advanced Computational Techniques (EXA2CT) / Research Foundation Flanders (FWO)
 
    Reference:
-   S. Cools, E.F. Yetkin, E. Agullo, L. Giraud, W. Vanroose, "Analyzing the effect of local rounding error 
+   S. Cools, E.F. Yetkin, E. Agullo, L. Giraud, W. Vanroose, "Analyzing the effect of local rounding error
    propagation on the maximal attainable accuracy of the pipelined Conjugate Gradients method",
-   SIAM J. Matrix Anal. Appl. (SIMAX), 2017.
+   SIAM Journal on Matrix Analysis and Applications (SIMAX), 39(1):426–450, 2018.
 
 .seealso: KSPCreate(), KSPSetType(), KSPPIPECR, KSPGROPPCG, KSPPIPECG, KSPPGMRES, KSPCG, KSPPIPEBCGS, KSPCGUseSingleReduction()
 M*/

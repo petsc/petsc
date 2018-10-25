@@ -983,8 +983,8 @@ PetscErrorCode  VecReciprocal(Vec vec)
 
     Usage:
 $      PetscErrorCode userview(Vec,PetscViewer);
-$      ierr = VecCreateMPI(comm,m,M,&x);
-$      ierr = VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview);
+$      ierr = VecCreateMPI(comm,m,M,&x);CHKERRQ(ierr);
+$      ierr = VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview);CHKERRQ(ierr);
 
     Notes:
     See the file include/petscvec.h for a complete list of matrix
@@ -1130,7 +1130,7 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    VecSetRandom - Sets all components of a vector to random numbers.
 
    Logically Collective on Vec

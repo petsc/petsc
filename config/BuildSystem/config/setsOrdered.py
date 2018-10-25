@@ -74,10 +74,6 @@ except ImportError:
         for x in iterable:
             if not predicate(x):
                 yield x
-    try:
-        True, False
-    except NameError:
-        True, False = (0==0, 0!=0)
 
 __all__ = ['BaseSet', 'Set', 'ImmutableSet']
 
@@ -104,7 +100,7 @@ class BaseSet(object):
                 items.extend([(key, v) for v in value])
             else:
                 items.append((key, value))
-        items.sort(lambda a, b: a[1].__cmp__(b[1]))
+        items.sort(key=lambda a: a[1])
         return [i[0] for i in items]
 
     # Standard protocols: __len__, __repr__, __str__, __iter__

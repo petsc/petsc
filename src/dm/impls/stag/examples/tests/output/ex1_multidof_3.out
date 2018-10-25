@@ -1,0 +1,10 @@
+DM Object: 27 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 6 x 5 x 4
+Parallel decomposition: 3 x 3 x 3 ranks
+Boundary ghosting: NONE NONE NONE
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:3 1:4 2:2 3:5
+(Per-rank information omitted since >16 ranks used)
+2 Norm of test vector: 129.46

@@ -115,6 +115,7 @@ PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&MatOrderingList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

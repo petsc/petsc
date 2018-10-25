@@ -46,9 +46,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
   *dm = NULL;
-  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = VecInitializePackage();CHKERRQ(ierr);
-  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(v, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
@@ -73,6 +70,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
     PetscInt i;
     for (i = 0; i < 10; ++i) {
       v->nullspaceConstructors[i] = NULL;
+      v->nearnullspaceConstructors[i] = NULL;
     }
   }
   ierr = PetscDSCreate(comm, &v->prob);CHKERRQ(ierr);
@@ -180,7 +178,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
    Level: intermediate
 
-.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMGetVecType()
+.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMGetVecType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 {
@@ -206,7 +204,7 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 
    Level: intermediate
 
-.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType
+.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMSetMatType(), DMGetMatType(), DMSetVecType()
 @*/
 PetscErrorCode  DMGetVecType(DM da,VecType *ctype)
 {
@@ -334,7 +332,7 @@ PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 {
@@ -363,7 +361,7 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMSetMatType()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMSetMatType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
 {
@@ -1266,6 +1264,25 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
   ierr = (*dm->ops->creatematrix)(dm,mat);CHKERRQ(ierr);
+  /* Handle nullspace and near nullspace */
+  if (dm->prob) {
+    MatNullSpace nullSpace;
+    PetscInt     Nf;
+
+    ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+    if (Nf == 1) {
+      if (dm->nullspaceConstructors[0]) {
+        ierr = (*dm->nullspaceConstructors[0])(dm, 0, &nullSpace);CHKERRQ(ierr);
+        ierr = MatSetNullSpace(*mat, nullSpace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+      }
+      if (dm->nearnullspaceConstructors[0]) {
+        ierr = (*dm->nearnullspaceConstructors[0])(dm, 0, &nullSpace);CHKERRQ(ierr);
+        ierr = MatSetNearNullSpace(*mat, nullSpace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1402,6 +1419,35 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(nullsp, 3);
+  if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  *nullsp = dm->nullspaceConstructors[field];
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  dm->nearnullspaceConstructors[field] = nullsp;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(nullsp, 3);
+  if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  *nullsp = dm->nearnullspaceConstructors[field];
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMCreateFieldIS - Creates a set of IS objects with the global indices of dofs for each field
 
@@ -1445,15 +1491,16 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   }
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   if (section) {
-    PetscInt *fieldSizes, **fieldIndices;
+    PetscInt *fieldSizes, *fieldNc, **fieldIndices;
     PetscInt nF, f, pStart, pEnd, p;
 
     ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
-    ierr = PetscMalloc2(nF,&fieldSizes,nF,&fieldIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nF,&fieldSizes,nF,&fieldNc,nF,&fieldIndices);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
     for (f = 0; f < nF; ++f) {
       fieldSizes[f] = 0;
+      ierr          = PetscSectionGetFieldComponents(section, f, &fieldNc[f]);CHKERRQ(ierr);
     }
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof;
@@ -1461,11 +1508,16 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
       ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
       if (gdof > 0) {
         for (f = 0; f < nF; ++f) {
-          PetscInt fdof, fcdof;
+          PetscInt fdof, fcdof, fpdof;
 
-          ierr           = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
-          ierr           = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-          fieldSizes[f] += fdof-fcdof;
+          ierr  = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+          ierr  = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+          fpdof = fdof-fcdof;
+          if (fpdof && fpdof != fieldNc[f]) {
+            /* Layout does not admit a pointwise block size */
+            fieldNc[f] = 1;
+          }
+          fieldSizes[f] += fpdof;
         }
       }
     }
@@ -1503,10 +1555,17 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     if (fields) {
       ierr = PetscMalloc1(nF, fields);CHKERRQ(ierr);
       for (f = 0; f < nF; ++f) {
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
+        PetscInt bs, in[2], out[2];
+
+        ierr  = ISCreateGeneral(PetscObjectComm((PetscObject)dm), fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
+        in[0] = -fieldNc[f];
+        in[1] = fieldNc[f];
+        ierr  = MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+        bs    = (-out[0] == out[1]) ? out[1] : 1;
+        ierr  = ISSetBlockSize((*fields)[f], bs);CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
+    ierr = PetscFree3(fieldSizes,fieldNc,fieldIndices);CHKERRQ(ierr);
   } else if (dm->ops->createfieldis) {
     ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);
   }
@@ -1614,9 +1673,11 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 + is - The global indices for the subproblem
 - subdm - The DM for the subproblem
 
+  Note: You need to call DMPlexSetMigrationSF() on the original DM if you want the Global-To-Natural map to be automatically constructed
+
   Level: intermediate
 
-.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
+.seealso DMPlexSetMigrationSF(), DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
 @*/
 PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
@@ -1643,12 +1704,14 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 - len - The number of DMs
 
   Output Parameters:
-+ is - The global indices for the subproblem
++ is - The global indices for the subproblem, or NULL
 - superdm - The DM for the superproblem
+
+  Note: You need to call DMPlexSetMigrationSF() on the original DM if you want the Global-To-Natural map to be automatically constructed
 
   Level: intermediate
 
-.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
+.seealso DMPlexSetMigrationSF(), DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
 @*/
 PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
 {
@@ -1659,12 +1722,11 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
   PetscValidPointer(dms,1);
   for (i = 0; i < len; ++i) {PetscValidHeaderSpecific(dms[i],DM_CLASSID,1);}
   if (is) PetscValidPointer(is,3);
-  if (superdm) PetscValidPointer(superdm,4);
+  PetscValidPointer(superdm,4);
   if (len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %D", len);
   if (len) {
-    if (dms[0]->ops->createsuperdm) {
-      ierr = (*dms[0]->ops->createsuperdm)(dms, len, is, superdm);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject) dms[0]), PETSC_ERR_SUP, "This type has no DMCreateSuperDM implementation defined");
+    if (dms[0]->ops->createsuperdm) {ierr = (*dms[0]->ops->createsuperdm)(dms, len, is, superdm);CHKERRQ(ierr);}
+    else SETERRQ(PetscObjectComm((PetscObject) dms[0]), PETSC_ERR_SUP, "This type has no DMCreateSuperDM implementation defined");
   }
   PetscFunctionReturn(0);
 }
@@ -2074,6 +2136,36 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
 }
 
 /*@
+    DMGlobalToLocal - update local vectors from global vector
+
+    Neighbor-wise Collective on DM
+
+    Input Parameters:
++   dm - the DM object
+.   g - the global vector
+.   mode - INSERT_VALUES or ADD_VALUES
+-   l - the local vector
+
+    Notes:
+    The communication involved in this update can be overlapped with computation by using
+    DMGlobalToLocalBegin() and DMGlobalToLocalEnd().
+
+    Level: beginner
+
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToGlobal(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd()
+
+@*/
+PetscErrorCode DMGlobalToLocal(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGlobalToLocalBegin(dm,g,mode,l);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,g,mode,l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
     DMGlobalToLocalBegin - Begins updating local vectors from global vector
 
     Neighbor-wise Collective on DM
@@ -2084,10 +2176,9 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
 .   mode - INSERT_VALUES or ADD_VALUES
 -   l - the local vector
 
+    Level: intermediate
 
-    Level: beginner
-
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocal(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToGlobal(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd()
 
 @*/
 PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
@@ -2131,10 +2222,9 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 .   mode - INSERT_VALUES or ADD_VALUES
 -   l - the local vector
 
+    Level: intermediate
 
-    Level: beginner
-
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocal(), DMLocalToGlobalBegin(), DMLocalToGlobal(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd()
 
 @*/
 PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
@@ -2255,9 +2345,41 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
   }
   PetscFunctionReturn(0);
 }
+/*@
+    DMLocalToGlobal - updates global vectors from local vectors
+
+    Neighbor-wise Collective on DM
+
+    Input Parameters:
++   dm - the DM object
+.   l - the local vector
+.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that base point.
+-   g - the global vector
+
+    Notes:
+    The communication involved in this update can be overlapped with computation by using
+    DMLocalToGlobalBegin() and DMLocalToGlobalEnd().
+
+    In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
+           INSERT_VALUES is not supported for DMDA; in that case simply compute the values directly into a global vector instead of a local one.
+
+    Level: beginner
+
+.seealso DMLocalToGlobalBegin(), DMLocalToGlobalEnd(), DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocal(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
+
+@*/
+PetscErrorCode DMLocalToGlobal(DM dm,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLocalToGlobalBegin(dm,l,mode,g);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm,l,mode,g);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
-    DMLocalToGlobalBegin - updates global vectors from local vectors
+    DMLocalToGlobalBegin - begins updating global vectors from local vectors
 
     Neighbor-wise Collective on DM
 
@@ -2271,9 +2393,9 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
     In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
            INSERT_VALUES is not supported for DMDA, in that case simply compute the values directly into a global vector instead of a local one.
 
-    Level: beginner
+    Level: intermediate
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
+.seealso DMLocalToGlobal(), DMLocalToGlobalEnd(), DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocal(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
 
 @*/
 PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
@@ -2368,8 +2490,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
 .   mode - INSERT_VALUES or ADD_VALUES
 -   g - the global vector
 
-
-    Level: beginner
+    Level: intermediate
 
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalEnd()
 
@@ -3394,6 +3515,7 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&DMList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3521,6 +3643,9 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 
   Output Parameter:
 . section - The PetscSection
+
+  Options Database Keys:
+. -dm_petscsection_view - View the Section created by the DM
 
   Level: intermediate
 
@@ -5266,7 +5391,7 @@ PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
 }
 
 /*@
-  DMSetUseNatural - Set the flag for creating a mapping to the natural order on distribution
+  DMSetUseNatural - Set the flag for creating a mapping to the natural order after distribution
 
   Collective on dm
 
@@ -5274,9 +5399,11 @@ PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
 + dm - The DM
 - useNatural - The flag to build the mapping to a natural order during distribution
 
+  Note: This also causes the map to be build after DMCreateSubDM() and DMCreateSuperDM()
+
   Level: beginner
 
-.seealso: DMGetUseNatural(), DMCreate()
+.seealso: DMGetUseNatural(), DMCreate(), DMPlexDistribute(), DMCreateSubDM(), DMCreateSuperDM()
 @*/
 PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
 {

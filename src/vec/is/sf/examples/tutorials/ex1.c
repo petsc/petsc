@@ -14,6 +14,30 @@ T*/
 #include <petscsf.h>
 #include <petscviewer.h>
 
+/* like PetscSFView() but with alternative array of local indices */
+static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf,const PetscInt locals[],PetscViewer viewer)
+{
+  const PetscSFNode *iremote;
+  PetscInt          i,nroots,nleaves,nranks;
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBeginUser;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf,&nroots,&nleaves,NULL,&iremote);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf,&nranks,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,nroots,nleaves,nranks);CHKERRQ(ierr);
+  for (i=0; i<nleaves; i++) {
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,locals[i],iremote[i].rank,iremote[i].index);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -267,16 +291,31 @@ int main(int argc,char **argv)
   }
 
   if (test_invert) {
+    const PetscInt *degree;
+    PetscInt *mRootsOrigNumbering;
+    PetscInt inedges;
     PetscSF msf,imsf;
+
     ierr = PetscSFGetMultiSF(sf,&msf);CHKERRQ(ierr);
     ierr = PetscSFCreateInverseSF(msf,&imsf);CHKERRQ(ierr);
     ierr = PetscSFSetUp(msf);CHKERRQ(ierr);
     ierr = PetscSFSetUp(imsf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF\n");CHKERRQ(ierr);
     ierr = PetscSFView(msf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF roots indices in original SF roots numbering\n");CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(msf,&inedges,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
+    ierr = PetscSFComputeMultiRootOriginalNumbering(sf,degree,&mRootsOrigNumbering);CHKERRQ(ierr);
+    ierr = PetscIntView(inedges,mRootsOrigNumbering,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF\n");CHKERRQ(ierr);
     ierr = PetscSFView(imsf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF, original numbering\n");CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
+    ierr = PetscSFViewCustomLocals_Private(imsf,mRootsOrigNumbering,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&imsf);CHKERRQ(ierr);
+    ierr = PetscFree(mRootsOrigNumbering);CHKERRQ(ierr);
   }
 
   /* Clean storage for star forest. */

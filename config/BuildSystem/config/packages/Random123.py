@@ -16,7 +16,7 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = file(conffile, 'w')
+    fd = open(conffile, 'w')
     fd.write(self.installDir)
     fd.close()
     if not self.installNeeded(conffile):

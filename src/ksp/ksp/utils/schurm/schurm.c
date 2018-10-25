@@ -151,7 +151,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
       MatCreateSchurComplement - Creates a new matrix object that behaves like the Schur complement of a matrix
 
    Collective on Mat

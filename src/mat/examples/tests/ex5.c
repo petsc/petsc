@@ -194,7 +194,7 @@ int main(int argc,char **args)
       args: -mat_type mpiaijcusparse -vec_type cuda
       filter: grep -v type
       output_file: output/ex5_21.out
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: 2_aijcusparse_2
@@ -202,7 +202,7 @@ int main(int argc,char **args)
       args: -mat_type mpiaijcusparse -vec_type cuda
       filter: grep -v type
       output_file: output/ex5_23.out
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: 31
@@ -231,7 +231,7 @@ int main(int argc,char **args)
       args: -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale
       filter: grep -v type
       output_file: output/ex5_31.out
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: 3_aijcusparse_2
@@ -239,21 +239,21 @@ int main(int argc,char **args)
       args: -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale
       filter: grep -v type
       output_file: output/ex5_33.out
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: aijcusparse_1
       args: -mat_type seqaijcusparse -vec_type cuda -rectA
       filter: grep -v type
       output_file: output/ex5_11_A.out
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: aijcusparse_2
       args: -mat_type seqaijcusparse -vec_type cuda -rectB
       filter: grep -v type
       output_file: output/ex5_11_B.out
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: sell_1

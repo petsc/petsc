@@ -510,7 +510,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
   PetscMPIInt      size;
   DM               dm;
   Vec              vNatural, vComp;
-  const PetscReal *varray;
+  const PetscScalar *varray;
   const char      *vecname;
   PetscInt         xs, xe, bs;
   PetscBool        useNatural;
@@ -589,7 +589,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
   PetscMPIInt    size;
   DM             dm;
   Vec            vNatural, vComp;
-  PetscReal     *varray;
+  PetscScalar   *varray;
   const char    *vecname;
   PetscInt       xs, xe, bs;
   PetscBool      useNatural;
@@ -665,7 +665,7 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
   PetscMPIInt       size;
   DM                dm;
   Vec               vNatural, vComp;
-  const PetscReal  *varray;
+  const PetscScalar *varray;
   const char       *vecname;
   PetscInt          xs, xe, bs;
   PetscBool         useNatural;
@@ -768,7 +768,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
   PetscMPIInt       size;
   DM                dm;
   Vec               vNatural, vComp;
-  PetscReal        *varray;
+  PetscScalar      *varray;
   const char       *vecname;
   PetscInt          xs, xe, bs;
   PetscBool         useNatural;

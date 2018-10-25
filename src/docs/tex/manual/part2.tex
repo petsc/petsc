@@ -585,7 +585,7 @@ The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \begin{lstlisting}
 DMDACreate1d(MPI_Comm comm,DMBoundaryType xperiod,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,DM *inra);
-DMDACreate3d=(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMBoundaryType zperiod, DMDAStencilType stencil_type,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra);
+DMDACreate3d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMBoundaryType zperiod, DMDAStencilType stencil_type,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra);
 \end{lstlisting}
 The routines to create distributed arrays are collective, so that all
 processes in the communicator \lstinline{comm} must call \lstinline{DACreateXXX()}.
@@ -642,9 +642,14 @@ and \lstinline{DMCreateLocalVector()}
 The \lstinline{InsertMode} can be either \lstinline{ADD_VALUES} or \lstinline{INSERT_VALUES}.
 
 One can scatter the local patches into the distributed vector
-with the commands
+with the command
+\begin{lstlisting}
+DMLocalToGlobal(DM da,Vec l,InsertMode mode,Vec g);
+\end{lstlisting}
+or the commands
 \begin{lstlisting}
 DMLocalToGlobalBegin(DM da,Vec l,InsertMode mode,Vec g);
+/* (Computation to overlap with communication) */
 DMLocalToGlobalEnd(DM da,Vec l,InsertMode mode,Vec g);
 \end{lstlisting}
 In general this is used with an \lstinline{InsertMode} of \lstinline{ADD_VALUES}, because if one wishes to insert values into the global vector they should
@@ -815,6 +820,10 @@ a nonlinear problem.  The analogous Fortran program is
 see Chapter \ref{chapter_snes} for a discussion of the nonlinear
 solvers.
 
+\subsection{Staggered Grids}
+For regular grids with staggered data (living on elements, faces, edges, and/or vertices), the \lstinline{DMStag} object is available.
+It behaves much like \lstinline{DMDA}; see the \lstinline{DMSTAG} manual page for more information.
+
 % --------------------------------------------------------------------------------------
 \section{Vectors Related to Unstructured Grids}
 \label{sec_unstruct}
@@ -897,7 +906,7 @@ actually a combination of scatters and gathers.
 To copy selected components from one vector
 to another, one uses the following set of commands:
 \begin{lstlisting}
-VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
+VecScatterCreateWithData(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
 VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterDestroy(VecScatter *ctx);
@@ -947,11 +956,11 @@ option is used.
 Once a \lstinline{VecScatter} object has been created it may be used with any vectors
 that have the appropriate parallel data layout. That is, one can call
 \lstinline{VecScatterBegin()} and \lstinline{VecScatterEnd()} with different vectors than
-used in the call to \lstinline{VecScatterCreate()} so long as they have the same
+used in the call to \lstinline{VecScatterCreateWithData()} so long as they have the same
 parallel layout (number of elements on each process are the same). Usually,
 these ``different'' vectors would have been obtained via calls to
 \lstinline{VecDuplicate()} from the original vectors used in the call to
-\lstinline{VecScatterCreate()}.
+\lstinline{VecScatterCreateWithData()}.
 
 \sindex{vector values, getting}
 There is a PETSc routine that is nearly the opposite of \lstinline{VecSetValues()}, that is, \lstinline{VecGetValues()}, but it can only get local values from the vector.
@@ -977,7 +986,7 @@ PetscInt    idx_from[] = {100,200}, idx_to[] = {0,1};
 VecCreateSeq(PETSC_COMM_SELF,2,&x);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,PETSC_COPY_VALUES,&from);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_to,PETSC_COPY_VALUES,&to);
-VecScatterCreate(p,from,x,to,&scatter);
+VecScatterCreateWithData(p,from,x,to,&scatter);
 VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecGetArray(x,&values);
@@ -5314,8 +5323,8 @@ TSSetIJacobian(ts,A,A,YourComputeIJacobian, &appctx);
 \item  \trl{-ts_monitor_lg_error} - for ODEs with only a few components plots the error as a function of time, only if \lstinline{TSSetSolutionFunction()} is provided, \lstinline{TSMonitorLGError()}.
 \item  \trl{-ts_monitor_draw_solution} - plots the solution at each iteration, \lstinline{TSMonitorDrawSolution()}.
 \item  \trl{-ts_monitor_draw_error} - plots the error at each iteration only if \lstinline{TSSetSolutionFunction()} is provided, \lstinline{TSMonitorDrawSolution()}.
-\item  \trl-ts_monitor_solution binary[:filename]} - saves the solution at each iteration to a binary file, \lstinline{TSMonitorSolution()}.
-\item  \trl{-ts_monitor_solution_vtk < filename-%%03D.vts>} - saves the solution at each iteration to a file in vtk format, \lstinline{TSMonitorSolutionVTK()}.
+\item  \trl{-ts_monitor_solution binary[:filename]} - saves the solution at each iteration to a binary file, \lstinline{TSMonitorSolution()}.
+\item  \trl{-ts_monitor_solution_vtk <filename-%03D.vts>} - saves the solution at each iteration to a file in vtk format, \lstinline{TSMonitorSolutionVTK()}.
 \end{itemize}
 
 \section{Error control via variable time-stepping}

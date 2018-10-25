@@ -5,7 +5,7 @@ import os, re, shutil, sys
 if 'PETSC_DIR' in os.environ:
   PETSC_DIR = os.environ['PETSC_DIR']
 else:
-  fd = file(os.path.join('lib','petsc','conf','petscvariables'))
+  fd = open(os.path.join('lib','petsc','conf','petscvariables'))
   a = fd.readline()
   a = fd.readline()
   PETSC_DIR = a.split('=')[1][0:-1]
@@ -14,7 +14,7 @@ else:
 if 'PETSC_ARCH' in os.environ:
   PETSC_ARCH = os.environ['PETSC_ARCH']
 else:
-  fd = file(os.path.join('lib','petsc','conf','petscvariables'))
+  fd = open(os.path.join('lib','petsc','conf','petscvariables'))
   a = fd.readline()
   PETSC_ARCH = a.split('=')[1][0:-1]
   fd.close()

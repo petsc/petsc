@@ -1245,6 +1245,7 @@ PetscErrorCode  TSGLLERegister(const char sname[],PetscErrorCode (*function)(TS)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSGLLEInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&TSGLLEList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
