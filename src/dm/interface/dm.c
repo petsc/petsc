@@ -120,6 +120,8 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   dm->labels->refct++;
   (*newdm)->labels = dm->labels;
   (*newdm)->depthLabel = dm->depthLabel;
+  (*newdm)->leveldown  = dm->leveldown;
+  (*newdm)->levelup    = dm->levelup;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(*newdm, dim);CHKERRQ(ierr);
   if (dm->ops->clone) {
