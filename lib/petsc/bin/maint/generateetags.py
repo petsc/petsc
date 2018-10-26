@@ -14,7 +14,26 @@ import re
 import sys
 from string import *
 import subprocess
+try:
+  from subprocess import check_output
+except ImportError:
+  def check_output(*popenargs, **kwargs):
+    """Implementation from Python-2.7 subprocess.check_output for use with
+    Python-2.6 which does not provide check_output.
+    """
+    if 'stdout' in kwargs:
+      raise ValueError('stdout argument not allowed, it will be overridden.')
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+      cmd = kwargs.get("args")
+      if cmd is None:
+        cmd = popenargs[0]
+      raise subprocess.CalledProcessError(retcode, cmd, output=output)
+    return output
 
+DEVNULL = open(os.devnull, 'w')
 #
 #  Copies structs from filename to filename.tmp
 
@@ -58,11 +77,11 @@ def createTagsBlock(flist,etagfile,ctagfile):
 
   # linux can use '--tag-relative=yes --langmap=c:+.cu'. For others [Mac,bsd] try running ctags in root directory - with relative path to file
   if ctagfile:
-    status = subprocess.call('ctags --fields=+l --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(frlist), shell=True)
+    status = subprocess.call('ctags --fields=+l --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(frlist), shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
     if status:
-      status = subprocess.call('/usr/local/bin/ctags -a -f '+ctagfile+' '+' '.join(frlist), shell=True)
+      status = subprocess.call('/usr/local/bin/ctags -a -f '+ctagfile+' '+' '.join(frlist), shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
       if status:
-        status = subprocess.call('ctags -a -f '+ctagfile+' '+' '.join(frlist), shell=True)
+        status = subprocess.call('ctags -a -f '+ctagfile+' '+' '.join(frlist), shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
         if status:
           raise RuntimeError("Error running ctags")
   return
@@ -153,7 +172,7 @@ def main(ctags):
     ctagfile = None
   flist = []
   try:
-    output = subprocess.check_output('git ls-files | egrep -v \(^\(systems/\|share/petsc/datafiles/\)\|/output/\|\.\(png\|pdf\|ps\|ppt\|jpg\)$\)', shell=True)
+    output = check_output('git ls-files | egrep -v \(^\(systems/\|share/petsc/datafiles/\)\|/output/\|\.\(png\|pdf\|ps\|ppt\|jpg\)$\)', shell=True)
     flist = output.decode(sys.getfilesystemencoding()).splitlines()
   except OSError:
     for dirpath, dirnames, filenames in os.walk(os.getcwd()):

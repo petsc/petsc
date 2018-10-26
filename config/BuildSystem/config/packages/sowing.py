@@ -105,6 +105,9 @@ class Configure(config.package.GNUPackage):
         else:
           self.logPrint('Bfort not found. Installing sowing for FortranStubs')
           if (not self.argDB['download-sowing']):  self.argDB['download-sowing'] = 1
+          #check cygwin has g++
+          if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/g++.exe'):
+            raise RuntimeError('Error! sowing on windows requires cygwin/g++. Please install it with cygwin setup.exe')
           config.package.GNUPackage.configure(self)
 
           installDir = os.path.join(self.installDir,'bin')
