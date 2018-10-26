@@ -816,57 +816,97 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
+PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx, PetscInt *timestep, PetscBool *complexVal)
 {
-  hid_t          file_id, group, dset_id, filespace;
-  int            rdim, dim;
-  hsize_t        dims[4];
-  PetscInt       bsInd, lenInd, timestep, bs_, N_;
-  PetscBool      complexVal = PETSC_FALSE;
+  HDF5ReadCtx    h;
+  PetscInt       timestep_;
+  PetscBool      complexVal_ = PETSC_FALSE;
+  const char    *groupname;
+  char           vecgroup[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+  ierr = PetscNew(&h);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group);CHKERRQ(ierr);
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, name, H5P_DEFAULT));
+  PetscStackCallHDF5Return(h->dataset,H5Dopen2,(h->group, name, H5P_DEFAULT));
 #else
-  PetscStackCallHDF5Return(dset_id,H5Dopen,(group, name));
+  PetscStackCallHDF5Return(h->dataset,H5Dopen,(h->group, name));
 #endif
-  PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
+  PetscStackCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
+  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep_);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&complexVal_);CHKERRQ(ierr);
+  *ctx = h;
+  *timestep = timestep_;
+  *complexVal = complexVal_;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer viewer, HDF5ReadCtx *ctx)
+{
+  HDF5ReadCtx    h;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  h = *ctx;
+  if (h->group != h->file) PetscStackCallHDF5(H5Gclose,(h->group));
+  PetscStackCallHDF5(H5Sclose,(h->dataspace));
+  PetscStackCallHDF5(H5Dclose,(h->dataset));
+  ierr = PetscFree(*ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx ctx, PetscInt timestep, PetscBool complexVal, PetscInt *bs, PetscInt *N, PetscInt *bsDimInd, PetscInt *lenDimInd, PetscBool *dim2)
+{
+  int            rdim, dim;
+  hsize_t        dims[4];
+  PetscInt       bsInd, lenInd, bs_, N_;
+  PetscBool      dim2_;
+
+  PetscFunctionBegin;
   /* calculate expected number of dimensions */
   dim = 0;
   if (timestep >= 0) ++dim;
   ++dim; /* length in blocks */
-  {
-    const char *groupname;
-    char       vecgroup[PETSC_MAX_PATH_LEN];
-
-    ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,name);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&complexVal);CHKERRQ(ierr);
-  }
   if (complexVal) ++dim;
   /* get actual number of dimensions in dataset */
-  PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(filespace, dims, NULL));
+  PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(ctx->dataspace, dims, NULL));
   /* calculate expected dimension indices */
   lenInd = 0;
   if (timestep >= 0) ++lenInd;
   bsInd = lenInd + 1;
+  dim2_ = PETSC_FALSE;
   if (rdim == dim) {
     bs_ = 1; /* support vectors stored as 1D array */
   } else if (rdim == dim+1) {
     bs_ = (PetscInt) dims[bsInd];
+    if (bs_ == 1) dim2_ = PETSC_TRUE; /* vector with blocksize of 1, still stored as 2D array */
   } else {
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
   }
   N_ = (PetscInt) dims[lenInd]*bs_;
-  /* Close/release resources */
-  PetscStackCallHDF5(H5Sclose,(filespace));
-  PetscStackCallHDF5(H5Dclose,(dset_id));
-  if (group != file_id) PetscStackCallHDF5(H5Gclose,(group));
   if (bs) *bs = bs_;
   if (N)  *N  = N_;
+  if (bsDimInd) *bsDimInd = bsInd;
+  if (lenDimInd) *lenDimInd = lenInd;
+  if (dim2) *dim2 = dim2_;
+  PetscFunctionReturn(0);
+}
+
+/* TODO DOC */
+PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
+{
+  HDF5ReadCtx    h;
+  PetscInt       timestep;
+  PetscBool      complexVal;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h, &timestep, &complexVal);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Internal(h, timestep, complexVal, bs, N, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

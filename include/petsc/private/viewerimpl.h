@@ -45,5 +45,15 @@ PETSC_EXTERN PetscMPIInt Petsc_Viewer_HDF5_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_Viewer_Socket_keyval;
 #endif
 
+#if defined(PETSC_HAVE_HDF5)
+#include <petscviewerhdf5.h>
+struct _n_HDF5ReadCtx {
+  hid_t file, group, dataset, dataspace;
+};
+typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
+PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer,const char[],HDF5ReadCtx*,PetscInt*,PetscBool*);
+PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer,HDF5ReadCtx*);
+PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx,PetscInt,PetscBool,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscBool*);
+#endif
 
 #endif
