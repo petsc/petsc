@@ -577,7 +577,15 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
       ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     }
   }
+  /* Make sure KSP DM has the Jacobian computation routine */
+  {
+    DMSNES sdm;
 
+    ierr = DMGetDMSNES(snes->dm, &sdm);CHKERRQ(ierr);
+    if (!sdm->ops->computejacobian) {
+      ierr = DMCopyDMSNES(dmsave, snes->dm);CHKERRQ(ierr);
+    }
+  }
   /* Compute the operators */
   ierr = SNESComputeJacobian(snes,X,A,B);CHKERRQ(ierr);
   /* Put the previous context back */
