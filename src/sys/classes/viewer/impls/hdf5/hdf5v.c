@@ -816,6 +816,54 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
+{
+  hid_t          file_id, group, dset_id, filespace;
+  int            rdim, dim;
+  hsize_t        dims[4];
+  PetscInt       bsInd, lenInd, timestep;
+  PetscBool      complexVal = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, name, H5P_DEFAULT));
+#else
+  PetscStackCallHDF5Return(dset_id,H5Dopen,(group, name));
+#endif
+  PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
+  dim = 0;
+  if (timestep >= 0) ++dim;
+  ++dim; /* length in blocks */
+  ++dim; /* block size */
+  {
+    const char *groupname;
+    char       vecgroup[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,name);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&complexVal);CHKERRQ(ierr);
+  }
+  if (complexVal) ++dim;
+  PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(filespace, dims, NULL));
+  if (complexVal) {
+    bsInd = rdim-2;
+  } else {
+    bsInd = rdim-1;
+  }
+  lenInd = timestep >= 0 ? 1 : 0;
+  if (rdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
+  /* Close/release resources */
+  PetscStackCallHDF5(H5Sclose,(filespace));
+  PetscStackCallHDF5(H5Dclose,(dset_id));
+  if (group != file_id) PetscStackCallHDF5(H5Gclose,(group));
+  if (bs) *bs = (PetscInt) dims[bsInd];
+  if (N)  *N  = (PetscInt) dims[lenInd]*dims[bsInd];
+  PetscFunctionReturn(0);
+}
+
 /*
   The variable Petsc_Viewer_HDF5_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
