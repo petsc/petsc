@@ -78,6 +78,7 @@ typedef struct {
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscBool     simplex;           /* Use simplices or tensor product cells */
+  PetscInt      cells[3];          /* The initial domain division */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
   /* Problem definition */
@@ -323,7 +324,7 @@ void pressure(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt       bc, run, sol;
+  PetscInt       bc, run, sol, n;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -332,6 +333,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim             = 2;
   options->interpolate     = PETSC_FALSE;
   options->simplex         = PETSC_TRUE;
+  options->cells[0]        = 3;
+  options->cells[1]        = 3;
+  options->cells[2]        = 3;
   options->refinementLimit = 0.0;
   options->testPartition   = PETSC_FALSE;
   options->bcType          = DIRICHLET;
@@ -348,6 +352,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   spatialDim = options->dim;
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex62.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex62.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  if (options->simplex) {
+    options->cells[0] = 4 - options->dim;
+    options->cells[1] = 4 - options->dim;
+    options->cells[2] = 4 - options->dim;
+  }
+  n = 3;
+  ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex62.c", options->cells, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex62.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex62.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
@@ -383,12 +394,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  const PetscInt cells[3]        = {3, 3, 3};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->simplex ? NULL : cells, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->cells, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
