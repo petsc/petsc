@@ -52,6 +52,8 @@ typedef struct {
   PetscInt                  gkbdelay;              /* The delay window for the stopping criterion            */
   PetscReal                 gkbnu;                 /* Parameter for augmented Lagrangian H = A + nu*A01*A01' */
   PetscInt                  gkbmaxit;              /* Maximum number of iterations for outer loop            */
+  PetscBool                 gkbmonitor;            /* Monitor for gkb iterations and the lower bound error   */
+  PetscViewer               gkbviewer;             /* Viewer context for gkbmonitor                          */
 
   PC_FieldSplitLink         head;
   PetscBool                 isrestrict;             /* indicates PCFieldSplitRestrictIS() has been last called on this object, hack */
@@ -538,14 +540,17 @@ static PetscErrorCode MatGolubKahanComputeExplicitOperator(Mat A,Mat B,Mat C,Mat
 {
   PetscErrorCode    ierr;
   Mat               BT,T;
-  PetscReal         nrm;
+  PetscReal         nrmT,nrmB;
 
   PetscFunctionBegin;
   ierr = MatHermitianTranspose(C,MAT_INITIAL_MATRIX,&T);CHKERRQ(ierr);            /* Test if augmented matrix is symmetric */
   ierr = MatAXPY(T,-1.0,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(T,NORM_1,&nrm);CHKERRQ(ierr);
-  if (nrm >= 1e-12) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Matrix is not symmetric/hermitian, GKB is not applicable. For an approximation continue with A21 := A12'. \n");
+  ierr = MatNorm(T,NORM_1,&nrmT);CHKERRQ(ierr);
+  ierr = MatNorm(B,NORM_1,&nrmB);CHKERRQ(ierr);
+  if (nrmB > 0) {
+    if (nrmT/nrmB >= PETSC_SMALL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix is not symmetric/hermitian, GKB is not applicable.");
+    }
   }
   /* Compute augmented Lagrangian matrix H = A00 + nu*A01*A01'. This corresponds to */
   /* setting N := 1/nu*I in [Ar13].                                                 */
@@ -1016,6 +1021,14 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     ilink = jac->head;
     ierr  = KSPSetOperators(ilink->ksp,jac->H,jac->H);CHKERRQ(ierr);
     if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
+    if (jac->gkbmonitor) {
+      PetscInt  tablevel;
+      ierr = PetscViewerCreate(PETSC_COMM_WORLD,&jac->gkbviewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(jac->gkbviewer,PETSCVIEWERASCII);CHKERRQ(ierr);
+      ierr = PetscObjectGetTabLevel((PetscObject)ilink->ksp,&tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISetTab(jac->gkbviewer,tablevel+1);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)ilink->ksp,1);CHKERRQ(ierr);
+    }
   } else {
     /* set up the individual splits' PCs */
     i     = 0;
@@ -1276,38 +1289,30 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilinkA = jac->head,ilinkD = ilinkA->next;
   KSP               ksp = ilinkA->ksp;
-  Vec               u,v,c,Hu,d,b,q,work1,work2;
+  Vec               u,v,Hu,d,work1,work2;
   PetscScalar       alpha,z,beta,nrmz2,*vecz;
   PetscReal         lowbnd,nu;
   PetscInt          j,iterGKB;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDuplicate(ilinkD->x,&work1);CHKERRQ(ierr);
   ierr = VecDuplicate(ilinkA->x,&work2);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkD->x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkD->x,&c);CHKERRQ(ierr);
   ierr = VecDuplicate(ilinkD->x,&v);CHKERRQ(ierr);
   ierr = VecDuplicate(ilinkD->x,&d);CHKERRQ(ierr);
   ierr = VecDuplicate(ilinkA->x,&u);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkA->x,&q);CHKERRQ(ierr);
   ierr = VecDuplicate(ilinkA->x,&Hu);CHKERRQ(ierr);
   ierr = PetscCalloc1(jac->gkbdelay,&vecz);CHKERRQ(ierr);
-
-  /* Initialize Right hand side */
-  ierr = VecCopy(ilinkA->x,q);CHKERRQ(ierr);
-  ierr = VecCopy(ilinkD->x,b);CHKERRQ(ierr);
 
   /* Change RHS to comply with matrix regularization H = A + nu*B*B' */
   /* Add q = q + nu*B*b */
   if (jac->gkbnu) {
     nu = jac->gkbnu;
-    ierr = VecCopy(b,work1);CHKERRQ(ierr);                        /* b = nu * b     */
-    ierr = VecScale(work1,jac->gkbnu);CHKERRQ(ierr);
-    ierr = MatMultAdd(jac->B,work1,q,q);CHKERRQ(ierr);            /* q = q + nu*B*b */
+    ierr = VecScale(ilinkD->x,jac->gkbnu);CHKERRQ(ierr);
+    ierr = MatMultAdd(jac->B,ilinkD->x,ilinkA->x,ilinkA->x);CHKERRQ(ierr);            /* q = q + nu*B*b */
   } else {
     /* Situation when no augmented Lagrangian is used. Then we set inner  */
     /* matrix N = I in [Ar13], and thus nu = 1.                           */
@@ -1315,44 +1320,46 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   }
 
   /* Transform rhs from [q , tilde{b}] to [0, b] */
-  ierr = PetscLogEventBegin(ilinkA->event,ksp,q,ilinkA->y,NULL);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,q,ilinkA->y);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(ilinkA->event,ksp,q,ilinkA->y,NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
   ierr = MatMultHermitianTranspose(jac->B,ilinkA->y,work1);CHKERRQ(ierr);
-  ierr = VecWAXPY(c,-1,work1,b);CHKERRQ(ierr);                    /* c = b - B'*x         */
+  ierr = VecAXPBY(work1,1/nu,-1.0,ilinkD->x);CHKERRQ(ierr);             /* c = b - B'*x      */
 
   /* First step of algorithm */
-  ierr  = VecCopy(c,v);                                            /* v = nu*c             */
-  ierr  = VecScale(v,nu);CHKERRQ(ierr);
-  ierr  = VecDot(c,v,&beta);CHKERRQ(ierr);                        /* beta = sqrt(nu*v'*v) */
-  beta  = PetscSqrtScalar(beta);
-  ierr  = VecScale(v,1/beta);CHKERRQ(ierr);                        /* v = v/beta           */
-  ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                   /* u = H^{-1}*B*v       */
+  ierr  = VecNorm(work1,NORM_2,&beta);CHKERRQ(ierr);                  /* beta = sqrt(nu*c'*c)*/
+  beta  = PetscSqrtScalar(nu)*beta;
+  ierr  = VecAXPBY(v,nu/beta,0,work1);CHKERRQ(ierr);    /*SURE?*/      /* v = nu/beta *c     */
+  ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                     /* u = H^{-1}*B*v       */
   ierr  = PetscLogEventBegin(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
   ierr  = KSPSolve(ksp,work2,u);CHKERRQ(ierr);
   ierr  = PetscLogEventEnd(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
   ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                      /* alpha = u'*H*u       */
   ierr  = VecDot(Hu,u,&alpha);CHKERRQ(ierr);
-  alpha = PetscSqrtScalar(alpha);
+  alpha = PetscSqrtScalar(PetscAbsScalar(alpha));
   ierr  = VecScale(u,1/alpha);CHKERRQ(ierr);
-  ierr  = VecCopy(v,d);CHKERRQ(ierr);                              /* d = v/alpha          */
-  ierr  = VecScale(d,1/alpha);CHKERRQ(ierr);
+  ierr  = VecAXPBY(d,1/alpha,0,v);CHKERRQ(ierr);    /*SURE?*/      /* v = nu/beta *c     */
+
   z = beta/alpha;
   vecz[1] = z;
 
-  /* Computation of new iterate x(i+1) and p(i+1) */
+  /* Computation of first iterate x(1) and p(1) */
   ierr = VecAXPY(ilinkA->y,z,u);CHKERRQ(ierr);
   ierr = VecCopy(d,ilinkD->y);CHKERRQ(ierr);
   ierr = VecScale(ilinkD->y,-z);CHKERRQ(ierr);
 
   iterGKB = 1; lowbnd = 2*jac->gkbtol;
+  if (jac->gkbmonitor) {
+      ierr = PetscViewerASCIIPrintf(jac->gkbviewer,"%3D GKB Lower bound estimate %14.12e\n",iterGKB,lowbnd);CHKERRQ(ierr);
+  }
+
   while (iterGKB < jac->gkbmaxit && lowbnd > jac->gkbtol) {
     iterGKB += 1;
     ierr  = MatMultHermitianTranspose(jac->B,u,work1);CHKERRQ(ierr); /* nu*(B'*u-alpha/nu*v) */
     ierr  = VecScale(work1,nu);
     ierr  = VecAYPX(v,-alpha,work1);CHKERRQ(ierr);
-    ierr  = VecDot(v,v,&beta);CHKERRQ(ierr);
-    beta  = PetscSqrtScalar(beta/nu);
+    ierr  = VecNorm(v,NORM_2,&beta);CHKERRQ(ierr);
+    beta  = beta/PetscSqrtScalar(nu);
     ierr  = VecScale(v,1/beta);CHKERRQ(ierr);
     ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                 /* u = H^{-1}*B*v       */
     ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);
@@ -1362,7 +1369,7 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     ierr  = PetscLogEventEnd(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
     ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                    /* alpha = u'*H*u       */
     ierr  = VecDot(Hu,u,&alpha);CHKERRQ(ierr);
-    alpha = PetscSqrtScalar(alpha);
+    alpha = PetscSqrtScalar(PetscAbsScalar(alpha));
     ierr  = VecScale(u,1/alpha);CHKERRQ(ierr);
 
     z = -beta/alpha*z;                                            /* z = beta/alpha       */
@@ -1372,7 +1379,7 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     ierr = VecAXPBY(d,1/alpha,-beta/alpha,v);CHKERRQ(ierr);       /* d = 1/alpha*(v-beta*d)*/
     ierr = VecAXPY(ilinkA->y,z,u);CHKERRQ(ierr);                  /* r = r + z*u           */
     ierr = VecAXPY(ilinkD->y,-z,d);CHKERRQ(ierr);                 /* p = p - z*d           */
-    ierr = MatMult(jac->H,ilinkA->y,Hu);CHKERRQ(ierr);            /* alpha = u'*H*u        */
+    ierr = MatMult(jac->H,ilinkA->y,Hu);CHKERRQ(ierr);            /* ||u||_H = u'*H*u      */
     ierr = VecDot(Hu,ilinkA->y,&nrmz2);CHKERRQ(ierr);
 
     /* Compute Lower Bound estimate */
@@ -1387,6 +1394,9 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     for (j=0; j<jac->gkbdelay-1; j++) {
       vecz[jac->gkbdelay-j-1] = vecz[jac->gkbdelay-j-2];
     }
+    if (jac->gkbmonitor) {
+      ierr = PetscViewerASCIIPrintf(jac->gkbviewer,"%3D GKB Lower bound estimate %14.12e\n",iterGKB,lowbnd);CHKERRQ(ierr);
+    }
   }
 
   /* It would be good to have something like a gkb_monitor variable to print out the number of         */
@@ -1394,17 +1404,14 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   /* for this intermediate iteration, how can we do it?                                                */
 
   ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&q);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   ierr = VecDestroy(&Hu);CHKERRQ(ierr);
   ierr = VecDestroy(&d);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&c);CHKERRQ(ierr);
   ierr = VecDestroy(&work1);CHKERRQ(ierr);
   ierr = VecDestroy(&work2);CHKERRQ(ierr);
   ierr = PetscFree(vecz);CHKERRQ(ierr);
@@ -1546,6 +1553,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   ierr       = MatDestroy(&jac->B);CHKERRQ(ierr);
   ierr       = MatDestroy(&jac->C);CHKERRQ(ierr);
   ierr       = MatDestroy(&jac->H);CHKERRQ(ierr);
+  ierr       = PetscViewerDestroy(&jac->gkbviewer);CHKERRQ(ierr);
   jac->isrestrict = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1613,6 +1621,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
     ierr = PetscOptionsInt("-pc_fieldsplit_gkb_delay","The delay value for lower bound criterion","PCFieldSplitGKBDelay",jac->gkbdelay,&jac->gkbdelay,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_fieldsplit_gkb_nu","Parameter in augmented Lagrangian approach","PCFieldSplitGKBNu",jac->gkbnu,&jac->gkbnu,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_fieldsplit_gkb_maxit","Maximum allowed number of iterations","PCFieldSplitGKBMaxit",jac->gkbmaxit,&jac->gkbmaxit,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_fieldsplit_gkb_monitor","Prints number of GKB iterations and error","PCFieldSplitGKB",jac->gkbmonitor,&jac->gkbmonitor,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2554,7 +2563,7 @@ PetscErrorCode PCFieldSplitSetGKBTol(PC pc,PetscReal tolerance)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveScalar(pc,tolerance,2);
+  PetscValidLogicalCollectiveReal(pc,tolerance,2);
   ierr = PetscTryMethod(pc,"PCFieldSplitSetGKBTol_C",(PC,PetscReal),(pc,tolerance));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2591,7 +2600,7 @@ PetscErrorCode PCFieldSplitSetGKBMaxit(PC pc,PetscInt maxit)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveScalar(pc,maxit,2);
+  PetscValidLogicalCollectiveInt(pc,maxit,2);
   ierr = PetscTryMethod(pc,"PCFieldSplitSetGKBMaxit_C",(PC,PetscInt),(pc,maxit));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2678,7 +2687,7 @@ PetscErrorCode PCFieldSplitSetGKBNu(PC pc,PetscReal nu)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveScalar(pc,nu,2);
+  PetscValidLogicalCollectiveReal(pc,nu,2);
   ierr = PetscTryMethod(pc,"PCFieldSplitSetGKBNu_C",(PC,PetscReal),(pc,nu));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3056,6 +3065,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
   jac->gkbdelay           = 5;
   jac->gkbnu              = 1;
   jac->gkbmaxit           = 100;
+  jac->gkbmonitor         = PETSC_FALSE;
 
   pc->data = (void*)jac;
 
