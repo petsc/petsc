@@ -821,7 +821,7 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
   hid_t          file_id, group, dset_id, filespace;
   int            rdim, dim;
   hsize_t        dims[4];
-  PetscInt       bsInd, lenInd, timestep;
+  PetscInt       bsInd, lenInd, timestep, bs_, N_;
   PetscBool      complexVal = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -834,10 +834,10 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
   PetscStackCallHDF5Return(dset_id,H5Dopen,(group, name));
 #endif
   PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
+  /* calculate expected number of dimensions */
   dim = 0;
   if (timestep >= 0) ++dim;
   ++dim; /* length in blocks */
-  ++dim; /* block size */
   {
     const char *groupname;
     char       vecgroup[PETSC_MAX_PATH_LEN];
@@ -847,20 +847,26 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
     ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&complexVal);CHKERRQ(ierr);
   }
   if (complexVal) ++dim;
+  /* get actual number of dimensions in dataset */
   PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(filespace, dims, NULL));
-  if (complexVal) {
-    bsInd = rdim-2;
+  /* calculate expected dimension indices */
+  lenInd = 0;
+  if (timestep >= 0) ++lenInd;
+  bsInd = lenInd + 1;
+  if (rdim == dim) {
+    bs_ = 1; /* support vectors stored as 1D array */
+  } else if (rdim == dim+1) {
+    bs_ = (PetscInt) dims[bsInd];
   } else {
-    bsInd = rdim-1;
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
   }
-  lenInd = timestep >= 0 ? 1 : 0;
-  if (rdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
+  N_ = (PetscInt) dims[lenInd]*bs_;
   /* Close/release resources */
   PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Dclose,(dset_id));
   if (group != file_id) PetscStackCallHDF5(H5Gclose,(group));
-  if (bs) *bs = (PetscInt) dims[bsInd];
-  if (N)  *N  = (PetscInt) dims[lenInd]*dims[bsInd];
+  if (bs) *bs = bs_;
+  if (N)  *N  = N_;
   PetscFunctionReturn(0);
 }
 
