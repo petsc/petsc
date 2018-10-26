@@ -8,15 +8,13 @@
 PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 {
   PetscMPIInt     rank,size;
-  hid_t           file_id,group_matrix_id,dset_id,dspace_id;
-  hsize_t         h5_dims[4];
+  hid_t           file_id,group_matrix_id;
 
   const PetscInt  *i_glob = NULL;
   PetscInt        *i = NULL;
   const PetscInt  *j = NULL;
   const PetscScalar *a = NULL;
   const char      *a_name,*i_name,*j_name,*mat_name,*c_name;
-  int             rdim;
   PetscInt        p,m,M,N;
   PetscInt        bs = mat->rmap->bs;
   PetscBool       flg;
@@ -47,12 +45,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   ierr = PetscViewerHDF5ReadAttribute(viewer,mat_name,c_name,PETSC_INT,&N);CHKERRQ(ierr);
 
-  PetscStackCallHDF5Return(dset_id,H5Dopen,(group_matrix_id,i_name,H5P_DEFAULT));
-  PetscStackCallHDF5Return(dspace_id,H5Dget_space,(dset_id));
-  PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(dspace_id,h5_dims,NULL));
-  M = (PetscInt) h5_dims[rdim-1] - 1;
-  PetscStackCallHDF5(H5Sclose,(dspace_id));
-  PetscStackCallHDF5(H5Dclose,(dset_id));
+  ierr = PetscViewerHDF5ReadSizes(viewer, i_name, NULL, &M);CHKERRQ(ierr);
+  --M;  /* i has size M+1 as there is global number of nonzeros stored at the end */
 
   /* If global sizes are set, check if they are consistent with that given in the file */
   if (mat->rmap->N >= 0 && mat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows: Matrix in file has (%D) and input matrix has (%D)",mat->rmap->N,M);
