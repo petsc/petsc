@@ -1466,7 +1466,7 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
   Not collective
 
   Input Parameters:
-+ mesh - The DMPlex
++ dm - The DMPlex
 - p - The point, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameter:
@@ -1478,9 +1478,7 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-  You must also call DMPlexRestoreCone() after you finish using the returned array.
-
-.seealso: DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart()
+.seealso: DMPlexCreate(), DMPlexSetCone(), DMPlexGetConeTuple(), DMPlexSetChart()
 @*/
 PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 {
@@ -1493,6 +1491,109 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
   PetscValidPointer(cone, 3);
   ierr  = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
   *cone = &mesh->cones[off];
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexGetConeTuple - Return the points on the in-edges of several points in the DAG
+
+  Not collective
+
+  Input Parameters:
++ dm - The DMPlex
+- p - The IS of points, which must lie in the chart set with DMPlexSetChart()
+
+  Output Parameter:
++ pConesSection - PetscSection describing the layout of pCones
+- pCones - An array of points which are on the in-edges for the point set p
+
+  Level: intermediate
+
+.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeRecursive(), DMPlexSetChart()
+@*/
+PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *pCones)
+{
+  PetscSection        cs, newcs;
+  PetscInt            *cones;
+  PetscInt            *newarr=NULL;
+  PetscInt            n;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSection(dm, &cs);CHKERRQ(ierr);
+  ierr = PetscSectionExtractDofsFromArray(cs, MPIU_INT, cones, p, &newcs, pCones ? ((void**)&newarr) : NULL);CHKERRQ(ierr);
+  if (pConesSection) *pConesSection = newcs;
+  if (pCones) {
+    ierr = PetscSectionGetStorageSize(newcs, &n);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)p), n, newarr, PETSC_OWN_POINTER, pCones);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexGetConeRecursive_Private(DM dm, PetscInt *n_inout, const PetscInt points[], PetscInt *offset_inout, PetscInt buf[])
+{
+  PetscInt p, n, cn, i;
+  const PetscInt *cone;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  n = *n_inout;
+  *n_inout = 0;
+  for (i=0; i<n; i++) {
+    p = points[i];
+    ierr = DMPlexGetConeSize(dm, p, &cn);CHKERRQ(ierr);
+    if (!cn) {
+      cn = 1;
+      if (buf) {
+        buf[*offset_inout] = p;
+        ++(*offset_inout);
+      }
+    } else {
+      ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeRecursive_Private(dm, &cn, cone, offset_inout, buf);CHKERRQ(ierr);
+    }
+    *n_inout += cn;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexGetConeRecursive - Like DMPlexGetConeTuple() but recursive, i.e. each cone point is expanded into a set of its own cone points until a vertex (DAG point with no cone) is reached.
+
+  Not collective
+
+  Input Parameters:
++ dm - The DMPlex
+- p - The IS of points, which must lie in the chart set with DMPlexSetChart()
+
+  Output Parameter:
+. pCones - An array of recursively expanded cones, i.e. containing only vertices, and each of them can be present multiple times
+
+  Level: advanced
+
+.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeTuple()
+@*/
+PetscErrorCode DMPlexGetConeRecursive(DM dm, IS p, IS *pCones)
+{
+  const PetscInt      *arr=NULL;
+  PetscInt            *cpoints=NULL;
+  PetscInt            n, cn;
+  PetscInt            zero;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(p, &n);CHKERRQ(ierr);
+  ierr = ISGetIndices(p, &arr);CHKERRQ(ierr);
+  zero = 0;
+  /* first figure out the total number of returned points */
+  cn = n;
+  ierr = DMPlexGetConeRecursive_Private(dm, &cn, arr, &zero, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cn, &cpoints);CHKERRQ(ierr);
+  /* now get recursive cones themselves */
+  ierr = DMPlexGetConeRecursive_Private(dm, &n, arr, &zero, cpoints);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)p), n, cpoints, PETSC_OWN_POINTER, pCones);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(p, &arr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

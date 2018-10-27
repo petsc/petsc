@@ -3146,3 +3146,77 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
   s->useFieldOff = flg;
   PetscFunctionReturn(0);
 }
+
+#define PetscSectionExpandPoints_Loop(TYPE) \
+{ \
+  PetscInt i, n, o0, o1, size; \
+  TYPE *a0 = (TYPE*)origArray, *a1; \
+  ierr = PetscSectionGetStorageSize(s, &size);CHKERRQ(ierr); \
+  ierr = PetscMalloc1(size, &a1);CHKERRQ(ierr); \
+  for (i=0; i<npoints; i++) { \
+    ierr = PetscSectionGetOffset(origSection, points_[i], &o0);CHKERRQ(ierr); \
+    ierr = PetscSectionGetOffset(s, i, &o1);CHKERRQ(ierr); \
+    ierr = PetscSectionGetDof(s, i, &n);CHKERRQ(ierr); \
+    ierr = PetscMemcpy(&a1[o1], &a0[o0], n*unitsize);CHKERRQ(ierr); \
+  } \
+  *newArray = (void*)a1; \
+}
+
+/*@
+  PetscSectionExtractDofsFromArray - Extracts elements of an array corresponding to DOFs of specified points.
+
+  Not collective
+
+  Input Parameters:
++ origSection - the PetscSection describing the layout of the array
+. dataType - MPI_Datatype describing the data type of the array (currently only MPIU_INT, MPIU_SCALAR, MPIU_REAL)
+. origArray - the array; its size must be equal to the storage size of origSection
+- points - IS with points to extract; its indices must lie in the chart of origSection
+
+  Output Parameters:
++ newSection - the new PetscSection desribing the layout of the new array (with points renumbered 0,1,... but preserving numbers of DOFs)
+- newArray - the array of the extracted DOFs; its size is the storage size of newSection
+
+  Level: developer
+
+.seealso: PetscSectionGetChart(), PetscSectionGetDof(), PetscSectionGetStorageSize(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Datatype dataType, const void *origArray, IS points, PetscSection *newSection, void *newArray[])
+{
+  PetscSection        s;
+  const PetscInt      *points_;
+  PetscInt            i, n, npoints, pStart, pEnd;
+  PetscMPIInt         unitsize;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(origSection, PETSC_SECTION_CLASSID, 1);
+  PetscValidPointer(origArray, 3);
+  PetscValidHeaderSpecific(points, IS_CLASSID, 4);
+  if (newSection) PetscValidPointer(newSection, 5);
+  if (newArray) PetscValidPointer(newArray, 6);
+  ierr = MPI_Type_size(dataType, &unitsize);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(points, &npoints);CHKERRQ(ierr);
+  ierr = ISGetIndices(points, &points_);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(origSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_SELF, &s);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(s, 0, npoints);CHKERRQ(ierr);
+  for (i=0; i<npoints; i++) {
+    if (PetscUnlikely(points_[i] < pStart || points_[i] >= pEnd)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %d (index %d) in input IS out of input section's chart", points_[i], i);
+    ierr = PetscSectionGetDof(origSection, points_[i], &n);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(s, i, n);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(s);CHKERRQ(ierr);
+  if (newArray) {
+    if (dataType == MPIU_INT)           {PetscSectionExpandPoints_Loop(PetscInt);}
+    else if (dataType == MPIU_SCALAR)   {PetscSectionExpandPoints_Loop(PetscScalar);}
+    else if (dataType == MPIU_REAL)     {PetscSectionExpandPoints_Loop(PetscReal);}
+    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "not implemented for this MPI_Datatype");
+  }
+  if (newSection) {
+    *newSection = s;
+  } else {
+    ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
