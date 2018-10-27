@@ -79,3 +79,12 @@ class Configure(config.package.CMakePackage):
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
     return args
+
+  def consistencyChecks(self):
+    config.package.Package.consistencyChecks(self)
+    if self.argDB['with-'+self.package]:
+      # Strumpack requires dlapmr() LAPACK routine
+      if not self.blasLapack.checkForRoutine('dlapmr'):
+        raise RuntimeError('Strumpack requires the LAPACK routine dlapmr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-fblaslapack=1 option \nIf you are using vecLib on OSX, it does not contain this function.')
+      self.log.write('Found dlapmr() in Lapack library as needed by Strumpack\n')
+    return

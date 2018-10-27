@@ -15,6 +15,7 @@ configure_options = [
   '--download-ptscotch',
   '--download-scalapack',
   '--download-strumpack',
+  '--download-fblaslapack', #vecLib has incomplete lapack - so unuseable by strumpack
   ]
 
 if __name__ == '__main__':
