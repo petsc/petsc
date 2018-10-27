@@ -190,7 +190,7 @@ PETSC_STATIC_INLINE PetscHash_t PetscHash_UInt64(PetscHash64_t key)
 
 PETSC_STATIC_INLINE PetscHash_t PetscHashInt(PetscInt key)
 {
-#if PETSC_USE_64BIT_INDICES
+#if defined(PETSC_USE_64BIT_INDICES)
   return PetscHash_UInt64((PetscHash64_t)key);
 #else
   return PetscHash_UInt32((PetscHash32_t)key);
