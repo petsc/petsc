@@ -227,7 +227,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
 
   ierr = PetscCalloc2(locRows, &dnz, locRows, &onz);CHKERRQ(ierr);
   ierr = PetscHSetIJCreate(&ht);CHKERRQ(ierr);
-  /* ierr = PetscSynchronizedPrintf(comm, "DMSwarmComputeMassMatrix_Private: rStart = %D rEnd = %D colStart = %D colEnd = %D\n", rStart, rStart+locRows, colStart, colEnd);CHKERRQ(ierr); */
+  
   ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
   /* count non-zeros */
   ierr = DMSwarmSortGetAccess(dmc);CHKERRQ(ierr);
@@ -243,10 +243,8 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       {
         PetscHashIJKey key;
         PetscBool      missing;
-        /* PetscPrintf(PETSC_COMM_SELF, "\t[%D]DMSwarmComputeMassMatrix_Private: cell %D\n",rank,cell); */
         for (i = 0; i < numFIndices; ++i) {
           key.j = findices[i]; /* global column (from Plex) */
-          /* PetscPrintf(PETSC_COMM_SELF, "\t\t[%D]DMSwarmComputeMassMatrix_Private: j ('fine',vertices) = %D, num rows ('coarse',particles) = %D\n",rank,key.i,numCIndices); */
           if (key.j >= 0) {
             /* Get indices for coarse elements */
             for (c = 0; c < numCIndices; ++c) {
@@ -254,7 +252,6 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
               if (key.i < 0) continue;
               ierr = PetscHSetIJQueryAdd(ht, key, &missing);CHKERRQ(ierr);
               if (missing) {
-/* PetscPrintf(PETSC_COMM_SELF, "\t\t\t[%D]DMSwarmComputeMassMatrix_Private: new key j (row,particle) = %D, i (col,vertices) = %D\n",-1,key.j,key.i); */
                 if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
                 else                                         ++onz[key.i - rStart];
               } else SETERRQ2(PetscObjectComm((PetscObject) dmf), PETSC_ERR_SUP, "Set new value at %D,%D", key.i, key.j);
@@ -291,7 +288,6 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       ierr = DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices);CHKERRQ(ierr);
       for (p = 0; p < numCIndices; ++p) {
         CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &coords[cindices[p]*dim], &xi[p*dim]);
-        /* PetscPrintf(PETSC_COMM_SELF,"[%D]DMSwarmComputeMassMatrix_Private: %2D.%D) coord[%D] = (%12.5e, %12.5e) element coord = (%12.5e, %12.5e) cindices[%D]=%D detJ=%12.5e\n",-1,cell,p,cindices[p]*dim,coords[cindices[p]*dim],coords[cindices[p]*dim+1],xi[p*dim],xi[p*dim+1],p,cindices[p],detJ); */
       }
       ierr = PetscFEGetTabulation((PetscFE) obj, numCIndices, xi, &Bcoarse, NULL, NULL);CHKERRQ(ierr);
       /* Get elemMat entries by multiplying by weight */
@@ -301,7 +297,6 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
           for (c = 0; c < Nc; ++c) {
             /* B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c */
             elemMat[p*numFIndices+i] += Bcoarse[(p*numFIndices + i)*Nc + c]*(useDeltaFunction ? 1.0 : detJ);
-            /* PetscPrintf(PETSC_COMM_SELF, "\t[%D]DMSwarmComputeMassMatrix_Private: %2D) findices[%D] (col) %D, particle (row) %D (nc=%D) Bcoarse[%2D]=%12.5e\n",rank,cell,i,findices[i],cindices[p],c,(p*numFIndices + i)*Nc + c,Bcoarse[(p*numFIndices + i)*Nc + c]); */
           }
         }
       }
@@ -1012,11 +1007,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
       break;
     case DMSWARM_MIGRATE_DMCELLEXACT:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE_DMCELLEXACT not implemented");
-      /*ierr = DMSwarmMigrate_CellDMExact(dm,remove_sent_points);CHKERRQ(ierr);*/
       break;
     case DMSWARM_MIGRATE_USER:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE_USER not implemented");
-      /*ierr = swarm->migrate(dm,remove_sent_points);CHKERRQ(ierr);*/
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE type unknown");
@@ -1072,11 +1065,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm)
       break;
     case DMSWARM_COLLECT_DMDABOUNDINGBOX:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT_DMDABOUNDINGBOX not implemented");
-      /*ierr = DMSwarmCollect_DMDABoundingBox(dm,&ng);CHKERRQ(ierr);*/
       break;
     case DMSWARM_COLLECT_GENERAL:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT_GENERAL not implemented");
-      /*ierr = DMSwarmCollect_General(dm,..,,..,&ng);CHKERRQ(ierr);*/
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT type unknown");
