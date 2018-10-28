@@ -1415,6 +1415,11 @@ int main(int argc, char **argv)
     requires: triangle
     args: -run_type full -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -snes_converged_reason ::ascii_info_detail
 
+  test:
+    requires: !complex
+    suffix: periodic_1
+    args: -quiet -run_type test -simplex 0 -x_periodicity periodic -y_periodicity periodic -vec_view vtk:test.vtu:vtk_vtu -interpolate 1 -petscspace_degree 1 -dm_refine 1
+
   # 2D serial P1 test with field bc
   test:
     suffix: field_bc_p1_0
