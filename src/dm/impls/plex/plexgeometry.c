@@ -295,21 +295,21 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
 
 /*
  PetscGridHashGetEnclosingBoxQuery - Find the grid boxes containing each input point
- 
+
  Not collective
- 
+
   Input Parameters:
 + box       - The grid hash object
 . numPoints - The number of input points
 - points    - The input point coordinates
- 
+
   Output Parameters:
 + dboxes    - An array of numPoints*dim integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
 . boxes     - An array of numPoints integers expressing the enclosing box as single number, or NULL
 - found     - Flag indicating if point was located within a box
- 
+
   Level: developer
- 
+
 .seealso: PetscGridHashGetEnclosingBox()
 */
 PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[],PetscBool *found)
@@ -320,13 +320,13 @@ PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscInt num
   const PetscInt  *n     = box->n;
   const PetscInt   dim   = box->dim;
   PetscInt         d, p;
-  
+
   PetscFunctionBegin;
   *found = PETSC_FALSE;
   for (p = 0; p < numPoints; ++p) {
     for (d = 0; d < dim; ++d) {
       PetscInt dbox = PetscFloorReal((PetscRealPart(points[p*dim+d]) - lower[d])/h[d]);
-      
+
       if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p*dim+d]) - upper[d]) < 1.0e-9) dbox = n[d]-1;
       if (dbox < 0 || dbox >= n[d]) {
         PetscFunctionReturn(0);
@@ -532,7 +532,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
               for (ii = 0, cpoint[0] = point[0]; ii < 2; ++ii, cpoint[0] += h[0]) {
 
                 ierr = DMPlexLocatePoint_Internal(dm, dim, cpoint, c, &cell);CHKERRQ(ierr);
-                if (cell >= 0) {DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); ii = jj = kk = 2;}
+                if (cell >= 0) { ierr = DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); ii = jj = kk = 2;}
               }
             }
           }
@@ -554,7 +554,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
                   segB[0]     = PetscRealPart(point[0]);
                   segB[dim+0] = PetscRealPart(point[0]) + ii*h[0];
                   ierr = DMPlexGetLineIntersection_2D_Internal(segA, segB, NULL, &intersects);CHKERRQ(ierr);
-                  if (intersects) {DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); edge = ii = jj = kk = dim+1;}
+                  if (intersects) { ierr = DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); edge = ii = jj = kk = dim+1;}
                 }
               }
             }
@@ -602,7 +602,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   numPoints /= bs;
   {
     const PetscSFNode *sf_cells;
-    
+
     ierr = PetscSFGetGraph(cellSF,NULL,NULL,NULL,&sf_cells);CHKERRQ(ierr);
     if (sf_cells) {
       ierr = PetscInfo(dm,"[DMLocatePoints_Plex] Re-using existing StarForest node list\n");CHKERRQ(ierr);
@@ -621,7 +621,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   /* define domain bounding box */
   {
     Vec coorglobal;
-    
+
     ierr = DMGetCoordinates(dm,&coorglobal);CHKERRQ(ierr);
     ierr = VecStrideMaxAll(coorglobal,NULL,gmax);CHKERRQ(ierr);
     ierr = VecStrideMinAll(coorglobal,NULL,gmin);CHKERRQ(ierr);
@@ -650,7 +650,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       terminating_query_type[0]++;
       continue;
     }
-    
+
     /* check initial values in cells[].index - abort early if found */
     if (cells[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
       c = cells[p].index;
@@ -666,10 +666,10 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       terminating_query_type[1]++;
       continue;
     }
-  
+
     if (hash) {
       PetscBool found_box;
-      
+
       /* allow for case that point is outside box - abort early */
       ierr = PetscGridHashGetEnclosingBoxQuery(mesh->lbox, 1, point, dbin, &bin,&found_box);CHKERRQ(ierr);
       if (found_box) {

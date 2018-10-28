@@ -294,7 +294,7 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm,DM *dmc)
     ierr = DMCreate(PETSC_COMM_WORLD,dmc);CHKERRQ(ierr);
     ierr = DMSetType(*dmc,DMPRODUCT);CHKERRQ(ierr);
     ierr = DMSetDimension(*dmc,dim);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported coordinate DM type %s",stag->coordinateDMType);CHKERRQ(ierr);
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported coordinate DM type %s",stag->coordinateDMType);
   PetscFunctionReturn(0);
 }
 
