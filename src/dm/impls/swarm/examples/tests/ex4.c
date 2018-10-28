@@ -236,7 +236,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscRandom    rnd, rndp;
   PetscReal      interval = user->particleRelDx;
   PetscScalar    value, *vals;
-  PetscReal     *centroid, *coords, *xi0, *v0, *J, *invJ, detJ;
+  PetscReal     *centroid, *coords, *xi0, *v0, *J, *invJ, detJ, *initialConditions;
   PetscInt      *cellid;
   PetscInt       Ncell, Np = user->particlesPerCell, p, c, dim, d;
   PetscErrorCode ierr;
@@ -257,6 +257,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   ierr = DMSwarmSetType(*sw, DMSWARM_PIC);CHKERRQ(ierr);
   ierr = DMSwarmSetCellDM(*sw, dm);CHKERRQ(ierr);
   ierr = DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(*sw, "kinematics", 1, PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(*sw);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, NULL, &Ncell);CHKERRQ(ierr);
   ierr = DMSwarmSetLocalSizes(*sw, Ncell * Np, 0);CHKERRQ(ierr);
@@ -264,6 +265,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   ierr = DMSwarmGetField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, "w_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(*sw, "kinematics", NULL, NULL, (void **) &initialConditions);CHKERRQ(ierr);
 
   ierr = PetscMalloc5(dim, &centroid, dim, &xi0, dim, &v0, dim*dim, &J, dim*dim, &invJ);CHKERRQ(ierr);
   for (c = 0; c < Ncell; ++c) {
@@ -289,14 +291,20 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   for (c = 0; c < Ncell; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c*Np + p;
-
+      
       for (d = 0; d < dim; ++d) {ierr = PetscRandomGetValue(rndp, &value);CHKERRQ(ierr); coords[n*dim+d] += PetscRealPart(value);}
       user->func(dim, 0.0, &coords[n*dim], 1, &vals[c], user);
+    }
+    for (p = 0; p < Np; p += 2) {
+      initialConditions[p]   = 0.0;
+      initialConditions[p+1] = 0.2; 
+      
     }
   }
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, "w_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
+  ierr = DMSwarmRestoreField(*sw, "kinematics", NULL, NULL, (void **) &initialConditions);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rndp);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *sw, "Particles");CHKERRQ(ierr);
@@ -312,11 +320,16 @@ static PetscErrorCode RHSFunction1Particles(TS ts,PetscReal t,Vec V,Vec Xres,voi
   PetscInt          Np;
   PetscErrorCode    ierr;
 
+  
+  
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(Xres, &Np);CHKERRQ(ierr);
+  
+  //Np /= 2;
+  
   ierr = VecGetArray(Xres,&xres);CHKERRQ(ierr);
   ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
-  for (int p = 0; p < Np; ++p) {
+  for (int p = 0; p < Np; p+=2) {
      xres[p] = v[p];
   }
   ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
@@ -331,13 +344,17 @@ static PetscErrorCode RHSFunction2Particles(TS ts,PetscReal t,Vec X,Vec Vres,voi
   const PetscScalar *x;
   PetscInt          Np;
   PetscScalar       *vres;
-  PetscErrorCode    ierr;
+  PetscErrorCode    ierr; 
+
 
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(Vres, &Np);CHKERRQ(ierr);
+
+  //Np /= 2;
+
   ierr = VecGetArray(Vres,&vres);CHKERRQ(ierr);
-  for(int p = 0; p < Np; ++p){
+  for(int p = 0; p < Np; p+=2){
     vres[p] = -user->omega*user->omega*x[p];
   }
   ierr = VecRestoreArray(Vres,&vres);CHKERRQ(ierr);
@@ -359,16 +376,15 @@ static PetscErrorCode RHSFunctionParticles(TS ts,PetscReal t,Vec U,Vec R,void *c
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(R,&r);CHKERRQ(ierr);
   
-  for(int p = 0; p < Np; ++p){
-    r[p*2+0] = u[p*2+1];
-    r[p*2+1] = -user->omega*user->omega*u[p*2+0];
+  for(int p = 0; p < Np; p+=2){
+    r[p] = u[p+1];
+    r[p+1] = -user->omega*user->omega*u[p];
   }
   
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
@@ -385,7 +401,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
     ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
     menergy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0]-user->omega*user->omega*dt*u[0]*u[1])/2.;
     energy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0])/2.;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"At time %.6lf, Energy = %8g, Modified Energy = %8g\n",t,(double)energy,(double)menergy);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"At time %.6lf, Energy = %8g, Modified Energy = %8g \n",t,(double)energy,(double)menergy);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -401,7 +417,9 @@ int main(int argc,char **argv)
   Vec            f;              /* swarm vector */
   MPI_Comm       comm;
   DM             dm, sw;
+  const PetscReal   *kCheck;
   AppCtx         user;
+
   PetscErrorCode ierr;  
 
   
@@ -415,7 +433,7 @@ int main(int argc,char **argv)
   ierr = CreateFEM(dm, &user);CHKERRQ(ierr);
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
 
-  ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  ierr = DMSwarmCreateGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
   
   ierr = VecGetLocalSize(f, &locsize);CHKERRQ(ierr);
   
@@ -423,7 +441,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(comm, locsize/2, 1, 2,&is2);CHKERRQ(ierr);
   
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBSI);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSBASICSYMPLECTIC);CHKERRQ(ierr);
 
   ierr = TSRHSSplitSetIS(ts,"position",is1);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"momentum",is2);CHKERRQ(ierr);
@@ -446,8 +464,21 @@ int main(int argc,char **argv)
 
   ierr = TSSolve(ts,f);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+  ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
+  /* Compute energy of particles */
+  ierr = DMSwarmGetField(sw, "kinematics", NULL, NULL, (void **) &kCheck);CHKERRQ(ierr);
+  for (int p = 0; p < user.particlesPerCell; p += 2) {
+    ierr = PetscPrintf(comm,"The particle solution at time %.6lf is [%g %g]\n",(double)ftime,(kCheck[p+1]*kCheck[p+1]+user.omega*user.omega*kCheck[p]*kCheck[p])/2.,kCheck[p+1]);CHKERRQ(ierr);
+      
+    
+  }
+ 
+
+  /* end energy computation */
+ 
+  ierr = PetscPrintf(comm,"The exact solution at time %.6lf is [%g %g]\n",(double)ftime,(double)0.2*PetscCosReal(user.omega*ftime),(double)-0.2*user.omega*PetscSinReal(user.omega*ftime));CHKERRQ(ierr);
+
+
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
   ierr = ISDestroy(&is2);CHKERRQ(ierr);
@@ -461,9 +492,9 @@ int main(int argc,char **argv)
    build:
      requires: !single !complex
    test:
-     args: -dim 2 -faces 1 -particlePerCell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ts_bsi_type 1 -monitor
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 
    test:
      suffix: 2
-     args: -dim 2 -faces 1 -particlePerCell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ts_bsi_type 2 -monitor
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 2 
 
 TEST*/
