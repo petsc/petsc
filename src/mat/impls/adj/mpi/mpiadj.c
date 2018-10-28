@@ -184,8 +184,8 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
     for(j=0; j<irow_n; j++){
       for(k=sxadj[j]; k<sxadj[j+1]; k++){
         ierr = PetscFindInt(sadjncy[k],nindx,indices,&loc);CHKERRQ(ierr);
-#if PETSC_USE_DEBUG
-        if (loc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %d \n",sadjncy[k]);
+#if defined(PETSC_USE_DEBUG)
+        if (loc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %D",sadjncy[k]);
 #endif
         sadjncy[k] = loc;
       }
