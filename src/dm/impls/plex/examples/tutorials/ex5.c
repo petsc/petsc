@@ -116,48 +116,44 @@ int main(int argc, char **argv)
 
 /*TEST
   build:
-    requires: hdf5 exodusii
+    requires: hdf5
   # Idempotence of saving/loading
   test:
     suffix: 0
-    requires: hdf5 exodusii
+    requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -format hdf5_petsc -compare
   test:
     suffix: 1
-    requires: hdf5 exodusii parmetis !define(PETSC_USE_64BIT_INDICES)
+    requires: exodusii parmetis !define(PETSC_USE_64BIT_INDICES)
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -petscpartitioner_type parmetis
     args: -format hdf5_petsc -new_dm_view ascii::ascii_info_detail 
-  test:
-    suffix: 2
-    requires: hdf5 exodusii
-    nsize: {{1 2 4 8}separate output}
+  testset:
+    requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     args: -petscpartitioner_type simple
     args: -dm_view ascii::ascii_info_detail
     args: -new_dm_view ascii::ascii_info_detail
-    args: -format {{default hdf5_petsc}separate output}
-    args: -interpolate {{0 1}separate output}
-  test:
-    suffix: 2a
-    requires: hdf5 exodusii
-    nsize: {{1 2 4 8}separate output}
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
-    args: -petscpartitioner_type simple
-    args: -dm_view ascii::ascii_info_detail
-    args: -new_dm_view ascii::ascii_info_detail
-    args: -format {{hdf5_xdmf hdf5_viz}separate output}
+    test:
+      suffix: 2
+      nsize: {{1 2 4 8}separate output}
+      args: -format {{default hdf5_petsc}separate output}
+      args: -interpolate {{0 1}separate output}
+    test:
+      suffix: 2a
+      nsize: {{1 2 4 8}separate output}
+      args: -format {{hdf5_xdmf hdf5_viz}separate output}
   test:
     suffix: 3
-    requires: hdf5 exodusii
+    requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -compare
 
   # Load HDF5 file in XDMF format in parallel, write, read dm1, write, read dm2, and compare dm1 and dm2
   test:
     suffix: 4
-    requires: hdf5 !complex
+    requires: !complex
     nsize: {{1 2 3 4 8}}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5
     args: -dm_plex_create_from_hdf5_xdmf -distribute 0 -format hdf5_xdmf -second_write_read -compare
@@ -165,7 +161,7 @@ int main(int argc, char **argv)
   # reproduce PetscSFView() crash - fixed, left as regression test
   test:
     suffix: new_dm_view
-    requires: hdf5 exodusii !define(PETSC_USE_64BIT_INDICES)
+    requires: exodusii !define(PETSC_USE_64BIT_INDICES) !complex
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo -new_dm_view ascii::ascii_info_detail
 TEST*/
