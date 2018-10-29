@@ -861,14 +861,20 @@ PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer viewer, HDF5Read
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx ctx, PetscInt timestep, PetscBool complexVal, PetscInt *bs, PetscInt *N)
+PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx ctx, PetscInt timestep, PetscBool complexVal, PetscLayout *map_)
 {
   int            rdim, dim;
   hsize_t        dims[4];
   PetscInt       bsInd, lenInd, bs_, N_;
   PetscBool      dim2_;
+  PetscLayout    map;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!(*map_)) {
+    ierr = PetscLayoutCreate(PetscObjectComm((PetscObject)viewer),map_);CHKERRQ(ierr);
+  }
+  map = *map_;
   /* calculate expected number of dimensions */
   dim = 0;
   if (timestep >= 0) ++dim;
@@ -890,8 +896,14 @@ PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx ctx, PetscInt times
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
   }
   N_ = (PetscInt) dims[lenInd]*bs_;
-  if (bs) *bs = bs_;
-  if (N)  *N  = N_;
+
+  /* Set Vec sizes,blocksize,and type if not already set */
+  if (map->bs < 0) {
+    ierr = PetscLayoutSetBlockSize(map, bs_);CHKERRQ(ierr);
+  } else if (map->bs != bs_) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %D, not %D as expected",bs_,map->bs);
+  if (map->N < 0) {
+    ierr = PetscLayoutSetSize(map, N_);CHKERRQ(ierr);
+  } else if (map->N != N_) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %D, not %D as expected",N_,map->N);
   PetscFunctionReturn(0);
 }
 
@@ -901,12 +913,16 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
   HDF5ReadCtx    h;
   PetscInt       timestep;
   PetscBool      complexVal;
+  PetscLayout    map=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h, &timestep, &complexVal);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Internal(h, timestep, complexVal, bs, N);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, timestep, complexVal, &map);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
+  if (bs) *bs = map->bs;
+  if (N) *N = map->N;
+  ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
