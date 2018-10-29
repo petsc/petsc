@@ -57,6 +57,7 @@ typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
 PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer,const char[],HDF5ReadCtx*);
 PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer,HDF5ReadCtx*);
 PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer,HDF5ReadCtx,PetscLayout*);
+PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Internal(PetscViewer,HDF5ReadCtx,PetscLayout,hid_t*);
 #endif
 
 #endif

@@ -902,6 +902,47 @@ PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Internal(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout map, hid_t *memspace)
+{
+  hsize_t        count[4], offset[4];
+  int            dim;
+  PetscInt       bs, n, low;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Compute local size and ownership range */
+  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(map, &bs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(map, &n);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(map, &low, NULL);CHKERRQ(ierr);
+
+  /* Each process defines a dataset and reads it from the hyperslab in the file */
+  dim  = 0;
+  if (ctx->timestep >= 0) {
+    count[dim]  = 1;
+    offset[dim] = ctx->timestep;
+    ++dim;
+  }
+  {
+    ierr = PetscHDF5IntCast(n/bs, &count[dim]);CHKERRQ(ierr);
+    ierr = PetscHDF5IntCast(low/bs, &offset[dim]);CHKERRQ(ierr);
+    ++dim;
+  }
+  if (bs > 1 || ctx->dim2) {
+    count[dim]  = bs;
+    offset[dim] = 0;
+    ++dim;
+  }
+  if (ctx->complexVal) {
+    count[dim]  = 2;
+    offset[dim] = 0;
+    ++dim;
+  }
+  PetscStackCallHDF5Return(*memspace,H5Screate_simple,(dim, count, NULL));
+  PetscStackCallHDF5(H5Sselect_hyperslab,(ctx->dataspace, H5S_SELECT_SET, offset, NULL, count, NULL));
+  PetscFunctionReturn(0);
+}
+
 /* TODO DOC */
 PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
 {
