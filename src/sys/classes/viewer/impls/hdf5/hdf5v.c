@@ -865,8 +865,8 @@ PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx
 {
   int            rdim, dim;
   hsize_t        dims[4];
-  PetscInt       bsInd, lenInd, bs_, N_;
-  PetscBool      dim2_;
+  PetscInt       bsInd, lenInd, bs, N;
+  PetscBool      dim2;
   PetscLayout    map;
   PetscErrorCode ierr;
 
@@ -886,24 +886,24 @@ PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx
   lenInd = 0;
   if (timestep >= 0) ++lenInd;
   bsInd = lenInd + 1;
-  dim2_ = PETSC_FALSE;
+  dim2 = PETSC_FALSE;
   if (rdim == dim) {
-    bs_ = 1; /* support vectors stored as 1D array */
+    bs = 1; /* support vectors stored as 1D array */
   } else if (rdim == dim+1) {
-    bs_ = (PetscInt) dims[bsInd];
-    if (bs_ == 1) dim2_ = PETSC_TRUE; /* vector with blocksize of 1, still stored as 2D array */
+    bs = (PetscInt) dims[bsInd];
+    if (bs == 1) dim2 = PETSC_TRUE; /* vector with blocksize of 1, still stored as 2D array */
   } else {
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
   }
-  N_ = (PetscInt) dims[lenInd]*bs_;
+  N = (PetscInt) dims[lenInd]*bs;
 
   /* Set Vec sizes,blocksize,and type if not already set */
   if (map->bs < 0) {
-    ierr = PetscLayoutSetBlockSize(map, bs_);CHKERRQ(ierr);
-  } else if (map->bs != bs_) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %D, not %D as expected",bs_,map->bs);
+    ierr = PetscLayoutSetBlockSize(map, bs);CHKERRQ(ierr);
+  } else if (map->bs != bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %D, not %D as expected",bs,map->bs);
   if (map->N < 0) {
-    ierr = PetscLayoutSetSize(map, N_);CHKERRQ(ierr);
-  } else if (map->N != N_) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %D, not %D as expected",N_,map->N);
+    ierr = PetscLayoutSetSize(map, N);CHKERRQ(ierr);
+  } else if (map->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %D, not %D as expected",N,map->N);
   PetscFunctionReturn(0);
 }
 
