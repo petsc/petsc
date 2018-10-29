@@ -816,11 +816,9 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx, PetscInt *timestep, PetscBool *complexVal)
+PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx)
 {
   HDF5ReadCtx    h;
-  PetscInt       timestep_;
-  PetscBool      complexVal_ = PETSC_FALSE;
   const char    *groupname;
   char           vecgroup[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -834,16 +832,14 @@ PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer viewer, const 
   PetscStackCallHDF5Return(h->dataset,H5Dopen,(h->group, name));
 #endif
   PetscStackCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
-  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep_);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetTimestep(viewer, &h->timestep);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
   ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,name);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&complexVal_);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&h->complexVal);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  if (complexVal_) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"file contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
+  if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"file contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
 #endif
   *ctx = h;
-  *timestep = timestep_;
-  *complexVal = complexVal_;
   PetscFunctionReturn(0);
 }
 
@@ -861,12 +857,11 @@ PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer viewer, HDF5Read
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx ctx, PetscInt timestep, PetscBool complexVal, PetscLayout *map_)
+PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout *map_)
 {
   int            rdim, dim;
   hsize_t        dims[4];
   PetscInt       bsInd, lenInd, bs, N;
-  PetscBool      dim2;
   PetscLayout    map;
   PetscErrorCode ierr;
 
@@ -877,21 +872,21 @@ PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx
   map = *map_;
   /* calculate expected number of dimensions */
   dim = 0;
-  if (timestep >= 0) ++dim;
+  if (ctx->timestep >= 0) ++dim;
   ++dim; /* length in blocks */
-  if (complexVal) ++dim;
+  if (ctx->complexVal) ++dim;
   /* get actual number of dimensions in dataset */
   PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(ctx->dataspace, dims, NULL));
   /* calculate expected dimension indices */
   lenInd = 0;
-  if (timestep >= 0) ++lenInd;
+  if (ctx->timestep >= 0) ++lenInd;
   bsInd = lenInd + 1;
-  dim2 = PETSC_FALSE;
+  ctx->dim2 = PETSC_FALSE;
   if (rdim == dim) {
     bs = 1; /* support vectors stored as 1D array */
   } else if (rdim == dim+1) {
     bs = (PetscInt) dims[bsInd];
-    if (bs == 1) dim2 = PETSC_TRUE; /* vector with blocksize of 1, still stored as 2D array */
+    if (bs == 1) ctx->dim2 = PETSC_TRUE; /* vector with blocksize of 1, still stored as 2D array */
   } else {
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
   }
@@ -911,14 +906,12 @@ PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx
 PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
 {
   HDF5ReadCtx    h;
-  PetscInt       timestep;
-  PetscBool      complexVal;
   PetscLayout    map=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h, &timestep, &complexVal);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, timestep, complexVal, &map);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &map);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
   if (bs) *bs = map->bs;
   if (N) *N = map->N;
