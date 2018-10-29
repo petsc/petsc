@@ -1099,7 +1099,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   }
   ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
   ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones);CHKERRQ(ierr);
-#if PETSC_USE_DEBUG
+#if defined(PETSC_USE_DEBUG)
   {
     PetscInt  p;
     PetscBool valid = PETSC_TRUE;
@@ -1348,7 +1348,7 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
     ierr = PetscSFBcastBegin(parentSF, MPIU_INT, origChildIDs, newChildIDs);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(parentSF, MPIU_INT, origChildIDs, newChildIDs);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApplyBlock(renumbering,IS_GTOLM_MASK, newParentSize, newParents, NULL, newParents);CHKERRQ(ierr);
-#if PETSC_USE_DEBUG
+#if defined(PETSC_USE_DEBUG)
     {
       PetscInt  p;
       PetscBool valid = PETSC_TRUE;
