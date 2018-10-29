@@ -861,7 +861,7 @@ PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer viewer, HDF5Read
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx ctx, PetscInt timestep, PetscBool complexVal, PetscInt *bs, PetscInt *N, PetscInt *bsDimInd, PetscInt *lenDimInd, PetscBool *dim2)
+PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx ctx, PetscInt timestep, PetscBool complexVal, PetscInt *bs, PetscInt *N)
 {
   int            rdim, dim;
   hsize_t        dims[4];
@@ -892,9 +892,6 @@ PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx ctx, PetscInt times
   N_ = (PetscInt) dims[lenInd]*bs_;
   if (bs) *bs = bs_;
   if (N)  *N  = N_;
-  if (bsDimInd) *bsDimInd = bsInd;
-  if (lenDimInd) *lenDimInd = lenInd;
-  if (dim2) *dim2 = dim2_;
   PetscFunctionReturn(0);
 }
 
@@ -908,7 +905,7 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h, &timestep, &complexVal);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Internal(h, timestep, complexVal, bs, N, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Internal(h, timestep, complexVal, bs, N);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

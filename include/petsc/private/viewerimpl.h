@@ -53,7 +53,7 @@ struct _n_HDF5ReadCtx {
 typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
 PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer,const char[],HDF5ReadCtx*,PetscInt*,PetscBool*);
 PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer,HDF5ReadCtx*);
-PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx,PetscInt,PetscBool,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscBool*);
+PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadSizes_Internal(HDF5ReadCtx,PetscInt,PetscBool,PetscInt*,PetscInt*);
 #endif
 
 #endif
