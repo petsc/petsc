@@ -5,7 +5,7 @@
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
 /*@C
-   PetscObjectSetOptions - Sets the options database used by the object
+   PetscObjectSetOptions - Sets the options database used by the object. Call immediately after creating the object.
 
    Collective on PetscObject
 

@@ -276,8 +276,7 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
     {
       PetscViewer viewer;
       PetscViewerFormat format;
-      ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,
-                                   "-snes_fas_monitor",&viewer,&format,&monflg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject) snes)->options,((PetscObject)snes)->prefix,"-snes_fas_monitor",&viewer,&format,&monflg);CHKERRQ(ierr);
       if (monflg) {
         PetscViewerAndFormat *vf;
         ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);

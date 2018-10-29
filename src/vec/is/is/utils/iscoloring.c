@@ -78,7 +78,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj,PetscObject bobj,const c
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : NULL;
-  ierr   = PetscOptionsGetViewer(obj->comm,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetViewer(obj->comm,NULL,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = ISColoringView(obj,viewer);CHKERRQ(ierr);

@@ -92,7 +92,7 @@ int main(int argc, char **argv)
   else {
     PetscViewer viewer = NULL;
 
-    ierr = PetscOptionsGetViewer(comm,NULL,"-vec_tagger_boxes_view",&viewer,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,NULL,NULL,"-vec_tagger_boxes_view",&viewer,NULL,NULL);CHKERRQ(ierr);
     if (viewer) {
       PetscBool iascii;
 

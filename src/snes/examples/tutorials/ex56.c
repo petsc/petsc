@@ -479,7 +479,7 @@ int main(int argc,char **args)
     {
       PetscViewer       viewer = NULL;
       PetscViewerFormat fmt;
-      ierr = PetscOptionsGetViewer(comm,"ex56_","-vec_view",&viewer,&fmt,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetViewer(comm,NULL,"ex56_","-vec_view",&viewer,&fmt,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = PetscViewerPushFormat(viewer,fmt);CHKERRQ(ierr);
         ierr = VecView(xx,viewer);CHKERRQ(ierr);
