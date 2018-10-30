@@ -9,7 +9,6 @@ from __future__ import print_function
 import os
 import glob
 import posixpath
-import string
 from sys import *
 import shutil
 import os.path
@@ -26,8 +25,8 @@ def modifyfile(filename):
     buf    = fd.read()
     fd.close()
 
-    header = string.split(string.split(buf, '<!--end-->')[0],'<!--begin-->')[1]
-    body = string.split(string.split(buf, '<!--end-->')[1],'<!--begin-->')[1]
+    header = buf.split('<!--end-->')[0].split('<!--begin-->')[1]
+    body = buf.split('<!--end-->')[1].split('<!--begin-->')[1]
 
     outbuf = '''
  <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
