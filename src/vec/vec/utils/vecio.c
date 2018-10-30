@@ -8,7 +8,7 @@
 #include <petscsys.h>
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
 #include <petsc/private/vecimpl.h>
-#include <petscviewerhdf5.h>
+#include <petsc/private/viewerimpl.h>
 
 static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,PetscInt *rows)
 {
@@ -150,17 +150,15 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 */
 PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
-  hid_t          file_id, group, dset_id, filespace, memspace, plist_id;
-  int            rdim, dim;
-  hsize_t        dims[4], count[4], offset[4];
-  PetscInt       n, N, bs = 1, bsInd, lenInd, low, timestep;
-  PetscScalar    *x;
+  HDF5ReadCtx    h;
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
+  hid_t          memspace;
+  PetscScalar    *x;
   const char     *vecname;
   PetscErrorCode ierr;
-  PetscBool      dim2 = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (!((PetscObject)xin)->name) SETERRQ(PetscObjectComm((PetscObject)xin), PETSC_ERR_SUP, "Vec name must be set with PetscObjectSetName() before VecLoad()");
 #if defined(PETSC_USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
@@ -171,124 +169,18 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
 
-  ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
-  /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, vecname, H5P_DEFAULT));
-#else
-  PetscStackCallHDF5Return(dset_id,H5Dopen,(group, vecname));
-#endif
-  /* Retrieve the dataspace for the dataset */
-  PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
-  dim = 0;
-  if (timestep >= 0) ++dim;
-  ++dim;
-  if (bs > 1) ++dim;
-#if defined(PETSC_USE_COMPLEX)
-  ++dim;
-#endif
-  PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(filespace, dims, NULL));
-#if defined(PETSC_USE_COMPLEX)
-  bsInd = rdim-2;
-#else
-  bsInd = rdim-1;
-#endif
-  lenInd = timestep >= 0 ? 1 : 0;
-  
-  if (rdim != dim) {
-    /* In this case the input dataset have one extra, unexpected dimension. */
-    if (rdim == dim+1)
-    {
-      /* In this case the block size is unset */
-      if (bs == -1)
-      {
-        ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
-        bs = dims[bsInd];
-      }
-    
-      /* In this case the block size unity */
-      else if (bs == 1 && dims[bsInd] == 1) dim2 = PETSC_TRUE;
-      
-      /* Special error message for the case where bs does not match the input file */
-      else if (bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %D, not %D as expected",(PetscInt)dims[bsInd],bs);
-      
-      /* All other cases is errors */
-      else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with bs = %D",rdim,dim,bs);
-    }
-    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected",rdim,dim);
-  } else if (bs > 1 && bs != (PetscInt) dims[bsInd]) {
-    ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
-    bs = dims[bsInd];
-  }
-  
-  /* Set Vec sizes,blocksize,and type if not already set */
-  if ((xin)->map->n < 0 && (xin)->map->N < 0) {
-    ierr = VecSetSizes(xin, PETSC_DECIDE, dims[lenInd]*bs);CHKERRQ(ierr);
-  }
-  /* If sizes and type already set,check if the vector global size is correct */
-  ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
-  if (N/bs != (PetscInt) dims[lenInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", (PetscInt) dims[lenInd], N/bs);
+  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, vecname, &h);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &xin->map);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSelectHyperslab_Internal(viewer, h, xin->map, &memspace);CHKERRQ(ierr);
 
-  /* Each process defines a dataset and reads it from the hyperslab in the file */
-  ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
-  dim  = 0;
-  if (timestep >= 0) {
-    count[dim] = 1;
-    ++dim;
-  }
-  ierr = PetscHDF5IntCast(n/bs,count + dim);CHKERRQ(ierr);
-  ++dim;
-  if (bs > 1 || dim2) {
-    count[dim] = bs;
-    ++dim;
-  }
-#if defined(PETSC_USE_COMPLEX)
-  count[dim] = 2;
-  ++dim;
-#endif
-  PetscStackCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
-
-  /* Select hyperslab in the file */
-  ierr = VecGetOwnershipRange(xin, &low, NULL);CHKERRQ(ierr);
-  dim  = 0;
-  if (timestep >= 0) {
-    offset[dim] = timestep;
-    ++dim;
-  }
-  ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
-  ++dim;
-  if (bs > 1 || dim2) {
-    offset[dim] = 0;
-    ++dim;
-  }
-#if defined(PETSC_USE_COMPLEX)
-  offset[dim] = 0;
-  ++dim;
-#endif
-  PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
-
-  /* Create property list for collective dataset read */
-  PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_DATASET_XFER));
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  PetscStackCallHDF5(H5Pset_dxpl_mpio,(plist_id, H5FD_MPIO_COLLECTIVE));
-#endif
-  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
-
-  ierr   = VecGetArray(xin, &x);CHKERRQ(ierr);
-  PetscStackCallHDF5(H5Dread,(dset_id, scalartype, memspace, filespace, plist_id, x));
-  ierr   = VecRestoreArray(xin, &x);CHKERRQ(ierr);
+  ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadArray_Internal(viewer, h, scalartype, memspace, (void*)x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
-  if (group != file_id) {
-    PetscStackCallHDF5(H5Gclose,(group));
-  }
-  PetscStackCallHDF5(H5Pclose,(plist_id));
-  PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Sclose,(memspace));
-  PetscStackCallHDF5(H5Dclose,(dset_id));
+  ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(xin);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(xin);CHKERRQ(ierr);
