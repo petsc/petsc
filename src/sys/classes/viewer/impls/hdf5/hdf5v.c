@@ -950,6 +950,13 @@ PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Internal(PetscViewer viewer, H
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscViewerHDF5ReadArray_Internal(PetscViewer viewer, HDF5ReadCtx h, hid_t datatype, hid_t memspace, void *arr)
+{
+  PetscFunctionBegin;
+  PetscStackCallHDF5(H5Dread,(h->dataset, datatype, memspace, h->dataspace, h->plist, arr));
+  PetscFunctionReturn(0);
+}
+
 /* TODO DOC */
 PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
 {

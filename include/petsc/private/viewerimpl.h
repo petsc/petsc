@@ -58,6 +58,7 @@ PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer,c
 PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer,HDF5ReadCtx*);
 PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer,HDF5ReadCtx,PetscLayout*);
 PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Internal(PetscViewer,HDF5ReadCtx,PetscLayout,hid_t*);
+PETSC_INTERN PetscErrorCode PetscViewerHDF5ReadArray_Internal(PetscViewer,HDF5ReadCtx,hid_t,hid_t,void*);
 #endif
 
 #endif
