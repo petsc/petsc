@@ -54,6 +54,8 @@ typedef struct {
   PetscInt                  gkbmaxit;              /* Maximum number of iterations for outer loop            */
   PetscBool                 gkbmonitor;            /* Monitor for gkb iterations and the lower bound error   */
   PetscViewer               gkbviewer;             /* Viewer context for gkbmonitor                          */
+  Vec                       u,v,d,Hu;              /* Work vectors for the GKB algorithm                     */
+  PetscScalar               *vecz;                 /* Contains intermediate values, eg for lower bound       */
 
   PC_FieldSplitLink         head;
   PetscBool                 isrestrict;             /* indicates PCFieldSplitRestrictIS() has been last called on this object, hack */
@@ -1009,6 +1011,10 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
     }
     ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
+    /* Create work vectors for GKB algorithm */
+    ierr  = VecDuplicate(ilink->x,&jac->u);CHKERRQ(ierr);
+    ierr  = VecDuplicate(ilink->x,&jac->Hu);CHKERRQ(ierr);
+    ierr  = VecDuplicate(ilink->x,&jac->w2);CHKERRQ(ierr);
     ilink = ilink->next;
     ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
     if (jac->offdiag_use_amat) {
@@ -1017,16 +1023,23 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 	    ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
     }
     ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
+    /* Create work vectors for GKB algorithm */
+    ierr  = VecDuplicate(ilink->x,&jac->v);CHKERRQ(ierr);
+    ierr  = VecDuplicate(ilink->x,&jac->d);CHKERRQ(ierr);
+    ierr  = VecDuplicate(ilink->x,&jac->w1);CHKERRQ(ierr);
     ierr  = MatGolubKahanComputeExplicitOperator(jac->mat[0],jac->B,jac->C,&jac->H,jac->gkbnu);CHKERRQ(ierr);
+    ierr  = PetscCalloc1(jac->gkbdelay,&jac->vecz);CHKERRQ(ierr);
+
     ilink = jac->head;
     ierr  = KSPSetOperators(ilink->ksp,jac->H,jac->H);CHKERRQ(ierr);
     if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
+    /* Create gkb_monitor context */
     if (jac->gkbmonitor) {
       PetscInt  tablevel;
       ierr = PetscViewerCreate(PETSC_COMM_WORLD,&jac->gkbviewer);CHKERRQ(ierr);
       ierr = PetscViewerSetType(jac->gkbviewer,PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscObjectGetTabLevel((PetscObject)ilink->ksp,&tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISetTab(jac->gkbviewer,tablevel+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISetTab(jac->gkbviewer,tablevel);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)ilink->ksp,1);CHKERRQ(ierr);
     }
   } else {
@@ -1290,8 +1303,8 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   PC_FieldSplitLink ilinkA = jac->head,ilinkD = ilinkA->next;
   KSP               ksp = ilinkA->ksp;
   Vec               u,v,Hu,d,work1,work2;
-  PetscScalar       alpha,z,beta,nrmz2,*vecz;
-  PetscReal         lowbnd,nu;
+  PetscScalar       alpha,z,nrmz2,*vecz;
+  PetscReal         lowbnd,nu,beta;
   PetscInt          j,iterGKB;
 
   PetscFunctionBegin;
@@ -1299,13 +1312,14 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkD->x,&work1);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkA->x,&work2);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkD->x,&v);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkD->x,&d);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkA->x,&u);CHKERRQ(ierr);
-  ierr = VecDuplicate(ilinkA->x,&Hu);CHKERRQ(ierr);
-  ierr = PetscCalloc1(jac->gkbdelay,&vecz);CHKERRQ(ierr);
+
+  u     = jac->u;
+  v     = jac->v;
+  Hu    = jac->Hu;
+  d     = jac->d;
+  work1 = jac->w1;
+  work2 = jac->w2;
+  vecz  = jac->vecz;
 
   /* Change RHS to comply with matrix regularization H = A + nu*B*B' */
   /* Add q = q + nu*B*b */
@@ -1319,26 +1333,29 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     nu = 1;
   }
 
-  /* Transform rhs from [q , tilde{b}] to [0, b] */
+  /* Transform rhs from [q,tilde{b}] to [0,b] */
   ierr = PetscLogEventBegin(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
   ierr = MatMultHermitianTranspose(jac->B,ilinkA->y,work1);CHKERRQ(ierr);
-  ierr = VecAXPBY(work1,1/nu,-1.0,ilinkD->x);CHKERRQ(ierr);             /* c = b - B'*x      */
+  ierr = VecAXPBY(work1,1/nu,-1.0,ilinkD->x);CHKERRQ(ierr);            /* c = b - B'*x        */
 
   /* First step of algorithm */
-  ierr  = VecNorm(work1,NORM_2,&beta);CHKERRQ(ierr);                  /* beta = sqrt(nu*c'*c)*/
+  ierr  = VecNorm(work1,NORM_2,&beta);CHKERRQ(ierr);                   /* beta = sqrt(nu*c'*c)*/
+  KSPCheckDot(ksp,beta);
   beta  = PetscSqrtScalar(nu)*beta;
-  ierr  = VecAXPBY(v,nu/beta,0,work1);CHKERRQ(ierr);    /*SURE?*/      /* v = nu/beta *c     */
-  ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                     /* u = H^{-1}*B*v       */
+  ierr  = VecAXPBY(v,nu/beta,0,work1);CHKERRQ(ierr);                   /* v = nu/beta *c      */
+  ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                       /* u = H^{-1}*B*v      */
   ierr  = PetscLogEventBegin(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
   ierr  = KSPSolve(ksp,work2,u);CHKERRQ(ierr);
   ierr  = PetscLogEventEnd(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
-  ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                      /* alpha = u'*H*u       */
+  ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                          /* alpha = u'*H*u      */
   ierr  = VecDot(Hu,u,&alpha);CHKERRQ(ierr);
+  KSPCheckDot(ksp,alpha);
+  if (PetscRealPart(alpha) <= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"GKB preconditioner diverged, H is not positive definite");
   alpha = PetscSqrtScalar(PetscAbsScalar(alpha));
   ierr  = VecScale(u,1/alpha);CHKERRQ(ierr);
-  ierr  = VecAXPBY(d,1/alpha,0,v);CHKERRQ(ierr);    /*SURE?*/      /* v = nu/beta *c     */
+  ierr  = VecAXPBY(d,1/alpha,0,v);CHKERRQ(ierr);                       /* v = nu/beta *c      */
 
   z = beta/alpha;
   vecz[1] = z;
@@ -1355,31 +1372,32 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
 
   while (iterGKB < jac->gkbmaxit && lowbnd > jac->gkbtol) {
     iterGKB += 1;
-    ierr  = MatMultHermitianTranspose(jac->B,u,work1);CHKERRQ(ierr); /* nu*(B'*u-alpha/nu*v) */
-    ierr  = VecScale(work1,nu);
-    ierr  = VecAYPX(v,-alpha,work1);CHKERRQ(ierr);
-    ierr  = VecNorm(v,NORM_2,&beta);CHKERRQ(ierr);
+    ierr  = MatMultHermitianTranspose(jac->B,u,work1);CHKERRQ(ierr); /* v <- nu*(B'*u-alpha/nu*v) */
+    ierr  = VecAXPBY(v,nu,-alpha,work1);CHKERRQ(ierr);
+    ierr  = VecNorm(v,NORM_2,&beta);CHKERRQ(ierr);                   /* beta = sqrt(nu)*v'*v      */
     beta  = beta/PetscSqrtScalar(nu);
     ierr  = VecScale(v,1/beta);CHKERRQ(ierr);
-    ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                 /* u = H^{-1}*B*v       */
+    ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                  /* u <- H^{-1}*(B*v-beta*H*u) */
     ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);
     ierr  = VecAXPY(work2,-beta,Hu);CHKERRQ(ierr);
     ierr  = PetscLogEventBegin(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
     ierr  = KSPSolve(ksp,work2,u);CHKERRQ(ierr);
     ierr  = PetscLogEventEnd(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
-    ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                    /* alpha = u'*H*u       */
+    ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                      /* alpha = u'*H*u            */
     ierr  = VecDot(Hu,u,&alpha);CHKERRQ(ierr);
+    KSPCheckDot(ksp,alpha);
+    if (PetscRealPart(alpha) <= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"GKB preconditioner diverged, H is not positive definite");
     alpha = PetscSqrtScalar(PetscAbsScalar(alpha));
     ierr  = VecScale(u,1/alpha);CHKERRQ(ierr);
 
-    z = -beta/alpha*z;                                            /* z = beta/alpha       */
+    z = -beta/alpha*z;                                            /* z <- beta/alpha*z     */
     vecz[0] = z;
 
     /* Computation of new iterate x(i+1) and p(i+1) */
-    ierr = VecAXPBY(d,1/alpha,-beta/alpha,v);CHKERRQ(ierr);       /* d = 1/alpha*(v-beta*d)*/
-    ierr = VecAXPY(ilinkA->y,z,u);CHKERRQ(ierr);                  /* r = r + z*u           */
-    ierr = VecAXPY(ilinkD->y,-z,d);CHKERRQ(ierr);                 /* p = p - z*d           */
-    ierr = MatMult(jac->H,ilinkA->y,Hu);CHKERRQ(ierr);            /* ||u||_H = u'*H*u      */
+    ierr = VecAXPBY(d,1/alpha,-beta/alpha,v);CHKERRQ(ierr);       /* d = (v-beta*d)/alpha */
+    ierr = VecAXPY(ilinkA->y,z,u);CHKERRQ(ierr);                  /* r = r + z*u          */
+    ierr = VecAXPY(ilinkD->y,-z,d);CHKERRQ(ierr);                 /* p = p - z*d          */
+    ierr = MatMult(jac->H,ilinkA->y,Hu);CHKERRQ(ierr);            /* ||u||_H = u'*H*u     */
     ierr = VecDot(Hu,ilinkA->y,&nrmz2);CHKERRQ(ierr);
 
     /* Compute Lower Bound estimate */
@@ -1399,22 +1417,10 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     }
   }
 
-  /* It would be good to have something like a gkb_monitor variable to print out the number of         */
-  /* iterations iterGKB and the final error estimate lowbnd. Since there is no ksp context associated  */
-  /* for this intermediate iteration, how can we do it?                                                */
-
   ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = VecDestroy(&Hu);CHKERRQ(ierr);
-  ierr = VecDestroy(&d);CHKERRQ(ierr);
-  ierr = VecDestroy(&work1);CHKERRQ(ierr);
-  ierr = VecDestroy(&work2);CHKERRQ(ierr);
-  ierr = PetscFree(vecz);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1553,6 +1559,11 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   ierr       = MatDestroy(&jac->B);CHKERRQ(ierr);
   ierr       = MatDestroy(&jac->C);CHKERRQ(ierr);
   ierr       = MatDestroy(&jac->H);CHKERRQ(ierr);
+  ierr       = VecDestroy(&jac->u);CHKERRQ(ierr);
+  ierr       = VecDestroy(&jac->v);CHKERRQ(ierr);
+  ierr       = VecDestroy(&jac->Hu);CHKERRQ(ierr);
+  ierr       = VecDestroy(&jac->d);CHKERRQ(ierr);
+  ierr       = PetscFree(jac->vecz);CHKERRQ(ierr);
   ierr       = PetscViewerDestroy(&jac->gkbviewer);CHKERRQ(ierr);
   jac->isrestrict = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1620,6 +1631,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
     ierr = PetscOptionsReal("-pc_fieldsplit_gkb_tol","The tolerance for the lower bound stopping criterion","PCFieldSplitGKBTol",jac->gkbtol,&jac->gkbtol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_fieldsplit_gkb_delay","The delay value for lower bound criterion","PCFieldSplitGKBDelay",jac->gkbdelay,&jac->gkbdelay,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_fieldsplit_gkb_nu","Parameter in augmented Lagrangian approach","PCFieldSplitGKBNu",jac->gkbnu,&jac->gkbnu,NULL);CHKERRQ(ierr);
+    if (jac->gkbnu < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nu cannot be less than 0: value %f",jac->gkbnu);
     ierr = PetscOptionsInt("-pc_fieldsplit_gkb_maxit","Maximum allowed number of iterations","PCFieldSplitGKBMaxit",jac->gkbmaxit,&jac->gkbmaxit,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_fieldsplit_gkb_monitor","Prints number of GKB iterations and error","PCFieldSplitGKB",jac->gkbmonitor,&jac->gkbmonitor,NULL);CHKERRQ(ierr);
   }
@@ -2542,9 +2554,16 @@ PetscErrorCode  PCFieldSplitGetSchurBlocks(PC pc,Mat *A00,Mat *A01,Mat *A10, Mat
 }
 
 /*@
-    PCFieldSplitSetGKBTol -  Sets the solver tolerance for the Golub-Kahan bidiagonalization preconditioner.
+    PCFieldSplitSetGKBTol -  Sets the solver tolerance for the generalized Golub-Kahan bidiagonalization preconditioner.
 
     Collective on PC
+
+    Notes:
+    The generalized GKB algorithm uses a lower bound estimate of the error in energy norm as stopping criterion.
+    It stops once the lower bound estimate undershoots the required solver tolerance. Although the actual error might be bigger than
+    this estimate, the stopping criterion is satisfactory in practical cases [A13].
+
+[Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
 
     Input Parameters:
 +   pc        - the preconditioner context
@@ -2579,7 +2598,8 @@ static PetscErrorCode PCFieldSplitSetGKBTol_FieldSplit(PC pc,PetscReal tolerance
 
 
 /*@
-    PCFieldSplitSetGKBMaxit -  Sets the maximum number of iterations for the Golub-Kahan bidiagonalization preconditioner.
+    PCFieldSplitSetGKBMaxit -  Sets the maximum number of iterations for the generalized Golub-Kahan bidiagonalization
+    preconditioner.
 
     Collective on PC
 
@@ -2615,13 +2635,15 @@ static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc,PetscInt maxit)
 }
 
 /*@
-    PCFieldSplitSetGKBDelay -  Sets the delay in the lower bound error estimate in the Golub-Kahan bidiagonalization preconditioner.
+    PCFieldSplitSetGKBDelay -  Sets the delay in the lower bound error estimate in the generalized Golub-Kahan bidiagonalization
+    preconditioner.
 
     Collective on PC
 
     Notes:
-    The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. For more details on the
-    Golub-Kahan bidiagonalization method and its lower bound stopping criterion, please refer to
+    The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. The lower bound of the error ||u-u^k||_H
+    is expressed as a truncated sum. The error at iteration k can only be measured at iteration (k + delay), and thus the algorithm needs
+    at least (delay + 1) iterations to stop. For more details on the generalized Golub-Kahan bidiagonalization method and its lower bound stopping criterion, please refer to
 
 [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
 
@@ -2662,7 +2684,7 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc,PetscInt delay)
     Collective on PC
 
     Notes:
-    This shift is in general done to obtain better convergence properties for the outer loop in the algorithm. This is often achieved by chosing nu sufficiently large. However,
+    This shift is in general done to obtain better convergence properties for the outer loop of the algorithm. This is often achieved by chosing nu sufficiently big. However,
     if nu is chosen too big, the matrix H might be badly conditioned and the solution of the linear system Hx = b in the inner loop gets difficult. It is therefore
     necessary to find a good balance in between the convergence of the inner and outer loop.
 
@@ -2709,6 +2731,17 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
 
   PetscFunctionBegin;
   jac->type = type;
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurPre_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBTol_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBMaxit_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBNu_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBDelay_C",0);CHKERRQ(ierr);
+
   if (type == PC_COMPOSITE_SCHUR) {
     pc->ops->apply = PCApply_FieldSplit_Schur;
     pc->ops->view  = PCView_FieldSplit_Schur;
@@ -2718,19 +2751,11 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",PCFieldSplitGetSchurPre_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",PCFieldSplitSetSchurFactType_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",PCFieldSplitSetSchurScale_FieldSplit);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBTol_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBMaxit_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBNu_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBDelay_C",0);CHKERRQ(ierr);
   } else if (type == PC_COMPOSITE_GKB){
     pc->ops->apply = PCApply_FieldSplit_GKB;
     pc->ops->view  = PCView_FieldSplit_GKB;
 
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",PCFieldSplitGetSubKSP_FieldSplit);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurPre_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBTol_C",PCFieldSplitSetGKBTol_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBMaxit_C",PCFieldSplitSetGKBMaxit_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBNu_C",PCFieldSplitSetGKBNu_FieldSplit);CHKERRQ(ierr);
@@ -2740,14 +2765,6 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     pc->ops->view  = PCView_FieldSplit;
 
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",PCFieldSplitGetSubKSP_FieldSplit);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurPre_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBTol_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBMaxit_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBNu_C",0);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBDelay_C",0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3031,11 +3048,11 @@ $              (  0   S  )
    The Constrained Pressure Preconditioner (CPR) can be implemented using PCCOMPOSITE with PCGALERKIN. CPR first solves an R A P subsystem, updates the
    residual on all variables (PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE)), and then applies a simple ILU like preconditioner on all the variables.
 
-   The Golub-Kahan bidiagonalization preconditioner (gkb) can be applied to symmetric 2x2 block matrices of the shape
+   The generalized Golub-Kahan bidiagonalization preconditioner (gkb) can be applied to symmetric 2x2 block matrices of the shape
 $        ( A00  A01 )
 $        ( A01' 0   )
    with A00 positive semi-definite. The implementation follows [Ar13]. Therein, we choose N := 1/nu * I and the (1,1)-block of the matrix is modified to H = A00 + nu*A01*A01'.
-   A linear system Hx = b has to be solved in each iteration of the GKB algorithm. The solver is chosen with the option prefix -fieldsplit_0_.
+   A linear system Hx = b has to be solved in each iteration of the GKB algorithm. This solver is chosen with the option prefix -fieldsplit_0_.
 
 [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
 
