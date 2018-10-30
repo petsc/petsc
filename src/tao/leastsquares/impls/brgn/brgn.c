@@ -39,78 +39,46 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Ve
 static PetscErrorCode GNHessianProd(Mat H, Vec in, Vec out)
 {
   TAO_BRGN              *gn;
-  PetscInt              N = 3; /* dimension of X hack, to change size 3 to VecGetSize() from Vec X*/
-  PetscScalar           epsilon = 1e-6; /*XH: added epsilon to approximate L1-norm with sqrt(x^2+epsilon^2)-epsilon*/
   PetscErrorCode        ierr;
-  Vec                   xE, tmp;          /* xE: vector sqrt(x.^2 + epsilon^2) that is reused multiple times */  
   
-  PetscFunctionBegin;
-  /* Allocate vectors */
-
-  /* XH: Use x_work or r_work instead and do not create new vectors */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&xE);CHKERRQ(ierr); 
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&tmp);CHKERRQ(ierr); 
-    
+  PetscFunctionBegin;    
   ierr = MatShellGetContext(H, &gn);CHKERRQ(ierr);
   ierr = MatMult(gn->subsolver->ls_jac, in, gn->r_work);CHKERRQ(ierr);
   ierr = MatMultTranspose(gn->subsolver->ls_jac, gn->r_work, out);CHKERRQ(ierr);
+  /* out = out + lambda*in.*diag*/
+  ierr = VecPointwiseMult(gn->x_work, in, gn->diag);CHKERRQ(ierr);   /* gn->x_work = in.*diag, where diag = epsilon^2 ./ sqrt(x.^2+epsilon^2).^3 */
+  ierr = VecAXPY(out, gn->lambda, gn->x_work);CHKERRQ(ierr);  
 
-  /* XH: Use the sparse diagonal vector diag that has already been computed.  Code should just be the VecAXPY() */
-
-  /* out = out +  lambda*epsilon^2*(in./xE.^3) */
-  /* xE = sqrt(x.^2+epsilon^2). Should we reuse code/result of xE from GNObjectiveGradientEval()?*/
-  ierr = VecPointwiseMult(xE, gn->x_old, gn->x_old);CHKERRQ(ierr);  /* hack, todo: change to X, how to add X? */
-  ierr = VecShift(xE, epsilon*epsilon);CHKERRQ(ierr);
-  ierr = VecCopy(xE, tmp);CHKERRQ(ierr);                 /* tmp = xE.^2 */
-  ierr = VecSqrtAbs(xE);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(tmp, tmp, xE);CHKERRQ(ierr);   /* tmp = xE.^3 */
-  ierr = VecPointwiseDivide(tmp, in, tmp);CHKERRQ(ierr); /* tmp = in./xE.^3 */
-  ierr = VecAXPY(out, gn->lambda * epsilon * epsilon, tmp);CHKERRQ(ierr);
-
-  /* Free PETSc data structures */
-  ierr = VecDestroy(&xE);CHKERRQ(ierr);
-  ierr = VecDestroy(&tmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Vec G, void *ptr)
 {
   TAO_BRGN              *gn = (TAO_BRGN *)ptr;
-  PetscInt              N = 3; /* dimension of X hack, to change size 3 to VecGetSize() from Vec X*/
-  PetscScalar           xESum, epsilon = 1e-6;/* epsilon to approximate L1-norm with sqrt(x^2+epsilon^2)-epsilon*/
+  PetscInt              N;                    /* dimension of X */
+  PetscScalar           xESum;
   PetscErrorCode        ierr;
-  Vec                   xE;          /* xE: vector sqrt(x.^2 + epsilon^2) that is reused multiple times */  
   
   PetscFunctionBegin;
-  /* Allocate vectors */
-
-  /* XH: Do no create vectors; use x_work or r_work */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&xE);CHKERRQ(ierr); 
-
+  /* compute objective */
+  /* compute first term ||ls_res||^2 */
   ierr = TaoComputeResidual(tao, X, tao->ls_res);CHKERRQ(ierr);
   ierr = VecDotBegin(tao->ls_res, tao->ls_res, fcn);CHKERRQ(ierr);
   ierr = VecDotEnd(tao->ls_res, tao->ls_res, fcn);CHKERRQ(ierr);
-
-  /* Compute xE = sqrt(x.^2+epsilon^2) */
-
-  /* XH: Use epsilon from the gn structure */
-  /* XH: Use VecGetSize() rather than N */
-
-  ierr = VecPointwiseMult(xE, X, X);CHKERRQ(ierr);
-  ierr = VecShift(xE, epsilon*epsilon);CHKERRQ(ierr);
-  ierr = VecSqrtAbs(xE);CHKERRQ(ierr);
-
-  ierr = VecSum(xE,&xESum);CHKERRQ(ierr);CHKERRQ(ierr);
-  *fcn = 0.5*(*fcn) + gn->lambda*(xESum - N*epsilon);
+  /* add the second term lambda*sum(sqrt(x.^2+epsilon^2) - epsilon)*/
+  ierr = VecPointwiseMult(gn->x_work, X, X);CHKERRQ(ierr);
+  ierr = VecShift(gn->x_work, gn->epsilon*gn->epsilon);CHKERRQ(ierr);
+  ierr = VecSqrtAbs(gn->x_work);CHKERRQ(ierr);      /* gn->x_work = sqrt(x.^2+epsilon^2) */ 
+  ierr = VecSum(gn->x_work, &xESum);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = VecGetSize(X, &N);CHKERRQ(ierr);
+  *fcn = 0.5*(*fcn) + gn->lambda*(xESum - N*gn->epsilon);
   
+  /* compute gradient G */
   ierr = TaoComputeResidualJacobian(tao, X, tao->ls_jac, tao->ls_jac_pre);CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->ls_jac, tao->ls_res, G);CHKERRQ(ierr);
-  /* G = G + lambda*(X./xE) */
-  ierr = VecPointwiseDivide(xE, X, xE);CHKERRQ(ierr); /* reuse xE = X./xE */
-  ierr = VecAXPY(G, gn->lambda, xE);CHKERRQ(ierr); 
-
-  /* Free PETSc data structures */
-  ierr = VecDestroy(&xE);CHKERRQ(ierr);  
+  /* compute G = G + lambda*(x./sqrt(x.^2+epsilon^2)) */
+  ierr = VecPointwiseDivide(gn->x_work, X, gn->x_work);CHKERRQ(ierr); /* reuse x_work = x./sqrt(x.^2+epsilon^2) */
+  ierr = VecAXPY(G, gn->lambda, gn->x_work);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }
@@ -118,12 +86,21 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Ve
 
 static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
 { 
+  TAO_BRGN              *gn = (TAO_BRGN *)ptr;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = TaoComputeResidualJacobian(tao, X, tao->ls_jac, tao->ls_jac_pre);CHKERRQ(ierr);
 
-  /* XH: Calculate and store diagonal matrix as a vector; diag in the structure */
+  /* calculate and store diagonal matrix as a vector: diag = epsilon^2 ./ sqrt(x.^2+epsilon^2).^3*/  
+  ierr = VecPointwiseMult(gn->x_work, X, X);CHKERRQ(ierr);
+  ierr = VecShift(gn->x_work, gn->epsilon*gn->epsilon);CHKERRQ(ierr);
+  ierr = VecCopy(gn->x_work, gn->diag);CHKERRQ(ierr);                     /* gn->diag = x.^2+epsilon^2 */
+  ierr = VecSqrtAbs(gn->x_work);CHKERRQ(ierr);                            /* gn->x_work = sqrt(x.^2+epsilon^2) */ 
+  ierr = VecPointwiseMult(gn->diag, gn->x_work, gn->diag);CHKERRQ(ierr);  /* gn->diag = sqrt(x.^2+epsilon^2).^3 */
+  ierr = VecReciprocal(gn->diag);CHKERRQ(ierr);
+  ierr = VecScale(gn->diag, gn->epsilon*gn->epsilon);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -185,11 +162,14 @@ static PetscErrorCode TaoSetFromOptions_BRGN(PetscOptionItems *PetscOptionsObjec
   TAO_BRGN              *gn = (TAO_BRGN *)tao->data;
   PetscErrorCode        ierr;
 
-  /* XH: Read an option to change epsilon in the structure; follow the lambda function below */
-
   PetscFunctionBegin;
+  /* old Tikhonov regularization code
   ierr = PetscOptionsHead(PetscOptionsObject,"Gauss-Newton method for least-squares problems using Tikhonov regularization");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_lambda", "Tikhonov regularization factor", "", gn->lambda, &gn->lambda, NULL);CHKERRQ(ierr);
+  */
+  ierr = PetscOptionsHead(PetscOptionsObject,"least-squares problems with L1 regularizer: ||f(x)||^2 + lambda*||x||_1. Currently L1-norm is approximated with smooth form");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_brgn_lambda", "L1-norm regularizer weight", "", gn->lambda, &gn->lambda, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_brgn_epsilon", "L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon)", "", gn->epsilon, &gn->epsilon, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoSetFromOptions(gn->subsolver);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -233,8 +213,10 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     ierr = VecDuplicate(tao->solution, &gn->x_old);CHKERRQ(ierr);
     ierr = VecSet(gn->x_old, 0.0);CHKERRQ(ierr);
   }
-
-  /* XH: Create diag vector */
+  if (!gn->diag){
+    ierr = VecDuplicate(tao->solution, &gn->diag);CHKERRQ(ierr);
+    ierr = VecSet(gn->diag, 0.0);CHKERRQ(ierr);
+  }
 
   if (!tao->setupcalled) {
     /* Hessian setup */
@@ -279,8 +261,7 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
     ierr = VecDestroy(&gn->x_work);CHKERRQ(ierr);
     ierr = VecDestroy(&gn->r_work);CHKERRQ(ierr);
     ierr = VecDestroy(&gn->x_old);CHKERRQ(ierr);
-
-    /* XH: Destroy diagonal vector */
+    ierr = VecDestroy(&gn->diag);CHKERRQ(ierr);    
   }
   ierr = MatDestroy(&gn->H);CHKERRQ(ierr);
   ierr = TaoDestroy(&gn->subsolver);CHKERRQ(ierr);
@@ -318,10 +299,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   tao->ops->view = TaoView_BRGN;
   tao->ops->solve = TaoSolve_BRGN;
   
-  /* XH: initialize the epsilon */
-
   tao->data = (void*)gn;
   gn->lambda = 1e-4;
+  gn->epsilon = 1e-6;
   gn->parent = tao;
   
   ierr = MatCreate(PetscObjectComm((PetscObject)tao), &gn->H);CHKERRQ(ierr);
@@ -368,13 +348,33 @@ PetscErrorCode TaoBRGNSetTikhonovLambda(Tao tao, PetscReal lambda)
 {
   TAO_BRGN       *gn = (TAO_BRGN *)tao->data;
   
-  /* Initialize epsilon here */
+  /* Initialize lambda here */
 
   PetscFunctionBegin;
   gn->lambda = lambda;
   PetscFunctionReturn(0);
 }
 
-/* XH: Add a routine to TaoBRGNSetEpsilon; follow the SetTikhonovLambda function including the comment */
-/* XH: Look for BRGNSetTikhonovLambda in the rest of the code; it will appear in a header file somewhere and add TaoBRGNSetEpsilon to that header with the same format */
-/* XH: Need to add a line to the ftn-custom for the TaoBRGNSetEpsilon function */
+/*@C
+  TaoBRGNSetL1SmoothEpsilon - Set the L1-norm smooth approximation parameter for L1-regularized least-squares algorithm
+
+  Collective on Tao
+
+  Level: developer
+  
+  Input Parameters:
++  tao - the Tao solver context
+-  epsilon - L1-norm smooth approximation parameter
+@*/
+PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao, PetscReal epsilon)
+{
+  TAO_BRGN       *gn = (TAO_BRGN *)tao->data;
+  
+  /* Initialize epsilon here */
+
+  PetscFunctionBegin;
+  gn->epsilon = epsilon;
+  PetscFunctionReturn(0);
+}
+/* XH: done TaoBRGNSetL1SmoothEpsilon by copy TaoBRGNSetTikhonovLambda in peststao.h, brgn.c and zbrgnf.c. 
+ maybe change the name of Tikhonov in TaoBRGNSetTikhonovLambda() etc, as lambda is no longer the Tikhonov regularizer weight but the L1 regularizer weight */
