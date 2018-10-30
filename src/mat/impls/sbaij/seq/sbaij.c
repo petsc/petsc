@@ -2390,7 +2390,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
 .  bs - size of block
 .  m - number of rows
 .  n - number of columns
-.  i - row indices
+.  i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of block elements in that row block row of the matrix
 .  j - column indices
 -  a - matrix values
 

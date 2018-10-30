@@ -4384,7 +4384,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg)
 +   comm - must be an MPI communicator of size 1
 .   m - number of rows
 .   n - number of columns
-.   i - row indices
+.   i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
 .   j - column indices
 -   a - matrix values
 

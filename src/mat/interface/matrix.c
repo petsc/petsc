@@ -7471,7 +7471,7 @@ PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
 
     Output Parameters:
 +   n - number of rows in the (possibly compressed) matrix
-.   ia - the row pointers [of length n+1]
+.   ia - the row pointers; that is ia[0] = 0, ia[row] = ia[row-1] + number of elements in that row of the matrix
 .   ja - the column indices
 -   done - indicates if the routine actually worked and returned appropriate ia[] and ja[] arrays; callers
            are responsible for handling the case when done == PETSC_FALSE and ia and ja are not set
@@ -7535,16 +7535,11 @@ PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool 
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is
                  always used.
 .   n - number of columns in the (possibly compressed) matrix
-.   ia - the column pointers
+.   ia - the column pointers; that is ia[0] = 0, ia[col] = i[col-1] + number of elements in that col of the matrix
 -   ja - the row indices
 
     Output Parameters:
 .   done - PETSC_TRUE or PETSC_FALSE, indicating whether the values have been returned
-
-    Note:
-    This routine zeros out n, ia, and ja. This is to prevent accidental
-    us of the array after it has been restored. If you pass NULL, it will
-    not zero the pointers.  Use of ia or ja after MatRestoreColumnIJ() is invalid.
 
     Level: developer
 

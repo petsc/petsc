@@ -3859,7 +3859,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
 }
 
 /*@
-     MatCreateMPIBAIJWithArrays - creates a MPI BAIJ matrix using arrays that contain in standard
+     MatCreateMPIBAIJWithArrays - creates a MPI BAIJ matrix using arrays that contain in standard block
          CSR format the local rows.
 
    Collective on MPI_Comm
@@ -3873,7 +3873,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
        calculated if N is given) For square matrices n is almost always m.
 .  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
-.   i - row indices
+.   i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of block elements in that rowth block row of the matrix
 .   j - column indices
 -   a - matrix values
 
