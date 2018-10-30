@@ -834,7 +834,7 @@ PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer viewer, const 
   PetscStackCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
   ierr = PetscViewerHDF5GetTimestep(viewer, &h->timestep);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,name);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname ? groupname : "",name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&h->complexVal);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"file contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
