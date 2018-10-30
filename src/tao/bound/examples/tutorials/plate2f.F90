@@ -567,8 +567,8 @@
       if (assembled .eqv. PETSC_TRUE) call MatZeroEntries(Hessian,ierr)
 
 
-      rhx = real(mx + 1.0)
-      rhy = real(my + 1.0)
+      rhx = real(mx) + 1.0
+      rhy = real(my) + 1.0
       hx = 1.0/rhx
       hy = 1.0/rhy
       hydhx = hy/hx
