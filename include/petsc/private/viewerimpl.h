@@ -49,7 +49,7 @@ PETSC_EXTERN PetscMPIInt Petsc_Viewer_Socket_keyval;
 #include <petscviewerhdf5.h>
 #include <petscis.h>
 struct _n_HDF5ReadCtx {
-  hid_t file, group, dataset, dataspace;
+  hid_t file, group, dataset, dataspace, plist;
   PetscInt timestep;
   PetscBool complexVal, dim2;
 };

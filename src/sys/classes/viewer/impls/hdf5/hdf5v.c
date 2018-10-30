@@ -839,6 +839,12 @@ PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer viewer, const 
 #if !defined(PETSC_USE_COMPLEX)
   if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"file contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
 #endif
+  /* Create property list for collective dataset read */
+  PetscStackCallHDF5Return(h->plist,H5Pcreate,(H5P_DATASET_XFER));
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
+  PetscStackCallHDF5(H5Pset_dxpl_mpio,(h->plist, H5FD_MPIO_COLLECTIVE));
+#endif
+  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
   *ctx = h;
   PetscFunctionReturn(0);
 }
@@ -850,6 +856,7 @@ PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer viewer, HDF5Read
 
   PetscFunctionBegin;
   h = *ctx;
+  PetscStackCallHDF5(H5Pclose,(h->plist));
   if (h->group != h->file) PetscStackCallHDF5(H5Gclose,(h->group));
   PetscStackCallHDF5(H5Sclose,(h->dataspace));
   PetscStackCallHDF5(H5Dclose,(h->dataset));
