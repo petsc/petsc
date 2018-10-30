@@ -742,8 +742,9 @@ int main(int argc, char **argv)
       nsize: 2
       args: -nx 16 -ny 24 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_type bjacobi -fieldsplit_1_pc_type jacobi -fieldsplit_1_inner_ksp_type preonly -fieldsplit_1_upper_ksp_type preonly -fieldsplit_1_upper_pc_type jacobi
 
-        test:
-      nsize: 5
+   test:
+      suffix: 5
+      nsize: 2
       args: -nx 4 -ny 8 -mat_set_symmetric -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type gkb -fieldsplit_0_ksp_type cg -fieldsplit_0_pc_type jacobi -fieldsplit_0_ksp_rtol 1e-10
 
    test:
