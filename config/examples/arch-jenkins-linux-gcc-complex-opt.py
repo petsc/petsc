@@ -15,7 +15,7 @@ if __name__ == '__main__':
     '--with-64-bit-indices=no',
     '--with-precision=double',
     '--with-sowing=1',
-    '--with-sowing-dir=/homes/petsc/soft/sowing-v1.1.25-p1',
+    '--with-sowing-dir=/home/petsc/soft/sowing-v1.1.25-p1',
     'DATAFILESPATH=/home/petsc/datafiles',
     ]
   configure.petsc_configure(configure_options)
