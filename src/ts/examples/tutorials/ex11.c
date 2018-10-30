@@ -412,6 +412,7 @@ static void PhysicsRiemann_SW(PetscInt dim, PetscInt Nf, const PetscReal *qp, co
   PetscReal    zero=0.;
 
 #if defined(PETSC_USE_COMPLEX)
+  uLreal.swnode.h = 0; uRreal.swnode.h = 0;
   for (i = 0; i < 1+dim; i++) uLreal.vals[i] = PetscRealPart(xL[i]);
   for (i = 0; i < 1+dim; i++) uRreal.vals[i] = PetscRealPart(xR[i]);
 #endif
