@@ -7008,6 +7008,126 @@ PetscErrorCode DMPlexCheckPointSF(DM dm)
   PetscFunctionReturn(0);
 }
 
+typedef struct cell_stats
+{
+  PetscReal min, max, sum, squaresum;
+  PetscInt  count;
+} cell_stats_t;
+
+static void cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype)
+{
+  PetscInt i, N = *len;
+
+  for (i = 0; i < N; i++) {
+    cell_stats_t *A = (cell_stats_t *) a;
+    cell_stats_t *B = (cell_stats_t *) b;
+
+    B->min = PetscMin(A->min,B->min);
+    B->max = PetscMax(A->max,B->max);
+    B->sum += A->sum;
+    B->squaresum += A->squaresum;
+    B->count += A->count;
+  }
+}
+
+/*@
+  DMPlexCheckCellShape - Checks the Jacobian of the mapping and computes some minimal statistics.
+
+  Input Parameters:
++ dm - The DMPlex object
+- output - If true, statistics will be displayed on stdout
+
+  Note: This is mainly intended for debugging/testing purposes.
+
+  Level: developer
+
+.seealso: DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexCheckFaces()
+@*/
+PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output)
+{
+  PetscMPIInt    rank,size;
+  PetscInt       dim, c, cStart, cEnd, cMax, count = 0;
+  cell_stats_t   stats, globalStats;
+  PetscReal      *J, *invJ, min = 0, max = 0, mean = 0, stdev = 0;
+  MPI_Comm       comm = PetscObjectComm((PetscObject)dm);
+  DM             dmCoarse;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  stats.min   = PETSC_MAX_REAL;
+  stats.max   = PETSC_MIN_REAL;
+  stats.sum   = stats.squaresum = 0.;
+  stats.count = 0;
+
+  ierr = DMGetCoordinateDim(dm,&dim);CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim * dim, &J, dim * dim, &invJ);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm,&cMax,NULL,NULL,NULL);CHKERRQ(ierr);
+  cMax = cMax < 0 ? cEnd : cMax;
+  for (c = cStart; c < cMax; c++) {
+    PetscInt  i;
+    PetscReal frobJ = 0., frobInvJ = 0., cond2, cond, detJ;
+
+    ierr = DMPlexComputeCellGeometryAffineFEM(dm,c,NULL,J,invJ,&detJ);CHKERRQ(ierr);
+    if (detJ < 0.0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted", c);
+    for (i = 0; i < dim * dim; i++) {
+      frobJ    += J[i] * J[i];
+      frobInvJ += invJ[i] * invJ[i];
+    }
+    cond2 = frobJ * frobInvJ;
+    cond  = PetscSqrtReal(cond2);
+
+    stats.min        = PetscMin(stats.min,cond);
+    stats.max        = PetscMax(stats.max,cond);
+    stats.sum       += cond;
+    stats.squaresum += cond2;
+    stats.count++;
+  }
+
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) {
+    PetscMPIInt   blockLengths[2] = {4,1};
+    MPI_Aint      blockOffsets[2] = {offsetof(cell_stats_t,min),offsetof(cell_stats_t,count)};
+    MPI_Datatype  blockTypes[2]   = {MPIU_REAL,MPIU_INT}, statType;
+    MPI_Op        statReduce;
+
+    ierr = MPI_Type_create_struct(2,blockLengths,blockOffsets,blockTypes,&statType);CHKERRQ(ierr);
+    ierr = MPI_Type_commit(&statType);CHKERRQ(ierr);
+    ierr = MPI_Op_create(cell_stats_reduce, PETSC_TRUE, &statReduce);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&stats,&globalStats,1,statType,statReduce,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Op_free(&statReduce);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&statType);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMemcpy(&globalStats,&stats,sizeof(stats));CHKERRQ(ierr);
+  }
+
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    count = globalStats.count;
+    min   = globalStats.min;
+    max   = globalStats.max;
+    mean  = globalStats.sum / globalStats.count;
+    stdev = globalStats.count > 1 ? PetscSqrtReal(PetscMax((globalStats.squaresum - globalStats.count * mean * mean) / (globalStats.count - 1),0)) : 0.0;
+  }
+
+  if (output) {
+    ierr = PetscPrintf(comm,"Mesh with %D cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(J,invJ);CHKERRQ(ierr);
+
+  ierr = DMGetCoarseDM(dm,&dmCoarse);CHKERRQ(ierr);
+  if (dmCoarse) {
+    PetscBool isplex;
+
+    ierr = PetscObjectTypeCompare((PetscObject)dmCoarse,DMPLEX,&isplex);CHKERRQ(ierr);
+    if (isplex) {
+      ierr = DMPlexCheckCellShape(dmCoarse,output);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 /* Pointwise interpolation
      Just code FEM for now
      u^f = I u^c
