@@ -174,6 +174,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &xin->map);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSelectHyperslab_Internal(viewer, h, xin->map, &memspace);CHKERRQ(ierr);
 
+  ierr = VecSetUp(xin);CHKERRQ(ierr);
   ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadArray_Internal(viewer, h, scalartype, memspace, (void*)x);CHKERRQ(ierr);
   ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
