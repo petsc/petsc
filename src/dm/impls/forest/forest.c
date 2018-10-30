@@ -304,11 +304,19 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
   ierr         = DMDestroy(&forest->base);CHKERRQ(ierr);
   forest->base = base;
   if (base) {
+    PetscBool        isper;
+    const PetscReal *maxCell, *L;
+    const DMBoundaryType *bd;
+
     PetscValidHeaderSpecific(base, DM_CLASSID, 2);
     ierr = DMGetDimension(base,&dim);CHKERRQ(ierr);
     ierr = DMSetDimension(dm,dim);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(base,&dimEmbed);CHKERRQ(ierr);
     ierr = DMSetCoordinateDim(dm,dimEmbed);CHKERRQ(ierr);
+    ierr = DMGetPeriodicity(base,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(dm,isper,maxCell,L,bd);CHKERRQ(ierr);
+  } else {
+    ierr = DMSetPeriodicity(dm,PETSC_FALSE,NULL,NULL,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
