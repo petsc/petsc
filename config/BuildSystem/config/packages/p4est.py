@@ -23,6 +23,7 @@ class Configure(config.package.GNUPackage):
     self.mpi        = framework.require('config.packages.MPI',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.zlib       = framework.require('config.packages.zlib',self)
+    self.memalign   = framework.argDB['with-memalign']
     self.deps       = [self.mpi,self.blasLapack,self.zlib]
     return
 
@@ -33,6 +34,7 @@ class Configure(config.package.GNUPackage):
     args.append('--enable-mpi')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     args.append('LIBS="'+self.libraries.toString(self.dlib)+'"')
+    args.append('--enable-memalign='+self.memalign)
     return args
 
   def updateGitDir(self):
@@ -59,6 +61,10 @@ class Configure(config.package.GNUPackage):
     '''bootstrap, then standar GNU configure; make; make install'''
     import os
     if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+      if not self.programs.libtoolize:
+        raise RuntimeError('Could not bootstrap p4est using autotools: libtoolize not found')
+      if not self.programs.autoreconf:
+        raise RuntimeError('Could not bootstrap p4est using autotools: autoreconf not found')
       self.logPrintBox('Trying to bootstrap p4est using autotools; this may take several minutes')
       try:
         self.executeShellCommand('./bootstrap',cwd=self.packageDir,log=self.log)
