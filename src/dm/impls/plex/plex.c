@@ -6590,7 +6590,7 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
 {
   IS             nums[4];
-  PetscInt       depths[4];
+  PetscInt       depths[4], gdepths[4], starts[4];
   PetscInt       depth, d, shift = 0;
   PetscErrorCode ierr;
 
@@ -6599,12 +6599,22 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   /* For unstratified meshes use dim instead of depth */
   if (depth < 0) {ierr = DMGetDimension(dm, &depth);CHKERRQ(ierr);}
-  depths[0] = depth; depths[1] = 0;
-  for (d = 2; d <= depth; ++d) depths[d] = depth-d+1;
+  for (d = 0; d <= depth; ++d) {
+    PetscInt end;
+
+    depths[d] = depth-d;
+    ierr = DMPlexGetDepthStratum(dm, depths[d], &starts[d], &end);CHKERRQ(ierr);
+    if (!(starts[d]-end)) { starts[d] = depths[d] = -1; }
+  }
+  ierr = PetscSortIntWithArray(depth+1, starts, depths);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(depths, gdepths, depth+1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  for (d = 0; d <= depth; ++d) {
+    if (starts[d] >= 0 && depths[d] != gdepths[d]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected depth %D, found %D",depths[d],gdepths[d]);
+  }
   for (d = 0; d <= depth; ++d) {
     PetscInt pStart, pEnd, gsize;
 
-    ierr = DMPlexGetDepthStratum(dm, depths[d], &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, gdepths[d], &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMPlexCreateNumbering_Private(dm, pStart, pEnd, shift, &gsize, dm->sf, &nums[d]);CHKERRQ(ierr);
     shift += gsize;
   }
