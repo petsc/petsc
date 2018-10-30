@@ -296,9 +296,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
       user->func(dim, 0.0, &coords[n*dim], 1, &vals[c], user);
     }
     for (p = 0; p < Np; p += 2) {
-      initialConditions[p]   = 0.0;
-      initialConditions[p+1] = 0.2; 
-      
+      initialConditions[p]   = 0.2; 
+      initialConditions[p+1] = 0.0;
     }
   }
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
@@ -372,12 +371,14 @@ static PetscErrorCode RHSFunctionParticles(TS ts,PetscReal t,Vec U,Vec R,void *c
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
-  Np  /= 2;
+  //Np  /= 2;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(R,&r);CHKERRQ(ierr);
   
   for(int p = 0; p < Np; p+=2){
+    // residual position
     r[p] = u[p+1];
+    // residual momentum
     r[p+1] = -user->omega*user->omega*u[p];
   }
   
@@ -452,8 +453,8 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,NULL,RHSFunctionParticles,&user);CHKERRQ(ierr);
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.0001);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,1000);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.00001);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
@@ -465,19 +466,23 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,f);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
+  
+  
+  
+  
   /* Compute energy of particles */
   ierr = DMSwarmGetField(sw, "kinematics", NULL, NULL, (void **) &kCheck);CHKERRQ(ierr);
   for (int p = 0; p < user.particlesPerCell; p += 2) {
-    ierr = PetscPrintf(comm,"The particle solution at time %.6lf is [%g %g]\n",(double)ftime,(kCheck[p+1]*kCheck[p+1]+user.omega*user.omega*kCheck[p]*kCheck[p])/2.,kCheck[p+1]);CHKERRQ(ierr);
-      
-    
+    ierr = PetscPrintf(comm,"The particle solution for (x, t) at time %.6lf is [%g %g]\n",(double)ftime,kCheck[p],kCheck[p+1]);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Energy: %g\n",(double) (kCheck[1]*kCheck[1]+user.omega*user.omega*kCheck[0]*kCheck[0]-user.omega*user.omega*ftime*kCheck[0]*kCheck[1])/2.);
+    ierr = PetscPrintf(comm,"Modified energy: %g\n", (double) (kCheck[1]*kCheck[1]+user.omega*user.omega*kCheck[0]*kCheck[0])/2.);
   }
- 
-
   /* end energy computation */
  
-  ierr = PetscPrintf(comm,"The exact solution at time %.6lf is [%g %g]\n",(double)ftime,(double)0.2*PetscCosReal(user.omega*ftime),(double)-0.2*user.omega*PetscSinReal(user.omega*ftime));CHKERRQ(ierr);
-
+  ierr = PetscPrintf(comm,"The exact solution for (x, v) time %.6lf is [%g %g]\n",(double)ftime,(double)0.2*PetscCosReal(user.omega*ftime),(double)-0.2*user.omega*PetscSinReal(user.omega*ftime));CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"The exact solution for energy is: %g\n", (double) (kCheck[1]*kCheck[1]+user.omega*user.omega*kCheck[0]*kCheck[0])/2.);
+  ierr = PetscPrintf(comm,"The exact solution for modified energy is: %g\n", (double) (-0.2*user.omega*PetscSinReal(user.omega*ftime)*-0.2*user.omega*PetscSinReal(user.omega*ftime)+ user.omega*user.omega*0.2*PetscCosReal(user.omega*ftime)*0.2*PetscCosReal(user.omega*ftime) )/2.);
+  
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
@@ -492,7 +497,7 @@ int main(int argc,char **argv)
    build:
      requires: !single !complex
    test:
-     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1
    test:
      suffix: 2
      args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 2 
