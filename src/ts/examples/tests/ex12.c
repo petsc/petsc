@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscReal      dt;
   PetscReal      time_total_max = 100.0; /* default max total time */
-  PetscOptions   options;
+  PetscOptions   options,optionscopy;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -188,6 +188,9 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = PetscObjectGetOptions((PetscObject)ts,&optionscopy);CHKERRQ(ierr);
+  if (options != optionscopy) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"PetscObjectGetOptions() failed");
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
