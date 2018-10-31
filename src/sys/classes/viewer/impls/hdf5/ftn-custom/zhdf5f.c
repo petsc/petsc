@@ -57,6 +57,16 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5hasattribute_(PetscViewer *viewer
    FREECHAR(name, c2);
 }
 
+PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5readsizes_(PetscViewer *viewer, char* name PETSC_MIXED_LEN(len),
+    PetscInt *bs, PetscInt *N, PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+   char *c1;
+
+   FIXCHAR(name, len, c1);
+   *ierr = PetscViewerHDF5ReadSizes(*viewer, c1, bs, N);
+   FREECHAR(name, c1);
+}
+
 PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5writeattribute_(PetscViewer *viewer, char* parent PETSC_MIXED_LEN(plen),
     char* name PETSC_MIXED_LEN(nlen), PetscDataType *datatype, const void *value, PetscErrorCode *ierr PETSC_END_LEN(plen) PETSC_END_LEN(nlen))
 {

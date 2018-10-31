@@ -957,7 +957,27 @@ PetscErrorCode PetscViewerHDF5ReadArray_Internal(PetscViewer viewer, HDF5ReadCtx
   PetscFunctionReturn(0);
 }
 
-/* TODO DOC */
+/*@C
+ PetscViewerHDF5ReadSizes - Read block size and global size of a vector (Vec or IS) stored in an HDF5 file.
+
+  Input Parameters:
++ viewer - The HDF5 viewer
+- name   - The vector name
+
+  Output Parameter:
++ bs     - block size
+- N      - global size
+
+  Note:
+  A vector is stored as an HDF5 dataspace with 1-4 dimensions in this order:
+  1) # timesteps (optional), 2) # blocks, 3) # elements per block (optional), 4) real and imaginary part (only for complex).
+
+  A vectors can be stored as a 2D dataspace even if its blocksize is 1; see PetscViewerHDF5SetBaseDimension2().
+
+  Level: advanced
+
+.seealso: PetscViewerHDF5Open(), VecLoad(), ISLoad(), VecGetSize(), ISGetSize(), PetscViewerHDF5SetBaseDimension2()
+@*/
 PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
 {
   HDF5ReadCtx    h;
@@ -965,6 +985,7 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &map);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
