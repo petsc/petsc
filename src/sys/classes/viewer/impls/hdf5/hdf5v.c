@@ -457,7 +457,7 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   PetscViewerHDF5OpenGroup - Open the HDF5 group with the name (full path) returned by PetscViewerHDF5GetGroup(),
   and return this group's ID and file ID.
   If PetscViewerHDF5GetGroup() yields NULL, then group ID is file ID.
