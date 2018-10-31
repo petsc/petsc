@@ -166,7 +166,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #else
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
-  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)xin, &vecname);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Load_Internal(viewer, vecname, xin->map, scalartype, (void**)&x);CHKERRQ(ierr);
   ierr = VecSetUp(xin);CHKERRQ(ierr);
   ierr = VecReplaceArray(xin, x);CHKERRQ(ierr);
