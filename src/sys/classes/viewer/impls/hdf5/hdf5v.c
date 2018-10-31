@@ -843,9 +843,6 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
   ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname ? groupname : "",name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&h->complexVal);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"file contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
-#endif
   /* Create property list for collective dataset read */
   PetscStackCallHDF5Return(h->plist,H5Pcreate,(H5P_DATASET_XFER));
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
@@ -978,6 +975,14 @@ PetscErrorCode PetscViewerHDF5Load_Internal(PetscViewer viewer, const char *name
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_COMPLEX)
+  if (!h->complexVal) {
+    H5T_class_t class = H5Tget_class(datatype);
+    if (class == H5T_FLOAT) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains real numbers but PETSc is configured for complex. The conversion is not yet implemented. Configure with --with-scalar-type=real.");
+  }
+#else
+  if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
+#endif
   unitsize = H5Tget_size(datatype);
   if (h->complexVal) unitsize *= 2;
   ierr = PetscMalloc(map->n*unitsize, &arr);CHKERRQ(ierr);
