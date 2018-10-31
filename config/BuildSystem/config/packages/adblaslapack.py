@@ -37,5 +37,5 @@ class Configure(config.package.Package):
       output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean all ',timeout=50, log = self.log)
       output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+self.installSudo+' cp -f libadblaslapack.a '+os.path.join(self.installDir,'lib'),timeout=20, log = self.log)
       output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'include')+' && '+self.installSudo+' cp -f adblaslapack.hpp '+os.path.join(self.installDir,'include'),timeout=20, log = self.log)
-    self.postInstall(output1+err1+output2+err2,'Makefile.inc')
+      self.postInstall(output1+err1+output2+err2,'Makefile.inc')
     return self.installDir
