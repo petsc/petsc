@@ -973,12 +973,15 @@ PetscErrorCode PetscViewerHDF5Load_Internal(PetscViewer viewer, const char *name
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  unitsize = H5Tget_size(datatype);
   ierr = PetscViewerHDF5ReadInitialize_Private(viewer, name, &h);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-  ierr = PetscMalloc(map->n*unitsize, &arr);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace);CHKERRQ(ierr);
+
+  unitsize = H5Tget_size(datatype);
+  if (h->complexVal) unitsize *= 2;
+  ierr = PetscMalloc(map->n*unitsize, &arr);CHKERRQ(ierr);
+
   ierr = PetscViewerHDF5ReadArray_Private(viewer, h, datatype, memspace, arr);CHKERRQ(ierr);
   PetscStackCallHDF5(H5Sclose,(memspace));
   ierr = PetscViewerHDF5ReadFinalize_Private(viewer, &h);CHKERRQ(ierr);
