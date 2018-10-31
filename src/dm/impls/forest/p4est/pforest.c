@@ -3200,6 +3200,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
       p4est_tree_t     *trees   = (p4est_tree_t*) pforest->forest->trees->array;
       p4est_quadrant_t * q;
       PetscInt         t, val;
+      PetscBool        zerosupportpoint = PETSC_FALSE;
 
       ierr = DMPlexGetTransitiveClosure(plex,p,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
       for (s = 0; s < starSize; s++) {
@@ -3232,9 +3233,29 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
           }
           ierr = DMPlexRestoreTransitiveClosure(plex,point,PETSC_TRUE,NULL,&closure);CHKERRQ(ierr);
           if (l < closureSize) break;
+        } else {
+          PetscInt supportSize;
+
+          ierr = DMPlexGetSupportSize(plex,point,&supportSize);CHKERRQ(ierr);
+          zerosupportpoint = (PetscBool) (zerosupportpoint || !supportSize);
         }
       }
-      if (c < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %D in its closure",p);
+      if (c < 0) {
+        const char* prefix;
+        PetscBool   print = PETSC_FALSE;
+
+        ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
+        ierr = PetscOptionsGetBool(((PetscObject)dm)->options,prefix,"-dm_forest_print_label_error",&print,NULL);CHKERRQ(ierr);
+        if (print) {
+          PetscInt i;
+
+          ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Failed to find cell with point %D in its closure for label %s (starSize %D)\n",PetscGlobalRank,p,baseLabel ? baseLabel->name : "_forest_base_subpoint_map",starSize);
+          for (i = 0; i < starSize; i++) { ierr = PetscPrintf(PETSC_COMM_SELF,"  star[%D] = %D,%D\n",i,star[2*i],star[2*i+1]);CHKERRQ(ierr); }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,NULL,&star);CHKERRQ(ierr);
+        if (zerosupportpoint) continue;
+        else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %D in its closure for label %s. Rerun with -dm_forest_print_label_error for more information",p,baseLabel ? baseLabel->name : "_forest_base_subpoint_map");
+      }
       ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,NULL,&star);CHKERRQ(ierr);
 
       if (c < cLocalStart) {
