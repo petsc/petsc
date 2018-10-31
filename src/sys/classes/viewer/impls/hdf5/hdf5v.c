@@ -16,6 +16,13 @@ typedef struct {
   PetscBool     spoutput;  /* write data in single precision even if PETSc is compiled with double precision PetscReal */
 } PetscViewer_HDF5;
 
+struct _n_HDF5ReadCtx {
+  hid_t file, group, dataset, dataspace, plist;
+  PetscInt timestep;
+  PetscBool complexVal, dim2;
+};
+typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
+
 static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode   ierr;
@@ -816,7 +823,7 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx)
+static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx)
 {
   HDF5ReadCtx    h;
   const char    *groupname;
@@ -849,7 +856,7 @@ PetscErrorCode PetscViewerHDF5ReadInitialize_Internal(PetscViewer viewer, const 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer viewer, HDF5ReadCtx *ctx)
+static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HDF5ReadCtx *ctx)
 {
   HDF5ReadCtx    h;
   PetscErrorCode ierr;
@@ -864,7 +871,7 @@ PetscErrorCode PetscViewerHDF5ReadFinalize_Internal(PetscViewer viewer, HDF5Read
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout *map_)
+static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout *map_)
 {
   int            rdim, dim;
   hsize_t        dims[4];
@@ -909,7 +916,7 @@ PetscErrorCode PetscViewerHDF5ReadSizes_Internal(PetscViewer viewer, HDF5ReadCtx
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Internal(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout map, hid_t *memspace)
+static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout map, hid_t *memspace)
 {
   hsize_t        count[4], offset[4];
   int            dim;
@@ -950,7 +957,7 @@ PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Internal(PetscViewer viewer, H
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5ReadArray_Internal(PetscViewer viewer, HDF5ReadCtx h, hid_t datatype, hid_t memspace, void *arr)
+static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5ReadCtx h, hid_t datatype, hid_t memspace, void *arr)
 {
   PetscFunctionBegin;
   PetscStackCallHDF5(H5Dread,(h->dataset, datatype, memspace, h->dataspace, h->plist, arr));
@@ -967,14 +974,14 @@ PetscErrorCode PetscViewerHDF5Load_Internal(PetscViewer viewer, const char *name
 
   PetscFunctionBegin;
   unitsize = H5Tget_size(datatype);
-  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &map);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadInitialize_Private(viewer, name, &h);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
   ierr = PetscMalloc(map->n*unitsize, &arr);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSelectHyperslab_Internal(viewer, h, map, &memspace);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadArray_Internal(viewer, h, datatype, memspace, arr);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadArray_Private(viewer, h, datatype, memspace, arr);CHKERRQ(ierr);
   PetscStackCallHDF5(H5Sclose,(memspace));
-  ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadFinalize_Private(viewer, &h);CHKERRQ(ierr);
   *newarr = arr;
   PetscFunctionReturn(0);
 }
@@ -1008,9 +1015,9 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &map);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadInitialize_Private(viewer, name, &h);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadFinalize_Private(viewer, &h);CHKERRQ(ierr);
   if (bs) *bs = map->bs;
   if (N) *N = map->N;
   ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
