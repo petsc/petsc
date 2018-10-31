@@ -16,9 +16,9 @@ class Configure(config.package.Package):
     return
 
   def Install(self):
-    import os, glob
+    import os
 
     self.logPrintBox('Copying CoDiPack include files to install location')
     self.installDirProvider.printSudoPasswordMessage()
-    output2,err2,ret2  = config.package.Package.executeShellCommand([self.installSudo+'cp', '-rf'] + glob.glob('include/*') + [os.path.join(self.installDir,'include')], cwd=self.packageDir, timeout=250, log = self.log)
+    output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+' cp -rf include/* '+os.path.join(self.installDir,'include'),timeout=250, log = self.log)
     return self.installDir
