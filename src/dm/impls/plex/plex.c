@@ -664,6 +664,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     const char  *defcolors[3]  = {"gray", "orange", "green"};
     const char  *deflcolors[4] = {"blue", "cyan", "red", "magenta"};
     PetscReal    scale         = 2.0;
+    PetscReal    tikzscale     = 1.0;
     PetscBool    useNumbers    = PETSC_TRUE, useLabels, useColors;
     double       tcoords[3];
     PetscScalar *coords;
@@ -680,6 +681,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     numLColors = 10;
     ierr = PetscCalloc3(numLabels, &names, numColors, &colors, numLColors, &lcolors);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_scale", &scale, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_tikzscale", &tikzscale, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_numbers", &useNumbers, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetStringArray(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_labels", names, &numLabels, &useLabels);CHKERRQ(ierr);
     if (!useLabels) numLabels = 0;
@@ -718,7 +720,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer, ".\n\n\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n", 1.0);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n", tikzscale);CHKERRQ(ierr);
     /* Plot vertices */
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -757,6 +759,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     /* Plot cells */
     ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
     if (dim == 3 || !useNumbers) {
       for (e = eStart; e < eEnd; ++e) {
         const PetscInt *cone;
@@ -835,7 +838,6 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     /* Plot edges */
-    if (depth > 1 || plotEdges) {ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
     if (plotEdges) {
       ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "\\path\n");CHKERRQ(ierr);
