@@ -9,9 +9,7 @@
 */
 PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 {
-  HDF5ReadCtx     h;
   hid_t           inttype;    /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
-  hid_t           memspace;
   PetscInt       *ind;
   const char     *isname;
   PetscErrorCode  ierr;
@@ -23,19 +21,9 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 #else
   inttype = H5T_NATIVE_INT;
 #endif
-
   ierr = PetscObjectGetName((PetscObject)is,&isname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, isname, &h);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &is->map);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSelectHyperslab_Internal(viewer, h, is->map, &memspace);CHKERRQ(ierr);
-
-  ierr = PetscMalloc1(is->map->n,&ind);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadArray_Internal(viewer, h, inttype, memspace, (void*)ind);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Load_Internal(viewer, isname, is->map, inttype, (void**)&ind);CHKERRQ(ierr);
   ierr = ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER);CHKERRQ(ierr);
-
-  /* Close/release resources */
-  PetscStackCallHDF5(H5Sclose,(memspace));
-  ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

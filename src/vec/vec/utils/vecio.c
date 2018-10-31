@@ -150,9 +150,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 */
 PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
-  HDF5ReadCtx    h;
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
-  hid_t          memspace;
   PetscScalar    *x;
   const char     *vecname;
   PetscErrorCode ierr;
@@ -168,23 +166,10 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #else
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
-
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, vecname, &h);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &xin->map);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSelectHyperslab_Internal(viewer, h, xin->map, &memspace);CHKERRQ(ierr);
-
+  ierr = PetscViewerHDF5Load_Internal(viewer, vecname, xin->map, scalartype, (void**)&x);CHKERRQ(ierr);
   ierr = VecSetUp(xin);CHKERRQ(ierr);
-  ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadArray_Internal(viewer, h, scalartype, memspace, (void*)x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
-
-  /* Close/release resources */
-  PetscStackCallHDF5(H5Sclose,(memspace));
-  ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
-
-  ierr = VecAssemblyBegin(xin);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(xin);CHKERRQ(ierr);
+  ierr = VecReplaceArray(xin, x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
