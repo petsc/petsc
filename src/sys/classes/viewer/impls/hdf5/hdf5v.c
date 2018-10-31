@@ -957,6 +957,28 @@ PetscErrorCode PetscViewerHDF5ReadArray_Internal(PetscViewer viewer, HDF5ReadCtx
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscViewerHDF5Load_Internal(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
+{
+  HDF5ReadCtx     h;
+  hid_t           memspace;
+  size_t          unitsize;
+  void            *arr;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  unitsize = H5Tget_size(datatype);
+  ierr = PetscViewerHDF5ReadInitialize_Internal(viewer, name, &h);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Internal(viewer, h, &map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+  ierr = PetscMalloc(map->n*unitsize, &arr);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSelectHyperslab_Internal(viewer, h, map, &memspace);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadArray_Internal(viewer, h, datatype, memspace, arr);CHKERRQ(ierr);
+  PetscStackCallHDF5(H5Sclose,(memspace));
+  ierr = PetscViewerHDF5ReadFinalize_Internal(viewer, &h);CHKERRQ(ierr);
+  *newarr = arr;
+  PetscFunctionReturn(0);
+}
+
 /*@C
  PetscViewerHDF5ReadSizes - Read block size and global size of a vector (Vec or IS) stored in an HDF5 file.
 
