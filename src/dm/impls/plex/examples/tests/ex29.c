@@ -138,6 +138,6 @@ int main(int argc, char **argv)
   test:
     suffix: quad_0
     nsize: 2
-    args: -dim 3 -simplex 0 -dm_refine 2 -dm_view -pdm_view
+    args: -dim 3 -simplex 0 -dm_refine 2 -petscpartitioner_type simple -dm_view -pdm_view
 
 TEST*/
