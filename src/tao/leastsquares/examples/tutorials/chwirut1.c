@@ -103,6 +103,15 @@ int main(int argc,char **argv)
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
+  /*
+     Assemble vector, using the 2-step process: VecAssemblyBegin(), VecAssemblyEnd()
+     Computations can be done while messages are in transition by placing code between these two statements.
+  */
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  /* View the vector; then destroy it.  */
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
