@@ -335,9 +335,6 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
       ierr = DMPlexSetConeSize(dm, f, 4);CHKERRQ(ierr);
     }
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-    for (v = 0; v < numFaces+numVertices; ++v) {
-      ierr = DMSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
-    }
 
     /* Side 0 (Top) */
     for (vy = 0; vy < faces[1]; vy++) {
@@ -345,6 +342,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         voffset = numFaces + vertices[0]*vertices[1]*(vertices[2]-1) + vy*vertices[0] + vx;
         cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]+1; cone[3] = voffset+vertices[0];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+1, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -355,6 +357,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         voffset = numFaces + vy*(faces[0]+1) + vx;
         cone[0] = voffset+1; cone[1] = voffset; cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]+1;
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+1, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -365,6 +372,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         voffset = numFaces + vz*vertices[0]*vertices[1] + vx;
         cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]*vertices[1]+1; cone[3] = voffset+vertices[0]*vertices[1];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+1, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -376,6 +388,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset+vertices[0]*vertices[1]+1;
         cone[2] = voffset+1; cone[3] = voffset;
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+1, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -387,6 +404,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         cone[0] = voffset; cone[1] = voffset+vertices[0]*vertices[1];
         cone[2] = voffset+vertices[0]*vertices[1]+vertices[0]; cone[3] = voffset+vertices[0];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[1]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -398,6 +420,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset;
         cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]*vertices[1]+vertices[0];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], 1);CHKERRQ(ierr);
         iface++;
       }
     }
