@@ -33,19 +33,22 @@ int main(int argc, char **argv)
 /*TEST
 
       test:
-        suffix: moebius
+        output_file: output/ex1_moebius.out
+        suffix: p4est_topology_moebius
         nsize: 3
         args: -dm_type p4est -dm_forest_topology moebius -dm_view vtk:moebius.vtu
         requires: p4est
 
       test:
-        suffix: shell
+        output_file: output/ex1_shell.out
+        suffix: p4est_topology_shell
         nsize: 3
         args: -dm_type p8est -dm_forest_topology shell -dm_view vtk:shell.vtu
         requires: p4est
 
       test:
-        suffix: brick
+        output_file: output/ex1_brick.out
+        suffix: p4est_topology_brick
         nsize: 3
         args: -dm_type p8est -dm_forest_topology brick -dm_p4est_brick_size 2,3,5 -dm_view vtk:brick.vtu
         requires: p4est

@@ -214,25 +214,29 @@ int main(int argc, char **argv)
 /*TEST
 
      test:
-       suffix: 2d
+       output_file: output/ex2_2d.out
+       suffix: p4est_2d
        args: -petscspace_poly_tensor -petscspace_degree 2 -dim 2
        nsize: 3
        requires: p4est
 
      test:
-       suffix: 2d_fv
+       output_file: output/ex2_2d_fv.out
+       suffix: p4est_2d_fv
        args: -use_fv -linear -dim 2 -dm_forest_partition_overlap 1
        nsize: 3
        requires: p4est
 
      test:
-       suffix: 3d
+       output_file: output/ex2_3d.out
+       suffix: p4est_3d
        args: -petscspace_poly_tensor -petscspace_degree 1 -dim 3
        nsize: 3
        requires: p4est
 
      test:
-       suffix: 3d_fv
+       output_file: output/ex2_3d_fv.out
+       suffix: p4est_3d_fv
        args: -use_fv -linear -dim 3 -dm_forest_partition_overlap 1
        nsize: 3
        requires: p4est
