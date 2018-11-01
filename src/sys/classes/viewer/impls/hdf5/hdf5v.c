@@ -977,8 +977,8 @@ PetscErrorCode PetscViewerHDF5Load_Internal(PetscViewer viewer, const char *name
 
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
-    H5T_class_t class = H5Tget_class(datatype);
-    if (class == H5T_FLOAT) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains real numbers but PETSc is configured for complex. The conversion is not yet implemented. Configure with --with-scalar-type=real.");
+    H5T_class_t clazz = H5Tget_class(datatype);
+    if (clazz == H5T_FLOAT) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains real numbers but PETSc is configured for complex. The conversion is not yet implemented. Configure with --with-scalar-type=real.");
   }
 #else
   if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
