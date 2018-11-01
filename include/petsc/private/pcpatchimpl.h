@@ -46,9 +46,9 @@ typedef struct {
   PetscInt             vankadim;           /* In Vanka construction, should we eliminate any entities of a certain dimension on the initial patch? */
   PetscInt             ignoredim;          /* In Vanka construction, should we eliminate any entities of a certain dimension on the boundary? */
   /* Patch system assembly */
-  PetscErrorCode     (*usercomputeop)(PC, PetscInt, Mat, IS, PetscInt, const PetscInt *, void *);
+  PetscErrorCode     (*usercomputeop)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, void *);
+  void                *usercomputeopctx;
   IS                   cellIS;             /* Temporary IS for each cell patch */
-  void                *usercomputectx;
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */
   /* Patch solves */
@@ -84,5 +84,7 @@ PETSC_EXTERN PetscLogEvent PC_Patch_Solve;
 PETSC_EXTERN PetscLogEvent PC_Patch_Scatter;
 PETSC_EXTERN PetscLogEvent PC_Patch_Apply;
 PETSC_EXTERN PetscLogEvent PC_Patch_Prealloc;
+
+PETSC_EXTERN PetscErrorCode PCPatchComputeOperator_Internal(PC, Vec, Mat, PetscInt);
 
 #endif

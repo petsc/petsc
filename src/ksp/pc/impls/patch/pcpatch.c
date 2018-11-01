@@ -466,9 +466,10 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 
   Note:
   The callback has signature:
-+  usercomputeop(pc, point, mat, cellIS, n, u, ctx)
++  usercomputeop(pc, point, x, mat, cellIS, n, u, ctx)
 +  pc     - The PC
 +  point  - The point
++  x      - The input solution (not used in linear problems)
 +  mat    - The patch matrix
 +  cellIS - An array of the cell numbers
 +  n      - The size of g2l
@@ -476,15 +477,15 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 +  ctx    - The user context
   and can assume that the matrix entries have been set to zero before the call.
 
-.seealso: PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo()
+.seealso: PCPatchGetComputeOperator(), PCPatchSetComputeFunction(), PCPatchSetDiscretisationInfo()
 @*/
-PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, PetscInt, Mat, IS, PetscInt, const PetscInt *, void *), void *ctx)
+PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, void *), void *ctx)
 {
   PC_PATCH *patch = (PC_PATCH *) pc->data;
 
   PetscFunctionBegin;
-  patch->usercomputeop  = func;
-  patch->usercomputectx = ctx;
+  patch->usercomputeop    = func;
+  patch->usercomputeopctx = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -1257,7 +1258,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patchNum, Mat J, IS cellIS, PetscInt n, const PetscInt *l2p, void *ctx)
+static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patchNum, Vec x, Mat J, IS cellIS, PetscInt n, const PetscInt *l2p, void *ctx)
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   DM              dm;
@@ -1289,11 +1290,11 @@ static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patc
   ierr = ISRestoreIndices(patch->offs,   &oarray);CHKERRQ(ierr);
   if (patch->viewSection) {ierr = ObjectView((PetscObject) patch->patchSection, patch->viewerSection, patch->formatSection);CHKERRQ(ierr);}
   /* TODO Shut off MatViewFromOptions() in MatAssemblyEnd() here */
-  ierr = DMPlexComputeJacobian_Patch_Internal(pc->dm, patch->patchSection, patch->patchSection, cellIS, 0.0, 0.0, NULL, NULL, J, J, ctx);CHKERRQ(ierr);
+  ierr = DMPlexComputeJacobian_Patch_Internal(pc->dm, patch->patchSection, patch->patchSection, cellIS, 0.0, 0.0, x, NULL, J, J, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPatchComputeOperator_Private(PC pc, Mat mat, PetscInt point)
+PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt point)
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   const PetscInt *dofsArray;
@@ -1320,7 +1321,7 @@ static PetscErrorCode PCPatchComputeOperator_Private(PC pc, Mat mat, PetscInt po
   PetscStackPush("PCPatch user callback");
   /* Cannot reuse the same IS because the geometry info is being cached in it */
   ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
-  ierr = patch->usercomputeop(pc, point, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, patch->usercomputectx);CHKERRQ(ierr);
+  ierr = patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, patch->usercomputeopctx);CHKERRQ(ierr);
   PetscStackPop;
   ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
   ierr = ISRestoreIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
@@ -1506,7 +1507,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
   if (patch->save_operators) {
     for (i = 0; i < patch->npatch; ++i) {
       ierr = MatZeroEntries(patch->mat[i]);CHKERRQ(ierr);
-      ierr = PCPatchComputeOperator_Private(pc, patch->mat[i], i);CHKERRQ(ierr);
+      ierr = PCPatchComputeOperator_Internal(pc, NULL, patch->mat[i], i);CHKERRQ(ierr);
       ierr = KSPSetOperators(patch->ksp[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
     }
   }
@@ -1565,7 +1566,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
 
         ierr = PCPatchCreateMatrix_Private(pc, i, &mat);CHKERRQ(ierr);
         /* Populate operator here. */
-        ierr = PCPatchComputeOperator_Private(pc, mat, i);CHKERRQ(ierr);
+        ierr = PCPatchComputeOperator_Internal(pc, NULL, mat, i);CHKERRQ(ierr);
         ierr = KSPSetOperators(patch->ksp[i], mat, mat);CHKERRQ(ierr);
         /* Drop reference so the KSPSetOperators below will blow it away. */
         ierr = MatDestroy(&mat);CHKERRQ(ierr);
