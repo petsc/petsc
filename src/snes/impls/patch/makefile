@@ -1,11 +1,14 @@
-
 ALL: lib
 
-DIRS     = ksponly ls tr richardson python vi ngmres qn shell ncg fas gs ms nasm composite patch
-LOCDIR   = src/snes/impls/
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = snespatch.c
+SOURCEF  =
+SOURCEH  =
+LIBBASE  = libpetscsnes
+MANSEC   = SNES
+LOCDIR   = src/snes/impls/patch/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-
-

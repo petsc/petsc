@@ -46,6 +46,7 @@ typedef const char* SNESType;
 #define SNESANDERSON     "anderson"
 #define SNESASPIN        "aspin"
 #define SNESCOMPOSITE    "composite"
+#define SNESPATCH        "patch"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;
@@ -812,6 +813,8 @@ PETSC_EXTERN PetscErrorCode SNESCompositeAddSNES(SNES,SNESType);
 PETSC_EXTERN PetscErrorCode SNESCompositeGetSNES(SNES,PetscInt,SNES *);
 PETSC_EXTERN PetscErrorCode SNESCompositeGetNumber(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESCompositeSetDamping(SNES,PetscInt,PetscReal);
+
+PETSC_EXTERN PetscErrorCode SNESPatchSetType(SNES,SNESCompositeType);
 
 /*E
     SNESFASType - Determines the type of nonlinear multigrid method that is run.
