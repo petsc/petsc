@@ -412,6 +412,9 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
 + sp     - the function space object
 - tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
 
+  Options Database:
+. -petscspace_poly_tensor <bool> - Whether to use tensor product polynomials in higher dimension
+
   Level: beginner
 
 .seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetDegree(), PetscSpaceSetNumVariables()
