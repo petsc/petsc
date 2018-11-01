@@ -961,7 +961,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5Load_Internal(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
+PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
   HDF5ReadCtx     h;
   hid_t           memspace;

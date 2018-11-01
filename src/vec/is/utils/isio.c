@@ -22,7 +22,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   inttype = H5T_NATIVE_INT;
 #endif
   ierr = PetscObjectGetName((PetscObject)is, &isname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Load_Internal(viewer, isname, is->map, inttype, (void**)&ind);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Load(viewer, isname, is->map, inttype, (void**)&ind);CHKERRQ(ierr);
   ierr = ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
