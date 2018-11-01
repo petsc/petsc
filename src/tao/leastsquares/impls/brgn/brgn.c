@@ -76,9 +76,19 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Ve
   /* compute gradient G */
   ierr = TaoComputeResidualJacobian(tao, X, tao->ls_jac, tao->ls_jac_pre);CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->ls_jac, tao->ls_res, G);CHKERRQ(ierr);
+  /* XH: debug*/
+  PetscPrintf(PETSC_COMM_SELF, "first least square component gradient.\n");
+  ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* compute G = G + lambda*(x./sqrt(x.^2+epsilon^2)) */
   ierr = VecPointwiseDivide(gn->x_work, X, gn->x_work);CHKERRQ(ierr); /* reuse x_work = x./sqrt(x.^2+epsilon^2) */
   ierr = VecAXPY(G, gn->lambda, gn->x_work);CHKERRQ(ierr); 
+
+  /* XH: debug*/
+  PetscPrintf(PETSC_COMM_SELF, "composited gradient.\n");
+  ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* XH: debug*/
+  PetscPrintf(PETSC_COMM_SELF, "gn->diag.\n");
+  ierr = VecView(gn->diag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

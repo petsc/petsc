@@ -46,11 +46,10 @@ T*/
 #define N 5
 
 /* User-defined application context */
-/* XH: t -> A,  y--> b, j = j, but j = A */
 typedef struct {
-  /* Working space */
-  PetscReal A[M][N];    /* array of independent variables of observation */
-  PetscReal b[M];       /* array of dependent variables */
+  /* Working space. linear least square:  f(x) = b - A*x */
+  PetscReal A[M][N];    /* array of coefficients */
+  PetscReal b[M];       /* array of observations */
   PetscReal j[M][N];    /* dense jacobian matrix array. For linear least square, j = A. For nonlinear least square, it is different from A */
   PetscInt  idm[M];     /* Matrix indices for jacobian */
   PetscInt  idn[N];
@@ -106,15 +105,16 @@ int main(int argc,char **argv)
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
 
-  /*
+  /* XH: Debug: Do we really need to assembly the vector?
      Assemble vector, using the 2-step process: VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition by placing code between these two statements.
   */
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  /* View the vector.  */
+  /* XH: Debug: View the result, function and Jacobian.  */
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
 
   /* Free TAO data structures */
@@ -204,7 +204,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 /* ---------------------------------------------------------------------- */
 PetscErrorCode InitializeData(AppCtx *user)
 {
-  PetscReal *b=user->b; /* **A=user->A, but we don't kown the dimension of A in this way */
+  PetscReal *b=user->b; /* **A=user->A, but we don't kown the dimension of A in this way, how to fix? */
   PetscInt  m=0, n=0;
 
   PetscFunctionBegin;
