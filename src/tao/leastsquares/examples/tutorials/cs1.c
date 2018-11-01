@@ -14,8 +14,8 @@
 
 /*
 Description:   Compressive sensing test example 1.
-               0.5*||Ax-b||^2 + lambda*||x||_1                
-               Xiang Huang: Oct 31, 2018
+               0.5*||Ax-b||^2 + lambda*||D*x||_1                
+               Xiang Huang: Nov 19, 2018
 
 Reference:     None
                
@@ -25,7 +25,8 @@ Reference:     None
 
 static char help[]="Finds the least-squares solution to the underconstraint linear model Ax = b. \n\
             A is a M*N real flat matrix (M<N), x is sparse. \n\
-            We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||x||_1, where lambda (by default 1e-4) is a user specified weight.\n";
+            We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||D*x||_1, where lambda (by default 1e-4) is a user specified weight.
+            D is the P*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x\n";
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
    Routines: TaoCreate();
@@ -44,12 +45,14 @@ T*/
 
 #define M 3
 #define N 5
+#define P 5
 
 /* User-defined application context */
 typedef struct {
-  /* Working space. linear least square:  f(x) = b - A*x */
+  /* Working space. linear least square:  f(x) = A*x - b */
   PetscReal A[M][N];    /* array of coefficients */
   PetscReal b[M];       /* array of observations */
+  PetscReal D[P][N];    /* array of coefficients for 0.5*||Ax-b||^2 + lambda*||D*x||_1 */
   PetscReal j[M][N];    /* dense jacobian matrix array. For linear least square, j = A. For nonlinear least square, it is different from A */
   PetscInt  idm[M];     /* Matrix indices for jacobian */
   PetscInt  idn[N];
@@ -111,7 +114,10 @@ int main(int argc,char **argv)
   */
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  /* XH: Debug: View the result, function and Jacobian.  */
+
+  
+  /* XH: Debug: View the result, function and Jacobian.  */    
+  PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n");  
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -143,11 +149,11 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   
-  /* Even for linear least square, we do not use matrix operation f = b-A*x now, just for future modification and compatability for nonlinear least square */
+  /* Even for linear least square, we do not direct use matrix operation f = A*x - b now, just for future modification and compatability for nonlinear least square */
   for (m=0;m<M;m++) {
-    f[m] = b[m];
+    f[m] = -b[m];
     for (n=0;n<N;n++) {
-      f[m] -= user->A[m][n]*x[n];
+      f[m] += user->A[m][n]*x[n];
     }
   }
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
@@ -157,7 +163,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 }
 
 /*------------------------------------------------------------*/
-/* J[m][n] = df[m]/dt[n] */
+/* J[m][n] = df[m]/dx[n] */
 PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
@@ -168,15 +174,15 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr); /* not used for linear least square, but keep for future nonlinear least square) */
   /* For linear least square, we can just set j=A, but for nonlinear least square, we require x to compute j, keep codes here for future nonlinear least square*/
-  for (m=0;m<M;m++) {
-    for (n=0;n<N;n++) {  
+  for (m=0; m<M; m++) {
+    for (n=0; n<N; n++) {  
       user->j[m][n] = user->A[m][n];
     }
   }
 
   /* Assemble the matrix */
-  ierr = MatSetValues(J,M,user->idm, N, user->idn,(PetscReal *)user->j,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetValues(J, M, user->idm, N, user->idn, (PetscReal *)user->j, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);  /* not used for linear least square, but keep for future nonlinear least square) */
@@ -192,11 +198,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  x[0] = 0;
-  x[1] = 0;
-  x[2] = 0;
-  x[3] = 0;
-  x[4] = 0;
+  x[0] = 0; x[1] = 0; x[2] = 0; x[3] = 0; x[4] = 0;
   VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -205,7 +207,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 PetscErrorCode InitializeData(AppCtx *user)
 {
   PetscReal *b=user->b; /* **A=user->A, but we don't kown the dimension of A in this way, how to fix? */
-  PetscInt  m=0, n=0;
+  PetscInt  m=0, n=0, p=0; /* XH: coding style #7 strangely says PetscInt  m = 0,n = 0, p = 0;*/
 
   PetscFunctionBegin;
   /* b = A*x while x = [0;0;1;0;0] here*/
@@ -222,6 +224,19 @@ PetscErrorCode InitializeData(AppCtx *user)
   ++m; n=0; user->A[m][n++] = 0.91; user->A[m][n++] = 0.63; user->A[m][n++] = 0.55; user->A[m][n++] = 0.16; user->A[m][n++] = 0.49;
   ++m; n=0; user->A[m][n++] = 0.13; user->A[m][n++] = 0.10; user->A[m][n++] = 0.96; user->A[m][n++] = 0.97; user->A[m][n++] = 0.80;
   
+  /* initialize to 0 */
+  /* C99 can use: char ZEROARRAY[1024] = {0}; Can we do the same thing here?*/
+  for (p=0; p<P; p++) {
+    for (n=0; n<N; n++) {
+      user->D[p][n] = 0.0;
+    }
+  }
+  /* set D to identity matrix for testing */
+  for (n=0; n<N; n++) user->D[n][n] = 1.0;
+  /* set D to Backward difference matrix, with zero extended boundary assumption */
+  /* for (n=1;n<N;n++) user->D[n][n-1] = -1.0; */
+  
+
   PetscFunctionReturn(0);
 }
 
@@ -242,4 +257,3 @@ PetscErrorCode InitializeData(AppCtx *user)
 
 TEST*/
 
-/* XH: Done InitializeData() and FormStartingPoint()*/
