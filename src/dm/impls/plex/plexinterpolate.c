@@ -762,6 +762,10 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm)
   if (nroots < 0) PetscFunctionReturn(0);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  ierr = DMViewFromOptions(dm, NULL, "-before_fix_dm_view");CHKERRQ(ierr);
+  ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);
+#endif
   ierr = SortRmineRremoteByRemote_Private(sf, &rmine1, &rremote1);CHKERRQ(ierr);
   ierr = PetscMalloc4(nroots, &roots, nroots, &leaves, nroots, &rootsRanks, nroots, &leavesRanks);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
@@ -1107,13 +1111,6 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
     ierr = DMCopyLabels(dm, idm);CHKERRQ(ierr);
-    {
-      /* TODO temporary */
-      PetscBool flg=PETSC_FALSE;
-      ierr = PetscOptionsGetBool(NULL,NULL, "-dm_plex_check_point_sf", &flg, NULL);CHKERRQ(ierr);
-      if (flg) {ierr = DMPlexCheckPointSF(idm);CHKERRQ(ierr);}
-      ierr = DMViewFromOptions(idm, NULL, "-before_fix_dm_view");CHKERRQ(ierr);
-    }
     ierr = DMPlexOrientPointSF_Internal(idm);CHKERRQ(ierr);
   }
   {

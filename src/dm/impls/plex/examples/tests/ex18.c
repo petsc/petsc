@@ -181,10 +181,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->dim = dim;
   }
   ierr = PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  {
-    /* TODO temporary */
-    ierr = PetscOptionsBool("-dm_plex_check_point_sf", NULL, NULL, PETSC_TRUE, &flg1, NULL);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -510,10 +506,6 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-  {
-    /* TODO temporary */
-    ierr = PetscOptionsSetValue(NULL, "-dm_plex_check_point_sf", "1");CHKERRQ(ierr);
-  }
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
