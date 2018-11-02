@@ -673,6 +673,9 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
   ierr = DMPlexFixFaceOrientations_Orient_Private(coneSize, masterConeSize, masterCone, cone, &start1, &reverse1);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  if (PetscUnlikely(cone[start1] != masterCone[0])) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "The algorithm above is wrong as cone[%d] = %d != %d = masterCone[0]", start1, cone[start1], masterCone[0]);
+#endif
   if (!start1 && !reverse1) PetscFunctionReturn(0);
   /* permute p's cone and orientations */
   ierr = DMPlexGetConeOrientation(dm, p, &ornts);CHKERRQ(ierr);
@@ -680,6 +683,14 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
   ierr = DMGetWorkArray(dm, maxConeSize, MPIU_INT, &newornts);CHKERRQ(ierr);
   ierr = DMPlexFixFaceOrientations_Permute_Private(coneSize, cone, start1, reverse1, newcone);CHKERRQ(ierr);
   ierr = DMPlexFixFaceOrientations_Permute_Private(coneSize, ornts, start1, reverse1, newornts);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt c;
+    for (c = 0; c < 2; c++) {
+      if (PetscUnlikely(newcone[c] != masterCone[c])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "The algorithm above is wrong as newcone[%d] = %d != %d = masterCone[%d]", c, newcone[c], masterCone[c], c);
+    }
+  }
+#endif
   /* if direction of p (face) is flipped, flip also p's cone points (edges) */
   if (reverse1) {
     for (i=0; i<coneSize; i++) {
