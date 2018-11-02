@@ -1368,12 +1368,46 @@ static PetscErrorCode PCPatch_ScatterLocal_Private(PC pc, PetscInt p, Vec x, Vec
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
+{
+  PC_PATCH      *patch = (PC_PATCH *) pc->data;
+  const char    *prefix;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!pc->setupcalled) {
+    ierr = PetscMalloc1(patch->npatch, &patch->solver);CHKERRQ(ierr);
+    ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
+    for (i = 0; i < patch->npatch; ++i) {
+      KSP ksp;
+      PC  subpc;
+
+      ierr = KSPCreate(PETSC_COMM_SELF, &ksp);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(ksp, prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(ksp, "sub_");CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject) ksp, (PetscObject) pc, 1);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp, &subpc);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) ksp);CHKERRQ(ierr);
+      patch->solver[i] = (PetscObject) ksp;
+    }
+  }
+  if (patch->save_operators) {
+    for (i = 0; i < patch->npatch; ++i) {
+      ierr = MatZeroEntries(patch->mat[i]);CHKERRQ(ierr);
+      ierr = PCPatchComputeOperator_Internal(pc, NULL, patch->mat[i], i);CHKERRQ(ierr);
+      ierr = KSPSetOperators((KSP) patch->solver[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCSetUp_PATCH(PC pc)
 {
-  PC_PATCH       *patch   = (PC_PATCH *) pc->data;
-  PetscInt        i;
-  const char     *prefix;
-  PetscErrorCode  ierr;
+  PC_PATCH      *patch = (PC_PATCH *) pc->data;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -1469,19 +1503,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchY[p-pStart]);CHKERRQ(ierr);
       ierr = VecSetUp(patch->patchY[p-pStart]);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc1(patch->npatch, &patch->ksp);CHKERRQ(ierr);
-    ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
-    for (i = 0; i < patch->npatch; ++i) {
-      PC subpc;
-
-      ierr = KSPCreate(PETSC_COMM_SELF, &patch->ksp[i]);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(patch->ksp[i], prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(patch->ksp[i], "sub_");CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) patch->ksp[i], (PetscObject) pc, 1);CHKERRQ(ierr);
-      ierr = KSPGetPC(patch->ksp[i], &subpc);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) patch->ksp[i]);CHKERRQ(ierr);
-    }
     if (patch->save_operators) {
       ierr = PetscMalloc1(patch->npatch, &patch->mat);CHKERRQ(ierr);
       for (i = 0; i < patch->npatch; ++i) {
@@ -1504,12 +1525,39 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = VecReciprocal(patch->dof_weights);CHKERRQ(ierr);
     }
   }
-  if (patch->save_operators) {
-    for (i = 0; i < patch->npatch; ++i) {
-      ierr = MatZeroEntries(patch->mat[i]);CHKERRQ(ierr);
-      ierr = PCPatchComputeOperator_Internal(pc, NULL, patch->mat[i], i);CHKERRQ(ierr);
-      ierr = KSPSetOperators(patch->ksp[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
-    }
+  ierr = (*patch->setupsolver)(pc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
+{
+  PC_PATCH      *patch = (PC_PATCH *) pc->data;
+  KSP            ksp   = (KSP) patch->solver[i];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!patch->save_operators) {
+    Mat mat;
+
+    ierr = PCPatchCreateMatrix_Private(pc, i, &mat);CHKERRQ(ierr);
+    /* Populate operator here. */
+    ierr = PCPatchComputeOperator_Internal(pc, NULL, mat, i);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, mat, mat);CHKERRQ(ierr);
+    /* Drop reference so the KSPSetOperators below will blow it away. */
+    ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
+  if (!ksp->setfromoptionscalled) {
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  }
+  ierr = KSPSolve(ksp, x, y);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
+  if (!patch->save_operators) {
+    PC pc;
+    ierr = KSPSetOperators(ksp, NULL, NULL);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    /* Destroy PC context too, otherwise the factored matrix hangs around. */
+    ierr = PCReset(pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1561,31 +1609,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
       if (len <= 0) continue;
       /* TODO: Do we need different scatters for X and Y? */
       ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localX, patch->patchX[i], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-      if (!patch->save_operators) {
-        Mat mat;
-
-        ierr = PCPatchCreateMatrix_Private(pc, i, &mat);CHKERRQ(ierr);
-        /* Populate operator here. */
-        ierr = PCPatchComputeOperator_Internal(pc, NULL, mat, i);CHKERRQ(ierr);
-        ierr = KSPSetOperators(patch->ksp[i], mat, mat);CHKERRQ(ierr);
-        /* Drop reference so the KSPSetOperators below will blow it away. */
-        ierr = MatDestroy(&mat);CHKERRQ(ierr);
-      }
-      ierr = PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
-      if (!patch->ksp[i]->setfromoptionscalled) {
-        ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);
-      }
-      ierr = KSPSolve(patch->ksp[i], patch->patchX[i], patch->patchY[i]);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
-
-      if (!patch->save_operators) {
-        PC pc;
-        ierr = KSPSetOperators(patch->ksp[i], NULL, NULL);CHKERRQ(ierr);
-        ierr = KSPGetPC(patch->ksp[i], &pc);CHKERRQ(ierr);
-        /* Destroy PC context too, otherwise the factored matrix hangs around. */
-        ierr = PCReset(pc);CHKERRQ(ierr);
-      }
-
+      ierr = (*patch->applysolver)(pc, i, patch->patchX[i], patch->patchY[i]);CHKERRQ(ierr);
       ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchY[i], patch->localY, ADD_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
     }
   }
@@ -1621,6 +1645,19 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCReset_PATCH_Linear(PC pc)
+{
+  PC_PATCH      *patch = (PC_PATCH *) pc->data;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (patch->solver) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = KSPReset((KSP) patch->solver[i]);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCReset_PATCH(PC pc)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
@@ -1651,9 +1688,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   ierr = PetscFree(patch->cellNodeMap);CHKERRQ(ierr);
   ierr = PetscFree(patch->subspaceOffsets);CHKERRQ(ierr);
 
-  if (patch->ksp) {
-    for (i = 0; i < patch->npatch; ++i) {ierr = KSPReset(patch->ksp[i]);CHKERRQ(ierr);}
-  }
+  ierr = (*patch->resetsolver)(pc);CHKERRQ(ierr);
 
   if (patch->subspaces_to_exclude) {
     PetscHSetIDestroy(&patch->subspaces_to_exclude);
@@ -1692,18 +1727,28 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_PATCH(PC pc)
+static PetscErrorCode PCDestroy_PATCH_Linear(PC pc)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_PATCH(pc);CHKERRQ(ierr);
-  if (patch->ksp) {
-    for (i = 0; i < patch->npatch; ++i) {ierr = KSPDestroy(&patch->ksp[i]);CHKERRQ(ierr);}
-    ierr = PetscFree(patch->ksp);CHKERRQ(ierr);
+  if (patch->solver) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = KSPDestroy((KSP *) &patch->solver[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(patch->solver);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCDestroy_PATCH(PC pc)
+{
+  PC_PATCH      *patch = (PC_PATCH *) pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_PATCH(pc);CHKERRQ(ierr);
+  ierr = (*patch->destroysolver)(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1777,11 +1822,11 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
     PetscFunctionReturn(0);
   }
   for (i = 0; i < patch->npatch; ++i) {
-    if (!patch->ksp[i]->setfromoptionscalled) {
-      ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);
+    if (!((KSP) patch->solver[i])->setfromoptionscalled) {
+      ierr = KSPSetFromOptions((KSP) patch->solver[i]);CHKERRQ(ierr);
     }
-    ierr = KSPSetUp(patch->ksp[i]);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(patch->ksp[i], &reason);CHKERRQ(ierr);
+    ierr = KSPSetUp((KSP) patch->solver[i]);CHKERRQ(ierr);
+    ierr = KSPGetConvergedReason((KSP) patch->solver[i], &reason);CHKERRQ(ierr);
     if (reason == KSP_DIVERGED_PCSETUP_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
@@ -1813,18 +1858,18 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   else if (patch->patchconstructop == PCPatchConstruct_Vanka) {ierr = PetscViewerASCIIPrintf(viewer, "Patch construction operator: Vanka\n");CHKERRQ(ierr);}
   else if (patch->patchconstructop == PCPatchConstruct_User)  {ierr = PetscViewerASCIIPrintf(viewer, "Patch construction operator: user-specified\n");CHKERRQ(ierr);}
   else                                                        {ierr = PetscViewerASCIIPrintf(viewer, "Patch construction operator: unknown\n");CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPrintf(viewer, "KSP on patches (all same):\n");CHKERRQ(ierr);
-  if (patch->ksp) {
+  ierr = PetscViewerASCIIPrintf(viewer, "Solver on patches (all same):\n");CHKERRQ(ierr);
+  if (patch->solver) {
     ierr = PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
-      ierr = KSPView(patch->ksp[0], sviewer);CHKERRQ(ierr);
+      ierr = PetscObjectView(patch->solver[0], sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "KSP not yet set.\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Solver not yet set.\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -1881,6 +1926,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->viewPoints         = PETSC_FALSE;
   patch->viewSection        = PETSC_FALSE;
   patch->viewMatrix         = PETSC_FALSE;
+  patch->setupsolver        = PCSetUp_PATCH_Linear;
+  patch->applysolver        = PCApply_PATCH_Linear;
+  patch->resetsolver        = PCReset_PATCH_Linear;
+  patch->destroysolver      = PCDestroy_PATCH_Linear;
 
   pc->data                 = (void *) patch;
   pc->ops->apply           = PCApply_PATCH;

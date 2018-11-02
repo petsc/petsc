@@ -52,7 +52,6 @@ typedef struct {
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */
   /* Patch solves */
-  KSP                 *ksp;                /* Solvers for each patch TODO Do we need a new KSP for each patch? */
   Mat                 *mat;                /* System matrix for each patch */
   MatType              sub_mat_type;       /* Matrix type for patch systems */
   Vec                 *patchX, *patchY;    /* RHS and solution for each patch */
@@ -62,6 +61,12 @@ typedef struct {
   PetscBool            symmetrise_sweep;   /* Should we sweep forwards->backwards, backwards->forwards? */
   PetscBool            optionsSet;         /* SetFromOptions was called on this PC */
   IS                   iterationSet;       /* Index set specifying how we iterate over patches */
+  PetscInt             currentPatch;       /* The current patch number when iterating */
+  PetscObject         *solver;             /* Solvers for each patch TODO Do we need a new KSP for each patch? */
+  PetscErrorCode     (*setupsolver)(PC);
+  PetscErrorCode     (*applysolver)(PC, PetscInt, Vec, Vec);
+  PetscErrorCode     (*resetsolver)(PC);
+  PetscErrorCode     (*destroysolver)(PC);
   /* Monitoring */
   PetscBool            viewPatches;        /* View information about patch construction */
   PetscBool            viewCells;          /* View cells for each patch */
