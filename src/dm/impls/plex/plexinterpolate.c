@@ -822,7 +822,7 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm)
       PetscInt masterCone[2];
       /* Translate these two cone points back to leave numbering */
       for (c = 0; c < 2; c++) {
-        if (leavesRanks[p][c] == rank) continue;
+        if (leavesRanks[p][c] == rank) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "this should never happen - remote rank of point %D is the same rank",leavesRanks[p][c]);
         /* Find index of rank leavesRanks[p][c] among remote ranks */
         /* No need for PetscMPIIntCast because these integers were originally cast from PetscMPIInt. */
         ierr = PetscFindMPIInt((PetscMPIInt)leavesRanks[p][c], nranks, ranks, &r);CHKERRQ(ierr);
