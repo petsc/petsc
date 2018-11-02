@@ -737,8 +737,9 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
+static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm)
 {
+  PetscSF           sf;
   PetscInt          (*roots)[2], (*leaves)[2];
   PetscMPIInt       (*rootsRanks)[2], (*leavesRanks)[2];
   const PetscInt    *locals;
@@ -756,6 +757,7 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes);CHKERRQ(ierr);
   if (nroots < 0) PetscFunctionReturn(0);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
@@ -1112,8 +1114,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
       if (flg) {ierr = DMPlexCheckPointSF(idm);CHKERRQ(ierr);}
       ierr = DMViewFromOptions(idm, NULL, "-before_fix_dm_view");CHKERRQ(ierr);
     }
-    ierr = DMGetPointSF(idm, &sfPoint);CHKERRQ(ierr);
-    ierr = DMPlexOrientPointSF_Internal(idm, sfPoint);CHKERRQ(ierr);
+    ierr = DMPlexOrientPointSF_Internal(idm);CHKERRQ(ierr);
   }
   {
     PetscBool            isper;
