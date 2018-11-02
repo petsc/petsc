@@ -7,24 +7,34 @@
      user should give the indexes for both slow and fast components;
   2) The general system is written as
      Usdot = Fs(t,Us,Uf)
-     Ufdot = Ff(t,Us,Uf) for split  RHS multi-rate RK,
+     Ufdot = Ff(t,Us,Uf) for split RHS multi-rate RK,
      user should partioned RHS by themselves and also provide the indexes for both slow and fast components.
+  3) To correct The confusing terminology in the paper, we use 'slow method', 'slow buffer method' and 'fast method' to denote the methods applied to 'slow region', 'slow buffer region' and 'fast region' respectively. The 'slow method' in the original paper actually means the 'slow buffer method'.
+  4) Why does the buffer region have to be inside the slow region? The buffer region is treated with a slow method essentially. Applying the slow method to a region with a fast characteristic time scale is apparently not a good choice.
+
+  Reference:
+  Emil M. Constantinescu, Adrian Sandu, Multirate Timestepping Methods for Hyperbolic Conservation Laws, Journal of Scientific Computing 2007
+
 */
 
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
-static TSMPRKType TSMPRKDefault = TSMPRKPM2;
+static TSMPRKType TSMPRKDefault = TSMPRK2A22;
 static PetscBool TSMPRKRegisterAllCalled;
 static PetscBool TSMPRKPackageInitialized;
 
 typedef struct _MPRKTableau *MPRKTableau;
 struct _MPRKTableau {
-  char       *name;
-  PetscInt   order;                          /* Classical approximation order of the method i  */
-  PetscInt   s;                              /* Number of stages                               */
-  PetscReal  *Af,*bf,*cf;                    /* Tableau for fast components                    */
-  PetscReal  *As,*bs,*cs;                    /* Tableau for slow components                    */
+  char      *name;
+  PetscInt  order;                          /* Classical approximation order of the method i */
+  PetscInt  s;                              /* Number of stages */
+  PetscInt  np;                             /* Number of partitions */
+  PetscReal *Af,*bf,*cf;                    /* Tableau for fast components */
+  PetscReal *Amb,*bmb,*cmb;                 /* Tableau for medium components */
+  PetscInt  *rmb;                           /* Array of flags for repeated stages in medium method */
+  PetscReal *Asb,*bsb,*csb;                 /* Tableau for slow components */
+  PetscInt  *rsb;                           /* Array of flags for repeated staged in slow method*/
 };
 typedef struct _MPRKTableauLink *MPRKTableauLink;
 struct _MPRKTableauLink {
@@ -34,36 +44,139 @@ struct _MPRKTableauLink {
 static MPRKTableauLink MPRKTableauList;
 
 typedef struct {
-  MPRKTableau          tableau;
+  MPRKTableau         tableau;
   TSMPRKMultirateType mprkmtype;
   Vec                 *Y;                          /* States computed during the step                           */
   Vec                 Ytmp;
-  Vec                 *YdotRHS_fast;               /* Function evaluations by fast tableau for fast components  */
   Vec                 *YdotRHS_slow;               /* Function evaluations by slow tableau for slow components  */
-  PetscScalar         *work_fast;                  /* Scalar work_fast by fast tableau                          */
+  Vec                 *YdotRHS_slowbuffer;         /* Function evaluations by slow tableau for slow components  */
+  Vec                 *YdotRHS_medium;             /* Function evaluations by slow tableau for slow components  */
+  Vec                 *YdotRHS_mediumbuffer;       /* Function evaluations by slow tableau for slow components  */
+  Vec                 *YdotRHS_fast;               /* Function evaluations by fast tableau for fast components  */
   PetscScalar         *work_slow;                  /* Scalar work_slow by slow tableau                          */
+  PetscScalar         *work_slowbuffer;            /* Scalar work_slow by slow tableau                          */
+  PetscScalar         *work_medium;                /* Scalar work_slow by medium tableau                        */
+  PetscScalar         *work_mediumbuffer;          /* Scalar work_slow by medium tableau                        */
+  PetscScalar         *work_fast;                  /* Scalar work_fast by fast tableau                          */
   PetscReal           stage_time;
   TSStepStatus        status;
   PetscReal           ptime;
   PetscReal           time_step;
-  IS                  is_slow,is_fast;
-  TS                  subts_slow,subts_fast;
+  IS                  is_slow,is_slowbuffer,is_medium,is_mediumbuffer,is_fast;
+  TS                  subts_slow,subts_slowbuffer,subts_medium,subts_mediumbuffer,subts_fast;
 } TS_MPRK;
 
+static PetscErrorCode TSMPRKGenerateTableau2(PetscInt ratio,PetscInt s,const PetscReal Abase[],const PetscReal bbase[],PetscReal A1[],PetscReal b1[],PetscReal A2[],PetscReal b2[])
+{
+  PetscInt i,j,k,l;
+
+  PetscFunctionBegin;
+  for (k=0; k<ratio; k++) {
+    /* diagonal blocks */
+    for (i=0; i<s; i++)
+      for (j=0; j<s; j++) {
+        A1[(k*s+i)*ratio*s+k*s+j] = Abase[i*s+j];
+        A2[(k*s+i)*ratio*s+k*s+j] = Abase[i*s+j]/ratio;
+      }
+    /* off diagonal blocks */
+    for (l=0; l<k; l++)
+      for (i=0; i<s; i++)
+        for (j=0; j<s; j++)
+          A2[(k*s+i)*ratio*s+l*s+j] = bbase[j]/ratio;
+    for (j=0; j<s; j++) {
+      b1[k*s+j] = bbase[j]/ratio;
+      b2[k*s+j] = bbase[j]/ratio;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio,PetscInt s,const PetscReal Abase[],const PetscReal bbase[],PetscReal A1[],PetscReal b1[],PetscReal A2[],PetscReal b2[],PetscReal A3[],PetscReal b3[])
+{
+  PetscInt i,j,k,l,m,n;
+
+  PetscFunctionBegin;
+  for (k=0; k<ratio; k++) { /* diagonal blocks of size ratio*s by ratio*s */
+    for (l=0; l<ratio; l++) /* diagonal sub-blocks of size s by s */
+      for (i=0; i<s; i++)
+        for (j=0; j<s; j++) {
+          A1[((k*ratio+l)*s+i)*ratio*ratio*s+(k*ratio+l)*s+j] = Abase[i*s+j];
+          A2[((k*ratio+l)*s+i)*ratio*ratio*s+(k*ratio+l)*s+j] = Abase[i*s+j]/ratio;
+          A3[((k*ratio+l)*s+i)*ratio*ratio*s+(k*ratio+l)*s+j] = Abase[i*s+j]/ratio/ratio;
+        }
+    for (l=0; l<k; l++) /* off-diagonal blocks of size ratio*s by ratio*s */
+      for (m=0; m<ratio; m++)
+        for (n=0; n<ratio; n++)
+          for (i=0; i<s; i++)
+            for (j=0; j<s; j++) {
+               A2[((k*ratio+m)*s+i)*ratio*ratio*s+(l*ratio+n)*s+j] = bbase[j]/ratio/ratio;
+               A3[((k*ratio+m)*s+i)*ratio*ratio*s+(l*ratio+n)*s+j] = bbase[j]/ratio/ratio;
+            }
+    for (m=0; m<ratio; m++)
+      for (n=0; n<m; n++) /* off-diagonal sub-blocks of size s by s in the diagonal blocks */
+          for (i=0; i<s; i++)
+            for (j=0; j<s; j++)
+               A3[((k*ratio+m)*s+i)*ratio*ratio*s+(k*ratio+n)*s+j] = bbase[j]/ratio/ratio;
+    for (n=0; n<ratio; n++)
+      for (j=0; j<s; j++) {
+        b1[(k*ratio+n)*s+j] = bbase[j]/ratio/ratio;
+        b2[(k*ratio+n)*s+j] = bbase[j]/ratio/ratio;
+        b3[(k*ratio+n)*s+j] = bbase[j]/ratio/ratio;
+      }
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
-     TSMPRKPM2 - Second Order Partitioned Runge Kutta scheme.
+     TSMPRK2A22 - Second Order Partitioned Runge Kutta scheme based on RK2A.
 
-     This method has four stages for both slow and fast parts.
-
+     This method has four stages for slow and fast parts. The refinement factor of the stepsize is 2.
+     r = 2, np = 2
      Options database:
-.     -ts_mprk_type pm2
+.     -ts_mprk_type 2a22
 
      Level: advanced
 
 .seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
 M*/
 /*MC
-     TSMPRKPM3 - Third Order Partitioned Runge Kutta scheme.
+     TSMPRK2A23 - Second Order Partitioned Runge Kutta scheme based on RK2A.
+
+     This method has eight stages for slow and medium and fast parts. The refinement factor of the stepsize is 2.
+     r = 2, np = 3
+     Options database:
+.     -ts_mprk_type 2a23
+
+     Level: advanced
+
+.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+M*/
+/*MC
+     TSMPRK2A32 - Second Order Partitioned Runge Kutta scheme based on RK2A.
+
+     This method has four stages for slow and fast parts. The refinement factor of the stepsize is 3.
+     r = 3, np = 2
+     Options database:
+.     -ts_mprk_type 2a32
+
+     Level: advanced
+
+.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+M*/
+/*MC
+     TSMPRK2A33 - Second Order Partitioned Runge Kutta scheme based on RK2A.
+
+     This method has eight stages for slow and medium and fast parts. The refinement factor of the stepsize is 3.
+     r = 3, np = 3
+     Options database:
+.     -ts_mprk_type 2a33
+
+     Level: advanced
+
+.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+M*/
+/*MC
+     TSMPRK3P2M - Third Order Partitioned Runge Kutta scheme.
 
      This method has eight stages for both slow and fast parts.
 
@@ -121,19 +234,82 @@ PetscErrorCode TSMPRKRegisterAll(void)
 #define RC PetscRealConstant
   {
     const PetscReal
-      As[4][4] = {{0,0,0,0},
-                  {RC(1.0),0,0,0},
-                  {0,0,0,0},
-                  {0,0,RC(1.0),0}},
-      A[4][4]  = {{0,0,0,0},
-                  {RC(0.5),0,0,0},
-                  {RC(0.25),RC(0.25),0,0},
-                  {RC(0.25),RC(0.25),RC(0.5),0}},
-      bs[4]    = {RC(0.25),RC(0.25),RC(0.25),RC(0.25)},
-      b[4]     = {RC(0.25),RC(0.25),RC(0.25),RC(0.25)};
-    ierr = TSMPRKRegister(TSMPRKPM2,2,4,&As[0][0],bs,NULL,&A[0][0],b,NULL);CHKERRQ(ierr);
+      Abase[2][2] = {{0,0},
+                     {RC(1.0),0}},
+      bbase[2] = {RC(0.5),RC(0.5)};
+    PetscReal
+      Asb[4][4] = {{0}},Af[4][4] = {{0}},bsb[4] = {0},bf[4] = {0};
+    PetscInt
+      rsb[4] = {0,0,1,2};
+    ierr = TSMPRKGenerateTableau2(2,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Af[0][0],bf);CHKERRQ(ierr);
+    ierr = TSMPRKRegister(TSMPRK2A22,2,4,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL);CHKERRQ(ierr);
   }
-
+  {
+    const PetscReal
+      Abase[2][2] = {{0,0},
+                     {RC(1.0),0}},
+      bbase[2]    = {RC(0.5),RC(0.5)};
+    PetscReal
+      Asb[8][8] = {{0}},Amb[8][8] = {{0}},Af[8][8] = {{0}},bsb[8] ={0},bmb[8] = {0},bf[8] = {0};
+    PetscInt
+      rsb[8] = {0,0,1,2,1,2,1,2},rmb[8] = {0,0,1,2,0,0,5,6};
+    ierr = TSMPRKGenerateTableau3(2,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Amb[0][0],bmb,&Af[0][0],bf);CHKERRQ(ierr);
+    ierr = TSMPRKRegister(TSMPRK2A23,2,8,&Asb[0][0],bsb,NULL,rsb,&Amb[0][0],bmb,NULL,rmb,&Af[0][0],bf,NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal
+      Abase[2][2] = {{0,0},
+                     {RC(1.0),0}},
+      bbase[2]    = {RC(0.5),RC(0.5)};
+    PetscReal
+      Asb[6][6] = {{0}},Af[6][6] = {{0}},bsb[6] = {0},bf[6] = {0};
+    PetscInt
+      rsb[6] = {0,0,1,2,1,2};
+    ierr = TSMPRKGenerateTableau2(3,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Af[0][0],bf);CHKERRQ(ierr);
+    ierr = TSMPRKRegister(TSMPRK2A32,2,6,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal
+      Abase[2][2] = {{0,0},
+                     {RC(1.0),0}},
+      bbase[2]    = {RC(0.5),RC(0.5)};
+    PetscReal
+      Asb[18][18] = {{0}},Amb[18][18] = {{0}},Af[18][18] = {{0}},bsb[18] ={0},bmb[18] = {0},bf[18] = {0};
+    PetscInt
+      rsb[18] = {0,0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2},rmb[18] = {0,0,1,2,1,2,0,0,7,8,7,8,0,0,13,14,13,14};
+    ierr = TSMPRKGenerateTableau3(3,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Amb[0][0],bmb,&Af[0][0],bf);CHKERRQ(ierr);
+    ierr = TSMPRKRegister(TSMPRK2A33,2,18,&Asb[0][0],bsb,NULL,rsb,&Amb[0][0],bmb,NULL,rmb,&Af[0][0],bf,NULL);CHKERRQ(ierr);
+  }
+/*
+    PetscReal
+      Asb[8][8] = {{Abase[0][0],Abase[0][1],0,0,0,0,0,0},
+                   {Abase[1][0],Abase[1][1],0,0,0,0,0,0},
+                   {0,0,Abase[0][0],Abase[0][1],0,0,0,0},
+                   {0,0,Abase[1][0],Abase[1][1],0,0,0,0},
+                   {0,0,0,0,Abase[0][0],Abase[0][1],0,0},
+                   {0,0,0,0,Abase[1][0],Abase[1][1],0,0},
+                   {0,0,0,0,0,0,Abase[0][0],Abase[0][1]},
+                   {0,0,0,0,0,0,Abase[1][0],Abase[1][1]}},
+      Amb[8][8] = {{Abase[0][0]/m,Abase[0][1]/m,0,0,0,0,0,0},
+                   {Abase[1][0]/m,Abase[1][1]/m,0,0,0,0,0,0},
+                   {0,0,Abase[0][0]/m,Abase[0][1]/m,0,0,0,0},
+                   {0,0,Abase[1][0]/m,Abase[1][1]/m,0,0,0,0},
+                   {bbase[0]/m,bbase[1]/m,bbase[0]/m,bbase[1]/m,Abase[0][0]/m,Abase[0][1]/m,0,0},
+                   {bbase[0]/m,bbase[1]/m,bbase[0]/m,bbase[1]/m,Abase[1][0]/m,Abase[1][1]/m,0,0},
+                   {bbase[0]/m,bbase[1]/m,bbase[0]/m,bbase[1]/m,0,0,Abase[0][0]/m,Abase[0][1]/m},
+                   {bbase[0]/m,bbase[1]/m,bbase[0]/m,bbase[1]/m,0,0,Abase[1][0]/m,Abase[1][1]/m}},
+      Af[8][8] = {{Abase[0][0]/m/m,Abase[0][1]/m/m,0,0,0,0,0,0},
+                   {Abase[1][0]/m/m,Abase[1][1]/m/m,0,0,0,0,0,0},
+                   {0,0,Abase[0][0]/m/m,Abase[0][1]/m/m,0,0,0,0},
+                   {0,0,Abase[1][0]/m/m,Abase[1][1]/m/m,0,0,0,0},
+                   {bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,Abase[0][0]/m/m,Abase[0][1]/m/m,0,0},
+                   {bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,Abase[1][0]/m/m,Abase[1][1]/m/m,0,0},
+                   {bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,Abase[0][0]/m,Abase[0][1]/m},
+                   {bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,Abase[1][0]/m,Abase[1][1]/m}},
+      bsb[8]    = {bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m},
+      bmb[8]    = {bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m,bbase[1]/m/m},
+      bf[8]     = {bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m/m,bbase[0]/m/m,bbase[1]/m,bbase[0]/m/m,bbase[1]/m/m},
+*/
   /*{
       const PetscReal
         As[8][8] = {{0,0,0,0,0,0,0,0},
@@ -159,46 +335,50 @@ PetscErrorCode TSMPRKRegisterAll(void)
 
   {
     const PetscReal
-      As[5][5] = {{0,0,0,0,0},
-                  {RC(1.0)/RC(2.0),0,0,0,0},
-                  {RC(1.0)/RC(2.0),0,0,0,0},
-                  {RC(1.0),0,0,0,0},
-                  {RC(1.0),0,0,0,0}},
-      A[5][5]  = {{0,0,0,0,0},
-                  {RC(1.0)/RC(2.0),0,0,0,0},
-                  {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),0,0,0},
-                  {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(2.0),0,0},
-                  {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),0}},
-      bs[5]     = {RC(1.0)/RC(2.0),0,0,0,RC(1.0)/RC(2.0)},
-      b[5]      = {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),0};
-    ierr = TSMPRKRegister(TSMPRKP2,2,5,&As[0][0],bs,NULL,&A[0][0],b,NULL);CHKERRQ(ierr);
+      Asb[5][5] = {{0,0,0,0,0},
+                   {RC(1.0)/RC(2.0),0,0,0,0},
+                   {RC(1.0)/RC(2.0),0,0,0,0},
+                   {RC(1.0),0,0,0,0},
+                   {RC(1.0),0,0,0,0}},
+      Af[5][5]  = {{0,0,0,0,0},
+                   {RC(1.0)/RC(2.0),0,0,0,0},
+                   {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),0,0,0},
+                   {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(2.0),0,0},
+                   {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),0}},
+      bsb[5]    = {RC(1.0)/RC(2.0),0,0,0,RC(1.0)/RC(2.0)},
+      bf[5]     = {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),0};
+    const PetscInt
+      rsb[5]    = {0,0,2,0,4};
+    ierr = TSMPRKRegister(TSMPRKP2,2,5,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL);CHKERRQ(ierr);
   }
 
   {
     const PetscReal
-      As[10][10] = {{0,0,0,0,0,0,0,0,0,0},
-                    {RC(1.0)/RC(4.0),0,0,0,0,0,0,0,0,0},
-                    {RC(1.0)/RC(4.0),0,0,0,0,0,0,0,0,0},
-                    {RC(1.0)/RC(2.0),0,0,0,0,0,0,0,0,0},
-                    {RC(1.0)/RC(2.0),0,0,0,0,0,0,0,0,0},
-                    {RC(-1.0)/RC(6.0),0,0,0,RC(2.0)/RC(3.0),0,0,0,0,0},
-                    {RC(1.0)/RC(12.0),0,0,0,RC(1.0)/RC(6.0),RC(1.0)/RC(2.0),0,0,0,0},
-                    {RC(1.0)/RC(12.0),0,0,0,RC(1.0)/RC(6.0),RC(1.0)/RC(2.0),0,0,0,0},
-                    {RC(1.0)/RC(3.0),0,0,0,RC(-1.0)/RC(3.0),RC(1.0),0,0,0,0},
-                    {RC(1.0)/RC(3.0),0,0,0,RC(-1.0)/RC(3.0),RC(1.0),0,0,0,0}},
-      A[10][10]  = {{0,0,0,0,0,0,0,0,0,0},
-                    {RC(1.0)/RC(4.0),0,0,0,0,0,0,0,0,0},
-                    {RC(-1.0)/RC(12.0),RC(1.0)/RC(3.0),0,0,0,0,0,0,0,0},
-                    {RC(1.0)/RC(6.0),RC(-1.0)/RC(6.0),RC(1.0)/RC(2.0),0,0,0,0,0,0,0},
-                    {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,0,0,0,0,0},
-                    {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,0,0,0,0,0},
-                    {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(4.0),0,0,0,0},
-                    {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(-1.0)/RC(12.0),RC(1.0)/RC(3.0),0,0,0},
-                    {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(6.0),RC(-1.0)/RC(6.0),RC(1.0)/RC(2.0),0,0},
-                    {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0}},
-      bs[10]     = {RC(1.0)/RC(6.0),0,0,0,RC(1.0)/RC(3.0),RC(1.0)/RC(3.0),0,0,0,RC(1.0)/RC(6.0)},
-      b[10]      = {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0};
-    ierr = TSMPRKRegister(TSMPRKP3,3,10,&As[0][0],bs,NULL,&A[0][0],b,NULL);CHKERRQ(ierr);
+      Asb[10][10] = {{0,0,0,0,0,0,0,0,0,0},
+                     {RC(1.0)/RC(4.0),0,0,0,0,0,0,0,0,0},
+                     {RC(1.0)/RC(4.0),0,0,0,0,0,0,0,0,0},
+                     {RC(1.0)/RC(2.0),0,0,0,0,0,0,0,0,0},
+                     {RC(1.0)/RC(2.0),0,0,0,0,0,0,0,0,0},
+                     {RC(-1.0)/RC(6.0),0,0,0,RC(2.0)/RC(3.0),0,0,0,0,0},
+                     {RC(1.0)/RC(12.0),0,0,0,RC(1.0)/RC(6.0),RC(1.0)/RC(2.0),0,0,0,0},
+                     {RC(1.0)/RC(12.0),0,0,0,RC(1.0)/RC(6.0),RC(1.0)/RC(2.0),0,0,0,0},
+                     {RC(1.0)/RC(3.0),0,0,0,RC(-1.0)/RC(3.0),RC(1.0),0,0,0,0},
+                     {RC(1.0)/RC(3.0),0,0,0,RC(-1.0)/RC(3.0),RC(1.0),0,0,0,0}},
+      Af[10][10]  = {{0,0,0,0,0,0,0,0,0,0},
+                     {RC(1.0)/RC(4.0),0,0,0,0,0,0,0,0,0},
+                     {RC(-1.0)/RC(12.0),RC(1.0)/RC(3.0),0,0,0,0,0,0,0,0},
+                     {RC(1.0)/RC(6.0),RC(-1.0)/RC(6.0),RC(1.0)/RC(2.0),0,0,0,0,0,0,0},
+                     {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,0,0,0,0,0},
+                     {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,0,0,0,0,0},
+                     {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(4.0),0,0,0,0},
+                     {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(-1.0)/RC(12.0),RC(1.0)/RC(3.0),0,0,0},
+                     {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(6.0),RC(-1.0)/RC(6.0),RC(1.0)/RC(2.0),0,0},
+                     {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0}},
+      bsb[10]     = {RC(1.0)/RC(6.0),0,0,0,RC(1.0)/RC(3.0),RC(1.0)/RC(3.0),0,0,0,RC(1.0)/RC(6.0)},
+      bf[10]      = {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0};
+    const PetscInt
+      rsb[10]     = {0,0,2,0,4,0,0,7,0,9};
+    ierr = TSMPRKRegister(TSMPRKP3,3,10,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL);CHKERRQ(ierr);
   }
 #undef RC
   PetscFunctionReturn(0);
@@ -223,8 +403,10 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
   while ((link = MPRKTableauList)) {
     MPRKTableau t = &link->tab;
     MPRKTableauList = link->next;
+    ierr = PetscFree3(t->Asb,t->bsb,t->csb);CHKERRQ(ierr);
+    ierr = PetscFree3(t->Amb,t->bmb,t->cmb);CHKERRQ(ierr);
     ierr = PetscFree3(t->Af,t->bf,t->cf);CHKERRQ(ierr);
-    ierr = PetscFree3(t->As,t->bs,t->cs);CHKERRQ(ierr);
+    ierr = PetscFree2(t->rsb,t->rmb);CHKERRQ(ierr);
     ierr = PetscFree (t->name);CHKERRQ(ierr);
     ierr = PetscFree (link);CHKERRQ(ierr);
   }
@@ -299,7 +481,8 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 .seealso: TSMPRK
 @*/
 PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,PetscInt s,
-                              const PetscReal As[],const PetscReal bs[],const PetscReal cs[],
+                              const PetscReal Asb[],const PetscReal bsb[],const PetscReal csb[],const PetscInt rsb[],
+                              const PetscReal Amb[],const PetscReal bmb[],const PetscReal cmb[],const PetscInt rmb[],
                               const PetscReal Af[],const PetscReal bf[],const PetscReal cf[])
 {
   MPRKTableauLink link;
@@ -309,48 +492,77 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,PetscInt s,
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
-  PetscValidRealPointer(Af,7);
+  PetscValidRealPointer(Asb,4);
+  if (bsb) PetscValidRealPointer(bsb,5);
+  if (csb) PetscValidRealPointer(csb,6);
+  if (rsb) PetscValidRealPointer(rsb,7);
+  if (Amb) PetscValidRealPointer(Amb,8);
+  if (bmb) PetscValidRealPointer(bmb,9);
+  if (cmb) PetscValidRealPointer(cmb,10);
+  if (rmb) PetscValidRealPointer(rmb,11);
+  PetscValidRealPointer(Af,12);
   if (bf) PetscValidRealPointer(bf,8);
   if (cf) PetscValidRealPointer(cf,9);
-  PetscValidRealPointer(As,4);
-  if (bs) PetscValidRealPointer(bs,5);
-  if (cs) PetscValidRealPointer(cs,6);
 
   ierr = PetscNew(&link);CHKERRQ(ierr);
   t = &link->tab;
 
   ierr = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
-  t->s = s;
+  t->s  = s;
+  t->np = 2;
   ierr = PetscMalloc3(s*s,&t->Af,s,&t->bf,s,&t->cf);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->Af,Af,s*s*sizeof(Af[0]));CHKERRQ(ierr);
   if (bf) {
     ierr = PetscMemcpy(t->bf,bf,s*sizeof(bf[0]));CHKERRQ(ierr);
-  }
-  else
+  } else
     for (i=0; i<s; i++) t->bf[i] = Af[(s-1)*s+i];
   if (cf) {
     ierr = PetscMemcpy(t->cf,cf,s*sizeof(cf[0]));CHKERRQ(ierr);
-  }
-  else {
+  } else {
     for (i=0; i<s; i++)
       for (j=0,t->cf[i]=0; j<s; j++)
         t->cf[i] += Af[i*s+j];
   }
-  ierr = PetscMalloc3(s*s,&t->As,s,&t->bs,s,&t->cs);CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->As,As,s*s*sizeof(As[0]));CHKERRQ(ierr);
-  if (bs) {
-    ierr = PetscMemcpy(t->bs,bs,s*sizeof(bs[0]));CHKERRQ(ierr);
+
+  if (Amb) {
+    t->np = 3;
+    ierr = PetscMalloc3(s*s,&t->Amb,s,&t->bmb,s,&t->cmb);CHKERRQ(ierr);
+    ierr = PetscCalloc1(s,&t->rmb);CHKERRQ(ierr);
+    ierr = PetscMemcpy(t->Amb,Amb,s*s*sizeof(Amb[0]));CHKERRQ(ierr);
+    if (bmb) {
+      ierr = PetscMemcpy(t->bmb,bmb,s*sizeof(bmb[0]));CHKERRQ(ierr);
+    } else {
+      for (i=0; i<s; i++) t->bmb[i] = Amb[(s-1)*s+i];
+    }
+    if (cmb) {
+      ierr = PetscMemcpy(t->cmb,cmb,s*sizeof(cmb[0]));CHKERRQ(ierr);
+    } else {
+      for (i=0; i<s; i++)
+        for (j=0,t->cmb[i]=0; j<s; j++)
+          t->cmb[i] += Amb[i*s+j];
+    }
+    if (rmb) {
+      ierr = PetscMemcpy(t->rmb,rmb,s*sizeof(rmb[0]));CHKERRQ(ierr);
+    }
   }
-  else
-    for (i=0; i<s; i++) t->bs[i] = As[(s-1)*s+i];
-  if (cs) {
-    ierr = PetscMemcpy(t->cs,cs,s*sizeof(cs[0]));CHKERRQ(ierr);
-  }
-  else {
+
+  ierr = PetscMalloc3(s*s,&t->Asb,s,&t->bsb,s,&t->csb);CHKERRQ(ierr);
+  ierr = PetscMemcpy(t->Asb,Asb,s*s*sizeof(Asb[0]));CHKERRQ(ierr);
+  ierr = PetscCalloc1(s,&t->rsb);CHKERRQ(ierr);
+  if (bsb) {
+    ierr = PetscMemcpy(t->bsb,bsb,s*sizeof(bsb[0]));CHKERRQ(ierr);
+  } else
+    for (i=0; i<s; i++) t->bsb[i] = Asb[(s-1)*s+i];
+  if (csb) {
+    ierr = PetscMemcpy(t->csb,csb,s*sizeof(csb[0]));CHKERRQ(ierr);
+  } else {
     for (i=0; i<s; i++)
-      for (j=0,t->cs[i]=0; j<s; j++)
-        t->cs[i] += As[i*s+j];
+      for (j=0,t->csb[i]=0; j<s; j++)
+        t->csb[i] += Asb[i*s+j];
+  }
+  if (rsb) {
+    ierr = PetscMemcpy(t->rsb,rsb,s*sizeof(rsb[0]));CHKERRQ(ierr);
   }
   link->next = MPRKTableauList;
   MPRKTableauList = link;
@@ -360,6 +572,7 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,PetscInt s,
 static PetscErrorCode TSMPRKSetSplits(TS ts)
 {
   TS_MPRK        *mprk = (TS_MPRK*)ts->data;
+  MPRKTableau    tab = mprk->tableau;
   DM             dm,subdm,newdm;
   PetscErrorCode ierr;
 
@@ -368,20 +581,58 @@ static PetscErrorCode TSMPRKSetSplits(TS ts)
   ierr = TSRHSSplitGetSubTS(ts,"fast",&mprk->subts_fast);CHKERRQ(ierr);
   if (!mprk->subts_slow || !mprk->subts_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
 
-  /* Only copy */
+  /* Only copy the DM */
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+
+  ierr = TSRHSSplitGetSubTS(ts,"slowbuffer",&mprk->subts_slowbuffer);CHKERRQ(ierr);
+  if (!mprk->subts_slowbuffer) {
+    mprk->subts_slowbuffer = mprk->subts_slow;
+    mprk->subts_slow       = NULL;
+  }
+  if (mprk->subts_slow) {
+    ierr = DMClone(dm,&newdm);CHKERRQ(ierr);
+    ierr = TSGetDM(mprk->subts_slow,&subdm);CHKERRQ(ierr);
+    ierr = DMCopyDMTS(subdm,newdm);CHKERRQ(ierr);
+    ierr = DMCopyDMSNES(subdm,newdm);CHKERRQ(ierr);
+    ierr = TSSetDM(mprk->subts_slow,newdm);CHKERRQ(ierr);
+    ierr = DMDestroy(&newdm);CHKERRQ(ierr);
+  }
+  ierr = DMClone(dm,&newdm);CHKERRQ(ierr);
+  ierr = TSGetDM(mprk->subts_slowbuffer,&subdm);CHKERRQ(ierr);
+  ierr = DMCopyDMTS(subdm,newdm);CHKERRQ(ierr);
+  ierr = DMCopyDMSNES(subdm,newdm);CHKERRQ(ierr);
+  ierr = TSSetDM(mprk->subts_slowbuffer,newdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&newdm);CHKERRQ(ierr);
+
   ierr = DMClone(dm,&newdm);CHKERRQ(ierr);
   ierr = TSGetDM(mprk->subts_fast,&subdm);CHKERRQ(ierr);
   ierr = DMCopyDMTS(subdm,newdm);CHKERRQ(ierr);
   ierr = DMCopyDMSNES(subdm,newdm);CHKERRQ(ierr);
   ierr = TSSetDM(mprk->subts_fast,newdm);CHKERRQ(ierr);
   ierr = DMDestroy(&newdm);CHKERRQ(ierr);
-  ierr = DMClone(dm,&newdm);CHKERRQ(ierr);
-  ierr = TSGetDM(mprk->subts_slow,&subdm);CHKERRQ(ierr);
-  ierr = DMCopyDMTS(subdm,newdm);CHKERRQ(ierr);
-  ierr = DMCopyDMSNES(subdm,newdm);CHKERRQ(ierr);
-  ierr = TSSetDM(mprk->subts_slow,newdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&newdm);CHKERRQ(ierr);
+
+  if (tab->np == 3) {
+    ierr = TSRHSSplitGetSubTS(ts,"medium",&mprk->subts_medium);CHKERRQ(ierr);
+    ierr = TSRHSSplitGetSubTS(ts,"mediumbuffer",&mprk->subts_mediumbuffer);CHKERRQ(ierr);
+    if (mprk->subts_medium && !mprk->subts_mediumbuffer) {
+      mprk->subts_mediumbuffer = mprk->subts_medium;
+      mprk->subts_medium       = NULL;
+    }
+    if (mprk->subts_medium) {
+      ierr = DMClone(dm,&newdm);CHKERRQ(ierr);
+      ierr = TSGetDM(mprk->subts_medium,&subdm);CHKERRQ(ierr);
+      ierr = DMCopyDMTS(subdm,newdm);CHKERRQ(ierr);
+      ierr = DMCopyDMSNES(subdm,newdm);CHKERRQ(ierr);
+      ierr = TSSetDM(mprk->subts_medium,newdm);CHKERRQ(ierr);
+      ierr = DMDestroy(&newdm);CHKERRQ(ierr);
+    }
+    ierr = DMClone(dm,&newdm);CHKERRQ(ierr);
+    ierr = TSGetDM(mprk->subts_mediumbuffer,&subdm);CHKERRQ(ierr);
+    ierr = DMCopyDMTS(subdm,newdm);CHKERRQ(ierr);
+    ierr = DMCopyDMSNES(subdm,newdm);CHKERRQ(ierr);
+    ierr = TSSetDM(mprk->subts_mediumbuffer,newdm);CHKERRQ(ierr);
+    ierr = DMDestroy(&newdm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -405,7 +656,7 @@ static PetscErrorCode TSEvaluateStep_MPRK(TS ts,PetscInt order,Vec X,PetscBool *
   PetscFunctionBegin;
   ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
   for (j=0; j<s; j++) wf[j] = h*tab->bf[j];
-  for (j=0; j<s; j++) ws[j] = h*tab->bs[j];
+  for (j=0; j<s; j++) ws[j] = h*tab->bsb[j];
   ierr = VecCopy(X,Xtmp);CHKERRQ(ierr);
   ierr = VecMAXPY(Xtmp,s,ws,mprk->YdotRHS_slow);CHKERRQ(ierr);
   ierr = VecGetSubVector(Xtmp,mprk->is_slow,&Xslow);CHKERRQ(ierr);
@@ -428,8 +679,8 @@ static PetscErrorCode TSStep_MPRK(TS ts)
   Vec             Yfast,Yslow;
   MPRKTableau     tab = mprk->tableau;
   const PetscInt  s   = tab->s;
-  const PetscReal *Af = tab->Af,*cf = tab->cf,*As = tab->As,*cs = tab->cs;
-  PetscScalar     *wf = mprk->work_fast, *ws = mprk->work_slow;
+  const PetscReal *Af = tab->Af,*cf = tab->cf,*Asb = tab->Asb,*csb = tab->csb;
+  PetscScalar     *wf = mprk->work_fast,*wsb = mprk->work_slowbuffer;
   PetscInt        i,j;
   PetscReal       next_time_step = ts->time_step,t = ts->ptime,h = ts->time_step;
   PetscErrorCode  ierr;
@@ -440,9 +691,9 @@ static PetscErrorCode TSStep_MPRK(TS ts)
     ierr = TSPreStage(ts,mprk->stage_time);CHKERRQ(ierr);
 
     /* update the satge value for all components by slow and fast tableau respectively */
-    for (j=0; j<i; j++) ws[j] = h*As[i*s+j];
+    for (j=0; j<i; j++) wsb[j] = h*Asb[i*s+j];
     ierr = VecCopy(ts->vec_sol,Ytmp);CHKERRQ(ierr);
-    ierr = VecMAXPY(Ytmp,i,ws,YdotRHS_slow);CHKERRQ(ierr);
+    ierr = VecMAXPY(Ytmp,i,wsb,YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecGetSubVector(Ytmp,mprk->is_slow,&Yslow);CHKERRQ(ierr);
     ierr = VecISCopy(Y[i],mprk->is_slow,SCATTER_FORWARD,Yslow);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(Ytmp,mprk->is_slow,&Yslow);CHKERRQ(ierr);
@@ -456,7 +707,7 @@ static PetscErrorCode TSStep_MPRK(TS ts)
 
     ierr = TSPostStage(ts,mprk->stage_time,i,Y); CHKERRQ(ierr);
     /* compute the stage RHS by fast and slow tableau respectively */
-    ierr = TSComputeRHSFunction(ts,t+h*cs[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,t+h*csb[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
     ierr = TSComputeRHSFunction(ts,t+h*cf[i],Y[i],YdotRHS_fast[i]);CHKERRQ(ierr);
   }
   ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
@@ -476,22 +727,59 @@ static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts,PetscInt order,Vec X,PetscB
 {
   TS_MPRK        *mprk = (TS_MPRK*)ts->data;
   MPRKTableau    tab  = mprk->tableau;
-  Vec            Xslow,Xfast; /* subvectors for slow and fast componets in X respectively */
-  PetscScalar    *wf = mprk->work_fast,*ws = mprk->work_slow;
+  Vec            Xslow,Xfast,Xslowbuffer; /* subvectors for slow and fast componets in X respectively */
+  PetscScalar    *wf = mprk->work_fast,*ws = mprk->work_slow,*wsb = mprk->work_slowbuffer;
   PetscReal      h = ts->time_step;
-  PetscInt       s = tab->s,j;
+  PetscInt       s = tab->s,j,basestages;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
+
+  /* slow region */
+  if (mprk->is_slow) {
+    basestages = 0;
+    for (j=0; j<s; j++) {
+      if (!tab->rsb[j]) ws[tab->rsb[j]-1] += h*tab->bsb[j];
+      else ws[basestages++] = h*tab->bsb[j];
+    }
+    ierr = VecGetSubVector(X,mprk->is_slow,&Xslow);CHKERRQ(ierr);
+    ierr = VecMAXPY(Xslow,basestages,ws,mprk->YdotRHS_slow);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(X,mprk->is_slow,&Xslow);CHKERRQ(ierr);
+  }
+
+  /* slow buffer region */
+  for (j=0; j<s; j++) wsb[j] = h*tab->bsb[j];
+  ierr = VecGetSubVector(X,mprk->is_slowbuffer,&Xslowbuffer);CHKERRQ(ierr);
+  ierr = VecMAXPY(Xslowbuffer,s,wsb,mprk->YdotRHS_slowbuffer);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(X,mprk->is_slowbuffer,&Xslowbuffer);CHKERRQ(ierr);
+
+  if (tab->np == 3) {
+    Vec         Xmedium,Xmediumbuffer;
+    PetscScalar *wm = mprk->work_medium,*wmb = mprk->work_mediumbuffer;
+    /* medium region */
+    if (mprk->is_medium) {
+      basestages = 0;
+      for (j=0; j<s; j++) {
+        if (!tab->rmb[j]) wm[tab->rmb[j]-1] += h*tab->bmb[j];
+        else wm[basestages++] = h*tab->bmb[j];
+      }
+      ierr = VecGetSubVector(X,mprk->is_medium,&Xmedium);CHKERRQ(ierr);
+      ierr = VecMAXPY(Xmedium,basestages,wm,mprk->YdotRHS_medium);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(X,mprk->is_medium,&Xmedium);CHKERRQ(ierr);
+    }
+    /* medium buffer region */
+    for (j=0; j<s; j++) wmb[j] = h*tab->bmb[j];
+    ierr = VecGetSubVector(X,mprk->is_mediumbuffer,&Xmediumbuffer);CHKERRQ(ierr);
+    ierr = VecMAXPY(Xmediumbuffer,s,wmb,mprk->YdotRHS_mediumbuffer);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(X,mprk->is_mediumbuffer,&Xmediumbuffer);CHKERRQ(ierr);
+  }
+
+  /* fast region */
   for (j=0; j<s; j++) wf[j] = h*tab->bf[j];
-  for (j=0; j<s; j++) ws[j] = h*tab->bs[j];
-  ierr = VecGetSubVector(X,mprk->is_slow,&Xslow);CHKERRQ(ierr);
   ierr = VecGetSubVector(X,mprk->is_fast,&Xfast);CHKERRQ(ierr);
-  ierr = VecMAXPY(Xslow,s,ws,mprk->YdotRHS_slow);CHKERRQ(ierr);
   ierr = VecMAXPY(Xfast,s,wf,mprk->YdotRHS_fast);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(X,mprk->is_slow,&Xfast);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(X,mprk->is_fast,&Xslow);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(X,mprk->is_fast,&Xfast);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -499,12 +787,12 @@ static PetscErrorCode TSStep_MPRKSPLIT(TS ts)
 {
   TS_MPRK         *mprk = (TS_MPRK*)ts->data;
   MPRKTableau     tab = mprk->tableau;
-  Vec             *Y = mprk->Y,*YdotRHS_fast = mprk->YdotRHS_fast, *YdotRHS_slow = mprk->YdotRHS_slow;
-  Vec             Yslow,Yfast; /* subvectors for slow and fast components in Y[i] respectively */
-  const PetscInt  s = tab->s;
-  const PetscReal *Af = tab->Af,*cf = tab->cf,*As = tab->As,*cs = tab->cs;
-  PetscScalar     *wf = mprk->work_fast, *ws = mprk->work_slow;
-  PetscInt        i,j;
+  Vec             *Y = mprk->Y,*YdotRHS_fast = mprk->YdotRHS_fast,*YdotRHS_slow = mprk->YdotRHS_slow,*YdotRHS_slowbuffer = mprk->YdotRHS_slowbuffer;
+  Vec             Yslow,Yslowbuffer,Yfast; /* subvectors for slow and fast components in Y[i] respectively */
+  PetscInt        s = tab->s;
+  const PetscReal *Af = tab->Af,*cf = tab->cf,*Asb = tab->Asb,*csb = tab->csb;
+  PetscScalar     *wf = mprk->work_fast,*ws = mprk->work_slow,*wsb = mprk->work_slowbuffer;
+  PetscInt        i,j,basestages;
   PetscReal       next_time_step = ts->time_step,t = ts->ptime,h = ts->time_step;
   PetscErrorCode  ierr;
 
@@ -514,17 +802,61 @@ static PetscErrorCode TSStep_MPRKSPLIT(TS ts)
     ierr = TSPreStage(ts,mprk->stage_time);CHKERRQ(ierr);
     /* calculate the stage value for fast and slow components respectively */
     ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
+    for (j=0; j<i; j++) wsb[j] = h*Asb[i*s+j];
+
+    /* slow buffer region */
+    ierr = VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer);CHKERRQ(ierr);
+    ierr = VecMAXPY(Yslowbuffer,i,wsb,YdotRHS_slowbuffer);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer);CHKERRQ(ierr);
+    /* slow region */
+    if (!tab->rsb[i] && mprk->is_slow) { /* not a repeated stage */
+      basestages = 0;
+      for (j=0; j<i; j++) {
+        if (!tab->rsb[j]) ws[tab->rsb[j]-1] += h*Asb[i*s+j];
+        else ws[basestages++] = wsb[j];
+      }
+      ierr = VecGetSubVector(Y[i],mprk->is_slow,&Yslow);CHKERRQ(ierr);
+      ierr = VecMAXPY(Yslow,i,ws,YdotRHS_slow);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow);CHKERRQ(ierr);
+      /* only depends on the slow buffer region */
+      ierr = TSComputeRHSFunction(mprk->subts_slow,t+h*csb[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
+    }
+
+    /* fast region */
     for (j=0; j<i; j++) wf[j] = h*Af[i*s+j];
-    for (j=0; j<i; j++) ws[j] = h*As[i*s+j];
-    ierr = VecGetSubVector(Y[i],mprk->is_slow,&Yslow);CHKERRQ(ierr);
     ierr = VecGetSubVector(Y[i],mprk->is_fast,&Yfast);CHKERRQ(ierr);
-    ierr = VecMAXPY(Yslow,i,ws,YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecMAXPY(Yfast,i,wf,YdotRHS_fast);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(Y[i],mprk->is_fast,&Yfast);CHKERRQ(ierr);
-    ierr = TSPostStage(ts,mprk->stage_time,i,Y); CHKERRQ(ierr);
-    /* calculate the stage RHS for slow and fast components respectively */
-    ierr = TSComputeRHSFunction(mprk->subts_slow,t+h*cs[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
+
+    if (tab->np == 3) {
+      Vec *YdotRHS_medium = mprk->YdotRHS_medium,*YdotRHS_mediumbuffer = mprk->YdotRHS_mediumbuffer;
+      Vec Ymedium,Ymediumbuffer;
+      const PetscReal *Amb = tab->Amb,*cmb = tab->cmb;
+      PetscScalar *wm = mprk->work_medium,*wmb = mprk->work_mediumbuffer;
+
+      for (j=0; j<i; j++) wmb[j] = h*Amb[i*s+j];
+      /* medium buffer region */
+      ierr = VecGetSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer);CHKERRQ(ierr);
+      ierr = VecMAXPY(Ymediumbuffer,i,wmb,YdotRHS_mediumbuffer);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer);CHKERRQ(ierr);
+      /* medium region */
+      if (!tab->rmb[i] && mprk->is_medium) { /* not a repeated stage */
+        basestages = 0;
+        for (j=0; j<i; j++) {
+          if (tab->rmb[j]) wm[tab->rmb[j]-1] += h*Amb[i*s+j];
+          else wm[basestages++] = wmb[j];
+        }
+        ierr = VecGetSubVector(Y[basestages],mprk->is_medium,&Ymedium);CHKERRQ(ierr);
+        ierr = VecMAXPY(Ymedium,i,wm,YdotRHS_medium);CHKERRQ(ierr);
+        ierr = VecRestoreSubVector(Y[i],mprk->is_medium,&Ymedium);CHKERRQ(ierr);
+        /* only depends on the medium buffer region and the slow buffer region */
+        ierr = TSComputeRHSFunction(mprk->subts_medium,t+h*cmb[i],Y[i],YdotRHS_medium[i]);CHKERRQ(ierr);
+      }
+      /* must be computed after fast region and slow region are updated in Y */
+      ierr = TSComputeRHSFunction(mprk->subts_mediumbuffer,t+h*cmb[i],Y[i],YdotRHS_mediumbuffer[i]);CHKERRQ(ierr);
+    }
+    /* must be computed after all regions are updated in Y */
+    ierr = TSComputeRHSFunction(mprk->subts_slowbuffer,t+h*csb[i],Y[i],YdotRHS_slowbuffer[i]);CHKERRQ(ierr);
     ierr = TSComputeRHSFunction(mprk->subts_fast,t+h*cf[i],Y[i],YdotRHS_fast[i]);CHKERRQ(ierr);
   }
   ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
@@ -589,39 +921,86 @@ static PetscErrorCode TSMPRKTableauSetUp(TS ts)
 {
   TS_MPRK        *mprk  = (TS_MPRK*)ts->data;
   MPRKTableau    tab = mprk->tableau;
-  Vec            YdotRHS_fast,YdotRHS_slow;
+  Vec            YdotRHS_slow,YdotRHS_slowbuffer,YdotRHS_medium,YdotRHS_mediumbuffer,YdotRHS_fast;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(tab->s,&mprk->work_fast);CHKERRQ(ierr);
-  ierr = PetscMalloc1(tab->s,&mprk->work_slow);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->Y);CHKERRQ(ierr);
   if (mprk->mprkmtype == TSMPRKNONSPLIT) {
     ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->YdotRHS_fast);CHKERRQ(ierr);
     ierr = VecDuplicate(ts->vec_sol,&mprk->Ytmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(tab->s,&mprk->work_slow);CHKERRQ(ierr);
+    ierr = PetscMalloc1(tab->s,&mprk->work_fast);CHKERRQ(ierr);
   }
   if (mprk->mprkmtype == TSMPRKSPLIT) {
-    ierr = VecGetSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow);CHKERRQ(ierr);
+    if (mprk->is_slow) {
+      ierr = VecGetSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow);CHKERRQ(ierr);
+      ierr = VecDuplicateVecs(YdotRHS_slow,tab->s,&mprk->YdotRHS_slow);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow);CHKERRQ(ierr);
+      ierr = PetscMalloc1(tab->s,&mprk->work_slow);CHKERRQ(ierr);
+    }
+    ierr = VecGetSubVector(ts->vec_sol,mprk->is_slowbuffer,&YdotRHS_slowbuffer);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(YdotRHS_slowbuffer,tab->s,&mprk->YdotRHS_slowbuffer);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(ts->vec_sol,mprk->is_slowbuffer,&YdotRHS_slowbuffer);CHKERRQ(ierr);
+    ierr = PetscMalloc1(tab->s,&mprk->work_slowbuffer);CHKERRQ(ierr);
+
+    if (tab->np == 3) {
+      if (mprk->is_medium) {
+        ierr = VecGetSubVector(ts->vec_sol,mprk->is_medium,&YdotRHS_medium);CHKERRQ(ierr);
+        ierr = VecDuplicateVecs(YdotRHS_medium,tab->s,&mprk->YdotRHS_medium);CHKERRQ(ierr);
+        ierr = VecRestoreSubVector(ts->vec_sol,mprk->is_medium,&YdotRHS_medium);CHKERRQ(ierr);
+        ierr = PetscMalloc1(tab->s,&mprk->work_medium);CHKERRQ(ierr);
+      }
+      ierr = VecGetSubVector(ts->vec_sol,mprk->is_mediumbuffer,&YdotRHS_mediumbuffer);CHKERRQ(ierr);
+      ierr = VecDuplicateVecs(YdotRHS_mediumbuffer,tab->s,&mprk->YdotRHS_mediumbuffer);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(ts->vec_sol,mprk->is_mediumbuffer,&YdotRHS_mediumbuffer);CHKERRQ(ierr);
+      ierr = PetscMalloc1(tab->s,&mprk->work_mediumbuffer);CHKERRQ(ierr);
+    }
     ierr = VecGetSubVector(ts->vec_sol,mprk->is_fast,&YdotRHS_fast);CHKERRQ(ierr);
-    ierr = VecDuplicateVecs(YdotRHS_slow,tab->s,&mprk->YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(YdotRHS_fast,tab->s,&mprk->YdotRHS_fast);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(ts->vec_sol,mprk->is_fast,&YdotRHS_fast);CHKERRQ(ierr);
+    ierr = PetscMalloc1(tab->s,&mprk->work_fast);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSSetUp_MPRK(TS ts)
 {
-  TS_MPRK         *mprk = (TS_MPRK*)ts->data;
+  TS_MPRK        *mprk = (TS_MPRK*)ts->data;
+  MPRKTableau    tab = mprk->tableau;
   DM             dm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSRHSSplitGetIS(ts,"slow",&mprk->is_slow);CHKERRQ(ierr);
   ierr = TSRHSSplitGetIS(ts,"fast",&mprk->is_fast);CHKERRQ(ierr);
-  if (!mprk->is_slow || !mprk->is_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use -ts_type mprk");
+  if (!mprk->is_slow || !mprk->is_fast) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use the method '%s'",tab->name);
+
+  if (tab->np == 3) {
+    ierr = TSRHSSplitGetIS(ts,"medium",&mprk->is_medium);CHKERRQ(ierr);
+    if (!mprk->is_medium) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'medium' and 'fast' respectively in order to use the method '%s'",tab->name);
+    ierr = TSRHSSplitGetIS(ts,"mediumbuffer",&mprk->is_mediumbuffer);CHKERRQ(ierr);
+    if (!mprk->is_mediumbuffer) { /* let medium buffer cover whole medium region */
+      mprk->is_mediumbuffer = mprk->is_medium;
+      mprk->is_medium = NULL;
+    }
+  }
+
+  /* If users do not provide buffer region settings, the solver will do them automatically, but with a performance penalty */
+  ierr = TSRHSSplitGetIS(ts,"slowbuffer",&mprk->is_slowbuffer);CHKERRQ(ierr);
+  if (!mprk->is_slowbuffer) { /* let slow buffer cover whole slow region */
+    mprk->is_slowbuffer = mprk->is_slow;
+    mprk->is_slow = NULL;
+  }
+/*
+  if (!mprk->is_medium) {
+    mprk->is_medium = mprk->is_fast;
+    mprk->is_fast = NULL;
+  } else {
+    ierr = TSRHSSplitGetIS(ts,"mediumbuffer",&mprk->is_mediumbuffer);CHKERRQ(ierr);
+  }
+*/
   ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
   ierr = TSMPRKTableauSetUp(ts);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -673,13 +1052,43 @@ static PetscErrorCode TSView_MPRK(TS ts,PetscViewer viewer)
     TSMPRKType  mprktype;
     char        fbuf[512];
     char        sbuf[512];
+    PetscInt    i;
     ierr = TSMPRKGetType(ts,&mprktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  MPRK type %s\n",mprktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order);CHKERRQ(ierr);
+
     ierr = PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,tab->cf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa cf = %s\n",fbuf);CHKERRQ(ierr);
-    ierr = PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,tab->cs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa cs = %s\n",sbuf);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Af = \n");CHKERRQ(ierr);
+    for (i=0; i<tab->s; i++) {
+      ierr = PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,&tab->Af[i*tab->s]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"    %s\n",fbuf);CHKERRQ(ierr);
+    }
+    ierr = PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,tab->bf);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  bf = %s\n",fbuf);CHKERRQ(ierr);
+
+    ierr = PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,tab->csb);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa csb = %s\n",sbuf);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Asb = \n");CHKERRQ(ierr);
+    for (i=0; i<tab->s; i++) {
+      ierr = PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,&tab->Asb[i*tab->s]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"    %s\n",sbuf);CHKERRQ(ierr);
+    }
+    ierr = PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,tab->bsb);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  bsb = %s\n",sbuf);CHKERRQ(ierr);
+
+    if (tab->np == 3) {
+      char mbuf[512];
+      ierr = PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,tab->cmb);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa cmb = %s\n",mbuf);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Amb = \n");CHKERRQ(ierr);
+      for (i=0; i<tab->s; i++) {
+        ierr = PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,&tab->Amb[i*tab->s]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    %s\n",mbuf);CHKERRQ(ierr);
+      }
+      ierr = PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,tab->bmb);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  bmb = %s\n",mbuf);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

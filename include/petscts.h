@@ -801,7 +801,10 @@ PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
 .seealso: TSMPRKSetType(), TS, TSMPRK, TSMPRKRegister()
 J*/
 typedef const char* TSMPRKType;
-#define TSMPRKPM2   "pm2"
+#define TSMPRK2A22   "2a22"
+#define TSMPRK2A23   "2a23"
+#define TSMPRK2A32   "2a32"
+#define TSMPRK2A33   "2a33"
 #define TSMPRKP2    "p2"
 #define TSMPRKP3    "p3"
 
@@ -818,7 +821,7 @@ PETSC_EXTERN const char* const TSMPRKMultirateTypes[];
 PETSC_EXTERN PetscErrorCode TSMPRKGetType(TS ts,TSMPRKType*);
 PETSC_EXTERN PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType);
 PETSC_EXTERN PetscErrorCode TSMPRKSetMultirateType(TS ts,TSMPRKMultirateType);
-PETSC_EXTERN PetscErrorCode TSMPRKRegister(TSMPRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSMPRKRegister(TSMPRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt [],const PetscReal[],const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSMPRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSMPRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSMPRKRegisterDestroy(void);
