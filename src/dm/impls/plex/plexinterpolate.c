@@ -749,7 +749,7 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
   const PetscInt    *roffset;
   PetscInt          *rmine1, *rremote1; /* rmine and rremote copies simultaneously sorted by rank and rremote */
   const PetscInt    *cone;
-  PetscInt           coneSize, ind0, ind1;
+  PetscInt           coneSize, ind0;
   MPI_Comm           comm;
   PetscMPIInt        rank;
   PetscInt           debug = 0;
@@ -823,7 +823,7 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
         o = roffset[r];
         n = roffset[r+1] - o;
         ierr = PetscFindInt(leaves[p][c], n, &rremote1[o], &ind0);CHKERRQ(ierr);
-        if (PetscUnlikely(ind0 < 0)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "no cone point of %D is connected to (%D, %D) - it seems there is missing connection in point SF",p,ranks[r],leaves[p][c]);
+        if (PetscUnlikely(ind0 < 0)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No cone point of %D is connected to (%D, %D) - it seems there is missing connection in point SF!",p,ranks[r],leaves[p][c]);
         /* Get the corresponding local point */
         masterCone[c] = rmine1[o+ind0];CHKERRQ(ierr);
       }
@@ -831,18 +831,33 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
       /* Vaclav's note: Here we only compare first 2 points of the cone. Full cone size would lead to stronger self-checking. */
       ierr = DMPlexOrientCell(dm, p, 2, masterCone);CHKERRQ(ierr);
     }
-#if defined(PETSC_USE_DEBUG)
-    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-    ierr = PetscFindInt(cone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
-    ierr = PetscFindInt(cone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
-    if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", p, 0, cone[0]);
-    if (ind1 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", p, 1, cone[1]);
-    if (leaves[p][0]  != remotes[ind0].index)
-      SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", p, 0, cone[0], remotes[ind0].rank, remotes[ind0].index, leaves[p][0], 0, remotes[p].rank, remotes[p].index);
-    if (leaves[p][1] != remotes[ind1].index)
-      SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", p, 1, cone[1], remotes[ind1].rank, remotes[ind1].index, leaves[p][1], 1, remotes[p].rank, remotes[p].index);
-#endif
   }
+#if defined(PETSC_USE_DEBUG)
+  ierr = DMViewFromOptions(dm, NULL, "-after_fix_dm_view");CHKERRQ(ierr);
+  for (r = 0; r < nleaves; ++r) {
+    p = locals[r];
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    if (!coneSize) continue;
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    for (c = 0; c < 2; c++) {
+      ierr = PetscFindInt(cone[c], nleaves, locals, &ind0);CHKERRQ(ierr);
+      if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing its cone point cone[%D] = %D!", p, c, cone[c]);
+      if (leaves[p][c] != remotes[ind0].index || leavesRanks[p][c] != remotes[ind0].rank) {
+        if (leavesRanks[p][c] == rank) {
+          PetscInt ind1;
+          ierr = PetscFindInt(leaves[p][c], nleaves, locals, &ind1);CHKERRQ(ierr);
+          if (ind1 < 0) {
+            SETERRQ8(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D = locals[%d]: cone[%D]=%D --> (%D, %D) differs from the enforced (%D, %D). The latter was not even found among the local SF points - it is probably broken!", p, r, c, cone[c], remotes[ind0].rank, remotes[ind0].index, leavesRanks[p][c], leaves[p][c]);
+          } else {
+            SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D = locals[%d]: cone[%D]=%D --> (%D, %D) differs from the enforced %D --> (%D, %D). Is the algorithm above or the point SF broken?", p, r, c, cone[c], remotes[ind0].rank, remotes[ind0].index, leaves[p][c], remotes[ind1].rank, remotes[ind1].index);
+          }
+        } else {
+          SETERRQ8(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D = locals[%d]: cone[%D]=%D --> (%D, %D) differs from the enforced (%D, %D). Is the algorithm above or the point SF broken?", p, r, c, cone[c], remotes[ind0].rank, remotes[ind0].index, leavesRanks[p][c], leaves[p][c]);
+        }
+      }
+    }
+  }
+#endif
   if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
   ierr = PetscFree4(roots, leaves, rootsRanks, leavesRanks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
