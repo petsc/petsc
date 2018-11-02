@@ -111,15 +111,5 @@ typedef struct {
 
 /* --------------------------------- Finite Volume Solver ----------------------------------- */
 PetscErrorCode FVRHSFunction(TS,PetscReal,Vec,Vec,void*);
-PetscErrorCode FVRHSFunctionslow(TS,PetscReal,Vec,Vec,void*);
-PetscErrorCode FVRHSFunctionfast(TS,PetscReal,Vec,Vec,void*);
-PetscErrorCode FVRHSFunctionslow2(TS,PetscReal,Vec,Vec,void*);
-PetscErrorCode FVRHSFunctionfast2(TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode FVSample(FVCtx*,DM,PetscReal,Vec);
 PetscErrorCode SolutionStatsView(DM,Vec,PetscViewer);
-
-PetscErrorCode FVRHSFunction_2WaySplit(TS,PetscReal,Vec,Vec,void*);
-PetscErrorCode FVRHSFunctionslow_2WaySplit(TS,PetscReal,Vec,Vec,void*);
-PetscErrorCode FVRHSFunctionfast_2WaySplit(TS,PetscReal,Vec,Vec,void*);
-PetscErrorCode FVSample_2WaySplit(FVCtx*,DM,PetscReal,Vec);
-PetscErrorCode SolutionStatsView_2WaySplit(DM,Vec,PetscViewer);

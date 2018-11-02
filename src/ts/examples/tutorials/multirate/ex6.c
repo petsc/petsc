@@ -139,6 +139,457 @@ static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,DM da,PetscReal t,Vec X,Pets
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
+{
+  FVCtx          *ctx = (FVCtx*)vctx;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,Mx,dof,xs,xm,len_slow,len_fast;
+  PetscReal      hxf,hxs,cfl_idt = 0;
+  PetscScalar    *x,*f,*slope;
+  Vec            Xloc;
+  DM             da;
+
+  PetscFunctionBeginUser;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);                          /* Xloc contains ghost points                                     */
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);   /* Mx is the number of center points                              */
+  hxs  = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
+  hxf  = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);       /* X is solution vector which does not contain ghost points       */
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+
+  ierr = VecZeroEntries(F);CHKERRQ(ierr);                                   /* F is the right hand side function corresponds to center points */
+
+  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);                  /* contains ghost points                                           */
+
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
+  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
+
+  if (ctx->bctype == FVBC_OUTFLOW) {
+    for (i=xs-2; i<0; i++) {
+      for (j=0; j<dof; j++) x[i*dof+j] = x[j];
+    }
+    for (i=Mx; i<xs+xm+2; i++) {
+      for (j=0; j<dof; j++) x[i*dof+j] = x[(xs+xm-1)*dof+j];
+    }
+  }
+  for (i=xs-1; i<xs+xm+1; i++) {
+    struct _LimitInfo info;
+    PetscScalar       *cjmpL,*cjmpR;
+    /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
+    ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+    /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
+    ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+    cjmpL = &ctx->cjmpLR[0];
+    cjmpR = &ctx->cjmpLR[dof];
+    for (j=0; j<dof; j++) {
+      PetscScalar jmpL,jmpR;
+      jmpL = x[(i+0)*dof+j]-x[(i-1)*dof+j];
+      jmpR = x[(i+1)*dof+j]-x[(i+0)*dof+j];
+      for (k=0; k<dof; k++) {
+        cjmpL[k] += ctx->Rinv[k+j*dof]*jmpL;
+        cjmpR[k] += ctx->Rinv[k+j*dof]*jmpR;
+      }
+    }
+    /* Apply limiter to the left and right characteristic jumps */
+    info.m  = dof;
+    info.hxs = hxs;
+    info.hxf = hxf;
+    (*ctx->limit2)(&info,cjmpL,cjmpR,len_slow,len_fast,i,ctx->cslope);
+    for (j=0; j<dof; j++) {
+      PetscScalar tmp = 0;
+      for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
+      slope[i*dof+j] = tmp;
+    }
+  }
+
+  for (i=xs; i<xs+xm+1; i++) {
+    PetscReal   maxspeed;
+    PetscScalar *uL,*uR;
+    uL = &ctx->uLR[0];
+    uR = &ctx->uLR[dof];
+    if (i < len_slow/2) { /* interface between slow components */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxs)); /* Max allowable value of 1/Delta t */
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hxs;
+      }
+    } else if (i == len_slow/2) { /* interface between the slow component and the first fast component */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hxf;
+      }
+    } else if (i > len_slow/2 && i < len_slow/2+len_fast) { /* interfaces between fast components */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxf;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hxf;
+      }
+    } else if (i == len_slow/2+len_fast) { /* interface between the last fast component and the slow component */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxf;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hxs;
+      }
+    } else { /* interface between slow components */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hxs;
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  if (0) {
+    /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
+    PetscReal dt,tnow;
+    ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+    ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
+    if (dt > 0.5/ctx->cfl_idt) {
+      if (1) {
+        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
+      } else SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------- Finite Volume Solver for slow components ----------------------------------- */
+PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
+{
+  FVCtx          *ctx = (FVCtx*)vctx;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,Mx,dof,xs,xm,len_slow,len_fast,islow = 0;
+  PetscReal      hxs,hxf,cfl_idt = 0;
+  PetscScalar    *x,*f,*slope;
+  Vec            Xloc;
+  DM             da;
+
+  PetscFunctionBeginUser;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  hxs  = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
+  hxf  = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = VecZeroEntries(F);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
+  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
+
+  if (ctx->bctype == FVBC_OUTFLOW) {
+    for (i=xs-2; i<0; i++) {
+      for (j=0; j<dof; j++) x[i*dof+j] = x[j];
+    }
+    for (i=Mx; i<xs+xm+2; i++) {
+      for (j=0; j<dof; j++) x[i*dof+j] = x[(xs+xm-1)*dof+j];
+    }
+  }
+  for (i=xs-1; i<xs+xm+1; i++) {
+    struct _LimitInfo info;
+    PetscScalar       *cjmpL,*cjmpR;
+    if (i < len_slow/2+1 || i > len_slow/2+len_fast-2) { /* slow components and the first and last fast components */
+      /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
+      ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+      /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
+      ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+      cjmpL = &ctx->cjmpLR[0];
+      cjmpR = &ctx->cjmpLR[dof];
+      for (j=0; j<dof; j++) {
+        PetscScalar jmpL,jmpR;
+        jmpL = x[(i+0)*dof+j]-x[(i-1)*dof+j];
+        jmpR = x[(i+1)*dof+j]-x[(i+0)*dof+j];
+        for (k=0; k<dof; k++) {
+          cjmpL[k] += ctx->Rinv[k+j*dof]*jmpL;
+          cjmpR[k] += ctx->Rinv[k+j*dof]*jmpR;
+        }
+      }
+      /* Apply limiter to the left and right characteristic jumps */
+      info.m  = dof;
+      info.hxs = hxs;
+      info.hxf = hxf;
+      (*ctx->limit2)(&info,cjmpL,cjmpR,len_slow,len_fast,i,ctx->cslope);
+      for (j=0; j<dof; j++) {
+        PetscScalar tmp = 0;
+        for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
+          slope[i*dof+j] = tmp;
+      }
+    }
+  }
+
+  for (i=xs; i<xs+xm+1; i++) {
+    PetscReal   maxspeed;
+    PetscScalar *uL,*uR;
+    uL = &ctx->uLR[0];
+    uR = &ctx->uLR[dof];
+    if (i < len_slow/2) { /* interface between slow componets */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxs)); /* Max allowable value of 1/Delta t */
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
+        islow++;
+      }
+    }
+    if (i == len_slow/2) { /* interface between the slow component and the first fast component */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
+      }
+      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+    }
+    if (i == len_slow/2+len_fast) { /* interface between the last fast component and the first slow component which locate behind the fast components */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
+        islow++;
+      }
+    }
+    if (i > len_slow/2+len_fast) { /* interface between the slow components */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
+        islow++;
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------- Finite Volume Solver for fast  parts ----------------------------------- */
+PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
+{
+  FVCtx          *ctx = (FVCtx*)vctx;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,Mx,dof,xs,xm,len_slow,len_fast,ifast = 0;
+  PetscReal      hxs,hxf,cfl_idt = 0;
+  PetscScalar    *x,*f,*slope;
+  Vec            Xloc;
+  DM             da;
+
+  PetscFunctionBeginUser;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  hxs  = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
+  hxf  = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = VecZeroEntries(F);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
+  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
+
+  if (ctx->bctype == FVBC_OUTFLOW) {
+    for (i=xs-2; i<0; i++) {
+      for (j=0; j<dof; j++) x[i*dof+j] = x[j];
+    }
+    for (i=Mx; i<xs+xm+2; i++) {
+      for (j=0; j<dof; j++) x[i*dof+j] = x[(xs+xm-1)*dof+j];
+    }
+  }
+  for (i=xs-1; i<xs+xm+1; i++) { /* fast components and the last slow componets before fast components and the first slow component after fast components */
+    struct _LimitInfo info;
+    PetscScalar       *cjmpL,*cjmpR;
+    if (i > len_slow/2-2 && i < len_slow/2+len_fast+1) {
+      ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+      ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+      cjmpL = &ctx->cjmpLR[0];
+      cjmpR = &ctx->cjmpLR[dof];
+      for (j=0; j<dof; j++) {
+        PetscScalar jmpL,jmpR;
+        jmpL = x[(i+0)*dof+j]-x[(i-1)*dof+j];
+        jmpR = x[(i+1)*dof+j]-x[(i+0)*dof+j];
+        for (k=0; k<dof; k++) {
+          cjmpL[k] += ctx->Rinv[k+j*dof]*jmpL;
+          cjmpR[k] += ctx->Rinv[k+j*dof]*jmpR;
+        }
+      }
+      /* Apply limiter to the left and right characteristic jumps */
+      info.m  = dof;
+      info.hxs = hxs;
+      info.hxf = hxf;
+      (*ctx->limit2)(&info,cjmpL,cjmpR,len_slow,len_fast,i,ctx->cslope);
+      for (j=0; j<dof; j++) {
+      PetscScalar tmp = 0;
+      for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
+        slope[i*dof+j] = tmp;
+      }
+    }
+   }
+
+  for (i=xs; i<xs+xm+1; i++) {
+    PetscReal   maxspeed;
+    PetscScalar *uL,*uR;
+    uL = &ctx->uLR[0];
+    uR = &ctx->uLR[dof];
+    if (i == len_slow/2) { /* interface between the last slow component which is located before fast components and the first fast component */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxs));
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[ifast*dof+j] += ctx->flux[j]/hxf;
+        ifast++;
+      }
+    }
+    if (i > len_slow/2 && i < len_slow/2+len_fast) { /* interface between fast components */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(ifast-1)*dof+j] -= ctx->flux[j]/hxf;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[ifast*dof+j] += ctx->flux[j]/hxf;
+        ifast++;
+      }
+    }
+    if (i == len_slow/2+len_fast) { /* interface between the last fast component and the first slow component which is located after fast components */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(ifast-1)*dof+j] -= ctx->flux[j]/hxf;
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *u,*uj,xj,xi;
+  PetscInt       i,j,k,dof,xs,xm,Mx,count_slow,count_fast;
+  const PetscInt N = 200;
+
+  PetscFunctionBeginUser;
+  if (!ctx->physics2.sample2) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof,&uj);CHKERRQ(ierr);
+  const PetscReal hs = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
+  const PetscReal hf = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
+  count_slow = Mx/(1+ctx->hratio);
+  count_fast = Mx-count_slow;
+  for (i=xs; i<xs+xm; i++) {
+    if (i*hs+0.5*hs<(ctx->xmax-ctx->xmin)*0.25) {
+      xi = ctx->xmin+0.5*hs+i*hs;
+      /* Integrate over cell i using trapezoid rule with N points. */
+      for (k=0; k<dof; k++) u[i*dof+k] = 0;
+      for (j=0; j<N+1; j++) {
+        xj = xi+hs*(j-N/2)/(PetscReal)N;
+        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
+      }
+    } else if ((ctx->xmax-ctx->xmin)*0.25+(i-count_slow/2)*hf+0.5*hf < (ctx->xmax-ctx->xmin)*0.75) {
+      xi = ctx->xmin+(ctx->xmax-ctx->xmin)*0.25+0.5*hf+(i-count_slow/2)*hf;
+      /* Integrate over cell i using trapezoid rule with N points. */
+      for (k=0; k<dof; k++) u[i*dof+k] = 0;
+      for (j=0; j<N+1; j++) {
+        xj = xi+hf*(j-N/2)/(PetscReal)N;
+        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
+      }
+    } else {
+      xi = ctx->xmin+(ctx->xmax-ctx->xmin)*0.75+0.5*hs+(i-count_slow/2-count_fast)*hs;
+      /* Integrate over cell i using trapezoid rule with N points. */
+      for (k=0; k<dof; k++) u[i*dof+k] = 0;
+      for (j=0; j<N+1; j++) {
+        xj = xi+hs*(j-N/2)/(PetscReal)N;
+        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  ierr = PetscFree(uj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc,char *argv[])
 {
   char              lname[256] = "mc",physname[256] = "advect",final_fname[256] = "solution.m";
