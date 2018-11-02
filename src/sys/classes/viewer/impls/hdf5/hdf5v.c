@@ -825,8 +825,8 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
 
 static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx)
 {
-  HDF5ReadCtx    h;
-  const char    *groupname;
+  HDF5ReadCtx    h=NULL;
+  const char    *groupname=NULL;
   char           vecgroup[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
@@ -963,8 +963,8 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 
 PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
-  HDF5ReadCtx     h;
-  hid_t           memspace;
+  HDF5ReadCtx     h=NULL;
+  hid_t           memspace=0;
   size_t          unitsize;
   void            *arr;
   PetscErrorCode  ierr;
@@ -1017,7 +1017,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 @*/
 PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
 {
-  HDF5ReadCtx    h;
+  HDF5ReadCtx    h=NULL;
   PetscLayout    map=NULL;
   PetscErrorCode ierr;
 
