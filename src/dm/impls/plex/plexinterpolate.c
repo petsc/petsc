@@ -802,8 +802,10 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm)
     ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
   }
   for (p = 0; p < nroots; ++p) {
-    leaves[p][0] = -2;
-    leaves[p][1] = -2;
+    for (c = 0; c < 2; c++) {
+      leaves[p][c] = -2;
+      leavesRanks[p][c] = -2;
+    }
   }
   ierr = PetscSFBcastBegin(sf, MPIU_2INT, roots, leaves);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(sf, MPI_2INT, rootsRanks, leavesRanks);CHKERRQ(ierr);
