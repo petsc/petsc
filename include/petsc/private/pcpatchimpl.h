@@ -48,6 +48,8 @@ typedef struct {
   /* Patch system assembly */
   PetscErrorCode     (*usercomputeop)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, void *);
   void                *usercomputeopctx;
+  PetscErrorCode     (*usercomputef)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, void *);
+  void                *usercomputefctx;
   IS                   cellIS;             /* Temporary IS for each cell patch */
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */
@@ -90,6 +92,7 @@ PETSC_EXTERN PetscLogEvent PC_Patch_Scatter;
 PETSC_EXTERN PetscLogEvent PC_Patch_Apply;
 PETSC_EXTERN PetscLogEvent PC_Patch_Prealloc;
 
+PETSC_EXTERN PetscErrorCode PCPatchComputeFunction_Internal(PC, Vec, Vec, PetscInt);
 PETSC_EXTERN PetscErrorCode PCPatchComputeOperator_Internal(PC, Vec, Mat, PetscInt);
 
 #endif

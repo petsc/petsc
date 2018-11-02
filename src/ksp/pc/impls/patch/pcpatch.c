@@ -455,6 +455,42 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 
 /*@C
 
+  PCPatchSetComputeFunction - Set the callback used to compute patch residuals
+
+  Input Parameters:
++ pc   - The PC
+. func - The callback
+- ctx  - The user context
+
+  Level: advanced
+
+  Note:
+  The callback has signature:
++  usercomputef(pc, point, x, f, cellIS, n, u, ctx)
++  pc     - The PC
++  point  - The point
++  x      - The input solution (not used in linear problems)
++  f      - The patch residual vector
++  cellIS - An array of the cell numbers
++  n      - The size of g2l
++  g2l    - The global to local dof translation table
++  ctx    - The user context
+  and can assume that the matrix entries have been set to zero before the call.
+
+.seealso: PCPatchSetComputeOperator(), PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo()
+@*/
+PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, void *), void *ctx)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+
+  PetscFunctionBegin;
+  patch->usercomputef    = func;
+  patch->usercomputefctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+
   PCPatchSetComputeOperator - Set the callback used to compute patch matrices
 
   Input Parameters:
@@ -1258,6 +1294,84 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCPatchComputeFunction_DMPlex_Private(PC pc, PetscInt patchNum, Vec x, Vec F, IS cellIS, PetscInt n, const PetscInt *l2p, void *ctx)
+{
+  PC_PATCH       *patch = (PC_PATCH *) pc->data;
+  DM              dm;
+  PetscSection    s;
+  const PetscInt *parray, *oarray;
+  PetscInt        Nf = patch->nsubspaces, Np, poff, p, f;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  /* Set offset into patch */
+  ierr = PetscSectionGetDof(patch->pointCounts, patchNum, &Np);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(patch->pointCounts, patchNum, &poff);CHKERRQ(ierr);
+  ierr = ISGetIndices(patch->points, &parray);CHKERRQ(ierr);
+  ierr = ISGetIndices(patch->offs,   &oarray);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    for (p = 0; p < Np; ++p) {
+      const PetscInt point = parray[poff+p];
+      PetscInt       dof;
+
+      ierr = PetscSectionGetFieldDof(patch->patchSection, point, f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldOffset(patch->patchSection, point, f, oarray[(poff+p)*Nf+f]);CHKERRQ(ierr);
+      if (patch->nsubspaces == 1) {ierr = PetscSectionSetOffset(patch->patchSection, point, oarray[(poff+p)*Nf+f]);CHKERRQ(ierr);}
+      else                        {ierr = PetscSectionSetOffset(patch->patchSection, point, -1);CHKERRQ(ierr);}
+    }
+  }
+  ierr = ISRestoreIndices(patch->points, &parray);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(patch->offs,   &oarray);CHKERRQ(ierr);
+  if (patch->viewSection) {ierr = ObjectView((PetscObject) patch->patchSection, patch->viewerSection, patch->formatSection);CHKERRQ(ierr);}
+  ierr = DMPlexComputeResidual_Patch_Internal(pc->dm, patch->patchSection, cellIS, 0.0, x, NULL, F, ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt point)
+{
+  PC_PATCH       *patch = (PC_PATCH *) pc->data;
+  const PetscInt *dofsArray;
+  const PetscInt *cellsArray;
+  PetscInt        ncell, offset, pStart, pEnd;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
+  if (!patch->usercomputeop) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback\n");
+  ierr = ISGetIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
+  ierr = ISGetIndices(patch->cells, &cellsArray);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(patch->cellCounts, &pStart, &pEnd);CHKERRQ(ierr);
+
+  point += pStart;
+  if (point >= pEnd) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Operator point %D not in [%D, %D)\n", point, pStart, pEnd);CHKERRQ(ierr);
+
+  ierr = PetscSectionGetDof(patch->cellCounts, point, &ncell);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(patch->cellCounts, point, &offset);CHKERRQ(ierr);
+  if (ncell <= 0) {
+    ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  PetscStackPush("PCPatch user callback");
+  /* Cannot reuse the same IS because the geometry info is being cached in it */
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
+  ierr = patch->usercomputef(pc, point, x, F, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, patch->usercomputefctx);CHKERRQ(ierr);
+  PetscStackPop;
+  ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(patch->cells, &cellsArray);CHKERRQ(ierr);
+  if (patch->viewMatrix) {
+    char name[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "Patch vector for Point %D", point);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) F, name);CHKERRQ(ierr);
+    ierr = ObjectView((PetscObject) F, patch->viewerMatrix, patch->formatMatrix);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patchNum, Vec x, Mat J, IS cellIS, PetscInt n, const PetscInt *l2p, void *ctx)
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
@@ -1480,6 +1594,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = PetscFree(cellDofs[f]);CHKERRQ(ierr);
       }
       ierr = PetscFree3(Nb, cellDofs, globalBcs);CHKERRQ(ierr);
+      ierr = PCPatchSetComputeFunction(pc, PCPatchComputeFunction_DMPlex_Private, NULL);CHKERRQ(ierr);
       ierr = PCPatchSetComputeOperator(pc, PCPatchComputeOperator_DMPlex_Private, NULL);CHKERRQ(ierr);
     }
 
@@ -1581,6 +1696,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_Patch_Apply, pc, 0, 0, 0);CHKERRQ(ierr);
   ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE);CHKERRQ(ierr);
+  /* start, end, inc have 2 entries to manage a second backward sweep if we symmetrize */
   end[0]   = patch->npatch;
   start[1] = patch->npatch-1;
   if (patch->user_patches) {
