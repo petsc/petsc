@@ -284,7 +284,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
   DM_Forest      *forest = (DM_Forest*) dm->data;
   const char     *name   = (const char*) topologyName;
   const char     *prefix;
-  PetscBool      isBrick, isShell, isSphere;
+  PetscBool      isBrick, isShell, isSphere, isMoebius;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -294,6 +294,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
   ierr = PetscStrcmp(name,"brick",&isBrick);CHKERRQ(ierr);
   ierr = PetscStrcmp(name,"shell",&isShell);CHKERRQ(ierr);
   ierr = PetscStrcmp(name,"sphere",&isSphere);CHKERRQ(ierr);
+  ierr = PetscStrcmp(name,"moebius",&isMoebius);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
   if (isBrick) {
     PetscBool flgN, flgP, flgM, flgB, useMorton = PETSC_TRUE;
@@ -320,6 +321,9 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     (*topo)->refct = 1;
     PetscStackCallP4estReturn((*topo)->conn,p4est_connectivity_new_byname,(name));
     (*topo)->geom = NULL;
+    if (isMoebius) {
+      ierr = DMSetCoordinateDim(dm,3);CHKERRQ(ierr);
+    }
 #if defined(P4_TO_P8)
     if (isShell) {
       PetscReal R2 = 1., R1 = .55;
