@@ -13,5 +13,8 @@ if __name__ == '__main__':
     '--with-mkl_sparse_optimize=0',
     # using mpich-3.2 as default mpich-3.1.3 does not build with ifort-16
     '--download-mpich=http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.2.tar.gz',
+    '--with-cxx-dialect=C++11',
+    '--download-codipack=1',
+    '--download-adblaslapack=1',
   ]
   configure.petsc_configure(configure_options)
