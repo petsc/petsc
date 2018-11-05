@@ -14,7 +14,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbinaryopen_(char* name PETSC_MIXED_LEN(len)
   char *c1;
 
   FIXCHAR(name,len,c1);
-  *ierr = PetscBinaryOpen(c1,*type,fd);
+  *ierr = PetscBinaryOpen(c1,*type,fd);if (*ierr) return;
   FREECHAR(name,c1);
 }
 
@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL petsctestfile_(char* name PETSC_MIXED_LEN(len),c
   char *c1;
 
   FIXCHAR(name,len,c1);
-  *ierr = PetscTestFile(c1,*mode,flg);
+  *ierr = PetscTestFile(c1,*mode,flg);if (*ierr) return;
   FREECHAR(name,c1);
 }
 

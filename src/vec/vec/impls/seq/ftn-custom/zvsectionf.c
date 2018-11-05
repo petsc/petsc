@@ -34,6 +34,6 @@ PETSC_EXTERN void PETSC_STDCALL petscsectionsetfieldname_(PetscSection *s, Petsc
   char *f;
 
   FIXCHAR(name, len, f);
-  *ierr = PetscSectionSetFieldName(*s, *field, f);
+  *ierr = PetscSectionSetFieldName(*s, *field, f);if (*ierr) return;
   FREECHAR(name, f);
 }

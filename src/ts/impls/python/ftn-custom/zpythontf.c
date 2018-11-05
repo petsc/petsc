@@ -11,6 +11,6 @@ PETSC_EXTERN void PETSC_STDCALL tspythonsettype_(TS *ts, char* name PETSC_MIXED_
 {
   char *t;
   FIXCHAR(name,len,t);
-  *ierr = TSPythonSetType(*ts,t);
+  *ierr = TSPythonSetType(*ts,t);if (*ierr) return;
   FREECHAR(name,t);
 }

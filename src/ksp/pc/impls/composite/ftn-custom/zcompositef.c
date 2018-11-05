@@ -12,7 +12,7 @@ PETSC_EXTERN void PETSC_STDCALL pccompositeaddpc_(PC *pc,char* type PETSC_MIXED_
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = PCCompositeAddPC(*pc,t);
+  *ierr = PCCompositeAddPC(*pc,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

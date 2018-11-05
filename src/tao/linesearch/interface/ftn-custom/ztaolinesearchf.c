@@ -113,7 +113,7 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchsettype_(TaoLineSearch *ls, char* t
     char *t;
 
     FIXCHAR(type_name,len,t);
-    *ierr = TaoLineSearchSetType(*ls,t);
+    *ierr = TaoLineSearchSetType(*ls,t);if (*ierr) return;
     FREECHAR(type_name,t);
 
 }
@@ -138,7 +138,7 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchappendoptionsprefix_(TaoLineSearch 
 {
   char *name;
   FIXCHAR(prefix,len,name);
-  *ierr = TaoLineSearchAppendOptionsPrefix(*ls,name);
+  *ierr = TaoLineSearchAppendOptionsPrefix(*ls,name);if (*ierr) return;
   FREECHAR(prefix,name);
 }
 
@@ -146,7 +146,7 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchsetoptionsprefix_(TaoLineSearch *ls
 {
   char *t;
   FIXCHAR(prefix,len,t);
-  *ierr = TaoLineSearchSetOptionsPrefix(*ls,t);
+  *ierr = TaoLineSearchSetOptionsPrefix(*ls,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 
