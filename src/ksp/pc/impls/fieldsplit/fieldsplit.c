@@ -1338,13 +1338,13 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
   ierr = MatMultHermitianTranspose(jac->B,ilinkA->y,work1);CHKERRQ(ierr);
-  ierr = VecAXPBY(work1,1/nu,-1.0,ilinkD->x);CHKERRQ(ierr);            /* c = b - B'*x        */
+  ierr = VecAXPBY(work1,1.0/nu,-1.0,ilinkD->x);CHKERRQ(ierr);            /* c = b - B'*x        */
 
   /* First step of algorithm */
   ierr  = VecNorm(work1,NORM_2,&beta);CHKERRQ(ierr);                   /* beta = sqrt(nu*c'*c)*/
   KSPCheckDot(ksp,beta);
   beta  = PetscSqrtScalar(nu)*beta;
-  ierr  = VecAXPBY(v,nu/beta,0,work1);CHKERRQ(ierr);                   /* v = nu/beta *c      */
+  ierr  = VecAXPBY(v,nu/beta,0.0,work1);CHKERRQ(ierr);                   /* v = nu/beta *c      */
   ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                       /* u = H^{-1}*B*v      */
   ierr  = PetscLogEventBegin(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
   ierr  = KSPSolve(ksp,work2,u);CHKERRQ(ierr);
@@ -1354,8 +1354,8 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   KSPCheckDot(ksp,alpha);
   if (PetscRealPart(alpha) <= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"GKB preconditioner diverged, H is not positive definite");
   alpha = PetscSqrtScalar(PetscAbsScalar(alpha));
-  ierr  = VecScale(u,1/alpha);CHKERRQ(ierr);
-  ierr  = VecAXPBY(d,1/alpha,0,v);CHKERRQ(ierr);                       /* v = nu/beta *c      */
+  ierr  = VecScale(u,1.0/alpha);CHKERRQ(ierr);
+  ierr  = VecAXPBY(d,1.0/alpha,0.0,v);CHKERRQ(ierr);                       /* v = nu/beta *c      */
 
   z = beta/alpha;
   vecz[1] = z;
@@ -1376,7 +1376,7 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     ierr  = VecAXPBY(v,nu,-alpha,work1);CHKERRQ(ierr);
     ierr  = VecNorm(v,NORM_2,&beta);CHKERRQ(ierr);                   /* beta = sqrt(nu)*v'*v      */
     beta  = beta/PetscSqrtScalar(nu);
-    ierr  = VecScale(v,1/beta);CHKERRQ(ierr);
+    ierr  = VecScale(v,1.0/beta);CHKERRQ(ierr);
     ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                  /* u <- H^{-1}*(B*v-beta*H*u) */
     ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);
     ierr  = VecAXPY(work2,-beta,Hu);CHKERRQ(ierr);
@@ -1388,13 +1388,13 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     KSPCheckDot(ksp,alpha);
     if (PetscRealPart(alpha) <= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"GKB preconditioner diverged, H is not positive definite");
     alpha = PetscSqrtScalar(PetscAbsScalar(alpha));
-    ierr  = VecScale(u,1/alpha);CHKERRQ(ierr);
+    ierr  = VecScale(u,1.0/alpha);CHKERRQ(ierr);
 
     z = -beta/alpha*z;                                            /* z <- beta/alpha*z     */
     vecz[0] = z;
 
     /* Computation of new iterate x(i+1) and p(i+1) */
-    ierr = VecAXPBY(d,1/alpha,-beta/alpha,v);CHKERRQ(ierr);       /* d = (v-beta*d)/alpha */
+    ierr = VecAXPBY(d,1.0/alpha,-beta/alpha,v);CHKERRQ(ierr);       /* d = (v-beta*d)/alpha */
     ierr = VecAXPY(ilinkA->y,z,u);CHKERRQ(ierr);                  /* r = r + z*u          */
     ierr = VecAXPY(ilinkD->y,-z,d);CHKERRQ(ierr);                 /* p = p - z*d          */
     ierr = MatMult(jac->H,ilinkA->y,Hu);CHKERRQ(ierr);            /* ||u||_H = u'*H*u     */
