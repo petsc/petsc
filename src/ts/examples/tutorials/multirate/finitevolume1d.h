@@ -105,8 +105,10 @@ typedef struct {
   void        (*limit2)(LimitInfo,const PetscScalar*,const PetscScalar*,PetscInt,PetscInt,PetscInt,PetscScalar*);
   PhysicsCtx2 physics2;
   PetscInt    hratio;           /* hratio = hslow/hfast */
-  IS          isf,iss,isf2,iss2;
+  IS          isf,iss,isf2,iss2,ism;
   PetscBool   recursive;
+  PetscInt    sm,mf,fm,ms; /* positions (array index) for slow-medium, medium-fast, fast-medium, medium-slow interfaces */
+  PetscInt    sf,fs; /* slow-fast and fast-slow interfaces */
 } FVCtx;
 
 /* --------------------------------- Finite Volume Solver ----------------------------------- */

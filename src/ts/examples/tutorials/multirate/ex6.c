@@ -112,19 +112,71 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,DM da,PetscReal t,Vec X,PetscReal *nrm1)
+PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
 {
-  PetscErrorCode      ierr;
-  Vec                 Y;
-  PetscInt            i,Mx,count_slow=0,count_fast=0;
-  const PetscScalar   *ptr_X,*ptr_Y;
+  PetscErrorCode  ierr;
+  PetscScalar     *u,*uj,xj,xi;
+  PetscInt        i,j,k,dof,xs,xm,Mx,count_slow,count_fast;
+  const PetscInt  N = 200;
+  const PetscReal hs = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
+  const PetscReal hf = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
+
+  PetscFunctionBeginUser;
+  if (!ctx->physics2.sample2) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof,&uj);CHKERRQ(ierr);
+  count_slow = Mx/(1+ctx->hratio);
+  count_fast = Mx-count_slow;
+  for (i=xs; i<xs+xm; i++) {
+    if (i*hs+0.5*hs<(ctx->xmax-ctx->xmin)*0.25) {
+      xi = ctx->xmin+0.5*hs+i*hs;
+      /* Integrate over cell i using trapezoid rule with N points. */
+      for (k=0; k<dof; k++) u[i*dof+k] = 0;
+      for (j=0; j<N+1; j++) {
+        xj = xi+hs*(j-N/2)/(PetscReal)N;
+        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
+      }
+    } else if ((ctx->xmax-ctx->xmin)*0.25+(i-count_slow/2)*hf+0.5*hf < (ctx->xmax-ctx->xmin)*0.75) {
+      xi = ctx->xmin+(ctx->xmax-ctx->xmin)*0.25+0.5*hf+(i-count_slow/2)*hf;
+      /* Integrate over cell i using trapezoid rule with N points. */
+      for (k=0; k<dof; k++) u[i*dof+k] = 0;
+      for (j=0; j<N+1; j++) {
+        xj = xi+hf*(j-N/2)/(PetscReal)N;
+        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
+      }
+    } else {
+      xi = ctx->xmin+(ctx->xmax-ctx->xmin)*0.75+0.5*hs+(i-count_slow/2-count_fast)*hs;
+      /* Integrate over cell i using trapezoid rule with N points. */
+      for (k=0; k<dof; k++) u[i*dof+k] = 0;
+      for (j=0; j<N+1; j++) {
+        xj = xi+hs*(j-N/2)/(PetscReal)N;
+        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  ierr = PetscFree(uj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode SolutionErrorNorms_2WaySplit(FVCtx *ctx,DM da,PetscReal t,Vec X,PetscReal *nrm1)
+{
+  PetscErrorCode    ierr;
+  Vec               Y;
+  PetscInt          i,Mx,count_slow=0,count_fast=0;
+  const PetscScalar *ptr_X,*ptr_Y;
+  const PetscReal   hs = (ctx->xmax - ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
+  const PetscReal   hf = (ctx->xmax - ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
 
   PetscFunctionBeginUser;
   ierr = VecGetSize(X,&Mx);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
   ierr = FVSample_2WaySplit(ctx,da,t,Y);CHKERRQ(ierr);
-  const PetscReal hs = (ctx->xmax - ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
-  const PetscReal hf = (ctx->xmax - ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
   count_slow = Mx/(1+ctx->hratio);
   count_fast = Mx-count_slow;
   ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
@@ -143,7 +195,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
-  PetscInt       i,j,k,Mx,dof,xs,xm,len_slow,len_fast;
+  PetscInt       i,j,k,Mx,dof,xs,xm,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hxf,hxs,cfl_idt = 0;
   PetscScalar    *x,*f,*slope;
   Vec            Xloc;
@@ -165,8 +217,6 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
   ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);                  /* contains ghost points                                           */
 
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -198,7 +248,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
     info.m  = dof;
     info.hxs = hxs;
     info.hxf = hxf;
-    (*ctx->limit2)(&info,cjmpL,cjmpR,len_slow,len_fast,i,ctx->cslope);
+    (*ctx->limit2)(&info,cjmpL,cjmpR,ctx->sf,ctx->fs,i,ctx->cslope);
     for (j=0; j<dof; j++) {
       PetscScalar tmp = 0;
       for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
@@ -211,7 +261,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
     PetscScalar *uL,*uR;
     uL = &ctx->uLR[0];
     uR = &ctx->uLR[dof];
-    if (i < len_slow/2) { /* interface between slow components */
+    if (i < sf) { /* interface between slow components */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
@@ -224,7 +274,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hxs;
       }
-    } else if (i == len_slow/2) { /* interface between the slow component and the first fast component */
+    } else if (i == sf) { /* interface between the slow component and the first fast component */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
@@ -236,7 +286,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hxf;
       }
-    } else if (i > len_slow/2 && i < len_slow/2+len_fast) { /* interfaces between fast components */
+    } else if (i > sf && i < fs) { /* interfaces between fast components */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
@@ -248,7 +298,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hxf;
       }
-    } else if (i == len_slow/2+len_fast) { /* interface between the last fast component and the slow component */
+    } else if (i == fs) { /* interface between the last fast component and the slow component */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
@@ -298,7 +348,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
-  PetscInt       i,j,k,Mx,dof,xs,xm,len_slow,len_fast,islow = 0;
+  PetscInt       i,j,k,Mx,dof,xs,xm,islow = 0,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hxs,hxf,cfl_idt = 0;
   PetscScalar    *x,*f,*slope;
   Vec            Xloc;
@@ -317,8 +367,6 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -331,7 +379,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
   for (i=xs-1; i<xs+xm+1; i++) {
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
-    if (i < len_slow/2+1 || i > len_slow/2+len_fast-2) { /* slow components and the first and last fast components */
+    if (i < sf+1 || i > fs-2) { /* slow components and the first and last fast components */
       /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
       ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
       /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
@@ -351,7 +399,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
       info.m  = dof;
       info.hxs = hxs;
       info.hxf = hxf;
-      (*ctx->limit2)(&info,cjmpL,cjmpR,len_slow,len_fast,i,ctx->cslope);
+      (*ctx->limit2)(&info,cjmpL,cjmpR,ctx->sf,ctx->fs,i,ctx->cslope);
       for (j=0; j<dof; j++) {
         PetscScalar tmp = 0;
         for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
@@ -365,7 +413,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
     PetscScalar *uL,*uR;
     uL = &ctx->uLR[0];
     uR = &ctx->uLR[dof];
-    if (i < len_slow/2) { /* interface between slow componets */
+    if (i < sf) { /* interface between slow componets */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
@@ -380,7 +428,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         islow++;
       }
     }
-    if (i == len_slow/2) { /* interface between the slow component and the first fast component */
+    if (i == sf) { /* interface between the slow component and the first fast component */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
@@ -390,7 +438,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
       }
     }
-    if (i == len_slow/2+len_fast) { /* interface between the last fast component and the first slow component which locate behind the fast components */
+    if (i == fs) { /* interface between the last fast component and the first slow component which locate behind the fast components */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
@@ -401,7 +449,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         islow++;
       }
     }
-    if (i > len_slow/2+len_fast) { /* interface between the slow components */
+    if (i > fs) { /* interface between the slow components */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
@@ -429,7 +477,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
-  PetscInt       i,j,k,Mx,dof,xs,xm,len_slow,len_fast,ifast = 0;
+  PetscInt       i,j,k,Mx,dof,xs,xm,ifast = 0,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hxs,hxf,cfl_idt = 0;
   PetscScalar    *x,*f,*slope;
   Vec            Xloc;
@@ -448,8 +496,6 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -462,7 +508,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
   for (i=xs-1; i<xs+xm+1; i++) { /* fast components and the last slow componets before fast components and the first slow component after fast components */
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
-    if (i > len_slow/2-2 && i < len_slow/2+len_fast+1) {
+    if (i > sf-2 && i < fs+1) {
       ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
       ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
       cjmpL = &ctx->cjmpLR[0];
@@ -480,7 +526,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
       info.m  = dof;
       info.hxs = hxs;
       info.hxf = hxf;
-      (*ctx->limit2)(&info,cjmpL,cjmpR,len_slow,len_fast,i,ctx->cslope);
+      (*ctx->limit2)(&info,cjmpL,cjmpR,ctx->sf,ctx->fs,i,ctx->cslope);
       for (j=0; j<dof; j++) {
       PetscScalar tmp = 0;
       for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
@@ -494,7 +540,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
     PetscScalar *uL,*uR;
     uL = &ctx->uLR[0];
     uR = &ctx->uLR[dof];
-    if (i == len_slow/2) { /* interface between the last slow component which is located before fast components and the first fast component */
+    if (i == sf) { /* interface between the last slow component which is located before fast components and the first fast component */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
@@ -506,7 +552,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         ifast++;
       }
     }
-    if (i > len_slow/2 && i < len_slow/2+len_fast) { /* interface between fast components */
+    if (i > sf && i < fs) { /* interface between fast components */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
@@ -520,7 +566,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         ifast++;
       }
     }
-    if (i == len_slow/2+len_fast) { /* interface between the last fast component and the first slow component which is located after fast components */
+    if (i == fs) { /* interface between the last fast component and the first slow component which is located after fast components */
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
@@ -535,58 +581,6 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
-{
-  PetscErrorCode ierr;
-  PetscScalar    *u,*uj,xj,xi;
-  PetscInt       i,j,k,dof,xs,xm,Mx,count_slow,count_fast;
-  const PetscInt N = 200;
-
-  PetscFunctionBeginUser;
-  if (!ctx->physics2.sample2) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dof,&uj);CHKERRQ(ierr);
-  const PetscReal hs = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
-  const PetscReal hf = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
-  count_slow = Mx/(1+ctx->hratio);
-  count_fast = Mx-count_slow;
-  for (i=xs; i<xs+xm; i++) {
-    if (i*hs+0.5*hs<(ctx->xmax-ctx->xmin)*0.25) {
-      xi = ctx->xmin+0.5*hs+i*hs;
-      /* Integrate over cell i using trapezoid rule with N points. */
-      for (k=0; k<dof; k++) u[i*dof+k] = 0;
-      for (j=0; j<N+1; j++) {
-        xj = xi+hs*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
-        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
-      }
-    } else if ((ctx->xmax-ctx->xmin)*0.25+(i-count_slow/2)*hf+0.5*hf < (ctx->xmax-ctx->xmin)*0.75) {
-      xi = ctx->xmin+(ctx->xmax-ctx->xmin)*0.25+0.5*hf+(i-count_slow/2)*hf;
-      /* Integrate over cell i using trapezoid rule with N points. */
-      for (k=0; k<dof; k++) u[i*dof+k] = 0;
-      for (j=0; j<N+1; j++) {
-        xj = xi+hf*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
-        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
-      }
-    } else {
-      xi = ctx->xmin+(ctx->xmax-ctx->xmin)*0.75+0.5*hs+(i-count_slow/2-count_fast)*hs;
-      /* Integrate over cell i using trapezoid rule with N points. */
-      for (k=0; k<dof; k++) u[i*dof+k] = 0;
-      for (j=0; j<N+1; j++) {
-        xj = xi+hs*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
-        for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
-      }
-    }
-  }
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscFree(uj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -682,6 +676,8 @@ int main(int argc,char *argv[])
   count_slow = Mx/(1+ctx.hratio);
   if (count_slow%2) SETERRQ(PETSC_COMM_WORLD,1,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio) is even");
   count_fast = Mx-count_slow;
+  ctx.sf = count_slow/2;
+  ctx.fs = ctx.sf+count_fast;
   ierr = PetscMalloc1(xm*dof,&index_slow);CHKERRQ(ierr);
   ierr = PetscMalloc1(xm*dof,&index_fast);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
@@ -749,7 +745,7 @@ int main(int argc,char *argv[])
     ierr = PetscPrintf(comm,"Final time %8.5f, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
     if (ctx.exact) {
       PetscReal nrm1=0;
-      ierr = SolutionErrorNorms(&ctx,da,ptime,X,&nrm1);CHKERRQ(ierr);
+      ierr = SolutionErrorNorms_2WaySplit(&ctx,da,ptime,X,&nrm1);CHKERRQ(ierr);
       ierr = PetscPrintf(comm,"Error ||x-x_e||_1 %8.4e\n",(double)nrm1);CHKERRQ(ierr);
     }
     if (ctx.simulation) {

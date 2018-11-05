@@ -121,139 +121,139 @@ void Limit_CadaTorrilhon3R100(LimitInfo info,const PetscScalar *jL,const PetscSc
 
 /* ----------------------- Limiters for split systems ------------------------- */
 
-void Limit2_Upwind(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt)
+void Limit2_Upwind(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sf,const PetscInt fs,PetscInt n,PetscScalar *lmt)
 {
   PetscInt i;
   for (i=0; i<info->m; i++) lmt[i] = 0;
 }
-void Limit2_LaxWendroff(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt)
+void Limit2_LaxWendroff(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sf,const PetscInt fs,PetscInt n,PetscScalar *lmt)
 {
   PetscInt i;
-  if (n < len_slow/2-1) {                                 /* slow components */
+  if (n < sf-1) {                                 /* slow components */
     for (i=0; i<info->m; i++) lmt[i] = jR[i]/info->hxs;
-  } else if (n == len_slow/2-1) {                         /* slow component which is next to fast components */
+  } else if (n == sf-1) {                         /* slow component which is next to fast components */
     for (i=0; i<info->m; i++) lmt[i] = jR[i]/(info->hxs/2.0+info->hxf/2.0);
-  } else if (n == len_slow/2) {                            /* fast component which is next to slow components */
+  } else if (n == sf) {                            /* fast component which is next to slow components */
     for (i=0; i<info->m; i++) lmt[i] = jR[i]/info->hxf;
-  } else if (n > len_slow/2 && n < len_slow/2+len_fast-1) { /* fast components */
+  } else if (n > sf && n < fs-1) { /* fast components */
     for (i=0; i<info->m; i++) lmt[i] = jR[i]/info->hxf;
-  } else if (n == len_slow/2+len_fast-1) {                /* fast component next to slow components */
+  } else if (n == fs-1) {                /* fast component next to slow components */
     for (i=0; i<info->m; i++) lmt[i] = jR[i]/(info->hxf/2.0+info->hxs/2.0);
-  } else if (n == len_slow/2+len_fast) {                  /* slow component next to fast components */
+  } else if (n == fs) {                  /* slow component next to fast components */
     for (i=0; i<info->m; i++) lmt[i] = jR[i]/info->hxs;
   } else {                                              /* slow components */
     for (i=0; i<info->m; i++) lmt[i] = jR[i]/info->hxs;
   }
 }
-void Limit2_BeamWarming(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt)
+void Limit2_BeamWarming(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sf,const PetscInt fs,PetscInt n,PetscScalar *lmt)
 {
   PetscInt i;
-  if (n < len_slow/2-1) {
+  if (n < sf-1) {
     for (i=0; i<info->m; i++) lmt[i] = jL[i]/info->hxs;
-  } else if (n == len_slow/2-1) {
+  } else if (n == sf-1) {
     for (i=0; i<info->m; i++) lmt[i] = jL[i]/info->hxs;
-  } else if (n == len_slow/2) {
+  } else if (n == sf) {
     for (i=0; i<info->m; i++) lmt[i] = jL[i]/(info->hxs/2.0+info->hxf/2.0);
-  } else if (n > len_slow/2 && n < len_slow/2+len_fast-1) {
+  } else if (n > sf && n < fs-1) {
     for (i=0; i<info->m; i++) lmt[i] = jL[i]/info->hxf;
-  } else if (n == len_slow/2+len_fast-1) {
+  } else if (n == fs-1) {
     for (i=0; i<info->m; i++) lmt[i] = jL[i]/info->hxf;
-  } else if (n == len_slow/2+len_fast) {
+  } else if (n == fs) {
     for (i=0; i<info->m; i++) lmt[i] = jL[i]/(info->hxf/2.0+info->hxs/2.0);
   } else {
     for (i=0; i<info->m; i++) lmt[i] = jL[i]/info->hxs;
   }
 }
-void Limit2_Fromm(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt)
+void Limit2_Fromm(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sf,const PetscInt fs,PetscInt n,PetscScalar *lmt)
 {
   PetscInt i;
-  if (n < len_slow/2-1) {
+  if (n < sf-1) {
     for (i=0; i<info->m; i++) lmt[i] = 0.5*(jL[i]+jR[i])/info->hxs;
-  } else if (n == len_slow/2-1) {
+  } else if (n == sf-1) {
     for (i=0; i<info->m; i++) lmt[i] = 0.5*(jL[i]/info->hxs+jR[i]/(info->hxs/2.0+info->hxf/2.0));
-  } else if (n == len_slow/2) {
+  } else if (n == sf) {
     for (i=0; i<info->m; i++) lmt[i] = 0.5*(jL[i]/(info->hxs/2.0+info->hxf/2.0)+jR[i]/info->hxf);
-  } else if (n > len_slow/2 && n < len_slow/2+len_fast-1) {
+  } else if (n > sf && n < fs-1) {
     for (i=0; i<info->m; i++) lmt[i] = 0.5*(jL[i]+jR[i])/info->hxf;
-  } else if (n == len_slow/2+len_fast-1) {
+  } else if (n == fs-1) {
     for (i=0; i<info->m; i++) lmt[i] = 0.5*(jL[i]/info->hxf+jR[i]/(info->hxf/2.0+info->hxs/2.0));
-  } else if (n == len_slow/2+len_fast) {
+  } else if (n == fs) {
     for (i=0; i<info->m; i++) lmt[i] = 0.5*(jL[i]/(info->hxf/2.0+info->hxs/2.0)+jR[i]/info->hxs);
   } else {
     for (i=0; i<info->m; i++) lmt[i] = 0.5*(jL[i]+jR[i])/info->hxs;
   }
 }
-void Limit2_Minmod(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt)
+void Limit2_Minmod(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sf,const PetscInt fs,PetscInt n,PetscScalar *lmt)
 {
   PetscInt i;
-  if (n < len_slow/2-1) {
+  if (n < sf-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(jL[i],jR[i])/info->hxs;
-  } else if (n == len_slow/2-1) {
+  } else if (n == sf-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(jL[i]/info->hxs,jR[i]/(info->hxs/2.0+info->hxf/2.0));
-  } else if (n == len_slow/2) {
+  } else if (n == sf) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(jL[i]/(info->hxs/2.0+info->hxf/2.0),jR[i]/info->hxf);
-  } else if (n > len_slow/2 && n < len_slow/2+len_fast-1) {
+  } else if (n > sf && n < fs-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(jL[i],jR[i])/info->hxf;
-  } else if (n == len_slow/2+len_fast-1) {
+  } else if (n == fs-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(jL[i]/info->hxf,jR[i]/(info->hxf/2.0+info->hxs/2.0));
-  } else if (n == len_slow/2+len_fast) {
+  } else if (n == fs) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(jL[i]/(info->hxf/2.0+info->hxs/2.0),jR[i]/info->hxs);
   } else {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(jL[i],jR[i])/info->hxs;
   }
 }
-void Limit2_Superbee(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt)
+void Limit2_Superbee(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sf,const PetscInt fs,PetscInt n,PetscScalar *lmt)
 {
   PetscInt i;
-  if (n < len_slow/2-1) {
+  if (n < sf-1) {
     for (i=0; i<info->m; i++) lmt[i] = MaxMod2(MinMod2(jL[i],2*jR[i]),MinMod2(2*jL[i],jR[i]))/info->hxs;
-  } else if (n == len_slow/2-1) {
+  } else if (n == sf-1) {
     for (i=0; i<info->m; i++) lmt[i] = MaxMod2(MinMod2(jL[i]/info->hxs,2*jR[i]/(info->hxs/2.0+info->hxf/2.0)),MinMod2(2*jL[i]/info->hxs,jR[i]/(info->hxs/2.0+info->hxf/2.0)));
-  } else if (n == len_slow/2) {
+  } else if (n == sf) {
     for (i=0; i<info->m; i++) lmt[i] = MaxMod2(MinMod2(jL[i]/(info->hxs/2.0+info->hxf/2.0),2*jR[i]/info->hxf),MinMod2(2*jL[i]/(info->hxs/2.0+info->hxf/2.0),jR[i]/info->hxf));
-  } else if (n > len_slow/2 && n < len_slow/2+len_fast-1) {
+  } else if (n > sf && n < fs-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(MinMod2(jL[i],2*jR[i]),MinMod2(2*jL[i],jR[i]))/info->hxf;
-  } else if (n == len_slow/2+len_fast-1) {
+  } else if (n == fs-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(MinMod2(jL[i]/info->hxf,2*jR[i]/(info->hxf/2.0+info->hxs/2.0)),MinMod2(2*jL[i]/info->hxf,jR[i]/(info->hxf/2.0+info->hxs/2.0)));
-  } else if (n == len_slow/2+len_fast) {
+  } else if (n == fs) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(MinMod2(jL[i]/(info->hxf/2.0+info->hxs/2.0),2*jR[i]/info->hxs),MinMod2(2*jL[i]/(info->hxf/2.0+info->hxs/2.0),jR[i]/info->hxs));
   } else {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod2(MinMod2(jL[i],2*jR[i]),MinMod2(2*jL[i],jR[i]))/info->hxs;
   }
 }
-void Limit2_MC(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt)
+void Limit2_MC(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sf,const PetscInt fs,PetscInt n,PetscScalar *lmt)
 {
   PetscInt i;
-  if (n < len_slow/2-1) {
+  if (n < sf-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod3(2*jL[i],0.5*(jL[i]+jR[i]),2*jR[i])/info->hxs;
-  } else if (n == len_slow/2-1) {
+  } else if (n == sf-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod3(2*jL[i]/info->hxs,0.5*(jL[i]/info->hxs+jR[i]/(info->hxf/2.0+info->hxs/2.0)),2*jR[i]/(info->hxf/2.0+info->hxs/2.0));
-  } else if (n == len_slow/2) {
+  } else if (n == sf) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod3(2*jL[i]/(info->hxs/2.0+info->hxf/2.0),0.5*(jL[i]/(info->hxs/2.0+info->hxf/2.0)+jR[i]/info->hxf),2*jR[i]/info->hxf);
-  } else if (n > len_slow/2 && n < len_slow/2+len_fast-1) {
+  } else if (n > sf && n < fs-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod3(2*jL[i],0.5*(jL[i]+jR[i]),2*jR[i])/info->hxf;
-  } else if (n == len_slow/2+len_fast-1) {
+  } else if (n == fs-1) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod3(2*jL[i]/info->hxf,0.5*(jL[i]/info->hxf+jR[i]/(info->hxf/2.0+info->hxs/2.0)),2*jR[i]/(info->hxf/2.0+info->hxs/2.0));
-  } else if (n == len_slow/2+len_fast) {
+  } else if (n == fs) {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod3(2*jL[i]/(info->hxf/2.0+info->hxs/2.0),0.5*(jL[i]/(info->hxf/2.0+info->hxs/2.0)+jR[i]/info->hxs),2*jR[i]/info->hxs);
   } else {
     for (i=0; i<info->m; i++)  lmt[i] = MinMod3(2*jL[i],0.5*(jL[i]+jR[i]),2*jR[i])/info->hxs;
   }
 }
-void Limit2_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt)
+void Limit2_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sf,const PetscInt fs,PetscInt n,PetscScalar *lmt)
 { /* Eq 11 of Cada-Torrilhon 2009 */
   PetscInt i;
-  if (n < len_slow/2-1) {
+  if (n < sf-1) {
     for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i],(jL[i]+2*jR[i])/3,2*jR[i])/info->hxs;
-  } else if (n == len_slow/2-1) {
+  } else if (n == sf-1) {
     for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i]/info->hxs,(jL[i]/info->hxs+2*jR[i]/(info->hxf/2.0+info->hxs/2.0))/3,2*jR[i]/(info->hxf/2.0+info->hxs/2.0));
-  } else if (n == len_slow/2) {
+  } else if (n == sf) {
     for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i]/(info->hxs/2.0+info->hxf/2.0),(jL[i]/(info->hxs/2.0+info->hxf/2.0)+2*jR[i]/info->hxf)/3,2*jR[i]/info->hxf);
-  } else if (n > len_slow/2 && n < len_slow/2+len_fast-1) {
+  } else if (n > sf && n < fs-1) {
     for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i],(jL[i]+2*jR[i])/3,2*jR[i])/info->hxf;
-  } else if (n == len_slow/2+len_fast-1) {
+  } else if (n == fs-1) {
     for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i]/info->hxf,(jL[i]/info->hxf+2*jR[i]/(info->hxf/2.0+info->hxs/2.0))/3,2*jR[i]/(info->hxf/2.0+info->hxs/2.0));
-  } else if (n == len_slow/2+len_fast) {
+  } else if (n == fs) {
     for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i]/(info->hxf/2.0+info->hxs/2.0),(jL[i]/(info->hxf/2.0+info->hxs/2.0)+2*jR[i]/info->hxs)/3,2*jR[i]/info->hxs);
   } else {
     for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i],(jL[i]+2*jR[i])/3,2*jR[i])/info->hxs;

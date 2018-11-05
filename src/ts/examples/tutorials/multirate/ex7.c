@@ -64,6 +64,7 @@ typedef struct {
   FVBCType    bctype;
   PetscInt    hratio;           /* hratio = hslow/hfast */
   IS          isf,iss;
+  PetscInt    sf,fs;            /* slow-fast and fast-slow interfaces */
 } FVCtx;
 
 /* --------------------------------- Physics ----------------------------------- */
@@ -146,7 +147,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
-  PetscInt       i,j,Mx,dof,xs,xm,len_slow,len_fast;
+  PetscInt       i,j,Mx,dof,xs,xm,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hf,hs,cfl_idt = 0;
   PetscScalar    *x,*f,*r,*min,*alpha,*gamma;
   Vec            Xloc;
@@ -164,8 +165,6 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
   ierr = PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma);CHKERRQ(ierr);
 
   if (ctx->bctype == FVBC_OUTFLOW) {
@@ -180,7 +179,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   for (i=xs; i<xs+xm+1; i++) {
     PetscReal   maxspeed;
     PetscScalar *u;
-    if (i < len_slow/2 || i > len_slow/2+len_fast+1) {
+    if (i < sf || i > fs+1) {
       u = &ctx->u[0];
       alpha[0] = 1.0/6.0;
       gamma[0] = 1.0/3.0;
@@ -197,7 +196,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hs;
       }
-    } else if(i == len_slow/2) {
+    } else if(i == sf) {
       u = &ctx->u[0];
       alpha[0] = hs*hf/(hs+hs)/(hs+hs+hf);
       gamma[0] = hs*(hs+hs)/(hs+hf)/(hs+hs+hf);
@@ -213,7 +212,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hf;
       }
-    } else if (i == len_slow/2+1) {
+    } else if (i == sf+1) {
       u = &ctx->u[0];
       alpha[0] = hf*hf/(hs+hf)/(hs+hf+hf);
       gamma[0] = hf*(hs+hf)/(hf+hf)/(hs+hf+hf);
@@ -229,7 +228,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hf;
       }
-    } else if (i > len_slow/2+1 && i < len_slow/2+len_fast) {
+    } else if (i > sf+1 && i < fs) {
       u = &ctx->u[0];
       alpha[0] = 1.0/6.0;
       gamma[0] = 1.0/3.0;
@@ -245,7 +244,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hf;
       }
-    } else if (i == len_slow/2+len_fast) {
+    } else if (i == fs) {
       u = &ctx->u[0];
       alpha[0] = hf*hs/(hf+hf)/(hf+hf+hs);
       gamma[0] = hf*(hf+hf)/(hf+hs)/(hf+hf+hs);
@@ -261,7 +260,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hs;
       }
-    } else if (i == len_slow/2+len_fast+1) {
+    } else if (i == fs+1) {
       u = &ctx->u[0];
       alpha[0] = hs*hs/(hf+hs)/(hf+hs+hs);
       gamma[0] = hs*(hf+hs)/(hs+hs)/(hf+hs+hs);
@@ -302,7 +301,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
 {
   FVCtx             *ctx = (FVCtx*)vctx;
   PetscErrorCode    ierr;
-  PetscInt          i,j,Mx,dof,xs,xm,len_slow,len_fast,islow = 0;
+  PetscInt          i,j,Mx,dof,xs,xm,islow = 0,sf = ctx->sf,fs = ctx->fs;
   PetscReal         hf,hs;
   PetscScalar       *x,*f,*r,*min,*alpha,*gamma;
   Vec               Xloc;
@@ -320,8 +319,6 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
   ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
   ierr = PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma);CHKERRQ(ierr);
 
   if (ctx->bctype == FVBC_OUTFLOW) {
@@ -336,7 +333,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
   for (i=xs; i<xs+xm+1; i++) {
     PetscReal   maxspeed;
     PetscScalar *u;
-    if (i < len_slow/2) {
+    if (i < sf) {
       u = &ctx->u[0];
       alpha[0] = 1.0/6.0;
       gamma[0] = 1.0/3.0;
@@ -353,7 +350,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hs;
         islow++;
       }
-    } else if (i == len_slow/2) {
+    } else if (i == sf) {
       u = &ctx->u[0];
       alpha[0] = hs*hf/(hs+hs)/(hs+hs+hf);
       gamma[0] = hs*(hs+hs)/(hs+hf)/(hs+hs+hf);
@@ -367,7 +364,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hs;
         islow++;
       }
-    } else if (i == len_slow/2+len_fast) {
+    } else if (i == fs) {
       u = &ctx->u[0];
       alpha[0] = hf*hs/(hf+hf)/(hf+hf+hs);
       gamma[0] = hf*(hf+hf)/(hf+hs)/(hf+hf+hs);
@@ -378,10 +375,10 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
       }
       ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
       if (i < xs+xm) {
-        for (j=0; j<dof; j++)  f[i*dof+j-len_fast] += ctx->flux[j]/hs;
+        for (j=0; j<dof; j++)  f[i*dof+j-fs+sf] += ctx->flux[j]/hs;
         islow++;
       }
-    } else if (i == len_slow/2+len_fast+1) {
+    } else if (i == fs+1) {
       u = &ctx->u[0];
       alpha[0] = hs*hs/(hf+hs)/(hf+hs+hs);
       gamma[0] = hs*(hf+hs)/(hs+hs)/(hf+hs+hs);
@@ -392,12 +389,12 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
       }
       ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
       if (i > xs) {
-        for (j=0; j<dof; j++) f[(i-len_fast-1)*dof+j] -= ctx->flux[j]/hs;
+        for (j=0; j<dof; j++) f[(i-fs+sf-1)*dof+j] -= ctx->flux[j]/hs;
       }
       if (i < xs+xm) {
-        for (j=0; j<dof; j++) f[(i-len_fast)*dof+j] += ctx->flux[j]/hs;
+        for (j=0; j<dof; j++) f[(i-fs+sf)*dof+j] += ctx->flux[j]/hs;
       }
-    } else if (i > len_slow/2+len_fast+1) {
+    } else if (i > fs+1) {
       u = &ctx->u[0];
       alpha[0] = 1.0/6.0;
       gamma[0] = 1.0/3.0;
@@ -408,10 +405,10 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
       }
       ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
       if (i > xs) {
-        for (j=0; j<dof; j++) f[(i-len_fast-1)*dof+j] -= ctx->flux[j]/hs;
+        for (j=0; j<dof; j++) f[(i-fs+sf-1)*dof+j] -= ctx->flux[j]/hs;
       }
       if (i < xs+xm) {
-        for (j=0; j<dof; j++) f[(i-len_fast)*dof+j] += ctx->flux[j]/hs;
+        for (j=0; j<dof; j++) f[(i-fs+sf)*dof+j] += ctx->flux[j]/hs;
       }
     }
   }
@@ -426,7 +423,7 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
-  PetscInt       i,j,Mx,dof,xs,xm,len_slow,len_fast,ifast = 0;
+  PetscInt       i,j,Mx,dof,xs,xm,ifast = 0,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hf,hs;
   PetscScalar    *x,*f,*r,*min,*alpha,*gamma;
   Vec            Xloc;
@@ -444,8 +441,6 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
   ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->iss,&len_slow);CHKERRQ(ierr);
-  ierr = ISGetSize(ctx->isf,&len_fast);CHKERRQ(ierr);
   ierr = PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma);CHKERRQ(ierr);
 
   if (ctx->bctype == FVBC_OUTFLOW) {
@@ -460,7 +455,7 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
   for (i=xs; i<xs+xm+1; i++) {
     PetscReal   maxspeed;
     PetscScalar *u;
-    if (i == len_slow/2) {
+    if (i == sf) {
       u = &ctx->u[0];
       alpha[0] = hs*hf/(hs+hs)/(hs+hs+hf);
       gamma[0] = hs*(hs+hs)/(hs+hf)/(hs+hs+hf);
@@ -471,10 +466,10 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
       }
       ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
       if (i < xs+xm) {
-        for (j=0; j<dof; j++) f[(i-len_slow/2)*dof+j] += ctx->flux[j]/hf;
+        for (j=0; j<dof; j++) f[(i-sf)*dof+j] += ctx->flux[j]/hf;
         ifast++;
       }
-    } else if (i == len_slow/2+1) {
+    } else if (i == sf+1) {
       u = &ctx->u[0];
       alpha[0] = hf*hf/(hs+hf)/(hs+hf+hf);
       gamma[0] = hf*(hs+hf)/(hf+hf)/(hs+hf+hf);
@@ -485,13 +480,13 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
       }
       ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
       if (i > xs) {
-        for (j=0; j<dof; j++) f[(i-len_slow/2-1)*dof+j] -= ctx->flux[j]/hf;
+        for (j=0; j<dof; j++) f[(i-sf-1)*dof+j] -= ctx->flux[j]/hf;
       }
       if (i < xs+xm) {
-        for (j=0; j<dof; j++) f[(i-len_slow/2)*dof+j] += ctx->flux[j]/hf;
+        for (j=0; j<dof; j++) f[(i-sf)*dof+j] += ctx->flux[j]/hf;
         ifast++;
       }
-    } else if (i > len_slow/2+1 && i < len_slow/2+len_fast) {
+    } else if (i > sf+1 && i < fs) {
       u = &ctx->u[0];
       alpha[0] = 1.0/6.0;
       gamma[0] = 1.0/3.0;
@@ -502,13 +497,13 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
       }
       ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
       if (i > xs) {
-        for (j=0; j<dof; j++) f[(i-len_slow/2-1)*dof+j] -= ctx->flux[j]/hf;
+        for (j=0; j<dof; j++) f[(i-sf-1)*dof+j] -= ctx->flux[j]/hf;
       }
       if (i < xs+xm) {
-        for (j=0; j<dof; j++) f[(i-len_slow/2)*dof+j] += ctx->flux[j]/hf;
+        for (j=0; j<dof; j++) f[(i-sf)*dof+j] += ctx->flux[j]/hf;
         ifast++;
       }
-    } else if (i == len_slow/2+len_fast) {
+    } else if (i == fs) {
       u = &ctx->u[0];
       alpha[0] = hf*hs/(hf+hf)/(hf+hf+hs);
       gamma[0] = hf*(hf+hf)/(hf+hs)/(hf+hf+hs);
@@ -519,7 +514,7 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
       }
       ierr =  (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
       if (i>xs) {
-        for (j=0; j<dof; j++) f[(i-len_slow/2-1)*dof+j] -= ctx->flux[j]/hf;
+        for (j=0; j<dof; j++) f[(i-sf-1)*dof+j] -= ctx->flux[j]/hf;
       }
     }
   }
@@ -722,6 +717,8 @@ int main(int argc,char *argv[])
   count_slow = Mx/(1+ctx.hratio);
   if (count_slow%2) SETERRQ(PETSC_COMM_WORLD,1,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio) is even");
   count_fast = Mx-count_slow;
+  ctx.sf = count_slow/2;
+  ctx.fs = ctx.sf + count_fast;
   ierr = PetscMalloc1(xm*dof,&index_slow);CHKERRQ(ierr);
   ierr = PetscMalloc1(xm*dof,&index_fast);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
