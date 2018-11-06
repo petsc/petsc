@@ -498,9 +498,14 @@ class Package(config.base.Configure):
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
       self.log.write('Have to rebuild '+self.PACKAGE+', '+makefile+' != '+makefileSaved+'\n')
       return 1
-    if os.path.isfile(gcommfile) and (not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(gcommfile))):
-      self.log.write('Have to rebuild '+self.PACKAGE+', '+gcommfile+' != '+gcommfileSaved+'\n')
-      return 1
+    else:
+      self.log.write('Makefile '+makefileSaved+' has correct checksum\n')
+    if os.path.isfile(gcommfile):
+      if not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(gcommfile)):
+        self.log.write('Have to rebuild '+self.PACKAGE+', '+gcommfile+' != '+gcommfileSaved+'\n')
+        return 1
+      else:
+        self.log.write('Commit file '+gcommfileSaved+' has correct checksum\n')
     self.log.write('Do not need to rebuild '+self.PACKAGE+'\n')
     return 0
 
