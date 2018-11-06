@@ -1094,6 +1094,8 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
+  PetscValidPointer(mat,3);
+  if (!dm1->ops->createinterpolation) SETERRQ1(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DMCreateInterpolation not implemented for type %s",((PetscObject)dm1)->type_name);
   ierr = PetscLogEventBegin(DM_CreateInterpolation,dm1,dm2,0,0);CHKERRQ(ierr);
   ierr = (*dm1->ops->createinterpolation)(dm1,dm2,mat,vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DM_CreateInterpolation,dm1,dm2,0,0);CHKERRQ(ierr);
