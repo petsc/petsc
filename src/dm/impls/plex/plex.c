@@ -7022,8 +7022,10 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   if (regular && cdm == dmCoarse) {ierr = DMPlexComputeInterpolatorNested(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);}
   else                            {ierr = DMPlexComputeInterpolatorGeneral(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);}
   ierr = MatViewFromOptions(*interpolation, NULL, "-interp_mat_view");CHKERRQ(ierr);
-  /* Use naive scaling */
-  ierr = DMCreateInterpolationScale(dmCoarse, dmFine, *interpolation, scaling);CHKERRQ(ierr);
+  if (scaling) {
+    /* Use naive scaling */
+    ierr = DMCreateInterpolationScale(dmCoarse, dmFine, *interpolation, scaling);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
