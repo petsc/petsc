@@ -1078,7 +1078,8 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
   PetscBool      iascii, ishdf5, isvtk, isdraw, flg, isglvis;
-  PetscErrorCode    ierr;
+  char           name[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1118,6 +1119,18 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     ierr = DMPlexCreateRankField(dm, &ranks);CHKERRQ(ierr);
     ierr = VecView(ranks, viewer);CHKERRQ(ierr);
     ierr = VecDestroy(&ranks);CHKERRQ(ierr);
+  }
+  /* Optionally view a label */
+  ierr = PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_label_view", name, PETSC_MAX_PATH_LEN, &flg);CHKERRQ(ierr);
+  if (flg) {
+    DMLabel label;
+    Vec     val;
+
+    ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+    if (!label) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Label %s provided to -dm_label_view does not exist in this DM", name);
+    ierr = DMPlexCreateLabelField(dm, label, &val);CHKERRQ(ierr);
+    ierr = VecView(val, viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(&val);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
