@@ -7,9 +7,8 @@ class Configure(config.package.CMakePackage):
     self.download          = ['git://https://github.com/meshadaptation/pragmatic.git']
     self.gitcommit         = '1dfe81ff5f34b16c15ee61adaaa7f4974e5b5135'
     self.functions         = ['pragmatic_2d_init']
-    self.includes          = ['pragmatic.h']
+    self.includes          = ['pragmatic/pragmatic.h']
     self.liblist           = [['libpragmatic.a']]
-    self.includedir        = os.path.join('include', 'pragmatic')
     self.requirescxx11     = 1
     return
 
