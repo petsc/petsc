@@ -582,7 +582,7 @@ PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
 - point - the point
 
   Output Parameter:
-. value - The point value, or -1
+. value - The point value, or the default value (-1 by default)
 
   Level: intermediate
 
