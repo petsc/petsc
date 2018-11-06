@@ -300,9 +300,7 @@ static PetscErrorCode PetscDualSpaceLagrangeView_Ascii(PetscDualSpace sp, PetscV
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer, "%s %sLagrange dual space of order %D", lag->continuous ? "Continuous" : "Discontinuous", lag->tensorSpace ? "Tensor " : "", sp->order, sp->Nc);CHKERRQ(ierr);
-  if (sp->Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, " with %D components", sp->Nc);CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "%s %sLagrange dual space\n", lag->continuous ? "Continuous" : "Discontinuous", lag->tensorSpace ? "tensor " : "");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

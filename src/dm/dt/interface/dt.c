@@ -304,13 +304,44 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewer v)
+{
+  PetscInt          q, d, c;
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(v, "Quadrature on %D points with %D components of order %D\n", quad->numPoints, quad->Nc, quad->order);CHKERRQ(ierr);}
+  else              {ierr = PetscViewerASCIIPrintf(v, "Quadrature on %D points of order %D\n", quad->numPoints, quad->order);CHKERRQ(ierr);}
+  ierr = PetscViewerGetFormat(v, &format);CHKERRQ(ierr);
+  if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
+  for (q = 0; q < quad->numPoints; ++q) {
+    ierr = PetscViewerASCIIPrintf(v, "(");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(v, PETSC_FALSE);CHKERRQ(ierr);
+    for (d = 0; d < quad->dim; ++d) {
+      if (d) {ierr = PetscViewerASCIIPrintf(v, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(v, "%+g", (double)quad->points[q*quad->dim+d]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(v, ") ");CHKERRQ(ierr);
+    if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(v, "(");CHKERRQ(ierr);}
+    for (c = 0; c < quad->Nc; ++c) {
+      if (c) {ierr = PetscViewerASCIIPrintf(v, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(v, "%g", (double)quad->weights[q*quad->Nc+c]);CHKERRQ(ierr);
+    }
+    if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(v, ")");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(v, "\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(v, PETSC_TRUE);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscQuadratureView - Views a PetscQuadrature object
 
   Collective on PetscQuadrature
 
   Input Parameters:
-+ q  - The PetscQuadrature object
++ quad  - The PetscQuadrature object
 - viewer - The PetscViewer object
 
   Level: beginner
@@ -320,29 +351,18 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
 @*/
 PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 {
-  PetscInt       q, d, c;
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)quad,viewer);CHKERRQ(ierr);
-  if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %D points with %D components\n  (", quad->numPoints, quad->Nc);CHKERRQ(ierr);}
-  else              {ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %D points\n  (", quad->numPoints);CHKERRQ(ierr);}
-  for (q = 0; q < quad->numPoints; ++q) {
-    for (d = 0; d < quad->dim; ++d) {
-      if (d) ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", (double)quad->points[q*quad->dim+d]);CHKERRQ(ierr);
-    }
-    if (quad->Nc > 1) {
-      ierr = PetscViewerASCIIPrintf(viewer, ") (");CHKERRQ(ierr);
-      for (c = 0; c < quad->Nc; ++c) {
-        if (c) ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer, "%g", (double)quad->weights[q*quad->Nc+c]);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerASCIIPrintf(viewer, ")\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer, ") %g\n", (double)quad->weights[q]);CHKERRQ(ierr);
-    }
-  }
+  PetscValidHeader(quad, 1);
+  if (viewer) PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) quad), &viewer);CHKERRQ(ierr);}
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)quad, viewer);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscQuadratureView_Ascii(quad, viewer);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -601,6 +621,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
   ierr = PetscQuadratureSetOrder(*q, 2*npoints-1);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)*q,"GaussTensor");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -818,6 +839,7 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
   ierr = PetscQuadratureSetOrder(*q, 2*npoints-1);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)*q,"GaussJacobi");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
