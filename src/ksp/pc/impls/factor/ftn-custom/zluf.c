@@ -17,7 +17,7 @@ PETSC_EXTERN void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,char* orderin
   char *t;
 
   FIXCHAR(ordering,len,t);
-  *ierr = PCFactorSetMatOrderingType(*pc,t);
+  *ierr = PCFactorSetMatOrderingType(*pc,t);if (*ierr) return;
   FREECHAR(ordering,t);
 }
 PETSC_EXTERN void PETSC_STDCALL pcfactorsetmatsolvertype_(PC *pc,char* ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
@@ -25,7 +25,7 @@ PETSC_EXTERN void PETSC_STDCALL pcfactorsetmatsolvertype_(PC *pc,char* ordering 
   char *t;
 
   FIXCHAR(ordering,len,t);
-  *ierr = PCFactorSetMatSolverType(*pc,t);
+  *ierr = PCFactorSetMatSolverType(*pc,t);if (*ierr) return;
   FREECHAR(ordering,t);
 }
 PETSC_EXTERN void PETSC_STDCALL pcfactorgetmatsolvertype_(PC *mat,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

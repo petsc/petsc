@@ -21,7 +21,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5open_(MPI_Comm *comm, char* name 
   char *c1;
 
   FIXCHAR(name, len, c1);
-  *ierr = PetscViewerHDF5Open(MPI_Comm_f2c(*(MPI_Fint*)&*comm), c1, *type, binv);
+  *ierr = PetscViewerHDF5Open(MPI_Comm_f2c(*(MPI_Fint*)&*comm), c1, *type, binv);if (*ierr) return;
   FREECHAR(name, c1);
 }
 
@@ -31,7 +31,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5pushgroup_(PetscViewer *viewer, c
   char *c1;
 
   FIXCHAR(name, len, c1);
-  *ierr = PetscViewerHDF5PushGroup(*viewer, c1);
+  *ierr = PetscViewerHDF5PushGroup(*viewer, c1);if (*ierr) return;
   FREECHAR(name, c1);
 }
 
@@ -40,7 +40,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5getgroup_(PetscViewer *viewer, ch
 {
   const char *c1;
 
-  *ierr = PetscViewerHDF5GetGroup(*viewer, &c1);
+  *ierr = PetscViewerHDF5GetGroup(*viewer, &c1);if (*ierr) return;
   *ierr = PetscStrncpy(name, c1, len);
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
@@ -52,7 +52,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5hasattribute_(PetscViewer *viewer
 
    FIXCHAR(parent, plen, c1);
    FIXCHAR(name, nlen, c2);
-   *ierr = PetscViewerHDF5HasAttribute(*viewer, c1, c2, has);
+   *ierr = PetscViewerHDF5HasAttribute(*viewer, c1, c2, has);if (*ierr) return;
    FREECHAR(parent, c1);
    FREECHAR(name, c2);
 }
@@ -74,7 +74,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5writeattribute_(PetscViewer *view
 
    FIXCHAR(parent, plen, c1);
    FIXCHAR(name, nlen, c2);
-   *ierr = PetscViewerHDF5WriteAttribute(*viewer, c1, c2, *datatype, (const void *) value);
+   *ierr = PetscViewerHDF5WriteAttribute(*viewer, c1, c2, *datatype, (const void *) value);if (*ierr) return;
    FREECHAR(parent, c1);
    FREECHAR(name, c2);
 }
@@ -86,7 +86,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5readattribute_(PetscViewer *viewe
 
    FIXCHAR(parent, plen, c1);
    FIXCHAR(name, nlen, c2);
-   *ierr = PetscViewerHDF5ReadAttribute(*viewer, c1, c2, *datatype, (void *) value);
+   *ierr = PetscViewerHDF5ReadAttribute(*viewer, c1, c2, *datatype, (void *) value);if (*ierr) return;
    FREECHAR(parent, c1);
    FREECHAR(name, c2);
 }

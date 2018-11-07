@@ -11,7 +11,7 @@ PETSC_EXTERN void PETSC_STDCALL matgetordering_(Mat *mat,char* type PETSC_MIXED_
 {
   char *t;
   FIXCHAR(type,len,t);
-  *ierr = MatGetOrdering(*mat,t,rperm,cperm);
+  *ierr = MatGetOrdering(*mat,t,rperm,cperm);if (*ierr) return;
   FREECHAR(type,t);
 }
 

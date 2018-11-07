@@ -82,7 +82,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetoptionsprefix_(DM *dm,char* prefix PETSC_MI
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = DMSetOptionsPrefix(*dm,t);
+  *ierr = DMSetOptionsPrefix(*dm,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 
@@ -91,7 +91,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsettype_(DM *x,char* type_name PETSC_MIXED_LEN
   char *t;
 
   FIXCHAR(type_name,len,t);
-  *ierr = DMSetType(*x,t);
+  *ierr = DMSetType(*x,t);if (*ierr) return;
   FREECHAR(type_name,t);
 }
 
@@ -112,7 +112,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetmattype_(DM *dm,char* prefix PETSC_MIXED_LE
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = DMSetMatType(*dm,t);
+  *ierr = DMSetMatType(*dm,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 
@@ -122,7 +122,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetvectype_(DM *dm,char* prefix PETSC_MIXED_LE
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = DMSetVecType(*dm,t);
+  *ierr = DMSetVecType(*dm,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 
@@ -131,7 +131,7 @@ PETSC_EXTERN void PETSC_STDCALL dmcreatelabel_(DM *dm, char* name PETSC_MIXED_LE
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMCreateLabel(*dm, lname);
+  *ierr = DMCreateLabel(*dm, lname);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -140,7 +140,7 @@ PETSC_EXTERN void PETSC_STDCALL dmhaslabel_(DM *dm, char* name PETSC_MIXED_LEN(l
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMHasLabel(*dm, lname, hasLabel);
+  *ierr = DMHasLabel(*dm, lname, hasLabel);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -149,7 +149,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabelvalue_(DM *dm, char* name PETSC_MIXED_
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMGetLabelValue(*dm, lname, *point, value);
+  *ierr = DMGetLabelValue(*dm, lname, *point, value);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -158,7 +158,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetlabelvalue_(DM *dm, char* name PETSC_MIXED_
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMSetLabelValue(*dm, lname, *point, *value);
+  *ierr = DMSetLabelValue(*dm, lname, *point, *value);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -167,7 +167,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabelsize_(DM *dm, char* name PETSC_MIXED_L
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMGetLabelSize(*dm, lname, size);
+  *ierr = DMGetLabelSize(*dm, lname, size);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -176,7 +176,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabelidis_(DM *dm, char* name PETSC_MIXED_L
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMGetLabelIdIS(*dm, lname, ids);
+  *ierr = DMGetLabelIdIS(*dm, lname, ids);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -193,7 +193,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabel_(DM *dm, char* name PETSC_MIXED_LEN(l
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMGetLabel(*dm, lname, label);
+  *ierr = DMGetLabel(*dm, lname, label);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -202,7 +202,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetstratumsize_(DM *dm, char* name PETSC_MIXED
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMGetStratumSize(*dm, lname, *value, size);
+  *ierr = DMGetStratumSize(*dm, lname, *value, size);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -211,7 +211,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetstratumis_(DM *dm, char* name PETSC_MIXED_L
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMGetStratumIS(*dm, lname, *value, is);
+  *ierr = DMGetStratumIS(*dm, lname, *value, is);if (*ierr) return;
   if (is && !*is) *is = (IS)0;
   FREECHAR(name, lname);
 }
@@ -221,7 +221,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetstratumis_(DM *dm, char* name PETSC_MIXED_L
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMSetStratumIS(*dm, lname, *value, *is);
+  *ierr = DMSetStratumIS(*dm, lname, *value, *is);if (*ierr) return;
   FREECHAR(name, lname);
 }
 
@@ -230,6 +230,6 @@ PETSC_EXTERN void PETSC_STDCALL dmremovelabel_(DM *dm, char* name PETSC_MIXED_LE
   char *lname;
 
   FIXCHAR(name, lenN, lname);
-  *ierr = DMRemoveLabel(*dm, lname, label);
+  *ierr = DMRemoveLabel(*dm, lname, label);if (*ierr) return;
   FREECHAR(name, lname);
 }

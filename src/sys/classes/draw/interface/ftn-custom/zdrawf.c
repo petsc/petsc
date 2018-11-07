@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawsettitle_(PetscDraw *draw,char* title P
 {
   char *t1;
   FIXCHAR(title,len,t1);
-  *ierr = PetscDrawSetTitle(*draw,t1);
+  *ierr = PetscDrawSetTitle(*draw,t1);if (*ierr) return;
   FREECHAR(title,t1);
 }
 
@@ -31,7 +31,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawappendtitle_(PetscDraw *draw,char* titl
 {
   char *t1;
   FIXCHAR(title,len,t1);
-  *ierr = PetscDrawAppendTitle(*draw,t1);
+  *ierr = PetscDrawAppendTitle(*draw,t1);if (*ierr) return;
   FREECHAR(title,t1);
 }
 

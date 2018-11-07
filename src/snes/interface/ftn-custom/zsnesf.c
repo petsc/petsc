@@ -277,7 +277,7 @@ PETSC_EXTERN void PETSC_STDCALL snessettype_(SNES *snes,char* type PETSC_MIXED_L
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = SNESSetType(*snes,t);
+  *ierr = SNESSetType(*snes,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 
@@ -286,7 +286,7 @@ PETSC_EXTERN void PETSC_STDCALL snesappendoptionsprefix_(SNES *snes,char* prefix
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = SNESAppendOptionsPrefix(*snes,t);
+  *ierr = SNESAppendOptionsPrefix(*snes,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 
@@ -295,7 +295,7 @@ PETSC_EXTERN void PETSC_STDCALL snessetoptionsprefix_(SNES *snes,char* prefix PE
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = SNESSetOptionsPrefix(*snes,t);
+  *ierr = SNESSetOptionsPrefix(*snes,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 

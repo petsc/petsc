@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,char
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   FIXCHAR(name,len,c1);
-  *ierr = PetscViewerFileSetName(v,c1);
+  *ierr = PetscViewerFileSetName(v,c1);if (*ierr) return;
   FREECHAR(name,c1);
 }
 
