@@ -1347,6 +1347,8 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner part)
   PetscFunctionReturn(0);
 }
 
+static const char *ptypes[] = {"kway", "rb"};
+
 static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
 {
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
@@ -1383,13 +1385,14 @@ static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, Petsc
 
 static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
 {
-  static const char         *ptypes[] = {"kway", "rb"};
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitioner ParMetis Options");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-petscpartitioner_parmetis_type", "Partitioning method", "", ptypes, 2, ptypes[p->ptype], &p->ptype, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-petscpartitioner_parmetis_imbalance_ratio", "Load imbalance ratio limit", "", p->imbalanceRatio, &p->imbalanceRatio, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1401,24 +1404,25 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *
 static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
 {
 #if defined(PETSC_HAVE_PARMETIS)
+  PetscPartitioner_ParMetis *pm = (PetscPartitioner_ParMetis *) part->data;
   MPI_Comm       comm;
   PetscSection   section;
-  PetscInt       nvtxs      = numVertices; /* The number of vertices in full graph */
-  PetscInt      *vtxdist;                  /* Distribution of vertices across processes */
-  PetscInt      *xadj       = start;       /* Start of edge list for each vertex */
-  PetscInt      *adjncy     = adjacency;   /* Edge lists for all vertices */
-  PetscInt      *vwgt       = NULL;        /* Vertex weights */
-  PetscInt      *adjwgt     = NULL;        /* Edge weights */
-  PetscInt       wgtflag    = 0;           /* Indicates which weights are present */
-  PetscInt       numflag    = 0;           /* Indicates initial offset (0 or 1) */
-  PetscInt       ncon       = 1;           /* The number of weights per vertex */
-  real_t        *tpwgts;                   /* The fraction of vertex weights assigned to each partition */
-  real_t        *ubvec;                    /* The balance intolerance for vertex weights */
-  PetscInt       options[64];              /* Options */
+  PetscInt       nvtxs       = numVertices; /* The number of vertices in full graph */
+  PetscInt      *vtxdist;                   /* Distribution of vertices across processes */
+  PetscInt      *xadj        = start;       /* Start of edge list for each vertex */
+  PetscInt      *adjncy      = adjacency;   /* Edge lists for all vertices */
+  PetscInt      *vwgt        = NULL;        /* Vertex weights */
+  PetscInt      *adjwgt      = NULL;        /* Edge weights */
+  PetscInt       wgtflag     = 0;           /* Indicates which weights are present */
+  PetscInt       numflag     = 0;           /* Indicates initial offset (0 or 1) */
+  PetscInt       ncon        = 1;           /* The number of weights per vertex */
+  PetscInt       metis_ptype = pm->ptype;   /* kway or recursive bisection */
+  real_t        *tpwgts;                    /* The fraction of vertex weights assigned to each partition */
+  real_t        *ubvec;                     /* The balance intolerance for vertex weights */
+  PetscInt       options[64];               /* Options */
   /* Outputs */
   PetscInt       v, i, *assignment, *points;
   PetscMPIInt    size, rank, p;
-  PetscInt       metis_ptype = ((PetscPartitioner_ParMetis *) part->data)->ptype;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1436,7 +1440,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   for (p = 0; p < nparts; ++p) {
     tpwgts[p] = 1.0/nparts;
   }
-  ubvec[0] = 1.05;
+  ubvec[0] = pm->imbalanceRatio;
   /* Weight cells by dofs on cell by default */
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   if (section) {
@@ -1482,7 +1486,8 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
         }
       }
     } else {
-      options[0] = 0; /* use all defaults */
+      options[0] = 1;
+      options[1] = pm->debugFlag;
       PetscStackPush("ParMETIS_V3_PartKway");
       ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &comm);
       PetscStackPop;
@@ -1535,6 +1540,10 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
   part->data = p;
+
+  p->ptype          = 0;
+  p->imbalanceRatio = 1.05;
+  p->debugFlag      = 0;
 
   ierr = PetscPartitionerInitialize_ParMetis(part);CHKERRQ(ierr);
   ierr = PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionercite);CHKERRQ(ierr);

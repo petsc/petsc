@@ -71,7 +71,9 @@ typedef struct {
 } PetscPartitioner_Chaco;
 
 typedef struct {
-  PetscInt ptype;
+  PetscInt  ptype;
+  PetscReal imbalanceRatio;
+  PetscInt  debugFlag;
 } PetscPartitioner_ParMetis;
 
 typedef struct {
