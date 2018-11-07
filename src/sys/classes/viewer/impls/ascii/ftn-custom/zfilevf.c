@@ -35,8 +35,8 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerfilegetname_(PetscViewer *viewer, cha
 {
    const char *c1;
 
-   *ierr = PetscViewerGetType(*viewer, &c1);
-   *ierr = PetscStrncpy(name, c1, len);
+   *ierr = PetscViewerGetType(*viewer, &c1);if (*ierr) return;
+   *ierr = PetscStrncpy(name, c1, len);if (*ierr) return;
    FIXRETURNCHAR(PETSC_TRUE, name, len);
 }
 
