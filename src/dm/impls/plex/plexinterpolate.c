@@ -748,7 +748,7 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm)
+PetscErrorCode DMPlexOrientInterface(DM dm)
 {
   PetscSF           sf;
   PetscInt          (*roots)[2], (*leaves)[2];
@@ -1124,7 +1124,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
     ierr = DMCopyLabels(dm, idm);CHKERRQ(ierr);
-    ierr = DMPlexOrientPointSF_Internal(idm);CHKERRQ(ierr);
+    ierr = DMPlexOrientInterface(idm);CHKERRQ(ierr);
   }
   {
     PetscBool            isper;
