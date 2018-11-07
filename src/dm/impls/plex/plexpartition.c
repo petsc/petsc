@@ -458,11 +458,23 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 @*/
 PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
 {
+  PetscInt       size;
+  PetscBool      isascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) part), &v);CHKERRQ(ierr);}
+  ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject) part), &size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "Graph Partitioner: %D MPI Process%s\n", size, size > 1 ? "es" : "");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "  type: %s\n", part->hdr.type_name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "edge cut: %D\n", part->edgeCut);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "balance:  %.2g\n", part->balance);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+  }
   if (part->ops->view) {ierr = (*part->ops->view)(part, v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -522,7 +534,6 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscPartitionerViewFromOptions(part, NULL, "-petscpartitioner_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -695,8 +706,8 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
       *partition = newPartition;
     }
   } else SETERRQ1(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Invalid height %D for points to partition", part->height);
+  ierr = PetscPartitionerViewFromOptions(part, NULL, "-petscpartitioner_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 static PetscErrorCode PetscPartitionerDestroy_Shell(PetscPartitioner part)
@@ -714,12 +725,9 @@ static PetscErrorCode PetscPartitionerDestroy_Shell(PetscPartitioner part)
 static PetscErrorCode PetscPartitionerView_Shell_Ascii(PetscPartitioner part, PetscViewer viewer)
 {
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
-  PetscViewerFormat       format;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Shell Graph Partitioner:\n");CHKERRQ(ierr);
   if (p->random) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "using random partition\n");CHKERRQ(ierr);
@@ -936,12 +944,7 @@ static PetscErrorCode PetscPartitionerDestroy_Simple(PetscPartitioner part)
 
 static PetscErrorCode PetscPartitionerView_Simple_Ascii(PetscPartitioner part, PetscViewer viewer)
 {
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Simple Graph Partitioner:\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1075,12 +1078,7 @@ static PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part)
 
 static PetscErrorCode PetscPartitionerView_Gather_Ascii(PetscPartitioner part, PetscViewer viewer)
 {
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Gather Graph Partitioner:\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1155,12 +1153,7 @@ static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part)
 
 static PetscErrorCode PetscPartitionerView_Chaco_Ascii(PetscPartitioner part, PetscViewer viewer)
 {
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Chaco Graph Partitioner:\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1361,12 +1354,15 @@ static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
 
 static PetscErrorCode PetscPartitionerView_ParMetis_Ascii(PetscPartitioner part, PetscViewer viewer)
 {
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
+  PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
+  PetscErrorCode             ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "ParMetis Graph Partitioner:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "ParMetis type: %s\n", ptypes[p->ptype]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "load imbalance ratio %g\n", (double) p->imbalanceRatio);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "debug flag %D\n", p->debugFlag);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1701,7 +1697,6 @@ static PetscErrorCode PetscPartitionerView_PTScotch_Ascii(PetscPartitioner part,
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer, "PTScotch Graph Partitioner:\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "using partitioning strategy %s\n",PTScotchStrategyList[p->strategy]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "using load imbalance ratio %g\n",(double)p->imbalance);CHKERRQ(ierr);
