@@ -738,9 +738,11 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
         DM dmRedundant;
+        PetscSF sf;
 
-        ierr = DMPlexGetRedundantDM(base,&dmRedundant);CHKERRQ(ierr);
+        ierr = DMPlexGetRedundantDM(base,&sf,&dmRedundant);CHKERRQ(ierr);
         if (!dmRedundant) SETERRQ(comm,PETSC_ERR_PLIB,"Could not create redundant DM");
+        ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
         base = dmRedundant;
         ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
         ierr = DMDestroy(&dmRedundant);CHKERRQ(ierr);
