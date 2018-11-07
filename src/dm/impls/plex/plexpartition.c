@@ -606,6 +606,9 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   ierr = PetscPartitionerGetDefaultType(NULL,&partitionerType);CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(p,partitionerType);CHKERRQ(ierr);
 
+  p->edgeCut = 0;
+  p->balance = 0.0;
+
   *part = p;
   PetscFunctionReturn(0);
 }
@@ -1413,7 +1416,6 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   real_t        *ubvec;                    /* The balance intolerance for vertex weights */
   PetscInt       options[64];              /* Options */
   /* Outputs */
-  PetscInt       edgeCut;                  /* The number of edges cut by the partition */
   PetscInt       v, i, *assignment, *points;
   PetscMPIInt    size, rank, p;
   PetscInt       metis_ptype = ((PetscPartitioner_ParMetis *) part->data)->ptype;
@@ -1462,7 +1464,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
         if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
         if (metis_ptype == 1) {
           PetscStackPush("METIS_PartGraphRecursive");
-          ierr = METIS_PartGraphRecursive(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &edgeCut, assignment);
+          ierr = METIS_PartGraphRecursive(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
           PetscStackPop;
           if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphRecursive()");
         } else {
@@ -1474,7 +1476,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
           /* options[METIS_OPTION_CONTIG]  = 1; */ /* try to produce partitions that are contiguous */
           /* options[METIS_OPTION_MINCONN] = 1; */ /* minimize the maximum degree of the subdomain graph */
           PetscStackPush("METIS_PartGraphKway");
-          ierr = METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &edgeCut, assignment);
+          ierr = METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
           PetscStackPop;
           if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
         }
@@ -1482,7 +1484,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     } else {
       options[0] = 0; /* use all defaults */
       PetscStackPush("ParMETIS_V3_PartKway");
-      ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm);
+      ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &comm);
       PetscStackPop;
       if (ierr != METIS_OK) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", ierr);
     }
