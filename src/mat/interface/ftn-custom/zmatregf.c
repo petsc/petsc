@@ -14,7 +14,7 @@ PETSC_EXTERN void PETSC_STDCALL matsettype_(Mat *x,char* type_name PETSC_MIXED_L
   char *t;
 
   FIXCHAR(type_name,len,t);
-  *ierr = MatSetType(*x,t);
+  *ierr = MatSetType(*x,t);if (*ierr) return;
   FREECHAR(type_name,t);
 }
 

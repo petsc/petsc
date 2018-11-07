@@ -13,7 +13,7 @@ PETSC_EXTERN void PETSC_STDCALL matpartitioningpartysetglobal_(MatPartitioning *
 {
   char *t;
   FIXCHAR(method,len,t);
-  *ierr = MatPartitioningPartySetGlobal(*part,t);
+  *ierr = MatPartitioningPartySetGlobal(*part,t);if (*ierr) return;
   FREECHAR(method,t);
 }
 
@@ -21,7 +21,7 @@ PETSC_EXTERN void PETSC_STDCALL matpartitioningpartysetlocal_(MatPartitioning *p
 {
   char *t;
   FIXCHAR(method,len,t);
-  *ierr = MatPartitioningPartySetLocal(*part,t);
+  *ierr = MatPartitioningPartySetLocal(*part,t);if (*ierr) return;
   FREECHAR(method,t);
 }
 

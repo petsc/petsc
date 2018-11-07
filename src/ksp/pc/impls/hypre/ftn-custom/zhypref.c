@@ -13,7 +13,7 @@ PETSC_EXTERN void PETSC_STDCALL pchypresettype_(PC *pc, char* name PETSC_MIXED_L
 {
   char *t;
   FIXCHAR(name,len,t);
-  *ierr = PCHYPRESetType(*pc,t);
+  *ierr = PCHYPRESetType(*pc,t);if (*ierr) return;
   FREECHAR(name,t);
 }
 

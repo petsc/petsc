@@ -254,7 +254,7 @@ PETSC_EXTERN void PETSC_STDCALL taosettype_(Tao *tao, char* type_name PETSC_MIXE
     char *t;
 
     FIXCHAR(type_name,len,t);
-    *ierr = TaoSetType(*tao,t);
+    *ierr = TaoSetType(*tao,t);if (*ierr) return;
     FREECHAR(type_name,t);
 
 }
@@ -284,7 +284,7 @@ PETSC_EXTERN void PETSC_STDCALL taoappendoptionsprefix_(Tao *tao, char* prefix P
 {
   char *name;
   FIXCHAR(prefix,len,name);
-  *ierr = TaoAppendOptionsPrefix(*tao,name);
+  *ierr = TaoAppendOptionsPrefix(*tao,name);if (*ierr) return;
   FREECHAR(prefix,name);
 }
 
@@ -292,7 +292,7 @@ PETSC_EXTERN void PETSC_STDCALL taosetoptionsprefix_(Tao *tao, char* prefix PETS
 {
   char *t;
   FIXCHAR(prefix,len,t);
-  *ierr = TaoSetOptionsPrefix(*tao,t);
+  *ierr = TaoSetOptionsPrefix(*tao,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 

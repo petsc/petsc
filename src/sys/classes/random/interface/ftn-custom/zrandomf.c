@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL petscrandomsettype_(PetscRandom *rnd,char* type 
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = PetscRandomSetType(*rnd,t);
+  *ierr = PetscRandomSetType(*rnd,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 
@@ -36,7 +36,7 @@ PETSC_EXTERN void PETSC_STDCALL petscrandomgettype_(PetscRandom *petscrandom,cha
   const char *tname;
 
   *ierr = PetscRandomGetType(*petscrandom,&tname);if (*ierr) return;
-  *ierr = PetscStrncpy(name,tname,len);
+  *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 
 }

@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,char* m 
   char *ms;
 
   FIXCHAR(m,len,ms);
-  *ierr = PetscMatlabEngineCreate(MPI_Comm_f2c(*(MPI_Fint*)&*comm),ms,e);
+  *ierr = PetscMatlabEngineCreate(MPI_Comm_f2c(*(MPI_Fint*)&*comm),ms,e);if (*ierr) return;
   FREECHAR(m,ms);
 }
 
@@ -32,7 +32,7 @@ PETSC_EXTERN void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,
 {
   char *ms;
   FIXCHAR(m,len,ms);
-  *ierr = PetscMatlabEngineEvaluate(*e,ms);
+  *ierr = PetscMatlabEngineEvaluate(*e,ms);if (*ierr) return;
   FREECHAR(m,ms);
 }
 
@@ -41,7 +41,7 @@ PETSC_EXTERN void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,
 {
   char *ms;
   FIXCHAR(s,len,ms);
-  *ierr = PetscMatlabEnginePutArray(*e,*m,*n,a,ms);
+  *ierr = PetscMatlabEnginePutArray(*e,*m,*n,a,ms);if (*ierr) return;
   FREECHAR(s,ms);
 }
 
@@ -50,7 +50,7 @@ PETSC_EXTERN void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,
 {
   char *ms;
   FIXCHAR(s,len,ms);
-  *ierr = PetscMatlabEngineGetArray(*e,*m,*n,a,ms);
+  *ierr = PetscMatlabEngineGetArray(*e,*m,*n,a,ms);if (*ierr) return;
   FREECHAR(s,ms);
 }
 

@@ -12,7 +12,7 @@ PETSC_EXTERN void PETSC_STDCALL ksppythonsettype_(KSP *ksp, char* name PETSC_MIX
 {
   char *t;
   FIXCHAR(name,len,t);
-  *ierr = KSPPythonSetType(*ksp,t);
+  *ierr = KSPPythonSetType(*ksp,t);if (*ierr) return;
   FREECHAR(name,t);
 }
 

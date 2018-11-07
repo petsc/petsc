@@ -25,6 +25,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcreatefromfile_(MPI_Fint *comm, char* name
   char *filename;
 
   FIXCHAR(name, lenN, filename);
-  *ierr = DMPlexCreateFromFile(MPI_Comm_f2c(*(comm)), filename, *interpolate, dm);
+  *ierr = DMPlexCreateFromFile(MPI_Comm_f2c(*(comm)), filename, *interpolate, dm);if (*ierr) return;
   FREECHAR(name, filename);
 }

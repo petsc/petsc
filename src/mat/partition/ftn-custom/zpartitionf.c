@@ -32,7 +32,7 @@ PETSC_EXTERN void PETSC_STDCALL matpartitioningsettype_(MatPartitioning *part,ch
 {
   char *t;
   FIXCHAR(type,len,t);
-  *ierr = MatPartitioningSetType(*part,t);
+  *ierr = MatPartitioningSetType(*part,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

@@ -574,7 +574,7 @@ PETSC_EXTERN void PETSC_STDCALL matgetfactor_(Mat *mat,char* outtype PETSC_MIXED
 {
   char *t;
   FIXCHAR(outtype,len,t);
-  *ierr = MatGetFactor(*mat,t,*ftype,M);
+  *ierr = MatGetFactor(*mat,t,*ftype,M);if (*ierr) return;
   FREECHAR(outtype,t);
 }
 
@@ -582,7 +582,7 @@ PETSC_EXTERN void PETSC_STDCALL matconvert_(Mat *mat,char* outtype PETSC_MIXED_L
 {
   char *t;
   FIXCHAR(outtype,len,t);
-  *ierr = MatConvert(*mat,t,*reuse,M);
+  *ierr = MatConvert(*mat,t,*reuse,M);if (*ierr) return;
   FREECHAR(outtype,t);
 }
 
@@ -643,7 +643,7 @@ PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,char* prefix PETSC
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = MatSetOptionsPrefix(*mat,t);
+  *ierr = MatSetOptionsPrefix(*mat,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 
