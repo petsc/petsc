@@ -1,0 +1,6 @@
+residual u = 3.64605e-10
+residual p = 9.22064e-13
+residual [u,p] = 3.64607e-10
+discretization error u = 0.006385
+discretization error p = 1.90886
+discretization error [u,p] = 1.90887
