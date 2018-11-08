@@ -6701,7 +6701,7 @@ PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rdm, val);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *val, "label value");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *val, "label_value");CHKERRQ(ierr);
   ierr = VecGetArray(*val, &v);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *lv;
