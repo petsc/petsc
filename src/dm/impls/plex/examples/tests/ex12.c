@@ -142,6 +142,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     *dm  = pdm;
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   if (user->loadBalance) {
     PetscPartitioner part;
 
