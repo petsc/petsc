@@ -4185,7 +4185,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     PetscInt     pRefStart,pRefEnd,leafStart,leafEnd;
     PetscScalar  *pointWork;
 
-    ierr = PetscSectionGetMaxDof(globalFine,&maxDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetMaxDof(localFine,&maxDof);CHKERRQ(ierr);
     ierr = DMGetWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
     ierr = DMGetWorkArray(fine,maxDof,MPIU_SCALAR,&pointWork);CHKERRQ(ierr);
     ierr = DMPlexGetReferenceTree(fine,&refTree);CHKERRQ(ierr);
@@ -4260,7 +4260,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
           PetscInt i, j;
 
 #if 0
-          ierr = PetscInfo6(coarse,"field %D, numFields %D, childId %D, numRows %D, numCols %D, refPointFieldN %D\n",f,numFields,childId,numRows,numCols,refPointFieldN[childId - pRefStart][f]);CHKERRQ(ierr);
+          ierr = PetscInfo5(coarse,"childId %D, numRows %D, numCols %D, refPointFieldN %D maxDof %D\n",childId,numRows,numCols,refPointFieldN[childId - pRefStart][f], maxDof);CHKERRQ(ierr);
 #endif
           for (i = 0; i < numRows; i++) {
             PetscScalar val = 0.;
@@ -4293,8 +4293,8 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
       }
     }
     ierr = DMPlexReferenceTreeRestoreChildrenMatrices(refTree,&refPointFieldMats,&refPointFieldN);CHKERRQ(ierr);
-    ierr = DMRestoreWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
     ierr = DMRestoreWorkArray(fine,maxDof,MPIU_SCALAR,&pointWork);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
   }
   ierr = PetscFree(leafValues);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafValuesSec);CHKERRQ(ierr);
