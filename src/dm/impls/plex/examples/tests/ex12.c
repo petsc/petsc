@@ -78,7 +78,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DM             distMesh        = NULL;
+  DM             pdm             = NULL;
   PetscInt       dim             = user->dim;
   PetscBool      cellSimplex     = user->cellSimplex;
   const char    *filename        = user->filename;
@@ -131,13 +131,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     }
-    ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, overlap, NULL, &pdm);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexGetRedundantDM(*dm, &distMesh);CHKERRQ(ierr);
+    ierr = DMPlexGetRedundantDM(*dm, &pdm);CHKERRQ(ierr);
   }
-  if (distMesh) {
+  if (pdm) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = distMesh;
+    *dm  = pdm;
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   if (user->loadBalance) {
@@ -155,10 +155,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
     }
     ierr = DMPlexSetPartitionBalance(*dm, user->partitionBalance);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
-    if (distMesh) {
+    ierr = DMPlexDistribute(*dm, overlap, NULL, &pdm);CHKERRQ(ierr);
+    if (pdm) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distMesh;
+      *dm  = pdm;
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
