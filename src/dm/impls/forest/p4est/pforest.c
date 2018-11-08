@@ -737,11 +737,12 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       }
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
-        DM dmRedundant;
+        DM      dmRedundant;
         PetscSF sf;
 
         ierr = DMPlexGetRedundantDM(base,&sf,&dmRedundant);CHKERRQ(ierr);
         if (!dmRedundant) SETERRQ(comm,PETSC_ERR_PLIB,"Could not create redundant DM");
+        ierr = PetscObjectCompose((PetscObject)dmRedundant,"_base_migration_sf",(PetscObject)sf);CHKERRQ(ierr);
         ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
         base = dmRedundant;
         ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
@@ -4578,6 +4579,21 @@ static PetscErrorCode DMCreateCoordinateDM_pforest(DM dm,DM *cdm)
   PetscFunctionReturn(0);
 }
 
+#define VecViewLocal_pforest _append_pforest(VecViewLocal)
+static PetscErrorCode VecViewLocal_pforest(Vec vec,PetscViewer viewer)
+{
+  DM             dm, plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(vec,&dm);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,plex);CHKERRQ(ierr);
+  ierr = VecView_Plex_Local(vec,viewer);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #define VecView_pforest _append_pforest(VecView)
 static PetscErrorCode VecView_pforest(Vec vec,PetscViewer viewer)
 {
@@ -4653,20 +4669,16 @@ static PetscErrorCode DMCreateGlobalVector_pforest(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#if 0
 #define DMCreateLocalVector_pforest _append_pforest(DMCreateLocalVector)
 static PetscErrorCode DMCreateLocalVector_pforest(DM dm,Vec *vec)
 {
-  DM             plex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(plex,vec);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector_Section_Private(dm,vec);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecViewLocal_pforest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 #define DMCreateMatrix_pforest _append_pforest(DMCreateMatrix)
 static PetscErrorCode DMCreateMatrix_pforest(DM dm,Mat *mat)
@@ -4804,7 +4816,6 @@ static PetscErrorCode DMClone_pforest(DM dm, DM *newdm)
 
   PetscFunctionBegin;
   ierr = DMClone_Forest(dm,newdm);CHKERRQ(ierr);
-  ierr = DMInitialize_pforest(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4899,7 +4910,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
-  dm->ops->createlocalvector         = DMCreateLocalVector_Section_Private;
+  dm->ops->createlocalvector         = DMCreateLocalVector_pforest;
   dm->ops->creatematrix              = DMCreateMatrix_pforest;
   dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
   dm->ops->projectfunctionlabellocal = DMProjectFunctionLabelLocal_pforest;
