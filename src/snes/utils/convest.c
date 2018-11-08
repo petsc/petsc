@@ -458,7 +458,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
     if (Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "[");CHKERRQ(ierr);}
     for (f = 0; f < Nf; ++f) {
       if (f > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
-      ierr = PetscViewerASCIIPrintf(viewer, "%.2#g", (double) alpha[f]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%#.2g", (double) alpha[f]);CHKERRQ(ierr);
     }
     if (Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
