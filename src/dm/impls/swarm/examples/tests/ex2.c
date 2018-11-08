@@ -145,7 +145,7 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
 
     for (d = 0; d < cdim; ++d) {
       ierr = PetscRandomGetValue(rnd, &value);CHKERRQ(ierr);
-      coord[d] = PetscMax(user->domain_lo[d], PetscMin(user->domain_hi[d], coord[d] + value*hh[d]));
+      coord[d] = PetscMax(user->domain_lo[d], PetscMin(user->domain_hi[d], PetscRealPart(coord[d] + value*hh[d])));
     }
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
@@ -311,9 +311,9 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
       const PetscInt   idx = pidx[p];
       const PetscReal *c   = &coords[idx*dim];
 
-      mom[0] += w[idx];
-      mom[1] += w[idx] * c[0];
-      for (d = 0; d < dim; ++d) mom[2] += w[idx] * c[d]*c[d];
+      mom[0] += PetscRealPart(w[idx]);
+      mom[1] += PetscRealPart(w[idx]) * c[0];
+      for (d = 0; d < dim; ++d) mom[2] += PetscRealPart(w[idx]) * c[d]*c[d];
     }
     ierr = PetscFree(pidx);CHKERRQ(ierr);
   }
@@ -355,15 +355,19 @@ static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppC
 {
   PetscDS        prob;
   PetscErrorCode ierr;
+  PetscScalar    mom;
 
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetObjective(prob, 0, &f0_1);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, &moments[0], user);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, &mom, user);CHKERRQ(ierr);
+  moments[0] = PetscRealPart(mom);
   ierr = PetscDSSetObjective(prob, 0, &f0_x);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, &moments[1], user);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, &mom, user);CHKERRQ(ierr);
+  moments[1] = PetscRealPart(mom);
   ierr = PetscDSSetObjective(prob, 0, &f0_r2);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, &moments[2], user);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, &mom, user);CHKERRQ(ierr);
+  moments[2] = PetscRealPart(mom);
   PetscFunctionReturn(0);
 }
 
