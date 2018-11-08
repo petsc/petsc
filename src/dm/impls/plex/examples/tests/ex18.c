@@ -140,6 +140,8 @@ typedef struct {
   PetscBool  distribute;                   /* Distribute the mesh */
   InterpType interpolate;                  /* Interpolate the mesh before or after DMPlexDistribute() */
   PetscBool  useGenerator;                 /* Construct mesh with a mesh generator */
+  PetscBool  testOrientIF;                 /* Test for different original interface orientations */
+  PetscInt   ornt[2];                      /* Orientation of interface on rank 0 and rank 1 */
   PetscInt   faces[3];                     /* Number of faces per dimension for generator */
   char       filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
 } AppCtx;
@@ -159,6 +161,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->distribute   = PETSC_FALSE;
   options->interpolate  = NONE;
   options->useGenerator = PETSC_FALSE;
+  options->testOrientIF = PETSC_FALSE;
+  options->ornt[0]      = 0;
+  options->ornt[1]      = 0;
   options->faces[0]     = 2;
   options->faces[1]     = 2;
   options->faces[2]     = 2;
@@ -175,6 +180,17 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate = (InterpType) interp;
   if (!options->distribute && options->interpolate == PARALLEL) SETERRQ(comm, PETSC_ERR_SUP, "-interpolate parallel  needs  -distribute 1");
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2);CHKERRQ(ierr);
+  if (flg2 != options->testOrientIF) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
+  if (options->testOrientIF) {
+    PetscInt i;
+    for (i=0; i<2; i++) {
+      if (options->ornt[i] >= 10) options->ornt[i] = -(options->ornt[i]-10);  /* 11 12 13 become -1 -2 -3 */
+    }
+    options->interpolate = SERIAL;
+    options->distribute = PETSC_FALSE;
+  }
   dim = 3;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", "ex18.c", options->faces, &dim, &flg2);CHKERRQ(ierr);
   if (flg2) {
@@ -350,6 +366,20 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
   if (user->interpolate == SERIAL) {
     /* TODO this dirty hotfix can be removed once point SF is fixed systematically */
     ierr = CreateSimplex_3D_HotfixSF(*dm);CHKERRQ(ierr);
+  }
+  if (user->testOrientIF) {
+    PetscInt start;
+    PetscBool reverse;
+    PetscInt ifp[] = {8, 6};
+
+    ierr = PetscObjectSetName((PetscObject) *dm, "Mesh before orientation");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-before_orientation_dm_view");CHKERRQ(ierr);
+    /* rotate interface face ifp[rank] by given orientation ornt[rank] */
+    ierr = DMPlexFixFaceOrientations_Translate_Private(user->ornt[rank], &start, &reverse);CHKERRQ(ierr);
+    ierr = DMPlexOrientCell_Internal(*dm, ifp[rank], start, reverse);CHKERRQ(ierr);
+    ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+  }
+  if (user->interpolate == SERIAL) {
     ierr = DMPlexOrientInterface(*dm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -613,6 +643,14 @@ int main(int argc, char **argv)
     test:
       suffix: 4_hex_dist1
       args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
+
+  test:
+    # the same as 4_tet_dist0 but test different initial orientations
+    suffix: 4_tet_test_orient
+    nsize: 2
+    args: -dim 3 -distribute 0
+    args: -rotate_interface_0 {{0 1 2 11 12 13}}
+    args: -rotate_interface_1 {{0 1 2 11 12 13}}
 
   testset:
     requires: exodusii
