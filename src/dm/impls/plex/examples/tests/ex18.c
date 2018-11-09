@@ -149,7 +149,7 @@ typedef struct {
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *interpTypes[3]  = {"none", "serial", "parallel"};
-  PetscInt       interp, dim;
+  PetscInt       interp=NONE, dim;
   PetscBool      flg1, flg2;
   PetscErrorCode ierr;
 
