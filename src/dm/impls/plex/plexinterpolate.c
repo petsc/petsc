@@ -683,7 +683,7 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexOrientCell_Internal(DM dm, PetscInt p, PetscInt start1, PetscInt reverse1)
+PetscErrorCode DMPlexOrientCell_Internal(DM dm, PetscInt p, PetscInt start1, PetscBool reverse1)
 {
   PetscInt i, j, k, maxConeSize, coneSize, coneConeSize, supportSize, supportConeSize;
   PetscInt start0, start;
