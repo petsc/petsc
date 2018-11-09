@@ -893,6 +893,7 @@ PetscErrorCode DMPlexOrientInterface(DM dm)
 #endif
   if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
   ierr = PetscFree4(roots, leaves, rootsRanks, leavesRanks);CHKERRQ(ierr);
+  ierr = PetscFree2(rmine1, rremote1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
