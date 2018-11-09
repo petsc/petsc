@@ -4,6 +4,7 @@
 #if !defined(__PETSCPC_H)
 #define __PETSCPC_H
 #include <petscmat.h>
+#include <petscdmtypes.h>
 #include <petscpctypes.h>
 
 PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
