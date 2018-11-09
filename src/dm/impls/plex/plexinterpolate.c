@@ -662,7 +662,7 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
   PetscInt c, coneSize;
   PetscInt start1;
   PetscBool reverse1;
-  const PetscInt *cone;
+  const PetscInt *cone=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -689,8 +689,8 @@ PetscErrorCode DMPlexOrientCell_Internal(DM dm, PetscInt p, PetscInt start1, Pet
   PetscInt start0, start;
   PetscBool reverse0, reverse;
   PetscInt newornt;
-  const PetscInt *cone, *support, *supportCone, *ornts;
-  PetscInt *newcone, *newornts;
+  const PetscInt *cone=NULL, *support=NULL, *supportCone=NULL, *ornts=NULL;
+  PetscInt *newcone=NULL, *newornts=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -741,8 +741,8 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
 {
   PetscInt            nleaves;
   PetscInt            nranks;
-  const PetscMPIInt   *ranks;
-  const PetscInt      *roffset, *rmine, *rremote;
+  const PetscMPIInt  *ranks=NULL;
+  const PetscInt     *roffset=NULL, *rmine=NULL, *rremote=NULL;
   PetscInt            n, o, r;
   PetscErrorCode      ierr;
 
@@ -764,17 +764,17 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
 
 PetscErrorCode DMPlexOrientInterface(DM dm)
 {
-  PetscSF           sf;
+  PetscSF           sf=NULL;
   PetscInt          (*roots)[2], (*leaves)[2];
   PetscMPIInt       (*rootsRanks)[2], (*leavesRanks)[2];
-  const PetscInt    *locals;
-  const PetscSFNode *remotes;
+  const PetscInt    *locals=NULL;
+  const PetscSFNode *remotes=NULL;
   PetscInt           nroots, nleaves, p, c;
   PetscInt           nranks, n, o, r;
-  const PetscMPIInt *ranks;
-  const PetscInt    *roffset;
-  PetscInt          *rmine1, *rremote1; /* rmine and rremote copies simultaneously sorted by rank and rremote */
-  const PetscInt    *cone;
+  const PetscMPIInt *ranks=NULL;
+  const PetscInt    *roffset=NULL;
+  PetscInt          *rmine1=NULL, *rremote1=NULL; /* rmine and rremote copies simultaneously sorted by rank and rremote */
+  const PetscInt    *cone=NULL;
   PetscInt           coneSize, ind0;
   MPI_Comm           comm;
   PetscMPIInt        rank;

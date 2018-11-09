@@ -287,13 +287,11 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
 /* TODO this dirty hotfix can be removed once point SF is fixed systematically */
 static PetscErrorCode CreateSimplex_3D_HotfixSF(DM idm)
 {
-  PetscSF sf;
+  PetscSF sf=NULL;
   PetscInt nroots,nleaves;
-  const PetscInt *ilocal;
-  const PetscSFNode *iremote;
-  PetscInt *ilocal1;
+  const PetscInt *ilocal=NULL;
+  const PetscSFNode *iremote=NULL;
   PetscInt idx=3;
-  PetscSFNode *iremote1;
   PetscMPIInt rank;
   PetscErrorCode ierr;
 
@@ -302,6 +300,9 @@ static PetscErrorCode CreateSimplex_3D_HotfixSF(DM idm)
   ierr = DMGetPointSF(idm, &sf);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, &iremote);CHKERRQ(ierr);
   if (!rank) {
+    PetscInt *ilocal1=NULL;
+    PetscSFNode *iremote1=NULL;
+
     /* insert 8 <- (1,6) as leave idx */
     ierr = PetscMalloc1(nleaves+1, &ilocal1);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves+1, &iremote1);CHKERRQ(ierr);
