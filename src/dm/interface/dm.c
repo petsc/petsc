@@ -4654,13 +4654,16 @@ PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSecti
   ierr = VecGetArrayRead(coords, &arr);CHKERRQ(ierr);
   ierr = PetscSectionExtractDofsFromArray(cs, MPIU_SCALAR, arr, p, &newcs, pCoord ? ((void**)&newarr) : NULL);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(coords, &arr);CHKERRQ(ierr);
-  if (pCoordSection) *pCoordSection = newcs;
   if (pCoord) {
     ierr = PetscSectionGetStorageSize(newcs, &n);CHKERRQ(ierr);
     /* set array in two steps to mimic PETSC_OWN_POINTER */
     ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)p), 1, n, NULL, pCoord);CHKERRQ(ierr);
     ierr = VecReplaceArray(*pCoord, newarr);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFree(newarr);CHKERRQ(ierr);
   }
+  if (pCoordSection) {*pCoordSection = newcs;}
+  else               {ierr = PetscSectionDestroy(&newcs);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
