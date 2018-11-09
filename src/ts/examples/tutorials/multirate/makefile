@@ -22,4 +22,7 @@ ex6: ex6.o $(OBJECTS_FV) chkopts
 	-${CLINKER} -o ex6 ex6.o $(OBJECTS_FV) ${PETSC_TS_LIB}
 	${RM} ex6.o $(OBJECTS_FV)
 
+ex8: ex8.o $(OBJECTS_FV) chkopts
+	-${CLINKER} -o ex8 ex8.o $(OBJECTS_FV) ${PETSC_TS_LIB}
+	${RM} ex8.o $(OBJECTS_FV)
 include ${PETSC_DIR}/lib/petsc/conf/test

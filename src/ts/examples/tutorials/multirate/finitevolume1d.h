@@ -6,7 +6,7 @@ typedef struct _LimitInfo {
   PetscInt  m;
 
   /* context for partitioned system */
-  PetscReal hxs,hxf;
+  PetscReal hxs,hxm,hxf;
 } *LimitInfo;
 void Limit_Upwind(LimitInfo,const PetscScalar*,const PetscScalar*,PetscScalar*);
 void Limit_LaxWendroff(LimitInfo,const PetscScalar*,const PetscScalar*,PetscScalar*);
@@ -61,6 +61,15 @@ void Limit2_Superbee(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,
 void Limit2_MC(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt);
 void Limit2_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt len_slow,const PetscInt len_fast,PetscInt n,PetscScalar *lmt);
 
+void Limit3_Upwind(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sm,const PetscInt mf,const PetscInt fm,const PetscInt ms,PetscInt n,PetscScalar *lmt);
+void Limit3_LaxWendroff(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sm,const PetscInt mf,const PetscInt fm,const PetscInt ms,PetscInt n,PetscScalar *lmt);
+void Limit3_BeamWarming(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sm,const PetscInt mf,const PetscInt fm,const PetscInt ms,PetscInt n,PetscScalar *lmt);
+void Limit3_Fromm(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sm,const PetscInt mf,const PetscInt fm,const PetscInt ms,PetscInt n,PetscScalar *lmt);
+void Limit3_Minmod(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sm,const PetscInt mf,const PetscInt fm,const PetscInt ms,PetscInt n,PetscScalar *lmt);
+void Limit3_Superbee(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sm,const PetscInt mf,const PetscInt fm,const PetscInt ms,PetscInt n,PetscScalar *lmt);
+void Limit3_MC(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sm,const PetscInt mf,const PetscInt fm,const PetscInt ms,PetscInt n,PetscScalar *lmt);
+void Limit3_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,const PetscInt sm,const PetscInt mf,const PetscInt fm,const PetscInt ms,PetscInt n,PetscScalar *lmt);
+
 typedef PetscErrorCode (*RiemannFunction_2WaySplit)(void*,PetscInt,const PetscScalar*,const PetscScalar*,PetscScalar*,PetscReal*);
 typedef PetscErrorCode (*ReconstructFunction_2WaySplit)(void*,PetscInt,const PetscScalar*,PetscScalar*,PetscScalar*,PetscReal*);
 
@@ -102,6 +111,7 @@ typedef struct {
   PetscBool   exact;
 
   /* context for partitioned system */
+  void        (*limit3)(LimitInfo,const PetscScalar*,const PetscScalar*,const PetscInt,const PetscInt,const PetscInt,const PetscInt,PetscInt,PetscScalar*);
   void        (*limit2)(LimitInfo,const PetscScalar*,const PetscScalar*,PetscInt,PetscInt,PetscInt,PetscScalar*);
   PhysicsCtx2 physics2;
   PetscInt    hratio;           /* hratio = hslow/hfast */
