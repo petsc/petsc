@@ -3092,6 +3092,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
     if (!numChildDof || !numSelfDof) continue;
 
     for (f = 0; f < numFields; f++) {
+      PetscInt       pI = -1, cI = -1;
       PetscInt       selfOff, Nc, parentCell;
       PetscInt       cellShapeOff;
       PetscObject    disc;
@@ -3156,11 +3157,14 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         PetscInt numClosure;
 
         ierr = DMPlexGetTransitiveClosure(refTree,parentCell,PETSC_TRUE,&numClosure,&closure);CHKERRQ(ierr);
-        for (i = 0, cellShapeOff = 0; i < numClosure; i++) {
+        for (i = 0, pI = -1, cellShapeOff = 0; i < numClosure; i++) {
           PetscInt point = closure[2 * i], pointDepth;
 
           pO = closure[2 * i + 1];
-          if (point == p) break;
+          if (point == p) {
+            pI = i;
+            break;
+          }
           ierr = DMLabelGetValue(depth,point,&pointDepth);CHKERRQ(ierr);
           cellShapeOff += depthNumDof[pointDepth];
         }
@@ -3198,9 +3202,15 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
       if (classId == PETSCFE_CLASSID) {
         PetscFE        fe = (PetscFE) disc;
         PetscInt       fSize;
+        const PetscInt ***perms;
+        const PetscScalar ***flips;
+        const PetscInt *pperms;
+
 
         ierr = PetscFEGetDualSpace(fe,&dsp);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDimension(dsp,&fSize);CHKERRQ(ierr);
+        ierr = PetscDualSpaceGetSymmetries(dsp, &perms, &flips);CHKERRQ(ierr);
+        pperms = perms ? perms[pI] ? perms[pI][pO] : NULL : NULL;
         for (i = 0; i < numSelfDof; i++) { /* for every shape function */
           PetscQuadrature q;
           PetscInt        dim, thisNc, numPoints, j, k;
@@ -3208,7 +3218,8 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           const PetscReal *weights;
           PetscInt        *closure = NULL;
           PetscInt        numClosure;
-          PetscInt        parentCellShapeDof = cellShapeOff + (pO < 0 ? (numSelfDof - 1 - i) : i);
+          PetscInt        iCell = pperms ? pperms[i] : i;
+          PetscInt        parentCellShapeDof = cellShapeOff + iCell;
           PetscReal       *Bparent;
 
           ierr = PetscDualSpaceGetFunctional(dsp,parentCellShapeDof,&q);CHKERRQ(ierr);
@@ -3263,15 +3274,19 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             for (k = 0, pointMatOff = 0; k < numChildren; k++) { /* point is located in cell => child dofs support at point are in closure of cell */
               PetscInt child = children[k], childDepth, childDof, childO = PETSC_MIN_INT;
               PetscInt l;
+              const PetscInt *cperms;
 
               ierr = DMLabelGetValue(depth,child,&childDepth);CHKERRQ(ierr);
               childDof = depthNumDof[childDepth];
-              for (l = 0, childCellShapeOff = 0; l < numClosure; l++) {
+              for (l = 0, cI = -1, childCellShapeOff = 0; l < numClosure; l++) {
                 PetscInt point = closure[2 * l];
                 PetscInt pointDepth;
 
                 childO = closure[2 * l + 1];
-                if (point == child) break;
+                if (point == child) {
+                  cI = l;
+                  break;
+                }
                 ierr = DMLabelGetValue(depth,point,&pointDepth);CHKERRQ(ierr);
                 childCellShapeOff += depthNumDof[pointDepth];
               }
@@ -3279,8 +3294,10 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
                 pointMatOff += childDof;
                 continue; /* child is not in the closure of the cell: has nothing to contribute to this point */
               }
+              cperms = perms ? perms[cI] ? perms[cI][childO] : NULL : NULL;
               for (l = 0; l < childDof; l++) {
-                PetscInt    childCellDof = childCellShapeOff + (childO ? (childDof - 1 - l) : l), m;
+                PetscInt    lCell = cperms ? cperms[l] : l;
+                PetscInt    childCellDof = childCellShapeOff + lCell;
                 PetscReal   *childValAtPoint;
                 PetscReal   val = 0.;
 
