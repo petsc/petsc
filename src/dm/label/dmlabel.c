@@ -1281,8 +1281,10 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   ierr = PetscMalloc1(nroots, &leafPoints);CHKERRQ(ierr);
   for (p = 0; p < nroots; ++p) leafPoints[p].rank = leafPoints[p].index = -1;
   for (p = 0; p < nleaves; p++) {
-    leafPoints[ilocal[p]].index = ilocal[p];
-    leafPoints[ilocal[p]].rank  = rank;
+    PetscInt ilp = ilocal ? ilocal[p] : p;
+
+    leafPoints[ilp].index = ilp;
+    leafPoints[ilp].rank  = rank;
   }
   ierr = PetscSFComputeDegreeBegin(sf, &rootDegree);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(sf, &rootDegree);CHKERRQ(ierr);
