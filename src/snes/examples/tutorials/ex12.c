@@ -1677,7 +1677,6 @@ int main(int argc, char **argv)
 
   test:
     suffix: p4est_exact_q2_conformal_parallel
-    TODO: broken
     requires: p4est !single
     nsize: 7
     args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
@@ -1736,7 +1735,6 @@ int main(int argc, char **argv)
     suffix: p4est_fas_q2_conformal_serial
     requires: p4est
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type svd -fas_coarse_ksp_type gmres -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type svd -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -dm_refine_hierarchy 3 -cells 2,2
-    TODO: broken
 
   test:
     suffix: p4est_fas_q2_nonconformal_serial
