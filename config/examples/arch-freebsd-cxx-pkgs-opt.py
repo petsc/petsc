@@ -27,7 +27,7 @@ configure_options = [
   '--download-netcdf=1',
   '--download-moab=1',
   '--download-saws',
-  '--download-codipack=1',
+  # no with-cxx-dialect=C++11 support '--download-codipack=1',
   '--download-adblaslapack=1',
   ]
 
