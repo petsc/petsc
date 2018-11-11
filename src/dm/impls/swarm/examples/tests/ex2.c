@@ -497,7 +497,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
   PetscInt         debug = mesh->printFEM;
   DM               dmC;
   PetscSection     section;
-  PetscQuadrature  quad;
+  PetscQuadrature  quad = NULL;
   PetscScalar     *interpolant, *gradsum;
   PetscReal       *coords, *detJ, *J, *invJ;
   const PetscReal *quadPoints, *quadWeights;
