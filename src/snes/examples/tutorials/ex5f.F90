@@ -90,7 +90,7 @@
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,PETSC_NULL_BOOL,ierr)
 ! this statement is split into multiple-lines to keep lines under 132 char limit - required by 'make check'
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          SETERRA(PETSC_COMM_WORLD,1,'Lambda out of range')
