@@ -101,7 +101,13 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
 
     /* If dm is a submesh, do not get subpoint */
     ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
-    if (!spmap) {ierr = DMPlexGetSubpoint(dmAux, p, &subp);CHKERRQ(ierr);}
+    if (!spmap) {
+      PetscInt h;
+      ierr = DMPlexGetVTKCellHeight(dmAux, &h);CHKERRQ(ierr);
+      ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
+      if (spmap && !h) { ierr = DMLabelGetValue(spmap, p, &subp);CHKERRQ(ierr); }
+      else             { ierr = DMPlexGetSubpoint(dmAux, p, &subp);CHKERRQ(ierr); }
+    }
     ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
@@ -145,7 +151,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
         invJ = &fegeom->invJ[tp*dE*dE];
       }
       EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, invJ, coefficients, coefficients_t, u, u_x, u_t);
-      if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
+      if (probAux) EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);
       (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, v0, numConstants, constants, &pointEval[Nc[f]*q]);
     }
     ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
@@ -285,17 +291,21 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   ierr = DMPlexGetVTKCellHeight(dm, &minHeight);CHKERRQ(ierr);
   /* Auxiliary information can only be used with interpolation of field functions */
   if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
+    if (dmAux && !localA) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing localA vector");
     if (!minHeight && dmAux) {
       DMLabel spmap;
 
       /* If dmAux is a surface, then force the projection to take place over a surface */
       ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
-      if (spmap) {minHeight = 1; auxBd = PETSC_TRUE;}
+      if (spmap) {
+        ierr = DMPlexGetVTKCellHeight(dmAux, &minHeight);CHKERRQ(ierr);
+        auxBd = minHeight ? PETSC_TRUE : PETSC_FALSE;
+      }
     }
   }
   ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
   maxHeight = PetscMax(maxHeight, minHeight);
-  if (maxHeight < 0 || maxHeight > dim) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %d not in [0, %d)\n", maxHeight, dim);}
+  if (maxHeight < 0 || maxHeight > dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %D not in [0, %D)", maxHeight, dim);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
