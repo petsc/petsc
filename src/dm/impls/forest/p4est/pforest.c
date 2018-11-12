@@ -429,9 +429,20 @@ typedef struct _PforestAdaptCtx
 {
   PetscInt  maxLevel;
   PetscInt  minLevel;
+  PetscInt  currLevel;
   PetscBool anyChange;
 }
 PforestAdaptCtx;
+
+static int pforest_coarsen_currlevel(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
+{
+  PforestAdaptCtx *ctx      = (PforestAdaptCtx*) p4est->user_pointer;
+  PetscInt        minLevel  = ctx->minLevel;
+  PetscInt        currLevel = ctx->currLevel;
+
+  if (quadrants[0]->level <= minLevel) return 0;
+  return (int) ((PetscInt) quadrants[0]->level == currLevel);
+}
 
 static int pforest_coarsen_uniform(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
 {
@@ -578,6 +589,30 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
   PetscFunctionReturn(0);
 }
 
+/* Compute the maximum level across all the trees */
+static PetscErrorCode DMPforestGetRefinementLevel(DM dm, PetscInt *lev)
+{
+  p4est_topidx_t    t, flt, llt;
+  DM_Forest         *forest  = (DM_Forest*) dm->data;
+  DM_Forest_pforest *pforest = (DM_Forest_pforest*) forest->data;
+  PetscInt          maxlevelloc = 0;
+  p4est_t           *p4est;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (!pforest) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing DM_Forest_pforest");
+  if (!pforest->forest) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing p4est_t");
+  p4est = pforest->forest;
+  flt   = p4est->first_local_tree;
+  llt   = p4est->last_local_tree;
+  for (t = flt; t <= llt; t++) {
+    p4est_tree_t *tree  = &(((p4est_tree_t*) p4est->trees->array)[t]);
+    maxlevelloc = PetscMax((PetscInt)tree->maxlevel,maxlevelloc);
+  }
+  ierr = MPIU_Allreduce(&maxlevelloc,lev,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* Puts identity in coarseToFine */
 /* assumes a matching partition */
 static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t *p4estFrom, PetscInt FromOffset, p4est_t *p4estTo, PetscInt ToOffset, PetscSF *fromCoarseToFine, PetscSF *toCoarseFromFine)
@@ -689,6 +724,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   PetscFunctionBegin;
   ctx.minLevel  = PETSC_MAX_INT;
   ctx.maxLevel  = 0;
+  ctx.currLevel = 0;
   ctx.anyChange = PETSC_FALSE;
   /* sanity check */
   ierr = DMForestGetAdaptivityForest(dm,&adaptFrom);CHKERRQ(ierr);
@@ -844,7 +880,18 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMLabelGetNumValues(adaptLabel,&numValues);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&numValues,&numValuesGlobal,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)adaptFrom));CHKERRQ(ierr);
       ierr = DMLabelGetDefaultValue(adaptLabel,&defaultValue);CHKERRQ(ierr);
-      if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN) { /* uniform coarsen */
+      if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN_LAST) { /* uniform coarsen of the last level only (equivalent to DM_ADAPT_COARSEN for conforming grids)  */
+        ierr                          = DMForestGetMinimumRefinement(dm,&ctx.minLevel);CHKERRQ(ierr);
+        ierr                          = DMPforestGetRefinementLevel(dm,&ctx.currLevel);CHKERRQ(ierr);
+        pforest->forest->user_pointer = (void*) &ctx;
+        PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_currlevel,NULL));
+        pforest->forest->user_pointer = (void*) dm;
+        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        /* we will have to change the offset after we compute the overlap */
+        if (computeAdaptSF) {
+          ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),pforest->forest,0,apforest->forest,apforest->cLocalStart,&coarseToPreFine,NULL);CHKERRQ(ierr);
+        }
+      } else if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN) { /* uniform coarsen */
         ierr                          = DMForestGetMinimumRefinement(dm,&ctx.minLevel);CHKERRQ(ierr);
         pforest->forest->user_pointer = (void*) &ctx;
         PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
@@ -4548,6 +4595,7 @@ static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, 
       ierr = PetscSFSetUp(inSF);CHKERRQ(ierr);
       break;
     case DM_ADAPT_COARSEN:
+    case DM_ADAPT_COARSEN_LAST:
       ierr = DMPforestGetTransferSF_Internal(dmOut,dmIn,dofPerDim,&outSF,PETSC_TRUE,&outCids);CHKERRQ(ierr);
       ierr = PetscSFSetUp(outSF);CHKERRQ(ierr);
       break;
@@ -4564,6 +4612,7 @@ static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, 
       ierr = PetscSFSetUp(outSF);CHKERRQ(ierr);
       break;
     case DM_ADAPT_COARSEN:
+    case DM_ADAPT_COARSEN_LAST:
       ierr = DMPforestGetTransferSF_Internal(dmIn,dmOut,dofPerDim,&inSF,PETSC_TRUE,&inCids);CHKERRQ(ierr);
       ierr = PetscSFSetUp(inSF);CHKERRQ(ierr);
       break;

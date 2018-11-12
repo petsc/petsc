@@ -425,6 +425,7 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
     ierr = DMSetCoarseDM(dm,adapt);CHKERRQ(ierr);
     break;
   case DM_ADAPT_COARSEN:
+  case DM_ADAPT_COARSEN_LAST:
     ierr = DMSetFineDM(dm,adapt);CHKERRQ(ierr);
     break;
   default:
@@ -464,6 +465,7 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
     ierr = DMGetCoarseDM(dm,adapt);CHKERRQ(ierr);
     break;
   case DM_ADAPT_COARSEN:
+  case DM_ADAPT_COARSEN_LAST:
     ierr = DMGetFineDM(dm,adapt);CHKERRQ(ierr);
     break;
   default:
@@ -485,11 +487,11 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
 
   Input Parameters:
 + dm - the forest
-- purpose - the adaptivity purpose (DM_ADAPT_DETERMINE/DM_ADAPT_REFINE/DM_ADAPT_COARSEN)
+- purpose - the adaptivity purpose
 
   Level: advanced
 
-.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest()
+.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest(), DMAdaptFlag
 @*/
 PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
 {
@@ -516,8 +518,9 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
 
 /*@
   DMForestGetAdaptivityPurpose - Get whether the current DM is being adapted from its source (set with
-  DMForestSetAdaptivityForest()) for the purpose of refinement (DM_ADAPT_REFINE), coarsening (DM_ADAPT_COARSEN), or
-  undefined (DM_ADAPT_DETERMINE).  This only matters for the purposes of reference counting: during DMDestroy(), cyclic
+  DMForestSetAdaptivityForest()) for the purpose of refinement (DM_ADAPT_REFINE), coarsening (DM_ADAPT_COARSEN),
+  coarsening only the last level (DM_ADAPT_COARSEN_LAST) or undefined (DM_ADAPT_DETERMINE).
+  This only matters for the purposes of reference counting: during DMDestroy(), cyclic
   references can be found between DMs only if the cyclic reference is due to a fine/coarse relationship (see
   DMSetFineDM()/DMSetCoarseDM()).  If the purpose is not refinement or coarsening, and the user does not maintain a
   reference to the post-adaptation forest (i.e., the one created by DMForestTemplate()), then this can cause a memory
@@ -529,11 +532,11 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
 . dm - the forest
 
   Output Parameter:
-. purpose - the adaptivity purpose (DM_ADAPT_DETERMINE/DM_ADAPT_REFINE/DM_ADAPT_COARSEN)
+. purpose - the adaptivity purpose
 
   Level: advanced
 
-.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest()
+.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest(), DMAdaptFlag
 @*/
 PetscErrorCode DMForestGetAdaptivityPurpose(DM dm, DMAdaptFlag *purpose)
 {
@@ -801,7 +804,7 @@ PetscErrorCode DMForestSetInitialRefinement(DM dm, PetscInt initRefinement)
 . dm - the forest
 
   Output Paramater:
-. initefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
+. initRefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
 
   Level: intermediate
 
