@@ -1023,6 +1023,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
                                                              0,           /* we don't allocate any per quadrant data */
                                                              NULL,        /* there is no special quadrant initialization */
                                                              (void*)dm)); /* this dm is the user context */
+
+    if (initLevel > minLevel) pforest->coarsen_hierarchy = PETSC_TRUE;
     if (forest->setfromoptionscalled) {
       PetscBool  flgPattern, flgFractal;
       PetscInt   corner = 0;
@@ -1044,6 +1046,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr          = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
         ierr          = PetscNewLog(dm,&ctx);CHKERRQ(ierr);
         ctx->maxLevel = PetscMin(maxLevel,P4EST_QMAXLEVEL);
+        if (initLevel + ctx->maxLevel > minLevel) pforest->coarsen_hierarchy = PETSC_TRUE;
         switch (pattern) {
         case PATTERN_HASH:
           ctx->refine_fn      = DMRefinePattern_Hash;
@@ -1081,14 +1084,14 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         pforest->forest->user_pointer = (void*) dm;
       }
     }
-    if (initLevel > minLevel) pforest->coarsen_hierarchy = PETSC_TRUE;
   }
   if (pforest->coarsen_hierarchy) {
-    PetscInt initLevel, minLevel;
+    PetscInt initLevel, currLevel, minLevel;
 
+    ierr = DMPforestGetRefinementLevel(dm,&currLevel);CHKERRQ(ierr);
     ierr = DMForestGetInitialRefinement(dm,&initLevel);CHKERRQ(ierr);
     ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
-    if (initLevel > minLevel) {
+    if (currLevel > minLevel) {
       DM_Forest_pforest *coarse_pforest;
       DMLabel           coarsen;
       DM                coarseDM;
@@ -1100,15 +1103,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMForestSetAdaptivityLabel(coarseDM,coarsen);CHKERRQ(ierr);
       ierr = DMLabelDestroy(&coarsen);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
-      if (forest->setfromoptionscalled) {
-        ierr = DMSetFromOptions(coarseDM);CHKERRQ(ierr);
-      }
-      ierr                              = DMForestSetInitialRefinement(coarseDM,initLevel - 1);CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)coarseDM);CHKERRQ(ierr);
+      initLevel = currLevel == initLevel ? initLevel - 1 : initLevel;
+      ierr                              = DMForestSetInitialRefinement(coarseDM,initLevel);CHKERRQ(ierr);
+      ierr                              = DMForestSetMinimumRefinement(coarseDM,minLevel);CHKERRQ(ierr);
       coarse_pforest                    = (DM_Forest_pforest*) ((DM_Forest*) coarseDM->data)->data;
       coarse_pforest->coarsen_hierarchy = PETSC_TRUE;
-      ierr                              = DMDestroy(&coarseDM);CHKERRQ(ierr);
     }
   }
+
   { /* repartitioning and overlap */
     PetscMPIInt size, rank;
 
