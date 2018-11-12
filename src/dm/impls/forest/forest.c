@@ -1600,7 +1600,7 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
     PetscFunctionReturn(0);
   }
   ierr = DMForestTemplate(dm,comm,dmCoarsened);CHKERRQ(ierr);
-  ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_ADAPT_COARSEN);CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityPurpose(*dmCoarsened,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
   if (!coarsen) {
     ierr = DMLabelCreate("coarsen",&coarsen);CHKERRQ(ierr);
