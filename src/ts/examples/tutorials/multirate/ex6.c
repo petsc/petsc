@@ -346,7 +346,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
-  PetscInt       i,j,k,Mx,dof,xs,xm,islow = 0,sf = ctx->sf,fs = ctx->fs;
+  PetscInt       i,j,k,Mx,dof,xs,xm,islow = 0,sf = ctx->sf,fs = ctx->fs,lsbwidth = ctx->lsbwidth,rsbwidth = ctx->rsbwidth;
   PetscReal      hxs,hxf,cfl_idt = 0;
   PetscScalar    *x,*f,*slope;
   Vec            Xloc;
@@ -377,7 +377,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
   for (i=xs-1; i<xs+xm+1; i++) {
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
-    if (i < sf+1 || i > fs-2) { /* slow components and the first and last fast components */
+    if (i < sf-lsbwidth+1 || i > fs+rsbwidth-2) { /* slow components and the first and last fast components */
       /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
       ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
       /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
@@ -411,7 +411,147 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
     PetscScalar *uL,*uR;
     uL = &ctx->uLR[0];
     uR = &ctx->uLR[dof];
-    if (i < sf) { /* slow region */
+    if (i < sf-lsbwidth) { /* slow region */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxs)); /* Max allowable value of 1/Delta t */
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
+        islow++;
+      }
+    }
+    if (i == sf-lsbwidth) { /* interface between the slow region and the fast region */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+    }
+    if (i == fs+rsbwidth) { /* slow region */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
+        islow++;
+      }
+    }
+    if (i > fs+rsbwidth) { /* slow region */
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
+      }
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
+        islow++;
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
+{
+  FVCtx          *ctx = (FVCtx*)vctx;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,Mx,dof,xs,xm,islow = 0,sf = ctx->sf,fs = ctx->fs,lsbwidth = ctx->lsbwidth,rsbwidth = ctx->rsbwidth;
+  PetscReal      hxs,hxf,cfl_idt = 0;
+  PetscScalar    *x,*f,*slope;
+  Vec            Xloc;
+  DM             da;
+
+  PetscFunctionBeginUser;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  hxs  = (ctx->xmax-ctx->xmin)*3.0/8.0/ctx->sf;
+  hxf  = (ctx->xmax-ctx->xmin)/4.0/(ctx->fs-ctx->sf);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = VecZeroEntries(F);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+
+  if (ctx->bctype == FVBC_OUTFLOW) {
+    for (i=xs-2; i<0; i++) {
+      for (j=0; j<dof; j++) x[i*dof+j] = x[j];
+    }
+    for (i=Mx; i<xs+xm+2; i++) {
+      for (j=0; j<dof; j++) x[i*dof+j] = x[(xs+xm-1)*dof+j];
+    }
+  }
+  for (i=xs-1; i<xs+xm+1; i++) {
+    struct _LimitInfo info;
+    PetscScalar       *cjmpL,*cjmpR;
+    if ((i > sf-lsbwidth-2 && i < sf+1) || (i > fs-2 && i < fs+rsbwidth+1)) {
+      /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
+      ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+      /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
+      ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+      cjmpL = &ctx->cjmpLR[0];
+      cjmpR = &ctx->cjmpLR[dof];
+      for (j=0; j<dof; j++) {
+        PetscScalar jmpL,jmpR;
+        jmpL = x[(i+0)*dof+j]-x[(i-1)*dof+j];
+        jmpR = x[(i+1)*dof+j]-x[(i+0)*dof+j];
+        for (k=0; k<dof; k++) {
+          cjmpL[k] += ctx->Rinv[k+j*dof]*jmpL;
+          cjmpR[k] += ctx->Rinv[k+j*dof]*jmpR;
+        }
+      }
+      /* Apply limiter to the left and right characteristic jumps */
+      info.m  = dof;
+      info.hxs = hxs;
+      info.hxf = hxf;
+      (*ctx->limit2)(&info,cjmpL,cjmpR,ctx->sf,ctx->fs,i,ctx->cslope);
+      for (j=0; j<dof; j++) {
+        PetscScalar tmp = 0;
+        for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
+          slope[i*dof+j] = tmp;
+      }
+    }
+  }
+
+  for (i=xs; i<xs+xm+1; i++) {
+    PetscReal   maxspeed;
+    PetscScalar *uL,*uR;
+    uL = &ctx->uLR[0];
+    uR = &ctx->uLR[dof];
+    if (i == sf-lsbwidth) {
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxs)); /* Max allowable value of 1/Delta t */
+      if (i < xs+xm) {
+        for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
+        islow++;
+      }
+    }
+    if (i > sf-lsbwidth && i < sf) {
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
@@ -447,7 +587,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         islow++;
       }
     }
-    if (i > fs) { /* slow region */
+    if (i > fs && i < fs+rsbwidth) {
       for (j=0; j<dof; j++) {
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
@@ -459,6 +599,16 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
         islow++;
+      }
+    }
+    if (i == fs+rsbwidth) {
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
+      }
+      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
       }
     }
   }
@@ -531,7 +681,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         slope[i*dof+j] = tmp;
       }
     }
-   }
+  }
 
   for (i=xs; i<xs+xm+1; i++) {
     PetscReal   maxspeed;
@@ -590,7 +740,7 @@ int main(int argc,char *argv[])
   DM                da;
   Vec               X,X0,R;
   FVCtx             ctx;
-  PetscInt          i,k,dof,xs,xm,Mx,draw = 0,count_slow,count_fast,islow = 0,ifast =0,*index_slow,*index_fast;
+  PetscInt          i,k,dof,xs,xm,Mx,draw = 0,count_slow,count_fast,islow = 0,ifast =0,islowbuffer = 0,*index_slow,*index_fast,*index_slowbuffer;
   PetscBool         view_final = PETSC_FALSE;
   PetscReal         ptime;
   PetscErrorCode    ierr;
@@ -677,23 +827,36 @@ int main(int argc,char *argv[])
   ctx.fs = ctx.sf+count_fast;
   ierr = PetscMalloc1(xm*dof,&index_slow);CHKERRQ(ierr);
   ierr = PetscMalloc1(xm*dof,&index_fast);CHKERRQ(ierr);
+  ierr = PetscMalloc1(6*dof,&index_slowbuffer);CHKERRQ(ierr);
+  if (((AdvectCtx*)ctx.physics2.user)->a > 0) {
+    ctx.lsbwidth = 2;
+    ctx.rsbwidth = 4;
+  } else {
+    ctx.lsbwidth = 4;
+    ctx.rsbwidth = 2;
+  }
   for (i=xs; i<xs+xm; i++) {
-    if (i < ctx.sf || i > ctx.fs-1)
+    if (i < ctx.sf-ctx.lsbwidth || i > ctx.fs+ctx.rsbwidth-1)
       for (k=0; k<dof; k++) index_slow[islow++] = i*dof+k;
+    else if ((i >= ctx.sf-ctx.lsbwidth && i < ctx.sf) || (i > ctx.fs-1 && i <= ctx.fs+ctx.rsbwidth-1))
+      for (k=0; k<dof; k++) index_slowbuffer[islowbuffer++] = i*dof+k;
     else
       for (k=0; k<dof; k++) index_fast[ifast++] = i*dof+k;
   }
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&ctx.iss);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&ctx.isf);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,islowbuffer,index_slowbuffer,PETSC_COPY_VALUES,&ctx.issb);CHKERRQ(ierr);
 
   /* Create a time-stepping object */
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,R,FVRHSFunction_2WaySplit,&ctx);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"slow",ctx.iss);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"slowbuffer",ctx.issb);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"fast",ctx.isf);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts,"slow",NULL,FVRHSFunctionslow_2WaySplit,&ctx);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts,"fast",NULL,FVRHSFunctionfast_2WaySplit,&ctx);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"slowbuffer",NULL,FVRHSFunctionslowbuffer_2WaySplit,&ctx);CHKERRQ(ierr);
 
   ierr = TSSetType(ts,TSSSP);CHKERRQ(ierr);
   /*ierr = TSSetType(ts,TSMPRK);CHKERRQ(ierr);*/
@@ -807,8 +970,10 @@ int main(int argc,char *argv[])
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = ISDestroy(&ctx.iss);CHKERRQ(ierr);
   ierr = ISDestroy(&ctx.isf);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx.issb);CHKERRQ(ierr);
   ierr = PetscFree(index_slow);CHKERRQ(ierr);
   ierr = PetscFree(index_fast);CHKERRQ(ierr);
+  ierr = PetscFree(index_slowbuffer);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&limiters);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&physics);CHKERRQ(ierr);
   ierr = PetscFinalize();
