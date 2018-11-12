@@ -1007,6 +1007,21 @@ PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, Pet
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMForestTransferVecFromBase(DM dm, Vec vecIn, Vec vecOut)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm   ,DM_CLASSID  ,1);
+  PetscValidHeaderSpecific(vecIn  ,VEC_CLASSID ,2);
+  PetscValidHeaderSpecific(vecOut ,VEC_CLASSID ,3);
+  forest = (DM_Forest *) dm->data;
+  if (!forest->transfervecfrombase) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMForestTransferVecFromBase() not implemented");
+  ierr = (forest->transfervecfrombase)(dm,vecIn,vecOut);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMForestGetComputeAdaptivitySF - Get whether transfer PetscSFs should be computed relating the cells of the
   pre-adaptation forest to the post-adaptiation forest.  After DMSetUp() is called, these transfer PetscSFs can be
