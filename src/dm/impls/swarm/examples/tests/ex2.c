@@ -744,6 +744,7 @@ int main (int argc, char * argv[]) {
     suffix: proj_tri_3d_2_faces
     requires: ctetgen !complex
     args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker
   
   test:
     suffix: proj_tri_3d_5P
@@ -759,11 +760,13 @@ int main (int argc, char * argv[]) {
     suffix: proj_tri_3d_mdx_5P
     requires: ctetgen !complex
     args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker
   
   test:
     suffix: proj_tri_3d_mdx_2_faces
     requires: ctetgen !complex
     args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker
 
   test:
     suffix: proj_tri_3d_mdx_5P_2_faces

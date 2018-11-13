@@ -12,27 +12,27 @@ Labels:
 DM Object: Particles 1 MPI processes
   type: swarm
 DMSwarmDataBucketView: 
-  L                  = 48 
+  L                  = 240 
   buffer             = 0 
-  allocated          = 48 
+  allocated          = 240 
   nfields registered = 5 
-    [  0]     DMSwarm_pid : Mem. usage       = 3.84e-04 (MB) [rank0]
+    [  0]     DMSwarm_pid : Mem. usage       = 1.92e-03 (MB) [rank0]
                             blocksize        = 1 
                             atomic size      = 8 
-    [  1]    DMSwarm_rank : Mem. usage       = 1.92e-04 (MB) [rank0]
+    [  1]    DMSwarm_rank : Mem. usage       = 9.60e-04 (MB) [rank0]
                             blocksize        = 1 
                             atomic size      = 4 
-    [  2] DMSwarmPIC_coor : Mem. usage       = 1.15e-03 (MB) [rank0]
+    [  2] DMSwarmPIC_coor : Mem. usage       = 5.76e-03 (MB) [rank0]
                             blocksize        = 3 
                             atomic size      = 24 [full block, bs=3]
                             atomic size/item = 8 
-    [  3]  DMSwarm_cellid : Mem. usage       = 1.92e-04 (MB) [rank0]
+    [  3]  DMSwarm_cellid : Mem. usage       = 9.60e-04 (MB) [rank0]
                             blocksize        = 1 
                             atomic size      = 4 
-    [  4]             w_q : Mem. usage       = 3.84e-04 (MB) [rank0]
+    [  4]             w_q : Mem. usage       = 1.92e-03 (MB) [rank0]
                             blocksize        = 1 
                             atomic size      = 8 
-  Total mem. usage                           = 2.30e-03 (MB) (collective)
-L2 projection m ([m - m_p]/m) mass:  7.2067149914163e+01 ( 3.9438e-16), x-momentum:  3.8145241395782e+01 ( 0.0000e+00), energy:  7.7983554784834e+01 ( 1.8223e-16).
-L2 projection m ([m - m_p]/m) mass:  7.2067149914163e+01 ( 3.9438e-16), x-momentum:  3.8145241395782e+01 ( 3.7255e-16), energy:  7.7983554784834e+01 ( 3.6446e-16).
-L2 projection m ([m - m_p]/m) mass:  7.2067149914163e+01 ( 0.0000e+00), x-momentum:  3.8145241395782e+01 ( 1.8627e-16), energy:  7.7983554784834e+01 ( 0.0000e+00).
+  Total mem. usage                           = 1.15e-02 (MB) (collective)
+L2 projection m ([m - m_p]/m) mass:  6.8669342780993e+01 ( 6.2084e-16), x-momentum:  4.0192988006024e+01 ( 1.4143e-15), energy:  9.9640077157490e+01 ( 7.1311e-16).
+L2 projection m ([m - m_p]/m) mass:  6.8669342780993e+01 ( 1.4486e-15), x-momentum:  4.0192988006024e+01 ( 1.5910e-15), energy:  9.9640077157490e+01 (-7.1311e-16).
+L2 projection m ([m - m_p]/m) mass:  6.8669342780993e+01 (-4.1389e-16), x-momentum:  4.0192988006024e+01 ( 3.5357e-16), energy:  9.9640077157490e+01 (-1.1410e-15).
