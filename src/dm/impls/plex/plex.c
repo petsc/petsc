@@ -1078,7 +1078,8 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
   PetscBool      iascii, ishdf5, isvtk, isdraw, flg, isglvis;
-  PetscErrorCode    ierr;
+  char           name[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1118,6 +1119,18 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     ierr = DMPlexCreateRankField(dm, &ranks);CHKERRQ(ierr);
     ierr = VecView(ranks, viewer);CHKERRQ(ierr);
     ierr = VecDestroy(&ranks);CHKERRQ(ierr);
+  }
+  /* Optionally view a label */
+  ierr = PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_label_view", name, PETSC_MAX_PATH_LEN, &flg);CHKERRQ(ierr);
+  if (flg) {
+    DMLabel label;
+    Vec     val;
+
+    ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+    if (!label) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Label %s provided to -dm_label_view does not exist in this DM", name);
+    ierr = DMPlexCreateLabelField(dm, label, &val);CHKERRQ(ierr);
+    ierr = VecView(val, viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(&val);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -6624,10 +6637,12 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(ranks, 2);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = DMClone(dm, &rdm);CHKERRQ(ierr);
   ierr = DMGetDimension(rdm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) rdm), dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) rdm), dim, 1, PETSC_TRUE, "PETSc___rank_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "rank");CHKERRQ(ierr);
   ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
@@ -6643,6 +6658,60 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
     *lr = rank;
   }
   ierr = VecRestoreArray(*ranks, &r);CHKERRQ(ierr);
+  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexCreateLabelField - Create a cell field whose value is the label value for that cell
+
+  Input Parameters:
++ dm    - The DMPlex
+- label - The DMLabel
+
+  Output Parameter:
+. val - The label value field
+
+  Options Database Keys:
+. -dm_label_view - Adds the label value field into the DM output from -dm_view using the same viewer
+
+  Level: intermediate
+
+.seealso: DMView()
+@*/
+PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
+{
+  DM             rdm;
+  PetscDS        prob;
+  PetscFE        fe;
+  PetscScalar   *v;
+  PetscInt       dim, cStart, cEnd, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(label, 2);
+  PetscValidPointer(val, 3);
+  ierr = DMClone(dm, &rdm);CHKERRQ(ierr);
+  ierr = DMGetDimension(rdm, &dim);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) rdm), dim, 1, PETSC_TRUE, "PETSc___label_value_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fe, "label_value");CHKERRQ(ierr);
+  ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(rdm, val);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *val, "label_value");CHKERRQ(ierr);
+  ierr = VecGetArray(*val, &v);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *lv;
+    PetscInt     cval;
+
+    ierr = DMPlexPointGlobalRef(rdm, c, v, &lv);CHKERRQ(ierr);
+    ierr = DMLabelGetValue(label, c, &cval);CHKERRQ(ierr);
+    *lv = cval;
+  }
+  ierr = VecRestoreArray(*val, &v);CHKERRQ(ierr);
   ierr = DMDestroy(&rdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
