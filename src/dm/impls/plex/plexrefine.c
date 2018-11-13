@@ -8405,7 +8405,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
                   break;
                 }
               }
-              if (cv == cellConeSize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map vertex %D\n",tv);
+              if (cv == cellConeSize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map vertex %D",tv);
 
               ierr = PetscSectionGetOffset(coordSection, cone[p], &voff);CHKERRQ(ierr);
               for (d = 0; d < spaceDim; ++d) {
@@ -8442,7 +8442,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
                 if (rcone[p] >= vStartNew && rcone[p] < vEndNew) lid++;
               }
               ierr = DMPlexRestoreTransitiveClosure(rdm, rcell, PETSC_TRUE, &rclosureSize, &rcone);CHKERRQ(ierr);
-              if (p == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D\n",newv);
+              if (p == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D",newv);
             }
           }
           ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &cellClosureSize, &cellCone);CHKERRQ(ierr);
@@ -8524,7 +8524,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
               }
               if (cone[p] >= vStartNew && cone[p] < vEndNew) lid++;
             }
-            if (p == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D\n",newv);
+            if (p == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D",newv);
             ierr = DMPlexRestoreTransitiveClosure(rdm, rc, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
           }
         }
@@ -8612,7 +8612,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
                   if (rcone[p] >= vStartNew && rcone[p] < vEndNew) lid++;
                 }
                 ierr = DMPlexRestoreTransitiveClosure(rdm, rcell, PETSC_TRUE, &rclosureSize, &rcone);CHKERRQ(ierr);
-                if (p == rclosureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D\n",newv);
+                if (p == rclosureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D",newv);
               }
             }
           }
@@ -8674,7 +8674,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
               }
               if (cone[s] >= vStart && cone[s] < vEnd) lid++;
             }
-            if (s == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map old vertex %D\n",v);
+            if (s == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map old vertex %D",v);
             ierr = DMPlexRestoreTransitiveClosure(dm, oc, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
 
             ierr = PetscSectionGetOffset(coordSectionNew, c, &coff);CHKERRQ(ierr);
@@ -8686,7 +8686,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
               }
               if (cone[s] >= vStartNew && cone[s] < vEndNew) lid++;
             }
-            if (s == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D\n",newv);
+            if (s == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D",newv);
             ierr = DMPlexRestoreTransitiveClosure(rdm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
           }
         }
@@ -8712,6 +8712,11 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       PetscSF            sf;
       const PetscScalar *lArray;
       PetscScalar       *gArray;
+#if defined(PETSC_USE_COMPLEX)
+      PetscInt          i, ln, gn;
+      PetscReal         *lrArray;
+      PetscReal         *grArray;
+#endif
 
       ierr = DMGetCoordinateDM(rdm, &cdm);CHKERRQ(ierr);
       ierr = DMCreateGlobalVector(cdm, &aux);CHKERRQ(ierr);
@@ -8719,8 +8724,20 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       ierr = VecGetArrayRead(coordinatesNew, &lArray);CHKERRQ(ierr);
       ierr = VecSet(aux, PETSC_MIN_REAL);CHKERRQ(ierr);
       ierr = VecGetArray(aux, &gArray);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+      ierr = VecGetLocalSize(aux, &gn);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(coordinatesNew, &ln);CHKERRQ(ierr);
+      ierr = PetscMalloc2(ln,&lrArray,gn,&grArray);CHKERRQ(ierr);
+      for (i=0;i<ln;i++) lrArray[i] = PetscRealPart(lArray[i]);
+      for (i=0;i<gn;i++) grArray[i] = PetscRealPart(gArray[i]);
+      ierr = PetscSFReduceBegin(sf, MPIU_REAL, lrArray, grArray, MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf, MPIU_REAL, lrArray, grArray, MPIU_MAX);CHKERRQ(ierr);
+      for (i=0;i<gn;i++) gArray[i] = grArray[i];
+      ierr = PetscFree2(lrArray,grArray);CHKERRQ(ierr);
+#else
       ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_MAX);CHKERRQ(ierr);
+#endif
       ierr = VecRestoreArrayRead(coordinatesNew, &lArray);CHKERRQ(ierr);
       ierr = VecRestoreArray(aux, &gArray);CHKERRQ(ierr);
       ierr = DMGlobalToLocalBegin(cdm, aux, INSERT_VALUES, coordinatesNew);CHKERRQ(ierr);
