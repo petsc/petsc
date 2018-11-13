@@ -15,7 +15,7 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
 #include <petscksp.h>
-
+#include <petscviewerhdf5.h>
 
 int main(int argc,char **args)
 {
@@ -31,6 +31,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscBool      nonzero_guess=PETSC_TRUE;
   PetscBool      solve_normal=PETSC_TRUE;
+  PetscBool      hdf5=PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
@@ -44,6 +45,7 @@ int main(int argc,char **args)
      or the normal equation (-solve_normal 1).
   */
   ierr = PetscOptionsGetBool(NULL,NULL,"-solve_normal",&solve_normal,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-hdf5",&hdf5,NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -67,7 +69,11 @@ int main(int argc,char **args)
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  if (hdf5) {
+    ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  }
 
   /*
      Load the matrix and vector; then destroy the viewer.
