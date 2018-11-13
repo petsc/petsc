@@ -659,9 +659,9 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
 PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, const PetscInt masterCone[])
 {
-  PetscInt c, coneSize;
-  PetscInt start1;
-  PetscBool reverse1;
+  PetscInt coneSize;
+  PetscInt start1=0;
+  PetscBool reverse1=PETSC_FALSE;
   const PetscInt *cone=NULL;
   PetscErrorCode ierr;
 
@@ -675,9 +675,12 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
 #endif
   ierr = DMPlexOrientCell_Internal(dm, p, start1, reverse1);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-  ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-  for (c = 0; c < 2; c++) {
-    if (PetscUnlikely(cone[c] != masterCone[c])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "The algorithm above is wrong as cone[%d] = %d != %d = masterCone[%d]", c, cone[c], masterCone[c], c);
+  {
+    PetscInt c;
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    for (c = 0; c < 2; c++) {
+      if (PetscUnlikely(cone[c] != masterCone[c])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "The algorithm above is wrong as cone[%d] = %d != %d = masterCone[%d]", c, cone[c], masterCone[c], c);
+    }
   }
 #endif
   PetscFunctionReturn(0);

@@ -382,6 +382,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Orient_Private(Pets
   PetscInt        i;
 
   PetscFunctionBegin;
+  *start = 0;
   for (i=0; i<coneSize; i++) {
     if (slaveCone[i] == masterCone[0]) {
       *start = i;
