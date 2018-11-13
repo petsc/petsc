@@ -73,9 +73,11 @@ int main(int argc,char **args)
      Load the matrix and vector; then destroy the viewer.
   */
   ierr  = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr  = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
   ierr  = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr  = MatLoad(A,fd);CHKERRQ(ierr);
   ierr  = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr  = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
   ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
   ierrp = VecLoad(b,fd);
   ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
@@ -89,6 +91,7 @@ int main(int argc,char **args)
   }
 
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"x0");CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /* load file_x0 if it is specified, otherwise try to reuse file */
@@ -164,6 +167,7 @@ int main(int argc,char **args)
   } else {
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   }
+  ierr = PetscObjectSetName((PetscObject)x,"x");CHKERRQ(ierr);
 
   /*
       Conclude profiling this stage
