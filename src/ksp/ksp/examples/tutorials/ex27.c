@@ -275,6 +275,15 @@ int main(int argc,char **args)
         args: -ksp_converged_reason -ksp_rtol 1e-3 -ksp_max_it 200 -ksp_view
         args: -solve_normal 0 -ksp_type lsqr -ksp_convergence_test lsqr -ksp_lsqr_monitor -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
 
+   test:
+      # Load rectangular matrix from HDF5 (Version 7.3 MAT-File)
+      suffix: 4a_lsqr_hdf5
+      nsize: {{1 2 4 8}}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841.mat -hdf5
+      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+      args: -solve_normal 0 -ksp_type lsqr
+
    # Test for correct cgls convergence reason
    test:
       suffix: 5
