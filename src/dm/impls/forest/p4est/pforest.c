@@ -3707,10 +3707,9 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
   PetscFunctionReturn(0);
 }
 
-/* XXX SZ: add test for this, it seems is not working */
 static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, p4est_geometry_t *geom, PetscInt cell, p4est_quadrant_t *q, p4est_topidx_t t, p4est_connectivity_t * conn, PetscScalar *coords)
 {
-  PetscInt       closureSize, c, coordStart, coordEnd, coordDim, p4estCoordDim;
+  PetscInt       closureSize, c, coordStart, coordEnd, coordDim;
   PetscInt       *closure = NULL;
   PetscSection   coordSec;
   PetscErrorCode ierr;
@@ -3719,7 +3718,6 @@ static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, p4est_geometry_t *ge
   ierr          = DMGetCoordinateSection(plex,&coordSec);CHKERRQ(ierr);
   ierr          = PetscSectionGetChart(coordSec,&coordStart,&coordEnd);CHKERRQ(ierr);
   ierr          = DMGetCoordinateDim(plex,&coordDim);CHKERRQ(ierr);
-  p4estCoordDim = PetscMin(coordDim,3);
   ierr          = DMPlexGetTransitiveClosure(plex,cell,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
   for (c = 0; c < closureSize; c++) {
     PetscInt point = closure[2 * c];
@@ -3809,7 +3807,7 @@ static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, p4est_geometry_t *ge
 
         if (geom) {
           (geom->X)(geom,t,coordP4est,coordP4estMapped);
-          for (j = 0; j < p4estCoordDim; j++) coord[j] = (PetscScalar) coordP4estMapped[j];
+          for (j = 0; j < coordDim; j++) coord[j] = (PetscScalar) coordP4estMapped[j];
         } else {
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded");
         }
