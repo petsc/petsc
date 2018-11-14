@@ -1087,7 +1087,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 #endif
 
 /*@C
-   MatLoad - Loads a matrix that has been stored in binary format
+   MatLoad - Loads a matrix that has been stored in binary/HDF5 format
    with MatView().  The matrix format is determined from the options database.
    Generates a parallel MPI matrix if the communicator has more than one
    processor.  The default matrix type is AIJ.
@@ -1097,7 +1097,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    Input Parameters:
 +  newmat - the newly loaded matrix, this needs to have been created with MatCreate()
             or some related function before a call to MatLoad()
--  viewer - binary file viewer, created with PetscViewerBinaryOpen()
+-  viewer - binary/HDF5 file viewer
 
    Options Database Keys:
    Used with block matrix formats (MATSEQBAIJ,  ...) to specify
@@ -1127,7 +1127,27 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    relatively small blocks of data rather than reading the entire
    matrix and then subsetting it.
 
-   Notes for advanced users:
+   Viewer's PetscViewerType must be either PETSCVIEWERBINARY or PETSCVIEWERHDF5.
+   Such viewer can be created using PetscViewerBinaryOpen()/PetscViewerHDF5Open(),
+   or the sequence like
+$    PetscViewer v;
+$    PetscViewerCreate(PETSC_COMM_WORLD,&v);
+$    PetscViewerSetType(v,PETSCVIEWERBINARY);
+$    PetscViewerSetFromOptions(v);
+$    PetscViewerFileSetMode(v,FILE_MODE_READ);
+$    PetscViewerFileSetName(v,"datafile");
+   The optional PetscViewerSetFromOptions() call allows to override PetscViewerSetType() using option
+$ -viewer_type {binary,hdf5}
+
+   See the example src/ksp/ksp/examples/tutorials/ex27.c with the first approach,
+   and src/mat/examples/tutorials/ex10.c with the second approach.
+
+   Notes about the PETSc binary format:
+   In case of PETSCVIEWERBINARY, a native PETSc binary format is used. Each of the blocks
+   is read onto rank 0 and then shipped to its destination rank, one after another.
+   Multiple objects, both matrices and vectors, can be stored within the same file.
+   Their PetscObject name is ignored; they are loaded in the order of their storage.
+
    Most users should not need to know the details of the binary storage
    format, since MatLoad() and MatView() completely hide these details.
    But for anyone who's interested, the standard binary matrix storage
@@ -1147,9 +1167,34 @@ linux, Windows and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscBinaryRead()
 and PetscBinaryWrite() to see how this may be done.
 
-.keywords: matrix, load, binary, input
+   Notes about the HDF5 (MATLAB MAT-File Version 7.3) format:
+   In case of PETSCVIEWERHDF5, a parallel HDF5 reader is used.
+   Each processor's chunk is loaded independently by its owning rank.
+   Multiple objects, both matrices and vectors, can be stored within the same file.
+   They are looked up by their PetscObject name.
 
-.seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
+   As the MATLAB MAT-File Version 7.3 format is also a HDF5 flavor, we decided to use
+   by default the same structure and naming of the AIJ arrays and column count
+   within the HDF5 file. This means that a MAT file saved with -v7.3 flag, e.g.
+$    save example.mat A b -v7.3
+   can be directly read by this routine (see MATLAB documentation for details).
+   Note that depending on your MATLAB version, this format might be a default,
+   otherwise you can set it as default in Preferences.
+
+   Unless -nocompression flag is used to save the file in MATLAB,
+   PETSc must be configured with ZLIB package.
+
+   Current HDF5 limitations:
+   MATLAB uses a column-major storage, so to get the correct objects in PETSc,
+   you need to transpose your matrices and vectors before saving in MATLAB.
+
+   This reader currently supports only real MATSEQAIJ and MATMPIAIJ matrices.
+
+   MatView() is not yet implemented.
+
+.keywords: matrix, load, binary, input, HDF5
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerSetType(), PetscViewerHDF5SetAIJNames(), PetscViewerHDF5SetAIJColumnCountAttributeName(), MatView(), VecLoad()
 
  @*/
 PetscErrorCode MatLoad(Mat newmat,PetscViewer viewer)
