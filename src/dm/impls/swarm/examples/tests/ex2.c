@@ -579,7 +579,6 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
           }
         }
         fieldOffset += Nb;
-        qc          += Nc;
       }
       ierr = DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
       for (fc = 0; fc < numComponents; ++fc) {
