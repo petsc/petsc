@@ -3507,6 +3507,7 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
         ierr = PetscSectionGetDof(section, p, &numConst);CHKERRQ(ierr);
       }
       /* If Nc < 0, constrain every dof on the point */
+      /* TODO: Matt, this only works if there is one node on the point.  We need to handle numDofs > NumComponents */
       if (Nc > 0) numConst = PetscMin(numConst, Nc);
       if (numFields) {ierr = PetscSectionAddFieldConstraintDof(section, p, field, numConst);CHKERRQ(ierr);}
       ierr = PetscSectionAddConstraintDof(section, p, numConst);CHKERRQ(ierr);
