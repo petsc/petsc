@@ -97,6 +97,13 @@ int main(int argc,char **args)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0_complex.mat -a_mat_type mpiaij -viewer_type hdf5
 
    test:
+      TODO: mpibaij not supported yet
+      suffix: mpibaij_hdf5
+      nsize: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/small.mat -a_mat_type mpibaij -a_mat_block_size 2 -viewer_type hdf5
+
+   test:
       suffix: mpidense
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
