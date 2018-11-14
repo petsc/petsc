@@ -255,28 +255,25 @@ int main(int argc,char **args)
         args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0.mat -hdf5
 
    # Test least-square algorithms
-   test:
-      suffix: 4
-      nsize: {{1 2 4}}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
-      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
-      args: -solve_normal 1 -ksp_type cg
-   test:
-      suffix: 4a
-      nsize: {{1 2 4}}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
-      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
-      args: -solve_normal 0 -ksp_type {{cgls lsqr}separate output}
-   test:
-      # Test KSPLSQR-specific options
-      suffix: 4b
-      nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
-      args: -ksp_converged_reason -ksp_rtol 1e-3 -ksp_max_it 200 -ksp_view
-      args: -solve_normal 0 -ksp_type lsqr -ksp_convergence_test lsqr -ksp_lsqr_monitor -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
+   testset:
+     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+     args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+     test:
+        suffix: 4
+        nsize: {{1 2 4}}
+        args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+        args: -solve_normal 1 -ksp_type cg
+     test:
+        suffix: 4a
+        nsize: {{1 2 4}}
+        args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+        args: -solve_normal 0 -ksp_type {{cgls lsqr}separate output}
+     test:
+        # Test KSPLSQR-specific options
+        suffix: 4b
+        nsize: 2
+        args: -ksp_converged_reason -ksp_rtol 1e-3 -ksp_max_it 200 -ksp_view
+        args: -solve_normal 0 -ksp_type lsqr -ksp_convergence_test lsqr -ksp_lsqr_monitor -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
 
    # Test for correct cgls convergence reason
    test:
