@@ -1185,7 +1185,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
 
         for (d = 0; d < pdim; d++) {
           J0[d*dim+0] = 0.5*(PetscRealPart(coords[1*pdim+d]) - PetscRealPart(coords[0*pdim+d]));
-          J0[d*dim+1] = 0.5*(PetscRealPart(coords[3*pdim+d]) - PetscRealPart(coords[0*pdim+d]));
+          J0[d*dim+1] = 0.5*(PetscRealPart(coords[2*pdim+d]) - PetscRealPart(coords[1*pdim+d]));
         }
         ierr = PetscLogFlops(8.0);CHKERRQ(ierr);
         DMPlex_Det3D_Internal(detJ, J0);
