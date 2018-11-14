@@ -34,6 +34,6 @@ DMSwarmDataBucketView:
                             blocksize        = 1 
                             atomic size      = 8 
   Total mem. usage                           = 2.88e-04 (MB) (collective)
-L2 projection m ([m - m_p]/m) mass:  9.0000000000000e+00 ( 3.9475e-16), x-momentum:  4.5000000000000e+00 ( 1.9737e-16), energy:  7.8750000000000e+00 ( 4.5114e-16).
-L2 projection m ([m - m_p]/m) mass:  9.0000000000000e+00 ( 3.9475e-16), x-momentum:  4.5000000000000e+00 ( 1.9737e-16), energy:  7.8750000000000e+00 ( 4.5114e-16).
-L2 projection m ([m - m_p]/m) mass:  9.0000000000000e+00 ( 3.9475e-16), x-momentum:  4.5000000000000e+00 ( 1.9737e-16), energy:  7.8750000000000e+00 ( 2.2557e-16).
+L2 projection mass:  9.0000000000000e+00, x-momentum:  4.5000000000000e+00, energy:  7.8750000000000e+00.
+L2 projection mass:  9.0000000000000e+00, x-momentum:  4.5000000000000e+00, energy:  7.8750000000000e+00.
+L2 projection mass:  9.0000000000000e+00, x-momentum:  4.5000000000000e+00, energy:  7.8750000000000e+00.

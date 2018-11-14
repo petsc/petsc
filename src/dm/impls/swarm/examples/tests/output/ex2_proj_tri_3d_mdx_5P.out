@@ -6,7 +6,6 @@ Mesh in 3 dimensions:
   2-cells: 18
   3-cells: 6
 Labels:
-  marker: 1 strata with value/size (1 (20))
   depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))
   DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
@@ -34,6 +33,6 @@ DMSwarmDataBucketView:
                             blocksize        = 1 
                             atomic size      = 8 
   Total mem. usage                           = 1.44e-03 (MB) (collective)
-L2 projection m ([m - m_p]/m) mass:  6.6668169349744e+00 (-1.4655e-15), x-momentum:  2.4495008731740e+00 (-7.2519e-16), energy:  7.9215379942936e+00 (-2.2424e-16).
-L2 projection m ([m - m_p]/m) mass:  6.6668169349744e+00 (-4.7961e-15), x-momentum:  2.4495008731740e+00 (-1.0878e-15), energy:  7.9215379942936e+00 (-2.9152e-15).
-L2 projection m ([m - m_p]/m) mass:  6.6668169349745e+00 ( 1.3322e-16), x-momentum:  2.4495008731740e+00 ( 2.9008e-15), energy:  7.9215379942937e+00 ( 1.1212e-15).
+L2 projection mass:  6.6668169349744e+00, x-momentum:  2.4495008731740e+00, energy:  7.9215379942936e+00.
+L2 projection mass:  6.6668169349744e+00, x-momentum:  2.4495008731740e+00, energy:  7.9215379942936e+00.
+L2 projection mass:  6.6668169349745e+00, x-momentum:  2.4495008731740e+00, energy:  7.9215379942937e+00.

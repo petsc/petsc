@@ -414,8 +414,7 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *use
   /* Check moments of field */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
   ierr = computeFEMMoments(dm, fhat, fmoments, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
-                     fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "L2 projection mass: %20.13e, x-momentum: %20.13e, energy: %20.13e.\n", fmoments[0], fmoments[1], fmoments[2]);CHKERRQ(ierr);
   for (m = 0; m < 3; ++m) {
     if (PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
@@ -477,8 +476,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   /* Check moments */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
   ierr = computeFEMMoments(dm, fhat, fmoments, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
-                     fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "L2 projection mass: %20.13e, x-momentum: %20.13e, energy: %20.13e.\n", fmoments[0], fmoments[1], fmoments[2]);CHKERRQ(ierr);
   for (m = 0; m < 3; ++m) {
     if (PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
@@ -655,8 +653,7 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   /* Check moments of field */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
   ierr = computeFEMMoments(dm, grad, fmoments, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
-                     fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "L2 projection mass: %20.13e, x-momentum: %20.13e, energy: %20.13e.\n", fmoments[0], fmoments[1], fmoments[2]);CHKERRQ(ierr);
   for (m = 0; m < 3; ++m) {
     if (PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
@@ -772,5 +769,6 @@ int main (int argc, char * argv[]) {
     suffix: proj_tri_3d_mdx_5P_2_faces
     requires: ctetgen !complex
     args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker
 
 TEST*/
