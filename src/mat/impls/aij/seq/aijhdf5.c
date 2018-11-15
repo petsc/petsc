@@ -12,13 +12,13 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscInt        *i = NULL;
   const PetscInt  *j = NULL;
   const PetscScalar *a = NULL;
-  const char      *a_name, *i_name, *j_name, *mat_name, *c_name;
+  const char      *a_name = NULL, *i_name = NULL, *j_name = NULL, *mat_name = NULL, *c_name = NULL;
   PetscInt        p, m, M, N;
   PetscInt        bs = mat->rmap->bs;
   PetscBool       flg;
-  IS              is_i, is_j;
-  Vec             vec_a;
-  PetscLayout     jmap;
+  IS              is_i = NULL, is_j = NULL;
+  Vec             vec_a = NULL;
+  PetscLayout     jmap = NULL;
   MPI_Comm        comm;
   PetscMPIInt     rank, size;
   PetscErrorCode  ierr;
