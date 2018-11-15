@@ -1809,8 +1809,9 @@ static PetscErrorCode coords_double_to_PetscScalar(sc_array_t * array, PetscInt 
 
   PetscFunctionBegin;
   if (array->elem_size != 3 * sizeof(double)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong coordinate size");
-
+#if !defined(PETSC_USE_COMPLEX)
   if (sizeof(double) == sizeof(PetscScalar) && dim == 3) PetscFunctionReturn(0);
+#endif
 
   newarray = sc_array_new_size (dim * sizeof(PetscScalar), array->elem_count);
   for (zz = 0; zz < count; zz++) {
