@@ -7,24 +7,21 @@
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 {
-  PetscMPIInt     rank,size;
-  hid_t           file_id,group_matrix_id;
-
+  hid_t           file_id, group_matrix_id;
   const PetscInt  *i_glob = NULL;
   PetscInt        *i = NULL;
   const PetscInt  *j = NULL;
   const PetscScalar *a = NULL;
-  const char      *a_name,*i_name,*j_name,*mat_name,*c_name;
-  PetscInt        p,m,M,N;
+  const char      *a_name, *i_name, *j_name, *mat_name, *c_name;
+  PetscInt        p, m, M, N;
   PetscInt        bs = mat->rmap->bs;
   PetscBool       flg;
-
-  PetscErrorCode  ierr;
-  MPI_Comm        comm;
-
-  IS              is_i,is_j;
+  IS              is_i, is_j;
   Vec             vec_a;
   PetscLayout     jmap;
+  MPI_Comm        comm;
+  PetscMPIInt     rank, size;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
