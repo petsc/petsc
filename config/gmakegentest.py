@@ -503,10 +503,17 @@ class generateExamples(Petsc):
       loopVars['subargs']['pc_type']=["j","cholesky sor"]
     """
     outstr=''; indnt=self.indent
+
     for key in loopVars:
       for var in loopVars[key]['varlist']:
         varval=loopVars[key][var]
-        outstr += indnt * i + "for {0} in ${{{0}:-{1}}}; do\n".format(*varval)
+        outstr += "{0}_in=${{{0}:-{1}}}\n".format(*varval)
+    outstr += "\n\n"
+
+    for key in loopVars:
+      for var in loopVars[key]['varlist']:
+        varval=loopVars[key][var]
+        outstr += indnt * i + "for {0} in ${{{0}_in}}; do\n".format(*varval)
         i = i + 1
     return (outstr,i)
 
