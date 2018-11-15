@@ -3512,7 +3512,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Split faces have 3 edges and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1(2 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2 + maxSupportSize*3, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt  newp = fStartNew + (f - fStart)*4;
       const PetscInt *cone, *ornt, *support;
