@@ -493,7 +493,7 @@ def printExParseDict(rDict):
   indent="   "
   for sfile in rDict:
     print(sfile)
-    sortkeys=rDict[sfile].keys()
+    sortkeys=list(rDict[sfile].keys())
     sortkeys.sort()
     for runex in sortkeys:
       print(indent+runex)
