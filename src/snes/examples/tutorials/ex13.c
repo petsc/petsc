@@ -538,7 +538,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_gmg_vcycle
     requires: triangle
-    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 3 -snes_convergence_estimate \
+    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
           -ksp_rtol 5e-10 -pc_type mg \
             -mg_levels_ksp_max_it 1 \
             -mg_levels_esteig_ksp_type cg \
@@ -548,7 +548,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_gmg_fcycle
     requires: triangle
-    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 3 -snes_convergence_estimate \
+    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
           -ksp_rtol 5e-10 -pc_type mg -pc_mg_type full \
             -mg_levels_ksp_max_it 2 \
             -mg_levels_esteig_ksp_type cg \
