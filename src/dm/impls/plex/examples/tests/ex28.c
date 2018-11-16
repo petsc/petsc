@@ -7,7 +7,7 @@ static char help[] = "Compare parallel partitioning strategies using matrix grap
 int main(int argc, char **args)
 {
   MatPartitioning part;
-  IS              partis;//index set
+  IS              partis;
   Mat             A        = NULL;
   PetscInt        max      = -1;
   PetscInt        min      = -1;
@@ -20,7 +20,7 @@ int main(int argc, char **args)
   PetscBool       flg;
   PetscErrorCode  ierr;
 
-  //load matrix
+  /*load matrix*/
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -33,7 +33,7 @@ int main(int argc, char **args)
     ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   }
 
-  //partition matrix
+  /*partition matrix*/
   ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part, A);CHKERRQ(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
@@ -56,8 +56,6 @@ int main(int argc, char **args)
   ierr = PetscPrintf(comm, "max:%.0lf min:%.0lf balance:%.11lf\n", (double) max,(double) min,(double) balance);CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject)partis,NULL,"-partition_view");CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
-  //count the cut
-
   ierr = ISDestroy(&partis);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();

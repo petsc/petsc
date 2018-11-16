@@ -46,7 +46,7 @@ int main(int argc,char **args)
   for (i=0; i<m; i++) rownz[i] = 1; /* add 0.0 to diagonal entries */
 
   for (i=0; i<nnz; i++) {
-    char *s = fgets(line,PETSC_MAX_PATH_LEN,file);
+    char *s = fgets(line,sizeof(line),file);
     if (!s) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"i=%d, reached EOF\n",i);
     ierr = sscanf(line,"%d %d %le\n",&row[i],&col[i],(double*)&val[i]);
     if (ierr==2){val[i]=1.0;}
