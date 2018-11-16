@@ -131,10 +131,10 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: ctetgen
-    args: -dim 3 -dm_refine 2 -dm_view
+    args: -dim 3 -dm_refine 2 -petscpartitioner_type simple -dm_view
   test:
     suffix: 1
-    args: -dim 3 -simplex 0 -dm_refine 2 -dm_view
+    args: -dim 3 -simplex 0 -dm_refine 2 -petscpartitioner_type simple -dm_view
   test:
     suffix: quad_0
     nsize: 2
