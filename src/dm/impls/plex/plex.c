@@ -6967,19 +6967,19 @@ PetscErrorCode DMPlexCheckPointSF(DM dm)
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, NULL, &nleaves, &locals, NULL);CHKERRQ(ierr);
 
-  /* 1) if some point is in interface, then all its cone points must be also in interface  */
-  for (i=0; i<nleaves; i++) {
-    p = locals[i];
-    ierr = DMPlexAreAllConePointsInArray_Private(dm, p, nleaves, locals, &missingPoint);CHKERRQ(ierr);
-    if (missingPoint >= 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d but not %d from its cone",p,missingPoint);
-  }
-
-  /* 2) check there are no faces in 2D, cells in 3D, in interface */
+  /* 1) check there are no faces in 2D, cells in 3D, in interface */
   ierr = DMPlexGetVTKCellHeight(dm, &d);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, d, &plo, &phi);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
     p = locals[i];
     if (p >= plo && p < phi) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d which is a cell",p);
+  }
+
+  /* 2) if some point is in interface, then all its cone points must be also in interface  */
+  for (i=0; i<nleaves; i++) {
+    p = locals[i];
+    ierr = DMPlexAreAllConePointsInArray_Private(dm, p, nleaves, locals, &missingPoint);CHKERRQ(ierr);
+    if (missingPoint >= 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d but not %d from its cone",p,missingPoint);
   }
   PetscFunctionReturn(0);
 }
