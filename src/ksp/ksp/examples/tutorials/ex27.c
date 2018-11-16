@@ -280,7 +280,7 @@ int main(int argc,char **args)
       suffix: 4a_lsqr_hdf5
       nsize: {{1 2 4 8}}
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
-      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841.mat -hdf5
+      args: -f ${DATAFILESPATH}/matrices/matlab/rectangular_ultrasound_4889x841.mat -hdf5
       args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
       args: -solve_normal 0 -ksp_type lsqr
 

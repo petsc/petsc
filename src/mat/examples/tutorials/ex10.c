@@ -79,7 +79,7 @@ int main(int argc,char **args)
       suffix: mpiaij_hdf5
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
-      args: -f ${DATAFILESPATH}/matrices/small.mat -a_mat_type mpiaij -viewer_type hdf5
+      args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type mpiaij -viewer_type hdf5
 
    test:
       # test for more processes than rows
@@ -101,7 +101,7 @@ int main(int argc,char **args)
       suffix: mpibaij_hdf5
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
-      args: -f ${DATAFILESPATH}/matrices/small.mat -a_mat_type mpibaij -a_mat_block_size 2 -viewer_type hdf5
+      args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type mpibaij -a_mat_block_size 2 -viewer_type hdf5
 
    test:
       suffix: mpidense
@@ -117,7 +117,7 @@ int main(int argc,char **args)
    test:
       suffix: seqaij_hdf5
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
-      args: -f ${DATAFILESPATH}/matrices/small.mat -a_mat_type seqaij -viewer_type hdf5
+      args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type seqaij -viewer_type hdf5
 
    test:
       suffix: seqdense
