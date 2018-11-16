@@ -381,7 +381,6 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
     IS           heightIS;
 
-    if (effectiveHeight) {ierr = PetscDSGetHeightSubspace(prob, effectiveHeight, &probEff);CHKERRQ(ierr);}
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(depthLabel,depth - h,&heightIS);CHKERRQ(ierr);
     if (!h) {
@@ -412,6 +411,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       ierr = ISDestroy(&heightIS);CHKERRQ(ierr);
       continue;
     }
+    if (effectiveHeight) {ierr = PetscDSGetHeightSubspace(prob, effectiveHeight, &probEff);CHKERRQ(ierr);}
     /* Loop over points at this height */
     ierr = DMGetWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr);
