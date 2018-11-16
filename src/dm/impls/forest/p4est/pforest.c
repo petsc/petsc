@@ -768,9 +768,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         base = connDM;
         ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
         ierr = DMDestroy(&connDM);CHKERRQ(ierr);
-      } else if (depth != P4EST_DIM) {
-        SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Base plex is neither interpolated nor uninterpolated? depth %D, expected 2 or %d",depth,P4EST_DIM + 1);
-      }
+      } else if (depth != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Base plex is neither interpolated nor uninterpolated? depth %D, expected 2 or %d",depth,P4EST_DIM + 1);
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
         DM      dmRedundant;
@@ -814,8 +812,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       }
       topo->tree_face_to_uniq = tree_face_to_uniq;
       pforest->topo           = topo;
-    } else if (isDA) {
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
+    } else if (isDA) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
 #if 0
       PetscInt N[3], P[3];
 
@@ -824,7 +821,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
                                                                   /* don't use Morton order */
       ierr = DMFTopologyCreateBrick_pforest(dm,N,P,&pforest->topo,PETSC_FALSE);CHKERRQ(ierr);
 #endif
-    }
     {
       PetscInt numLabels, l;
 
@@ -1136,10 +1132,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
         PetscStackCallP4estReturn(shipped,p4est_partition_ext,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
-      } else {
-        /* TODO: handle non-uniform partition cases */
-        SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
-      }
+      } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Non-uniform partition cases not implemented yet");
       if (shipped) ctx.anyChange = PETSC_TRUE;
       if (forest_copy) {
         if (preCoarseToFine || coarseToPreFine) {
@@ -1503,9 +1496,7 @@ static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
     ierr = DMView_HDF5_pforest(dm, viewer);CHKERRQ(ierr);
   } else if (isglvis) {
     ierr = DMView_GLVis_pforest(dm, viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject) dm),PETSC_ERR_SUP,"Viewer not supported (not VTK, HDF5, or GLVis)");
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject) dm),PETSC_ERR_SUP,"Viewer not supported (not VTK, HDF5, or GLVis)");
   PetscFunctionReturn(0);
 }
 
@@ -3810,9 +3801,7 @@ static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, p4est_geometry_t *ge
         if (geom) {
           (geom->X)(geom,t,coordP4est,coordP4estMapped);
           for (j = 0; j < coordDim; j++) coord[j] = (PetscScalar) coordP4estMapped[j];
-        } else {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded");
-        }
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded");
       }
     }
   }
