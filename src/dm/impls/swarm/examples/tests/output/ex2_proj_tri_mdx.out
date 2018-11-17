@@ -6,7 +6,6 @@ Mesh in 2 dimensions:
   2-cells: 2
 Labels:
   Face Sets: 1 strata with value/size (1 (4))
-  marker: 1 strata with value/size (1 (8))
   depth: 3 strata with value/size (0 (4), 1 (5), 2 (2))
   DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
@@ -17,23 +16,11 @@ DMSwarmDataBucketView:
   buffer             = 0 
   allocated          = 2 
   nfields registered = 5 
-    [  0]     DMSwarm_pid : Mem. usage       = 1.60e-05 (MB) [rank0]
                             blocksize        = 1 
-                            atomic size      = 8 
-    [  1]    DMSwarm_rank : Mem. usage       = 8.00e-06 (MB) [rank0]
                             blocksize        = 1 
-                            atomic size      = 4 
-    [  2] DMSwarmPIC_coor : Mem. usage       = 3.20e-05 (MB) [rank0]
                             blocksize        = 2 
-                            atomic size      = 16 [full block, bs=2]
-                            atomic size/item = 8 
-    [  3]  DMSwarm_cellid : Mem. usage       = 8.00e-06 (MB) [rank0]
                             blocksize        = 1 
-                            atomic size      = 4 
-    [  4]             w_q : Mem. usage       = 1.60e-05 (MB) [rank0]
                             blocksize        = 1 
-                            atomic size      = 8 
-  Total mem. usage                           = 8.00e-05 (MB) (collective)
-L2 projection mass:  1.8493864339355e+00, x-momentum:  9.4241475859666e-01, energy:  1.0480119317443e+00.
-L2 projection mass:  1.8493864339355e+00, x-momentum:  9.4241475859666e-01, energy:  1.0480119317443e+00.
-L2 projection mass:  1.8493864339355e+00, x-momentum:  9.4241475859666e-01, energy:  1.0480119317443e+00.
+L2 projection mass:     1.8493864339e+00, x-momentum:     9.4241475860e-01, energy:     1.0480119317e+00.
+L2 projection mass:     1.8493864339e+00, x-momentum:     9.4241475860e-01, energy:     1.0480119317e+00.
+L2 projection mass:     1.8493864339e+00, x-momentum:     9.4241475860e-01, energy:     1.0480119317e+00.
