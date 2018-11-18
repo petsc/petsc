@@ -1632,17 +1632,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, p, &numPatchDofsWithArtificial);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(patch->gtolCountsWithArtificial, p, &offsetWithArtificial);CHKERRQ(ierr);
 
-        /*printf("\n--------------------------------------------------\n");*/
-        /*printf("\n------------ without artificial ------------------\n");*/
-        /*for (PetscInt i=0; i<numPatchDofs; i++) {*/
-        /*  printf("%i ", gtolArray[i + offset]);*/
-        /*}*/
-        /*printf("\n-------------- with artificial -------------------\n");*/
-        /*for (PetscInt i=0; i<numPatchDofsWithArtificial; i++) {*/
-        /*  printf("%i ", gtolArrayWithArtificial[i + offsetWithArtificial]);*/
-        /*}*/
-        /*printf("\n--------------------------------------------------\n");*/
-
         PetscInt dofWithoutArtificialCounter = 0;
         PetscInt *patchWithoutArtificialToWithArtificialArray;
         ierr = PetscMalloc1(numPatchDofs, &patchWithoutArtificialToWithArtificialArray);CHKERRQ(ierr);
