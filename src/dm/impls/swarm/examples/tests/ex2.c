@@ -125,11 +125,12 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
   PetscReal      interval = user->meshRelDx;
   Vec            coordinates;
   PetscScalar   *coords;
-  PetscReal      hh[3];
+  PetscReal      *hh;
   PetscInt       d, cdim, N, p, bs;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscMalloc(user->dim,&hh);CHKERRQ(ierr);
   for (d = 0; d < user->dim; ++d) hh[d] = (user->domain_hi[d] - user->domain_lo[d])/user->faces;
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject) dm), &rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rnd, -interval, interval);CHKERRQ(ierr);
@@ -150,6 +151,7 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
+  ierr = PetscFree(hh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
