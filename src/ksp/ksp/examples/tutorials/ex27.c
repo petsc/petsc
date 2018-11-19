@@ -45,6 +45,9 @@ int main(int argc,char **args)
      or the normal equation (-solve_normal 1).
   */
   ierr = PetscOptionsGetBool(NULL,NULL,"-solve_normal",&solve_normal,NULL);CHKERRQ(ierr);
+  /*
+     Decide whether to use the HDF5 reader.
+  */
   ierr = PetscOptionsGetBool(NULL,NULL,"-hdf5",&hdf5,NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
@@ -70,7 +73,11 @@ int main(int argc,char **args)
      reading from this file.
   */
   if (hdf5) {
+#if defined(PETSC_HAVE_HDF5)
     ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc must be configured with HDF5 to use this feature");
+#endif
   } else {
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   }
