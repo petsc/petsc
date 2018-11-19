@@ -110,7 +110,13 @@ int main(int argc,char **args)
   /* load file_x0 if it is specified, otherwise try to reuse file */
   if (file_x0[0]) {
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    if (hdf5) {
+#if defined(PETSC_HAVE_HDF5)
+      ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+#endif
+    } else {
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    }
   }
   ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
   ierrp = VecLoad(x,fd);
