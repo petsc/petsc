@@ -89,6 +89,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
   /*
@@ -97,6 +98,7 @@ int main(int argc,char **args)
   has  = PETSC_FALSE;
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
+  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   if (hdf5) {
 #if defined(PETSC_HAVE_HDF5)
     ierr = PetscViewerHDF5HasObject(fd,(PetscObject)b,&has);CHKERRQ(ierr);
