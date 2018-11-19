@@ -17,6 +17,30 @@ T*/
 #include <petscksp.h>
 #include <petscviewerhdf5.h>
 
+static PetscErrorCode VecLoadIfExists_Private(Vec b,PetscViewer fd,PetscBool *has)
+{
+  PetscBool      hdf5=PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscObjectTypeCompare((PetscObject)fd,PETSCVIEWERHDF5,&hdf5);CHKERRQ(ierr);
+  if (hdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = PetscViewerHDF5HasObject(fd,(PetscObject)b,has);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc must be configured with HDF5 to use this feature");
+#endif
+    if (*has) {ierr = VecLoad(b,fd);CHKERRQ(ierr);}
+  } else {
+    PetscErrorCode ierrp;
+    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
+    ierrp = VecLoad(b,fd);
+    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
+    *has  = ierrp ? PETSC_FALSE : PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
 int main(int argc,char **args)
 {
   KSP            ksp;             /* linear solver context */
@@ -95,22 +119,10 @@ int main(int argc,char **args)
   /*
      Load the RHS vector if it is present in the file, otherwise use a vector of all ones.
   */
-  has  = PETSC_FALSE;
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  if (hdf5) {
-#if defined(PETSC_HAVE_HDF5)
-    ierr = PetscViewerHDF5HasObject(fd,(PetscObject)b,&has);CHKERRQ(ierr);
-#endif
-    if (has) {ierr = VecLoad(b,fd);CHKERRQ(ierr);}
-  } else {
-    PetscErrorCode ierrp;
-    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
-    ierrp = VecLoad(b,fd);
-    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
-    has   = ierrp ? PETSC_FALSE : PETSC_TRUE;
-  }
+  ierr = VecLoadIfExists_Private(b,fd,&has);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (!has) {
     PetscScalar one = 1.0;
@@ -127,7 +139,6 @@ int main(int argc,char **args)
   ierr = PetscObjectSetName((PetscObject)x,"x0");CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   /* load file_x0 if it is specified, otherwise try to reuse file */
-  has  = PETSC_FALSE;
   if (file_x0[0]) {
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
     if (hdf5) {
@@ -138,18 +149,7 @@ int main(int argc,char **args)
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
     }
   }
-  if (hdf5) {
-#if defined(PETSC_HAVE_HDF5)
-    ierr = PetscViewerHDF5HasObject(fd,(PetscObject)x,&has);CHKERRQ(ierr);
-#endif
-    if (has) {ierr = VecLoad(x,fd);CHKERRQ(ierr);}
-  } else {
-    PetscErrorCode ierrp;
-    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
-    ierrp = VecLoad(x,fd);
-    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
-    has   = ierrp ? PETSC_FALSE : PETSC_TRUE;
-  }
+  ierr = VecLoadIfExists_Private(x,fd,&has);CHKERRQ(ierr);
   if (!has) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n");CHKERRQ(ierr);
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
