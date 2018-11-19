@@ -65,6 +65,10 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
     ierr         = PetscFree(hdf5->groups);CHKERRQ(ierr);
     hdf5->groups = tmp;
   }
+  ierr = PetscFree(hdf5->mataij_iname);CHKERRQ(ierr);
+  ierr = PetscFree(hdf5->mataij_jname);CHKERRQ(ierr);
+  ierr = PetscFree(hdf5->mataij_aname);CHKERRQ(ierr);
+  ierr = PetscFree(hdf5->mataij_cname);CHKERRQ(ierr);
   ierr = PetscFree(hdf5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL);CHKERRQ(ierr);
