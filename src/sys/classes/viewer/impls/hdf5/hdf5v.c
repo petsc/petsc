@@ -869,7 +869,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char name[], H5O_type_t otype, PetscBool *has)
+static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, const char name[], H5O_type_t otype, PetscBool *has)
 {
   hid_t          h5;
   PetscErrorCode ierr;
@@ -892,6 +892,30 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
   PetscFunctionReturn(0);
 }
 
+/*@
+ PetscViewerHDF5HasObject - Check whether a dataset with the same name as given object exists in the HDF5 file
+
+  Input Parameters:
++ viewer - The HDF5 viewer
+- obj    - The named object
+
+  Output Parameter:
+. has    - Flag for dataset existence; PETSC_FALSE for unnamed object
+
+  Level: advanced
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5HasAttribute()
+@*/
+PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, PetscBool *has)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *has = PETSC_FALSE;
+  if (obj->name) {ierr = PetscViewerHDF5HasObject_Internal(viewer, obj->name, H5O_TYPE_DATASET, has);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*@C
  PetscViewerHDF5HasAttribute - Check whether a scalar attribute exists
 
@@ -905,7 +929,7 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
 
   Level: advanced
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5ReadAttribute()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5ReadAttribute(), PetscViewerHDF5HasObject()
 @*/
 PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
 {
@@ -921,7 +945,7 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscValidPointer(has, 4);
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5HasObject(viewer, parent, H5O_TYPE_DATASET, &exists);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, H5O_TYPE_DATASET, &exists);CHKERRQ(ierr);
   if (exists) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     PetscStackCall("H5Dopen2",dataset = H5Dopen2(h5, parent, H5P_DEFAULT));
