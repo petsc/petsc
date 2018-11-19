@@ -84,15 +84,19 @@ int main(int argc,char **args)
   }
 
   /*
-     Load the matrix and vector; then destroy the viewer.
+     Load the matrix.
   */
-  ierr  = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr  = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
-  ierr  = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr  = MatLoad(A,fd);CHKERRQ(ierr);
-  has   = PETSC_FALSE;
-  ierr  = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr  = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
+  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+
+  /*
+     Load the RHS vector if it is present in the file, otherwise use a vector of all ones.
+  */
+  has  = PETSC_FALSE;
+  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
   if (hdf5) {
 #if defined(PETSC_HAVE_HDF5)
     ierr = PetscViewerHDF5HasObject(fd,(PetscObject)b,&has);CHKERRQ(ierr);
@@ -105,8 +109,8 @@ int main(int argc,char **args)
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
     has   = ierrp ? PETSC_FALSE : PETSC_TRUE;
   }
-  ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (!has) {    /* if file contains no RHS, then use a vector of all ones */
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  if (!has) {
     PetscScalar one = 1.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load RHS, so use a vector of all ones.\n");CHKERRQ(ierr);
     ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
@@ -114,10 +118,12 @@ int main(int argc,char **args)
     ierr = VecSet(b,one);CHKERRQ(ierr);
   }
 
+  /*
+     Load the initial guess vector if it is present in the file, otherwise use a vector of all zeros.
+  */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,"x0");CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-
   /* load file_x0 if it is specified, otherwise try to reuse file */
   has  = PETSC_FALSE;
   if (file_x0[0]) {
@@ -142,13 +148,13 @@ int main(int argc,char **args)
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
     has   = ierrp ? PETSC_FALSE : PETSC_TRUE;
   }
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   if (!has) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n");CHKERRQ(ierr);
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     nonzero_guess=PETSC_FALSE;
   }
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
 
