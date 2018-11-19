@@ -1333,10 +1333,10 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
     PetscInt        pStart, pEnd, ncell, offset, c, i, j;
 
     if(withArtificial) {
-        ierr = ISGetIndices(patch->dofsWithArtificial, &dofsArray);CHKERRQ(ierr);
+      ierr = ISGetIndices(patch->dofsWithArtificial, &dofsArray);CHKERRQ(ierr);
     }
     else {
-        ierr = ISGetIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
+      ierr = ISGetIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
     }
     ierr = PetscSectionGetChart(patch->cellCounts, &pStart, &pEnd);CHKERRQ(ierr);
     point += pStart;
