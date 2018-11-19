@@ -1308,8 +1308,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
     /* would be nice if we could create a rectangular matrix of size numDofsWithArtificial x numDofs here */
     x = patch->patchXWithArtificial[point];
     y = patch->patchXWithArtificial[point];
-  }
-  else {
+  } else {
     x = patch->patchX[point];
     y = patch->patchY[point];
   }
@@ -1334,8 +1333,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
 
     if(withArtificial) {
       ierr = ISGetIndices(patch->dofsWithArtificial, &dofsArray);CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = ISGetIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
     }
     ierr = PetscSectionGetChart(patch->cellCounts, &pStart, &pEnd);CHKERRQ(ierr);
