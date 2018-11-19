@@ -1057,10 +1057,10 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
       }
     }
      /*How many local dofs in this patch? */
-    if(patch->multiplicative) {
-        ierr = PetscHMapIGetSize(htWithArtificial, &dof);CHKERRQ(ierr);
-        ierr = PetscSectionSetDof(gtolCountsWithArtificial, v, dof);CHKERRQ(ierr);
-    }
+   if(patch->multiplicative) {
+     ierr = PetscHMapIGetSize(htWithArtificial, &dof);CHKERRQ(ierr);
+     ierr = PetscSectionSetDof(gtolCountsWithArtificial, v, dof);CHKERRQ(ierr);
+   }
     ierr = PetscHMapIGetSize(ht, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(gtolCounts, v, dof);CHKERRQ(ierr);
   }
