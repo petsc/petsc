@@ -26,7 +26,8 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
   char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
   KSPType        ksptype;
-  PetscErrorCode ierr,ierrp;
+  PetscErrorCode ierr;
+  PetscBool      has;
   PetscInt       its,n,m;
   PetscReal      norm;
   PetscBool      nonzero_guess=PETSC_TRUE;
@@ -89,13 +90,23 @@ int main(int argc,char **args)
   ierr  = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
   ierr  = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr  = MatLoad(A,fd);CHKERRQ(ierr);
+  has   = PETSC_FALSE;
   ierr  = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr  = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
-  ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
-  ierrp = VecLoad(b,fd);
-  ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
+  if (hdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = PetscViewerHDF5HasObject(fd,(PetscObject)b,&has);CHKERRQ(ierr);
+#endif
+    if (has) {ierr = VecLoad(b,fd);CHKERRQ(ierr);}
+  } else {
+    PetscErrorCode ierrp;
+    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
+    ierrp = VecLoad(b,fd);
+    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
+    has   = ierrp ? PETSC_FALSE : PETSC_TRUE;
+  }
   ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (ierrp) {   /* if file contains no RHS, then use a vector of all ones */
+  if (!has) {    /* if file contains no RHS, then use a vector of all ones */
     PetscScalar one = 1.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load RHS, so use a vector of all ones.\n");CHKERRQ(ierr);
     ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
@@ -108,6 +119,7 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /* load file_x0 if it is specified, otherwise try to reuse file */
+  has  = PETSC_FALSE;
   if (file_x0[0]) {
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
     if (hdf5) {
@@ -118,11 +130,20 @@ int main(int argc,char **args)
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
     }
   }
-  ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
-  ierrp = VecLoad(x,fd);
-  ierr = PetscPopErrorHandler();CHKERRQ(ierr);
+  if (hdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = PetscViewerHDF5HasObject(fd,(PetscObject)x,&has);CHKERRQ(ierr);
+#endif
+    if (has) {ierr = VecLoad(x,fd);CHKERRQ(ierr);}
+  } else {
+    PetscErrorCode ierrp;
+    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
+    ierrp = VecLoad(x,fd);
+    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
+    has   = ierrp ? PETSC_FALSE : PETSC_TRUE;
+  }
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  if (ierrp) {
+  if (!has) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n");CHKERRQ(ierr);
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
