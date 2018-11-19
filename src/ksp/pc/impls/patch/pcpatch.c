@@ -1039,7 +1039,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
             if(patch->multiplicative)
             {
               if (isGlobalBcDof) {
-                dofsArrayWithArtificial[globalIndex] = -1; // don't use this in assembly in this patch
+                dofsArrayWithArtificial[globalIndex] = -1; /* don't use this in assembly in this patch */
               } else {
                 ierr = PetscHMapIGet(htWithArtificial, globalDof + l, &localDof);CHKERRQ(ierr);
                 if (localDof == -1) {
@@ -1305,7 +1305,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
 
   PetscFunctionBegin;
   if(withArtificial) {
-   // would be nice if we could create a rectangular matrix of size numDofsWithArtificial x numDofs here
+    /* would be nice if we could create a rectangular matrix of size numDofsWithArtificial x numDofs here */
     x = patch->patchXWithArtificial[point];
     y = patch->patchXWithArtificial[point];
   }
@@ -1618,8 +1618,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
         ierr = VecSetUp(patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
 
-        // Now build the mapping that for a dof in a patch WITHOUT dofs that have artificial bcs gives the
-        // the index in the patch with all dofs
+        /* Now build the mapping that for a dof in a patch WITHOUT dofs that have artificial bcs gives the */
+        /* the index in the patch with all dofs */
         const PetscInt    *gtolArray, *gtolArrayWithArtificial = NULL;
         PetscInt           numPatchDofs, offset;
         PetscInt           numPatchDofsWithArtificial, offsetWithArtificial;
@@ -1638,14 +1638,12 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
         ISCreateGeneral(PETSC_COMM_SELF, numPatchDofs, patchWithoutArtificialToWithArtificialArray, PETSC_OWN_POINTER, &patch->dofMappingWithoutToWithArtificial[p-pStart]);
         if (numPatchDofs == 0) continue;
-        for(PetscInt i=0; i<numPatchDofsWithArtificial; i++)
-        {
-          if(gtolArrayWithArtificial[i+offsetWithArtificial] == gtolArray[offset+dofWithoutArtificialCounter])
-          {
+        for(PetscInt i=0; i<numPatchDofsWithArtificial; i++) {
+          if(gtolArrayWithArtificial[i+offsetWithArtificial] == gtolArray[offset+dofWithoutArtificialCounter]) {
             patchWithoutArtificialToWithArtificialArray[dofWithoutArtificialCounter] = i;
             dofWithoutArtificialCounter++;
             if(dofWithoutArtificialCounter == numPatchDofs)
-                break;
+              break;
           }
         }
         ierr = ISRestoreIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
@@ -1686,7 +1684,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
           ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchX[i], patch->dof_weights, ADD_VALUES, SCATTER_REVERSE, PETSC_FALSE);CHKERRQ(ierr);
         }
       } else {
-        // multiplicative is actually only locally multiplicative and globally additive. need the pou where the mesh decomposition overlaps
+        /* multiplicative is actually only locally multiplicative and globally additive. need the pou where the mesh decomposition overlaps */
         ierr = VecSet(patch->dof_weights, 1.0);CHKERRQ(ierr);
       }
 
@@ -1725,11 +1723,11 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     }
     if(patch->multiplicative) {
       for (i = 0; i < patch->npatch; ++i) {
-        // Instead of padding patch->patchY with zeros to get
-        // patch->patchYWithArtificial and then multiplying with the matrix,
-        // just get rid of the columns that correspond to the dofs with
-        // artificial bcs. That's of course fairly inefficient, hopefully we
-        // can just assemble the rectangular matrix in the first place.
+        /* Instead of padding patch->patchY with zeros to get */
+        /* patch->patchYWithArtificial and then multiplying with the matrix, */
+        /* just get rid of the columns that correspond to the dofs with */
+        /* artificial bcs. That's of course fairly inefficient, hopefully we */
+        /* can just assemble the rectangular matrix in the first place. */
         Mat matSquare;
         IS rowis;
         PetscInt dof;
@@ -1836,12 +1834,12 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
         } else {
           /*Very inefficient, hopefully we can just assemble the rectangular matrix in the first place.*/
           Mat matSquare;
+          PetscInt dof;
+          IS rowis;
           ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
           ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
           ierr = PCPatchComputeOperator_Private(pc, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
-          PetscInt dof;
           ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
-          IS rowis;
           ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
           ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &multMat); CHKERRQ(ierr);
           ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
@@ -1909,14 +1907,10 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   ierr = PetscSectionDestroy(&patch->patchSection);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->ghostBcNodes);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->globalBcNodes);CHKERRQ(ierr);
-  if(patch->gtolCountsWithArtificial)
-    ierr = PetscSectionDestroy(&patch->gtolCountsWithArtificial);CHKERRQ(ierr);
-  if(&patch->gtolWithArtificial)
-    ierr = ISDestroy(&patch->gtolWithArtificial);CHKERRQ(ierr);
-  if(patch->dofsWithArtificial)
-    ierr = ISDestroy(&patch->dofsWithArtificial);CHKERRQ(ierr);
-  if(patch->offsWithArtificial)
-    ierr = ISDestroy(&patch->offsWithArtificial);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&patch->gtolCountsWithArtificial);CHKERRQ(ierr);
+  ierr = ISDestroy(&patch->gtolWithArtificial);CHKERRQ(ierr);
+  ierr = ISDestroy(&patch->dofsWithArtificial);CHKERRQ(ierr);
+  ierr = ISDestroy(&patch->offsWithArtificial);CHKERRQ(ierr);
 
 
   if (patch->dofSection) for (i = 0; i < patch->nsubspaces; i++) {ierr = PetscSectionDestroy(&patch->dofSection[i]);CHKERRQ(ierr);}
@@ -2093,10 +2087,9 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Subspace Correction preconditioner with %d patches\n", patch->npatch);CHKERRQ(ierr);
   if(patch->multiplicative) {
-      ierr = PetscViewerASCIIPrintf(viewer, "Schwarz type: multiplicative\n");CHKERRQ(ierr);
-  }
-  else {
-      ierr = PetscViewerASCIIPrintf(viewer, "Schwarz type: additive\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Schwarz type: multiplicative\n");CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer, "Schwarz type: additive\n");CHKERRQ(ierr);
   }
   if (patch->partition_of_unity) {ierr = PetscViewerASCIIPrintf(viewer, "Weighting by partition of unity\n");CHKERRQ(ierr);}
   else                           {ierr = PetscViewerASCIIPrintf(viewer, "Not weighting by partition of unity\n");CHKERRQ(ierr);}
