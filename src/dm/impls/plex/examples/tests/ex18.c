@@ -403,42 +403,6 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
   PetscFunctionReturn(0);
 }
 
-/* TODO this dirty hotfix can be removed once point SF is fixed systematically */
-static PetscErrorCode CreateSimplex_3D_HotfixSF(DM idm)
-{
-  PetscSF sf=NULL;
-  PetscInt nroots,nleaves;
-  const PetscInt *ilocal=NULL;
-  const PetscSFNode *iremote=NULL;
-  PetscInt idx=3;
-  PetscMPIInt rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)idm),&rank);CHKERRQ(ierr);
-  ierr = DMGetPointSF(idm, &sf);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, &iremote);CHKERRQ(ierr);
-  if (!rank) {
-    PetscInt *ilocal1=NULL;
-    PetscSFNode *iremote1=NULL;
-
-    /* insert 8 <- (1,6) as leave idx */
-    ierr = PetscMalloc1(nleaves+1, &ilocal1);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nleaves+1, &iremote1);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ilocal1, ilocal, idx*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(iremote1, iremote, idx*sizeof(PetscSFNode));CHKERRQ(ierr);
-    ilocal1[idx] = 8;
-    iremote1[idx].rank = 1;
-    iremote1[idx].index = 6;
-    ierr = PetscMemcpy(ilocal1+idx+1, ilocal+idx, (nleaves-idx)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(iremote1+idx+1, iremote+idx, (nleaves-idx)*sizeof(PetscSFNode));CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sf, nroots, nleaves+1, ilocal1, PETSC_OWN_POINTER, iremote1, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  } else {
-    ierr = PetscSFSetGraph(sf, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx *user, DM *dm)
 {
   PetscInt       testNum = user->testNum, p;
@@ -448,10 +412,6 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (user->interpolate) {
-    /* TODO this dirty hotfix can be removed once point SF is fixed systematically */
-    ierr = PetscOptionsSetValue(NULL, "-dm_plex_interpolate_orient_interfaces", "0");CHKERRQ(ierr);  /* disable the fix in DMPlexInterpolate, will be done later */
-  }
   switch (testNum) {
   case 0:
     if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
@@ -483,10 +443,6 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
     break;
   default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
-  if (user->interpolate == SERIAL) {
-    /* TODO this dirty hotfix can be removed once point SF is fixed systematically */
-    ierr = CreateSimplex_3D_HotfixSF(*dm);CHKERRQ(ierr);
-  }
   if (user->testOrientIF) {
     PetscInt start;
     PetscBool reverse;
@@ -498,8 +454,6 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
     ierr = DMPlexFixFaceOrientations_Translate_Private(user->ornt[rank], &start, &reverse);CHKERRQ(ierr);
     ierr = DMPlexOrientCell_Internal(*dm, ifp[rank], start, reverse);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-  }
-  if (user->interpolate == SERIAL) {
     ierr = DMPlexOrientInterface(*dm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -598,7 +552,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      useGenerator   = user->useGenerator;
   PetscBool      interpSerial   = user->interpolate == SERIAL ? PETSC_TRUE : PETSC_FALSE;
   PetscBool      interpParallel = user->interpolate == PARALLEL ? PETSC_TRUE : PETSC_FALSE;
-  PetscBool      hotfix         = PETSC_FALSE;
   const char    *filename       = user->filename;
   size_t         len;
   PetscMPIInt    rank;
@@ -627,7 +580,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     case 3:
       if (cellSimplex) {
         ierr = CreateSimplex_3D(comm, interpSerial, user, dm);CHKERRQ(ierr);
-        hotfix = PETSC_TRUE;
       } else {
         ierr = CreateHex_3D(comm, interpSerial, user, dm);CHKERRQ(ierr);
       }
@@ -663,12 +615,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm = idm;
-      if (hotfix) {
-        /* TODO this dirty hotfix can be removed once point SF is fixed systematically */
-        /* CreateSimplex_3D didn't do the hotfix, do it now */
-        ierr = CreateSimplex_3D_HotfixSF(*dm);CHKERRQ(ierr);
-        ierr = DMPlexOrientInterface(*dm);CHKERRQ(ierr);
-      }
       ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Redistributed Mesh");CHKERRQ(ierr);
       ierr = DMViewFromOptions(*dm, NULL, "-intp_dm_view");CHKERRQ(ierr);
     }
