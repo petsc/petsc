@@ -936,29 +936,29 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           break;
         }
       }
-      {
-        PetscInt numLabels, l;
+    }
+    {
+      PetscInt numLabels, l;
 
-        ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
-        for (l = 0; l < numLabels; l++) {
-          PetscBool  isDepth, isGhost, isVTK;
-          DMLabel    label, labelNew;
-          PetscInt   defVal;
-          const char *name;
+      ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
+      for (l = 0; l < numLabels; l++) {
+        PetscBool  isDepth, isGhost, isVTK;
+        DMLabel    label, labelNew;
+        PetscInt   defVal;
+        const char *name;
 
-          ierr = DMGetLabelName(adaptFrom, l, &name);CHKERRQ(ierr);
-          ierr = DMGetLabelByNum(adaptFrom, l, &label);CHKERRQ(ierr);
-          ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
-          if (isDepth) continue;
-          ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
-          if (isGhost) continue;
-          ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
-          if (isVTK) continue;
-          ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
-          ierr = DMGetLabel(dm,name,&labelNew);CHKERRQ(ierr);
-          ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
-          ierr = DMLabelSetDefaultValue(labelNew,defVal);CHKERRQ(ierr);
-        }
+        ierr = DMGetLabelName(adaptFrom, l, &name);CHKERRQ(ierr);
+        ierr = DMGetLabelByNum(adaptFrom, l, &label);CHKERRQ(ierr);
+        ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
+        if (isDepth) continue;
+        ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
+        if (isGhost) continue;
+        ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
+        if (isVTK) continue;
+        ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
+        ierr = DMGetLabel(dm,name,&labelNew);CHKERRQ(ierr);
+        ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
+        ierr = DMLabelSetDefaultValue(labelNew,defVal);CHKERRQ(ierr);
       }
     }
   } else { /* initial */
@@ -3556,7 +3556,6 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       }
       /* label was created earlier */
       ierr = DMGetLabel(dm,name,&label);CHKERRQ(ierr);
-
       for (p = pStartA; p < pEndA; p++) {
         ierr = DMLabelGetValue(nextLabel,p,&adaptValues[p]);CHKERRQ(ierr);
       }
