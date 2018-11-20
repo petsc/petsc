@@ -96,7 +96,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = AdolcComputeRHSJacobian(A,x,user->adctx);CHKERRQ(ierr);
+  ierr = AdolcComputeRHSJacobian(1,A,x,user->adctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -118,7 +118,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = AdolcComputeRHSJacobian(A,x,user->adctx);CHKERRQ(ierr);
+  ierr = AdolcComputeRHSJacobian(1,A,x,user->adctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -134,7 +134,7 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = AdolcComputeRHSJacobianP(A,x,&user->mu,3,user->adctx);CHKERRQ(ierr);
+  ierr = AdolcComputeRHSJacobianP(A,x,&user->mu,3,user->adctx);CHKERRQ(ierr);  // FIXME: reorder for tag first
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
