@@ -1177,7 +1177,7 @@ and PetscBinaryWrite() to see how this may be done.
    by default the same structure and naming of the AIJ arrays and column count
    within the HDF5 file. This means that a MAT file saved with -v7.3 flag, e.g.
 $    save example.mat A b -v7.3
-   can be directly read by this routine (see MATLAB documentation for details).
+   can be directly read by this routine (see Reference 1 for details).
    Note that depending on your MATLAB version, this format might be a default,
    otherwise you can set it as default in Preferences.
 
@@ -1191,6 +1191,9 @@ $    save example.mat A b -v7.3
    This reader currently supports only real MATSEQAIJ and MATMPIAIJ matrices.
 
    MatView() is not yet implemented.
+
+   References:
+1. MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
 
 .keywords: matrix, load, binary, input, HDF5
 
