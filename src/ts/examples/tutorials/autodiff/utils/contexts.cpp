@@ -2,6 +2,12 @@
 #include <petscdmda.h>
 #include <adolc/adolc.h>
 
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
+
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+*/
 
 #ifndef ADOLCCTX
 #define ADOLCCTX
@@ -36,5 +42,5 @@ typedef struct {
   TS            ts;
   PetscBool     flg;
   PetscLogEvent event1,event2,event3,event4;
-} MatCtx;
+} AdolcMatCtx;
 #endif

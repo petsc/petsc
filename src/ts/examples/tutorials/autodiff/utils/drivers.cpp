@@ -2,6 +2,12 @@
 #include "sparse.cpp"
 #include "init.cpp"
 
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
+
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+*/
 
 /* --------------------------------------------------------------------------------
    Drivers for RHSJacobian and IJacobian
@@ -10,7 +16,7 @@
 /*
   Compute Jacobian for explicit TS in compressed format and recover from this, using
   precomputed seed and recovery matrices. If sparse mode is not used, full Jacobian is
-  assembled (not recommended!).
+  assembled (not recommended for non-toy problems!).
 
   Input parameters:
   tag   - tape identifier
@@ -20,7 +26,7 @@
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode AdolcComputeRHSJacobian(PetscInt tag,Mat A,PetscScalar *u_vec,void *ctx)
+PetscErrorCode PetscAdolcComputeRHSJacobian(PetscInt tag,Mat A,PetscScalar *u_vec,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
@@ -57,7 +63,7 @@ PetscErrorCode AdolcComputeRHSJacobian(PetscInt tag,Mat A,PetscScalar *u_vec,voi
 /*
   Compute Jacobian for explicit TS in compressed format and recover from this, using
   precomputed seed and recovery matrices. If sparse mode is not used, full Jacobian is
-  assembled (not recommended!).
+  assembled (not recommended for non-toy problems!).
 
   Input parameters:
   tag   - tape identifier
@@ -67,7 +73,7 @@ PetscErrorCode AdolcComputeRHSJacobian(PetscInt tag,Mat A,PetscScalar *u_vec,voi
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode AdolcComputeRHSJacobianLocal(PetscInt tag,Mat A,PetscScalar *u_vec,void *ctx)
+PetscErrorCode PetscAdolcComputeRHSJacobianLocal(PetscInt tag,Mat A,PetscScalar *u_vec,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
@@ -104,7 +110,7 @@ PetscErrorCode AdolcComputeRHSJacobianLocal(PetscInt tag,Mat A,PetscScalar *u_ve
 /*
   Compute Jacobian for implicit TS in compressed format and recover from this, using
   precomputed seed and recovery matrices. If sparse mode is not used, full Jacobian is
-  assembled (not recommended!).
+  assembled (not recommended for non-toy problems!).
 
   Input parameters:
   tag1   - tape identifier for df/dx part
@@ -115,7 +121,7 @@ PetscErrorCode AdolcComputeRHSJacobianLocal(PetscInt tag,Mat A,PetscScalar *u_ve
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode AdolcComputeIJacobian(PetscInt tag1,PetscInt tag2,Mat A,PetscScalar *u_vec,PetscReal a,void *ctx)
+PetscErrorCode PetscAdolcComputeIJacobian(PetscInt tag1,PetscInt tag2,Mat A,PetscScalar *u_vec,PetscReal a,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
@@ -189,7 +195,7 @@ PetscErrorCode AdolcComputeIJacobian(PetscInt tag1,PetscInt tag2,Mat A,PetscScal
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode AdolcComputeIJacobianIDMass(PetscInt tag,Mat A,PetscScalar *u_vec,PetscReal a,void *ctx)
+PetscErrorCode PetscAdolcComputeIJacobianIDMass(PetscInt tag,Mat A,PetscScalar *u_vec,PetscReal a,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
@@ -231,7 +237,7 @@ PetscErrorCode AdolcComputeIJacobianIDMass(PetscInt tag,Mat A,PetscScalar *u_vec
 /*
   Compute local portion of Jacobian for implicit TS in compressed format and recover from this, using
   precomputed seed and recovery matrices. If sparse mode is not used, full Jacobian is
-  assembled (not recommended!).
+  assembled (not recommended for non-toy problems!).
 
   Input parameters:
   tag1   - tape identifier for df/dx part
@@ -242,7 +248,7 @@ PetscErrorCode AdolcComputeIJacobianIDMass(PetscInt tag,Mat A,PetscScalar *u_vec
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode AdolcComputeIJacobianLocal(PetscInt tag1,PetscInt tag2,Mat A,PetscScalar *u_vec,PetscReal a,void *ctx)
+PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1,PetscInt tag2,Mat A,PetscScalar *u_vec,PetscReal a,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
@@ -315,7 +321,7 @@ PetscErrorCode AdolcComputeIJacobianLocal(PetscInt tag1,PetscInt tag2,Mat A,Pets
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode AdolcComputeIJacobianLocalIDMass(PetscInt tag,Mat A,PetscScalar *u_vec,PetscReal a,void *ctx)
+PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag,Mat A,PetscScalar *u_vec,PetscReal a,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
@@ -373,7 +379,7 @@ PetscErrorCode AdolcComputeIJacobianLocalIDMass(PetscInt tag,Mat A,PetscScalar *
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode AdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *param,void *ctx)
+PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *param,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
@@ -416,7 +422,7 @@ PetscErrorCode AdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_vec,Pe
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode AdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *param,void *ctx)
+PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *param,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
@@ -461,7 +467,7 @@ PetscErrorCode AdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,PetscScalar *u_v
   Output parameter:
   diag  - Vec object corresponding to Jacobian diagonal
 */
-PetscErrorCode AdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1,PetscInt tag2,Vec diag,PetscScalar *u_vec,PetscReal a,void *ctx)
+PetscErrorCode PetscAdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1,PetscInt tag2,Vec diag,PetscScalar *u_vec,PetscReal a,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;

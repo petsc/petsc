@@ -4,6 +4,13 @@
 #include "contexts.cpp"
 
 /*
+   REQUIRES configuration of PETSc with option --download-adolc.
+
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+*/
+
+/*
   ADOL-C implementation for Jacobian vector product, using the forward mode of AD.
   Intended to overload MatMult in matrix-free methods where implicit timestepping
   has been used.
@@ -20,7 +27,7 @@
   Output parameters:
   Y       - product of A_shell and X
 */
-PetscErrorCode JacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
+PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
 {
   MatCtx            *mctx;
   PetscErrorCode    ierr;
@@ -94,9 +101,19 @@ PetscErrorCode JacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
 }
 
 /*
-  Special case where mass matrix is identity
+  ADOL-C implementation for Jacobian vector product, using the forward mode of AD.
+  Intended to overload MatMult in matrix-free methods where implicit timestepping
+  has been applied to a problem of the form
+                             du/dt = F(u).
+
+  Input parameters:
+  A_shell - Jacobian matrix of MatShell type
+  X       - vector to be multiplied by A_shell
+
+  Output parameters:
+  Y       - product of A_shell and X
 */
-PetscErrorCode JacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
+PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
 {
   MatCtx            *mctx;
   PetscErrorCode    ierr;
@@ -168,7 +185,7 @@ PetscErrorCode JacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
   Output parameters:
   X       - product of A_shell transpose and X
 */
-PetscErrorCode JacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X)
+PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X)
 {
   MatCtx            *mctx;
   PetscErrorCode    ierr;
@@ -247,9 +264,19 @@ PetscErrorCode JacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X)
 }
 
 /*
-  Special case where mass matrix is identity.
+  ADOL-C implementation for Jacobian transpose vector product, using the reverse mode of AD.
+  Intended to overload MatMultTranspose in matrix-free methods where implicit timestepping
+  has been applied to a problem of the form
+                          du/dt = F(u).
+
+  Input parameters:
+  A_shell - Jacobian matrix of MatShell type
+  Y       - vector to be multiplied by A_shell transpose
+
+  Output parameters:
+  X       - product of A_shell transpose and X
 */
-PetscErrorCode JacobianTransposeVectorProductIDMass(Mat A_shell,Vec Y,Vec X)
+PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell,Vec Y,Vec X)
 {
   MatCtx            *mctx;
   PetscErrorCode    ierr;

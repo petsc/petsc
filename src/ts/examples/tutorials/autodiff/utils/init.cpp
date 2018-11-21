@@ -2,6 +2,12 @@
 #include <petscdmda.h>
 #include <adolc/adolc.h>
 
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
+
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+*/
 
 /*
   Wrapper function for allocating contiguous memory in a 2d array
@@ -9,14 +15,13 @@
   Input parameters:
   m,n - number of rows and columns of array, respectively
 
-  Outpu parameter:
+  Output parameter:
   A   - pointer to array for which memory is allocated
 
 
   Note: Only arrays of doubles are currently accounted for in ADOL-C's myalloc2 function.
 */
-template <class T>
-PetscErrorCode AdolcMalloc2(PetscInt m,PetscInt n,T **A[])
+template <class T> PetscErrorCode AdolcMalloc2(PetscInt m,PetscInt n,T **A[])
 {
   PetscFunctionBegin;
   *A = myalloc2(m,n);
@@ -29,10 +34,9 @@ PetscErrorCode AdolcMalloc2(PetscInt m,PetscInt n,T **A[])
   Input parameter:
   A - array to free memory of
 
-  Note: Only arrays of doubles are currently accounted for in ADOL-C's myalloc2 function.
+  Note: Only arrays of doubles are currently accounted for in ADOL-C's myfree2 function.
 */
-template <class T>
-PetscErrorCode AdolcFree2(T **A)
+template <class T> PetscErrorCode AdolcFree2(T **A)
 {
   PetscFunctionBegin;
   myfree2(A);
@@ -41,7 +45,7 @@ PetscErrorCode AdolcFree2(T **A)
 
 /*
   Shift indices in an array of type T to endow it with ghost points.
-  (e.g. This works for arrays of adoubles or AFields.)
+  (e.g. This works for arrays of adoubles or arrays (of structs) thereof.)
 
   Input parameters:
   da   - distributed array upon which variables are defined
@@ -52,8 +56,7 @@ PetscErrorCode AdolcFree2(T **A)
   array - contiguously allocated array of the appropriate dimension with
           ghost points, pointing to the 1-array
 */
-template <class T>
-PetscErrorCode GiveGhostPoints(DM da,T *cgs,void *array)
+template <class T> PetscErrorCode GiveGhostPoints(DM da,T *cgs,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       dim;
@@ -72,7 +75,7 @@ PetscErrorCode GiveGhostPoints(DM da,T *cgs,void *array)
 
 /*
   Shift indices in a 1-array of type T to endow it with ghost points.
-  (e.g. This works for arrays of adoubles or AFields.)
+  (e.g. This works for arrays of adoubles or arrays (of structs) thereof.)
 
   Input parameters:
   da  - distributed array upon which variables are defined
@@ -80,8 +83,7 @@ PetscErrorCode GiveGhostPoints(DM da,T *cgs,void *array)
   Output parameter:
   a1d - contiguously allocated 1-array
 */
-template <class T>
-PetscErrorCode GiveGhostPoints1d(DM da,T *a1d[])
+template <class T> PetscErrorCode GiveGhostPoints1d(DM da,T *a1d[])
 {
   PetscErrorCode ierr;
   PetscInt       gxs;
@@ -94,7 +96,7 @@ PetscErrorCode GiveGhostPoints1d(DM da,T *a1d[])
 
 /*
   Shift indices in a 2-array of type T to endow it with ghost points.
-  (e.g. This works for arrays of adoubles or AFields.)
+  (e.g. This works for arrays of adoubles or arrays (of structs) thereof.)
 
   Input parameters:
   da  - distributed array upon which variables are defined
@@ -105,8 +107,7 @@ PetscErrorCode GiveGhostPoints1d(DM da,T *a1d[])
   a2d - contiguously allocated 2-array with ghost points, pointing to the
         1-array
 */
-template <class T>
-PetscErrorCode GiveGhostPoints2d(DM da,T *cgs,T **a2d[])
+template <class T> PetscErrorCode GiveGhostPoints2d(DM da,T *cgs,T **a2d[])
 {
   PetscErrorCode ierr;
   PetscInt       gxs,gys,gxm,gym,j;
@@ -120,8 +121,7 @@ PetscErrorCode GiveGhostPoints2d(DM da,T *cgs,T **a2d[])
 }
 
 /*
-  Create a rectangular sub-identity of the m x m identity matrix.
-  than rows n.
+  Create a rectangular sub-identity of the m x m identity matrix, as an array.
 
   Input parameters:
   n - number of (adjacent) rows to take in slice
@@ -130,8 +130,7 @@ PetscErrorCode GiveGhostPoints2d(DM da,T *cgs,T **a2d[])
   Output parameter:
   S - resulting n x m submatrix
 */
-template <class T>
-PetscErrorCode Subidentity(PetscInt n,PetscInt s,T **S)
+template <class T> PetscErrorCode Subidentity(PetscInt n,PetscInt s,T **S)
 {
   PetscInt       i;
 
@@ -143,14 +142,13 @@ PetscErrorCode Subidentity(PetscInt n,PetscInt s,T **S)
 }
 
 /*
-  Enter unit diagonal to give an identity matrix.
+  Create an identity matrix, as an array.
 
   Input parameter:
   n - number of rows/columns
   I - n x n array with memory pre-allocated
 */
-template <class T>
-PetscErrorCode Identity(PetscInt n,T **I)
+template <class T> PetscErrorCode Identity(PetscInt n,T **I)
 {
   PetscErrorCode ierr;
 

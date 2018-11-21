@@ -1,10 +1,19 @@
-
-static char help[] = "Nonlinear Reaction Problem from Chemistry.\n";
+static char help[] = "Demonstrates automatic Jacobian generation using ADOL-C for a nonlinear reaction problem from chemistry.\n";
 
 /*
-  See advection-diffusion-reaction/ex1 for a description of the problem
+   Concepts: TS^time-dependent nonlinear problems
+   Concepts: Automatic differentiation using ADOL-C
+   Processors: 1
 */
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
 
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+*/
+/* ------------------------------------------------------------------------
+  See ../advection-diffusion-reaction/ex1 for a description of the problem
+  ------------------------------------------------------------------------- */
 #include <petscts.h>
 #include <adolc/adolc.h>
 #include "utils/drivers.cpp"
@@ -12,7 +21,7 @@ static char help[] = "Nonlinear Reaction Problem from Chemistry.\n";
 typedef struct {
   PetscScalar k;
   Vec         initialsolution;
-  AdolcCtx    *adctx;
+  AdolcCtx    *adctx; /* Automatic differentiation support */
 } AppCtx;
 
 PetscErrorCode IFunctionView(AppCtx *ctx,PetscViewer v)
@@ -35,7 +44,7 @@ PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
 }
 
 /*
-     Defines the ODE passed to the ODE solver
+  Defines the ODE passed to the ODE solver
 */
 PetscErrorCode IFunctionPassive(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
@@ -58,7 +67,7 @@ PetscErrorCode IFunctionPassive(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
 }
 
 /*
-  'Active' ADOL-C annotated versions
+  'Active' ADOL-C annotated version, marking dependence upon u.
 */
 PetscErrorCode IFunctionActive1(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
@@ -66,8 +75,8 @@ PetscErrorCode IFunctionActive1(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   PetscScalar       *f;
   const PetscScalar *u,*udot;
 
-  adouble           f_a[3];		// adouble for dependent variables
-  adouble           u_a[3];		// adouble for independent variables
+  adouble           f_a[3]; /* 'active' double for dependent variables */
+  adouble           u_a[3]; /* 'active' double for independent variables */
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
@@ -75,42 +84,15 @@ PetscErrorCode IFunctionActive1(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
+  /* Start of active section */
   trace_on(1);
-  u_a[0] <<= u[0]; u_a[1] <<= u[1]; u_a[2] <<= u[2];
+  u_a[0] <<= u[0]; u_a[1] <<= u[1]; u_a[2] <<= u[2]; /* Mark independence */
   f_a[0] = udot[0] + ctx->k*u_a[0]*u_a[1];
   f_a[1] = udot[1] + ctx->k*u_a[0]*u_a[1];
   f_a[2] = udot[2] - ctx->k*u_a[0]*u_a[1];
-  f_a[0] >>= f[0]; f_a[1] >>= f[1]; f_a[2] >>= f[2];
+  f_a[0] >>= f[0]; f_a[1] >>= f[1]; f_a[2] >>= f[2]; /* Mark dependence */
   trace_off();
-
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode IFunctionActive2(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
-{
-  PetscErrorCode    ierr;
-  PetscScalar       *f;
-  const PetscScalar *u,*udot;
-
-  adouble           f_a[3];		// adouble for dependent variables
-  adouble           udot_a[3];		// adouble for independent variables
-
-  PetscFunctionBegin;
-  /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-
-  trace_on(2);
-  udot_a[0] <<= udot[0]; udot_a[1] <<= udot[1]; udot_a[2] <<= udot[2];
-  f_a[0] = udot_a[0] + ctx->k*u[0]*u[1];
-  f_a[1] = udot_a[1] + ctx->k*u[0]*u[1];
-  f_a[2] = udot_a[2] - ctx->k*u[0]*u[1];
-  f_a[0] >>= f[0]; f_a[1] >>= f[1]; f_a[2] >>= f[2];
-  trace_off();
+  /* End of active section */
 
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
@@ -119,7 +101,42 @@ PetscErrorCode IFunctionActive2(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
 }
 
 /*
-     Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
+  'Active' ADOL-C annotated version, marking dependence upon udot.
+*/
+PetscErrorCode IFunctionActive2(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
+{
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *u,*udot;
+
+  adouble           f_a[3];    /* 'active' double for dependent variables */
+  adouble           udot_a[3]; /* 'active' double for independent variables */
+
+  PetscFunctionBegin;
+  /*  The next three lines allow us to access the entries of the vectors directly */
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+
+  /* Start of active section */
+  trace_on(2);
+  udot_a[0] <<= udot[0]; udot_a[1] <<= udot[1]; udot_a[2] <<= udot[2]; /* Mark independence */
+  f_a[0] = udot_a[0] + ctx->k*u[0]*u[1];
+  f_a[1] = udot_a[1] + ctx->k*u[0]*u[1];
+  f_a[2] = udot_a[2] - ctx->k*u[0]*u[1];
+  f_a[0] >>= f[0]; f_a[1] >>= f[1]; f_a[2] >>= f[2];                   /* Mark dependence */
+  trace_off();
+  /* End of active section */
+
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+ Defines the Jacobian of the ODE passed to the ODE solver, using the PETSc-ADOL-C driver for
+ implicit TS.
 */
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
@@ -129,9 +146,8 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
 
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = AdolcComputeIJacobian(1,2,A,u,a,appctx->adctx);CHKERRQ(ierr);
+  ierr = PetscAdolcComputeIJacobian(1,2,A,u,a,appctx->adctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

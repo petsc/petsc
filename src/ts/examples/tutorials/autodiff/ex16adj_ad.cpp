@@ -1,4 +1,4 @@
-static char help[] = "Illustrates automatic Jacobian generation using ADOL-C for an adjoint sensitivity analysis of the van der Pol equation.\n\
+static char help[] = "Demonstrates automatic Jacobian generation using ADOL-C for an adjoint sensitivity analysis of the van der Pol equation.\n\
 Input parameters include:\n\
       -mu : stiffness parameter\n\n";
 
@@ -6,10 +6,18 @@ Input parameters include:\n\
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation
    Concepts: TS^adjoint sensitivity analysis
+   Concepts: Automatic differentation using ADOL-C
+   Concepts: Automatic differentation w.r.t. a parameter using ADOL-C
    Processors: 1
 */
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
+
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+*/
 /* ------------------------------------------------------------------------
-   See ex16adj for a description of the underlying PDE.
+   See ex16adj for a description of the problem being solved.
   ------------------------------------------------------------------------- */
 
 #include <petscts.h>
@@ -58,19 +66,21 @@ static PetscErrorCode RHSFunctionActive(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   PetscScalar       *f;
   const PetscScalar *x;
  
-  adouble           f_a[2];   				/* adouble for dependent variables */
-  adouble           x_a[2];				/* adouble for independent variables */
+  adouble           f_a[2]; /* 'active' double for dependent variables */
+  adouble           x_a[2]; /* 'active' double for independent variables */
 
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
-  trace_on(1);						/* Start of active section */
-  x_a[0] <<= x[0];x_a[1] <<= x[1];			/* Mark independence */
+  /* Start of active section */
+  trace_on(1);
+  x_a[0] <<= x[0];x_a[1] <<= x[1]; /* Mark independence */
   f_a[0] = x_a[1];
   f_a[1] = user->mu*(1.-x_a[0]*x_a[0])*x_a[1]-x_a[0];
-  f_a[0] >>= f[0];f_a[1] >>= f[1];			/* Mark dependence */
-  trace_off();						/* End of active section */
+  f_a[0] >>= f[0];f_a[1] >>= f[1]; /* Mark dependence */
+  trace_off();
+  /* End of active section */
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -88,19 +98,21 @@ static PetscErrorCode RHSFunctionActiveP(TS ts,PetscReal t,Vec X,Vec F,void *ctx
   PetscScalar       *f;
   const PetscScalar *x;
  
-  adouble           f_a[2];   				/* adouble for dependent variables */
-  adouble           x_a[2],mu_a;			/* adouble for independent variables */
+  adouble           f_a[2];      /* 'active' double for dependent variables */
+  adouble           x_a[2],mu_a; /* 'active' double for independent variables */
 
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
-  trace_on(3);						/* Start of active section */
-  x_a[0] <<= x[0];x_a[1] <<= x[1];mu_a <<= user->mu;    /* Mark independence */
+  /* Start of active section */
+  trace_on(3);
+  x_a[0] <<= x[0];x_a[1] <<= x[1];mu_a <<= user->mu; /* Mark independence */
   f_a[0] = x_a[1];
   f_a[1] = mu_a*(1.-x_a[0]*x_a[0])*x_a[1]-x_a[0];
-  f_a[0] >>= f[0];f_a[1] >>= f[1];			/* Mark dependence */
-  trace_off();						/* End of active section */
+  f_a[0] >>= f[0];f_a[1] >>= f[1];                   /* Mark dependence */
+  trace_off();
+  /* End of active section */
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -108,7 +120,7 @@ static PetscErrorCode RHSFunctionActiveP(TS ts,PetscReal t,Vec X,Vec F,void *ctx
 }
 
 /*
-  Compute the Jacobian w.r.t. x using PETSc-ADOL-C driver.
+  Compute the Jacobian w.r.t. x using PETSc-ADOL-C driver for explicit TS.
 */
 static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 {
@@ -118,13 +130,13 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = AdolcComputeRHSJacobian(1,A,x,user->adctx);CHKERRQ(ierr);
+  ierr = PetscAdolcComputeRHSJacobian(1,A,x,user->adctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
-  Compute the Jacobian w.r.t. mu using PETSc-ADOL-C driver.
+  Compute the Jacobian w.r.t. mu using PETSc-ADOL-C driver for explicit TS.
 */
 static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 {
@@ -134,7 +146,7 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = AdolcComputeRHSJacobianP(3,A,x,&user->mu,user->adctx);CHKERRQ(ierr);
+  ierr = PetscAdolcComputeRHSJacobianP(3,A,x,&user->mu,user->adctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

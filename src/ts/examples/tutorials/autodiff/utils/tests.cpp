@@ -1,6 +1,12 @@
 #include <petscdm.h>
 #include <petscdmda.h>
 
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
+
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+*/
 
 /*
   Test to verify that the zero order scalar evaluation of forward mode AD yields the same

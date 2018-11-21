@@ -1,7 +1,13 @@
 #include <petscdm.h>
 
-
 // TODO: Most of the arguments here can be stored in AdolcCtx
+
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
+
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+*/
 
 /*
   Simple matrix printing
@@ -56,7 +62,7 @@ PetscErrorCode PrintSparsity(MPI_Comm comm,PetscInt m,unsigned int **sparsity)
 }
 
 /*
-  Extract an index set coloring from a sparsity pattern
+  Extract an index set coloring from a sparsity pattern TODO: Just call DMCreateColoring directly - allows user to use IS_COLORING_GLOBAL or whatever colouring they wish.
 
   Input parameters:
   da         - distributed array
@@ -67,7 +73,8 @@ PetscErrorCode PrintSparsity(MPI_Comm comm,PetscInt m,unsigned int **sparsity)
   Notes:
   Implementation works fine for DM_BOUNDARY_NONE or DM_BOUNDARY_GHOSTED. If DM_BOUNDARY_PERIODIC is
   used then implementation only currently works in parallel, where processors should not own two
-  opposite boundaries which have been identified by the periodicity.
+  opposite boundaries which have been identified by the periodicity. For example, for a square domain,
+  use nproc >= 4 with nproc_x >= 2 and nproc_y >= 2.
 */
 PetscErrorCode GetColoring(DM da,ISColoring *iscoloring)
 {
@@ -75,7 +82,6 @@ PetscErrorCode GetColoring(DM da,ISColoring *iscoloring)
 
   PetscFunctionBegin;
   ierr = DMCreateColoring(da,IS_COLORING_LOCAL,iscoloring);CHKERRQ(ierr);
-  //ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -99,7 +105,7 @@ PetscErrorCode CountColors(ISColoring iscoloring,PetscInt *p)
   PetscFunctionReturn(0);
 }
 
-// FIXME: Generate sparsity pattern using PETSc alone
+// FIXME: Generate sparsity pattern using PETSc alone? Or rely on ColPack?
 PetscErrorCode DMGetSparsity(DM da,unsigned int **sparsity)
 {
   PetscErrorCode ierr;
@@ -267,6 +273,21 @@ PetscErrorCode RecoverJacobian(Mat A,InsertMode mode,PetscInt m,PetscInt p,Petsc
   PetscFunctionReturn(0);
 }
 
+/*
+  Recover the values of the local portion of a sparse matrix from a compressed format and insert
+  these into the local portion of a matrix
+
+  Input parameters:
+  mode - use INSERT_VALUES or ADD_VALUES, as required
+  m    - number of rows of matrix.
+  p    - number of colors used in the compression of J (also the number of columns of R)
+  R    - recovery matrix to use in the decompression procedure
+  C    - compressed matrix to recover values from
+  a    - shift value for implicit problems (select NULL or unity for explicit problems)
+
+  Output parameter:
+  A    - Mat to be populated with values from compressed matrix
+*/
 PetscErrorCode RecoverJacobianLocal(Mat A,InsertMode mode,PetscInt m,PetscInt p,PetscScalar **R,PetscScalar **C,PetscReal *a)
 {
   PetscErrorCode ierr;
@@ -288,6 +309,34 @@ PetscErrorCode RecoverJacobianLocal(Mat A,InsertMode mode,PetscInt m,PetscInt p,
 
 /*
   Recover the diagonal of the Jacobian from its compressed matrix format
+
+  Input parameters:
+  mode - use INSERT_VALUES or ADD_VALUES, as required
+  m    - number of rows of matrix.
+  R    - recovery vector to use in the decompression procedure
+  C    - compressed matrix to recover values from
+  a    - shift value for implicit problems (select NULL or unity for explicit problems)
+
+  Output parameter:
+  diag - Vec to be populated with values from compressed matrix
+*/
+PetscErrorCode RecoverDiagonal(Vec diag,InsertMode mode,PetscInt m,PetscScalar *R,PetscScalar **C,PetscReal *a)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,colour;
+
+  PetscFunctionBegin;
+  for (i=0; i<m; i++) {
+    colour = (PetscInt)R[i];
+    if (a)
+      C[i][colour] *= *a;
+    ierr = VecSetValues(diag,1,&i,&C[i][colour],mode);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  Recover the local portion of the diagonal of the Jacobian from its compressed matrix format
 
   Input parameters:
   mode - use INSERT_VALUES or ADD_VALUES, as required

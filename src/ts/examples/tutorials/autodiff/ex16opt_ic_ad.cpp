@@ -1,4 +1,4 @@
-static char help[] = "Illustrates automatic Jacobian generation using ADOL-C for an ODE-constrained optimization problem.\n\
+static char help[] = "Demonstrates automatic Jacobian generation using ADOL-C for an ODE-constrained optimization problem.\n\
 Input parameters include:\n\
       -mu : stiffness parameter\n\n";
 
@@ -6,7 +6,14 @@ Input parameters include:\n\
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation
    Concepts: Optimization using adjoint sensitivities
+   Concepts: Automatic differentation using ADOL-C
    Processors: 1
+*/
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
+
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
 */
 /* ------------------------------------------------------------------------
   See ex16opt_ic for a description of the problem being solved.
@@ -96,7 +103,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = AdolcComputeRHSJacobian(1,A,x,user->adctx);CHKERRQ(ierr);
+  ierr = PetscAdolcComputeRHSJacobian(1,A,x,user->adctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
