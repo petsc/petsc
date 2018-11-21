@@ -5,14 +5,22 @@
 #define petscviewerhdf5open_            PETSCVIEWERHDF5OPEN
 #define petscviewerhdf5pushgroup_       PETSCVIEWERHDF5PUSHGROUP
 #define petscviewerhdf5getgroup_        PETSCVIEWERHDF5GETGROUP
+#define petscviewerhdf5hasattribute_    PETSCVIEWERHDF5HASATTRIBUTE
+#define petscviewerhdf5readsizes_       PETSCVIEWERHDF5READSIZES
 #define petscviewerhdf5writeattribute_  PETSCVIEWERHDF5WRITEATTRIBUTE
 #define petscviewerhdf5readattribute_   PETSCVIEWERHDF5READATTRIBUTE
+#define petscviewerhdf5setaijnames_     PETSCVIEWERHDF5SETAIJNAMES
+#define petscviewerhdf5getaijnames_     PETSCVIEWERHDF5GETAIJNAMES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerhdf5open_            petscviewerhdf5open
 #define petscviewerhdf5pushgroup_       petscviewerhdf5pushgroup
 #define petscviewerhdf5getgroup_        petscviewerhdf5getgroup
+#define petscviewerhdf5hasattribute_    petscviewerhdf5hasattribute
+#define petscviewerhdf5readsizes_       petscviewerhdf5readsizes
 #define petscviewerhdf5writeattribute_  petscviewerhdf5writeattribute
 #define petscviewerhdf5readattribute_   petscviewerhdf5readattribute
+#define petscviewerhdf5setaijnames_     petscviewerhdf5setaijnames
+#define petscviewerhdf5getaijnames_     petscviewerhdf5getaijnames
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5open_(MPI_Comm *comm, char* name PETSC_MIXED_LEN(len), PetscFileMode *type,
