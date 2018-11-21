@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
-    requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+    requires: hdf5 double !complex !define(PETSC_USE_64BIT_INDICES)
     args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/barycentricallyrefinedcube.h5 -dm_view ascii::ASCII_INFO_DETAIL -refined_dm_view ascii::ASCII_INFO_DETAIL
 
 TEST*/
