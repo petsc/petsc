@@ -15,7 +15,7 @@ Input parameters include:\n\
 #include <petscts.h>
 #include <petscmat.h>
 #include <adolc/adolc.h>
-#include "../../utils/drivers.cpp"
+#include "utils/drivers.cpp"
 
 typedef struct _n_User *User;
 struct _n_User {
@@ -134,7 +134,7 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = AdolcComputeRHSJacobianP(A,x,&user->mu,3,user->adctx);CHKERRQ(ierr);  // FIXME: reorder for tag first
+  ierr = AdolcComputeRHSJacobianP(3,A,x,&user->mu,user->adctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -179,7 +179,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 

@@ -12,10 +12,6 @@ class Configure(config.package.GNUPackage):
 #    self.requirescxx11    = 1
 #    self.precisions       = ['double']
 #    self.complex          = 0
-#   self.name             = 'ADOL-C'
-#   self.package          = 'adolc'
-#   self.PACKAGE          = 'ADOLC'
-#   self.downloadname     = 'ADOL-C'
     self.downloaddirnames = ['ADOL-C-2.6.0']
     return
 
@@ -25,10 +21,6 @@ class Configure(config.package.GNUPackage):
 #    self.deps    = [self.colpack] # TODO
     self.deps = []
     return
-
-#  def Install(self):
-#    print('Hello world!')
-#    return self.installDir
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
