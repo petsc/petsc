@@ -108,7 +108,7 @@ static PetscErrorCode RHSFunctionActiveP(TS ts,PetscReal t,Vec X,Vec F,void *ctx
 }
 
 /*
-  Compute the Jacobian w.r.t. x using ADOL-C.
+  Compute the Jacobian w.r.t. x using PETSc-ADOL-C driver.
 */
 static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 {
@@ -124,7 +124,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 }
 
 /*
-  Compute the Jacobian w.r.t. mu using ADOL-C.
+  Compute the Jacobian w.r.t. mu using PETSc-ADOL-C driver.
 */
 static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 {
