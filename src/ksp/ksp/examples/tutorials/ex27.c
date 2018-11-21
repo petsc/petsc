@@ -109,10 +109,11 @@ int main(int argc,char **args)
 
   /*
      Load the matrix.
+     Matrix type is set automatically but you can override it by MatSetType() prior to MatLoad().
+     Do that only if you really insist on the given type.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 

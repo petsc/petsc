@@ -45,6 +45,8 @@ int main(int argc,char **args)
 
   /*
     Load the matrix; then destroy the viewer.
+    Matrix type is set automatically but you can override it by MatSetType() prior to MatLoad().
+    Do that only if you really insist on the given type.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(A,"a_");CHKERRQ(ierr);
