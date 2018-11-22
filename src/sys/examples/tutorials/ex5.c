@@ -32,6 +32,8 @@ typedef struct {
 
 /*
   Define a C struct that will contain my program's parameters.
+
+  A PETSc bag is merely a representation of a C struct that can be printed, saved to a file and loaded from a file.
 */
 typedef struct {
   PetscScalar   W;

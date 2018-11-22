@@ -2404,7 +2404,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       ierr = MatView(B,mviewer);CHKERRQ(ierr);
     }
 
-    if (threshold_print) {
+    if (threshold_print || complete_print) {
       PetscInt          Istart, Iend, *ccols, bncols, cncols, j, row;
       PetscScalar       *cvals;
       const PetscInt    *bcols;
@@ -2452,6 +2452,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   if (complete_print) {
     ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
   }
+  if (mviewer) { ierr = PetscViewerDestroy(&mviewer);CHKERRQ(ierr); }
   ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
