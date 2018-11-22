@@ -1,0 +1,87 @@
+atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
+iter = 0,SNES Function norm 5.41468
+  ---------- Testing Jacobian -------------
+  Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is
+    O(1.e-8), the hand-coded Jacobian is probably correct.
+  ||J - Jfd||_F/||J||_F = 1.40605e-09, ||J - Jfd||_F = 9.34893e-08
+  Hand-coded Jacobian ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0: (0, 1.) 
+row 1: (0, 16.)  (1, -31.)  (2, 16.) 
+row 2: (1, 16.)  (2, -31.)  (3, 16.) 
+row 3: (2, 16.)  (3, -31.)  (4, 16.) 
+row 4: (4, 1.) 
+  Finite difference Jacobian ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0: (0, 1.) 
+row 1: (0, 16.)  (1, -31.)  (2, 16.) 
+row 2: (1, 16.)  (2, -31.)  (3, 16.) 
+row 3: (2, 16.)  (3, -31.)  (4, 16.) 
+row 4: (4, 1.) 
+  Hand-coded minus finite-difference Jacobian with tolerance 1e-05 ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0:
+row 1:
+row 2:
+row 3:
+row 4:
+iter = 1,SNES Function norm 0.295258
+  ---------- Testing Jacobian -------------
+  ||J - Jfd||_F/||J||_F = 1.30859e-09, ||J - Jfd||_F = 8.82153e-08
+  Hand-coded Jacobian ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0: (0, 1.) 
+row 1: (0, 16.)  (1, -32.0028)  (2, 16.) 
+row 2: (1, 16.)  (2, -31.7866)  (3, 16.) 
+row 3: (2, 16.)  (3, -31.1755)  (4, 16.) 
+row 4: (4, 1.) 
+  Finite difference Jacobian ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0: (0, 1.) 
+row 1: (0, 16.)  (1, -32.0028)  (2, 16.) 
+row 2: (1, 16.)  (2, -31.7866)  (3, 16.) 
+row 3: (2, 16.)  (3, -31.1755)  (4, 16.) 
+row 4: (4, 1.) 
+  Hand-coded minus finite-difference Jacobian with tolerance 1e-05 ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0:
+row 1:
+row 2:
+row 3:
+row 4:
+iter = 2,SNES Function norm 0.000450229
+  ---------- Testing Jacobian -------------
+  ||J - Jfd||_F/||J||_F = 9.03654e-10, ||J - Jfd||_F = 6.08796e-08
+  Hand-coded Jacobian ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0: (0, 1.) 
+row 1: (0, 16.)  (1, -31.9688)  (2, 16.) 
+row 2: (1, 16.)  (2, -31.7501)  (3, 16.) 
+row 3: (2, 16.)  (3, -31.1563)  (4, 16.) 
+row 4: (4, 1.) 
+  Finite difference Jacobian ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0: (0, 1.) 
+row 1: (0, 16.)  (1, -31.9688)  (2, 16.) 
+row 2: (1, 16.)  (2, -31.7501)  (3, 16.) 
+row 3: (2, 16.)  (3, -31.1563)  (4, 16.) 
+row 4: (4, 1.) 
+  Hand-coded minus finite-difference Jacobian with tolerance 1e-05 ----------
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0:
+row 1:
+row 2:
+row 3:
+row 4:
+iter = 3,SNES Function norm 1.38967e-09
+Number of SNES iterations = 3
+Norm of error 1.49751e-10 Iterations 3
