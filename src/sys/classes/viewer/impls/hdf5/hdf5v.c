@@ -917,7 +917,7 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
 }
 
 /*@C
- PetscViewerHDF5HasAttribute - Check whether a scalar attribute exists
+ PetscViewerHDF5HasAttribute - Check whether an attribute exists
 
   Input Parameters:
 + viewer - The HDF5 viewer
