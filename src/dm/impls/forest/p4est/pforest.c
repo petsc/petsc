@@ -2617,7 +2617,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       for (i = 0; i < numFineQuads; i++) {
         PetscInt         c     = i + offset;
         p4est_quadrant_t *quad = &fineQuads[i];
-        p4est_quadrant_t *quadCoarse;
+        p4est_quadrant_t *quadCoarse = NULL;
         ssize_t          disjoint = -1;
 
         while (disjoint < 0 && coarseCount < numCoarseQuads) {
