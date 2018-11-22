@@ -23,7 +23,7 @@ typedef struct {
 struct _n_HDF5ReadCtx {
   hid_t file, group, dataset, dataspace, plist;
   PetscInt timestep;
-  PetscBool complexVal, dim2;
+  PetscBool complexVal, dim2, horizontal;
 };
 typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
 
@@ -984,6 +984,8 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
   ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname ? groupname : "",name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&h->complexVal);CHKERRQ(ierr);
+  /* MATLAB stores column vectors horizontally */
+  ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"MATLAB_class",&h->horizontal);CHKERRQ(ierr);
   /* Create property list for collective dataset read */
   PetscStackCallHDF5Return(h->plist,H5Pcreate,(H5P_DATASET_XFER));
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
@@ -1013,7 +1015,7 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
 {
   int            rdim, dim;
   hsize_t        dims[4];
-  PetscInt       bsInd, lenInd, bs, N;
+  PetscInt       bsInd, lenInd, bs, len, N;
   PetscLayout    map;
   PetscErrorCode ierr;
 
@@ -1042,7 +1044,13 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   } else {
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
   }
-  N = (PetscInt) dims[lenInd]*bs;
+  len = dims[lenInd];
+  if (ctx->horizontal) {
+    if (len != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot have horizontal array with number of rows > 1. In case of MATLAB MAT-file, vectors must be saved as column vectors.");
+    len = bs;
+    bs = 1;
+  }
+  N = (PetscInt) len*bs;
 
   /* Set Vec sizes,blocksize,and type if not already set */
   if (map->bs < 0) {
@@ -1075,12 +1083,18 @@ static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer vie
     offset[dim] = ctx->timestep;
     ++dim;
   }
+  if (ctx->horizontal) {
+    count[dim]  = 1;
+    offset[dim] = 0;
+    ++dim;
+  }
   {
     ierr = PetscHDF5IntCast(n/bs, &count[dim]);CHKERRQ(ierr);
     ierr = PetscHDF5IntCast(low/bs, &offset[dim]);CHKERRQ(ierr);
     ++dim;
   }
   if (bs > 1 || ctx->dim2) {
+    if (PetscUnlikely(ctx->horizontal)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "cannot have horizontal array with blocksize > 1");
     count[dim]  = bs;
     offset[dim] = 0;
     ++dim;
