@@ -57,8 +57,12 @@ int main(int argc,char **args)
   PetscBool      nonzero_guess=PETSC_TRUE;
   PetscBool      solve_normal=PETSC_TRUE;
   PetscBool      hdf5=PETSC_FALSE;
+  PetscBool      test_custom_layout=PETSC_FALSE;
+  PetscMPIInt    rank,size;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
   /*
      Determine files from which we read the linear system
      (matrix, right-hand-side and initial guess vector).
@@ -74,6 +78,10 @@ int main(int argc,char **args)
      Decide whether to use the HDF5 reader.
   */
   ierr = PetscOptionsGetBool(NULL,NULL,"-hdf5",&hdf5,NULL);CHKERRQ(ierr);
+  /*
+     Decide whether custom matrix layout will be tested.
+  */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_custom_layout",&test_custom_layout,NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -116,19 +124,34 @@ int main(int argc,char **args)
   ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  if (test_custom_layout) {
+    /* Perturb the local sizes and create the matrix anew */
+    PetscInt m1,n1;
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    m = rank ? m-1 : m+size-1;
+    n = rank ? n-1 : n+size-1;
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
+    ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+    ierr = MatLoad(A,fd);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m1,&n1);CHKERRQ(ierr);
+    if (m1 != m || n1 != n) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_SUP,"resulting sizes differ from demanded ones: %D %D != %D %D",m1,n1,m,n);
+  }
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
 
   /*
      Load the RHS vector if it is present in the file, otherwise use a vector of all ones.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
+  ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecLoadIfExists_Private(b,fd,&has);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (!has) {
     PetscScalar one = 1.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load RHS, so use a vector of all ones.\n");CHKERRQ(ierr);
-    ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = VecSet(b,one);CHKERRQ(ierr);
   }
@@ -138,6 +161,7 @@ int main(int argc,char **args)
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,"x0");CHKERRQ(ierr);
+  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   /* load file_x0 if it is specified, otherwise try to reuse file */
   if (file_x0[0]) {
@@ -153,7 +177,6 @@ int main(int argc,char **args)
   ierr = VecLoadIfExists_Private(x,fd,&has);CHKERRQ(ierr);
   if (!has) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n");CHKERRQ(ierr);
-    ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     nonzero_guess=PETSC_FALSE;
   }
@@ -326,6 +349,7 @@ int main(int argc,char **args)
       args: -f ${DATAFILESPATH}/matrices/matlab/rectangular_ultrasound_4889x841.mat -hdf5
       args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
       args: -solve_normal 0 -ksp_type lsqr
+      args: -test_custom_layout {{0 1}}
 
    # Test for correct cgls convergence reason
    test:
