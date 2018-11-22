@@ -13,7 +13,7 @@ DMField Object: field 1 MPI processes
     marker: 1 strata with value/size (1 (24))
     depth: 3 strata with value/size (0 (16), 1 (33), 2 (18))
   PetscDS field 0
-    PetscFE Object: PetscFE_0x84000001_2 1 MPI processes
+    PetscFE Object: MyPetscFE 1 MPI processes
       type: basic
       Basic Finite Element in 2 dimensions with 2 components
       PetscSpace Object: 1 MPI processes
