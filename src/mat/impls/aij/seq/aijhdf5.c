@@ -45,6 +45,15 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = PetscViewerHDF5ReadSizes(viewer, i_name, NULL, &M);CHKERRQ(ierr);
   --M;  /* i has size M+1 as there is global number of nonzeros stored at the end */
 
+  if (!mat->symmetric) {
+    /* Swap row and columns layout for unallocated matrix. I want to avoid calling MatTranspose() just to transpose sparsity pattern and layout. */
+    /* TODO: this should be needed only for MAT format and not HDF5 in general */
+    if (!mat->preallocated) {
+      PetscLayout tmp;
+      tmp = mat->rmap; mat->rmap = mat->cmap; mat->cmap = tmp;
+    } else SETERRQ(comm,PETSC_ERR_SUP,"Not for preallocated matrix - we would need to transpose it here which we want to avoid");
+  }
+
   /* If global sizes are set, check if they are consistent with that given in the file */
   if (mat->rmap->N >= 0 && mat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows: Matrix in file has (%D) and input matrix has (%D)",mat->rmap->N,M);
   if (mat->cmap->N >= 0 && mat->cmap->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols: Matrix in file has (%D) and input matrix has (%D)",mat->cmap->N,N);
@@ -118,6 +127,12 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = MatSeqBAIJSetPreallocationCSR(mat,bs,i,j,a);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocationCSR(mat,bs,i,j,a);CHKERRQ(ierr);
   */
+
+  if (!mat->symmetric) {
+    /* Transpose the input matrix back */
+    /* TODO: this should be done only for MAT format and not HDF5 in general */
+    ierr = MatTranspose(mat,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);
+  }
 
   ierr = PetscLayoutDestroy(&jmap);CHKERRQ(ierr);
   ierr = PetscFree(i);CHKERRQ(ierr);
