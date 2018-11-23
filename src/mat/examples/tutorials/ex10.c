@@ -62,6 +62,10 @@ int main(int argc,char **args)
   ierr = PetscRealView(cend-cstart,norms+cstart,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscFree(norms);CHKERRQ(ierr);
 
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatGetOption(A,MAT_SYMMETRIC,&flg);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"MAT_SYMMETRIC: %D\n",flg);CHKERRQ(ierr);
+
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
@@ -76,12 +80,14 @@ int main(int argc,char **args)
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpiaij
+      args: -a_matload_symmetric
 
    test:
       suffix: mpiaij_hdf5
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
       args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type mpiaij -viewer_type hdf5
+      args: -a_matload_symmetric
 
    test:
       # test for more processes than rows
@@ -89,6 +95,7 @@ int main(int argc,char **args)
       nsize: 8
       requires: double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0.mat -a_mat_type mpiaij -viewer_type hdf5
+      args: -a_matload_symmetric
 
    test:
       # test for more processes than rows, complex
@@ -97,6 +104,7 @@ int main(int argc,char **args)
       nsize: 8
       requires: double complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0_complex.mat -a_mat_type mpiaij -viewer_type hdf5
+      args: -a_matload_symmetric
 
    test:
       TODO: mpibaij not supported yet
@@ -104,26 +112,31 @@ int main(int argc,char **args)
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
       args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type mpibaij -a_mat_block_size 2 -viewer_type hdf5
+      args: -a_matload_symmetric
 
    test:
       suffix: mpidense
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpidense
+      args: -a_matload_symmetric
 
    test:
       suffix: seqaij
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqaij
+      args: -a_matload_symmetric
 
    test:
       suffix: seqaij_hdf5
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
       args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type seqaij -viewer_type hdf5
+      args: -a_matload_symmetric
 
    test:
       suffix: seqdense
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqdense
+      args: -a_matload_symmetric
 
 TEST*/
