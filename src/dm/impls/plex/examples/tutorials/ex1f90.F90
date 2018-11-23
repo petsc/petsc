@@ -18,7 +18,7 @@
       PetscInt, pointer :: pNumDof(:)
       PetscInt, target, dimension(1) ::  bcField
       PetscInt, pointer :: pBcField(:)
-      PetscInt :: zero,eight
+      PetscInt, parameter :: zero = 0, one = 1, two = 2, eight = 8
       IS, target, dimension(1) ::   bcCompIS
       IS, target, dimension(1) ::   bcPointIS
       IS, pointer :: pBcCompIS(:)
@@ -56,12 +56,10 @@
       numBC = 1
 !     Test label retrieval
       call DMGetLabel(dm, 'marker', label, ierr);CHKERRA(ierr)
-      zero = 0
       call DMLabelGetValue(label, zero, val, ierr);CHKERRA(ierr)
       if (val .ne. -1) then
         CHKERRA(1)
       endif
-      eight = 8
       call DMLabelGetValue(label, eight, val, ierr);CHKERRA(ierr)
       if (val .ne. 1) then
         CHKERRA(1)
@@ -70,9 +68,9 @@
 !       Label "marker" is made by the mesh creation routine
       bcField(1) = 0
       pBcField => bcField
-      call ISCreateStride(PETSC_COMM_WORLD, 1, 0, 1, bcCompIS(1), ierr);CHKERRA(ierr)
+      call ISCreateStride(PETSC_COMM_WORLD, one, zero, one, bcCompIS(1), ierr);CHKERRA(ierr)
       pBcCompIS => bcCompIS
-      call DMGetStratumIS(dm, 'marker', 1, bcPointIS(1),ierr);CHKERRA(ierr)
+      call DMGetStratumIS(dm, 'marker', one, bcPointIS(1),ierr);CHKERRA(ierr)
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
       call DMPlexCreateSection(dm,dim,numFields,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr)
@@ -80,9 +78,9 @@
       call ISDestroy(bcCompIS(1), ierr);CHKERRA(ierr)
       call ISDestroy(bcPointIS(1), ierr);CHKERRA(ierr)
 !     Name the Field variables
-      call PetscSectionSetFieldName(section, 0, 'u', ierr);CHKERRA(ierr)
-      call PetscSectionSetFieldName(section, 1, 'v', ierr);CHKERRA(ierr)
-      call PetscSectionSetFieldName(section, 2, 'w', ierr);CHKERRA(ierr)
+      call PetscSectionSetFieldName(section, zero, 'u', ierr);CHKERRA(ierr)
+      call PetscSectionSetFieldName(section, one,  'v', ierr);CHKERRA(ierr)
+      call PetscSectionSetFieldName(section, two,  'w', ierr);CHKERRA(ierr)
       call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
 !     Tell the DM to use this data layout
       call DMSetSection(dm, section, ierr);CHKERRA(ierr)
