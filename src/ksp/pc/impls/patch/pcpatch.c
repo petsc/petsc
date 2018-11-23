@@ -406,8 +406,8 @@ PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms,
     patch->bs[i]              = bs[i];
     patch->nodesPerCell[i]    = nodesPerCell[i];
     patch->totalDofsPerCell  += nodesPerCell[i]*bs[i];
-    ierr = PetscMalloc1((cEnd-cStart)*nodesPerCell[i]*bs[i], &patch->cellNodeMap[i]);CHKERRQ(ierr);
-    for (j = 0; j < (cEnd-cStart)*nodesPerCell[i]*bs[i]; ++j) patch->cellNodeMap[i][j] = cellNodeMap[i][j];
+    ierr = PetscMalloc1((cEnd-cStart)*nodesPerCell[i], &patch->cellNodeMap[i]);CHKERRQ(ierr);
+    for (j = 0; j < (cEnd-cStart)*nodesPerCell[i]; ++j) patch->cellNodeMap[i][j] = cellNodeMap[i][j];
     patch->subspaceOffsets[i] = subspaceOffsets[i];
   }
   ierr = PCPatchCreateDefaultSF_Private(pc, nsubspaces, sfs, patch->bs);CHKERRQ(ierr);
