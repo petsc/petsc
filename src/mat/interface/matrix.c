@@ -1175,6 +1175,7 @@ and PetscBinaryWrite() to see how this may be done.
 
    As the MATLAB MAT-File Version 7.3 format is also a HDF5 flavor, we decided to use
    by default the same structure and naming of the AIJ arrays and column count
+   (see PetscViewerHDF5SetAIJNames())
    within the HDF5 file. This means that a MAT file saved with -v7.3 flag, e.g.
 $    save example.mat A b -v7.3
    can be directly read by this routine (see Reference 1 for details).
@@ -1185,9 +1186,6 @@ $    save example.mat A b -v7.3
    PETSc must be configured with ZLIB package.
 
    Current HDF5 limitations:
-   MATLAB uses a column-major storage, so to get the correct objects in PETSc,
-   you need to transpose your matrices and vectors before saving in MATLAB.
-
    This reader currently supports only real MATSEQAIJ and MATMPIAIJ matrices.
 
    MatView() is not yet implemented.
@@ -1197,7 +1195,7 @@ $    save example.mat A b -v7.3
 
 .keywords: matrix, load, binary, input, HDF5
 
-.seealso: PetscViewerBinaryOpen(), PetscViewerSetType(), PetscViewerHDF5SetAIJNames(), PetscViewerHDF5SetAIJColumnCountAttributeName(), MatView(), VecLoad()
+.seealso: PetscViewerBinaryOpen(), PetscViewerSetType(), PetscViewerHDF5SetAIJNames(), MatView(), VecLoad()
 
  @*/
 PetscErrorCode MatLoad(Mat newmat,PetscViewer viewer)
