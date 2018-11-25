@@ -22,6 +22,7 @@ const char *const PetscViewerFormats[] = {
   "ASCII_LATEX",
   "ASCII_XML",
   "ASCII_GLVIS",
+  "ASCII_CSV",
   "DRAW_BASIC",
   "DRAW_LG",
   "DRAW_LG_XRANGE",
@@ -187,6 +188,3 @@ PetscErrorCode  PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *forma
   *format =  viewer->format;
   PetscFunctionReturn(0);
 }
-
-
-
