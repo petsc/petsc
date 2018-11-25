@@ -33,7 +33,7 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 }
 
 /*@C
-      PetscObjectPrintTypeNamePrefix - used in the XXXView() methods to display information about the class, name, prefix and type of an object
+      PetscObjectPrintClassNamePrefixType - used in the XXXView() methods to display information about the class, name, prefix and type of an object
 
    Input Parameters:
 +     obj - the PETSc object
