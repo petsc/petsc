@@ -29,7 +29,7 @@
 */
 PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
 {
-  MatCtx            *mctx;
+  AdolcMatCtx        *mctx;
   PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k = 0,d;
   const PetscScalar *x0;
@@ -115,7 +115,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
 */
 PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
 {
-  MatCtx            *mctx;
+  AdolcMatCtx       *mctx;
   PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k = 0,d;
   const PetscScalar *x0;
@@ -187,7 +187,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
 */
 PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X)
 {
-  MatCtx            *mctx;
+  AdolcMatCtx       *mctx;
   PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k = 0,d;
   const PetscScalar *x;
@@ -278,7 +278,7 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X
 */
 PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell,Vec Y,Vec X)
 {
-  MatCtx            *mctx;
+  AdolcMatCtx       *mctx;
   PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k = 0,d;
   const PetscScalar *x;

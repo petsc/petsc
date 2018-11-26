@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 CXXFLAGS	=
 LOCDIR          = src/ts/examples/tutorials/autodiff/
-EXAMPLESCXX     = adr_ex1_ad.cpp ex16adj_ad.cpp ex16opt_ic_ad.cpp
+EXAMPLESCXX     = adr_ex1.cpp adr_ex5adj.cpp adr_ex5adj_mf ex16adj.cpp ex16opt_ic.cpp
 EXAMPLESF       =
 MANSEC          = TS
 DIRS            =
@@ -16,15 +16,23 @@ LIB             = ${PETSC_TS_LIB}
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-adr_ex1_ad: adr_ex1_ad.o
+adr_ex1: adr_ex1.o
 	-${CLINKER} -o $@ $^ $(LIB)
 	${RM} $^
 
-ex16adj_ad: ex16adj_ad.o
+adr_ex5adj: adr_ex5adj.o
 	-${CLINKER} -o $@ $^ $(LIB)
 	${RM} $^
 
-ex16opt_ic_ad: ex16opt_ic_ad.o
+adr_ex5adj_mf: adr_ex5adj_mf.o
+	-${CLINKER} -o $@ $^ $(LIB)
+	${RM} $^
+
+ex16adj: ex16adj.o
+	-${CLINKER} -o $@ $^ $(LIB)
+	${RM} $^
+
+ex16opt_ic: ex16opt_ic`.o
 	-${CLINKER} -o $@ $^ $(LIB)
 	${RM} $^
 
