@@ -10,32 +10,7 @@
 */
 
 /*
-  Simple matrix printing
-
-  Input parameters:
-  comm - MPI communicator
-  name - name of matrix to print
-  m,n  - number of rows and columns, respectively
-  M    - matrix to print
-*/
-PetscErrorCode PrintMat(MPI_Comm comm,const char* name,PetscInt m,PetscInt n,PetscScalar **M)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,j;
-
-  PetscFunctionBegin;
-  ierr = PetscPrintf(comm,"%s \n",name);CHKERRQ(ierr);
-  for(i=0; i<m ;i++) {
-    ierr = PetscPrintf(comm,"\n %d: ",i);CHKERRQ(ierr);
-    for(j=0; j<n ;j++)
-      ierr = PetscPrintf(comm," %10.4f ", M[i][j]);CHKERRQ(ierr);
-  }
-  ierr = PetscPrintf(comm,"\n\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-  Print sparsity pattern
+  Basic printing for sparsity pattern
 
   Input parameters:
   comm     - MPI communicator
@@ -62,30 +37,6 @@ PetscErrorCode PrintSparsity(MPI_Comm comm,PetscInt m,unsigned int **sparsity)
 }
 
 /*
-  Extract an index set coloring from a sparsity pattern TODO: Just call DMCreateColoring directly - allows user to use IS_COLORING_GLOBAL or whatever colouring they wish.
-
-  Input parameters:
-  da         - distributed array
-
-  Output parameter:
-  iscoloring - index set coloring corresponding to the sparsity pattern under the given coloring type
-
-  Notes:
-  Implementation works fine for DM_BOUNDARY_NONE or DM_BOUNDARY_GHOSTED. If DM_BOUNDARY_PERIODIC is
-  used then implementation only currently works in parallel, where processors should not own two
-  opposite boundaries which have been identified by the periodicity. For example, for a square domain,
-  use nproc >= 4 with nproc_x >= 2 and nproc_y >= 2.
-*/
-PetscErrorCode GetColoring(DM da,ISColoring *iscoloring)
-{
-  PetscErrorCode         ierr;
-
-  PetscFunctionBegin;
-  ierr = DMCreateColoring(da,IS_COLORING_LOCAL,iscoloring);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
   Simple function to count the number of colors used in an index set coloring
 
   Input parameter:
@@ -104,38 +55,6 @@ PetscErrorCode CountColors(ISColoring iscoloring,PetscInt *p)
   ierr = ISColoringRestoreIS(iscoloring,&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-// FIXME: Generate sparsity pattern using PETSc alone? Or rely on ColPack?
-PetscErrorCode DMGetSparsity(DM da,unsigned int **sparsity)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,j,nnz;
-  //PetscInt       nrows,ncols;
-  PetscInt       rowstart,rowend;
-  const PetscInt *cols;
-  Mat            A;
-
-  PetscFunctionBegin;
-  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
-  //ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr);
-  //for (i=0; i<nrows; i++) {
-  ierr = MatGetOwnershipRange(A,&rowstart,&rowend);CHKERRQ(ierr);
-  for (i=rowstart; i<rowend; i++) {
-    ierr = MatGetRow(A,i,&nnz,&cols,NULL);CHKERRQ(ierr);
-
-    ierr = PetscPrintf(MPI_COMM_WORLD,"%d: ",i);CHKERRQ(ierr);
-    for (j=0; j<nnz; j++) {
-      ierr = PetscPrintf(MPI_COMM_WORLD,"%d, ",cols[j]);CHKERRQ(ierr);
-    }
-    ierr = PetscPrintf(MPI_COMM_WORLD,"\n");CHKERRQ(ierr);
-
-    ierr = MatRestoreRow(A,i,&nnz,&cols,NULL);CHKERRQ(ierr);
-  }
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
 
 /*
   Generate a seed matrix defining the partition of columns of a matrix by a particular coloring,
