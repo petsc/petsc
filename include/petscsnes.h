@@ -30,7 +30,6 @@ typedef const char* SNESType;
 #define SNESNEWTONLS     "newtonls"
 #define SNESNEWTONTR     "newtontr"
 #define SNESPYTHON       "python"
-#define SNESTEST         "test"
 #define SNESNRICHARDSON  "nrichardson"
 #define SNESKSPONLY      "ksponly"
 #define SNESVINEWTONRSLS "vinewtonrsls"
