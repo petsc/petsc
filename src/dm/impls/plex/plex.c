@@ -1151,9 +1151,9 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ) {
       ierr = DMPlexLoad_HDF5_Xdmf_Internal(dm, viewer);CHKERRQ(ierr);
-    } else {
+    } else if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
       ierr = DMPlexLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
-    }
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
