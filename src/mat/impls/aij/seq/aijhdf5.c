@@ -7,6 +7,7 @@
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 {
+  PetscViewerFormat format;
   const PetscInt  *i_glob = NULL;
   PetscInt        *i = NULL;
   const PetscInt  *j = NULL;
@@ -23,6 +24,17 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  switch (format) {
+    case PETSC_VIEWER_HDF5_PETSC:
+    case PETSC_VIEWER_DEFAULT:
+    case PETSC_VIEWER_NATIVE:
+    case PETSC_VIEWER_HDF5_MAT:
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"PetscViewerFormat %s not supported for HDF5 input.",PetscViewerFormats[format]);
+  }
+
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -41,9 +53,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = PetscViewerHDF5ReadSizes(viewer, i_name, NULL, &M);CHKERRQ(ierr);
   --M;  /* i has size M+1 as there is global number of nonzeros stored at the end */
 
-  if (!mat->symmetric) {
+  if (format==PETSC_VIEWER_HDF5_MAT && !mat->symmetric) {
     /* Swap row and columns layout for unallocated matrix. I want to avoid calling MatTranspose() just to transpose sparsity pattern and layout. */
-    /* TODO: this should be needed only for MAT format and not HDF5 in general */
     if (!mat->preallocated) {
       PetscLayout tmp;
       tmp = mat->rmap; mat->rmap = mat->cmap; mat->cmap = tmp;
@@ -121,9 +132,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = MatMPIBAIJSetPreallocationCSR(mat,bs,i,j,a);CHKERRQ(ierr);
   */
 
-  if (!mat->symmetric) {
+  if (format==PETSC_VIEWER_HDF5_MAT && !mat->symmetric) {
     /* Transpose the input matrix back */
-    /* TODO: this should be done only for MAT format and not HDF5 in general */
     ierr = MatTranspose(mat,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);
   }
 

@@ -34,6 +34,7 @@ const char *const PetscViewerFormats[] = {
   "HDF5_PETSC",
   "HDF5_VIZ",
   "HDF5_XDMF",
+  "HDF5_MAT",
   "NOFORMAT",
   "LOAD_BALANCE",
   "PetscViewerFormat",

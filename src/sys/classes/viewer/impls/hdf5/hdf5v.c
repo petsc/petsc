@@ -355,7 +355,8 @@ PetscErrorCode  PetscViewerHDF5SetAIJNames_HDF5(PetscViewer viewer, const char i
   Level: advanced
 
   Notes:
-  Current defaults are (iname, jname, aname, cname) = ("jc", "ir", "data", "MATLAB_sparse") so that MAT files can be readily loaded. 
+  Current defaults are (iname, jname, aname, cname) = ("i", "j", "a", "ncols").
+  For PetscViewerFormat PETSC_VIEWER_HDF5_MAT they are ("jc", "ir", "data", "MATLAB_sparse") so that MAT files can be loaded.
 
 .seealso: MatLoad(), PetscViewerCreate(), PetscViewerSetType(), PETSCVIEWERHDF5, PetscViewerHDF5GetAIJNames()
 @*/
@@ -402,7 +403,8 @@ PetscErrorCode  PetscViewerHDF5GetAIJNames_HDF5(PetscViewer viewer, const char *
   Level: advanced
 
   Notes:
-  Current defaults are (iname, jname, aname, cname) = ("jc", "ir", "data", "MATLAB_sparse") so that MAT files can be readily loaded. 
+  Current defaults are (iname, jname, aname, cname) = ("i", "j", "a", "ncols").
+  For PetscViewerFormat PETSC_VIEWER_HDF5_MAT they are ("jc", "ir", "data", "MATLAB_sparse") so that MAT files can be loaded.
 
 .seealso: MatLoad(), PetscViewerCreate(), PetscViewerSetType(), PETSCVIEWERHDF5, PetscViewerHDF5SetAIJNames()
 @*/
@@ -427,7 +429,11 @@ static PetscErrorCode PetscViewerSetUp_HDF5(PetscViewer viewer)
 
   PetscFunctionBegin;
   if (!hdf5->mataij_names_set) {
-    ierr = PetscViewerHDF5SetAIJNames_HDF5(viewer,"jc","ir","data","MATLAB_sparse");CHKERRQ(ierr);
+    if (viewer->format == PETSC_VIEWER_HDF5_MAT) {
+      ierr = PetscViewerHDF5SetAIJNames_HDF5(viewer,"jc","ir","data","MATLAB_sparse");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerHDF5SetAIJNames_HDF5(viewer,"i","j","a","ncols");CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
