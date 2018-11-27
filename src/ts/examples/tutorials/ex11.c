@@ -2655,10 +2655,12 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
 
   # Test GLVis visualization of PetscFV fields
   test:
+    TODO: this example abuse of hybrid meshes for ghost cells
     suffix: glvis_adv_2d_tet
     args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
 
   test:
+    TODO: this example abuse of hybrid meshes for ghost cells
     suffix: glvis_adv_2d_quad
     args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
 

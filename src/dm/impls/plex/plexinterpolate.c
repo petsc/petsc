@@ -343,7 +343,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   }
   if (faceSizeAll > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSizeAll);
 
-  /* With hybrid grids, we first iterate on hybrid cells and start numbering the non-hybrid grids
+  /* With hybrid grids, we first iterate on hybrid cells and start numbering the non-hybrid faces
      Then, faces for non-hybrid cells are numbered.
      This is to guarantee consistent orientations (all 0) of all the points in the cone of the hybrid cells */
   ierr = PetscHashIJKLCreate(&faceTable);CHKERRQ(ierr);

@@ -861,4 +861,12 @@ int main(int argc, char **argv)
     suffix: p4est_bug_distribute_overlap
     args: -interpolate -test_p4est_seq -test_shape -check_symmetry -check_skeleton -check_faces -dm_forest_minimum_refinement 0 -dm_forest_partition_overlap 0 -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 3,3 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -overlap 1
 
+  test:
+    suffix: glvis_2d_hyb
+    args: -dim 2 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -dm_plex_gmsh_hybrid -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
+
+  test:
+    suffix: glvis_3d_hyb
+    args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_plex_gmsh_hybrid -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
+
 TEST*/
