@@ -40,37 +40,37 @@ class Configure(config.package.GNUPackage):
   def Install(self):
     import os
 
-    g = open(os.path.join(self.packageDir,'glvis_config.mk'),'w')
-    g.write('PREFIX = .\n')
-    g.write('INSTALL = /usr/bin/install\n')
-    g.write('AR = '+self.setCompilers.AR+'\n')
-    g.write('MFEM_DIR = ./mfem\n')
-    g.write('GLVIS_OPTS = \n')
-    g.write('GLVIS_LDFLAGS = \n')
-    g.write('GL_OPTS = '+self.headers.toString(self.x11.include)+'\n')
-    g.write('GL_LIBS = '+self.libraries.toString(self.x11.lib)+' '+self.libraries.toString(self.opengl.lib)+'\n')
-    g.write('GLVIS_USE_FREETYPE = NO\n')
-    g.write('GLVIS_USE_LIBTIFF = NO\n')
-    g.write('GLVIS_USE_LIBPNG = NO\n')
+    with open(os.path.join(self.packageDir,'glvis_config.mk'),'w') as g:
+      g.write('PREFIX = .\n')
+      g.write('INSTALL = /usr/bin/install\n')
+      g.write('AR = '+self.setCompilers.AR+'\n')
+      g.write('MFEM_DIR = ./mfem\n')
+      g.write('GLVIS_OPTS = \n')
+      g.write('GLVIS_LDFLAGS = \n')
+      g.write('GL_OPTS = '+self.headers.toString(self.x11.include)+'\n')
+      g.write('GL_LIBS = '+self.libraries.toString(self.x11.lib)+' '+self.libraries.toString(self.opengl.lib)+'\n')
+      g.write('GLVIS_USE_FREETYPE = NO\n')
+      g.write('GLVIS_USE_LIBTIFF = NO\n')
+      g.write('GLVIS_USE_LIBPNG = NO\n')
 
-    self.setCompilers.pushLanguage('C')
-    g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS = ' + self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
-    self.setCompilers.popLanguage()
+      self.setCompilers.pushLanguage('C')
+      g.write('CC = '+self.setCompilers.getCompiler()+'\n')
+      g.write('CFLAGS = ' + self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
+      self.setCompilers.popLanguage()
 
-    # build flags for serial MFEM
-    self.setCompilers.pushLanguage('Cxx')
-    mfem_flags='CXX=\"'+self.setCompilers.getCompiler()+'\" CXXFLAGS=\"-O3 '+self.setCompilers.getCompilerFlags()+'\"'
-    self.setCompilers.popLanguage()
+      # build flags for serial MFEM
+      self.setCompilers.pushLanguage('Cxx')
+      mfem_flags='CXX=\"'+self.setCompilers.getCompiler()+'\" CXXFLAGS=\"-O3 '+self.setCompilers.getCompilerFlags()+'\"'
+      self.setCompilers.popLanguage()
 
-    g.write('PETSC_MFEM_FLAGS = '+mfem_flags+'\n')
-    g.close()
+      g.write('PETSC_MFEM_FLAGS = '+mfem_flags+'\n')
+      g.close()
 
     if self.installNeeded('glvis_config.mk'):
       try:
         self.logPrintBox('Compiling GLVis; this may take several minutes')
-        output0,err0,ret0 = config.package.Package.executeShellCommand('cd '+self.packageDir+'/mfem && make clean && '+self.make.make_jnp+' serial '+mfem_flags, cwd=self.packageDir, timeout=2500, log = self.log)
-        output1,err1,ret1 = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && '+self.make.make_jnp+' GLVIS_CONFIG_MK=glvis_config.mk', cwd=self.packageDir, timeout=2500, log = self.log)
+        output0,err0,ret0 = config.package.Package.executeShellCommand('make clean && '+self.make.make_jnp+' serial '+mfem_flags, cwd=self.packageDir+'/mfem', timeout=2500, log = self.log)
+        output1,err1,ret1 = config.package.Package.executeShellCommand('make clean && '+self.make.make_jnp+' GLVIS_CONFIG_MK=glvis_config.mk', cwd=self.packageDir, timeout=2500, log = self.log)
         installBinDir = os.path.join(self.installDir,'bin')
         self.logPrintBox('Installing GLVis; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()

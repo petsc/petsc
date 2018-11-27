@@ -45,33 +45,33 @@ class Configure(config.package.Package):
     cxxflags = cxxflags.replace('-fvisibility=hidden','') # MFEM is currently broken with -fvisibility=hidden
     self.setCompilers.popLanguage()
 
-    g = open(os.path.join(configDir,'user.mk'),'w')
-    g.write('PREFIX = '+prefix+'\n')
-    g.write('MPICXX = '+cxx+'\n')
-    g.write('CXXFLAGS = '+cxxflags+'\n')
-    if self.argDB['with-shared-libraries']:
-      g.write('SHARED = YES\n')
-      g.write('STATIC = NO\n')
-    else:
-      g.write('SHARED = NO\n')
-      g.write('STATIC = YES\n')
-    g.write('AR = '+self.setCompilers.AR+'\n')
-    g.write('ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n')
-    g.write('MFEM_USE_MPI = YES\n')
-    g.write('MFEM_MPIEXEC = '+self.mpi.mpiexec+'\n')
-    g.write('MFEM_USE_METIS_5 = YES\n')
-    g.write('MFEM_USE_METIS = YES\n')
-    g.write('MFEM_USE_PETSC = YES\n')
-    g.write('HYPRE_OPT = '+self.headers.toString(self.hypre.include)+'\n')
-    g.write('HYPRE_LIB = '+self.libraries.toString(self.hypre.lib)+'\n')
-    g.write('METIS_OPT = '+self.headers.toString(self.metis.include)+'\n')
-    g.write('METIS_LIB = '+self.libraries.toString(self.metis.lib)+'\n')
-    g.write('PETSC_VARS ='+prefix+'/lib/petsc/conf/petscvariables\n')
-    g.write('PETSC_OPT = '+PETSC_OPT+'\n')
-    # Adding all externals should not be needed when PETSc is a shared library, but it is no harm.
-    # When the HYPRE library is built statically, we need to resolve blas symbols
-    g.write('PETSC_LIB = $(shell sed -n "s/PETSC_WITH_EXTERNAL_LIB = *//p" $(PETSC_VARS))\n')
-    g.close()
+    with open(os.path.join(configDir,'user.mk'),'w') as g:
+      g.write('PREFIX = '+prefix+'\n')
+      g.write('MPICXX = '+cxx+'\n')
+      g.write('CXXFLAGS = '+cxxflags+'\n')
+      if self.argDB['with-shared-libraries']:
+        g.write('SHARED = YES\n')
+        g.write('STATIC = NO\n')
+      else:
+        g.write('SHARED = NO\n')
+        g.write('STATIC = YES\n')
+      g.write('AR = '+self.setCompilers.AR+'\n')
+      g.write('ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n')
+      g.write('MFEM_USE_MPI = YES\n')
+      g.write('MFEM_MPIEXEC = '+self.mpi.mpiexec+'\n')
+      g.write('MFEM_USE_METIS_5 = YES\n')
+      g.write('MFEM_USE_METIS = YES\n')
+      g.write('MFEM_USE_PETSC = YES\n')
+      g.write('HYPRE_OPT = '+self.headers.toString(self.hypre.include)+'\n')
+      g.write('HYPRE_LIB = '+self.libraries.toString(self.hypre.lib)+'\n')
+      g.write('METIS_OPT = '+self.headers.toString(self.metis.include)+'\n')
+      g.write('METIS_LIB = '+self.libraries.toString(self.metis.lib)+'\n')
+      g.write('PETSC_VARS ='+prefix+'/lib/petsc/conf/petscvariables\n')
+      g.write('PETSC_OPT = '+PETSC_OPT+'\n')
+      # Adding all externals should not be needed when PETSc is a shared library, but it is no harm.
+      # When the HYPRE library is built statically, we need to resolve blas symbols
+      g.write('PETSC_LIB = $(shell sed -n "s/PETSC_WITH_EXTERNAL_LIB = *//p" $(PETSC_VARS))\n')
+      g.close()
 
     #  if installing as Superuser than want to return to regular user for clean and build
     if self.installSudo:
