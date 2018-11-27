@@ -17,13 +17,11 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-#    self.colpack = framework.require('config.packages.ColPack',self) # TODO
-#    self.deps    = [self.colpack] # TODO
     self.deps = []
     return
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('--enable-sparse') # TODO
-    args.append('--with-colpack-dir=$PETSC_ARCH/externalpackages/git.colpack') # TODO
+    args.append('--enable-sparse')
+    args.append('--with-colpack-dir=$PETSC_ARCH/externalpackages/git.colpack')
     return args
