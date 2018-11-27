@@ -1,7 +1,5 @@
 #include <petscdm.h>
 
-// TODO: Most of the arguments here can be stored in AdolcCtx
-
 /*
    REQUIRES configuration of PETSc with option --download-adolc.
 
@@ -17,8 +15,7 @@
   m        - number of rows
 
   Output parameter:
-  sparsity - matrix sparsity pattern, typically computed using an ADOL-C function such as jac_pat or
-  hess_pat
+  sparsity - matrix sparsity pattern, typically computed using an ADOL-C function such as jac_pat
 */
 PetscErrorCode PrintSparsity(MPI_Comm comm,PetscInt m,unsigned int **sparsity)
 {

@@ -1,34 +1,51 @@
 static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Diffusion Equations.\n";
 
 /*
-      See ex5.c for details on the equations.
-      This code applies the operator overloading automatic differentiation techniques provided by ADOL-C to automatically generate Jacobians for nonlinear partial differential equations (PDEs) and associated adjoint equations. Whilst doing this is unnecessary for equations such as these, where the Jacobian can be derived quite easily, automatic Jacobian generation would be greatly beneficial for more complex PDEs.
-      Handcoded Jacobians are included here for comparison.
+   Concepts: TS^time-dependent nonlinear problems
+   Concepts: Automatic differentiation using ADOL-C
+*/
+/*
+   REQUIRES configuration of PETSc with option --download-adolc.
 
+   For documentation on ADOL-C, see
+     $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
+
+   REQUIRES configuration of PETSc with option --download-colpack
+
+   For documentation on ColPack, see
+     $PETSC_ARCH/externalpackages/git.colpack/README.md
+*/
+/* ------------------------------------------------------------------------
+  See ../advection-diffusion-reaction/ex5 for a description of the problem
+  ------------------------------------------------------------------------- */
+
+/*
   Runtime options:
-    -forwardonly      - run the forward simulation without adjoint
-    -implicitform     - provide IFunction and IJacobian to TS, if not set, RHSFunction and RHSJacobian will be used
-    -aijpc            - set the preconditioner matrix to be aij (the Jacobian matrix can be of a different type such as ELL)
-    -jacobian_by_hand - Use the hand-coded Jacobian of ex13.c, rather than generating it automatically.
-    -no_annotation    - Do not annotate ADOL-C active variables. (Should be used alongside -jacobian_by_hand.)
 
+    Solver:
+      -forwardonly       - Run the forward simulation without adjoint.
+      -implicitform      - Provide IFunction and IJacobian to TS, if not set, RHSFunction and RHSJacobian will be used.
+      -aijpc             - Set the preconditioner matrix to be aij (the Jacobian matrix can be of a different type such as ELL).
+
+    Jacobian generation:
+      -jacobian_by_hand  - Use the hand-coded Jacobian of ex5.c, rather than generating it automatically.
+      -no_annotation     - Do not annotate ADOL-C active variables. (Should be used alongside -jacobian_by_hand.)
+      -adolc_sparse      - Calculate Jacobian in compressed format, using ADOL-C sparse functionality.
+      -adolc_sparse_view - Print sparsity pattern used by -adolc_sparse option.
  */
+/*
+  NOTE: If -adolc_sparse option is used, at least four processors should be used, so that no processor owns boundaries which are
+        identified by the periodic boundary conditions. The number of grid points in both x- and y-directions should be multiples
+        of 5, in order for the 5-point stencil to be cleanly parallelised.
+*/
 
 #include <petscsys.h>
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <adolc/adolc.h>
+#include <adolc/adolc_sparse.h>
 #include "utils/drivers.cpp"
-
-#if HAVE_LIBCOLPACK
-#include <adolc/adolc_sparse.h>  // FIXME: ColPack installation script not currently working.
-#define COLPACK 1
-#else
-#warning "WARNING: ColPack is not available. Jacobian pattern cannot be established automatically."
-int jac_pat(short,int,int,const double*,unsigned int**,int*){return 0;}
-#define COLPACK 0
-#endif
 
 /* (Passive) field for the two variables */
 typedef struct {
@@ -80,12 +97,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL);CHKERRQ(ierr);
   appctx.aijpc = PETSC_FALSE,adctx->no_an = PETSC_FALSE,adctx->sparse = PETSC_FALSE,adctx->sparse_view = PETSC_FALSE;adctx->sparse_view_done = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-aijpc",&appctx.aijpc,NULL);CHKERRQ(ierr);
-  if (COLPACK) {
-    ierr = PetscOptionsGetBool(NULL,NULL,"-adolc_sparse",&adctx->sparse,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(NULL,NULL,"-adolc_sparse_view",&adctx->sparse_view,NULL);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsGetBool(NULL,NULL,"-no_annotation",&adctx->no_an,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-jacobian_by_hand",&byhand,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-adolc_sparse",&adctx->sparse,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-adolc_sparse_view",&adctx->sparse_view,NULL);CHKERRQ(ierr);
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
   appctx.gamma = .024;
