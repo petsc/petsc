@@ -1318,7 +1318,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     for (i=xs; i<xs+xm; i++) {
       for (j=0; j<dof; j++) tvsum += PetscAbsScalar(x[i*dof+j] - x[(i-1)*dof+j]);
     }
-    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
     ierr = DMDAVecRestoreArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
 
