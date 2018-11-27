@@ -326,14 +326,4 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-/*TEST
-
-    test:
-      args: -monitor 0 -viewer_binary_skip_info -ts_trajectory_dirname ex16adjdir
-
-    test:
-      suffix: 2
-      args: -monitor 0 -ts_trajectory_type memory
-
-TEST*/
-
+/* TODO: testing */
