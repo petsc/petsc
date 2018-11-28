@@ -821,7 +821,7 @@ PETSC_EXTERN const char* const TSMPRKMultirateTypes[];
 PETSC_EXTERN PetscErrorCode TSMPRKGetType(TS ts,TSMPRKType*);
 PETSC_EXTERN PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType);
 PETSC_EXTERN PetscErrorCode TSMPRKSetMultirateType(TS ts,TSMPRKMultirateType);
-PETSC_EXTERN PetscErrorCode TSMPRKRegister(TSMPRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt [],const PetscReal[],const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSMPRKRegister(TSMPRKType,PetscInt,PetscInt,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt [],const PetscReal[],const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSMPRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSMPRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSMPRKRegisterDestroy(void);
