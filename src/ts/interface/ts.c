@@ -7181,7 +7181,13 @@ PetscErrorCode  TSRollBack(TS ts)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
+   Output Parameters:
++  ns - the number of stages
+-  Y - the current stage vectors
+
    Level: advanced
+
+   Notes: Both ns and Y can be NULL.
 
 .keywords: TS, getstages
 
@@ -7193,10 +7199,12 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns,Vec **Y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  PetscValidPointer(ns,2);
-
-  if (!ts->ops->getstages) *ns=0;
-  else {
+  if (ns) PetscValidPointer(ns,2);
+  if (Y) PetscValidPointer(Y,3);
+  if (!ts->ops->getstages) {
+    if (ns) *ns = 0;
+    if (Y) *Y = NULL;
+  } else {
     ierr = (*ts->ops->getstages)(ts,ns,Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

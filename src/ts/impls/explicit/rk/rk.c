@@ -992,8 +992,8 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
   TS_RK *rk = (TS_RK*)ts->data;
 
   PetscFunctionBegin;
-  *ns = rk->tableau->s;
-  if (Y) *Y = rk->Y;
+  if (ns) *ns = rk->tableau->s;
+  if (Y)   *Y = rk->Y;
   PetscFunctionReturn(0);
 }
 
