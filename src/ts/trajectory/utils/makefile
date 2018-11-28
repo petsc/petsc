@@ -1,9 +1,10 @@
 
 ALL: lib
 
+SOURCEC  = reconstruct.c
 SOURCEH  =
-DIRS     = interface utils impls
-LOCDIR   = src/ts/trajectory/
+DIRS     = 
+LOCDIR   = src/ts/trajectory/utils
 MANSEC   = TS
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
