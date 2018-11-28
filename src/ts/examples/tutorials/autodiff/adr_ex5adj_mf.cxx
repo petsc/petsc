@@ -434,19 +434,16 @@ PetscErrorCode IJacobianMatFree(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 /*TEST
 
   build:
-    requires: double !complex
+    requires: double !complex adolc
 
   testset:
     suffix: 1
-    nsize: 1
-    requires: adolc
     args: -ts_max_steps 1 -da_grid_x 12 -da_grid_y 12 -snes_test_jacobian
     output_file: output/adr_ex5adj_mf_1.out
 
   testset:
     suffix: 2
     nsize: 4
-    requires: adolc
     args: -ts_max_steps 10 -da_grid_x 12 -da_grid_y 12 -ts_monitor -ts_adjoint_monitor
     output_file: output/adr_ex5adj_mf_2.out
 

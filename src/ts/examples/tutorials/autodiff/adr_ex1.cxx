@@ -292,17 +292,15 @@ int main(int argc,char **argv)
 /*TEST
 
   build:
-    requires: double !complex
+    requires: double !complex adolc
 
   testset:
     suffix: 1
-    requires: adolc
-    args: -ts_monitor -ts_adjoint_monitor
+    args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor
     output_file: output/adr_ex1_1.out
 
   testset:
     suffix: 2
-    requires: adolc
     args: -ts_max_steps 1 -snes_test_jacobian
     output_file: output/adr_ex1_2.out
 

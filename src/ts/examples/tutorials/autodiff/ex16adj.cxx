@@ -329,11 +329,10 @@ int main(int argc,char **argv)
 /*TEST
 
   build:
-    requires: double !complex
+    requires: double !complex adolc
 
   testset:
     suffix: 1
-    requires: adolc
     args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor
     output_file: output/ex16adj_1.out
     test:
@@ -342,7 +341,6 @@ int main(int argc,char **argv)
 
   testset:
     suffix: 2
-    requires: adolc
     args: -ts_max_steps 10 -monitor
     output_file: output/ex16adj_2.out
     test:

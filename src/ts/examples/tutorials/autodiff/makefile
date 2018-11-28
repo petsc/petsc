@@ -32,7 +32,7 @@ ex16adj: ex16adj.o
 	-${CLINKER} -o $@ $^ $(LIB)
 	${RM} $^
 
-ex16opt_ic: ex16opt_ic`.o
+ex16opt_ic: ex16opt_ic.o
 	-${CLINKER} -o $@ $^ $(LIB)
 	${RM} $^
 
