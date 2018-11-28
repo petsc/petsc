@@ -416,6 +416,8 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode TSGetRHSMats_Private(TS,Mat*,Mat*);
+
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set;
 PETSC_EXTERN PetscLogEvent TSTrajectory_Get;
 PETSC_EXTERN PetscLogEvent TSTrajectory_DiskWrite;
