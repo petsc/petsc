@@ -12,6 +12,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt);
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt);
 
 /*@C
    TSAdaptRegister -  adds a TSAdapt implementation
@@ -69,11 +70,12 @@ PetscErrorCode  TSAdaptRegisterAll(void)
   PetscFunctionBegin;
   if (TSAdaptRegisterAllCalled) PetscFunctionReturn(0);
   TSAdaptRegisterAllCalled = PETSC_TRUE;
-  ierr = TSAdaptRegister(TSADAPTNONE, TSAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSAdaptRegister(TSADAPTBASIC,TSAdaptCreate_Basic);CHKERRQ(ierr);
-  ierr = TSAdaptRegister(TSADAPTDSP,  TSAdaptCreate_DSP);CHKERRQ(ierr);
-  ierr = TSAdaptRegister(TSADAPTCFL,  TSAdaptCreate_CFL);CHKERRQ(ierr);
-  ierr = TSAdaptRegister(TSADAPTGLEE, TSAdaptCreate_GLEE);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTNONE,   TSAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTBASIC,  TSAdaptCreate_Basic);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTDSP,    TSAdaptCreate_DSP);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTCFL,    TSAdaptCreate_CFL);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTGLEE,   TSAdaptCreate_GLEE);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTHISTORY,TSAdaptCreate_History);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

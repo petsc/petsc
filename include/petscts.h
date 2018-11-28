@@ -624,11 +624,12 @@ typedef struct _p_TSAdapt *TSAdapt;
 .seealso: TSAdaptSetType(), TS
 E*/
 typedef const char *TSAdaptType;
-#define TSADAPTNONE  "none"
-#define TSADAPTBASIC "basic"
-#define TSADAPTDSP   "dsp"
-#define TSADAPTCFL   "cfl"
-#define TSADAPTGLEE  "glee"
+#define TSADAPTNONE    "none"
+#define TSADAPTBASIC   "basic"
+#define TSADAPTDSP     "dsp"
+#define TSADAPTCFL     "cfl"
+#define TSADAPTGLEE    "glee"
+#define TSADAPTHISTORY "history"
 
 PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
@@ -657,6 +658,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptGetClip(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetStepLimits(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
+PETSC_EXTERN PetscErrorCode TSAdaptHistorySetHistory(TSAdapt,PetscInt n,PetscReal hist[],PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptDSPSetFilter(TSAdapt,const char *);
 PETSC_EXTERN PetscErrorCode TSAdaptDSPSetPID(TSAdapt,PetscReal,PetscReal,PetscReal);
 

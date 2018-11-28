@@ -422,6 +422,8 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
 }
 
 PETSC_INTERN PetscErrorCode TSGetRHSMats_Private(TS,Mat*,Mat*);
+/* this is declared here as TSHistory is not public */
+PETSC_INTERN PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt,TSHistory,PetscBool);
 
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set;
 PETSC_EXTERN PetscLogEvent TSTrajectory_Get;
