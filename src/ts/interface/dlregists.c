@@ -1,4 +1,3 @@
-
 #include <petsc/private/tsimpl.h>
 
 static PetscBool TSPackageInitialized = PETSC_FALSE;
@@ -56,6 +55,7 @@ PetscErrorCode  TSInitializePackage(void)
   ierr = PetscClassIdRegister("TS",&TS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DMTS",&DMTS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("TSTrajectory",&TSTRAJECTORY_CLASSID);CHKERRQ(ierr);
+
   /* Register Constructors */
   ierr = TSRegisterAll();CHKERRQ(ierr);
   ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);
@@ -115,6 +115,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
   ierr = TSInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

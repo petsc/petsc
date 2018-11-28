@@ -76,8 +76,13 @@ struct _TSTrajectoryOps {
   PetscErrorCode (*setup)(TSTrajectory,TS);
 };
 
+/* TSHistory is an helper object that allows inquiring
+   the TSTrajectory by time and not by the step number only */
+typedef struct _n_TSHistory* TSHistory;
+
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
+  TSHistory tsh;        /* associates times to unique step ids */
   PetscViewer    monitor;
   PetscInt       setupcalled;             /* true if setup has been called */
   PetscInt       recomps;                 /* counter for recomputations in the adjoint run */
