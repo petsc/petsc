@@ -331,20 +331,24 @@ int main(int argc,char **argv)
   build:
     requires: double !complex adolc
 
-  testset:
+  test:
     suffix: 1
     args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor
     output_file: output/ex16adj_1.out
-    test:
-    test:
-      args: -mu 5
 
-  testset:
+  test:
     suffix: 2
-    args: -ts_max_steps 10 -monitor
+    args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -mu 5
     output_file: output/ex16adj_2.out
-    test:
-    test:
-      args: -mu 5
+
+  test:
+    suffix: 3
+    args: -ts_max_steps 10 -monitor
+    output_file: output/ex16adj_3.out
+
+  test:
+    suffix: 4
+    args: -ts_max_steps 10 -monitor -mu 5
+    output_file: output/ex16adj_4.out
 
 TEST*/

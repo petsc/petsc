@@ -362,7 +362,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   build:
     requires: double !complex adolc
 
-  testset:
+  test:
     suffix: 1
     args: -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view -tao_max_it 2 -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view
     output_file: output/ex16opt_ic_1.out

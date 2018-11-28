@@ -1052,31 +1052,40 @@ PetscErrorCode RHSJacobianAdolc(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
   build:
     requires: double !complex adolc colpack
 
-  testset:
+  test:
     suffix: 1
     nsize: 1
     args: -ts_max_steps 1 -da_grid_x 12 -da_grid_y 12 -snes_test_jacobian
     output_file: output/adr_ex5adj_1.out
-    test:
-    test:
-      args: -implicitform
 
-  testset:
+  test:
     suffix: 2
-    nsize: 4
-    args: -ts_max_steps 10 -da_grid_x 12 -da_grid_y 12 -ts_monitor -ts_adjoint_monitor
+    nsize: 1
+    args: -ts_max_steps 1 -da_grid_x 12 -da_grid_y 12 -snes_test_jacobian -implicitform
     output_file: output/adr_ex5adj_2.out
-    test:
-    test:
-      args: -implicitform
 
-  testset:
+  test:
     suffix: 3
     nsize: 4
-    args: -ts_max_steps 10 -da_grid_x 15 -da_grid_y 15 -ts_monitor -ts_adjoint_monitor -adolc_sparse
+    args: -ts_max_steps 10 -da_grid_x 12 -da_grid_y 12 -ts_monitor -ts_adjoint_monitor
     output_file: output/adr_ex5adj_3.out
-    test:
-    test:
-      args: -implicitform
+
+  test:
+    suffix: 4
+    nsize: 4
+    args: -ts_max_steps 10 -da_grid_x 12 -da_grid_y 12 -ts_monitor -ts_adjoint_monitor -implicitform
+    output_file: output/adr_ex5adj_4.out
+
+  testset:
+    suffix: 5
+    nsize: 4
+    args: -ts_max_steps 10 -da_grid_x 15 -da_grid_y 15 -ts_monitor -ts_adjoint_monitor -adolc_sparse
+    output_file: output/adr_ex5adj_5.out
+
+  testset:
+    suffix: 6
+    nsize: 4
+    args: -ts_max_steps 10 -da_grid_x 15 -da_grid_y 15 -ts_monitor -ts_adjoint_monitor -adolc_sparse -implicitform
+    output_file: output/adr_ex5adj_6.out
 
 TEST*/

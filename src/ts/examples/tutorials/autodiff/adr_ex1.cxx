@@ -294,12 +294,12 @@ int main(int argc,char **argv)
   build:
     requires: double !complex adolc
 
-  testset:
+  test:
     suffix: 1
     args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor
     output_file: output/adr_ex1_1.out
 
-  testset:
+  test:
     suffix: 2
     args: -ts_max_steps 1 -snes_test_jacobian
     output_file: output/adr_ex1_2.out
