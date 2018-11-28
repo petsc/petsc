@@ -306,8 +306,7 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell,Vec Y
   /* dF/dx part */
   ierr = PetscMalloc1(n,&action);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(mctx->event3,0,0,0,0);CHKERRQ(ierr);
-  if (!mctx->flg)
-    zos_forward(mctx->tag1,m,n,1,x,NULL);
+  if (!mctx->flg) zos_forward(mctx->tag1,m,n,1,x,NULL);
   fos_reverse(mctx->tag1,m,n,y,action);
   for (j=info.gys; j<info.gys+info.gym; j++) {
     for (i=info.gxs; i<info.gxs+info.gxm; i++) {

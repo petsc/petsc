@@ -320,6 +320,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 
     test:
       suffix: 2
-      args: -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view -tao_max_it 2 -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view
+      args: -ts_rhs_jacobian_test_mult_transpose FALSE -mat_shell_test_mult_transpose_view -tao_max_it 2 -ts_rhs_jacobian_test_mult FALSE -mat_shell_test_mult_view
 
 TEST*/

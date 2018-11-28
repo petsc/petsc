@@ -34,26 +34,6 @@ PetscErrorCode PrintSparsity(MPI_Comm comm,PetscInt m,unsigned int **sparsity)
 }
 
 /*
-  Simple function to count the number of colors used in an index set coloring
-
-  Input parameter:
-  iscoloring - the index set coloring to count the number of colors of
-
-  Output parameter:
-  p          - number of colors used in iscoloring
-*/
-PetscErrorCode CountColors(ISColoring iscoloring,PetscInt *p)
-{
-  PetscErrorCode ierr;
-  IS             *is;
-
-  PetscFunctionBegin;
-  ierr = ISColoringGetIS(iscoloring,p,&is);CHKERRQ(ierr);
-  ierr = ISColoringRestoreIS(iscoloring,&is);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
   Generate a seed matrix defining the partition of columns of a matrix by a particular coloring,
   used for matrix compression
 

@@ -182,7 +182,7 @@ int main(int argc,char **argv)
         responsibility of the user to obtain a suitable colouring.
       */
       ierr = DMCreateColoring(da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
-      ierr = CountColors(iscoloring,&adctx->p);CHKERRQ(ierr);
+      ierr = ISColoringGetIS(iscoloring,&adctx->p,NULL);CHKERRQ(ierr);
 
       /* Generate seed matrix to propagate through the forward mode of AD */
       ierr = AdolcMalloc2(adctx->n,adctx->p,&Seed);CHKERRQ(ierr);
