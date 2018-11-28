@@ -27,10 +27,10 @@ static PetscErrorCode VecLoadIfExists_Private(Vec b,PetscViewer fd,PetscBool *ha
   if (hdf5) {
 #if defined(PETSC_HAVE_HDF5)
     ierr = PetscViewerHDF5HasObject(fd,(PetscObject)b,has);CHKERRQ(ierr);
+    if (*has) {ierr = VecLoad(b,fd);CHKERRQ(ierr);}
 #else
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc must be configured with HDF5 to use this feature");
 #endif
-    if (*has) {ierr = VecLoad(b,fd);CHKERRQ(ierr);}
   } else {
     PetscErrorCode ierrp;
     ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
