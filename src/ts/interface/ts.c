@@ -136,10 +136,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSGetIFunction(ts,NULL,&ifun,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-  if (((PetscObject)ts)->type_name)
-    defaultType = ((PetscObject)ts)->type_name;
-  else
-    defaultType = ifun ? TSBEULER : TSEULER;
+  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
+  else defaultType = ifun ? TSBEULER : TSEULER;
   ierr = PetscOptionsFList("-ts_type","TS method","TSSetType",TSList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = TSSetType(ts,typeName);CHKERRQ(ierr);
@@ -413,8 +411,12 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
 
+  /* why do we have to do this here and not during TSSetUp? */
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
-  if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(ts->snes,SNESKSPONLY);CHKERRQ(ierr);}
+  if (ts->problem_type == TS_LINEAR) {
+    ierr = PetscObjectTypeCompareAny((PetscObject)ts->snes,&flg,SNESKSPONLY,SNESKSPTRANSPOSEONLY,"");CHKERRQ(ierr);
+    if (!flg) { ierr = SNESSetType(ts->snes,SNESKSPONLY);CHKERRQ(ierr); }
+  }
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1920,7 +1922,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->snes_its);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)ts->snes,SNESKSPONLY,&lin);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompareAny((PetscObject)ts->snes,&lin,SNESKSPONLY,SNESKSPTRANSPOSEONLY,"");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of %slinear solve failures=%D\n",lin ? "" : "non",ts->num_snes_failures);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
