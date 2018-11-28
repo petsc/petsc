@@ -4,13 +4,13 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
   See ex5.c for details on the equation.
   This code demonestrates the TSAdjoint interface to a system of time-dependent partial differential equations.
   It computes the sensitivity of a component in the final solution, which locates in the center of the 2D domain, w.r.t. the initial conditions.
-  The user does not need to provide any additional functions. The required functions in the original simultion are resued in the adjoint run.
+  The user does not need to provide any additional functions. The required functions in the original simulation are reused in the adjoint run.
 
   Runtime options:
-    -forardonly   - run the forward simulation without adjoint
+    -forwardonly  - run the forward simulation without adjoint
     -implicitform - provide IFunction and IJacobian to TS, if not set, RHSFunction and RHSJacobian will be used
     -aijpc        - set the preconditioner matrix to be aij (the Jacobian matrix can be of a different type such as ELL)
- */
+*/
 
 #include <petscsys.h>
 #include <petscdm.h>
@@ -29,11 +29,11 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*),InitialConditions(DM,Vec);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
-
-extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
+PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode InitialConditions(DM,Vec);
+PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
+PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
+PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 PetscErrorCode InitializeLambda(DM da,Vec lambda,PetscReal x,PetscReal y)
 {
@@ -66,7 +66,6 @@ int main(int argc,char **argv)
   DM             da;
   AppCtx         appctx;
   Vec            lambda[1];
-  PetscScalar    *x_ptr;
   PetscBool      forwardonly=PETSC_FALSE,implicitform=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -99,13 +98,14 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   if (!implicitform) {
+    ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx);CHKERRQ(ierr);
   } else {
+    ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
     ierr = TSSetIFunction(ts,NULL,IFunction,&appctx);CHKERRQ(ierr);
     if (appctx.aijpc) {
       Mat                    A,B;
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetMaxTime(ts,200.0);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.5);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,7 +151,6 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = VecDuplicate(x,&lambda[0]);CHKERRQ(ierr);
     /*   Reset initial conditions for the adjoint integration */
-    ierr = VecGetArray(lambda[0],&x_ptr);CHKERRQ(ierr);
     ierr = InitializeLambda(da,lambda[0],0.5,0.5);CHKERRQ(ierr);
     ierr = TSSetCostGradients(ts,1,lambda,NULL);CHKERRQ(ierr);
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
