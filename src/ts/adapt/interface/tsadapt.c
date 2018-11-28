@@ -819,9 +819,10 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
     /* Increase/reduce step size if end time of next step is close to or overshoots max time */
     PetscReal t = ts->ptime + ts->time_step, h = *next_h;
     PetscReal tend = t + h, tmax = ts->max_time, hmax = tmax - t;
-    PetscReal a = (PetscReal)1.01; /* allow 1% step size increase */
+    PetscReal a = (PetscReal)(1.0 + adapt->matchstepfac[0]);
+    PetscReal b = adapt->matchstepfac[1];
     if (t < tmax && tend > tmax) *next_h = hmax;
-    if (t < tmax && tend < tmax && h > hmax/2) *next_h = hmax/2;
+    if (t < tmax && tend < tmax && h*b > hmax) *next_h = hmax/2;
     if (t < tmax && tend < tmax && h*a > hmax) *next_h = hmax;
   }
 
@@ -940,6 +941,10 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e+20;
   adapt->scale_solve_failed = 0.25;
+  /* these two safety factors are not public, and they are used only in the TS_EXACTFINALTIME_MATCHSTEP case
+     to prevent from situations were unreasonably small time steps are taken in order to match the final time */
+  adapt->matchstepfac[0]    = 0.01; /* allow 1% step size increase in the last step */
+  adapt->matchstepfac[1]    = 2.0;  /* halve last step if it is greater than what remains divided this factor */
   adapt->wnormtype          = NORM_2;
 
   *inadapt = adapt;
