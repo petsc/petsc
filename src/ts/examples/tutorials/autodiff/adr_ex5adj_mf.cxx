@@ -20,8 +20,8 @@ static char help[] = "Demonstrates automatic, matrix-free Jacobian generation us
 #include <petscdmda.h>
 #include <petscts.h>
 #include <adolc/adolc.h>
-#include "utils/init.cpp"
-#include "utils/matfree.cpp"
+#include "utils/init.cxx"
+#include "utils/matfree.cxx"
 
 /* (Passive) field for the two variables */
 typedef struct {
@@ -431,4 +431,23 @@ PetscErrorCode IJacobianMatFree(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-/* TODO: testing */
+/*TEST
+
+  build:
+    requires: double !complex
+
+  testset:
+    suffix: 1
+    nsize: 1
+    requires: adolc
+    args: -ts_max_steps 1 -da_grid_x 12 -da_grid_y 12 -snes_test_jacobian
+    output_file: output/adr_ex5adj_mf_1.out
+
+  testset:
+    suffix: 2
+    nsize: 4
+    requires: adolc
+    args: -ts_max_steps 10 -da_grid_x 12 -da_grid_y 12 -ts_monitor -ts_adjoint_monitor
+    output_file: output/adr_ex5adj_mf_2.out
+
+TEST*/

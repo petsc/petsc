@@ -1,6 +1,6 @@
-#include "contexts.cpp"
-#include "sparse.cpp"
-#include "init.cpp"
+#include "contexts.cxx"
+#include "sparse.cxx"
+#include "init.cxx"
 
 /*
    REQUIRES configuration of PETSc with option --download-adolc.

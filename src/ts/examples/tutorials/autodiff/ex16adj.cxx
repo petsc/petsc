@@ -23,7 +23,7 @@ Input parameters include:\n\
 #include <petscts.h>
 #include <petscmat.h>
 #include <adolc/adolc.h>
-#include "utils/drivers.cpp"
+#include "utils/drivers.cxx"
 
 typedef struct _n_User *User;
 struct _n_User {
@@ -326,4 +326,27 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-/* TODO: testing */
+/*TEST
+
+  build:
+    requires: double !complex
+
+  testset:
+    suffix: 1
+    requires: adolc
+    args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor
+    output_file: output/ex16adj_1.out
+    test:
+    test:
+      args: -mu 5
+
+  testset:
+    suffix: 2
+    requires: adolc
+    args: -ts_max_steps 10 -monitor
+    output_file: output/ex16adj_2.out
+    test:
+    test:
+      args: -mu 5
+
+TEST*/

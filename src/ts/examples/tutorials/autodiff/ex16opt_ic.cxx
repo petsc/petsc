@@ -22,7 +22,7 @@ Input parameters include:\n\
 #include <petscts.h>
 #include <petscmat.h>
 #include <adolc/adolc.h>
-#include "utils/drivers.cpp"
+#include "utils/drivers.cxx"
 
 typedef struct _n_User *User;
 struct _n_User {
@@ -357,4 +357,14 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   PetscFunctionReturn(0);
 }
 
-/* TODO: testing */
+/*TEST
+
+  build:
+    requires: double !complex
+
+  testset:
+    suffix: 1
+    requires: adolc
+    args: -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view -tao_max_it 2 -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view
+
+TEST*/

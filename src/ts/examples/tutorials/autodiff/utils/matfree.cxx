@@ -1,7 +1,7 @@
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <adolc/adolc.h>
-#include "contexts.cpp"
+#include "contexts.cxx"
 
 /*
    REQUIRES configuration of PETSc with option --download-adolc.
