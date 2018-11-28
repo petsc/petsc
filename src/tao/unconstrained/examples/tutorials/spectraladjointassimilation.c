@@ -603,6 +603,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec ic,PetscReal *f,Vec G,void *ctx)
 
   ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
   ierr = TSSetStepNumber(appctx->ts,0);CHKERRQ(ierr);
+  ierr = TSResetTrajectory(appctx->ts);CHKERRQ(ierr);
   ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
   ierr = VecCopy(ic,appctx->dat.curr_sol);CHKERRQ(ierr);
 

@@ -175,6 +175,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&(user.ftime));CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&user.steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   user.x_ob[0] = x_ptr[0];
@@ -222,7 +223,6 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&user.A);CHKERRQ(ierr);
   ierr = VecDestroy(&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(&user.lambda[0]);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&ic);CHKERRQ(ierr);
   ierr = PetscFinalize();

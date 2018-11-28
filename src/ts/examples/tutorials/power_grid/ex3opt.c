@@ -453,7 +453,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
     ierr = MatAssemblyEnd(sp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
-  /* sovle the ODE */
+  /* reset the trajectory */
+  ierr = TSResetTrajectory(ctx->ts);CHKERRQ(ierr);
+
+  /* solve the ODE */
   ierr = TSSolve(ctx->ts,ctx->U);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ctx->ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ctx->ts,&steps);CHKERRQ(ierr);

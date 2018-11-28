@@ -467,7 +467,7 @@ Note: This routine should be called after all TS options have been set
 
    Level: intermediate
 
-.seealso: TSGetTrajectory(), TSAdjointSolve(), TSTrajectoryType, TSSetTrajectoryType()
+.seealso: TSGetTrajectory(), TSAdjointSolve()
 
 .keywords: TS, set, checkpoint,
 @*/
@@ -478,6 +478,33 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->trajectory) {
+    ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSResetTrajectory - Destroys and recreates the internal TSTrajectory object
+
+   Collective on TS
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: intermediate
+
+.seealso: TSGetTrajectory(), TSAdjointSolve()
+
+.keywords: TS, set, checkpoint,
+@*/
+PetscErrorCode  TSResetTrajectory(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->trajectory) {
+    ierr = TSTrajectoryDestroy(&ts->trajectory);CHKERRQ(ierr);
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
