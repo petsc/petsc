@@ -518,6 +518,10 @@ cdef class PC(Object):
         CHKERR( PCMGGetLevels(self.pc, &levels) )
         return toInt(levels)
 
+    def setMGLevels(self, levels):
+        cdef PetscInt clevels = asInt(levels)
+        CHKERR( PCMGSetLevels(self.pc, clevels, NULL) )
+
     def getMGCoarseSolve(self):
         cdef KSP ksp = KSP()
         CHKERR( PCMGGetCoarseSolve(self.pc, &ksp.ksp) )

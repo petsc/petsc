@@ -224,6 +224,7 @@ cdef extern from * nogil:
     int PCMGSetRhs(PetscPC,PetscInt,PetscVec)
     int PCMGSetX(PetscPC,PetscInt,PetscVec)
     int PCMGSetR(PetscPC,PetscInt,PetscVec)
+    int PCMGSetLevels(PetscPC,PetscInt,MPI_Comm*)
     int PCMGGetLevels(PetscPC,PetscInt*)
     int PCMGSetCycleType(PetscPC,PetscPCMGCycleType)
     int PCMGSetCycleTypeOnLevel(PetscPC,PetscInt,PetscPCMGCycleType)
