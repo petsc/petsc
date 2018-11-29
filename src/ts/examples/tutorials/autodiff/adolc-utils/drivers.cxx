@@ -1,6 +1,8 @@
 #include "contexts.cxx"
 #include "sparse.cxx"
 #include "init.cxx"
+#include <adolc/drivers/drivers.h>
+#include <adolc/interfaces.h>
 
 /*
    REQUIRES configuration of PETSc with option --download-adolc.

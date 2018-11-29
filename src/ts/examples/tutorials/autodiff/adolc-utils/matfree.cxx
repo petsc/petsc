@@ -1,6 +1,6 @@
-#include <petscdm.h>
 #include <petscdmda.h>
-#include <adolc/adolc.h>
+#include <petscts.h>
+#include <adolc/interfaces.h>
 #include "contexts.cxx"
 
 /*

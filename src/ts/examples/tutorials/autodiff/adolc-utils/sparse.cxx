@@ -1,4 +1,5 @@
-#include <petscdm.h>
+#include <petscmat.h>
+#include <adolc/adolc_sparse.h>
 
 /*
    REQUIRES configuration of PETSc with option --download-adolc.

@@ -22,8 +22,8 @@ Input parameters include:\n\
 
 #include <petscts.h>
 #include <petscmat.h>
+#include "adolc-utils/drivers.cxx"
 #include <adolc/adolc.h>
-#include "utils/drivers.cxx"
 
 typedef struct _n_User *User;
 struct _n_User {

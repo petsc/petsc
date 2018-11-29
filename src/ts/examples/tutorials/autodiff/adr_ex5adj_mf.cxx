@@ -15,13 +15,11 @@ static char help[] = "Demonstrates automatic, matrix-free Jacobian generation us
   See ../advection-diffusion-reaction/ex5 for a description of the problem
   ------------------------------------------------------------------------- */
 
-#include <petscsys.h>
-#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
+#include "adolc-utils/init.cxx"
+#include "adolc-utils/matfree.cxx"
 #include <adolc/adolc.h>
-#include "utils/init.cxx"
-#include "utils/matfree.cxx"
 
 /* (Passive) field for the two variables */
 typedef struct {

@@ -39,13 +39,10 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
         of 5, in order for the 5-point stencil to be cleanly parallelised.
 */
 
-#include <petscsys.h>
-#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
+#include "adolc-utils/drivers.cxx"
 #include <adolc/adolc.h>
-#include <adolc/adolc_sparse.h>
-#include "utils/drivers.cxx"
 
 /* (Passive) field for the two variables */
 typedef struct {
