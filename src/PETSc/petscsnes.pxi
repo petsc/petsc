@@ -4,7 +4,6 @@ cdef extern from * nogil:
     PetscSNESType SNESNEWTONLS
     PetscSNESType SNESNEWTONTR
     #PetscSNESType SNESPYTHON
-    PetscSNESType SNESTEST
     PetscSNESType SNESNRICHARDSON
     PetscSNESType SNESKSPONLY
     PetscSNESType SNESVINEWTONRSLS

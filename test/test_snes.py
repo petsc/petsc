@@ -353,21 +353,6 @@ class TestSNESLS(BaseTestSNES, unittest.TestCase):
 class TestSNESTR(BaseTestSNES, unittest.TestCase):
     SNES_TYPE = PETSc.SNES.Type.NEWTONTR
 
-## class TestSNESTEST(BaseTestSNES, unittest.TestCase):
-##     SNES_TYPE = PETSc.SNES.Type.TEST
-##     def setUp(self):
-##         super(TestSNESTEST, self).setUp()
-##         import tempfile
-##         self.stdout = tempfile.TemporaryFile(mode='w+')
-##         PETSc.SetStdout(self.stdout)
-##     def tearDown(self):
-##         super(TestSNESTEST, self).tearDown()
-##         import sys
-##         PETSc.SetStdout(sys.stdout)
-##         self.stdout.flush()
-##         self.stdout.close()
-##         self.stdout = None
-
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':
