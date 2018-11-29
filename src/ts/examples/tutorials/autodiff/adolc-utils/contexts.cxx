@@ -10,9 +10,6 @@
 #ifndef ADOLCCTX
 #define ADOLCCTX
 typedef struct {
-  /* Zero Order Scalar (ZOS) test */
-  PetscBool   zos,zos_view;
-
   /* No ADOL-C annotation */
   PetscBool   no_an;
 
@@ -21,8 +18,8 @@ typedef struct {
   PetscScalar **Seed,**Rec,*rec;
   PetscInt    p;
 
-  /* Matrix dimensions */
-  PetscInt    m,n;
+  /* Matrix dimensions, number of parameters */
+  PetscInt    m,n,num_params;
 } AdolcCtx;
 #endif
 

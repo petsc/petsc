@@ -341,7 +341,6 @@ PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag,Mat A,PetscSca
   Compute Jacobian w.r.t a parameter for explicit TS.
 
   TODO: Do not form whole matrix. Just propagate [0,0,1] (for example).
-  TODO: Account for multiple parameters
   TODO: Allow compressed format
 
   Input parameters:
@@ -353,25 +352,23 @@ PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag,Mat A,PetscSca
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *param,void *ctx)
+PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *params,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
-  PetscInt       i,j = 0,m = adctx->m,n = adctx->n;
+  PetscInt       i,j = 0,m = adctx->m,n = adctx->n,p = adctx->num_params;
   PetscScalar    **J,*concat;
 
   PetscFunctionBegin;
-  ierr = AdolcMalloc2(m,n+1,&J);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n+1,&concat);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    concat[i] = u_vec[i];
-  }
-  concat[n] = param[0];
-  jacobian(tag,m,n+1,concat,J);
+  ierr = AdolcMalloc2(m,n+p,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+p,&concat);CHKERRQ(ierr);
+  for (i=0; i<n; i++) concat[i] = u_vec[i];
+  for (i=0; i<p; i++) concat[n+i] = params[i];
+  jacobian(tag,m,n+p,concat,J);
   for (i=0; i<m; i++) {
-    //if (fabs(J[i][n]) > 1.e-16) {
+    if (fabs(J[i][n]) > 1.e-16) {
       ierr = MatSetValues(A,1,&i,1,&j,&J[i][n],INSERT_VALUES);CHKERRQ(ierr);
-    //}
+    }
   }
   ierr = PetscFree(concat);CHKERRQ(ierr);
   ierr = AdolcFree2(J);CHKERRQ(ierr);
@@ -384,7 +381,6 @@ PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_v
   Compute local portion of Jacobian w.r.t a parameter for explicit TS.
 
   TODO: Do not form whole matrix. Just propagate [0,0,1] (for example).
-  TODO: Account for multiple parameters
   TODO: Allow compressed format
 
   Input parameters:
@@ -400,17 +396,15 @@ PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,PetscScalar
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
-  PetscInt       i,j = 0,m = adctx->m,n = adctx->n;
+  PetscInt       i,j = 0,m = adctx->m,n = adctx->n,p = adctx->num_params;
   PetscScalar    **J,*concat;
 
   PetscFunctionBegin;
-  ierr = AdolcMalloc2(m,1,&J);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n+1,&concat);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    concat[i] = u_vec[i];
-  }
-  concat[n] = param[0];
-  jacobian(tag,m,n+1,concat,J);
+  ierr = AdolcMalloc2(m,n+p,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+p,&concat);CHKERRQ(ierr);
+  for (i=0; i<n; i++) concat[i] = u_vec[i];
+  for (i=0; i<p; i++) concat[n+i] = param[i];
+  jacobian(tag,m,n+p,concat,J);
   for (i=0; i<m; i++) {
     if (fabs(J[i][n]) > 1.e-16) {
       ierr = MatSetValuesLocal(A,1,&i,1,&j,&J[i][n],INSERT_VALUES);CHKERRQ(ierr);

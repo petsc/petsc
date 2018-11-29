@@ -201,7 +201,7 @@ int main(int argc,char **argv)
   ierr = PetscNew(&adctx);CHKERRQ(ierr);
   user.mu          = 1;
   user.next_output = 0.0;
-  adctx->m = 2;adctx->n = 2;adctx->p = 2;
+  adctx->m = 2;adctx->n = 2;adctx->p = 2;adctx->num_params = 1;
   user.adctx = adctx;
 
   ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
