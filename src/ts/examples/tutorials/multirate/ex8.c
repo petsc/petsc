@@ -1367,10 +1367,11 @@ int main(int argc,char *argv[])
       depends: finitevolume1d.c
 
     test:
+      suffix: 1
       args: -da_grid_x 90 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a23 -ts_mprk_multirate_type nonsplit
 
     test:
+      suffix: 2
       args: -da_grid_x 90 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a23 -ts_mprk_multirate_type split
-      output_file: output/ex6_1.out
 
 TEST*/
