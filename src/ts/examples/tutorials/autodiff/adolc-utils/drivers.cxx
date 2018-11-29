@@ -340,37 +340,45 @@ PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag,Mat A,PetscSca
 /*
   Compute Jacobian w.r.t a parameter for explicit TS.
 
-  TODO: Do not form whole matrix. Just propagate [0,0,1] (for example).
-  TODO: Allow compressed format
-
   Input parameters:
-  tag   - tape identifier
-  u_vec - vector at which to evaluate Jacobian
-  param - the parameter
-  ctx   - ADOL-C context, as defined above
+  tag    - tape identifier
+  u_vec  - vector at which to evaluate Jacobian
+  params - the parameters w.r.t. which we differentiate
+  ctx    - ADOL-C context, as defined above
 
   Output parameter:
-  A     - Mat object corresponding to Jacobian
+  A      - Mat object corresponding to Jacobian
 */
 PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *params,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
   PetscInt       i,j = 0,m = adctx->m,n = adctx->n,p = adctx->num_params;
-  PetscScalar    **J,*concat;
+  PetscScalar    **J,*concat,**S;
 
   PetscFunctionBegin;
-  ierr = AdolcMalloc2(m,n+p,&J);CHKERRQ(ierr);
+
+  /* Allocate memory and concatenate independent variable values with parameter */
+  ierr = AdolcMalloc2(m,p,&J);CHKERRQ(ierr);
   ierr = PetscMalloc1(n+p,&concat);CHKERRQ(ierr);
+  ierr = AdolcMalloc2(n+p,p,&S);CHKERRQ(ierr);
+  ierr = Subidentity(p,n,S);CHKERRQ(ierr);
   for (i=0; i<n; i++) concat[i] = u_vec[i];
   for (i=0; i<p; i++) concat[n+i] = params[i];
-  jacobian(tag,m,n+p,concat,J);
+
+  /* Propagate the appropriate seed matrix through the forward mode of AD */
+  fov_forward(tag,m,n+p,p,concat,S,NULL,J);
+  ierr = AdolcFree2(S);CHKERRQ(ierr);
+  ierr = PetscFree(concat);CHKERRQ(ierr);
+
+  /* Set matrix values */
   for (i=0; i<m; i++) {
-    if (fabs(J[i][n]) > 1.e-16) {
-      ierr = MatSetValues(A,1,&i,1,&j,&J[i][n],INSERT_VALUES);CHKERRQ(ierr);
+    for (j=0; j<p; j++) {
+      if (fabs(J[i][j]) > 1.e-16) {
+        ierr = MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
   }
-  ierr = PetscFree(concat);CHKERRQ(ierr);
   ierr = AdolcFree2(J);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -380,17 +388,14 @@ PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_v
 /*
   Compute local portion of Jacobian w.r.t a parameter for explicit TS.
 
-  TODO: Do not form whole matrix. Just propagate [0,0,1] (for example).
-  TODO: Allow compressed format
-
   Input parameters:
-  tag   - tape identifier
-  u_vec - vector at which to evaluate Jacobian
-  param - the parameter
-  ctx   - ADOL-C context, as defined above
+  tag    - tape identifier
+  u_vec  - vector at which to evaluate Jacobian
+  params - the parameters w.r.t. which we differentiate
+  ctx    - ADOL-C context, as defined above
 
   Output parameter:
-  A     - Mat object corresponding to Jacobian
+  A      - Mat object corresponding to Jacobian
 */
 PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *param,void *ctx)
 {
@@ -400,17 +405,28 @@ PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,PetscScalar
   PetscScalar    **J,*concat;
 
   PetscFunctionBegin;
-  ierr = AdolcMalloc2(m,n+p,&J);CHKERRQ(ierr);
+
+  /* Allocate memory and concatenate independent variable values with parameter */
+  ierr = AdolcMalloc2(m,p,&J);CHKERRQ(ierr);
   ierr = PetscMalloc1(n+p,&concat);CHKERRQ(ierr);
+  ierr = AdolcMalloc2(n+p,p,&S);CHKERRQ(ierr);
+  ierr = Subidentity(p,n,S);CHKERRQ(ierr);
   for (i=0; i<n; i++) concat[i] = u_vec[i];
-  for (i=0; i<p; i++) concat[n+i] = param[i];
-  jacobian(tag,m,n+p,concat,J);
+  for (i=0; i<p; i++) concat[n+i] = params[i];
+
+  /* Propagate the appropriate seed matrix through the forward mode of AD */
+  fov_forward(tag,m,n+p,p,concat,S,NULL,J);
+  ierr = AdolcFree2(S);CHKERRQ(ierr);
+  ierr = PetscFree(concat);CHKERRQ(ierr);
+
+  /* Set matrix values */
   for (i=0; i<m; i++) {
-    if (fabs(J[i][n]) > 1.e-16) {
-      ierr = MatSetValuesLocal(A,1,&i,1,&j,&J[i][n],INSERT_VALUES);CHKERRQ(ierr);
+    for (j=0; j<p; j++) {
+      if (fabs(J[i][j]) > 1.e-16) {
+        ierr = MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
   }
-  ierr = PetscFree(concat);CHKERRQ(ierr);
   ierr = AdolcFree2(J);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
