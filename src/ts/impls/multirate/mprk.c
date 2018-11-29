@@ -674,8 +674,8 @@ static PetscErrorCode TSStep_MPRK(TS ts)
   MPRKTableau     tab = mprk->tableau;
   const PetscInt  s = tab->s;
   const PetscReal *Af = tab->Af,*cf = tab->cf,*Asb = tab->Asb,*csb = tab->csb;
-  PetscScalar     *wf = mprk->work_fast,*ws = mprk->work_slow,*wsb = mprk->work_slowbuffer;
-  PetscInt        i,j,computedstages;
+  PetscScalar     *wf = mprk->work_fast,*wsb = mprk->work_slowbuffer;
+  PetscInt        i,j;
   PetscReal       next_time_step = ts->time_step,t = ts->ptime,h = ts->time_step;
   PetscErrorCode  ierr;
 
@@ -683,7 +683,7 @@ static PetscErrorCode TSStep_MPRK(TS ts)
   for (i=0; i<s; i++) {
     mprk->stage_time = t + h*cf[i];
     ierr = TSPreStage(ts,mprk->stage_time);CHKERRQ(ierr);
-    ierr = VecCopy(ts->vec_sol, Y[i]);CHKERRQ(ierr);
+    ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
 
     /* slow buffer region */
     for (j=0; j<i; j++) wsb[j] = h*Asb[i*s+j];
@@ -698,18 +698,13 @@ static PetscErrorCode TSStep_MPRK(TS ts)
     }
     /* slow region */
     if (mprk->is_slow) {
-      computedstages = 0;
       for (j=0; j<i; j++) {
-        if (tab->rsb[j]) ws[tab->rsb[j]-1] += h*tab->Asb[i*s+j];
-        else ws[computedstages++] = h*tab->Asb[i*s+j];
-      }
-      for (j=0; j<computedstages; j++) {
         ierr = VecGetSubVector(YdotRHS[j],mprk->is_slow,&YdotRHS_slow[j]);CHKERRQ(ierr);
       }
       ierr = VecGetSubVector(Y[i],mprk->is_slow,&Yslow);CHKERRQ(ierr);
-      ierr = VecMAXPY(Yslow,computedstages,ws,mprk->YdotRHS_slow);CHKERRQ(ierr);
+      ierr = VecMAXPY(Yslow,i,wsb,mprk->YdotRHS_slow);CHKERRQ(ierr);
       ierr = VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow);CHKERRQ(ierr);
-      for (j=0; j<computedstages; j++) {
+      for (j=0; j<i; j++) {
         ierr = VecRestoreSubVector(YdotRHS[j],mprk->is_slow,&YdotRHS_slow[j]);CHKERRQ(ierr);
       }
     }
@@ -728,26 +723,22 @@ static PetscErrorCode TSStep_MPRK(TS ts)
     if (tab->np == 3) {
       Vec         *YdotRHS_medium = mprk->YdotRHS_medium,*YdotRHS_mediumbuffer = mprk->YdotRHS_mediumbuffer;
       Vec         Ymedium,Ymediumbuffer;
-      PetscScalar *wm = mprk->work_medium,*wmb = mprk->work_mediumbuffer;
+      PetscScalar *wmb = mprk->work_mediumbuffer;
+
+      for (j=0; j<i; j++) wmb[j] = h*tab->Amb[i*s+j];
       /* medium region */
       if (mprk->is_medium) {
-        computedstages = 0;
         for (j=0; j<i; j++) {
-          if (tab->rmb[j]) wm[computedstages-tab->sbase+(tab->rmb[j]-1)%tab->sbase] += h*tab->Amb[i*s+j];
-          else wm[computedstages++] = h*tab->Amb[i*s+j];
-        }
-        for (j=0; j<computedstages; j++) {
           ierr = VecGetSubVector(YdotRHS[j],mprk->is_medium,&YdotRHS_medium[j]);CHKERRQ(ierr);
         }
         ierr = VecGetSubVector(Y[i],mprk->is_medium,&Ymedium);CHKERRQ(ierr);
-        ierr = VecMAXPY(Ymedium,computedstages,wm,mprk->YdotRHS_medium);CHKERRQ(ierr);
+        ierr = VecMAXPY(Ymedium,i,wmb,mprk->YdotRHS_medium);CHKERRQ(ierr);
         ierr = VecRestoreSubVector(Y[i],mprk->is_medium,&Ymedium);CHKERRQ(ierr);
-        for (j=0; j<computedstages; j++) {
+        for (j=0; j<i; j++) {
           ierr = VecRestoreSubVector(YdotRHS[j],mprk->is_medium,&YdotRHS_medium[j]);CHKERRQ(ierr);
         }
       }
       /* medium buffer region */
-      for (j=0; j<i; j++) wmb[j] = h*tab->Amb[i*s+j];
       for (j=0; j<i; j++) {
         ierr = VecGetSubVector(YdotRHS[j],mprk->is_mediumbuffer,&YdotRHS_mediumbuffer[j]);CHKERRQ(ierr);
       }
