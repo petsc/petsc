@@ -1140,6 +1140,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 #endif
   unitsize = H5Tget_size(datatype);
   if (h->complexVal) unitsize *= 2;
+  if (unitsize <= 0 || unitsize > PetscMax(sizeof(PetscInt),sizeof(PetscScalar))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Sanity check failed: HDF5 function H5Tget_size(datatype) returned suspicious value %D",unitsize);
   ierr = PetscMalloc(map->n*unitsize, &arr);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5ReadArray_Private(viewer, h, datatype, memspace, arr);CHKERRQ(ierr);
