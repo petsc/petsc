@@ -343,7 +343,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   }
   if (faceSizeAll > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSizeAll);
 
-  /* With hybrid grids, we first iterate on hybrid cells and start numbering the non-hybrid grids
+  /* With hybrid grids, we first iterate on hybrid cells and start numbering the non-hybrid faces
      Then, faces for non-hybrid cells are numbered.
      This is to guarantee consistent orientations (all 0) of all the points in the cone of the hybrid cells */
   ierr = PetscHashIJKLCreate(&faceTable);CHKERRQ(ierr);
@@ -1216,7 +1216,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(coordSectionA, &cS, &cE);CHKERRQ(ierr);
   if (cStartA <= cS && cS < cEndA) { /* localized coordinates */
-    if ((cEndA-cStartA) != (cEndB-cStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cellls in first DM %d != %d in the second DM", cEndA-cStartA, cEndB-cStartB);
+    if ((cEndA-cStartA) != (cEndB-cStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cells in first DM %D != %D in the second DM", cEndA-cStartA, cEndB-cStartB);
     cS = cS - cStartA + cStartB;
     cE = vEndB;
     lc = PETSC_TRUE;

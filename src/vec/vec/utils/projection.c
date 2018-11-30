@@ -806,7 +806,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   ierr = VecRestoreArrayRead(XL,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(XU,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(DX,&dx);CHKERRQ(ierr);
-  ierr=PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
 
   if (boundmin){
     ierr = MPIU_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
