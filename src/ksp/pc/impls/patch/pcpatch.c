@@ -1731,7 +1731,10 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         PetscInt dof;
 
         ierr = MatGetSize(patch->mat[i], &dof, NULL);CHKERRQ(ierr);
-        if (dof == 0) continue;
+        if (dof == 0) {
+          ierr = MatCreate(PETSC_COMM_SELF, &patch->matWithArtificial[i]);CHKERRQ(ierr); /* make an empty dummy so that the MatDestroy later does not segfault */
+          continue;
+        }
 
         ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
         ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
