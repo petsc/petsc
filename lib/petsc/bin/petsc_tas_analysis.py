@@ -49,7 +49,7 @@ class File(object):
 class Field(File):
     #Class constructor
     def __init__(self, fileName, fieldName):
-        File.fileName = fileName
+        File.__init__(self, fileName)
         self.fieldName = fieldName
         self.fieldData = {}
     def printField(self):
@@ -61,9 +61,8 @@ def main(cmdLineArgs):
     file = dataProces(cmdLineArgs)
 
     if cmdLineArgs.enable_graphs == 1:
-        graphGen(file, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
-
-
+        for file in results:
+            graphGen(file, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
 def dataProces(cmdLineArgs):
     """
@@ -78,10 +77,12 @@ def dataProces(cmdLineArgs):
 
         :returns: data -- A dictionary containing the parsed data from the files specified on the command line.
     """
+
     data = {}
     dataPath = config.filePath['absoluteData']
     sys.path.append(dataPath)
-    files = []
+    files   = []
+    results = []
     #if -file/-f was left blank then this will automatically add every .py and .pyc
     #file to the files[] list to be processed.
     if(cmdLineArgs.file == None):
@@ -98,7 +99,8 @@ def dataProces(cmdLineArgs):
             sys.exit ("No vaild data modules in " + dataPath + " and -file/-f argument is empty. \n"
             "Please check for .py or .pyc files in " + dataPath + " or specify one with the -file/-f "
             "argument.")
-
+    else:
+	files.append(cmdLineArgs.file[0])
 
     for module in files:
         module             = importlib.import_module(module)
@@ -156,8 +158,9 @@ def dataProces(cmdLineArgs):
                 #This loops is used to grab the greatest time and flop when run in parallel
                 for n in range(1, nProcs):
                     #Sum of MatLUFactorNum and MatLUFactorSym
-                    luFactorCur = module.Stages[stageName]["MatLUFactorNum"][n]["time"] + \
-                        module.Stages[stageName]["MatLUFactorSym"][n]["time"]
+                    if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
+                        luFactorCur = module.Stages[stageName]["MatLUFactorNum"][n]["time"] + \
+                            module.Stages[stageName]["MatLUFactorSym"][n]["time"]
 
                     #Gather Time information
                     timeTempMax = timeTempMax if timeTempMax >= module.Stages[stageName]["SNESSolve"][n]["time"] \
@@ -174,11 +177,12 @@ def dataProces(cmdLineArgs):
                     totalFlop = totalFlop + module.Stages[stageName]["SNESSolve"][n]["flop"]
 
                     #Gather LU factor infomation
-                    luFactorTempMax = luFactorTempMax if luFactorTempMax >= luFactorCur \
-                            else luFactorCur
-                    luFactorTempMin = luFactorTempMin if luFactorTempMin <= luFactorCur \
-                            else luFactorCur
-                    totalLuFactor = totalLuFactor + luFactorCur
+                    if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
+                        luFactorTempMax = luFactorTempMax if luFactorTempMax >= luFactorCur \
+                                else luFactorCur
+                        luFactorTempMin = luFactorTempMin if luFactorTempMin <= luFactorCur \
+                                else luFactorCur
+                        totalLuFactor = totalLuFactor + luFactorCur
 
                     #print("Proc number: {} flops: {} running sum: {}".format(n, module.Stages[stageName]["SNESSolve"][n]["flop"],totalFlop))
 
@@ -193,16 +197,17 @@ def dataProces(cmdLineArgs):
                 flops.append(totalFlop)
                 flopsMax.append(flopsTempMax)
                 flopsMin.append(timeTempMin)
-
-                luFactor.append(luFactorTempMax)
-                luFactorMin.append(luFactorTempMin)
-                luFactorMean.append(totalLuFactor/nProcs)
+                if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
+                    luFactor.append(luFactorTempMax)
+                    luFactorMin.append(luFactorTempMin)
+                    luFactorMean.append(totalLuFactor/nProcs)
 
                 #Calculats the growth rate of statistics between levels
                 if level > 1:
                     timeGrowthRate.append(meanTime[level-1]/meanTime[level-2])
                     flopGrowthRate.append(meanFlop[level-1]/meanFlop[level-2])
-                    luFactorGrowthRate.append(luFactorMean[level-1]/luFactorMean[level-2])
+                    if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
+                        luFactorGrowthRate.append(luFactorMean[level-1]/luFactorMean[level-2])
 
                 for f in range(Nf):
                     dofs[f].append(module.Stages[stageName]["ConvEst Error"][0]["dof"][f])
@@ -253,7 +258,7 @@ def dataProces(cmdLineArgs):
             file.fieldList[f].fieldData["dofs"]   = dofs[f]
             file.fieldList[f].fieldData["errors"] = errors[f]
 
-
+    results.append(file)
     file.printFile()
 
     return file
@@ -375,26 +380,26 @@ def graphGen(file, graph_flops_scaling, dim):
         meshConvHandles = meshConvOrigHandles + meshConvLstSqHandles
         meshConvLabels = [h.get_label() for h in meshConvOrigHandles]
         meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
-
         meshConvFig.legend(handles = meshConvHandles, labels = meshConvLabels)
-        meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fieldName + '_' +\
-            date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-        meshConvFig.show()
 
         statScaleLabels = [h.get_label() for h in statScaleHandles]
-
         statScaleFig.legend(handles = statScaleHandles, labels = statScaleLabels)
-        statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fieldName + '_' +\
-            date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-        statScaleFig.show()
 
         efficLabels = [h.get_label() for h in efficHandles]
         efficFig.legend(handles = efficHandles, labels = efficLabels)
-        efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fieldName + '_' +\
-            date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-        efficFig.show()
 
+    meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fileName + '.png')
+    statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fileName + '.png')
+    efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fileName + '.png')
+    
+    # meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fileName + '_' +\
+    #     date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
+    # statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fileName + '_' +\
+    #     date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
+    # efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fileName + '_' +\
+    #     date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
 
+    return
 def leastSquares(x, y):
     """
     This function takes 2 numpy arrays of data and out puts the least squares solution,
@@ -414,7 +419,7 @@ def leastSquares(x, y):
     x = np.log10(x)
     y = np.log10(y)
     X = np.hstack((np.ones((x.shape[0],1)),x.reshape((x.shape[0],1))))
-    print y
+
 
 
     beta = np.dot(np.linalg.pinv(np.dot(X.transpose(),X)),X.transpose())
