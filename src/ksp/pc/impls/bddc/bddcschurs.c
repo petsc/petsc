@@ -1016,7 +1016,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatFactorCreateSchurComplement(F,&S,NULL);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject)S,"S");CHKERRQ(ierr);
         ierr = MatView(S,matl_dbg_viewer);CHKERRQ(ierr);
-        ierr = MatViewFromOptions(S,NULL,"-fuck_view");CHKERRQ(ierr);
         ierr = MatDestroy(&S);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF,n_I,0,1,&is);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject)is,"I");CHKERRQ(ierr);
