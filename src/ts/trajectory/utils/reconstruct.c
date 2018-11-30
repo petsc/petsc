@@ -95,8 +95,10 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
     /* now load the missing ones */
     for (s = up-1; s >= low; s--) {
       PetscReal t = tshhist[s];
+      PetscInt tid;
+
       if (tj->lag.TT[tj->lag.order+1 + s-low]) continue;
-      PetscInt tid = LagrangeGetId(t,tj->lag.order+1,tj->lag.T,tj->lag.TT);
+      tid = LagrangeGetId(t,tj->lag.order+1,tj->lag.T,tj->lag.TT);
       if (tid >= 0) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"This should not happen");
       tid = -tid-1;
       if (tj->monitor) {
