@@ -1732,7 +1732,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
         ierr = MatGetSize(patch->mat[i], &dof, NULL);CHKERRQ(ierr);
         if (dof == 0) {
-          ierr = MatCreate(PETSC_COMM_SELF, &patch->matWithArtificial[i]);CHKERRQ(ierr); /* make an empty dummy so that the MatDestroy later does not segfault */
+          patch->matWithArtificial[i] = NULL;
           continue;
         }
 
