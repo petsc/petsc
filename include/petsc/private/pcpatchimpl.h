@@ -56,6 +56,7 @@ typedef struct {
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */
   PetscBool            multiplicative;     /* Gauss-Seidel instead of Jacobi?  */
+  PCCompositeType      local_composition_type; /* locally additive or multiplicative? */
   /* Patch solves */
   KSP                 *ksp;                /* Solvers for each patch TODO Do we need a new KSP for each patch? */
   Mat                 *mat;                /* System matrix for each patch */

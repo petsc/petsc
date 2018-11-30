@@ -267,36 +267,37 @@ PetscErrorCode PCPatchGetSaveOperators(PC pc, PetscBool *flg)
 /* TODO: Docs */
 PetscErrorCode PCPatchSetPartitionOfUnity(PC pc, PetscBool flg)
 {
-    PC_PATCH *patch = (PC_PATCH *) pc->data;
-    PetscFunctionBegin;
-    patch->partition_of_unity = flg;
-    PetscFunctionReturn(0);
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+  PetscFunctionBegin;
+  patch->partition_of_unity = flg;
+  PetscFunctionReturn(0);
 }
 
 /* TODO: Docs */
 PetscErrorCode PCPatchGetPartitionOfUnity(PC pc, PetscBool *flg)
 {
-    PC_PATCH *patch = (PC_PATCH *) pc->data;
-    PetscFunctionBegin;
-    *flg = patch->partition_of_unity;
-    PetscFunctionReturn(0);
-}
-
-/* TODO: Docs */
-PetscErrorCode PCPatchSetMultiplicative(PC pc, PetscBool flg)
-{
   PC_PATCH *patch = (PC_PATCH *) pc->data;
   PetscFunctionBegin;
-  patch->multiplicative = flg;
+  *flg = patch->partition_of_unity;
   PetscFunctionReturn(0);
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchGetMultiplicative(PC pc, PetscBool *flg)
+PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
 {
   PC_PATCH *patch = (PC_PATCH *) pc->data;
   PetscFunctionBegin;
-  *flg = patch->multiplicative;
+  if (type != PC_COMPOSITE_ADDITIVE && type != PC_COMPOSITE_MULTIPLICATIVE) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Only supports additive or multiplicative as the local type");
+  patch->local_composition_type = type;
+  PetscFunctionReturn(0);
+}
+
+/* TODO: Docs */
+PetscErrorCode PCPatchGetLocalComposition(PC pc, PCCompositeType *type)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+  PetscFunctionBegin;
+  *type = patch->local_composition_type;
   PetscFunctionReturn(0);
 }
 
@@ -887,7 +888,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   ierr = PetscSectionSetChart(gtolCounts, vStart, vEnd);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) patch->gtolCounts, "Patch Global Index Section");CHKERRQ(ierr);
 
-  if(patch->multiplicative)
+  if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE)
   {
     ierr = PetscMalloc1(numDofs, &asmArrayWithArtificial);CHKERRQ(ierr);
     ierr = PetscMalloc1(numDofs, &dofsArrayWithArtificial);CHKERRQ(ierr);
@@ -1036,8 +1037,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
               dofsArray[globalIndex] = localDof;
             }
 
-            if(patch->multiplicative)
-            {
+            if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
               if (isGlobalBcDof) {
                 dofsArrayWithArtificial[globalIndex] = -1; /* don't use this in assembly in this patch */
               } else {
@@ -1057,7 +1057,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
       }
     }
      /*How many local dofs in this patch? */
-   if(patch->multiplicative) {
+   if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
      ierr = PetscHMapIGetSize(htWithArtificial, &dof);CHKERRQ(ierr);
      ierr = PetscSectionSetDof(gtolCountsWithArtificial, v, dof);CHKERRQ(ierr);
    }
@@ -1069,7 +1069,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   ierr = PetscSectionGetStorageSize(gtolCounts, &numGlobalDofs);CHKERRQ(ierr);
   ierr = PetscMalloc1(numGlobalDofs, &globalDofsArray);CHKERRQ(ierr);
 
-  if(patch->multiplicative) {
+  if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
     ierr = PetscSectionSetUp(gtolCountsWithArtificial);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(gtolCountsWithArtificial, &numGlobalDofsWithArtificial);CHKERRQ(ierr);
     ierr = PetscMalloc1(numGlobalDofsWithArtificial, &globalDofsArrayWithArtificial);CHKERRQ(ierr);
@@ -1105,7 +1105,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
             const PetscInt globalDof = cellNodeMap[cell*nodesPerCell + j]*bs + l + subspaceOffset;
             const PetscInt localDof  = dofsArray[key];
             if (localDof >= 0) {ierr = PetscHMapISet(ht, globalDof, localDof);CHKERRQ(ierr);}
-            if(patch->multiplicative) {
+            if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
               const PetscInt localDofWithArtificial = dofsArrayWithArtificial[key];
               if (localDofWithArtificial >= 0) {
                 ierr = PetscHMapISet(htWithArtificial, globalDof, localDofWithArtificial);CHKERRQ(ierr);
@@ -1128,7 +1128,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
         PetscHashIterNext(ht, hi);
       }
 
-      if(patch->multiplicative) {
+      if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
         ierr = PetscSectionGetOffset(gtolCountsWithArtificial, v, &goff);CHKERRQ(ierr);
         PetscHashIterBegin(htWithArtificial, hi);
         while (!PetscHashIterAtEnd(htWithArtificial, hi)) {
@@ -1147,7 +1147,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
         ierr = PCPatchGetGlobalDofs(pc, patch->dofSection, k, patch->combined, point, NULL, &globalDof);CHKERRQ(ierr);
         ierr = PetscHMapIGet(ht, globalDof, &localDof);CHKERRQ(ierr);
         offsArray[(ooff + p)*Nf + k] = localDof;
-        if(patch->multiplicative) {
+        if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
           ierr = PetscHMapIGet(htWithArtificial, globalDof, &localDof);CHKERRQ(ierr);
           offsArrayWithArtificial[(ooff + p)*Nf + k] = localDof;
         }
@@ -1189,7 +1189,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
                exactly the convention for PETSc's matrix assembly to
                ignore the dof. So we don't need to do anything here */
               asmArray[asmKey] = localDof;
-              if(patch->multiplicative) {
+              if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
                 ierr = PetscHMapIGet(htWithArtificial, globalDof, &localDof);CHKERRQ(ierr);
                 asmArrayWithArtificial[asmKey] = localDof;
               }
@@ -1202,7 +1202,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   }
   if (1 == patch->nsubspaces) {
     ierr = PetscMemcpy(asmArray, dofsArray, numDofs * sizeof(PetscInt));CHKERRQ(ierr);
-    if(patch->multiplicative) {
+    if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
       ierr = PetscMemcpy(asmArrayWithArtificial, dofsArrayWithArtificial, numDofs * sizeof(PetscInt));CHKERRQ(ierr);
     }
   }
@@ -1212,7 +1212,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   ierr = ISRestoreIndices(cells, &cellsArray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(points, &pointsArray);CHKERRQ(ierr);
   ierr = PetscFree(dofsArray);CHKERRQ(ierr);
-  if(patch->multiplicative) {
+  if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
     ierr = PetscFree(dofsArrayWithArtificial);CHKERRQ(ierr);
   }
   /* Create placeholder section for map from points to patch dofs */
@@ -1264,7 +1264,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   ierr = ISViewFromOptions(patch->gtol, (PetscObject) pc, "-pc_patch_g2l_view");CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numDofs, asmArray, PETSC_OWN_POINTER, &patch->dofs);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numPoints*Nf, offsArray, PETSC_OWN_POINTER, &patch->offs);CHKERRQ(ierr);
-  if(patch->multiplicative) {
+  if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
     ierr = ISCreateGeneral(PETSC_COMM_SELF, numGlobalDofsWithArtificial, globalDofsArrayWithArtificial, PETSC_OWN_POINTER, &patch->gtolWithArtificial);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, numDofs, asmArrayWithArtificial, PETSC_OWN_POINTER, &patch->dofsWithArtificial);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, numPoints*Nf, offsArrayWithArtificial, PETSC_OWN_POINTER, &patch->offsWithArtificial);CHKERRQ(ierr);
@@ -1599,7 +1599,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     ierr = PetscMalloc1(patch->npatch, &patch->patchX);CHKERRQ(ierr);
     ierr = PetscMalloc1(patch->npatch, &patch->patchY);CHKERRQ(ierr);
 
-    if(patch->multiplicative) {
+    if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
       ierr = PetscMalloc1(patch->npatch, &patch->patchXWithArtificial);CHKERRQ(ierr);
       ierr = PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithArtificial);CHKERRQ(ierr);
     }
@@ -1611,7 +1611,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = VecSetUp(patch->patchX[p-pStart]);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchY[p-pStart]);CHKERRQ(ierr);
       ierr = VecSetUp(patch->patchY[p-pStart]);CHKERRQ(ierr);
-      if(patch->multiplicative) {
+      if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
         ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, p, &dof);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
         ierr = VecSetUp(patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
@@ -1672,7 +1672,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     /* If desired, calculate weights for dof multiplicity */
     if (patch->partition_of_unity) {
       ierr = VecDuplicate(patch->localX, &patch->dof_weights);CHKERRQ(ierr);
-      if(!patch->multiplicative) {
+      if(patch->local_composition_type == PC_COMPOSITE_ADDITIVE) {
         for (i = 0; i < patch->npatch; ++i) {
           PetscInt dof;
 
@@ -1709,7 +1709,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = VecRestoreArray(global, &input);CHKERRQ(ierr);
       ierr = VecDestroy(&global);CHKERRQ(ierr);
     }
-    if(patch->multiplicative && patch->save_operators) {
+    if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE && patch->save_operators) {
       ierr = PetscMalloc1(patch->npatch, &patch->matWithArtificial);CHKERRQ(ierr);
     }
   }
@@ -1719,7 +1719,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = PCPatchComputeOperator_Private(pc, patch->mat[i], i, PETSC_FALSE);CHKERRQ(ierr);
       ierr = KSPSetOperators(patch->ksp[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
     }
-    if(patch->multiplicative) {
+    if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
       for (i = 0; i < patch->npatch; ++i) {
         /* Instead of padding patch->patchY with zeros to get */
         /* patch->patchYWithArtificial and then multiplying with the matrix, */
@@ -1825,7 +1825,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
       }
 
       ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchY[i], patch->localY, ADD_VALUES, SCATTER_REVERSE, PETSC_FALSE);CHKERRQ(ierr);
-      if(patch->multiplicative){
+      if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
         Mat multMat;
         if (patch->save_operators) {
           multMat = patch->matWithArtificial[i];
@@ -1999,6 +1999,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   MPI_Comm             comm;
   PetscInt            *ifields, nfields, k;
   PetscErrorCode       ierr;
+  PCCompositeType loctype = PC_COMPOSITE_ADDITIVE;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) pc, &comm);CHKERRQ(ierr);
@@ -2006,10 +2007,11 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject, "Vertex-patch Additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_patch_save_operators",  "Store all patch operators for lifetime of PC?", "PCPatchSetSaveOperators", patch->save_operators, &patch->save_operators, &flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_patch_partition_of_unity", "Weight contributions by dof multiplicity?", "PCPatchSetPartitionOfUnity", patch->partition_of_unity, &patch->partition_of_unity, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_patch_multiplicative", "Gauss-Seidel instead of Jacobi?", "PCPatchSetMultiplicative", patch->multiplicative, &patch->multiplicative, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-pc_patch_local_type","Type of local solver composition (additive or multiplicative)","PCPatchSetLocalComposition",PCCompositeTypes,(PetscEnum)loctype,(PetscEnum*)&loctype,&flg);CHKERRQ(ierr);
+  if(flg) { ierr = PCPatchSetLocalComposition(pc, loctype);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-pc_patch_construct_dim", "What dimension of mesh point to construct patches by? (0 = vertices)", "PCPATCH", patch->dim, &patch->dim, &dimflg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_patch_construct_codim", "What co-dimension of mesh point to construct patches by? (0 = cells)", "PCPATCH", patch->codim, &patch->codim, &codimflg);CHKERRQ(ierr);
-  if (dimflg && codimflg) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Can only set one of dimension or co-dimension");CHKERRQ(ierr);
+  if (dimflg && codimflg) {SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Can only set one of dimension or co-dimension");CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-pc_patch_construct_type", "How should the patches be constructed?", "PCPatchSetConstructType", PCPatchConstructTypes, (PetscEnum) patchConstructionType, (PetscEnum *) &patchConstructionType, &flg);CHKERRQ(ierr);
   if (flg) {ierr = PCPatchSetConstructType(pc, patchConstructionType, NULL, NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-pc_patch_vanka_dim", "Topological dimension of entities for Vanka to ignore", "PCPATCH", patch->vankadim, &patch->vankadim, &flg);CHKERRQ(ierr);
@@ -2084,7 +2086,7 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) pc), &rank);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Subspace Correction preconditioner with %d patches\n", patch->npatch);CHKERRQ(ierr);
-  if(patch->multiplicative) {
+  if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
     ierr = PetscViewerASCIIPrintf(viewer, "Schwarz type: multiplicative\n");CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIPrintf(viewer, "Schwarz type: additive\n");CHKERRQ(ierr);
@@ -2149,7 +2151,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   /* Set some defaults */
   patch->combined           = PETSC_FALSE;
   patch->save_operators     = PETSC_TRUE;
-  patch->multiplicative     = PETSC_FALSE;
+  patch->local_composition_type = PC_COMPOSITE_ADDITIVE;
   patch->partition_of_unity = PETSC_FALSE;
   patch->codim              = -1;
   patch->dim                = -1;
