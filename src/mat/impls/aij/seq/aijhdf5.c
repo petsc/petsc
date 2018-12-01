@@ -67,6 +67,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   /* Read array i (array of row indices) */
   ierr = PetscMalloc1(m+1, &i);CHKERRQ(ierr); /* allocate i with one more position for local number of nonzeros on each rank */
+  i[0] = i[m] = 0; /* make the last entry always defined - the code block below overwrites it just on last rank */
   if (rank == size-1) m++; /* in the loaded array i_glob, only the last rank has one more position with the global number of nonzeros */
   M++;
   ierr = ISCreate(comm,&is_i);CHKERRQ(ierr);
