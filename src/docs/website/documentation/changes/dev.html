@@ -125,8 +125,16 @@
       <h4>PC:</h4>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
+      <ul>
+        <li>Added SNESKSPTRANSPOSEONLY: a linear solver only SNES that solves the transposed linear system.</li>
+      </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <ul>
+        <li>Added TSADAPTHISTORY: a new TSAdapt implementation that follows a given time history, that can set with TSAdaptHistorySetHistory().</li>
+        <li>Added TSTrajectoryGetVecs() to reconstructs states and time derivative vectors from a TSTrajectory.</li>
+      </ul>
+      <h4>TAO:</h4>
       <h4>DM/DA:</h4>
       <ul>
         <li>Added DMStag and associated functions, for working with quantities on regular staggered grids, in a manner similar to the usage of DMDA for colocated quantities.</li>

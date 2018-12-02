@@ -1046,8 +1046,8 @@ static PetscErrorCode  TSGetStages_GLEE(TS ts,PetscInt *ns,Vec **Y)
   TS_GLEE *glee = (TS_GLEE*)ts->data;
 
   PetscFunctionBegin;
-  *ns = glee->tableau->s;
-  if(Y) *Y  = glee->YStage;
+  if (ns) *ns = glee->tableau->s;
+  if (Y)  *Y  = glee->YStage;
   PetscFunctionReturn(0);
 }
 

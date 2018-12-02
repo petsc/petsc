@@ -66,10 +66,10 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
   J[1][0] = -2.*mu*x[1]*x[0]-1;
   J[0][1] = 1.0;
   J[1][1] = mu*(1.0-x[0]*x[0]);
-  ierr    = MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (A != B) {
+  if (B && A != B) {
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
@@ -92,7 +92,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",(double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"t %.6f (tprev = %.6f) \n",(double)t,(double)tprev);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -175,6 +175,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&(user.ftime));CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&user.steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   user.x_ob[0] = x_ptr[0];
@@ -222,7 +223,6 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&user.A);CHKERRQ(ierr);
   ierr = VecDestroy(&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(&user.lambda[0]);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&ic);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -246,7 +246,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 {
   User              user = (User)ctx;
   TS                ts;
-  PetscScalar       *x_ptr,*y_ptr;
+  PetscScalar       *y_ptr;
+  const PetscScalar *x_ptr;
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
@@ -286,7 +287,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSGetStepNumber(ts,&user->steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %.6f, steps %D, ftime %g\n",(double)user->mu,user->steps,(double)user->ftime);CHKERRQ(ierr);
 
-  ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(user->x,&x_ptr);CHKERRQ(ierr);
   *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1]);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Observed value y_ob=[%f; %f], ODE solution y=[%f;%f], Cost function f=%f\n",(double)user->x_ob[0],(double)user->x_ob[1],(double)x_ptr[0],(double)x_ptr[1],(double)(*f));CHKERRQ(ierr);
 
@@ -298,7 +299,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);
   y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,user->lambda,NULL);CHKERRQ(ierr);
 
 
