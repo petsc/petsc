@@ -449,9 +449,9 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode TSGetRHSMats_Private(TS,Mat*,Mat*);
+PETSC_EXTERN PetscErrorCode TSGetRHSMats_Private(TS,Mat*,Mat*);
 /* this is declared here as TSHistory is not public */
-PETSC_INTERN PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt,TSHistory,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt,TSHistory,PetscBool);
 
 PETSC_INTERN PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory,TS,PetscReal,Vec,Vec);
 
