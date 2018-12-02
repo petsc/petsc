@@ -686,6 +686,7 @@ PETSC_STATIC_INLINE PetscBool PetscIsNanScalar(PetscScalar v) {return PetscIsNan
 PETSC_STATIC_INLINE PetscBool PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
 PETSC_STATIC_INLINE PetscBool PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
 
+PETSC_EXTERN PetscBool PetscIsCloseAtTol(PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscBool PetscEqualReal(PetscReal,PetscReal);
 PETSC_EXTERN PetscBool PetscEqualScalar(PetscScalar,PetscScalar);
 
