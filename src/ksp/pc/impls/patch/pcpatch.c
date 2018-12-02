@@ -1636,11 +1636,11 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
         ISCreateGeneral(PETSC_COMM_SELF, numPatchDofs, patchWithoutArtificialToWithArtificialArray, PETSC_OWN_POINTER, &patch->dofMappingWithoutToWithArtificial[p-pStart]);
         if (numPatchDofs == 0) continue;
-        for(PetscInt i=0; i<numPatchDofsWithArtificial; i++) {
-          if(gtolArrayWithArtificial[i+offsetWithArtificial] == gtolArray[offset+dofWithoutArtificialCounter]) {
+        for (i=0; i<numPatchDofsWithArtificial; i++) {
+          if (gtolArrayWithArtificial[i+offsetWithArtificial] == gtolArray[offset+dofWithoutArtificialCounter]) {
             patchWithoutArtificialToWithArtificialArray[dofWithoutArtificialCounter] = i;
             dofWithoutArtificialCounter++;
-            if(dofWithoutArtificialCounter == numPatchDofs)
+            if (dofWithoutArtificialCounter == numPatchDofs)
               break;
           }
         }
