@@ -84,10 +84,14 @@ def dataProces(cmdLineArgs):
         file               = File(module.__name__)
 
         for f in range(Nf):
-            if cmdLineArgs.problem != 'NULL':
-                file.addField(Field(file.fileName, config.fieldNames[cmdLineArgs.problem]['field '+str(f)]))
-            else:
-                file.addField(Field(file.fileName, str(f)))
+            try:
+                if cmdLineArgs.problem != 'NULL':
+                    file.addField(Field(file.fileName, config.fieldNames[cmdLineArgs.problem]['field '+str(f)]))
+                else:
+                    file.addField(Field(file.fileName, str(f)))
+            except:
+                sys.exit('The problem you specified on the command line: ' + cmdLineArgs.problem + ' \ncould not be found' \
+                ' please check ' + config.__file__ + ' to ensure that you are using the correct name/have defined the fields for the problem.')
 
         for f in range(Nf): errors.append([])
         for f in range(Nf): dofs.append([])
