@@ -404,6 +404,10 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   ksp->its = 0;
   maxit    = ksp->max_it;
 
+  if (!maxit) {
+    PetscFunctionReturn(0);
+  }
+
   /* These three point to the three active solutions, we
      rotate these three at each solution update */
   km1      = 0; k = 1; kp1 = 2;
@@ -433,10 +437,28 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
 
-  ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + p[km1] */
-  ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);
+  ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = B^{-1}r */
 
-  for (i=0; i<maxit; i++) {
+  /* calculate residual norm if requested, we have done one iteration */
+  if (ksp->normtype != KSP_NORM_NONE || ksp->numbermonitors) {
+    i = 0; /* test for first iteration */
+    if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+      ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
+    } else {
+      ierr = VecNorm(p[k],NORM_2,&rnorm);CHKERRQ(ierr);
+    }
+    ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ksp->rnorm   = rnorm;
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) maxit = 1; /* make it not iterate, ugh */
+  }
+  ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + p[km1] */
+  ksp->its = 1;
+
+  for (i=1; i<maxit; i++) {
     ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
 
     ksp->its++;
