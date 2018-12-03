@@ -879,7 +879,6 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   numDofs = numCells * totalDofsPerCell;
   ierr = PetscMalloc1(numDofs, &dofsArray);CHKERRQ(ierr);
   ierr = PetscMalloc1(numPoints*Nf, &offsArray);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numPoints*Nf, &offsArrayWithArtificial);CHKERRQ(ierr);
   ierr = PetscMalloc1(numDofs, &asmArray);CHKERRQ(ierr);
   ierr = PetscMalloc1(numCells, &newCellsArray);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cellCounts, &vStart, &vEnd);CHKERRQ(ierr);
@@ -890,6 +889,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
 
   if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE)
   {
+    ierr = PetscMalloc1(numPoints*Nf, &offsArrayWithArtificial);CHKERRQ(ierr);
     ierr = PetscMalloc1(numDofs, &asmArrayWithArtificial);CHKERRQ(ierr);
     ierr = PetscMalloc1(numDofs, &dofsArrayWithArtificial);CHKERRQ(ierr);
     ierr = PetscSectionCreate(PETSC_COMM_SELF, &patch->gtolCountsWithArtificial);CHKERRQ(ierr);
