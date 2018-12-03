@@ -1,6 +1,6 @@
 # -*- mode: makefile-gmake -*-
 
-CONFIGDIR := config
+CONFIGDIR := $(PETSC_DIR)/config
 
 # TESTSRCDIR is always relative to gmakefile.test
 #  This must be before includes
@@ -12,7 +12,7 @@ include $(PETSC_DIR)/lib/petsc/conf/variables
 
 TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
-TESTLOGFILE = $(TESTDIR)/examples_$(PETSC_ARCH).log
+TESTLOGFILE ?= $(TESTDIR)/examples_$(PETSC_ARCH).log
 EXAMPLESDIR := $(TESTSRCDIR)
 
 pkgs := sys vec mat dm ksp snes ts tao
@@ -74,8 +74,6 @@ endif
 ifdef TIMEOUT
   TESTFLAGS += -t $(TIMEOUT)  # Override the default timeout
 endif
-
-
 
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
@@ -215,16 +213,12 @@ $(testsrcs.o) : $(petscvariables)
 .SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
 .DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
 
-.PHONY: clean cleantest all print
+.PHONY: clean cleantest all
 
 cleantest:
 	${RM} -r $(TESTDIR) $(generatedtest)
 
 clean: cleantest
-
-# make print VAR=the-variable
-print:
-	@echo $($(VAR))
 
 alltest.d := $(testsrcs.o:%.o=%.d)
 # Tell make that alltest.d are all up to date.  Without this, the include
