@@ -3879,7 +3879,7 @@ M*/
 +  snes - the SNES context
 .  SNESConvergenceTestFunction - routine to test for convergence
 .  cctx - [optional] context for private data for the convergence routine  (may be NULL)
--  destroy - [optional] destructor for the context (may be NULL; NULL_FUNCTION in Fortran)
+-  destroy - [optional] destructor for the context (may be NULL; PETSC_NULL_FUNCTION in Fortran)
 
    Level: advanced
 
