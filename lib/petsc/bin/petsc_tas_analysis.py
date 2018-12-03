@@ -10,58 +10,14 @@ import math
 import configureTAS as config
 import sys
 import traceback
-
-# class NoDataError(Exception):
-#     """
-#     Raised if -file/-f is None and if the directory from configureTAS.absoluteData
-#        is also empty
-#     """
-#     def __init__(self, msg=None):
-#         if msg is None:
-#             msg = "No vaild data modules in  and -file/-f argument is empty. \
-#                 Please check for .py or .pyc files or specify one with the -file/-f \
-#                 argument."
-#             super(msg).__init__()
-
-class File(object):
-    #Class constructor
-    def __init__(self, fileName):
-        self.fileName     = fileName
-        self.numberFields = 0
-        self.fieldList    = []
-        self.fileData     = {}
-
-    #Adds a field to the field list and increases the number by 1
-    def addField(self, field):
-        self.fieldList.append(field)
-        self.numberFields = self.numberFields +1
-
-    #Prints the content of the object\
-    def printFile(self):
-        print('\t\t*******************Data for {}***************************'.format(self.fileName))
-        np.set_printoptions(precision=3, linewidth=100)
-        for k,v in self.fileData.items():
-            print(" {: >18} : {}\n".format(k,v))
-        for field in self.fieldList:
-            field.printField()
-
-
-class Field(File):
-    #Class constructor
-    def __init__(self, fileName, fieldName):
-        File.__init__(self, fileName)
-        self.fieldName = fieldName
-        self.fieldData = {}
-    def printField(self):
-        print('**********Data for Field {}************'.format(self.fieldName))
-        for k, v in self.fieldData.items():
-            print(" {: >18} : {}\n".format(k,v))
+from tasClasses import File
+from tasClasses import Field
 
 def main(cmdLineArgs):
-    file = dataProces(cmdLineArgs)
+    files = dataProces(cmdLineArgs)
 
     if cmdLineArgs.enable_graphs == 1:
-        for file in results:
+        for file in files:
             graphGen(file, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
 def dataProces(cmdLineArgs):
@@ -100,7 +56,7 @@ def dataProces(cmdLineArgs):
             "Please check for .py or .pyc files in " + dataPath + " or specify one with the -file/-f "
             "argument.")
     else:
-	files.append(cmdLineArgs.file[0])
+        files.append(cmdLineArgs.file[0])
 
     for module in files:
         module             = importlib.import_module(module)
@@ -128,7 +84,10 @@ def dataProces(cmdLineArgs):
         file               = File(module.__name__)
 
         for f in range(Nf):
-            file.addField(Field(file.fileName, str(f)))
+            if cmdLineArgs.problem != 'NULL':
+                file.addField(Field(file.fileName, config.fieldNames[cmdLineArgs.problem]['field '+str(f)]))
+            else:
+                file.addField(Field(file.fileName, str(f)))
 
         for f in range(Nf): errors.append([])
         for f in range(Nf): dofs.append([])
@@ -237,31 +196,31 @@ def dataProces(cmdLineArgs):
         luFactorGrowthRate = np.array(luFactorGrowthRate)
 
 
-        data["times"]              = times
-        data["meanTime"]           = meanTime
-        data["timesRange"]         = times-timesMin
-        data["timeGrowthRate"]     = timeGrowthRate
+        data["Times"]              = times
+        data["Mean Time"]           = meanTime
+        data["Times Range"]         = times-timesMin
+        data["Time Growth Rate"]     = timeGrowthRate
 
-        data["flops"]              = flops
-        data["meanFlop"]           = meanFlop
-        data["flopRange"]          = flopsMax - flopsMin
-        data["flopGrowthRate"]     = flopGrowthRate
+        data["Flops"]              = flops
+        data["Mean Flop"]           = meanFlop
+        data["Flop Range"]          = flopsMax - flopsMin
+        data["Flop Growth Rate"]     = flopGrowthRate
 
-        data["luFactor"]           = luFactor
-        data["luFactorMean"]       = luFactorMean
-        data["luFactorRange"]      = luFactor-luFactorMin
-        data["luFactorGrowthRate"] = luFactorGrowthRate
+        data["LU Factor"]           = luFactor
+        data["LU Factor Mean"]       = luFactorMean
+        data["LU Factor Range"]      = luFactor-luFactorMin
+        data["LU Factor Growth Rate"] = luFactorGrowthRate
 
 
         file.fileData = data
         for f in range(Nf):
             file.fieldList[f].fieldData["dofs"]   = dofs[f]
-            file.fieldList[f].fieldData["errors"] = errors[f]
+            file.fieldList[f].fieldData["Errors"] = errors[f]
 
     results.append(file)
     file.printFile()
 
-    return file
+    return results
 
 def getNf(errorList):
     """"
@@ -349,29 +308,29 @@ def graphGen(file, graph_flops_scaling, dim):
         convRate = str(convRate)
 
         x, = axMeshConv.loglog(field.fieldData['dofs'], field.fieldData['errors'],
-            label = 'Field ' + field.fieldName + ' Orig Data')
+            label = 'Field ' + field.fieldName + ' Orig Data', marker = "^")
 
         meshConvOrigHandles.append(x)
 
         y, = axMeshConv.loglog(field.fieldData['dofs'], ((field.fieldData['dofs']**lstSqMeshConv[0] * 10**lstSqMeshConv[1])),
-                label = field.fieldName + " Convergence rate =  " + convRate )
+                label = field.fieldName + " Convergence rate =  " + convRate, marker = "x" )
 
         meshConvLstSqHandles.append(y)
 
         ##Start Static Scaling Graph, only if graph_flops_scaling equals 1.  Specified on the command line.
         if graph_flops_scaling == 1 :
             x, =axStatScale.loglog(file.fileData['times'], file.fileData['flops']/file.fileData['times'],
-            label = 'Field ' + field.fieldName)
+            label = 'Field ' + field.fieldName, marker = "^")
 
         #statScaleHandles.append(x)
         ##Start Static Scaling with DoFs Graph
         x, =axStatScale.loglog(file.fileData['times'], field.fieldData['dofs']/file.fileData['times'],
-            label = 'Field ' + field.fieldName)
+            label = 'Field ' + field.fieldName, marker = "^")
 
         statScaleHandles.append(x)
         ##Start Efficacy graph
         x, = axEffic.semilogx(file.fileData['times'], -np.log10(field.fieldData['errors']*file.fileData['times']),
-            label = 'Field ' + field.fieldName)
+            label = 'Field ' + field.fieldName, marker = "^")
 
         efficHandles.append(x)
 
@@ -391,7 +350,7 @@ def graphGen(file, graph_flops_scaling, dim):
     meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fileName + '.png')
     statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fileName + '.png')
     efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fileName + '.png')
-    
+
     # meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fileName + '_' +\
     #     date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
     # statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fileName + '_' +\
@@ -455,6 +414,10 @@ if __name__ == "__main__":
     cmdLine.add_argument('-view_variance', '--view_variance', type = int, default = 0, choices = [0, 1],
     help = 'Enables calculating and outputing the Variance. Default: %(default)s does not print the variance. 1 to enable \
         printing the graphs')
+
+    cmdLine.add_argument('-problem', '--problem', default = 'NULL', help = 'Enables searching for the names of fields in \
+        configureTAS.py. Default: %(default)s does not look for the names.  Instead identifies the fields using \
+        a number, 0, 1, 2,...n')
 
     cmdLineArgs = cmdLine.parse_args()
 

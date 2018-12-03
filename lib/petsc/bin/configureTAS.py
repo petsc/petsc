@@ -14,3 +14,8 @@ This module holds configuration information for the petsc_tas_analysis.py in
 filePath = {}
 filePath['absoluteGraphs'] = '/home/arcowie/petscTas/graphs/'
 filePath['absoluteData']   = '/home/arcowie/petscTas/data'
+
+fieldNames = {}
+fieldNames['ex62'] = {}
+fieldNames['ex62']['field 0'] = 'Velocity'
+fieldNames['ex62']['field 1'] = 'Pressure'
