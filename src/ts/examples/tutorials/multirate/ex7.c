@@ -752,7 +752,7 @@ int main(int argc,char *argv[])
   ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   {
     PetscInt          steps;
-    PetscScalar       mass_initial,mass_final,mass_difference;
+    PetscScalar       mass_initial,mass_final,mass_difference,mass_differenceg;
     const PetscScalar *ptr_X,*ptr_X0;
     const PetscReal   hs  = (ctx.xmax-ctx.xmin)/2.0*(ctx.hratio+1.0)/Mx;
     const PetscReal   hf  = (ctx.xmax-ctx.xmin)/2.0*(1.0+1.0/ctx.hratio)/Mx;
@@ -762,8 +762,8 @@ int main(int argc,char *argv[])
     /* calculate the total mass at initial time and final time */
     mass_initial = 0.0;
     mass_final   = 0.0;
-    ierr = VecGetArrayRead(X0,&ptr_X0);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayRead(da,X0,&ptr_X0);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayRead(da,X,&ptr_X);CHKERRQ(ierr);
     for(i=0; i<Mx; i++) {
       if(i < count_slow/2 || i > count_slow/2+count_fast-1){
         mass_initial = mass_initial+hs*ptr_X0[i];
@@ -773,10 +773,11 @@ int main(int argc,char *argv[])
         mass_final = mass_final+hf*ptr_X[i];
       }
     }
-    ierr = VecRestoreArrayRead(X0,&ptr_X0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(X,&ptr_X);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayRead(da,X0,&ptr_X0);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayRead(da,X,&ptr_X);CHKERRQ(ierr);
     mass_difference = mass_final-mass_initial;
-    ierr = PetscPrintf(comm,"mass difference %.6g\n",mass_difference);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&mass_difference,&mass_differenceg,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"mass difference %.6g\n",(double)mass_differenceg);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Final time %8.5f, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
     if (ctx.exact) {
       PetscReal nrm1=0;
