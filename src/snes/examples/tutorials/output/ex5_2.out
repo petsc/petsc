@@ -1,32 +1,32 @@
         0 SNES Function norm 0.995735 
-        Linear solve converged due to CONVERGED_RTOL iterations 2
+        Linear solve converged due to CONVERGED_RTOL iterations 3
         1 SNES Function norm 0.276938 
-        Linear solve converged due to CONVERGED_RTOL iterations 2
+        Linear solve converged due to CONVERGED_RTOL iterations 3
         2 SNES Function norm 0.00668678 
         Linear solve converged due to CONVERGED_RTOL iterations 2
-        3 SNES Function norm 4.6152e-06 
+        3 SNES Function norm 4.61502e-06 
         Linear solve converged due to CONVERGED_RTOL iterations 2
-        4 SNES Function norm 2.560e-11 
+        4 SNES Function norm 1.568e-11 
       0 SNES Function norm 0.0763997 
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      1 SNES Function norm 2.68141e-05 
+      1 SNES Function norm 2.67906e-05 
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      2 SNES Function norm 6.486e-11 
+      2 SNES Function norm 9.312e-11 
     0 SNES Function norm 0.0408394 
     Linear solve converged due to CONVERGED_RTOL iterations 2
-    1 SNES Function norm 9.19747e-07 
+    1 SNES Function norm 9.10598e-07 
     Linear solve converged due to CONVERGED_RTOL iterations 2
     2 SNES Function norm < 1.e-11
   0 SNES Function norm 0.021012 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 2.66111e-08 
+  1 SNES Function norm 3.84069e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 2
   2 SNES Function norm < 1.e-11
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=20
+  total number of linear solver iterations=22
   total number of function evaluations=14
   norm schedule ALWAYS
   total number of grid sequence refinements=3
