@@ -837,7 +837,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   PC_PATCH       *patch           = (PC_PATCH *) pc->data;
   PetscSection    cellCounts      = patch->cellCounts;
   PetscSection    pointCounts     = patch->pointCounts;
-  PetscSection    gtolCounts, gtolCountsWithArtificial;
+  PetscSection    gtolCounts, gtolCountsWithArtificial = NULL;
   IS              cells           = patch->cells;
   IS              points          = patch->points;
   PetscSection    cellNumbering   = patch->cellNumbering;
@@ -1611,16 +1611,19 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = VecSetUp(patch->patchX[p-pStart]);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchY[p-pStart]);CHKERRQ(ierr);
       ierr = VecSetUp(patch->patchY[p-pStart]);CHKERRQ(ierr);
-      if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
+      if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
+        const PetscInt    *gtolArray, *gtolArrayWithArtificial = NULL;
+        PetscInt           numPatchDofs, offset;
+        PetscInt           numPatchDofsWithArtificial, offsetWithArtificial;
+        PetscInt           dofWithoutArtificialCounter = 0;
+        PetscInt          *patchWithoutArtificialToWithArtificialArray;
+
         ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, p, &dof);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
         ierr = VecSetUp(patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
 
         /* Now build the mapping that for a dof in a patch WITHOUT dofs that have artificial bcs gives the */
         /* the index in the patch with all dofs */
-        const PetscInt    *gtolArray, *gtolArrayWithArtificial = NULL;
-        PetscInt           numPatchDofs, offset;
-        PetscInt           numPatchDofsWithArtificial, offsetWithArtificial;
         ierr = ISGetIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
 
         ierr = PetscSectionGetDof(patch->gtolCounts, p, &numPatchDofs);CHKERRQ(ierr);
@@ -1630,11 +1633,9 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, p, &numPatchDofsWithArtificial);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(patch->gtolCountsWithArtificial, p, &offsetWithArtificial);CHKERRQ(ierr);
 
-        PetscInt dofWithoutArtificialCounter = 0;
-        PetscInt *patchWithoutArtificialToWithArtificialArray;
         ierr = PetscMalloc1(numPatchDofs, &patchWithoutArtificialToWithArtificialArray);CHKERRQ(ierr);
 
-        ISCreateGeneral(PETSC_COMM_SELF, numPatchDofs, patchWithoutArtificialToWithArtificialArray, PETSC_OWN_POINTER, &patch->dofMappingWithoutToWithArtificial[p-pStart]);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, numPatchDofs, patchWithoutArtificialToWithArtificialArray, PETSC_OWN_POINTER, &patch->dofMappingWithoutToWithArtificial[p-pStart]);CHKERRQ(ierr);
         if (numPatchDofs == 0) continue;
         for (i=0; i<numPatchDofsWithArtificial; i++) {
           if (gtolArrayWithArtificial[i+offsetWithArtificial] == gtolArray[offset+dofWithoutArtificialCounter]) {
@@ -1671,6 +1672,10 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
     /* If desired, calculate weights for dof multiplicity */
     if (patch->partition_of_unity) {
+      PetscScalar *input = NULL;
+      PetscScalar *output = NULL;
+      Vec global;
+
       ierr = VecDuplicate(patch->localX, &patch->dof_weights);CHKERRQ(ierr);
       if(patch->local_composition_type == PC_COMPOSITE_ADDITIVE) {
         for (i = 0; i < patch->npatch; ++i) {
@@ -1686,9 +1691,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = VecSet(patch->dof_weights, 1.0);CHKERRQ(ierr);
       }
 
-      PetscScalar *input = NULL;
-      PetscScalar *output = NULL;
-      Vec global;
       VecDuplicate(patch->dof_weights, &global);
       VecSet(global, 0.);
 
