@@ -663,7 +663,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 }
 
 /*@C
- PetscViewerHDF5WriteAttribute - Write a scalar attribute
+ PetscViewerHDF5WriteAttribute - Write an attribute
 
   Input Parameters:
 + viewer - The HDF5 viewer
@@ -709,7 +709,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 }
 
 /*@C
- PetscViewerHDF5ReadAttribute - Read a scalar attribute
+ PetscViewerHDF5ReadAttribute - Read an attribute
 
   Input Parameters:
 + viewer - The HDF5 viewer
@@ -776,7 +776,7 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
 }
 
 /*@C
- PetscViewerHDF5HasAttribute - Check whether a scalar attribute exists
+ PetscViewerHDF5HasAttribute - Check whether an attribute exists
 
   Input Parameters:
 + viewer - The HDF5 viewer
