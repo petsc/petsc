@@ -679,6 +679,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *value)
 {
   hid_t          h5, dataspace, obj, attribute, dtype;
+  PetscBool      has;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -686,6 +687,8 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscValidPointer(parent, 2);
   PetscValidPointer(name, 3);
   PetscValidPointer(value, 4);
+
+  ierr = PetscViewerHDF5HasAttribute(viewer, parent, name, &has);CHKERRQ(ierr);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
   if (datatype == PETSC_STRING) {
     size_t len;
@@ -695,11 +698,15 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   PetscStackCallHDF5Return(dataspace,H5Screate,(H5S_SCALAR));
   PetscStackCallHDF5Return(obj,H5Oopen,(h5, parent, H5P_DEFAULT));
+  if (has) {
+    PetscStackCallHDF5Return(attribute,H5Aopen_name,(obj, name));
+  } else {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  PetscStackCallHDF5Return(attribute,H5Acreate2,(obj, name, dtype, dataspace, H5P_DEFAULT, H5P_DEFAULT));
+    PetscStackCallHDF5Return(attribute,H5Acreate2,(obj, name, dtype, dataspace, H5P_DEFAULT, H5P_DEFAULT));
 #else
-  PetscStackCallHDF5Return(attribute,H5Acreate,(obj, name, dtype, dataspace, H5P_DEFAULT));
+    PetscStackCallHDF5Return(attribute,H5Acreate,(obj, name, dtype, dataspace, H5P_DEFAULT));
 #endif
+  }
   PetscStackCallHDF5(H5Awrite,(attribute, dtype, value));
   if (datatype == PETSC_STRING) PetscStackCallHDF5(H5Tclose,(dtype));
   PetscStackCallHDF5(H5Aclose,(attribute));
