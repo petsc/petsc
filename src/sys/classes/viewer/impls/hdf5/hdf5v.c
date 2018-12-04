@@ -814,11 +814,10 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   ierr = PetscViewerHDF5HasObject(viewer, parent, H5O_TYPE_DATASET, &exists);CHKERRQ(ierr);
   if (exists) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-    PetscStackCall("H5Dopen2",dataset = H5Dopen2(h5, parent, H5P_DEFAULT));
+    PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
 #else
-    PetscStackCall("H5Dopen",dataset = H5Dopen(h5, parent));
+    PetscStackCallHDF5Return(dataset, H5Dopen, (h5, parent));
 #endif
-    if (dataset < 0) PetscFunctionReturn(0);
     PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
     PetscStackCallHDF5(H5Dclose,(dataset));
     *has = hhas ? PETSC_TRUE : PETSC_FALSE;
