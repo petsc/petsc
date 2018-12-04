@@ -19,7 +19,7 @@ class debuglogger(object):
         self._log.debug(string)
 
 class Petsc(object):
-    def __init__(self, petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, verbose=False):
+    def __init__(self, petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, verbose=False):
         if petsc_dir is None:
             petsc_dir = os.environ.get('PETSC_DIR')
             if petsc_dir is None:
@@ -41,11 +41,15 @@ class Petsc(object):
         self.read_conf()
         self.pkg_dir = pkg_dir
         self.pkg_name = pkg_name
+        self.pkg_arch = pkg_arch
         if self.pkg_dir is None:
           self.pkg_dir = petsc_dir
           self.pkg_name = 'petsc'
+          self.pkg_arch = self.petsc_arch
         if self.pkg_name is None:
           self.pkg_name = os.path.basename(os.path.normpath(self.pkg_dir))
+        if self.pkg_arch is None:
+          self.pkg_arch = self.petsc_arch
         try:
             logging.basicConfig(filename=self.pkg_arch_path('lib',self.pkg_name,'conf', 'gmake.log'), level=logging.DEBUG)
         except IOError:
@@ -59,7 +63,7 @@ class Petsc(object):
         return os.path.join(self.petsc_dir, self.petsc_arch, *args)
 
     def pkg_arch_path(self, *args):
-        return os.path.join(self.pkg_dir, self.petsc_arch, *args)
+        return os.path.join(self.pkg_dir, self.pkg_arch, *args)
 
     def read_conf(self):
         self.conf = dict()
@@ -218,11 +222,11 @@ def WriteNinja(petsc):
                                                        petsc.arch_path('lib','petsc','conf', 'petscvariables'),
                                                        ' '.join(os.path.join(petsc.pkg_dir, dep) for dep in petsc.gendeps)))
 
-def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, output=None, verbose=False):
+def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, output=None, verbose=False):
     if output is None:
         output = 'gnumake'
     writer = dict(gnumake=WriteGnuMake, ninja=WriteNinja)
-    petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_name=pkg_name, verbose=verbose)
+    petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_name=pkg_name, pkg_arch=pkg_arch, verbose=verbose)
     writer[output](petsc)
     petsc.summary()
 
@@ -233,10 +237,11 @@ if __name__ == '__main__':
     parser.add_option('--petsc-arch', help='Set PETSC_ARCH different from environment', default=os.environ.get('PETSC_ARCH'))
     parser.add_option('--pkg-dir', help='Set the directory of the package (different from PETSc) you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-name', help='Set the name of the package you want to generate the makefile rules for', default=None)
+    parser.add_option('--pkg-arch', help='Set the package arch name you want to generate the makefile rules for', default=None)
     parser.add_option('--output', help='Location to write output file', default=None)
     opts, extra_args = parser.parse_args()
     if extra_args:
         import sys
         sys.stderr.write('Unknown arguments: %s\n' % ' '.join(extra_args))
         exit(1)
-    main(petsc_arch=opts.petsc_arch, pkg_dir=opts.pkg_dir, pkg_name=opts.pkg_name, output=opts.output, verbose=opts.verbose)
+    main(petsc_arch=opts.petsc_arch, pkg_dir=opts.pkg_dir, pkg_name=opts.pkg_name, pkg_arch=opts.pkg_arch, output=opts.output, verbose=opts.verbose)
