@@ -6,41 +6,10 @@ import sys
 import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
-from cmakegen import defaultdict # collections.defaultdict, with fallback for python-2.4
+from collections import defaultdict
 
 PKGS = 'sys vec mat dm ksp snes ts tao'.split()
 LANGS = dict(c='C', cxx='CXX', cu='CU', F='F', F90='F90')
-
-try:
-    all([True, True])
-except NameError:               # needs python-2.5
-    def all(iterable):
-        for i in iterable:
-            if not i:
-                return False
-        return True
-
-try:
-    os.path.relpath             # needs python-2.6
-except AttributeError:
-    def _relpath(path, start=os.path.curdir):
-        """Return a relative version of a path"""
-
-        from os.path import curdir, abspath, commonprefix, sep, pardir, join
-        if not path:
-            raise ValueError("no path specified")
-
-        start_list = [x for x in abspath(start).split(sep) if x]
-        path_list = [x for x in abspath(path).split(sep) if x]
-
-        # Work out how much of the filepath is shared by start and path.
-        i = len(commonprefix([start_list, path_list]))
-
-        rel_list = [pardir] * (len(start_list)-i) + path_list[i:]
-        if not rel_list:
-            return curdir
-        return join(*rel_list)
-    os.path.relpath = _relpath
 
 class debuglogger(object):
     def __init__(self, log):
@@ -142,7 +111,7 @@ class Petsc(object):
                 return self.relpath(root, src)
             source = self.get_sources(makevars)
             for lang, s in source.items():
-                pkgsrcs[lang] += map(mkrel, s)
+                pkgsrcs[lang] += [mkrel(t) for t in s]
                 allsource += s
             self.mistakes.compareSourceLists(root, allsource, files) # Diagnostic output about unused source files
             self.gendeps.append(self.relpath(root, 'makefile'))

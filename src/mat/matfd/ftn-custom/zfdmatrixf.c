@@ -87,6 +87,6 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringsettype_(MatFDColoring *matfdcolori
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = MatFDColoringSetType(*matfdcoloring,t);
+  *ierr = MatFDColoringSetType(*matfdcoloring,t);if (*ierr) return;
   FREECHAR(type,t);
 }

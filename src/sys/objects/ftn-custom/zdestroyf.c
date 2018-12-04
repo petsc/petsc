@@ -11,7 +11,7 @@ PETSC_EXTERN void PETSC_STDCALL petscobjecttypecompare_(PetscObject *obj,char* t
 {
   char *c1;
   FIXCHAR(type_name,len,c1);
-  *ierr = PetscObjectTypeCompare(*obj,c1,same);
+  *ierr = PetscObjectTypeCompare(*obj,c1,same);if (*ierr) return;
   FREECHAR(type_name,c1);
 }
 

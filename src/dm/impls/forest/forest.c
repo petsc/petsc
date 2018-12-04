@@ -128,6 +128,7 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   DMType                     type;
   DM                         base;
   DMForestTopology           topology;
+  MatType                    mtype;
   PetscInt                   dim, overlap, ref, factor;
   DMForestAdaptivityStrategy strat;
   PetscDS                    ds;
@@ -176,6 +177,8 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
     ierr = DMSetPeriodicity(*tdm,isper,maxCell,L,bd);CHKERRQ(ierr);
   }
   ierr = DMCopyBoundary(dm,*tdm);CHKERRQ(ierr);
+  ierr = DMGetMatType(dm,&mtype);CHKERRQ(ierr);
+  ierr = DMSetMatType(*tdm,mtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -301,11 +304,19 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
   ierr         = DMDestroy(&forest->base);CHKERRQ(ierr);
   forest->base = base;
   if (base) {
+    PetscBool        isper;
+    const PetscReal *maxCell, *L;
+    const DMBoundaryType *bd;
+
     PetscValidHeaderSpecific(base, DM_CLASSID, 2);
     ierr = DMGetDimension(base,&dim);CHKERRQ(ierr);
     ierr = DMSetDimension(dm,dim);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(base,&dimEmbed);CHKERRQ(ierr);
     ierr = DMSetCoordinateDim(dm,dimEmbed);CHKERRQ(ierr);
+    ierr = DMGetPeriodicity(base,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(dm,isper,maxCell,L,bd);CHKERRQ(ierr);
+  } else {
+    ierr = DMSetPeriodicity(dm,PETSC_FALSE,NULL,NULL,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -322,6 +333,9 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
 
   Output Parameter:
 . base - the base DM of the forest
+
+  Notes:
+    After DMSetUp(), the base DM will be redundantly distributed across MPI processes
 
   Level: intermediate
 
@@ -411,6 +425,7 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
     ierr = DMSetCoarseDM(dm,adapt);CHKERRQ(ierr);
     break;
   case DM_ADAPT_COARSEN:
+  case DM_ADAPT_COARSEN_LAST:
     ierr = DMSetFineDM(dm,adapt);CHKERRQ(ierr);
     break;
   default:
@@ -450,6 +465,7 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
     ierr = DMGetCoarseDM(dm,adapt);CHKERRQ(ierr);
     break;
   case DM_ADAPT_COARSEN:
+  case DM_ADAPT_COARSEN_LAST:
     ierr = DMGetFineDM(dm,adapt);CHKERRQ(ierr);
     break;
   default:
@@ -471,11 +487,11 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
 
   Input Parameters:
 + dm - the forest
-- purpose - the adaptivity purpose (DM_ADAPT_DETERMINE/DM_ADAPT_REFINE/DM_ADAPT_COARSEN)
+- purpose - the adaptivity purpose
 
   Level: advanced
 
-.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest()
+.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest(), DMAdaptFlag
 @*/
 PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
 {
@@ -502,8 +518,9 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
 
 /*@
   DMForestGetAdaptivityPurpose - Get whether the current DM is being adapted from its source (set with
-  DMForestSetAdaptivityForest()) for the purpose of refinement (DM_ADAPT_REFINE), coarsening (DM_ADAPT_COARSEN), or
-  undefined (DM_ADAPT_DETERMINE).  This only matters for the purposes of reference counting: during DMDestroy(), cyclic
+  DMForestSetAdaptivityForest()) for the purpose of refinement (DM_ADAPT_REFINE), coarsening (DM_ADAPT_COARSEN),
+  coarsening only the last level (DM_ADAPT_COARSEN_LAST) or undefined (DM_ADAPT_DETERMINE).
+  This only matters for the purposes of reference counting: during DMDestroy(), cyclic
   references can be found between DMs only if the cyclic reference is due to a fine/coarse relationship (see
   DMSetFineDM()/DMSetCoarseDM()).  If the purpose is not refinement or coarsening, and the user does not maintain a
   reference to the post-adaptation forest (i.e., the one created by DMForestTemplate()), then this can cause a memory
@@ -515,11 +532,11 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
 . dm - the forest
 
   Output Parameter:
-. purpose - the adaptivity purpose (DM_ADAPT_DETERMINE/DM_ADAPT_REFINE/DM_ADAPT_COARSEN)
+. purpose - the adaptivity purpose
 
   Level: advanced
 
-.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest()
+.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest(), DMAdaptFlag
 @*/
 PetscErrorCode DMForestGetAdaptivityPurpose(DM dm, DMAdaptFlag *purpose)
 {
@@ -787,7 +804,7 @@ PetscErrorCode DMForestSetInitialRefinement(DM dm, PetscInt initRefinement)
 . dm - the forest
 
   Output Paramater:
-. initefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
+. initRefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
 
   Level: intermediate
 
@@ -987,6 +1004,21 @@ PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, Pet
   forest = (DM_Forest *) dmIn->data;
   if (!forest->transfervec) SETERRQ(PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"DMForestTransferVec() not implemented");
   ierr = (forest->transfervec)(dmIn,vecIn,dmOut,vecOut,useBCs,time);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMForestTransferVecFromBase(DM dm, Vec vecIn, Vec vecOut)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm   ,DM_CLASSID  ,1);
+  PetscValidHeaderSpecific(vecIn  ,VEC_CLASSID ,2);
+  PetscValidHeaderSpecific(vecOut ,VEC_CLASSID ,3);
+  forest = (DM_Forest *) dm->data;
+  if (!forest->transfervecfrombase) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMForestTransferVecFromBase() not implemented");
+  ierr = (forest->transfervecfrombase)(dm,vecIn,vecOut);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1597,7 +1629,7 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
     PetscFunctionReturn(0);
   }
   ierr = DMForestTemplate(dm,comm,dmCoarsened);CHKERRQ(ierr);
-  ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_ADAPT_COARSEN);CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityPurpose(*dmCoarsened,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
   if (!coarsen) {
     ierr = DMLabelCreate("coarsen",&coarsen);CHKERRQ(ierr);
@@ -1697,4 +1729,3 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   ierr                         = DMInitialize_Forest(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

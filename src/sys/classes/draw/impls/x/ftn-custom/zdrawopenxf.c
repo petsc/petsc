@@ -15,7 +15,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawopenx_(MPI_Comm *comm,char* display PET
 
   FIXCHAR(display,len1,t1);
   FIXCHAR(title,len2,t2);
-  *ierr = PetscDrawOpenX(MPI_Comm_f2c(*(MPI_Fint*)&*comm),t1,t2,*x,*y,*w,*h,inctx);
+  *ierr = PetscDrawOpenX(MPI_Comm_f2c(*(MPI_Fint*)&*comm),t1,t2,*x,*y,*w,*h,inctx);if (*ierr) return;
   FREECHAR(display,t1);
   FREECHAR(title,t2);
 }

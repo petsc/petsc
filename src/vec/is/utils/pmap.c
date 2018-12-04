@@ -125,10 +125,10 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
 
   if (map->n > 0 && map->bs > 1) {
-    if (map->n % map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local matrix size %D must be divisible by blocksize %D",map->n,map->bs);
+    if (map->n % map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %D must be divisible by blocksize %D",map->n,map->bs);
   }
   if (map->N > 0 && map->bs > 1) {
-    if (map->N % map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Global matrix size %D must be divisible by blocksize %D",map->N,map->bs);
+    if (map->N % map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Global size %D must be divisible by blocksize %D",map->N,map->bs);
   }
 
   ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);

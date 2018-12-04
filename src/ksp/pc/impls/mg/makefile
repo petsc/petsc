@@ -8,7 +8,7 @@ SOURCEF   =
 SOURCEH   = ../../../../../include/petsc/private/pcmgimpl.h
 LIBBASE   = libpetscksp
 MANSEC    = KSP
-SUBMANSEC = PCMG
+SUBMANSEC = PC
 LOCDIR    = src/ksp/pc/impls/mg/
 DIRS      =
 

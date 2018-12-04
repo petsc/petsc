@@ -253,6 +253,11 @@ static PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"Using %s compute h routine\n",((PetscObject)ctx)->type_name);CHKERRQ(ierr);
     }
+#if defined(PETSC_USE_COMPLEX)
+    if (ctx->usecomplex) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Using Lyness complex number trick to compute the matrix-vector product\n");CHKERRQ(ierr);
+    }
+#endif
     if (ctx->ops->view) {
       ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
     }
@@ -352,6 +357,10 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   }
   ctx->ncurrenth++;
 
+#if defined(PETSC_USE_COMPLEX)
+  if (ctx->usecomplex) h = PETSC_i*h;
+#endif
+  
   /* w = u + ha */
   if (ctx->drscale) {
     ierr = VecPointwiseMult(ctx->drscale,a,U);CHKERRQ(ierr);
@@ -366,7 +375,16 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   }
   ierr = (*ctx->func)(ctx->funcctx,w,y);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_COMPLEX)  
+  if (ctx->usecomplex) {
+    ierr = VecImaginaryPart(y);CHKERRQ(ierr);
+    h    = PetscImaginaryPart(h);
+  } else {
+    ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
+  }
+#else
   ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
+#endif
   ierr = VecScale(y,1.0/h);CHKERRQ(ierr);
 
   if ((ctx->vshift != 0.0) || (ctx->vscale != 1.0)) {
@@ -596,6 +614,9 @@ static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObje
   if (flg) {
     ierr = MatMFFDSetCheckh(mat,MatMFFDCheckPositivity,0);CHKERRQ(ierr);
   }
+#if defined(PETSC_USE_COMPLEX)
+  ierr = PetscOptionsBool("-mat_mffd_complex","Use Lyness complex number trick to compute the matrix-vector product","None",mfctx->usecomplex,&mfctx->usecomplex,NULL);CHKERRQ(ierr);
+#endif
   if (mfctx->ops->setfromoptions) {
     ierr = (*mfctx->ops->setfromoptions)(PetscOptionsObject,mfctx);CHKERRQ(ierr);
   }
@@ -737,8 +758,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
    Options Database Keys: call MatSetFromOptions() to trigger these
 +  -mat_mffd_type - wp or ds (see MATMFFD_WP or MATMFFD_DS)
--  -mat_mffd_err - square root of estimated relative error in function evaluation
--  -mat_mffd_period - how often h is recomputed, defaults to 1, everytime
+.  -mat_mffd_err - square root of estimated relative error in function evaluation
+.  -mat_mffd_period - how often h is recomputed, defaults to 1, everytime
+.  -mat_mffd_check_positivity - possibly decrease h until U + h*a has only positive values
+-  -mat_mffd_complex - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
+                       (requires real valued functions but that PETSc be configured for complex numbers)
 
 
    Level: advanced

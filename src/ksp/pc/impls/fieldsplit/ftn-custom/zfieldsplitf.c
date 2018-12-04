@@ -43,7 +43,7 @@ PETSC_EXTERN void PETSC_STDCALL  pcfieldsplitsetis_(PC *pc, char* splitname PETS
 {
   char *t;
   FIXCHAR(splitname,len,t);
-  *ierr = PCFieldSplitSetIS(*pc,t,*is);
+  *ierr = PCFieldSplitSetIS(*pc,t,*is);if (*ierr) return;
   FREECHAR(splitname,t);
 }
 

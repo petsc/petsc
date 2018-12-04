@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'v5.1.2-p1'
+    self.gitcommit        = 'v5.1.2-p2'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
                              'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps']
@@ -141,19 +141,23 @@ class Configure(config.package.Package):
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean', timeout=2500, log = self.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=2500, log = self.log)
       except RuntimeError as e:
         pass
       try:
         self.logPrintBox('Compiling Mumps; this may take several minutes')
-        output2,err2,ret2 = config.package.Package.executeShellCommand('cd '+self.packageDir+' &&  make alllib',timeout=2500, log = self.log)
+        output2,err2,ret2 = config.package.Package.executeShellCommand('make alllib', cwd=self.packageDir, timeout=2500, log = self.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing Mumps; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.* '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f include/*.* '+includeDir+'/.', timeout=50, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommandSeq(
+          [[self.installSudo+'mkdir', '-p', libDir, includeDir],
+           self.installSudo+'cp -f lib/*.* '+libDir+'/.',
+           self.installSudo+'cp -f include/*.* '+includeDir+'/.'
+          ], cwd=self.packageDir, timeout=50, log = self.log)
         if self.argDB['with-mumps-serial']:
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+'cp -f libseq/libmpiseq.a '+libDir+'/. ', timeout=25, log = self.log)
+          output,err,ret = config.package.Package.executeShellCommand([self.installSudo+'cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=25, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'Makefile.inc')

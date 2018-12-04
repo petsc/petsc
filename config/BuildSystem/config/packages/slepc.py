@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'master'  #master+
+    self.gitcommit              = 'v3.10.1'
     self.download               = ['git://https://bitbucket.com/slepc/slepc.git']
     self.functions              = []
     self.includes               = []
@@ -36,10 +36,12 @@ class Configure(config.package.Package):
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix']:
-       newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH=" " SLEPC_DIR='+self.packageDir+' '
+       carg = 'SLEPC_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH="" '
+       barg = 'SLEPC_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH=installed-'+self.arch+' '
        prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
     else:
-       newdir = ' SLEPC_DIR='+self.packageDir+' '
+       carg = ' SLEPC_DIR='+self.packageDir+' '
+       barg = ' SLEPC_DIR='+self.packageDir+' '
        prefix = os.path.join(self.petscdir.dir,self.arch)
 
     self.addDefine('HAVE_SLEPC',1)
@@ -48,8 +50,8 @@ class Configure(config.package.Package):
                        ['@echo "*** Building slepc ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newdir+' ./configure --prefix='+prefix+' && \\\n\
-           '+newdir+' '+self.make.make+' ) > ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
+           '+carg+'./configure --prefix='+prefix+' && \\\n\
+           '+barg+'${OMAKE} '+barg+') > ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building slepc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
              echo "********************************************************************" && \\\n\
@@ -58,7 +60,7 @@ class Configure(config.package.Package):
     self.addMakeRule('slepcinstall','', \
                        ['@echo "*** Installing slepc ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+newdir+' make install ) >> ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
+           '+newuser+barg+'${OMAKE} install '+barg+') >> ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building slepc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
              echo "********************************************************************" && \\\n\

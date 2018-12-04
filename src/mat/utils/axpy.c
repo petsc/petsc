@@ -166,6 +166,7 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
     ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   }
 
+  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   if (Y->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
     Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
@@ -231,6 +232,7 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   } else {
     ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
   }
+  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

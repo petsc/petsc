@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL kspguesssettype_(KSPGuess *kspguess,char* type P
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = KSPGuessSetType(*kspguess,t);
+  *ierr = KSPGuessSetType(*kspguess,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

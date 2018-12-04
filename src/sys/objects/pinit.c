@@ -1038,7 +1038,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_HAVE_HWLOC)
   {
     PetscViewer viewer;
-    ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

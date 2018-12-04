@@ -1,11 +1,15 @@
+#include <petsc/private/snesimpl.h>             /*I   "petscsnes.h"   I*/
 
-#include <petsc/private/snesimpl.h>
+typedef struct {
+  PetscBool transpose_solve;
+} SNES_KSPONLY;
 
 static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 {
-  PetscErrorCode     ierr;
-  PetscInt           lits;
-  Vec                Y,X,F;
+  SNES_KSPONLY   *ksponly = (SNES_KSPONLY*)snes->data;
+  PetscErrorCode ierr;
+  PetscInt       lits;
+  Vec            Y,X,F;
 
   PetscFunctionBegin;
   if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
@@ -35,13 +39,17 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   /* Solve J Y = F, where J is Jacobian matrix */
   ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
-  ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
+  if (ksponly->transpose_solve) {
+    ierr = KSPSolveTranspose(snes->ksp,F,Y);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
+  }
   snes->reason = SNES_CONVERGED_ITS;
   SNESCheckKSPSolve(snes);
 
-  ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
   snes->linear_its += lits;
-  ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
+  ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
   snes->iter++;
 
   /* Take the computed step. */
@@ -66,8 +74,10 @@ static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 
 static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -83,6 +93,8 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 {
+  SNES_KSPONLY   *ksponly;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   snes->ops->setup          = SNESSetUp_KSPONLY;
@@ -97,6 +109,28 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  snes->data = 0;
+  ierr = PetscNewLog(snes,&ksponly);CHKERRQ(ierr);
+  snes->data = (void*)ksponly;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+      SNESKSPTRANSPOSEONLY - Nonlinear solver that only performs one Newton step and does not compute any norms.
+      The main purpose of this solver is to solve transposed linear problems using the SNES interface, without
+      any additional overhead in the form of vector operations within adjoint solvers.
+
+   Level: beginner
+
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESKSPTRANSPOSEONLY, SNESNEWTONLS, SNESNEWTONTR
+M*/
+PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes)
+{
+  SNES_KSPONLY   *kspo;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESCreate_KSPONLY(snes);CHKERRQ(ierr);
+  kspo = (SNES_KSPONLY*)snes->data;
+  kspo->transpose_solve = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

@@ -15,7 +15,8 @@ configure_options = [
   '--download-superlu_dist=1',
   '--download-scalapack=1',
   '--download-mumps=1',
-  # no with-cxx-dialect=C++11 support '--download-elemental=1',
+  '--with-cxx-dialect=C++11',
+  '--download-elemental=1',
   '--download-hdf5',
   '--download-zlib=1',
   '--download-sundials=1',
@@ -27,6 +28,8 @@ configure_options = [
   '--download-netcdf=1',
   '--download-moab=1',
   '--download-saws',
+  '--download-codipack=1',
+  '--download-adblaslapack=1',
   ]
 
 if __name__ == '__main__':

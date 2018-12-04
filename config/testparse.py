@@ -125,7 +125,7 @@ def parseLoopArgs(varset):
   Given:   String containing loop variables
   Return: tuple containing separate/shared and string of loop vars
   """
-  keynm=varset.split("{{")[0].strip()
+  keynm=varset.split("{{")[0].strip().lstrip('-')
   if not keynm.strip(): keynm='nsize'
   lvars=varset.split('{{')[1].split('}')[0]
   suffx=varset.split('{{')[1].split('}')[1]
@@ -493,7 +493,7 @@ def printExParseDict(rDict):
   indent="   "
   for sfile in rDict:
     print(sfile)
-    sortkeys=rDict[sfile].keys()
+    sortkeys=list(rDict[sfile].keys())
     sortkeys.sort()
     for runex in sortkeys:
       print(indent+runex)

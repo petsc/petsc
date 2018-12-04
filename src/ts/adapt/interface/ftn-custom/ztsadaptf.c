@@ -14,7 +14,7 @@ PETSC_EXTERN void PETSC_STDCALL tsadaptsettype_(TSAdapt *tsadapt,char* type PETS
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = TSAdaptSetType(*tsadapt,t);
+  *ierr = TSAdaptSetType(*tsadapt,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

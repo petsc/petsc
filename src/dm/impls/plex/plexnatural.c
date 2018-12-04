@@ -184,7 +184,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   Output Parameters:
 . nv - Vec in the canonical ordering distributed over all processors associated with gv
 
-  Note: The user must call DMPlexSetUseNaturalSF(dm, PETSC_TRUE) before DMPlexDistribute().
+  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
 
   Level: intermediate
 
@@ -221,7 +221,7 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
   Output Parameters:
 . nv - The natural Vec
 
-  Note: The user must call DMPlexSetUseNaturalSF(dm, PETSC_TRUE) before DMPlexDistribute().
+  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
 
   Level: intermediate
 
@@ -258,7 +258,7 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
   Output Parameters:
 . gv - The global Vec
 
-  Note: The user must call DMPlexSetUseNaturalSF(dm, PETSC_TRUE) before DMPlexDistribute().
+  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
 
   Level: intermediate
 
@@ -282,7 +282,7 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
     ierr = PetscSFReduceBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray, MPI_SUM);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(nv, &inarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(gv, &outarray);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMPlexSetUseNaturalSF() before DMPlexDistribute().\n");
+  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().\n");
   ierr = PetscLogEventEnd(DMPLEX_NaturalToGlobalBegin,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -299,7 +299,7 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
   Output Parameters:
 . gv - The global Vec
 
-  Note: The user must call DMPlexSetUseNaturalSF(dm, PETSC_TRUE) before DMPlexDistribute().
+  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
 
   Level: intermediate
 

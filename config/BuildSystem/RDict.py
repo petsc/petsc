@@ -62,7 +62,7 @@ except ImportError:
   pass
 import nargs
 
-import cPickle
+import pickle
 import os
 import sys
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
@@ -101,7 +101,7 @@ Arg class, which wraps the usual value.'''
     self.parentDirectory = parentDirectory
     self.packer          = xdrlib.Packer()
     self.unpacker        = xdrlib.Unpacker('')
-    self.stopCmd         = cPickle.dumps(('stop',))
+    self.stopCmd         = pickle.dumps(('stop',))
     self.writeLogLine('Greetings')
     self.connectParent(self.parentAddr, self.parentDirectory)
     if load: self.load()
@@ -124,7 +124,7 @@ Arg class, which wraps the usual value.'''
 
   def __setstate__(self, d):
     '''Reconnect the parent socket object, recreate the XDR translators and reopen the log file after unpickling'''
-    self.logFile  = file('RDict.log', 'a')
+    self.logFile  = open('RDict.log', 'a')
     self.writeLogLine('Unpickling RDict')
     self.__dict__.update(d)
     import xdrlib
@@ -140,9 +140,9 @@ Arg class, which wraps the usual value.'''
       if os.path.isfile(filename+'.bkp'):
         os.remove(filename+'.bkp')
       os.rename(filename, filename+'.bkp')
-      self.logFile = file(filename, 'w')
+      self.logFile = open(filename, 'w')
     else:
-      self.logFile = file(filename, 'a')
+      self.logFile = open(filename, 'a')
     return
 
   def writeLogLine(self, message):
@@ -161,17 +161,24 @@ Arg class, which wraps the usual value.'''
 
   def getType(self, key):
     '''Checks for the key locally, and if not found consults the parent. Returns the Arg object or None if not found.'''
-    if dict.has_key(self, key):
-      self.writeLogLine('getType: Getting local type for '+key+' '+str(dict.__getitem__(self, key)))
-      return dict.__getitem__(self, key)
-    elif not self.parent is None:
+    try:
+      value = dict.__getitem__(self, key)
+      self.writeLogLine('getType: Getting local type for '+key+' '+str(value))
+      return value
+    except KeyError:
+      pass
+    if self.parent:
       return self.send(key)
     return None
+
+  def dict_has_key(self, key):
+    """Utility to check whether the key is present in the dictionary without RDict side-effects."""
+    return key in dict(self)
 
   def __getitem__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Returns the value of the Arg.
        - If the value has not been set, the user will be prompted for input'''
-    if dict.has_key(self, key):
+    if self.dict_has_key(key):
       self.writeLogLine('__getitem__: '+key+' has local type')
       pass
     elif not self.parent is None:
@@ -207,8 +214,8 @@ Arg class, which wraps the usual value.'''
     if not isinstance(value, nargs.Arg):
       raise TypeError('An argument type must be a subclass of Arg')
     value.setKey(key)
-    if forceLocal or self.parent is None or dict.has_key(self, key):
-      if dict.has_key(self, key):
+    if forceLocal or self.parent is None or self.dict_has_key(key):
+      if self.dict_has_key(key):
         v = dict.__getitem__(self, key)
         if v.isValueSet():
           try:
@@ -227,7 +234,7 @@ Arg class, which wraps the usual value.'''
 
   def __setitem__(self, key, value):
     '''Checks for the key locally, and if not found consults the parent. Sets the value of the Arg.'''
-    if not dict.has_key(self, key):
+    if not self.dict_has_key(key):
       if not self.parent is None:
         return self.send(key, value)
       else:
@@ -239,7 +246,7 @@ Arg class, which wraps the usual value.'''
 
   def __delitem__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Deletes the Arg completely.'''
-    if dict.has_key(self, key):
+    if self.dict_has_key(key):
       dict.__delitem__(self, key)
       #self.save()
     elif not self.parent is None:
@@ -257,7 +264,7 @@ Arg class, which wraps the usual value.'''
 
   def __contains__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Then checks whether the value has been set'''
-    if dict.has_key(self, key):
+    if self.dict_has_key(key):
       if dict.__getitem__(self, key).isValueSet():
         self.writeLogLine('has_key: Have value for '+key)
       else:
@@ -275,7 +282,7 @@ Arg class, which wraps the usual value.'''
 
   def hasType(self, key):
     '''Checks for the key locally, and if not found consults the parent. Then checks whether the type has been set'''
-    if dict.has_key(self, key):
+    if self.dict_has_key(key):
       return 1
     elif not self.parent is None:
       return self.send(key)
@@ -294,7 +301,7 @@ Arg class, which wraps the usual value.'''
 
   def keys(self):
     '''Returns the list of keys in both the local and parent dictionaries'''
-    keyList = filter(lambda key: dict.__getitem__(self, key).isValueSet(), dict.keys(self))
+    keyList = [key for key in dict.keys(self) if dict.__getitem__(self, key).isValueSet()]
     if not self.parent is None:
       keyList.extend(self.send())
     return keyList
@@ -329,14 +336,12 @@ Arg class, which wraps the usual value.'''
 
   def insertArgs(self, args):
     '''Insert some text arguments into the dictionary (list and dictionaries are recognized)'''
-    import UserDict
 
     if isinstance(args, list):
       for arg in args:
         (key, value) = nargs.Arg.parseArgument(arg)
         self.insertArg(key, value, arg)
-    # Necessary since os.environ is a UserDict
-    elif isinstance(args, dict) or isinstance(args, UserDict.UserDict):
+    elif hasattr(args, keys):
       for key in args.keys():
         if isinstance(args[key], str):
           value = nargs.Arg.parseValue(args[key])
@@ -362,7 +367,7 @@ Arg class, which wraps the usual value.'''
       raise RuntimeError('Server address file does not exist: '+filename)
     try:
       f    = open(filename, 'r')
-      addr = cPickle.load(f)
+      addr = pickle.load(f)
       f.close()
       return addr
     except Exception as e:
@@ -371,8 +376,8 @@ Arg class, which wraps the usual value.'''
 
   def writeServerAddr(self, server):
     '''Write the server socket address (in pickled form) to a file, usually RDict.loc.'''
-    f = file(self.addrFilename, 'w')
-    cPickle.dump(server.server_address, f)
+    f = open(self.addrFilename, 'w')
+    pickle.dump(server.server_address, f)
     f.close()
     self.writeLogLine('SERVER: Wrote lock file '+os.path.abspath(self.addrFilename))
     return
@@ -472,7 +477,7 @@ Arg class, which wraps the usual value.'''
     if isPickled:
       p = packet
     else:
-      p = cPickle.dumps(packet)
+      p = pickle.dumps(packet)
     self.packer.reset()
     self.packer.pack_uint(len(p))
     if hasattr(s, 'write'):
@@ -489,7 +494,7 @@ Arg class, which wraps the usual value.'''
     self.writeLogLine(source+': Receiving packet')
     if hasattr(s, 'read'):
       s.read(4)
-      value = cPickle.load(s)
+      value = pickle.load(s)
     else:
       # I probably need to check that it actually read these 4 bytes
       self.unpacker.reset(s.recv(4))
@@ -497,7 +502,7 @@ Arg class, which wraps the usual value.'''
       objString = ''
       while len(objString) < length:
         objString += s.recv(length - len(objString))
-      value = cPickle.loads(objString)
+      value = pickle.loads(objString)
     self.writeLogLine(source+': Received packet '+str(value))
     return value
 
@@ -633,8 +638,8 @@ Arg class, which wraps the usual value.'''
     self.saveFilename = os.path.abspath(self.saveFilename)
     if os.path.exists(self.saveFilename):
       try:
-        dbFile = file(self.saveFilename)
-        data   = cPickle.load(dbFile)
+        dbFile = open(self.saveFilename, 'rb')
+        data   = pickle.load(dbFile)
         self.updateTypes(data)
         dbFile.close()
         self.writeLogLine('Loaded dictionary from '+self.saveFilename)
@@ -651,9 +656,9 @@ Arg class, which wraps the usual value.'''
     if force:
       self.saveTimer = None
       # This should be a critical section
-      dbFile = file(self.saveFilename, 'w')
-      data   = dict(filter(lambda i: not i[1].getTemporary(), self.localitems()))
-      cPickle.dump(data, dbFile)
+      dbFile = open(self.saveFilename, 'wb')
+      data   = dict([i for i in self.localitems() if not i[1].getTemporary()])
+      pickle.dump(data, dbFile)
       dbFile.close()
       self.writeLogLine('Saved local dictionary to '+os.path.abspath(self.saveFilename))
     elif not self.saveTimer:

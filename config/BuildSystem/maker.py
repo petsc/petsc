@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import script
 
 import os
-import cPickle
+import pickle
 from functools import reduce
 
 class Make(script.Script):
@@ -163,7 +163,7 @@ class Make(script.Script):
       self.logPrint('Starting new configuration')
       self.framework.configure()
       self.builder.sourceDB.updateSource(self.getPythonFile(self.configureMod))
-      cache = cPickle.dumps(self.framework)
+      cache = pickle.dumps(self.framework)
       self.argDB['configureCache'] = cache
       self.logPrint('Wrote configure to cache: size '+str(len(cache)))
     else:
@@ -426,7 +426,7 @@ class BasicMake(Make):
         if hasattr(lib, 'flags'):
           builder.setCompilerFlags(' '.join(lib.flags))
         compiler = builder.getCompilerObject()
-        lib.includes = filter(lambda inc: inc, lib.includes)
+        lib.includes = [inc for inc in lib.includes if inc]
         self.logPrint('  Adding includes '+str(lib.includes))
         compiler.includeDirectories.update(lib.includes)
         builder.popLanguage()
@@ -458,7 +458,7 @@ class BasicMake(Make):
         if hasattr(lib, 'flags'):
           builder.setCompilerFlags(' '.join(lib.flags))
         compiler = builder.getCompilerObject()
-        lib.includes = filter(lambda inc: inc, lib.includes)
+        lib.includes = [inc for inc in lib.includes if inc]
         self.logPrint('  Adding includes '+str(lib.includes))
         compiler.includeDirectories.update(lib.includes)
         builder.popLanguage()
@@ -490,7 +490,7 @@ class BasicMake(Make):
         if hasattr(bin, 'flags'):
           builder.setCompilerFlags(' '.join(bin.flags))
         compiler = builder.getCompilerObject()
-        bin.includes = filter(lambda inc: inc, bin.includes)
+        bin.includes = [inc for inc in bin.includes if inc]
         self.logPrint('  Adding includes '+str(bin.includes))
         compiler.includeDirectories.update(bin.includes)
         builder.popLanguage()

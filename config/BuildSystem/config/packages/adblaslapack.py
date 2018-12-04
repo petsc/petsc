@@ -16,6 +16,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.CoDiPack = framework.require('config.packages.CoDiPack',self)
+    self.deps     = [self.CoDiPack]
     return
 
   def Install(self):
@@ -27,7 +28,7 @@ class Configure(config.package.Package):
     g.write('AROPT            = rcs\n')
     g.write('AR               = '+self.setCompilers.AR+'\n')
     g.write('CXX              = '+self.framework.getCompiler()+'\n')
-    g.write('CFLAGS           = -I$(CODI_DIR) '+self.removeWarningFlags(self.framework.getCompilerFlags())+'\n')
+    g.write('CFLAGS           = -I$(CODI_DIR) -I../include '+self.removeWarningFlags(self.framework.getCompilerFlags())+'\n')
     g.close()
     self.framework.popLanguage()
 
@@ -37,5 +38,5 @@ class Configure(config.package.Package):
       output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean all ',timeout=50, log = self.log)
       output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+self.installSudo+' cp -f libadblaslapack.a '+os.path.join(self.installDir,'lib'),timeout=20, log = self.log)
       output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'include')+' && '+self.installSudo+' cp -f adblaslapack.hpp '+os.path.join(self.installDir,'include'),timeout=20, log = self.log)
-    self.postInstall(output1+err1+output2+err2,'Makefile.inc')
+      self.postInstall(output1+err1+output2+err2,'Makefile.inc')
     return self.installDir

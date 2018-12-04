@@ -525,7 +525,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetViewer(comm,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,NULL,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
   if (flg4) {
     if (format == PETSC_VIEWER_ASCII_XML) {
       ierr = PetscLogNestedBegin();CHKERRQ(ierr);

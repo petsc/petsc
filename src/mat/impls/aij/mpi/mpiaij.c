@@ -4164,7 +4164,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nn
        calculated if N is given) For square matrices n is almost always m.
 .  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
-.   i - row indices
+.   i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
 .   j - column indices
 -   a - matrix values
 
@@ -5705,10 +5705,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
        calculated if N is given) For square matrices n is almost always m.
 .  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
-.   i - row indices for "diagonal" portion of matrix
+.   i - row indices for "diagonal" portion of matrix; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
 .   j - column indices
 .   a - matrix values
-.   oi - row indices for "off-diagonal" portion of matrix
+.   oi - row indices for "off-diagonal" portion of matrix; that is oi[0] = 0, oi[row] = oi[row-1] + number of elements in that row of the matrix
 .   oj - column indices
 -   oa - matrix values
 

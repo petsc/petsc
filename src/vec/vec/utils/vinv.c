@@ -1340,7 +1340,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
   ierr = PetscLogEventBegin(VEC_DotNorm2,s,t,0,0);CHKERRQ(ierr);
   if (s->ops->dotnorm2) {
     ierr = (*s->ops->dotnorm2)(s,t,dp,&dpx);CHKERRQ(ierr);
-    *nm  = PetscRealPart(dpx);CHKERRQ(ierr);
+    *nm  = PetscRealPart(dpx);
   } else {
     ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
     ierr = VecGetArrayRead(s, &sx);CHKERRQ(ierr);
@@ -1397,6 +1397,60 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
   for (i=0; i<n; i++) lsum += x[i];
   ierr = MPIU_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecImaginaryPart - Replaces a complex vector with its imginary part
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Level: beginner
+
+.seealso: VecNorm(), VecRealPart()
+@*/
+PetscErrorCode  VecImaginaryPart(Vec v)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  PetscScalar       *x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for (i=0; i<n; i++) x[i] = PetscImaginaryPart(x[i]);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecRealPart - Replaces a complex vector with its real part
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Level: beginner
+
+.seealso: VecNorm(), VecImaginaryPart()
+@*/
+PetscErrorCode  VecRealPart(Vec v)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  PetscScalar       *x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for (i=0; i<n; i++) x[i] = PetscRealPart(x[i]);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

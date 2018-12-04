@@ -11,7 +11,7 @@ PETSC_EXTERN void PETSC_STDCALL pcpythonsettype_(PC *pc, char* name PETSC_MIXED_
 {
   char *t;
   FIXCHAR(name,len,t);
-  *ierr = PCPythonSetType(*pc,t);
+  *ierr = PCPythonSetType(*pc,t);if (*ierr) return;
   FREECHAR(name,t);
 }
 

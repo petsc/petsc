@@ -35,7 +35,7 @@ def classify(items, functional, args=(), kwargs=dict()):
     if len(items) < 5:          # linear check
         groups = [[i] for i in items]
     else:                       # bisect
-        groups = [items[:len(items)/2], items[len(items)/2:]]
+        groups = [items[:len(items)//2], items[len(items)//2:]]
     groups += [[i] for i in suggested]
     for grp in groups:
         g, b = classify(grp, functional, args, kwargs)

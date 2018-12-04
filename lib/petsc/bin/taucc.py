@@ -16,7 +16,6 @@ from __future__ import print_function
 import commands
 import sys
 import os
-import string
 import tempfile
 def runcmd(cmd,verbose):
   if verbose:

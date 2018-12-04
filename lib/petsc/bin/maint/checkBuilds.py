@@ -2,7 +2,6 @@
 # coding: utf-8
 
 from __future__ import print_function
-import user
 import os
 import re
 

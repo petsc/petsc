@@ -24,6 +24,7 @@ class Configure(config.package.CMakePackage):
     '''Requires the same CMake options as Metis'''
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DGKLIB_PATH=../headers')
+    args.append('-DMETIS_PATH='+self.metis.directory)
     if self.mpi.include:
       args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
     if self.checkSharedLibrariesEnabled():

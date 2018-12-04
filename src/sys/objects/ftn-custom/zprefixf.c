@@ -11,7 +11,7 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectsetoptionsprefix_(PetscObject *obj,ch
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = PetscObjectSetOptionsPrefix(*obj,t);
+  *ierr = PetscObjectSetOptionsPrefix(*obj,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 

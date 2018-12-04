@@ -1,4 +1,5 @@
 #include <petsc/private/pcpatchimpl.h>     /*I "petscpc.h" I*/
+#include <petsc/private/kspimpl.h>         /* For ksp->setfromoptionscalled */
 #include <petsc/private/dmpleximpl.h> /* For DMPlexComputeJacobian_Patch_Internal() */
 #include <petscsf.h>
 #include <petscbt.h>
@@ -405,8 +406,8 @@ PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms,
     patch->bs[i]              = bs[i];
     patch->nodesPerCell[i]    = nodesPerCell[i];
     patch->totalDofsPerCell  += nodesPerCell[i]*bs[i];
-    ierr = PetscMalloc1((cEnd-cStart)*nodesPerCell[i]*bs[i], &patch->cellNodeMap[i]);CHKERRQ(ierr);
-    for (j = 0; j < (cEnd-cStart)*nodesPerCell[i]*bs[i]; ++j) patch->cellNodeMap[i][j] = cellNodeMap[i][j];
+    ierr = PetscMalloc1((cEnd-cStart)*nodesPerCell[i], &patch->cellNodeMap[i]);CHKERRQ(ierr);
+    for (j = 0; j < (cEnd-cStart)*nodesPerCell[i]; ++j) patch->cellNodeMap[i][j] = cellNodeMap[i][j];
     patch->subspaceOffsets[i] = subspaceOffsets[i];
   }
   ierr = PCPatchCreateDefaultSF_Private(pc, nsubspaces, sfs, patch->bs);CHKERRQ(ierr);
@@ -556,7 +557,13 @@ static PetscErrorCode PCPatchGetGlobalDofs(PC pc, PetscSection dofSection[], Pet
           *dof += fdof;
         }
       }
-      if (off) {ierr = PetscSectionGetOffset(dofSection[0], p, off);CHKERRQ(ierr);}
+      if (off) {
+        *off = 0;
+        for (g = 0; g < patch->nsubspaces; ++g) {
+          ierr = PetscSectionGetOffset(dofSection[g], p, &fdof);CHKERRQ(ierr);
+          *off += fdof;
+        }
+      }
     } else {
       if (dof) {ierr = PetscSectionGetDof(dofSection[f], p, dof);CHKERRQ(ierr);}
       if (off) {ierr = PetscSectionGetOffset(dofSection[f], p, off);CHKERRQ(ierr);}
@@ -1111,21 +1118,39 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   /* Create placeholder section for map from points to patch dofs */
   ierr = PetscSectionCreate(PETSC_COMM_SELF, &patch->patchSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(patch->patchSection, patch->nsubspaces);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(patch->dofSection[0], &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(patch->patchSection, pStart, pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof, fdof, f;
+  if (patch->combined) {
+    PetscInt numFields;
+    ierr = PetscSectionGetNumFields(patch->dofSection[0], &numFields);CHKERRQ(ierr);
+    if (numFields != patch->nsubspaces) SETERRQ2(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Mismatch between number of section fields %D and number of subspaces %D", numFields, patch->nsubspaces);
+    ierr = PetscSectionGetChart(patch->dofSection[0], &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(patch->patchSection, pStart, pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt dof, fdof, f;
 
-    ierr = PetscSectionGetDof(patch->dofSection[0], p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(patch->patchSection, p, dof);CHKERRQ(ierr);
-    for (f = 0; f < patch->nsubspaces; ++f) {
-      ierr = PetscSectionGetFieldDof(patch->dofSection[0], p, f, &fdof);
-      if (ierr == 0) {
+      ierr = PetscSectionGetDof(patch->dofSection[0], p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(patch->patchSection, p, dof);CHKERRQ(ierr);
+      for (f = 0; f < patch->nsubspaces; ++f) {
+        ierr = PetscSectionGetFieldDof(patch->dofSection[0], p, f, &fdof);CHKERRQ(ierr);
         ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, fdof);CHKERRQ(ierr);
       }
-      else {
-        /* assume only one field */
-        ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, dof);CHKERRQ(ierr);
+    }
+  } else {
+    PetscInt pStartf, pEndf, f;
+    pStart = PETSC_MAX_INT;
+    pEnd = PETSC_MIN_INT;
+    for (f = 0; f < patch->nsubspaces; ++f) {
+      ierr = PetscSectionGetChart(patch->dofSection[f], &pStartf, &pEndf);CHKERRQ(ierr);
+      pStart = PetscMin(pStart, pStartf);
+      pEnd = PetscMax(pEnd, pEndf);
+    }
+    ierr = PetscSectionSetChart(patch->patchSection, pStart, pEnd);CHKERRQ(ierr);
+    for (f = 0; f < patch->nsubspaces; ++f) {
+      ierr = PetscSectionGetChart(patch->dofSection[f], &pStartf, &pEndf);CHKERRQ(ierr);
+      for (p = pStartf; p < pEndf; ++p) {
+        PetscInt fdof;
+        ierr = PetscSectionGetDof(patch->dofSection[f], p, &fdof);CHKERRQ(ierr);
+        ierr = PetscSectionAddDof(patch->patchSection, p, fdof);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, fdof);CHKERRQ(ierr);
       }
     }
   }
@@ -1485,7 +1510,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = KSPSetOperators(patch->ksp[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
     }
   }
-  if (!pc->setupcalled && patch->optionsSet) for (i = 0; i < patch->npatch; ++i) {ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1547,6 +1571,9 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
         ierr = MatDestroy(&mat);CHKERRQ(ierr);
       }
       ierr = PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
+      if (!patch->ksp[i]->setfromoptionscalled) {
+        ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);
+      }
       ierr = KSPSolve(patch->ksp[i], patch->patchX[i], patch->patchY[i]);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
 
@@ -1727,10 +1754,10 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   ierr = PetscFree(ifields);CHKERRQ(ierr);
 
   ierr = PetscOptionsBool("-pc_patch_patches_view", "Print out information during patch construction", "PCPATCH", patch->viewPatches, &patch->viewPatches, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_cells_view",   &patch->viewerCells,   &patch->formatCells,   &patch->viewCells);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_points_view",  &patch->viewerPoints,  &patch->formatPoints,  &patch->viewPoints);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_section_view", &patch->viewerSection, &patch->formatSection, &patch->viewSection);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_mat_view",     &patch->viewerMatrix,  &patch->formatMatrix,  &patch->viewMatrix);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) pc)->options,prefix, "-pc_patch_cells_view",   &patch->viewerCells,   &patch->formatCells,   &patch->viewCells);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) pc)->options,prefix, "-pc_patch_points_view",  &patch->viewerPoints,  &patch->formatPoints,  &patch->viewPoints);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) pc)->options,prefix, "-pc_patch_section_view", &patch->viewerSection, &patch->formatSection, &patch->viewSection);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) pc)->options,prefix, "-pc_patch_mat_view",     &patch->viewerMatrix,  &patch->formatMatrix,  &patch->viewMatrix);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   patch->optionsSet = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1744,7 +1771,14 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  if (!patch->save_operators) {
+    /* Can't do this here because the sub KSPs don't have an operator attached yet. */
+    PetscFunctionReturn(0);
+  }
   for (i = 0; i < patch->npatch; ++i) {
+    if (!patch->ksp[i]->setfromoptionscalled) {
+      ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);
+    }
     ierr = KSPSetUp(patch->ksp[i]);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(patch->ksp[i], &reason);CHKERRQ(ierr);
     if (reason == KSP_DIVERGED_PCSETUP_FAILED) pc->failedreason = PC_SUBPC_ERROR;

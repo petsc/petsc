@@ -4,7 +4,7 @@ import re
 import os
 import shutil
 
-class MissingProcessor(RuntimeError):
+class MissingProcessor(AttributeError):
   pass
 
 class Configure(config.base.Configure):

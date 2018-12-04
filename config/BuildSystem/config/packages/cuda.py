@@ -64,7 +64,7 @@ class Configure(config.package.Package):
     elif not self.argDB['with-batch']:
       self.pushLanguage('CUDA')
       if self.checkRun(includes, body) and os.path.exists(filename):
-        f    = file(filename)
+        f    = open(filename)
         size = int(f.read())
         f.close()
         os.remove(filename)

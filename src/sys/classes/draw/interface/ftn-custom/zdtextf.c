@@ -12,7 +12,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawstring_(PetscDraw *ctx,double* xl,doubl
 {
   char *t;
   FIXCHAR(text,len,t);
-  *ierr = PetscDrawString(*ctx,*xl,*yl,*cl,t);
+  *ierr = PetscDrawString(*ctx,*xl,*yl,*cl,t);if (*ierr) return;
   FREECHAR(text,t);
 }
 
@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawstringvertical_(PetscDraw *ctx,double *
 {
   char *t;
   FIXCHAR(text,len,t);
-  *ierr = PetscDrawStringVertical(*ctx,*xl,*yl,*cl,t);
+  *ierr = PetscDrawStringVertical(*ctx,*xl,*yl,*cl,t);if (*ierr) return;
   FREECHAR(text,t);
 }
 

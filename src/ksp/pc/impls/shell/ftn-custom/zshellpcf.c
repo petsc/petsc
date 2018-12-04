@@ -242,7 +242,7 @@ PETSC_EXTERN void PETSC_STDCALL pcshellsetname_(PC *pc,char* name PETSC_MIXED_LE
 {
   char *c;
   FIXCHAR(name,len,c);
-  *ierr = PCShellSetName(*pc,c);
+  *ierr = PCShellSetName(*pc,c);if (*ierr) return;
   FREECHAR(name,c);
 }
 
@@ -251,7 +251,7 @@ PETSC_EXTERN void PETSC_STDCALL pcshellgetname_(PC *pc,char* name PETSC_MIXED_LE
   const char *c;
 
   *ierr = PCShellGetName(*pc,&c);if (*ierr) return;
-  *ierr = PetscStrncpy(name,c,len);
+  *ierr = PetscStrncpy(name,c,len);if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 

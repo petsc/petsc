@@ -20,7 +20,7 @@ class Configure(config.package.Package):
     return
 
   def Install(self):
-    import os
+    import os, glob
     self.log.write('chacoDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
     mkfile = 'make.inc'
@@ -36,7 +36,16 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling and installing chaco; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && cd code && make clean && make && '+self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.installDir+' && '+self.installSudo+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+self.libdir+'/libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' `find '+self.packageDir+'/code -name "*.o"` && cd '+self.libdir+' && '+self.installSudo+self.setCompilers.AR+' d libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' main.o && '+self.installSudo+self.setCompilers.RANLIB+' libchaco.'+self.setCompilers.AR_LIB_SUFFIX, timeout=2500, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommandSeq(
+          ['make clean',
+           'make',
+           self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+'libchaco.'+
+           self.setCompilers.AR_LIB_SUFFIX+' `ls */*.o |grep -v main/main.o`',
+           self.setCompilers.RANLIB+' libchaco.'+self.setCompilers.AR_LIB_SUFFIX,
+           [self.installSudo+'mkdir', '-p', os.path.join(self.installDir,self.libdir)],
+           [self.installSudo+'cp', 'libchaco.'+self.setCompilers.AR_LIB_SUFFIX, os.path.join(self.installDir,self.libdir)]
+          ], cwd=os.path.join(self.packageDir, 'code'), timeout=2500, log = self.log)
+
       except RuntimeError as e:
         raise RuntimeError('Error running make on CHACO: '+str(e))
       self.postInstall(output+err, mkfile)

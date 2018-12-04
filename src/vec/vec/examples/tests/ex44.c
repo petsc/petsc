@@ -42,21 +42,21 @@ int main(int argc, char * argv[]) {
   if (!flg) fromStep = 2;
 
   if (n>m) {
-    PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %d. The number of elements being scattered is %d\n",m,n);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameters such that m>=n\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %D. The number of elements being scattered is %D\n",m,n);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameters such that m>=n\n");CHKERRQ(ierr);
   } else if (toFirst+(n-1)*toStep >=m) {
-    PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %d. The number of elements being scattered is %d\n",m,n);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, toFirst=%d and toStep=%d.\n",toFirst,toStep);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"This produces an index (toFirst+(n-1)*toStep)>=m\n");CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -toFirst, or -toStep\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %D. The number of elements being scattered is %D\n",m,n);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, toFirst=%D and toStep=%D.\n",toFirst,toStep);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"This produces an index (toFirst+(n-1)*toStep)>=m\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -toFirst, or -toStep\n");CHKERRQ(ierr);
   } else if (fromFirst+(n-1)*fromStep>=m) {
-    PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %d. The number of elements being scattered is %d\n",m,n);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, fromFirst=%d and fromStep=%d.\n",fromFirst,toStep);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"This produces an index (fromFirst+(n-1)*fromStep)>=m\n");CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -fromFirst, or -fromStep\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %D. The number of elements being scattered is %D\n",m,n);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, fromFirst=%D and fromStep=%D.\n",fromFirst,toStep);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"This produces an index (fromFirst+(n-1)*fromStep)>=m\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -fromFirst, or -fromStep\n");CHKERRQ(ierr);
   } else {
-    PetscPrintf(PETSC_COMM_WORLD,"m=%d\tn=%d\tfromFirst=%d\tfromStep=%d\ttoFirst=%d\ttoStep=%d\n",m,n,fromFirst,fromStep,toFirst,toStep);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"fromFirst+(n-1)*fromStep=%d\ttoFirst+(n-1)*toStep=%d\n",fromFirst+(n-1)*fromStep,toFirst+(n-1)*toStep);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"m=%D\tn=%D\tfromFirst=%D\tfromStep=%D\ttoFirst=%D\ttoStep=%D\n",m,n,fromFirst,fromStep,toFirst,toStep);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"fromFirst+(n-1)*fromStep=%D\ttoFirst+(n-1)*toStep=%D\n",fromFirst+(n-1)*fromStep,toFirst+(n-1)*toStep);CHKERRQ(ierr);
 
     /* Build the vectors */
     ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);

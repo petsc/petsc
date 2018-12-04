@@ -412,8 +412,8 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
 
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
-   NULL_CHARACTER must be employed; using NULL is not
-   correct for character data!  Thus, NULL_CHARACTER can be
+   PETSC_NULL_CHARACTER must be employed; using NULL is not
+   correct for character data!  Thus, PETSC_NULL_CHARACTER can be
    used for the display and title input parameters.
 
   Concepts: graphics^opening PetscViewer

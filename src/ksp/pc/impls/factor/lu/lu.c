@@ -62,20 +62,24 @@ static PetscErrorCode PCSetUp_LU(PC pc)
 
   ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (dir->hdr.inplace) {
-    if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
-    ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
-    ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-    if (dir->row) {
-      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->col);CHKERRQ(ierr);
-    }
-    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-    ierr = MatFactorGetError(pc->pmat,&err);CHKERRQ(ierr);
-    if (err) { /* Factor() fails */
-      pc->failedreason = (PCFailedReason)err;
-      PetscFunctionReturn(0);
-    }
+    MatFactorType ftype;
 
+    ierr = MatGetFactorType(pc->pmat, &ftype);CHKERRQ(ierr);
+    if (ftype == MAT_FACTOR_NONE) {
+      if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
+      ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
+      ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
+      if (dir->row) {
+        ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);
+        ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->col);CHKERRQ(ierr);
+      }
+      ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+      ierr = MatFactorGetError(pc->pmat,&err);CHKERRQ(ierr);
+      if (err) { /* Factor() fails */
+        pc->failedreason = (PCFailedReason)err;
+        PetscFunctionReturn(0);
+      }
+    }
     ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
     MatInfo info;

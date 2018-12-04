@@ -285,6 +285,7 @@ PETSC_EXTERN PetscClassId      TSTRAJECTORY_CLASSID;
 PETSC_EXTERN PetscBool         TSTrajectoryRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode TSSetSaveTrajectory(TS);
+PETSC_EXTERN PetscErrorCode TSResetTrajectory(TS);
 
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryReset(TSTrajectory);
@@ -293,6 +294,10 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryView(TSTrajectory,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,TS,TSTrajectoryType);
 PETSC_EXTERN PetscErrorCode TSTrajectorySet(TSTrajectory,TS,PetscInt,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSTrajectoryGetVecs(TSTrajectory,TS,PetscInt,PetscReal*,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory,TS,PetscReal,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSTrajectoryRestoreUpdatedHistoryVecs(TSTrajectory,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory,TS);
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegister(const char[],PetscErrorCode (*)(TSTrajectory,TS));
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
@@ -300,6 +305,8 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetUp(TSTrajectory,TS);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetMonitor(TSTrajectory,PetscBool);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory,const char * const*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetTransform(TSTrajectory,PetscErrorCode (*)(void*,Vec,Vec*),PetscErrorCode (*)(void*),void*);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory,PetscBool);
+PETSC_EXTERN PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory,PetscBool);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetDirname(TSTrajectory,const char[]);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory,const char[]);
@@ -624,11 +631,12 @@ typedef struct _p_TSAdapt *TSAdapt;
 .seealso: TSAdaptSetType(), TS
 E*/
 typedef const char *TSAdaptType;
-#define TSADAPTNONE  "none"
-#define TSADAPTBASIC "basic"
-#define TSADAPTDSP   "dsp"
-#define TSADAPTCFL   "cfl"
-#define TSADAPTGLEE  "glee"
+#define TSADAPTNONE    "none"
+#define TSADAPTBASIC   "basic"
+#define TSADAPTDSP     "dsp"
+#define TSADAPTCFL     "cfl"
+#define TSADAPTGLEE    "glee"
+#define TSADAPTHISTORY "history"
 
 PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
@@ -657,6 +665,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptGetClip(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetStepLimits(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
+PETSC_EXTERN PetscErrorCode TSAdaptHistorySetHistory(TSAdapt,PetscInt n,PetscReal hist[],PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptDSPSetFilter(TSAdapt,const char *);
 PETSC_EXTERN PetscErrorCode TSAdaptDSPSetPID(TSAdapt,PetscReal,PetscReal,PetscReal);
 

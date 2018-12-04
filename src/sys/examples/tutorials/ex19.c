@@ -33,5 +33,5 @@ int main(int argc,char **argv)
 
    test:
      localrunfiles: optionsfile
-     filter: grep -v malloc | grep -v nox | grep -v display | grep -v saws_port | grep -v vecscatter | grep -v options_left
+     filter: grep -v malloc | grep -v nox | grep -v display | grep -v saws_port | grep -v vecscatter | grep -v options_left | grep -v check_pointer_intensity
 TEST*/
