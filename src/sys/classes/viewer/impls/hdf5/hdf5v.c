@@ -812,11 +812,7 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
     PetscStackCall("H5Dopen",dataset = H5Dopen(h5, parent));
 #endif
     if (dataset < 0) PetscFunctionReturn(0);
-    PetscStackCall("H5Aexists",hhas = H5Aexists(dataset, name));
-    if (hhas < 0) {
-      PetscStackCallHDF5(H5Dclose,(dataset));
-      PetscFunctionReturn(0);
-    }
+    PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
     PetscStackCallHDF5(H5Dclose,(dataset));
     *has = hhas ? PETSC_TRUE : PETSC_FALSE;
   }
