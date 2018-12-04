@@ -20,6 +20,10 @@ typedef struct {
   PetscInt             dim, codim;         /* Dimension or codimension of mesh points to loop over; only one of them can be set */
   PetscSection         cellCounts;         /* Maps patch -> # cells in patch */
   IS                   cells;              /* [patch][cell in patch]: Cell number */
+  IS                   extFacets;
+  IS                   intFacets;
+  PetscSection         intFacetCounts;
+  PetscSection         extFacetCounts;
   PetscSection         cellNumbering;      /* Plex: NULL Firedrake: Numbering of cells in DM */
   PetscSection         pointCounts;        /* Maps patch -> # points with dofs in patch */
   IS                   points;             /* [patch][point in patch]: Point number */
@@ -90,6 +94,12 @@ typedef struct {
   PetscBool            viewCells;          /* View cells for each patch */
   PetscViewer          viewerCells;        /*   Viewer for patch cells */
   PetscViewerFormat    formatCells;        /*   Format for patch cells */
+  PetscBool            viewIntFacets;          /* View intFacets for each patch */
+  PetscViewer          viewerIntFacets;        /*   Viewer for patch intFacets */
+  PetscViewerFormat    formatIntFacets;        /*   Format for patch intFacets */
+  PetscBool            viewExtFacets;          /* View extFacets for each patch */
+  PetscViewer          viewerExtFacets;        /*   Viewer for patch extFacets */
+  PetscViewerFormat    formatExtFacets;        /*   Format for patch extFacets */
   PetscBool            viewPoints;         /* View points for each patch */
   PetscViewer          viewerPoints;       /*   Viewer for patch points */
   PetscViewerFormat    formatPoints;       /*   Format for patch points */

@@ -801,9 +801,9 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   DMLabel         ghost = NULL;
   DM              dm, plex;
   PetscHSetI      ht, cht;
-  PetscSection    cellCounts,  pointCounts;
-  PetscInt       *cellsArray, *pointsArray;
-  PetscInt        numCells,    numPoints;
+  PetscSection    cellCounts,  pointCounts, intFacetCounts, extFacetCounts;
+  PetscInt       *cellsArray, *pointsArray, *intFacetsArray, *extFacetsArray;
+  PetscInt        numCells, numPoints, numIntFacets, numExtFacets;
   const PetscInt *leaves;
   PetscInt        nleaves, pStart, pEnd, cStart, cEnd, vStart, vEnd, v;
   PetscBool       isFiredrake;
@@ -852,7 +852,17 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   ierr = PetscObjectSetName((PetscObject) patch->pointCounts, "Patch Point Layout");CHKERRQ(ierr);
   pointCounts = patch->pointCounts;
   ierr = PetscSectionSetChart(pointCounts, vStart, vEnd);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_SELF, &patch->extFacetCounts);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) patch->extFacetCounts, "Patch Exterior Facet Layout");CHKERRQ(ierr);
+  extFacetCounts = patch->extFacetCounts;
+  ierr = PetscSectionSetChart(extFacetCounts, vStart, vEnd);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_SELF, &patch->intFacetCounts);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) patch->intFacetCounts, "Patch Interior Facet Layout");CHKERRQ(ierr);
+  intFacetCounts = patch->intFacetCounts;
+  ierr = PetscSectionSetChart(intFacetCounts, vStart, vEnd);CHKERRQ(ierr);
   /* Count cells and points in the patch surrounding each entity */
+  PetscInt       fStart, fEnd;
+  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     PetscHashIter hi;
     PetscInt       chtSize, loc = -1;
@@ -877,6 +887,31 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
       PetscInt point, pdof;
 
       PetscHashIterGetKey(cht, hi, point);
+      if (fStart <= point && point < fEnd) {
+        const PetscInt *support;
+        PetscInt supportSize, p;
+        PetscBool interior = PETSC_TRUE;
+        ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
+        ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
+        if (supportSize == 1) {
+          interior = PETSC_FALSE;
+        } else {
+          for (p = 0; p < supportSize; p++) {
+            PetscBool found;
+            /* FIXME: can I do this while iterating over cht? */
+            PetscHSetIHas(cht, support[p], &found);
+            if (!found) {
+              interior = PETSC_FALSE;
+              break;
+            }
+          }
+        }
+        if (interior) {
+          ierr = PetscSectionAddDof(intFacetCounts, v, 1);CHKERRQ(ierr);
+        } else {
+          ierr = PetscSectionAddDof(extFacetCounts, v, 1);CHKERRQ(ierr);
+        }
+      }
       ierr = PCPatchGetGlobalDofs(pc, patch->dofSection, -1, patch->combined, point, &pdof, NULL);CHKERRQ(ierr);
       if (pdof)                            {ierr = PetscSectionAddDof(pointCounts, v, 1);CHKERRQ(ierr);}
       if (point >= cStart && point < cEnd) {ierr = PetscSectionAddDof(cellCounts, v, 1);CHKERRQ(ierr);}
@@ -892,15 +927,26 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   ierr = PetscSectionGetStorageSize(pointCounts, &numPoints);CHKERRQ(ierr);
   ierr = PetscMalloc1(numPoints, &pointsArray);CHKERRQ(ierr);
 
+  ierr = PetscSectionSetUp(intFacetCounts);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(extFacetCounts);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(intFacetCounts, &numIntFacets);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(extFacetCounts, &numExtFacets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numIntFacets, &intFacetsArray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numExtFacets, &extFacetsArray);CHKERRQ(ierr);
+
   /* Now that we know how much space we need, run through again and actually remember the cells. */
   for (v = vStart; v < vEnd; v++ ) {
     PetscHashIter hi;
-    PetscInt       dof, off, cdof, coff, pdof, n = 0, cn = 0;
+    PetscInt       dof, off, cdof, coff, efdof, efoff, ifdof, ifoff, pdof, n = 0, cn = 0, ifn = 0, efn = 0;
 
     ierr = PetscSectionGetDof(pointCounts, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(pointCounts, v, &off);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(cellCounts, v, &cdof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(cellCounts, v, &coff);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(intFacetCounts, v, &ifdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(intFacetCounts, v, &ifoff);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(extFacetCounts, v, &efdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(extFacetCounts, v, &efoff);CHKERRQ(ierr);
     if (dof <= 0) continue;
     ierr = patch->patchconstructop((void *) patch, dm, v, ht);CHKERRQ(ierr);
     ierr = PCPatchCompleteCellPatch(pc, ht, cht);CHKERRQ(ierr);
@@ -909,11 +955,38 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
       PetscInt point;
 
       PetscHashIterGetKey(cht, hi, point);
+      if (fStart <= point && point < fEnd) {
+        const PetscInt *support;
+        PetscInt supportSize, p;
+        PetscBool interior = PETSC_TRUE;
+        ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
+        ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
+        if (supportSize == 1) {
+          interior = PETSC_FALSE;
+        } else {
+          for (p = 0; p < supportSize; p++) {
+            PetscBool found;
+            /* FIXME: can I do this while iterating over cht? */
+            PetscHSetIHas(cht, support[p], &found);
+            if (!found) {
+              interior = PETSC_FALSE;
+              break;
+            }
+          }
+        }
+        if (interior) {
+          intFacetsArray[ifoff + ifn++] = point;
+        } else {
+          extFacetsArray[efoff + efn++] = point;
+        }
+      }
       ierr = PCPatchGetGlobalDofs(pc, patch->dofSection, -1, patch->combined, point, &pdof, NULL);CHKERRQ(ierr);
       if (pdof)                            {pointsArray[off + n++] = point;}
       if (point >= cStart && point < cEnd) {cellsArray[coff + cn++] = point;}
       PetscHashIterNext(cht, hi);
     }
+    if (ifn != ifdof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of interior facets in patch %D is %D, but should be %D", v, ifn, ifdof);
+    if (efn != efdof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of exterior facets in patch %D is %D, but should be %D", v, efn, efdof);
     if (cn != cdof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of cells in patch %D is %D, but should be %D", v, cn, cdof);
     if (n  != dof)  SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of points in patch %D is %D, but should be %D", v, n, dof);
   }
@@ -926,6 +999,18 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   if (patch->viewCells) {
     ierr = ObjectView((PetscObject) patch->cellCounts, patch->viewerCells, patch->formatCells);CHKERRQ(ierr);
     ierr = ObjectView((PetscObject) patch->cells,      patch->viewerCells, patch->formatCells);CHKERRQ(ierr);
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, numIntFacets,  intFacetsArray,  PETSC_OWN_POINTER, &patch->intFacets);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) patch->intFacets,  "Patch Interior Facets");CHKERRQ(ierr);
+  if (patch->viewIntFacets) {
+    ierr = ObjectView((PetscObject) patch->cellCounts, patch->viewerIntFacets, patch->formatIntFacets);CHKERRQ(ierr);
+    ierr = ObjectView((PetscObject) patch->intFacets,      patch->viewerIntFacets, patch->formatIntFacets);CHKERRQ(ierr);
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, numExtFacets,  extFacetsArray,  PETSC_OWN_POINTER, &patch->extFacets);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) patch->extFacets,  "Patch Exterior Facets");CHKERRQ(ierr);
+  if (patch->viewExtFacets) {
+    ierr = ObjectView((PetscObject) patch->cellCounts, patch->viewerExtFacets, patch->formatExtFacets);CHKERRQ(ierr);
+    ierr = ObjectView((PetscObject) patch->extFacets,      patch->viewerExtFacets, patch->formatExtFacets);CHKERRQ(ierr);
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numPoints, pointsArray, PETSC_OWN_POINTER, &patch->points);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) patch->points, "Patch Points");CHKERRQ(ierr);
