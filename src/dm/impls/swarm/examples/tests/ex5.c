@@ -340,7 +340,7 @@ static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec V,Vec Posres,void *ctx)
      for(d = 0; d < dim; ++d){
      
        /* store residual positons in the format x, y in the function vector */
-       posres[p*dim+d] = v[p*dim+d];
+       posres[p*d+d] = v[p*d+d];
      
      }
   }
@@ -352,7 +352,7 @@ static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec V,Vec Posres,void *ctx)
 
 static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
 {
-  AppCtx*           user = (AppCtx*)ctx;
+  
   const PetscScalar *x;
   const PetscReal   G = 1; /* Actually: 6.67408e-11 */
   PetscInt          Np, p, dim, d;
@@ -374,8 +374,7 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
     PetscScalar rsqr = 0;
     for(d = 0; d < dim; ++d) rsqr += PetscSqr(x[p*dim+d]);
     
-    /* TODO: update for vlasov equations */
-    for(d=0; d< dim; ++d) vres[p*dim+p] = (G*1000)*x[p*dim+p]/rsqr;
+    for(d=0; d< dim; ++d) vres[p*d+p] = (G*1000)*x[p*dim+d]/rsqr;
 
   }
 
@@ -384,12 +383,10 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
   PetscFunctionReturn(0);
 }
 
-// x value out of usubt - v dx/dt - v = 0
-// v residual need x_t (dv/dt = f )
 static PetscErrorCode RHSFunctionParticles(TS ts,PetscReal t,Vec U,Vec R,void *ctx)
 {
   /* Function for orbiting particles, assumes center with mass of 1000 and orbiting particles of mass 1 */
-  AppCtx*           user = (AppCtx*)ctx;
+ 
   const PetscScalar *u;
   PetscScalar       *r;
   PetscScalar       rsqr = 0; 
@@ -405,24 +402,19 @@ static PetscErrorCode RHSFunctionParticles(TS ts,PetscReal t,Vec U,Vec R,void *c
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
-  for(int p = 0; p < Np; ++p){
+  for( p = 0; p < Np; ++p){
     for(d=0; d < dim; ++d) rsqr += PetscSqr(u[p*dim+p]);
     
     for(d=0; d < dim; ++d){
       
-        r[p*d+p+0] = u[p*d+p+2];
-        r[p*d+p+1] = u[p*d+p+3];
+        r[p*dim+p+0] = u[p*dim+2];
+        r[p*dim+p+1] = u[p*dim+3];
       
-        r[p+2] = (6.67408e-11*1000)*u[p]/rsqr;
-        r[p+3] = (6.67408e-11*1000)*u[p+1]/rsqr;
+        r[p*dim+p+2] = (6.67408e-11*1000)*u[p*dim+0]/rsqr;
+        r[p*dim+p+3] = (6.67408e-11*1000)*u[p*dim+1]/rsqr;
     
     }
-    /*TODO: Update for Vlasov Equations */  
-    // position
-    
-    
-    //  momentum
-    
+   
   }
   
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
@@ -479,7 +471,7 @@ int main(int argc,char **argv)
 
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
   
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
   
   ierr = VecGetLocalSize(f, &locSize);CHKERRQ(ierr);
   ierr = PetscMalloc1(locSize/2, &idx1);CHKERRQ(ierr);
@@ -552,7 +544,7 @@ int main(int argc,char **argv)
    build:
      requires: !single !complex
    test:
-     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 
    test:
      suffix: 2
      args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 2 
