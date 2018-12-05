@@ -300,7 +300,8 @@ struct _p_TSAdapt {
   PetscReal   matchstepfac[2];    /* factors to control the behaviour of matchstep */
   NormType    wnormtype;
   PetscViewer monitor;
-  PetscInt    timestepjustincreased;
+  PetscInt    timestepjustdecreased_delay; /* number of timesteps after a decrease in the timestep before the timestep can be increased */
+  PetscInt    timestepjustdecreased;
 };
 
 typedef struct _p_DMTS *DMTS;
