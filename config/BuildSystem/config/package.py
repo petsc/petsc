@@ -666,7 +666,7 @@ class Package(config.base.Configure):
         retriever.saveLog()
         pkgdir = self.getDir()
         if not pkgdir:
-          raise RuntimeError('Could not located downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
+          raise RuntimeError('Could not locate downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
         retriever.restoreLog()
         return pkgdir
