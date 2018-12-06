@@ -81,9 +81,10 @@ class generateExamples(Petsc):
       the dependencies, etc.
   """
   def __init__(self,petsc_dir=None, petsc_arch=None, testdir='tests', verbose=False, single_ex=False, srcdir=None):
-    super(generateExamples, self).__init__(petsc_dir, petsc_arch, verbose)
+    super(generateExamples, self).__init__(petsc_dir=petsc_dir, petsc_arch=petsc_arch, verbose=verbose)
 
     self.single_ex=single_ex
+    self.srcdir=srcdir
 
     # Set locations to handle movement
     self.inInstallDir=self.getInInstallDir(thisscriptdir)
@@ -94,13 +95,15 @@ class generateExamples(Petsc):
       dirlist=thisscriptdir.split(os.path.sep)
       installdir=os.path.sep.join(dirlist[0:len(dirlist)-4])
       self.arch_dir=installdir
-      self.srcdir=os.path.join(os.path.dirname(thisscriptdir),'src')
+      if self.srcdir is None:
+        self.srcdir=os.path.join(os.path.dirname(thisscriptdir),'src')
     else:
       if petsc_arch == '':
         raise RuntimeError('PETSC_ARCH must be set when running from build directory')
       # Case 1 discussed above
       self.arch_dir=os.path.join(self.petsc_dir,self.petsc_arch)
-      self.srcdir=os.path.join(self.petsc_dir,'src')
+      if self.srcdir is None:
+        self.srcdir=os.path.join(self.petsc_dir,'src')
 
     self.testroot_dir=os.path.abspath(testdir)
 
@@ -948,9 +951,11 @@ class generateExamples(Petsc):
 
 def main(petsc_dir=None, petsc_arch=None, verbose=False, single_ex=False, srcdir=None, testdir=None):
     # Allow petsc_arch to have both petsc_dir and petsc_arch for convenience
+    testdir=os.path.normpath(testdir)
     if petsc_arch: 
+        petsc_arch=petsc_arch.rstrip(os.path.sep)
         if len(petsc_arch.split(os.path.sep))>1:
-            petsc_dir,petsc_arch=os.path.split(petsc_arch.rstrip(os.path.sep))
+            petsc_dir,petsc_arch=os.path.split(petsc_arch)
     output = os.path.join(testdir, 'testfiles')
 
     pEx=generateExamples(petsc_dir=petsc_dir, petsc_arch=petsc_arch,
