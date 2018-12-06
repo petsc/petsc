@@ -1,20 +1,22 @@
-Timestep: 0000 time = 0        	 L_2 Error: 9.3452e-17
+Timestep: 0000 time = 0        	 L_2 Error: 1.0821e-16
 0 TS dt 0.1 time 0.
     0 SNES Function norm 0.38487 
       0 KSP unpreconditioned resid norm 3.848701079585e-01 true resid norm 3.848701079585e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 2.002699455086e-02 true resid norm 2.002699455086e-02 ||r(i)||/||b|| 5.203572357721e-02
-      2 KSP unpreconditioned resid norm 6.254748270027e-04 true resid norm 6.254748270027e-04 ||r(i)||/||b|| 1.625158239283e-03
-      3 KSP unpreconditioned resid norm 2.763575937000e-05 true resid norm 2.763575936998e-05 ||r(i)||/||b|| 7.180541901933e-05
-      4 KSP unpreconditioned resid norm 1.159518217141e-06 true resid norm 1.159518217137e-06 ||r(i)||/||b|| 3.012752077025e-06
-      5 KSP unpreconditioned resid norm 1.095197756188e-08 true resid norm 1.095197760035e-08 ||r(i)||/||b|| 2.845629570569e-08
-      6 KSP unpreconditioned resid norm 3.258107321197e-11 true resid norm 3.258106656756e-11 ||r(i)||/||b|| 8.465470789711e-11
-    1 SNES Function norm 3.258e-11 
+      1 KSP unpreconditioned resid norm 6.306958768405e-02 true resid norm 6.306958768405e-02 ||r(i)||/||b|| 1.638723984531e-01
+      2 KSP unpreconditioned resid norm 5.760676204313e-03 true resid norm 5.760676204313e-03 ||r(i)||/||b|| 1.496784521633e-02
+      3 KSP unpreconditioned resid norm 4.612023997603e-04 true resid norm 4.612023997603e-04 ||r(i)||/||b|| 1.198332606829e-03
+      4 KSP unpreconditioned resid norm 7.800377626583e-05 true resid norm 7.800377626586e-05 ||r(i)||/||b|| 2.026755901611e-04
+      5 KSP unpreconditioned resid norm 5.796001277060e-06 true resid norm 5.796001277043e-06 ||r(i)||/||b|| 1.505962961839e-05
+      6 KSP unpreconditioned resid norm 6.294785394574e-07 true resid norm 6.294785394633e-07 ||r(i)||/||b|| 1.635561002132e-06
+      7 KSP unpreconditioned resid norm 4.711800149142e-09 true resid norm 4.711800136142e-09 ||r(i)||/||b|| 1.224257233469e-08
+      8 KSP unpreconditioned resid norm 1.845375931471e-11 true resid norm 1.845373359363e-11 ||r(i)||/||b|| 4.794795234038e-11
+    1 SNES Function norm 1.845e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -106,20 +108,22 @@ SNES Object: 1 MPI processes
 Timestep: 0001 time = 0.1      	 L_2 Error: 0.042609
 1 TS dt 0.1 time 0.1
     0 SNES Function norm 0.383649 
-      0 KSP unpreconditioned resid norm 3.836491353027e-01 true resid norm 3.836491353027e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.966193119241e-02 true resid norm 1.966193119241e-02 ||r(i)||/||b|| 5.124977325152e-02
-      2 KSP unpreconditioned resid norm 6.207853068124e-04 true resid norm 6.207853068124e-04 ||r(i)||/||b|| 1.618106883839e-03
-      3 KSP unpreconditioned resid norm 2.821168496836e-05 true resid norm 2.821168496838e-05 ||r(i)||/||b|| 7.353511939005e-05
-      4 KSP unpreconditioned resid norm 1.175282614366e-06 true resid norm 1.175282614342e-06 ||r(i)||/||b|| 3.063430896085e-06
-      5 KSP unpreconditioned resid norm 1.038861816891e-08 true resid norm 1.038861818183e-08 ||r(i)||/||b|| 2.707843502275e-08
-      6 KSP unpreconditioned resid norm 3.337543850831e-11 true resid norm 3.337544674724e-11 ||r(i)||/||b|| 8.699471385725e-11
-    1 SNES Function norm 3.338e-11 
+      0 KSP unpreconditioned resid norm 3.836491353067e-01 true resid norm 3.836491353067e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 6.087119748495e-02 true resid norm 6.087119748495e-02 ||r(i)||/||b|| 1.586637160965e-01
+      2 KSP unpreconditioned resid norm 5.740698672644e-03 true resid norm 5.740698672644e-03 ||r(i)||/||b|| 1.496340834459e-02
+      3 KSP unpreconditioned resid norm 4.605229592736e-04 true resid norm 4.605229592736e-04 ||r(i)||/||b|| 1.200375334889e-03
+      4 KSP unpreconditioned resid norm 7.848908845461e-05 true resid norm 7.848908845462e-05 ||r(i)||/||b|| 2.045855997874e-04
+      5 KSP unpreconditioned resid norm 5.648624058193e-06 true resid norm 5.648624058220e-06 ||r(i)||/||b|| 1.472341141523e-05
+      6 KSP unpreconditioned resid norm 6.188836190140e-07 true resid norm 6.188836190145e-07 ||r(i)||/||b|| 1.613150042733e-06
+      7 KSP unpreconditioned resid norm 4.800059529470e-09 true resid norm 4.800059540549e-09 ||r(i)||/||b|| 1.251158701742e-08
+      8 KSP unpreconditioned resid norm 1.774392929439e-11 true resid norm 1.774395612425e-11 ||r(i)||/||b|| 4.625047860478e-11
+    1 SNES Function norm 1.774e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -211,20 +215,22 @@ SNES Object: 1 MPI processes
 Timestep: 0002 time = 0.2      	 L_2 Error: 0.084372
 2 TS dt 0.1 time 0.2
     0 SNES Function norm 0.380922 
-      0 KSP unpreconditioned resid norm 3.809222270494e-01 true resid norm 3.809222270494e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.963244152276e-02 true resid norm 1.963244152276e-02 ||r(i)||/||b|| 5.153923853390e-02
-      2 KSP unpreconditioned resid norm 6.171298678390e-04 true resid norm 6.171298678390e-04 ||r(i)||/||b|| 1.620094140001e-03
-      3 KSP unpreconditioned resid norm 2.804336390403e-05 true resid norm 2.804336390403e-05 ||r(i)||/||b|| 7.361965753811e-05
-      4 KSP unpreconditioned resid norm 1.168127852162e-06 true resid norm 1.168127852161e-06 ||r(i)||/||b|| 3.066578343850e-06
-      5 KSP unpreconditioned resid norm 9.980399053541e-09 true resid norm 9.980399063329e-09 ||r(i)||/||b|| 2.620062142510e-08
-      6 KSP unpreconditioned resid norm 3.393978417527e-11 true resid norm 3.393978588407e-11 ||r(i)||/||b|| 8.909899048676e-11
-    1 SNES Function norm 3.394e-11 
+      0 KSP unpreconditioned resid norm 3.809222270566e-01 true resid norm 3.809222270566e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 5.968841254678e-02 true resid norm 5.968841254678e-02 ||r(i)||/||b|| 1.566944859270e-01
+      2 KSP unpreconditioned resid norm 5.800384745162e-03 true resid norm 5.800384745162e-03 ||r(i)||/||b|| 1.522721525069e-02
+      3 KSP unpreconditioned resid norm 4.622462756028e-04 true resid norm 4.622462756028e-04 ||r(i)||/||b|| 1.213492526216e-03
+      4 KSP unpreconditioned resid norm 7.972477625283e-05 true resid norm 7.972477625284e-05 ||r(i)||/||b|| 2.092941041243e-04
+      5 KSP unpreconditioned resid norm 5.651496202770e-06 true resid norm 5.651496202787e-06 ||r(i)||/||b|| 1.483635188856e-05
+      6 KSP unpreconditioned resid norm 6.078212012816e-07 true resid norm 6.078212013076e-07 ||r(i)||/||b|| 1.595656956026e-06
+      7 KSP unpreconditioned resid norm 4.860650279105e-09 true resid norm 4.860650279805e-09 ||r(i)||/||b|| 1.276021700641e-08
+      8 KSP unpreconditioned resid norm 1.731140125257e-11 true resid norm 1.731140182079e-11 ||r(i)||/||b|| 4.544602701334e-11
+    1 SNES Function norm 1.731e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -316,20 +322,22 @@ SNES Object: 1 MPI processes
 Timestep: 0003 time = 0.3      	 L_2 Error: 0.12562
 3 TS dt 0.1 time 0.3
     0 SNES Function norm 0.377457 
-      0 KSP unpreconditioned resid norm 3.774573494063e-01 true resid norm 3.774573494063e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.972860497445e-02 true resid norm 1.972860497445e-02 ||r(i)||/||b|| 5.226711045760e-02
-      2 KSP unpreconditioned resid norm 6.141403116397e-04 true resid norm 6.141403116397e-04 ||r(i)||/||b|| 1.627045579072e-03
-      3 KSP unpreconditioned resid norm 2.767579682614e-05 true resid norm 2.767579682612e-05 ||r(i)||/||b|| 7.332165308119e-05
-      4 KSP unpreconditioned resid norm 1.154872045905e-06 true resid norm 1.154872045871e-06 ||r(i)||/||b|| 3.059609377556e-06
-      5 KSP unpreconditioned resid norm 9.891580635594e-09 true resid norm 9.891580629585e-09 ||r(i)||/||b|| 2.620582337354e-08
-      6 KSP unpreconditioned resid norm 3.417360185463e-11 true resid norm 3.417359338181e-11 ||r(i)||/||b|| 9.053630412962e-11
-    1 SNES Function norm 3.417e-11 
+      0 KSP unpreconditioned resid norm 3.774573494154e-01 true resid norm 3.774573494154e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 5.954853714304e-02 true resid norm 5.954853714304e-02 ||r(i)||/||b|| 1.577622935022e-01
+      2 KSP unpreconditioned resid norm 5.848939409168e-03 true resid norm 5.848939409168e-03 ||r(i)||/||b|| 1.549562995190e-02
+      3 KSP unpreconditioned resid norm 4.630907205003e-04 true resid norm 4.630907205002e-04 ||r(i)||/||b|| 1.226868999153e-03
+      4 KSP unpreconditioned resid norm 8.053803471345e-05 true resid norm 8.053803471342e-05 ||r(i)||/||b|| 2.133698942096e-04
+      5 KSP unpreconditioned resid norm 5.701869061872e-06 true resid norm 5.701869061870e-06 ||r(i)||/||b|| 1.510599560639e-05
+      6 KSP unpreconditioned resid norm 6.025388075754e-07 true resid norm 6.025388075944e-07 ||r(i)||/||b|| 1.596309645388e-06
+      7 KSP unpreconditioned resid norm 4.883261060044e-09 true resid norm 4.883261063505e-09 ||r(i)||/||b|| 1.293725256924e-08
+      8 KSP unpreconditioned resid norm 1.729375636379e-11 true resid norm 1.729375104729e-11 ||r(i)||/||b|| 4.581643747055e-11
+    1 SNES Function norm 1.729e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -421,20 +429,22 @@ SNES Object: 1 MPI processes
 Timestep: 0004 time = 0.4      	 L_2 Error: 0.16664
 4 TS dt 0.1 time 0.4
     0 SNES Function norm 0.37449 
-      0 KSP unpreconditioned resid norm 3.744902213553e-01 true resid norm 3.744902213553e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.972622519315e-02 true resid norm 1.972622519315e-02 ||r(i)||/||b|| 5.267487391728e-02
-      2 KSP unpreconditioned resid norm 6.103447621092e-04 true resid norm 6.103447621092e-04 ||r(i)||/||b|| 1.629801600427e-03
-      3 KSP unpreconditioned resid norm 2.734053023001e-05 true resid norm 2.734053023002e-05 ||r(i)||/||b|| 7.300732748395e-05
-      4 KSP unpreconditioned resid norm 1.142708835792e-06 true resid norm 1.142708835782e-06 ||r(i)||/||b|| 3.051371626331e-06
-      5 KSP unpreconditioned resid norm 1.002885856509e-08 true resid norm 1.002885857463e-08 ||r(i)||/||b|| 2.678002789587e-08
-      6 KSP unpreconditioned resid norm 3.399722626274e-11 true resid norm 3.399725958671e-11 ||r(i)||/||b|| 9.078276987759e-11
-    1 SNES Function norm 3.400e-11 
+      0 KSP unpreconditioned resid norm 3.744902213650e-01 true resid norm 3.744902213650e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 5.982974938131e-02 true resid norm 5.982974938131e-02 ||r(i)||/||b|| 1.597631819684e-01
+      2 KSP unpreconditioned resid norm 5.840834302842e-03 true resid norm 5.840834302842e-03 ||r(i)||/||b|| 1.559676052836e-02
+      3 KSP unpreconditioned resid norm 4.612964201615e-04 true resid norm 4.612964201614e-04 ||r(i)||/||b|| 1.231798305654e-03
+      4 KSP unpreconditioned resid norm 8.073771822390e-05 true resid norm 8.073771822391e-05 ||r(i)||/||b|| 2.155936620444e-04
+      5 KSP unpreconditioned resid norm 5.730193368363e-06 true resid norm 5.730193368351e-06 ||r(i)||/||b|| 1.530131640678e-05
+      6 KSP unpreconditioned resid norm 6.010616249637e-07 true resid norm 6.010616249715e-07 ||r(i)||/||b|| 1.605012869978e-06
+      7 KSP unpreconditioned resid norm 4.858498871957e-09 true resid norm 4.858498872870e-09 ||r(i)||/||b|| 1.297363347743e-08
+      8 KSP unpreconditioned resid norm 1.751406135113e-11 true resid norm 1.751403567040e-11 ||r(i)||/||b|| 4.676767154710e-11
+    1 SNES Function norm 1.751e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -526,20 +536,22 @@ SNES Object: 1 MPI processes
 Timestep: 0005 time = 0.5      	 L_2 Error: 0.2076
 5 TS dt 0.1 time 0.5
     0 SNES Function norm 0.372928 
-      0 KSP unpreconditioned resid norm 3.729281667899e-01 true resid norm 3.729281667899e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.955399630031e-02 true resid norm 1.955399630031e-02 ||r(i)||/||b|| 5.243368037505e-02
-      2 KSP unpreconditioned resid norm 6.053466821621e-04 true resid norm 6.053466821621e-04 ||r(i)||/||b|| 1.623225961645e-03
-      3 KSP unpreconditioned resid norm 2.704088265892e-05 true resid norm 2.704088265891e-05 ||r(i)||/||b|| 7.250962803823e-05
-      4 KSP unpreconditioned resid norm 1.131739917614e-06 true resid norm 1.131739917614e-06 ||r(i)||/||b|| 3.034739712358e-06
-      5 KSP unpreconditioned resid norm 1.022281375839e-08 true resid norm 1.022281374701e-08 ||r(i)||/||b|| 2.741228648671e-08
-      6 KSP unpreconditioned resid norm 3.345608771490e-11 true resid norm 3.345610659033e-11 ||r(i)||/||b|| 8.971193267143e-11
-    1 SNES Function norm 3.346e-11 
+      0 KSP unpreconditioned resid norm 3.729281667988e-01 true resid norm 3.729281667988e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 6.002541949214e-02 true resid norm 6.002541949214e-02 ||r(i)||/||b|| 1.609570551010e-01
+      2 KSP unpreconditioned resid norm 5.775316419172e-03 true resid norm 5.775316419172e-03 ||r(i)||/||b|| 1.548640444284e-02
+      3 KSP unpreconditioned resid norm 4.576993940278e-04 true resid norm 4.576993940278e-04 ||r(i)||/||b|| 1.227312482070e-03
+      4 KSP unpreconditioned resid norm 8.039211062475e-05 true resid norm 8.039211062473e-05 ||r(i)||/||b|| 2.155699616760e-04
+      5 KSP unpreconditioned resid norm 5.708171590220e-06 true resid norm 5.708171590238e-06 ||r(i)||/||b|| 1.530635682265e-05
+      6 KSP unpreconditioned resid norm 5.991553964591e-07 true resid norm 5.991553964691e-07 ||r(i)||/||b|| 1.606624143229e-06
+      7 KSP unpreconditioned resid norm 4.791537579858e-09 true resid norm 4.791537591102e-09 ||r(i)||/||b|| 1.284841966278e-08
+      8 KSP unpreconditioned resid norm 1.772048749492e-11 true resid norm 1.772051502236e-11 ||r(i)||/||b|| 4.751723414853e-11
+    1 SNES Function norm 1.772e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -631,20 +643,22 @@ SNES Object: 1 MPI processes
 Timestep: 0006 time = 0.6      	 L_2 Error: 0.24859
 6 TS dt 0.1 time 0.6
     0 SNES Function norm 0.372986 
-      0 KSP unpreconditioned resid norm 3.729860798672e-01 true resid norm 3.729860798672e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.928143749536e-02 true resid norm 1.928143749536e-02 ||r(i)||/||b|| 5.169479113598e-02
-      2 KSP unpreconditioned resid norm 6.002367739076e-04 true resid norm 6.002367739076e-04 ||r(i)||/||b|| 1.609273928189e-03
-      3 KSP unpreconditioned resid norm 2.672611757915e-05 true resid norm 2.672611757916e-05 ||r(i)||/||b|| 7.165446385740e-05
-      4 KSP unpreconditioned resid norm 1.120656189826e-06 true resid norm 1.120656189833e-06 ||r(i)||/||b|| 3.004552315282e-06
-      5 KSP unpreconditioned resid norm 1.036422342277e-08 true resid norm 1.036422340814e-08 ||r(i)||/||b|| 2.778715873749e-08
-      6 KSP unpreconditioned resid norm 3.272257408121e-11 true resid norm 3.272259186799e-11 ||r(i)||/||b|| 8.773140241493e-11
-    1 SNES Function norm 3.272e-11 
+      0 KSP unpreconditioned resid norm 3.729860798745e-01 true resid norm 3.729860798745e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 5.998286066860e-02 true resid norm 5.998286066860e-02 ||r(i)||/||b|| 1.608179605222e-01
+      2 KSP unpreconditioned resid norm 5.687596001641e-03 true resid norm 5.687596001641e-03 ||r(i)||/||b|| 1.524881572941e-02
+      3 KSP unpreconditioned resid norm 4.534382695579e-04 true resid norm 4.534382695579e-04 ||r(i)||/||b|| 1.215697566275e-03
+      4 KSP unpreconditioned resid norm 7.976964452116e-05 true resid norm 7.976964452115e-05 ||r(i)||/||b|| 2.138676181910e-04
+      5 KSP unpreconditioned resid norm 5.651631937849e-06 true resid norm 5.651631937845e-06 ||r(i)||/||b|| 1.515239372940e-05
+      6 KSP unpreconditioned resid norm 5.948808411325e-07 true resid norm 5.948808411183e-07 ||r(i)||/||b|| 1.594914323126e-06
+      7 KSP unpreconditioned resid norm 4.702487381111e-09 true resid norm 4.702487348039e-09 ||r(i)||/||b|| 1.260767519695e-08
+      8 KSP unpreconditioned resid norm 1.779657220875e-11 true resid norm 1.779659688198e-11 ||r(i)||/||b|| 4.771383663424e-11
+    1 SNES Function norm 1.780e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -736,20 +750,22 @@ SNES Object: 1 MPI processes
 Timestep: 0007 time = 0.7      	 L_2 Error: 0.28962
 7 TS dt 0.1 time 0.7
     0 SNES Function norm 0.374276 
-      0 KSP unpreconditioned resid norm 3.742759385245e-01 true resid norm 3.742759385245e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.902762001080e-02 true resid norm 1.902762001080e-02 ||r(i)||/||b|| 5.083848052273e-02
-      2 KSP unpreconditioned resid norm 5.965607405926e-04 true resid norm 5.965607405926e-04 ||r(i)||/||b|| 1.593906204456e-03
-      3 KSP unpreconditioned resid norm 2.639815341995e-05 true resid norm 2.639815341991e-05 ||r(i)||/||b|| 7.053125970102e-05
-      4 KSP unpreconditioned resid norm 1.109853772354e-06 true resid norm 1.109853772337e-06 ||r(i)||/||b|| 2.965335620324e-06
-      5 KSP unpreconditioned resid norm 1.042396494214e-08 true resid norm 1.042396492376e-08 ||r(i)||/||b|| 2.785101538949e-08
-      6 KSP unpreconditioned resid norm 3.201646127827e-11 true resid norm 3.201646135251e-11 ||r(i)||/||b|| 8.554239815345e-11
-    1 SNES Function norm 3.202e-11 
+      0 KSP unpreconditioned resid norm 3.742759385298e-01 true resid norm 3.742759385298e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 5.979030900298e-02 true resid norm 5.979030900298e-02 ||r(i)||/||b|| 1.597492727901e-01
+      2 KSP unpreconditioned resid norm 5.617806615202e-03 true resid norm 5.617806615202e-03 ||r(i)||/||b|| 1.500979901959e-02
+      3 KSP unpreconditioned resid norm 4.495138691066e-04 true resid norm 4.495138691066e-04 ||r(i)||/||b|| 1.201022622166e-03
+      4 KSP unpreconditioned resid norm 7.920536127941e-05 true resid norm 7.920536127941e-05 ||r(i)||/||b|| 2.116229047225e-04
+      5 KSP unpreconditioned resid norm 5.595911671793e-06 true resid norm 5.595911671801e-06 ||r(i)||/||b|| 1.495129955129e-05
+      6 KSP unpreconditioned resid norm 5.892156061787e-07 true resid norm 5.892156061538e-07 ||r(i)||/||b|| 1.574281286872e-06
+      7 KSP unpreconditioned resid norm 4.617371734791e-09 true resid norm 4.617371702498e-09 ||r(i)||/||b|| 1.233681149965e-08
+      8 KSP unpreconditioned resid norm 1.776419283029e-11 true resid norm 1.776421370272e-11 ||r(i)||/||b|| 4.746287931973e-11
+    1 SNES Function norm 1.776e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -841,20 +857,22 @@ SNES Object: 1 MPI processes
 Timestep: 0008 time = 0.8      	 L_2 Error: 0.33068
 8 TS dt 0.1 time 0.8
     0 SNES Function norm 0.376133 
-      0 KSP unpreconditioned resid norm 3.761327824842e-01 true resid norm 3.761327824842e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.888195209289e-02 true resid norm 1.888195209289e-02 ||r(i)||/||b|| 5.020022973852e-02
-      2 KSP unpreconditioned resid norm 5.953262237940e-04 true resid norm 5.953262237940e-04 ||r(i)||/||b|| 1.582755482950e-03
-      3 KSP unpreconditioned resid norm 2.611756282942e-05 true resid norm 2.611756282942e-05 ||r(i)||/||b|| 6.943708191805e-05
-      4 KSP unpreconditioned resid norm 1.101307614048e-06 true resid norm 1.101307614041e-06 ||r(i)||/||b|| 2.927975612142e-06
-      5 KSP unpreconditioned resid norm 1.042109393081e-08 true resid norm 1.042109395911e-08 ||r(i)||/||b|| 2.770589122885e-08
-      6 KSP unpreconditioned resid norm 3.151544291398e-11 true resid norm 3.151542265246e-11 ||r(i)||/||b|| 8.378802412360e-11
-    1 SNES Function norm 3.152e-11 
+      0 KSP unpreconditioned resid norm 3.761327824878e-01 true resid norm 3.761327824878e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 5.960286328784e-02 true resid norm 5.960286328784e-02 ||r(i)||/||b|| 1.584622932721e-01
+      2 KSP unpreconditioned resid norm 5.587587079708e-03 true resid norm 5.587587079708e-03 ||r(i)||/||b|| 1.485535784132e-02
+      3 KSP unpreconditioned resid norm 4.467633715519e-04 true resid norm 4.467633715519e-04 ||r(i)||/||b|| 1.187780997437e-03
+      4 KSP unpreconditioned resid norm 7.887710489546e-05 true resid norm 7.887710489544e-05 ||r(i)||/||b|| 2.097054778734e-04
+      5 KSP unpreconditioned resid norm 5.566404901123e-06 true resid norm 5.566404901117e-06 ||r(i)||/||b|| 1.479904214756e-05
+      6 KSP unpreconditioned resid norm 5.843952130956e-07 true resid norm 5.843952130851e-07 ||r(i)||/||b|| 1.553693908890e-06
+      7 KSP unpreconditioned resid norm 4.557400918821e-09 true resid norm 4.557400934472e-09 ||r(i)||/||b|| 1.211646829699e-08
+      8 KSP unpreconditioned resid norm 1.769382827441e-11 true resid norm 1.769385166385e-11 ||r(i)||/||b|| 4.704150365949e-11
+    1 SNES Function norm 1.769e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -946,20 +964,22 @@ SNES Object: 1 MPI processes
 Timestep: 0009 time = 0.9      	 L_2 Error: 0.37179
 9 TS dt 0.1 time 0.9
     0 SNES Function norm 0.377927 
-      0 KSP unpreconditioned resid norm 3.779274613437e-01 true resid norm 3.779274613437e-01 ||r(i)||/||b|| 1.000000000000e+00
-      1 KSP unpreconditioned resid norm 1.887090937555e-02 true resid norm 1.887090937555e-02 ||r(i)||/||b|| 4.993262280666e-02
-      2 KSP unpreconditioned resid norm 5.965568433025e-04 true resid norm 5.965568433025e-04 ||r(i)||/||b|| 1.578495622365e-03
-      3 KSP unpreconditioned resid norm 2.595525501424e-05 true resid norm 2.595525501420e-05 ||r(i)||/||b|| 6.867787517192e-05
-      4 KSP unpreconditioned resid norm 1.097073970936e-06 true resid norm 1.097073970923e-06 ||r(i)||/||b|| 2.902869156486e-06
-      5 KSP unpreconditioned resid norm 1.038737195886e-08 true resid norm 1.038737196794e-08 ||r(i)||/||b|| 2.748509444382e-08
-      6 KSP unpreconditioned resid norm 3.130392073423e-11 true resid norm 3.130392173359e-11 ||r(i)||/||b|| 8.283050303436e-11
-    1 SNES Function norm 3.130e-11 
+      0 KSP unpreconditioned resid norm 3.779274613460e-01 true resid norm 3.779274613460e-01 ||r(i)||/||b|| 1.000000000000e+00
+      1 KSP unpreconditioned resid norm 5.952775794612e-02 true resid norm 5.952775794612e-02 ||r(i)||/||b|| 1.575110676904e-01
+      2 KSP unpreconditioned resid norm 5.596783441033e-03 true resid norm 5.596783441033e-03 ||r(i)||/||b|| 1.480914729271e-02
+      3 KSP unpreconditioned resid norm 4.456392946867e-04 true resid norm 4.456392946866e-04 ||r(i)||/||b|| 1.179166216447e-03
+      4 KSP unpreconditioned resid norm 7.879630242934e-05 true resid norm 7.879630242930e-05 ||r(i)||/||b|| 2.084958371341e-04
+      5 KSP unpreconditioned resid norm 5.569022502593e-06 true resid norm 5.569022502581e-06 ||r(i)||/||b|| 1.473569156035e-05
+      6 KSP unpreconditioned resid norm 5.821644196935e-07 true resid norm 5.821644196750e-07 ||r(i)||/||b|| 1.540413119496e-06
+      7 KSP unpreconditioned resid norm 4.532618828776e-09 true resid norm 4.532618817180e-09 ||r(i)||/||b|| 1.199335661144e-08
+      8 KSP unpreconditioned resid norm 1.763889785026e-11 true resid norm 1.763888741317e-11 ||r(i)||/||b|| 4.667267985859e-11
+    1 SNES Function norm 1.764e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
