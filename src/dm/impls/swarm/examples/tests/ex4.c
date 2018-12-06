@@ -443,7 +443,7 @@ int main(int argc,char **argv)
   
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBASICSYMPLECTIC);CHKERRQ(ierr);
-
+  ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"position",is1);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"momentum",is2);CHKERRQ(ierr);
   
