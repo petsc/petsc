@@ -1,5 +1,8 @@
 /*
-Context for Bounded Regularized Gauss-Newton algorithm
+Context for Bounded Regularized Gauss-Newton algorithm.
+Extended with L1-regularizer with a linear transformation matrix D:
+0.5*||Ax-b||^2 + lambda*||D*x||_1
+When D is an identity matrix, we have the classic lasso, aka basis pursuit denoising in compressive sensing problem.
 */
 
 #if !defined(__TAO_BRGN_H)
@@ -8,8 +11,8 @@ Context for Bounded Regularized Gauss-Newton algorithm
 #include <../src/tao/bound/impls/bnk/bnk.h>
 
 typedef struct {
-  Mat J, H, D;  /* XH: gn->J is not used?, D matrix added for ||D*x||_1 */
-  Vec x_old, x_work, r_work, diag, y, y_work;  /* XH: Dx_work added, Dx_work=D*x whose dimension maybe different from x and r_work*/
+  Mat J, H, D;  /* Jacobian, Hessian, and Dictionary matrix have size M*N, N*N, and P*N respectively. */
+  Vec x_old, x_work, r_work, diag, y, y_work;  /* x, r=J*x, and y=D*x have size N, M, and P respectively. */
   Tao subsolver, parent;
   PetscReal lambda, epsilon; /* lambda is regularizer weight for both L2-norm Gaussian-Newton and L1-norm, ||x||_1 is approximated with sum(sqrt(x.^2+epsilon^2)-epsilon)*/
 } TAO_BRGN;

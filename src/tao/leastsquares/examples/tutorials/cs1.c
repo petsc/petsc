@@ -82,7 +82,7 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,M,&f);CHKERRQ(ierr);
 
-  /* Create the Jacobian matrix. */
+  /* Allocate Jacobian and Dictionary matrix. */
   ierr = MatCreateSeqDense(MPI_COMM_SELF,M,N,NULL,&J);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(MPI_COMM_SELF,P,N,NULL,&D);CHKERRQ(ierr);
 
