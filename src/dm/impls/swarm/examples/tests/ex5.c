@@ -91,33 +91,33 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscStrcpy(options->meshFilename, "");CHKERRQ(ierr);
 
   ierr = PetscOptionsInt("-next_output","time steps for next output point","<100>",options->nts,&options->nts,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex5.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   
-  ierr = PetscOptionsBool("-monitor", "To use the TS monitor or not", "ex4.c", options->monitor, &options->monitor, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex2.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-monitor", "To use the TS monitor or not", "ex5.c", options->monitor, &options->monitor, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex5.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   
-  ierr = PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex2.c", options->meshFilename, options->meshFilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-faces", "Number of faces per edge if unit square/cube generated", "ex2.c", options->faces, &options->faces, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-k", "Mode number of test", "ex2.c", options->k, &options->k, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-particlesPerCell", "Number of particles per cell", "ex2.c", options->particlesPerCell, &options->particlesPerCell, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex5.c", options->meshFilename, options->meshFilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-faces", "Number of faces per edge if unit square/cube generated", "ex5.c", options->faces, &options->faces, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-k", "Mode number of test", "ex5.c", options->k, &options->k, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-particlesPerCell", "Number of particles per cell", "ex5.c", options->particlesPerCell, &options->particlesPerCell, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-omega","parameter","<64>",options->omega,&options->omega,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-particle_perturbation", "Relative perturbation of particles (0,1)", "ex2.c", options->particleRelDx, &options->particleRelDx, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mesh_perturbation", "Relative perturbation of mesh points (0,1)", "ex2.c", options->meshRelDx, &options->meshRelDx, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-particle_perturbation", "Relative perturbation of particles (0,1)", "ex5.c", options->particleRelDx, &options->particleRelDx, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mesh_perturbation", "Relative perturbation of mesh points (0,1)", "ex5.c", options->meshRelDx, &options->meshRelDx, NULL);CHKERRQ(ierr);
   ii = options->dim;
-  ierr = PetscOptionsRealArray("-domain_hi", "Domain size", "ex2.c", options->domain_hi, &ii, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray("-domain_hi", "Domain size", "ex5.c", options->domain_hi, &ii, NULL);CHKERRQ(ierr);
   ii = options->dim;
-  ierr = PetscOptionsRealArray("-domain_lo", "Domain size", "ex2.c", options->domain_lo, &ii, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray("-domain_lo", "Domain size", "ex5.c", options->domain_lo, &ii, NULL);CHKERRQ(ierr);
   bd = options->boundary[0];
-  ierr = PetscOptionsEList("-x_boundary", "The x-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[0]], &bd, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-x_boundary", "The x-boundary", "ex5.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[0]], &bd, NULL);CHKERRQ(ierr);
   options->boundary[0] = (DMBoundaryType) bd;
   bd = options->boundary[1];
-  ierr = PetscOptionsEList("-y_boundary", "The y-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[1]], &bd, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-y_boundary", "The y-boundary", "ex5.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[1]], &bd, NULL);CHKERRQ(ierr);
   options->boundary[1] = (DMBoundaryType) bd;
   bd = options->boundary[2];
-  ierr = PetscOptionsEList("-z_boundary", "The z-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[2]], &bd, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-z_boundary", "The z-boundary", "ex5.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[2]], &bd, NULL);CHKERRQ(ierr);
   options->boundary[2] = (DMBoundaryType) bd;
-  ierr = PetscOptionsString("-function", "Name of test function", "ex2.c", fstring, fstring, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-function", "Name of test function", "ex5.c", fstring, fstring, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscStrcmp(fstring, "linear", &flag);CHKERRQ(ierr);
   if (flag) {
     options->func = linear;
@@ -246,8 +246,11 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), sw);CHKERRQ(ierr);
   ierr = DMSetType(*sw, DMSWARM);CHKERRQ(ierr);
+  
   ierr = DMSetDimension(*sw, dim);CHKERRQ(ierr);
-
+  // This line for debugging purposes
+  ierr = DMGetDimension(*sw, &dim);CHKERRQ(ierr);
+  // Above line for debugging purposes
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject) dm), &rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rnd, -1.0, 1.0);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
@@ -299,13 +302,26 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
     /* TODO: SET PARTICLE INITIAL CONDITIONS FOR OSCILLATIONS AROUND A POINT (CENTROID?) */
 
     /* generalize for more dimensions (dim*2) rewrite in terms of loops over dim */
-    for (p = 0; p < Np; p += 2*dim) {
-      initialConditions[p+0*dim+0] = 0.4;
-      initialConditions[p+0*dim+1] = 0.4;
-      initialConditions[p+1*dim+0] = 1.0;
-      initialConditions[p+1*dim+1] = 1.0;
-    }
+    
+    
   }
+  
+  for (p = 0; p < Np*Ncell; ++p) {
+        
+        initialConditions[p*2*dim+0*dim+0] = p+1;
+        initialConditions[p*2*dim+0*dim+1] = p+1;
+        initialConditions[p*2*dim+1*dim+0] = -(p+1);
+        initialConditions[p*2*dim+1*dim+1] = p+1;
+      
+  }
+  for(p=0; p<Np*Ncell; ++p){
+      PetscPrintf(PETSC_COMM_WORLD,"%g \n",initialConditions[p*2*dim+0*dim+0]);
+      PetscPrintf(PETSC_COMM_WORLD,"%g \n",initialConditions[p*2*dim+0*dim+1]);
+      PetscPrintf(PETSC_COMM_WORLD,"%g \n",initialConditions[p*2*dim+1*dim+0]);
+      PetscPrintf(PETSC_COMM_WORLD,"%g \n",initialConditions[p*2*dim+1*dim+1]);
+    }
+
+
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, "w_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
@@ -334,19 +350,22 @@ static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec V,Vec Posres,void *ctx)
   ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-
+  Np  /= dim;
+  PetscPrintf(PETSC_COMM_WORLD,"Begin looping rsedidual with Np = %D \n", Np);
   for (p = 0; p < Np; ++p) {
-     
+     PetscPrintf(PETSC_COMM_WORLD, "The particle is %g \n", p );
      for(d = 0; d < dim; ++d){
      
        /* store residual positons in the format x, y in the function vector */
-       posres[p*d+d] = v[p*d+d];
+       PetscPrintf(PETSC_COMM_WORLD, "Postion in loop is %g \n", p*dim+d);
+       posres[p*dim+d] = v[p*dim+d];
      
      }
   }
 
   ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
   ierr = VecRestoreArray(Posres,&posres);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(Posres, NULL, "-pos_res_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -369,17 +388,18 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
-  
+  Np/=dim;
   for(p = 0; p < Np; ++p){
     PetscScalar rsqr = 0;
     for(d = 0; d < dim; ++d) rsqr += PetscSqr(x[p*dim+d]);
     
-    for(d=0; d< dim; ++d) vres[p*d+p] = (G*1000)*x[p*dim+d]/rsqr;
-
+    for(d=0; d< dim; ++d) vres[p*dim+d] = (G*1000)*x[p*dim+d]/rsqr;
+    
   }
 
   ierr = VecRestoreArray(Vres,&vres);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(Vres, NULL, "-vel_res_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -401,24 +421,21 @@ static PetscErrorCode RHSFunctionParticles(TS ts,PetscReal t,Vec U,Vec R,void *c
 
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-
+  Np/=dim;
   for( p = 0; p < Np; ++p){
-    for(d=0; d < dim; ++d) rsqr += PetscSqr(u[p*dim+p]);
+    for(d=0; d < dim; ++d) rsqr += PetscSqr(u[p*dim+d]);
     
     for(d=0; d < dim; ++d){
-      
-        r[p*dim+p+0] = u[p*dim+2];
-        r[p*dim+p+1] = u[p*dim+3];
-      
-        r[p*dim+p+2] = (6.67408e-11*1000)*u[p*dim+0]/rsqr;
-        r[p*dim+p+3] = (6.67408e-11*1000)*u[p*dim+1]/rsqr;
+        
+        r[p*2*dim+d] = u[p*2*dim+d+2];
+        r[p*2*dim+d+2] = (1*1000)*u[p*2*dim+d]/rsqr;
     
     }
    
   }
-  
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(R, NULL, "-res_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -448,6 +465,7 @@ int main(int argc,char **argv)
   TS                ts;            /* nonlinear solver */
   IS                is1,is2;
   PetscReal         ftime   = 0.1;
+  PetscScalar       *y;
   PetscBool         monitor = PETSC_FALSE;
   PetscInt          locSize, p, d, dim, Np, *idx1, *idx2;
   Vec               f;              /* swarm vector */
@@ -463,17 +481,19 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
 
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  Np = user.particlesPerCell;
+  Np = user.particlesPerCell*2;
   /* Create dm and particles */
   ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);
   ierr = CreateFEM(dm, &user);CHKERRQ(ierr);
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
 
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
-  
+  ierr = VecViewFromOptions(f, NULL, "-kinematics_view");CHKERRQ(ierr);
   ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
-  
+  PetscPrintf(comm,"Dimension in main: %D \n", dim);
   ierr = VecGetLocalSize(f, &locSize);CHKERRQ(ierr);
+
+  
   ierr = PetscMalloc1(locSize/2, &idx1);CHKERRQ(ierr);
   ierr = PetscMalloc1(locSize/2, &idx2);CHKERRQ(ierr);
   /* The strides will have the format (x, y), (vx, vy) */
@@ -483,11 +503,13 @@ int main(int argc,char **argv)
       idx2[p*dim+d] = (p*2+1)*dim + d;
     }
   }
+  
+  
   ierr = ISCreateGeneral(comm, locSize/2, idx1, PETSC_OWN_POINTER, &is1);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm, locSize/2, idx2, PETSC_OWN_POINTER, &is2);CHKERRQ(ierr);
   
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
-  ierr = TSSetDM(ts, sw);
+  ierr = TSSetDM(ts, sw);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBASICSYMPLECTIC);CHKERRQ(ierr);
 
   ierr = TSRHSSplitSetIS(ts,"position",is1);CHKERRQ(ierr);
@@ -510,8 +532,16 @@ int main(int argc,char **argv)
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
+  ierr = VecViewFromOptions(f, NULL, "-init_view");CHKERRQ(ierr);
   ierr = TSSolve(ts,f);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
+  ierr = VecGetArray(f, &y);CHKERRQ(ierr);
+  for (int p = 0; p < user.particlesPerCell; p += 4) {
+    ierr = PetscPrintf(comm,"The particle solution for (x, xv, y, yv) at time %.6lf is [%g %g %g %g]\n",(double)ftime,y[p],y[p+2], y[p+1], y[p+3]);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Energy: %g\n",(double) (y[2]*y[2]+user.omega*user.omega*y[0]*y[0]-user.omega*user.omega*ftime*y[0]*y[2])/2.);
+    ierr = PetscPrintf(comm,"Modified energy: %g\n", (double) (y[2]*y[2]+user.omega*user.omega*y[0]*y[0])/2.);
+  }
+  ierr = VecRestoreArray(f, &y);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
   
   
@@ -519,15 +549,15 @@ int main(int argc,char **argv)
   
   /* Compute energy of particles */
   ierr = DMSwarmGetField(sw, "kinematics", NULL, NULL, (void **) &kCheck);CHKERRQ(ierr);
-  for (int p = 0; p < user.particlesPerCell; p += 2) {
-    ierr = PetscPrintf(comm,"The particle solution for (x, t) at time %.6lf is [%g %g]\n",(double)ftime,kCheck[p],kCheck[p+1]);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Energy: %g\n",(double) (kCheck[1]*kCheck[1]+user.omega*user.omega*kCheck[0]*kCheck[0]-user.omega*user.omega*ftime*kCheck[0]*kCheck[1])/2.);
-    ierr = PetscPrintf(comm,"Modified energy: %g\n", (double) (kCheck[1]*kCheck[1]+user.omega*user.omega*kCheck[0]*kCheck[0])/2.);
+  for (int p = 0; p < user.particlesPerCell; p += 4) {
+    ierr = PetscPrintf(comm,"The particle solution for (x, v) at time %.6lf is [%g %g]\n",(double)ftime,kCheck[p],kCheck[p+2]);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Energy: %g\n",(double) (kCheck[2]*kCheck[2]+user.omega*user.omega*kCheck[0]*kCheck[0]-user.omega*user.omega*ftime*kCheck[0]*kCheck[2])/2.);
+    ierr = PetscPrintf(comm,"Modified energy: %g\n", (double) (kCheck[2]*kCheck[2]+user.omega*user.omega*kCheck[0]*kCheck[0])/2.);
   }
   /* end energy computation */
  
   ierr = PetscPrintf(comm,"The exact solution for (x, v) time %.6lf is [%g %g]\n",(double)ftime,(double)0.2*PetscCosReal(user.omega*ftime),(double)-0.2*user.omega*PetscSinReal(user.omega*ftime));CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"The exact solution for energy is: %g\n", (double) (kCheck[1]*kCheck[1]+user.omega*user.omega*kCheck[0]*kCheck[0])/2.);
+  ierr = PetscPrintf(comm,"The exact solution for energy is: %g\n", (double) (kCheck[2]*kCheck[2]+user.omega*user.omega*kCheck[0]*kCheck[0])/2.);
   ierr = PetscPrintf(comm,"The exact solution for modified energy is: %g\n", (double) (-0.2*user.omega*PetscSinReal(user.omega*ftime)*-0.2*user.omega*PetscSinReal(user.omega*ftime)+ user.omega*user.omega*0.2*PetscCosReal(user.omega*ftime)*0.2*PetscCosReal(user.omega*ftime) )/2.);
   
 
