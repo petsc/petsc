@@ -23,10 +23,10 @@ Reference:     None
 
 
 
-static char help[]="Finds the least-squares solution to the underconstraint linear model Ax = b. \n\
+static char help[] = "Finds the least-squares solution to the underconstraint linear model Ax = b, with L1-norm regularizer. \n\
             A is a M*N real flat matrix (M<N), x is sparse. \n\
-            We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||D*x||_1, where lambda (by default 1e-4) is a user specified weight.
-            D is the P*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x\n";
+            We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||D*x||_1, where lambda (by default 1e-4) is a user specified weight.\n\
+            D is the P*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x.\n";
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
    Routines: TaoCreate();
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;               /* used to check for functions returning nonzeros */
   Vec            x, f;               /* solution, function */
-  Mat            J;                  /* Jacobian matrix */
+  Mat            J, D;               /* Jacobian matrix, Transform matrix */
   Tao            tao;                /* Tao solver context */
   PetscInt       i;                  /* iteration information */
   PetscReal      hist[100],resid[100];
@@ -84,6 +84,7 @@ int main(int argc,char **argv)
 
   /* Create the Jacobian matrix. */
   ierr = MatCreateSeqDense(MPI_COMM_SELF,M,N,NULL,&J);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,P,N,NULL,&D);CHKERRQ(ierr);
 
   for (i=0;i<M;i++) user.idm[i] = i;
 
@@ -96,9 +97,12 @@ int main(int argc,char **argv)
  /* Set the function and Jacobian routines. */
   ierr = InitializeData(&user);CHKERRQ(ierr);
   ierr = FormStartingPoint(x);CHKERRQ(ierr);
+  ierr = ComputeDictionaryMatrix(D);CHKERRQ(ierr):   /*XH todo: fill in value of D*/
+
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetDictionaryMatrix(tao,D);CHKERRQ(ierr); /*XH todo: bound D to tao*/
   ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianResidualRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)&user);CHKERRQ(ierr);
 
   /* Check for any TAO command line arguments */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -121,7 +125,7 @@ int main(int argc,char **argv)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -130,11 +134,16 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&f);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;
 }
 
+PetscErrorCode ComputeDictionaryMatrix(Mat D) /*XH */
+{
+  /*XH: todo*/
+}
 /*--------------------------------------------------------------------*/
 PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
@@ -195,10 +204,11 @@ PetscErrorCode FormStartingPoint(Vec X)
 {
   PetscReal      *x;
   PetscErrorCode ierr;
+  PetscInt       n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  x[0] = 0; x[1] = 0; x[2] = 0; x[3] = 0; x[4] = 0;
+  for (n=0; n<N; n++) x[0] = 1000.0;  
   VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -207,7 +217,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 PetscErrorCode InitializeData(AppCtx *user)
 {
   PetscReal *b=user->b; /* **A=user->A, but we don't kown the dimension of A in this way, how to fix? */
-  PetscInt  m=0, n=0, p=0; /* XH: coding style #7 strangely says PetscInt  m = 0,n = 0, p = 0;*/
+  PetscInt  m,n,p; /* loop index for M,N,P dimension. */
 
   PetscFunctionBegin;
   /* b = A*x while x = [0;0;1;0;0] here*/
@@ -231,9 +241,9 @@ PetscErrorCode InitializeData(AppCtx *user)
       user->D[p][n] = 0.0;
     }
   }
-  /* set D to identity matrix for testing */
+  /* Choice I: set D to identity matrix for testing */
   for (n=0; n<N; n++) user->D[n][n] = 1.0;
-  /* set D to Backward difference matrix, with zero extended boundary assumption */
+  /* Choice II: set D to Backward difference matrix, with zero extended boundary assumption */
   /* for (n=1;n<N;n++) user->D[n][n-1] = -1.0; */
   
 

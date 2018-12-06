@@ -268,7 +268,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   /* XH: debug: check matrix */
   PetscPrintf(PETSC_COMM_SELF, "-------- Check D matrix. -------- \n");  
   ierr = MatView(gn->D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  getchar();
+  
 
   if (!tao->setupcalled) {
     /* Hessian setup */
