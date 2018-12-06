@@ -4046,7 +4046,6 @@ few in the sections below.
 \hline
 Line search Newton                               & \lstinline|SNESNEWTONLS|    & \trl{newtonls}    & \lstinline|SNESLINESEARCHBT|   \\
   Trust region Newton                            & \lstinline|SNESNEWTONTR|    & \trl{newtontr}    & --                             \\
-  Test Jacobian                                  & \lstinline|SNESTEST|        & \trl{test}        & --                             \\
   Nonlinear Richardson                           & \lstinline|SNESNRICHARDSON| & \trl{nrichardson} & \lstinline|SNESLINESEARCHL2|   \\
   Nonlinear CG                                   & \lstinline|SNESNCG|         & \trl{ncg}         & \lstinline|SNESLINESEARCHCP|   \\
   Nonlinear GMRES                                & \lstinline|SNESNGMRES|      & \trl{ngmres}      & \lstinline|SNESLINESEARCHL2|   \\
@@ -4385,11 +4384,11 @@ routine arguments.
 Since hand-coding routines for Jacobian matrix evaluation
 can be error prone, \lstinline{SNES} provides easy-to-use support for checking
 these matrices against finite difference versions.  In the simplest
-form of comparison, users can employ the option \trl{-snes_type} \trl{test}
+form of comparison, users can employ the option \trl{-snes_test_jacobian}
 to compare the matrices at several points.  Although not exhaustive,
 this test will generally catch obvious problems.  One can compare the
 elements of the two matrices by using the option \trl{
--snes_test_display} \findex{-snes_test_display}, which causes the two
+-snes_test_display} \findex{-snes_test_jacobian_display -snes_test_jacobian_display_threshold}, which causes the two
 matrices to be printed to the screen.  \sindex{Jacobian, testing}
 
 Another means for verifying the correctness of a code for Jacobian

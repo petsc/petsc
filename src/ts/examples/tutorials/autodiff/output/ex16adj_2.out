@@ -1,0 +1,41 @@
+0 TS dt 0.001 time 0.
+1 TS dt 0.01 time 0.001
+2 TS dt 0.0161772 time 0.011
+3 TS dt 0.016648 time 0.0271772
+4 TS dt 0.017145 time 0.0438252
+5 TS dt 0.0179123 time 0.0609702
+6 TS dt 0.0189774 time 0.0788825
+7 TS dt 0.0203889 time 0.0978598
+8 TS dt 0.0222637 time 0.118249
+9 TS dt 0.0253164 time 0.140512
+10 TS dt 0.0293534 time 0.165829
+mu 5., steps 10, ftime 0.165829
+Vec Object: 1 MPI processes
+  type: seq
+2.02625
+-0.0692832
+10 TS dt -0.0253164 time 0.165829
+9 TS dt -0.0222637 time 0.140512
+8 TS dt -0.0203889 time 0.118249
+7 TS dt -0.0189774 time 0.0978598
+6 TS dt -0.0179123 time 0.0788825
+5 TS dt -0.017145 time 0.0609702
+4 TS dt -0.016648 time 0.0438252
+3 TS dt -0.0161772 time 0.0271772
+2 TS dt -0.01 time 0.011
+1 TS dt -0.001 time 0.001
+0 TS dt -0.001 time 0.
+Vec Object: 1 MPI processes
+  type: seq
+0.962421
+0.0592425
+Vec Object: 1 MPI processes
+  type: seq
+-0.107367
+0.0732519
+Vec Object: 1 MPI processes
+  type: seq
+-0.0046634
+Vec Object: 1 MPI processes
+  type: seq
+-0.00727401

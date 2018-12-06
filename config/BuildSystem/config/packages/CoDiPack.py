@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit     = 'master'
+    self.gitcommit     = 'origin/featureChangedStructure'
     self.download      = ['git://https://github.com/SciCompKL/CoDiPack.git']
-    self.includes      = ['adjointInterface.hpp']
+    self.includes      = ['codi/adjointInterface.hpp']
     self.liblist       = []
     self.cxx           = 1
     self.requirescxx11 = 1
@@ -16,9 +16,9 @@ class Configure(config.package.Package):
     return
 
   def Install(self):
-    import os, glob
+    import os
 
     self.logPrintBox('Copying CoDiPack include files to install location')
     self.installDirProvider.printSudoPasswordMessage()
-    output2,err2,ret2  = config.package.Package.executeShellCommand([self.installSudo+'cp', '-rf'] + glob.glob('include/*') + [os.path.join(self.installDir,'include')], cwd=self.packageDir, timeout=250, log = self.log)
+    output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+' cp -rf include/* '+os.path.join(self.installDir,'include'),timeout=250, log = self.log)
     return self.installDir

@@ -38,7 +38,7 @@ PETSC_EXTERN void PETSC_STDCALL sneslinesearchsettype_(SNESLineSearch *linesearc
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = SNESLineSearchSetType(*linesearch,t);
+  *ierr = SNESLineSearchSetType(*linesearch,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

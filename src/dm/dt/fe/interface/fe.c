@@ -173,20 +173,24 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
 
   Input Parameter:
 + fem - the PetscFE object to view
-- v   - the viewer
+- viewer   - the viewer
 
   Level: developer
 
 .seealso PetscFEDestroy()
 @*/
-PetscErrorCode PetscFEView(PetscFE fem, PetscViewer v)
+PetscErrorCode PetscFEView(PetscFE fem, PetscViewer viewer)
 {
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) fem), &v);CHKERRQ(ierr);}
-  if (fem->ops->view) {ierr = (*fem->ops->view)(fem, v);CHKERRQ(ierr);}
+  if (viewer) PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) fem), &viewer);CHKERRQ(ierr);}
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)fem, viewer);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (fem->ops->view) {ierr = (*fem->ops->view)(fem, viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

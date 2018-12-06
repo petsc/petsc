@@ -35,9 +35,9 @@ static char help[] = "Performs adjoint sensitivity analysis for the van der Pol 
               du'  du
 
    and the JacobianP of the explicit right-hand side of (2) f(u,t) ( which is equivalent to -G(0,u,t) ).
-   df   [       0         ]
-   -- = [                 ]
-   dp   [ (1 - u_1^2) u_2 ].
+   df   [       0               ]
+   -- = [                       ]
+   dp   [ (1 - u_1^2) u_2 - u_1 ].
 
    See ex20.c for more details on the Jacobian.
 
@@ -105,7 +105,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (A != B) {
+  if (B && A != B) {
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }

@@ -28,7 +28,7 @@ PETSC_EXTERN void PETSC_STDCALL pcsetoptionsprefix_(PC *pc,char* prefix PETSC_MI
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = PCSetOptionsPrefix(*pc,t);
+  *ierr = PCSetOptionsPrefix(*pc,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 
@@ -37,7 +37,7 @@ PETSC_EXTERN void PETSC_STDCALL pcappendoptionsprefix_(PC *pc,char* prefix PETSC
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = PCAppendOptionsPrefix(*pc,t);
+  *ierr = PCAppendOptionsPrefix(*pc,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 

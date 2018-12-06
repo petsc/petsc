@@ -5,7 +5,35 @@
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
 /*@C
-   PetscObjectSetOptions - Sets the options database used by the object
+   PetscObjectGetOptions - Gets the options database used by the object. Call immediately after creating the object.
+
+   Collective on PetscObject
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP.
+
+   Output Parameter:
+.  options - the options database
+
+   Notes:
+    if this is not called the object will use the default options database
+
+  Level: advanced
+
+.seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
+          PetscObjectGetOptionsPrefix(), PetscObjectSetOptions()
+
+@*/
+PetscErrorCode  PetscObjectGetOptions(PetscObject obj,PetscOptions *options)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  *options = obj->options;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscObjectSetOptions - Sets the options database used by the object. Call immediately after creating the object.
 
    Collective on PetscObject
 
@@ -19,7 +47,7 @@
   Level: advanced
 
 .seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
-          PetscObjectGetOptionsPrefix()
+          PetscObjectGetOptionsPrefix(), PetscObjectGetOptions()
 
 @*/
 PetscErrorCode  PetscObjectSetOptions(PetscObject obj,PetscOptions options)

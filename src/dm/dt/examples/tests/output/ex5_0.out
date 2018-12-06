@@ -1,10 +1,9 @@
-Basic Finite Element:
-  dimension:       1
-  components:      3
-  num quad points: 2
+PetscFE Object: 1 MPI processes
+  type: basic
+  Basic Finite Element in 1 dimensions with 3 components
   PetscSpace Object: 1 MPI processes
     type: subspace
-    Space in 1 variables of order 1 with 3 components
+    Space in 1 variables with 3 components
     Subspace-to-space domain shift:
 
      0.
@@ -16,6 +15,12 @@ Basic Finite Element:
     Original space:
       PetscSpace Object: 1 MPI processes
         type: poly
-        Space in 2 variables of order 1 with 3 components
+        Space in 2 variables with 3 components
         Polynomial space of degree 1
-  Continuous Lagrange dual space of order 1   with 3 components  
+  PetscDualSpace Object: 1 MPI processes
+    type: lagrange
+    Dual space of order 1 with 3 components
+    Continuous Lagrange dual space
+  PetscQuadrature Object: 1 MPI processes
+    type: GaussTensor
+    Quadrature on 2 points of order 3

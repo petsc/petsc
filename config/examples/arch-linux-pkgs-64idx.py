@@ -11,6 +11,8 @@ configure_options = [
   '--download-superlu_dist=1',
   '--donwload-suitesparse=1',
   '--download-cmake',  # superlu_dist requires a newer cmake
+  '--download-p4est=1',
+  '--with-zlib=1',
   ]
 
 if __name__ == '__main__':

@@ -22,6 +22,8 @@ configure_options = [
   '--download-moab=1',
   '--download-chaco=1',
   '--download-revolve=1',
+  '--download-codipack=1',
+  '--download-adblaslapack=1',
   ]
 
 if __name__ == '__main__':

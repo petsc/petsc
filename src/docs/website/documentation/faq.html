@@ -150,6 +150,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#singleprecision">When using PETSc in single precision mode (--with-precision=single when running ./configure) are the operations done in single or double precision?</a></li>
         <li><a href="#newton">Why is Newton's method (SNES) not converging, or converges slowly?</a></li>
         <li><a href="#kspdiverged">Why is the linear solver (KSP) not converging, or converges slowly?</a></li>
+        <li><a href="#typebound">I get the error message:Actual argument at (1) to assumed-type dummy is of derived type with type-bound or FINAL procedures</li>
       </ul>
 
       <h4><a href="#debugging">Debugging</a></h4>
@@ -1636,7 +1637,73 @@ PETSC_COMM_WORLD = NewComm;
         </li>
       </ul>
 
+      <h3><a name="typebound">I get the error message:Actual argument at (1) to assumed-type dummy is of derived type with type-bound or FINAL procedures</a></h3>
 
+      Use the code</p>
+
+      <pre>
+        module context_module
+#include petsc/finclude/petsc.h
+        use petsc
+        implicit none
+        private
+        type, public ::  context_type
+          private
+          PetscInt :: foo
+        contains
+          procedure, public :: init => context_init
+        end type context_type
+        contains
+        subroutine context_init(self, foo)
+          class(context_type), intent(in out) :: self
+          PetscInt, intent(in) :: foo
+          self%foo = foo
+        end subroutine context_init
+        end module context_module
+
+!------------------------------------------------------------------------
+
+        program test_snes
+        use iso_c_binding
+        use petsc
+        use context_module
+        implicit none
+
+        SNES :: snes
+        type(context_type),target :: context
+        type(c_ptr) :: contextOut
+        PetscErrorCode :: ierr
+
+        call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
+        call SNESCreate(PETSC_COMM_WORLD, snes, ierr)
+        call context%init(1)
+
+        contextOut = c_loc(context) ! contextOut is a C pointer on context
+
+        call SNESSetConvergenceTest(snes, convergence, contextOut, PETSC_NULL_FUNCTION, ierr)
+
+        call SNESDestroy(snes, ierr)
+        call PetscFinalize(ierr)
+
+        contains
+
+        subroutine convergence(snes, num_iterations, xnorm, pnorm,fnorm, reason, contextIn, ierr)
+        SNES, intent(in) :: snes
+
+        PetscInt, intent(in) :: num_iterations
+        PetscReal, intent(in) :: xnorm, pnorm, fnorm
+        SNESConvergedReason, intent(out) :: reason
+        type(c_ptr), intent(in out) :: contextIn
+        type(context_type), pointer :: context
+        PetscErrorCode, intent(out) :: ierr
+
+        call c_f_pointer(contextIn,context)  ! convert the C pointer to a Fortran pointer to use context as in the main program
+        reason = 0
+        ierr = 0
+        end subroutine convergence
+        end program test_snes
+
+  </pre>
 
       <hr>
 

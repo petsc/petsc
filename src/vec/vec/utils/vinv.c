@@ -1340,7 +1340,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
   ierr = PetscLogEventBegin(VEC_DotNorm2,s,t,0,0);CHKERRQ(ierr);
   if (s->ops->dotnorm2) {
     ierr = (*s->ops->dotnorm2)(s,t,dp,&dpx);CHKERRQ(ierr);
-    *nm  = PetscRealPart(dpx);CHKERRQ(ierr);
+    *nm  = PetscRealPart(dpx);
   } else {
     ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
     ierr = VecGetArrayRead(s, &sx);CHKERRQ(ierr);

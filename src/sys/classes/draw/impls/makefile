@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = image tikz x win32 opengl null
+DIRS     = image tikz x win32 null
 LOCDIR   = src/sys/classes/draw/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

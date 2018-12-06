@@ -19,19 +19,21 @@
    Feature test macros must be included before headers defined by IEEE Std 1003.1-2001
    We only turn these in PETSc source files that require them by setting PETSC_DESIRE_FEATURE_TEST_MACROS
 */
-#if defined(PETSC__POSIX_C_SOURCE_200112L) && !defined(_POSIX_C_SOURCE)
-#define _POSIX_C_SOURCE 200112L
+#  if defined(PETSC__POSIX_C_SOURCE_200112L) && !defined(_POSIX_C_SOURCE)
+#    define _POSIX_C_SOURCE 200112L
+#  endif
+#  if defined(PETSC__BSD_SOURCE) && !defined(_BSD_SOURCE)
+#    define _BSD_SOURCE
+#  endif
+#  if defined(PETSC__DEFAULT_SOURCE) && !defined(_DEFAULT_SOURCE)
+#    define _DEFAULT_SOURCE
+#  endif
+#  if defined(PETSC__GNU_SOURCE) && !defined(_GNU_SOURCE)
+#    define _GNU_SOURCE
+#  endif
 #endif
-#if defined(PETSC__BSD_SOURCE) && !defined(_BSD_SOURCE)
-#define _BSD_SOURCE
-#endif
-#if defined(PETSC__DEFAULT_SOURCE) && !defined(_DEFAULT_SOURCE)
-#define _DEFAULT_SOURCE
-#endif
-#if defined(PETSC__GNU_SOURCE) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
-#endif
-#endif
+
+#include <petscsystypes.h>
 
 /* ========================================================================== */
 /*
@@ -97,13 +99,13 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
   used from C and are always visible in the shared libraries
 */
 #if defined(__cplusplus)
-#define PETSC_EXTERN extern "C" PETSC_VISIBILITY_PUBLIC
-#define PETSC_EXTERN_TYPEDEF extern "C"
-#define PETSC_INTERN extern "C" PETSC_VISIBILITY_INTERNAL
+#  define PETSC_EXTERN extern "C" PETSC_VISIBILITY_PUBLIC
+#  define PETSC_EXTERN_TYPEDEF extern "C"
+#  define PETSC_INTERN extern "C" PETSC_VISIBILITY_INTERNAL
 #else
-#define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
-#define PETSC_EXTERN_TYPEDEF
-#define PETSC_INTERN extern PETSC_VISIBILITY_INTERNAL
+#  define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
+#  define PETSC_EXTERN_TYPEDEF
+#  define PETSC_INTERN extern PETSC_VISIBILITY_INTERNAL
 #endif
 
 #include <petscversion.h>
@@ -199,89 +201,8 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  define PetscAttrMPITypeTagLayoutCompatible(type)
 #endif
 
-/*MC
-    PetscErrorCode - datatype used for return error code from almost all PETSc functions
-
-    Level: beginner
-
-.seealso: CHKERRQ, SETERRQ
-M*/
-typedef int PetscErrorCode;
-
-/*MC
-
-    PetscClassId - A unique id used to identify each PETSc class.
-
-    Notes:
-    Use PetscClassIdRegister() to obtain a new value for a new class being created. Usually
-         XXXInitializePackage() calls it for each class it defines.
-
-    Developer Notes:
-    Internal integer stored in the _p_PetscObject data structure.
-         These are all computed by an offset from the lowest one, PETSC_SMALLEST_CLASSID.
-
-    Level: developer
-
-.seealso: PetscClassIdRegister(), PetscLogEventRegister(), PetscHeaderCreate()
-M*/
-typedef int PetscClassId;
-
-
-/*MC
-    PetscMPIInt - datatype used to represent 'int' parameters to MPI functions.
-
-    Level: intermediate
-
-    Notes:
-    usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
-           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt; it remains 32 bit.
-
-    PetscMPIIntCast(a,&b) checks if the given PetscInt a will fit in a PetscMPIInt, if not it
-      generates a PETSC_ERR_ARG_OUTOFRANGE error.
-
-.seealso: PetscBLASInt, PetscInt, PetscMPIIntCast()
-
-M*/
-typedef int PetscMPIInt;
-
-/*MC
-    PetscEnum - datatype used to pass enum types within PETSc functions.
-
-    Level: intermediate
-
-.seealso: PetscOptionsGetEnum(), PetscOptionsEnum(), PetscBagRegisterEnum()
-M*/
-typedef enum { ENUM_DUMMY } PetscEnum;
 PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
-
-#if defined(PETSC_HAVE_STDINT_H)
-#include <stdint.h>
-#endif
-#if defined (PETSC_HAVE_INTTYPES_H)
-#if !defined(__STDC_FORMAT_MACROS)
-#define __STDC_FORMAT_MACROS /* required for using PRId64 from c++ */
-#endif
-#include <inttypes.h>
-# if !defined(PRId64)
-# define PRId64 "ld"
-# endif
-#endif
-
-typedef short PetscShort;
-typedef char PetscChar;
-typedef float PetscFloat;
-
-/*MC
-  PetscInt - PETSc type that represents an integer, used primarily to
-      represent size of arrays and indexing into arrays. Its size can be configured with the option --with-64-bit-indices to be either 32-bit (default) or 64-bit.
-
-  Notes:
-  For MPI calls that require datatypes, use MPIU_INT as the datatype for PetscInt. It will automatically work correctly regardless of the size of PetscInt.
-
-  Level: beginner
-
-.seealso: PetscBLASInt, PetscMPIInt, PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
-M*/
+PETSC_EXTERN MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
 
 /*MC
    MPIU_INT - MPI datatype corresponding to PetscInt
@@ -295,88 +216,43 @@ M*/
 M*/
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
-typedef int64_t PetscInt64;
-# define MPIU_INT64 MPI_INT64_T
-# define PetscInt64_FMT PRId64
+#  define MPIU_INT64 MPI_INT64_T
+#  define PetscInt64_FMT PRId64
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
-typedef long long PetscInt64;
-# define MPIU_INT64 MPI_LONG_LONG_INT
-# define PetscInt64_FMT "lld"
+#  define MPIU_INT64 MPI_LONG_LONG_INT
+#  define PetscInt64_FMT "lld"
 #elif defined(PETSC_HAVE___INT64)
-typedef __int64 PetscInt64;
-# define MPIU_INT64 MPI_INT64_T
-# define PetscInt64_FMT "ld"
+#  define MPIU_INT64 MPI_INT64_T
+#  define PetscInt64_FMT "ld"
 #else
-#error "cannot determine PetscInt64 type"
+#  error "cannot determine PetscInt64 type"
 #endif
 
 #if PETSC_SIZEOF_VOID_P == 4
-#define MPIU_FORTRANADDR MPI_INT
+#  define MPIU_FORTRANADDR MPI_INT
 #else
-#define MPIU_FORTRANADDR MPIU_INT64
+#  define MPIU_FORTRANADDR MPIU_INT64
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
-typedef PetscInt64 PetscInt;
-#define MPIU_INT MPIU_INT64
-#define PetscInt_FMT PetscInt64_FMT
+#  define MPIU_INT MPIU_INT64
+#  define PetscInt_FMT PetscInt64_FMT
 #else
-typedef int PetscInt;
-#define MPIU_INT MPI_INT
-#define PetscInt_FMT "d"
-#endif
-
-/*MC
-   PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
-
-   Notes:
-    Usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
-           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit
-           (except on very rare BLAS/LAPACK implementations that support 64 bit integers see the note below).
-
-    PetscErrorCode PetscBLASIntCast(a,&b) checks if the given PetscInt a will fit in a PetscBLASInt, if not it
-      generates a PETSC_ERR_ARG_OUTOFRANGE error
-
-   Installation Notes:
-    The 64bit versions of MATLAB ship with BLAS and LAPACK that use 64 bit integers for sizes etc,
-     if you run ./configure with the option
-     --with-blaslapack-lib=[/Applications/MATLAB_R2010b.app/bin/maci64/libmwblas.dylib,/Applications/MATLAB_R2010b.app/bin/maci64/libmwlapack.dylib]
-     but you need to also use --known-64-bit-blas-indices.
-
-        MKL also ships with 64 bit integer versions of the BLAS and LAPACK, if you select those you must also ./configure with
-        --known-64-bit-blas-indices
-
-        OpenBLAS can also be built to use 64 bit integers. The ./configure options --download-openblas -download-openblas-64-bit-blas-indices
-        will build a 64 bit integer version
-
-    Developer Notes:
-     Eventually ./configure should automatically determine the size of the integers used by BLAS/LAPACK.
-
-     External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64 bit integers to BLAS/LAPACK so cannot
-     be used with PETSc if you have set PetscBLASInt to long int.
-
-   Level: intermediate
-
-.seealso: PetscMPIInt, PetscInt, PetscBLASIntCast()
-
-M*/
-#if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
-typedef PetscInt64 PetscBLASInt;
-#else
-typedef int PetscBLASInt;
+#  define MPIU_INT MPI_INT
+#  define PetscInt_FMT "d"
 #endif
 
 /*
     For the rare cases when one needs to send a size_t object with MPI
 */
 #if (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_INT)
-#define MPIU_SIZE_T MPI_UNSIGNED
+#  define MPIU_SIZE_T MPI_UNSIGNED
 #elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG)
-#define MPIU_SIZE_T MPI_UNSIGNED_LONG
+#  define MPIU_SIZE_T MPI_UNSIGNED_LONG
 #elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG_LONG)
-#define MPIU_SIZE_T MPI_UNSIGNED_LONG_LONG
+#  define MPIU_SIZE_T MPI_UNSIGNED_LONG_LONG
 #else
-#error "Unknown size for size_t! Send us a bugreport at petsc-maint@mcs.anl.gov"
+#  error "Unknown size for size_t! Send us a bugreport at petsc-maint@mcs.anl.gov"
 #endif
 
 /*
@@ -444,67 +320,14 @@ M*/
     Declare extern C stuff after including external header files
 */
 
-
-/*
-       Basic PETSc constants
-*/
-
-/*E
-    PetscBool  - Logical variable. Actually an int in C and a logical in Fortran.
-
-   Level: beginner
-
-   Developer Note:
-   Why have PetscBool , why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
-      boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
-
-.seealso: PETSC_TRUE, PETSC_FALSE, PetscNot()
-E*/
-typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
-PETSC_EXTERN MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
 
 /*
     Defines elementary mathematics functions and constants.
 */
 #include <petscmath.h>
 
-/*E
-    PetscCopyMode  - Determines how an array passed to certain functions is copied or retained
-
-   Level: beginner
-
-$   PETSC_COPY_VALUES - the array values are copied into new space, the user is free to reuse or delete the passed in array
-$   PETSC_OWN_POINTER - the array values are NOT copied, the object takes ownership of the array and will free it later, the user cannot change or
-$                       delete the array. The array MUST have been obtained with PetscMalloc(). Hence this mode cannot be used in Fortran.
-$   PETSC_USE_POINTER - the array values are NOT copied, the object uses the array but does NOT take ownership of the array. The user cannot use
-                        the array but the user must delete the array after the object is destroyed.
-
-E*/
-typedef enum { PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER} PetscCopyMode;
 PETSC_EXTERN const char *const PetscCopyModes[];
-
-/*MC
-    PETSC_FALSE - False value of PetscBool
-
-    Level: beginner
-
-    Note:
-    Zero integer
-
-.seealso: PetscBool, PETSC_TRUE
-M*/
-
-/*MC
-    PETSC_TRUE - True value of PetscBool
-
-    Level: beginner
-
-    Note:
-    Nonzero integer
-
-.seealso: PetscBool, PETSC_FALSE
-M*/
 
 /*MC
     PETSC_IGNORE - same as NULL, means PETSc will ignore this argument
@@ -522,7 +345,7 @@ M*/
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_DETERMINE
 
 M*/
-#define PETSC_IGNORE         NULL
+#define PETSC_IGNORE NULL
 
 /* This is deprecated */
 #define PETSC_NULL NULL
@@ -536,7 +359,7 @@ M*/
 .seealso: PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
-#define PETSC_DECIDE  -1
+#define PETSC_DECIDE -1
 
 /*MC
     PETSC_DETERMINE - standard way of passing in integer or floating point parameter
@@ -565,11 +388,11 @@ M*/
 .seealso: PETSC_DECIDE, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
-#define PETSC_DEFAULT  -2
+#define PETSC_DEFAULT -2
 
 /*MC
     PETSC_COMM_WORLD - the equivalent of the MPI_COMM_WORLD communicator which represents
-           all the processs that PETSc knows about.
+           all the processes that PETSc knows about.
 
    Level: beginner
 
@@ -1372,12 +1195,6 @@ PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDRAM(void);
 PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
 
-/*
-    PetscLogDouble variables are used to contain double precision numbers
-  that are not used in the numerical computations, but rather in logging,
-  timing etc.
-*/
-typedef double PetscLogDouble;
 #define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
 
 /*
@@ -1394,49 +1211,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
-/*E
-    PetscDataType - Used for handling different basic data types.
-
-   Level: beginner
-
-   Notes:
-   Use of this should be avoided if one can directly use MPI_Datatype instead.
-
-   Developer comment:
-   It would be nice if we could always just use MPI Datatypes, why can we not?
-
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
-          PetscDataTypeGetSize()
-
-E*/
-typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 13, PETSC___FP16 = 14,PETSC_STRUCT, PETSC_DATATYPE_UNKNOWN} PetscDataType;
 PETSC_EXTERN const char *const PetscDataTypes[];
-
-#if defined(PETSC_USE_COMPLEX)
-#define  PETSC_SCALAR  PETSC_COMPLEX
-#else
-#if defined(PETSC_USE_REAL_SINGLE)
-#define  PETSC_SCALAR  PETSC_FLOAT
-#elif defined(PETSC_USE_REAL___FLOAT128)
-#define  PETSC_SCALAR  PETSC___FLOAT128
-#elif defined(PETSC_USE_REAL___FP16)
-#define  PETSC_SCALAR  PETSC___FP16
-#else
-#define  PETSC_SCALAR  PETSC_DOUBLE
-#endif
-#endif
-#if defined(PETSC_USE_REAL_SINGLE)
-#define  PETSC_REAL  PETSC_FLOAT
-#elif defined(PETSC_USE_REAL___FLOAT128)
-#define  PETSC_REAL  PETSC___FLOAT128
-#elif defined(PETSC_USE_REAL___FP16)
-#define  PETSC_REAL  PETSC___FP16
-#else
-#define  PETSC_REAL  PETSC_DOUBLE
-#endif
-#define  PETSC_FORTRANADDR  PETSC_LONG
-
 PETSC_EXTERN PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 PETSC_EXTERN PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype,PetscDataType*);
 PETSC_EXTERN PetscErrorCode PetscDataTypeGetSize(PetscDataType,size_t*);
@@ -1479,15 +1254,6 @@ PETSC_EXTERN PetscErrorCode PetscStrreplace(MPI_Comm,const char[],char[],size_t)
 
 PETSC_EXTERN void PetscStrcmpNoError(const char[],const char[],PetscBool  *);
 
-/*S
-    PetscToken - 'Token' used for managing tokenizing strings
-
-  Level: intermediate
-
-.seealso: PetscTokenCreate(), PetscTokenFind(), PetscTokenDestroy()
-S*/
-typedef struct _p_PetscToken* PetscToken;
-
 PETSC_EXTERN PetscErrorCode PetscTokenCreate(const char[],const char,PetscToken*);
 PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken,char *[]);
 PETSC_EXTERN PetscErrorCode PetscTokenDestroy(PetscToken*);
@@ -1517,75 +1283,6 @@ PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm,const PetscInt[],PetscInt*,Pets
 PETSC_EXTERN PetscErrorCode MPIULong_Send(void*,PetscInt,MPI_Datatype,PetscMPIInt,PetscMPIInt,MPI_Comm);
 PETSC_EXTERN PetscErrorCode MPIULong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIInt,PetscMPIInt,MPI_Comm);
 
-/*S
-     PetscObject - any PETSc object, PetscViewer, Mat, Vec, KSP etc
-
-   Level: beginner
-
-   Note:
-   This is the base class from which all PETSc objects are derived from.
-
-.seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName(), PetscObjectReference(), PetscObjectDereference()
-S*/
-typedef struct _p_PetscObject* PetscObject;
-
-/*MC
-    PetscObjectId - unique integer Id for a PetscObject
-
-    Level: developer
-
-    Notes:
-    Unlike pointer values, object ids are never reused.
-
-.seealso: PetscObjectState, PetscObjectGetId()
-M*/
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND) /* compaq F90 */
-typedef int PetscObjectId;
-#else
-typedef PetscInt64 PetscObjectId;
-#endif
-
-/*MC
-    PetscObjectState - integer state for a PetscObject
-
-    Level: developer
-
-    Notes:
-    Object state is always-increasing and (for objects that track state) can be used to determine if an object has
-    changed since the last time you interacted with it.  It is 64-bit so that it will not overflow for a very long time.
-
-.seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
-M*/
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND) /* compaq F90 */
-typedef int PetscObjectState;
-#else
-typedef PetscInt64 PetscObjectState;
-#endif
-
-/*S
-     PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
-      by string name
-
-   Level: advanced
-
-.seealso:  PetscFunctionListAdd(), PetscFunctionListDestroy(), PetscOpFlist
-S*/
-typedef struct _n_PetscFunctionList *PetscFunctionList;
-
-/*E
-  PetscFileMode - Access mode for a file.
-
-  Level: beginner
-
-$  FILE_MODE_READ - open a file at its beginning for reading
-$  FILE_MODE_WRITE - open a file at its beginning for writing (will create if the file does not exist)
-$  FILE_MODE_APPEND - open a file at end for writing
-$  FILE_MODE_UPDATE - open a file for updating, meaning for reading and writing
-$  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and writing, at the end
-
-.seealso: PetscViewerFileSetMode()
-E*/
-typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
 PETSC_EXTERN const char *const PetscFileModes[];
 
 /*
@@ -1679,6 +1376,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,Pets
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
 #define PetscObjectQueryFunction(obj,name,fptr) PetscObjectQueryFunction_Private((obj),(name),(PetscVoidFunction*)(fptr))
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject,const char[],void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscObjectSetOptions(PetscObject,PetscOptions);
+PETSC_EXTERN PetscErrorCode PetscObjectGetOptions(PetscObject,PetscOptions*);
 PETSC_EXTERN PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
@@ -1720,8 +1419,6 @@ PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 
 #endif
 
-typedef void* PetscDLHandle;
-typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
 PETSC_EXTERN PetscErrorCode PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLClose(PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLSym(PetscDLHandle,const char[],void **);
@@ -1730,18 +1427,6 @@ PETSC_EXTERN PetscErrorCode PetscDLSym(PetscDLHandle,const char[],void **);
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void*,PetscStack**);
 #endif
 PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE*,PetscBool);
-
-/*S
-     PetscObjectList - Linked list of PETSc objects, each accessable by string name
-
-   Level: developer
-
-   Notes:
-   Used by PetscObjectCompose() and PetscObjectQuery()
-
-.seealso:  PetscObjectListAdd(), PetscObjectListDestroy(), PetscObjectListFind(), PetscObjectCompose(), PetscObjectQuery(), PetscFunctionList
-S*/
-typedef struct _n_PetscObjectList *PetscObjectList;
 
 PETSC_EXTERN PetscErrorCode PetscObjectListDestroy(PetscObjectList*);
 PETSC_EXTERN PetscErrorCode PetscObjectListFind(PetscObjectList,const char[],PetscObject*);
@@ -1765,14 +1450,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList,PetscFu
 PETSC_EXTERN PetscErrorCode PetscFunctionListView(PetscFunctionList,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char ***,int*);
 
-/*S
-     PetscDLLibrary - Linked list of dynamics libraries to search for functions
-
-   Level: advanced
-
-.seealso:  PetscDLLibraryOpen()
-S*/
-typedef struct _n_PetscDLLibrary *PetscDLLibrary;
 PETSC_EXTERN PetscDLLibrary  PetscDLLibrariesLoaded;
 PETSC_EXTERN PetscErrorCode PetscDLLibraryAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDLLibraryPrepend(MPI_Comm,PetscDLLibrary *,const char[]);
@@ -1871,15 +1548,7 @@ PETSC_EXTERN PetscErrorCode PetscStartMatlab(MPI_Comm,const char[],const char[],
 PETSC_EXTERN PetscErrorCode PetscStartJava(MPI_Comm,const char[],const char[],FILE**);
 PETSC_EXTERN PetscErrorCode PetscGetPetscDir(const char*[]);
 
-/*S
-     PetscContainer - Simple PETSc object that contains a pointer to any required data
-
-   Level: advanced
-
-.seealso:  PetscObject, PetscContainerCreate()
-S*/
 PETSC_EXTERN PetscClassId PETSC_CONTAINER_CLASSID;
-typedef struct _p_PetscContainer*  PetscContainer;
 PETSC_EXTERN PetscErrorCode PetscContainerGetPointer(PetscContainer,void **);
 PETSC_EXTERN PetscErrorCode PetscContainerSetPointer(PetscContainer,void *);
 PETSC_EXTERN PetscErrorCode PetscContainerDestroy(PetscContainer*);
@@ -2151,11 +1820,11 @@ M*/
    ugly extern "C" {} wrappers.
 */
 #if defined(__cplusplus)
-#define EXTERN_C_BEGIN extern "C" {
-#define EXTERN_C_END }
+#  define EXTERN_C_BEGIN extern "C" {
+#  define EXTERN_C_END }
 #else
-#define EXTERN_C_BEGIN
-#define EXTERN_C_END
+#  define EXTERN_C_BEGIN
+#  define EXTERN_C_END
 #endif
 
 /* --------------------------------------------------------------------*/
@@ -2169,87 +1838,6 @@ M*/
    Note: This manual page is a place-holder because MPICH does not have a manual page for MPI_Comm
 
 .seealso: PETSC_COMM_WORLD, PETSC_COMM_SELF
-M*/
-
-/*MC
-   PetscScalar - PETSc type that represents either a double precision real number, a double precision
-       complex number, a single precision real number, a __float128 real or complex or a __fp16 real - if the code is configured
-       with --with-scalar-type=real,complex --with-precision=single,double,__float128,__fp16
-
-   Notes:
-   For MPI calls that require datatypes, use MPIU_SCALAR as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX etc for operations. They will automatically work correctly regardless of the size of PetscScalar.
-
-   Level: beginner
-
-.seealso: PetscReal, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PetscRealPart(), PetscImaginaryPart()
-M*/
-
-/*MC
-   PetscComplex - PETSc type that represents a complex number with precision matching that of PetscReal.
-
-   Synopsis:
-   #include <petscsys.h>
-   PetscComplex number = 1. + 2.*PETSC_i;
-
-   Notes:
-   For MPI calls that require datatypes, use MPIU_COMPLEX as the datatype for PetscComplex and MPIU_SUM etc for operations.
-          They will automatically work correctly regardless of the size of PetscComplex.
-
-          See PetscScalar for details on how to ./configure the size of PetscReal
-
-          Complex numbers are automatically available if PETSc was able to find a working complex implementation
-
-   Level: beginner
-
-.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
-M*/
-
-/*MC
-   PetscReal - PETSc type that represents a real number version of PetscScalar
-
-
-   Notes:
-   For MPI calls that require datatypes, use MPIU_REAL as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX, etc. for operations.
-          They will automatically work correctly regardless of the size of PetscReal.
-
-          See PetscScalar for details on how to ./configure the size of PetscReal.
-
-   Level: beginner
-
-.seealso: PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
-M*/
-
-/*MC
-   MPIU_SCALAR - MPI datatype corresponding to PetscScalar
-
-   Notes:
-   In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalar values, pass this value.
-
-   Level: beginner
-
-.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_COMPLEX, MPIU_INT
-M*/
-
-/*MC
-   MPIU_COMPLEX - MPI datatype corresponding to PetscComplex
-
-   Notes:
-   In MPI calls that require an MPI datatype that matches a PetscComplex or array of PetscComplex values, pass this value.
-
-   Level: beginner
-
-.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
-M*/
-
-/*MC
-   MPIU_REAL - MPI datatype corresponding to PetscReal
-
-   Notes:
-   In MPI calls that require an MPI datatype that matches a PetscReal or array of PetscReal values, pass this value.
-
-   Level: beginner
-
-.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
 M*/
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -2512,29 +2100,28 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
      The IBM include files define hz, here we hide it so that it may be used as a regular user variable.
 */
 #if defined(hz)
-#undef hz
+#  undef hz
 #endif
 
 /*  For arrays that contain filenames or paths */
 
-
 #if defined(PETSC_HAVE_LIMITS_H)
-#include <limits.h>
+#  include <limits.h>
 #endif
 #if defined(PETSC_HAVE_SYS_PARAM_H)
-#include <sys/param.h>
+#  include <sys/param.h>
 #endif
 #if defined(PETSC_HAVE_SYS_TYPES_H)
-#include <sys/types.h>
+#  include <sys/types.h>
 #endif
 #if defined(MAXPATHLEN)
-#  define PETSC_MAX_PATH_LEN     MAXPATHLEN
+#  define PETSC_MAX_PATH_LEN MAXPATHLEN
 #elif defined(MAX_PATH)
-#  define PETSC_MAX_PATH_LEN     MAX_PATH
+#  define PETSC_MAX_PATH_LEN MAX_PATH
 #elif defined(_MAX_PATH)
-#  define PETSC_MAX_PATH_LEN     _MAX_PATH
+#  define PETSC_MAX_PATH_LEN _MAX_PATH
 #else
-#  define PETSC_MAX_PATH_LEN     4096
+#  define PETSC_MAX_PATH_LEN 4096
 #endif
 
 /*MC
@@ -2657,17 +2244,6 @@ PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;
 
 PETSC_EXTERN PetscErrorCode PetscRandomInitializePackage(void);
 
-/*S
-     PetscRandom - Abstract PETSc object that manages generating random numbers
-
-   Level: intermediate
-
-  Concepts: random numbers
-
-.seealso:  PetscRandomCreate(), PetscRandomGetValue(), PetscRandomType
-S*/
-typedef struct _p_PetscRandom*   PetscRandom;
-
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList PetscRandomList;
 
@@ -2713,27 +2289,6 @@ PETSC_EXTERN PetscErrorCode PetscLs(MPI_Comm,const char[],char[],size_t,PetscBoo
 PETSC_EXTERN PetscErrorCode PetscOpenSocket(const char[],int,int*);
 #endif
 
-/*
-   In binary files variables are stored using the following lengths,
-  regardless of how they are stored in memory on any one particular
-  machine. Use these rather then sizeof() in computing sizes for
-  PetscBinarySeek().
-*/
-#define PETSC_BINARY_INT_SIZE   (32/8)
-#define PETSC_BINARY_FLOAT_SIZE  (32/8)
-#define PETSC_BINARY_CHAR_SIZE  (8/8)
-#define PETSC_BINARY_SHORT_SIZE  (16/8)
-#define PETSC_BINARY_DOUBLE_SIZE  (64/8)
-#define PETSC_BINARY_SCALAR_SIZE  sizeof(PetscScalar)
-
-/*E
-  PetscBinarySeekType - argument to PetscBinarySeek()
-
-  Level: advanced
-
-.seealso: PetscBinarySeek(), PetscBinarySynchronizedSeek()
-E*/
-typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
 PETSC_EXTERN PetscErrorCode PetscBinarySeek(int,off_t,PetscBinarySeekType,off_t*);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm,int,off_t,PetscBinarySeekType,off_t*);
 PETSC_EXTERN PetscErrorCode PetscByteSwap(void *,PetscDataType,PetscInt);
@@ -2762,119 +2317,15 @@ PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm,PetscMPIInt,MPI_
                                                        PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
   PetscAttrMPIPointerWithType(6,3);
 
-/*E
-    PetscBuildTwoSidedType - algorithm for setting up two-sided communication
-
-$  PETSC_BUILDTWOSIDED_ALLREDUCE - classical algorithm using an MPI_Allreduce with
-$      a buffer of length equal to the communicator size. Not memory-scalable due to
-$      the large reduction size. Requires only MPI-1.
-$  PETSC_BUILDTWOSIDED_IBARRIER - nonblocking algorithm based on MPI_Issend and MPI_Ibarrier.
-$      Proved communication-optimal in Hoefler, Siebert, and Lumsdaine (2010). Requires MPI-3.
-$  PETSC_BUILDTWOSIDED_REDSCATTER - similar to above, but use more optimized function
-$      that only communicates the part of the reduction that is necessary.  Requires MPI-2.
-
-   Level: developer
-
-.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedSetType(), PetscCommBuildTwoSidedGetType()
-E*/
-typedef enum {
-  PETSC_BUILDTWOSIDED_NOTSET = -1,
-  PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
-  PETSC_BUILDTWOSIDED_IBARRIER = 1,
-  PETSC_BUILDTWOSIDED_REDSCATTER = 2
-  /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
-} PetscBuildTwoSidedType;
 PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm,PetscBuildTwoSidedType);
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm,PetscBuildTwoSidedType*);
 
-PETSC_EXTERN PetscErrorCode PetscSSEIsEnabled(MPI_Comm,PetscBool  *,PetscBool  *);
-
-/*E
-  InsertMode - Whether entries are inserted or added into vectors or matrices
-
-  Level: beginner
-
-.seealso: VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(),
-          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
-E*/
- typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES, INSERT_ALL_VALUES, ADD_ALL_VALUES, INSERT_BC_VALUES, ADD_BC_VALUES} InsertMode;
-
-/*MC
-    INSERT_VALUES - Put a value into a vector or matrix, overwrites any previous value
-
-    Level: beginner
-
-.seealso: InsertMode, VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), ADD_VALUES,
-          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd(), MAX_VALUES
-
-M*/
-
-/*MC
-    ADD_VALUES - Adds a value into a vector or matrix, if there previously was no value, just puts the
-                value into that location
-
-    Level: beginner
-
-.seealso: InsertMode, VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), INSERT_VALUES,
-          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd(), MAX_VALUES
-
-M*/
-
-/*MC
-    MAX_VALUES - Puts the maximum of the scattered/gathered value and the current value into each location
-
-    Level: beginner
-
-.seealso: InsertMode, VecScatterBegin(), VecScatterEnd(), ADD_VALUES, INSERT_VALUES
-
-M*/
+PETSC_EXTERN PetscErrorCode PetscSSEIsEnabled(MPI_Comm,PetscBool*,PetscBool*);
 
 PETSC_EXTERN MPI_Comm PetscObjectComm(PetscObject);
 
-typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;
 PETSC_EXTERN const char *const PetscSubcommTypes[];
-
-/*S
-   PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
-
-   Notes:
-   After a call to PetscSubcommSetType(), PetscSubcommSetTypeGeneral(), or PetscSubcommSetFromOptions() one may call
-$     PetscSubcommChild() returns the associated subcommunicator on this process
-$     PetscSubcommContiguousParent() returns a parent communitor but with all child of the same subcommunicator having contiguous rank
-
-   Sample Usage:
-       PetscSubcommCreate()
-       PetscSubcommSetNumber()
-       PetscSubcommSetType(PETSC_SUBCOMM_INTERLACED);
-       ccomm = PetscSubcommChild()
-       PetscSubcommDestroy()
-
-   Level: advanced
-
-   Concepts: communicator, create
-
-   Notes:
-$   PETSC_SUBCOMM_GENERAL - similar to MPI_Comm_split() each process sets the new communicator (color) they will belong to and the order within that communicator
-$   PETSC_SUBCOMM_CONTIGUOUS - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
-$   PETSC_SUBCOMM_INTERLACED - each new communictor contains a set of processes equally far apart in rank from the others in that new communicator
-
-   Example: Consider a communicator with six processes split into 3 subcommunicators.
-$     PETSC_SUBCOMM_CONTIGUOUS - the first communicator contains rank 0,1  the second rank 2,3 and the third rank 4,5 in the original ordering of the original communicator
-$     PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0,3, the second 1,4 and the third 2,5
-
-   Developer Notes:
-   This is used in objects such as PCREDUNDANT to manage the subcommunicators on which the redundant computations
-      are performed.
-
-
-.seealso: PetscSubcommCreate(), PetscSubcommSetNumber(), PetscSubcommSetType(), PetscSubcommView(), PetscSubcommSetFromOptions()
-
-S*/
-typedef struct _n_PetscSubcomm* PetscSubcomm;
 
 struct _n_PetscSubcomm {
   MPI_Comm         parent;           /* parent communicator */
@@ -2899,17 +2350,6 @@ PETSC_EXTERN PetscErrorCode PetscSubcommView(PetscSubcomm,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm,const char[]);
 
-/*S
-     PetscHeap - A simple class for managing heaps
-
-   Level: intermediate
-
-  Concepts: random numbers
-
-.seealso:  PetscHeapCreate(), PetscHeapAdd(), PetscHeapPop(), PetscHeapPeek(), PetscHeapStash(), PetscHeapUnstash(), PetscHeapView(), PetscHeapDestroy()
-S*/
-typedef struct _PetscHeap *PetscHeap;
-
 PETSC_EXTERN PetscErrorCode PetscHeapCreate(PetscInt,PetscHeap*);
 PETSC_EXTERN PetscErrorCode PetscHeapAdd(PetscHeap,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscHeapPop(PetscHeap,PetscInt*,PetscInt*);
@@ -2920,14 +2360,12 @@ PETSC_EXTERN PetscErrorCode PetscHeapDestroy(PetscHeap*);
 PETSC_EXTERN PetscErrorCode PetscHeapView(PetscHeap,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscProcessPlacementView(PetscViewer);
-typedef struct _n_PetscShmComm* PetscShmComm;
 PETSC_EXTERN PetscErrorCode PetscShmCommGet(MPI_Comm,PetscShmComm*);
 PETSC_EXTERN PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm,PetscMPIInt,PetscMPIInt*);
 PETSC_EXTERN PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm,PetscMPIInt,PetscMPIInt*);
 PETSC_EXTERN PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm,MPI_Comm*);
 
 /* routines to better support OpenMP multithreading needs of some PETSc third party libraries */
-typedef struct _n_PetscOmpCtrl* PetscOmpCtrl;
 PETSC_EXTERN PetscErrorCode PetscOmpCtrlCreate(MPI_Comm,PetscInt,PetscOmpCtrl*);
 PETSC_EXTERN PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl,MPI_Comm*,MPI_Comm*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl*);
@@ -2935,14 +2373,6 @@ PETSC_EXTERN PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl);
 PETSC_EXTERN PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl);
 PETSC_EXTERN PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl);
 
-/*S
-   PetscSegBuffer - a segmented extendable buffer
-
-   Level: developer
-
-.seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferExtract(), PetscSegBufferDestroy()
-S*/
-typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(size_t,size_t,PetscSegBuffer*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer,size_t,void*);
@@ -2958,7 +2388,6 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
  * possible. */
 PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,(size_t)count,(void**)slot);}
 
-typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
 extern PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton;
 PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted*);
 PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted*);

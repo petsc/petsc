@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  =
-DIRS     = interface impls
+DIRS     = interface utils impls
 LOCDIR   = src/ts/trajectory/
 MANSEC   = TS
 

@@ -14,7 +14,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetnamedglobalvector_(DM *dm,char* name PETSC_
   char *t;
 
   FIXCHAR(name,len,t);
-  *ierr = DMGetNamedGlobalVector(*dm,t,X);
+  *ierr = DMGetNamedGlobalVector(*dm,t,X);if (*ierr) return;
   FREECHAR(name,t);
 }
 
@@ -23,6 +23,6 @@ PETSC_EXTERN void PETSC_STDCALL dmrestorenamedglobalvector_(DM *dm,char* name PE
   char *t;
 
   FIXCHAR(name,len,t);
-  *ierr = DMRestoreNamedGlobalVector(*dm,t,X);
+  *ierr = DMRestoreNamedGlobalVector(*dm,t,X);if (*ierr) return;
   FREECHAR(name,t);
 }

@@ -87,7 +87,7 @@
         PetscFortranDouble PETSC_NULL_DOUBLE(1)
         PetscScalar PETSC_NULL_SCALAR(1)
         PetscReal PETSC_NULL_REAL(1)
-        PetscBool PETSC_NULL_BOOL(1)
+        PetscBool PETSC_NULL_BOOL
 !
 #if defined(PETSC_USE_REAL___FLOAT128)
         integer MPIU_REAL

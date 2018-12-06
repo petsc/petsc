@@ -7,11 +7,17 @@
 #define petscsectionrestorepointsyms_      PETSCSECTIONRESTOREPOINTSYMS
 #define petscsectiongetfieldpointsyms_     PETSCSECTIONGETFIELDPOINTSYMS
 #define petscsectionrestorefieldpointsyms_ PETSCSECTIONRESTOREFIELDPOINTSYMS
+#define petscsectionview_                  PETSCSECTIONVIEW
+#define petscsectiongetfieldname_          PETSCSECTIONGETFIELDNAME
+#define petscsectionsetfieldname_          PETSCSECTIONSETFIELDNAME
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscsectiongetpointsyms_          petscsectiongetpointsyms
 #define petscsectionrestorepointsyms_      petscsectionrestorepointsyms
 #define petscsectiongetfieldpointsyms_     petscsectiongetfieldpointsyms
 #define petscsectionrestorefieldpointsyms_ petscsectionrestorefieldpointsyms
+#define petscsectionview_                  petscsectionview
+#define petscsectiongetfieldname_          petscsectiongetfieldname
+#define petscsectionsetfieldname_          petscsectionsetfieldname
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL  petscsectiongetpointsyms_(PetscSection section,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr ){
@@ -25,4 +31,30 @@ PETSC_EXTERN void PETSC_STDCALL  petscsectiongetfieldpointsyms_(PetscSection sec
 }
 PETSC_EXTERN void PETSC_STDCALL  petscsectionrestorefieldpointsyms_(PetscSection section,PetscInt *field,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr ){
 *__ierr = PetscSectionRestoreFieldPointSyms(section,*field,*numPoints,points,(const PetscInt ***)perms,(const PetscScalar ***)rots);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscsectionview_(PetscSection *s, PetscViewer *vin, PetscErrorCode *ierr)
+{
+  PetscViewer v;
+
+  PetscPatchDefaultViewers_Fortran(vin, v);
+  *ierr = PetscSectionView(*s, v);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscsectiongetfieldname_(PetscSection *s, PetscInt *field, char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  const char *fname;
+
+  *ierr = PetscSectionGetFieldName(*s, *field, &fname);if (*ierr) return;
+  *ierr = PetscStrncpy(name, fname, len);
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscsectionsetfieldname_(PetscSection *s, PetscInt *field, char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *f;
+
+  FIXCHAR(name, len, f);
+  *ierr = PetscSectionSetFieldName(*s, *field, f);if (*ierr) return;
+  FREECHAR(name, f);
 }

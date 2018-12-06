@@ -20,6 +20,8 @@ configure_options = [
   '--download-superlu_dist=1',
   '--with-cxx-dialect=C++11',
   '--download-elemental=1',
+  '--download-p4est=1',
+  '--with-zlib=1',
   ]
 
 if __name__ == '__main__':

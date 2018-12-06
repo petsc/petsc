@@ -63,7 +63,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewersettype_(PetscViewer *x, char* type_n
   char *t;
 
   FIXCHAR(type_name, len, t);
-  *ierr = PetscViewerSetType(*x, t);
+  *ierr = PetscViewerSetType(*x, t);if (*ierr) return;
   FREECHAR(type_name, t);
 }
 

@@ -20,6 +20,7 @@ int main(int argc,char **args)
   PetscViewer    view;
   int            *row,*col,*rownz;
   PetscBool      flg;
+  char           line[PETSC_MAX_PATH_LEN];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -45,8 +46,11 @@ int main(int argc,char **args)
   for (i=0; i<m; i++) rownz[i] = 1; /* add 0.0 to diagonal entries */
 
   for (i=0; i<nnz; i++) {
-    ierr = fscanf(file,"%d %d %le\n",&row[i],&col[i],(double*)&val[i]);
-    if (ierr == EOF) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"i=%d, reach EOF\n",i);
+    char *s = fgets(line,sizeof(line),file);
+    if (!s) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"i=%d, reached EOF\n",i);
+    ierr = sscanf(line,"%d %d %le\n",&row[i],&col[i],(double*)&val[i]);
+    if (ierr==2){val[i]=1.0;}
+    else if (ierr != 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"i=%d, invalid line\n",i);
     row[i]--; col[i]--;    /* adjust from 1-based to 0-based */
     rownz[col[i]]++;
   }

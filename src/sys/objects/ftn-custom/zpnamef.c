@@ -11,7 +11,7 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,char* name 
   char *t1;
 
   FIXCHAR(name,len,t1);
-  *ierr = PetscObjectSetName(*obj,t1);
+  *ierr = PetscObjectSetName(*obj,t1);if (*ierr) return;
   FREECHAR(name,t1);
 }
 

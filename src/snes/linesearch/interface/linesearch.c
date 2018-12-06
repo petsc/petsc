@@ -776,7 +776,7 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
   PetscBool         flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ls),((PetscObject)ls)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ls),((PetscObject) ls)->options,((PetscObject)ls)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewerAndFormat *vf;
     ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
@@ -839,7 +839,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
     ierr = SNESLineSearchSetType(linesearch,deft);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)linesearch),((PetscObject)linesearch)->prefix,"-snes_linesearch_monitor",&viewer,NULL,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)linesearch),((PetscObject) linesearch)->options,((PetscObject)linesearch)->prefix,"-snes_linesearch_monitor",&viewer,NULL,&set);CHKERRQ(ierr);
   if (set) {
     ierr = SNESLineSearchSetDefaultMonitor(linesearch,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

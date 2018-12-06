@@ -134,12 +134,19 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
 @*/
 PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 {
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  if (v) PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp, v);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscViewerASCIIPrintf(v, "Dual space of order %D with %D components\n", sp->order, sp->Nc);CHKERRQ(ierr);}
   if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
