@@ -400,9 +400,9 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       cheb->pmatstate = pmatstate;
     }
   }
-
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
-
+  ierr   = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   /* These three point to the three active solutions, we
      rotate these three at each solution update */
   km1      = 0; k = 1; kp1 = 2;
@@ -433,7 +433,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   }
 
   /* calculate residual norm if requested, we have done one iteration */
-  if (ksp->normtype) {
+  if (ksp->normtype || ksp->numbermonitors) {
     switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
       ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = B^{-1}r */
@@ -448,13 +448,14 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       break;
     default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
+    ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ksp->rnorm   = rnorm;
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
-  ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ksp->rnorm   = rnorm;
-  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  else ksp->reason = 0;
   if (ksp->reason || ksp->max_it==0) {
     if (ksp->max_it==0) ksp->reason = KSP_DIVERGED_ITS; /* This for a V(0,x) cycle */
     PetscFunctionReturn(0);
@@ -463,27 +464,31 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = B^{-1}r */
   }
   ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + p[km1] */
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 1;
+  ierr   = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   for (i=1; i<ksp->max_it; i++) {
     ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
-
     ksp->its++;
     ierr   = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-    c[kp1] = 2.0*mu*c[k] - c[km1];
-    omega  = omegaprod*c[k]/c[kp1];
 
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);          /*  r = b - Ap[k]    */
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
-    ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
-    ksp->vec_sol = p[k];
-
     /* calculate residual norm if requested */
-    if (ksp->normtype) {
-      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
-      } else {
+    if (ksp->normtype || ksp->numbermonitors) {
+      switch (ksp->normtype) {
+      case KSP_NORM_PRECONDITIONED:
+        ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
         ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
+        break;
+      case KSP_NORM_UNPRECONDITIONED:
+      case KSP_NORM_NATURAL:
+        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
+        break;
+      default:
+        rnorm = 0.0;
+        break;
       }
       ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
@@ -492,7 +497,16 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
+      if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
+        ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
+      }
+    } else {
+      ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
     }
+    ksp->vec_sol = p[k];
+
+    c[kp1] = 2.0*mu*c[k] - c[km1];
+    omega  = omegaprod*c[k]/c[kp1];
 
     /* y^{k+1} = omega(y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
     ierr = VecAXPBYPCZ(p[kp1],1.0-omega,omega,omega*Gamma*scale,p[km1],p[k]);CHKERRQ(ierr);
@@ -503,19 +517,25 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     kp1  = ktmp;
   }
   if (!ksp->reason) {
-    if (ksp->normtype != KSP_NORM_NONE) {
+    if (ksp->normtype || ksp->numbermonitors) {
       ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
       ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
-      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
-      } else {
+      switch (ksp->normtype) {
+      case KSP_NORM_PRECONDITIONED:
         ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}r */
         ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
+        break;
+      case KSP_NORM_UNPRECONDITIONED:
+      case KSP_NORM_NATURAL:
+        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
+        break;
+      default:
+        rnorm = 0.0;
+        break;
       }
       ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
       ierr         = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-      ksp->vec_sol = p[k];
       ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
     }
