@@ -993,9 +993,15 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   if (!exists) PetscFunctionReturn(0);
   if (type == H5O_TYPE_DATASET) {
     PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
-  } else SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Only dataset attributes are supported");
+  } else if (type == H5O_TYPE_GROUP) {
+    PetscStackCallHDF5Return(dataset, H5Gopen2, (h5, parent, H5P_DEFAULT));
+  } else SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Only group and dataset attributes are supported");
   PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
-  PetscStackCallHDF5(H5Dclose,(dataset));
+  if (type == H5O_TYPE_DATASET) {
+    PetscStackCallHDF5(H5Dclose,(dataset));
+  } else if (type == H5O_TYPE_GROUP) {
+    PetscStackCallHDF5(H5Gclose,(dataset));
+  }
   *has = hhas ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
