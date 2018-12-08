@@ -170,14 +170,14 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   in the debugger hence we call abort() instead of MPI_Abort().
 */
 
-void Petsc_MPI_AbortOnError(MPI_Comm *comm,PetscMPIInt *flag)
+void Petsc_MPI_AbortOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("MPI error %d\n",*flag);
   abort();
 }
 
-void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
+void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
 {
   PetscErrorCode ierr;
 
@@ -414,7 +414,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     MPI_Errhandler err_handler;
 
     ierr = PetscSetDebuggerFromString(string);CHKERRQ(ierr);
-    ierr = MPI_Comm_create_errhandler((MPI_Handler_function*)Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
+    ierr = MPI_Comm_create_errhandler(Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
     ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRQ(ierr);
     ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);CHKERRQ(ierr);
   }
@@ -464,7 +464,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       } else {
         ierr = PetscStopForDebugger();CHKERRQ(ierr);
       }
-      ierr = MPI_Comm_create_errhandler((MPI_Handler_function*)Petsc_MPI_AbortOnError,&err_handler);CHKERRQ(ierr);
+      ierr = MPI_Comm_create_errhandler(Petsc_MPI_AbortOnError,&err_handler);CHKERRQ(ierr);
       ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRQ(ierr);
     }
     ierr = PetscFree(nodes);CHKERRQ(ierr);
