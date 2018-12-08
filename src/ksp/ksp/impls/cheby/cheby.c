@@ -433,7 +433,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   }
 
   /* calculate residual norm if requested, we have done one iteration */
-  if (ksp->normtype || ksp->numbermonitors) {
+  if (ksp->normtype) {
     switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
       ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = B^{-1}r */
@@ -476,7 +476,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);          /*  r = b - Ap[k]    */
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
     /* calculate residual norm if requested */
-    if (ksp->normtype || ksp->numbermonitors) {
+    if (ksp->normtype) {
       switch (ksp->normtype) {
       case KSP_NORM_PRECONDITIONED:
         ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
@@ -517,7 +517,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     kp1  = ktmp;
   }
   if (!ksp->reason) {
-    if (ksp->normtype || ksp->numbermonitors) {
+    if (ksp->normtype) {
       ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
       ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
       switch (ksp->normtype) {
