@@ -12,6 +12,6 @@ PETSC_EXTERN void PETSC_STDCALL matcoloringsettype_(MatColoring *mc,char* type P
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = MatColoringSetType(*mc,t);
+  *ierr = MatColoringSetType(*mc,t);if (*ierr) return;
   FREECHAR(type,t);
 }

@@ -136,10 +136,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSGetIFunction(ts,NULL,&ifun,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-  if (((PetscObject)ts)->type_name)
-    defaultType = ((PetscObject)ts)->type_name;
-  else
-    defaultType = ifun ? TSBEULER : TSEULER;
+  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
+  else defaultType = ifun ? TSBEULER : TSEULER;
   ierr = PetscOptionsFList("-ts_type","TS method","TSSetType",TSList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = TSSetType(ts,typeName);CHKERRQ(ierr);
@@ -413,8 +411,12 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
 
+  /* why do we have to do this here and not during TSSetUp? */
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
-  if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(ts->snes,SNESKSPONLY);CHKERRQ(ierr);}
+  if (ts->problem_type == TS_LINEAR) {
+    ierr = PetscObjectTypeCompareAny((PetscObject)ts->snes,&flg,SNESKSPONLY,SNESKSPTRANSPOSEONLY,"");CHKERRQ(ierr);
+    if (!flg) { ierr = SNESSetType(ts->snes,SNESKSPONLY);CHKERRQ(ierr); }
+  }
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -465,7 +467,7 @@ Note: This routine should be called after all TS options have been set
 
    Level: intermediate
 
-.seealso: TSGetTrajectory(), TSAdjointSolve(), TSTrajectoryType, TSSetTrajectoryType()
+.seealso: TSGetTrajectory(), TSAdjointSolve()
 
 .keywords: TS, set, checkpoint,
 @*/
@@ -476,6 +478,33 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->trajectory) {
+    ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSResetTrajectory - Destroys and recreates the internal TSTrajectory object
+
+   Collective on TS
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: intermediate
+
+.seealso: TSGetTrajectory(), TSAdjointSolve()
+
+.keywords: TS, set, checkpoint,
+@*/
+PetscErrorCode  TSResetTrajectory(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->trajectory) {
+    ierr = TSTrajectoryDestroy(&ts->trajectory);CHKERRQ(ierr);
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -533,21 +562,52 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   ierr = DMTSGetRHSFunction(dm,&rhsfunction,&ctx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
   ierr = PetscObjectGetId((PetscObject)U,&Uid);CHKERRQ(ierr);
+
   if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) {
+    /* restore back RHS Jacobian matrices if they have been shifted/scaled */
+    if (A == ts->Arhs) {
+      if (ts->rhsjacobian.shift != 0) {
+        ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
+      }
+      if (ts->rhsjacobian.scale != 1.) {
+        ierr = MatScale(A,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
+      }
+    }
+    if (B && B == ts->Brhs && A != B) {
+      if (ts->rhsjacobian.shift != 0) {
+        ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
+      }
+      if (ts->rhsjacobian.scale != 1.) {
+        ierr = MatScale(B,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
+      }
+    }
+    ts->rhsjacobian.shift = 0;
+    ts->rhsjacobian.scale = 1.;
     PetscFunctionReturn(0);
   }
 
   if (!rhsjacobianfunc && !ijacobianfunc) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
 
   if (ts->rhsjacobian.reuse) {
-    ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
-    ierr = MatScale(A,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
-    if (B && A != B) {
-      ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
-      ierr = MatScale(B,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
+    if (A == ts->Arhs) {
+      /* MatScale has a short path for this case.
+         However, this code path is taken the first time TSComputeRHSJacobian is called
+         and the matrices have not assembled yet */
+      if (ts->rhsjacobian.shift != 0) {
+        ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
+      }
+      if (ts->rhsjacobian.scale != 1.) {
+        ierr = MatScale(A,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
+      }
     }
-    ts->rhsjacobian.shift = 0;
-    ts->rhsjacobian.scale = 1.;
+    if (B && B == ts->Brhs && A != B) {
+      if (ts->rhsjacobian.shift != 0) {
+        ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
+      }
+      if (ts->rhsjacobian.scale != 1.) {
+        ierr = MatScale(B,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
+      }
+    }
   }
 
   if (rhsjacobianfunc) {
@@ -567,11 +627,13 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
     }
   } else {
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
-    if (A != B) {ierr = MatZeroEntries(B);CHKERRQ(ierr);}
+    if (B && A != B) {ierr = MatZeroEntries(B);CHKERRQ(ierr);}
   }
-  ts->rhsjacobian.time       = t;
-  ierr                       = PetscObjectGetId((PetscObject)U,&ts->rhsjacobian.Xid);CHKERRQ(ierr);
-  ierr                       = PetscObjectStateGet((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
+  ts->rhsjacobian.time  = t;
+  ts->rhsjacobian.shift = 0;
+  ts->rhsjacobian.scale = 1.;
+  ierr                  = PetscObjectGetId((PetscObject)U,&ts->rhsjacobian.Xid);CHKERRQ(ierr);
+  ierr                  = PetscObjectStateGet((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -728,7 +790,7 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
+PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
 {
   Mat            A,B;
   PetscErrorCode ierr;
@@ -921,6 +983,14 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   if (imex) {
     if (!ijacobian) {  /* system was written as Udot = G(t,U) */
       PetscBool assembled;
+      if (rhsjacobian) {
+        Mat Arhs = NULL;
+        ierr = TSGetRHSMats_Private(ts,&Arhs,NULL);CHKERRQ(ierr);
+        if (A == Arhs) {
+          if (rhsjacobian == TSComputeRHSJacobianConstant) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Unsupported operation! cannot use TSComputeRHSJacobianConstant");
+          ts->rhsjacobian.time = PETSC_MIN_REAL;
+        }
+      }
       ierr = MatZeroEntries(A);CHKERRQ(ierr);
       ierr = MatAssembled(A,&assembled);CHKERRQ(ierr);
       if (!assembled) {
@@ -1920,7 +1990,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->snes_its);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)ts->snes,SNESKSPONLY,&lin);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompareAny((PetscObject)ts->snes,&lin,SNESKSPONLY,SNESKSPTRANSPOSEONLY,"");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of %slinear solve failures=%D\n",lin ? "" : "non",ts->num_snes_failures);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
@@ -2511,20 +2581,21 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
-  if (ts->rhsjacobian.reuse) {
+  ierr = TSGetRHSJacobian(ts,NULL,NULL,&rhsjac,NULL);CHKERRQ(ierr);
+  if (ts->rhsjacobian.reuse && rhsjac == TSComputeRHSJacobianConstant) {
     Mat Amat,Pmat;
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,&Amat,&Pmat,NULL,NULL);CHKERRQ(ierr);
     /* Matching matrices implies that an IJacobian is NOT set, because if it had been set, the IJacobian's matrix would
      * have displaced the RHS matrix */
-    if (Amat == ts->Arhs) {
+    if (Amat && Amat == ts->Arhs) {
       /* we need to copy the values of the matrix because for the constant Jacobian case the user will never set the numerical values in this new location */
       ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&Amat);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,Amat,NULL,NULL,NULL);CHKERRQ(ierr);
       ierr = MatDestroy(&Amat);CHKERRQ(ierr);
     }
-    if (Pmat == ts->Brhs) {
+    if (Pmat && Pmat == ts->Brhs) {
       ierr = MatDuplicate(ts->Brhs,MAT_COPY_VALUES,&Pmat);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,NULL,Pmat,NULL,NULL);CHKERRQ(ierr);
       ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
@@ -7179,7 +7250,13 @@ PetscErrorCode  TSRollBack(TS ts)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
+   Output Parameters:
++  ns - the number of stages
+-  Y - the current stage vectors
+
    Level: advanced
+
+   Notes: Both ns and Y can be NULL.
 
 .keywords: TS, getstages
 
@@ -7191,10 +7268,12 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns,Vec **Y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  PetscValidPointer(ns,2);
-
-  if (!ts->ops->getstages) *ns=0;
-  else {
+  if (ns) PetscValidPointer(ns,2);
+  if (Y) PetscValidPointer(Y,3);
+  if (!ts->ops->getstages) {
+    if (ns) *ns = 0;
+    if (Y) *Y = NULL;
+  } else {
     ierr = (*ts->ops->getstages)(ts,ns,Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

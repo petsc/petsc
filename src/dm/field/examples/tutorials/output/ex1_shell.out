@@ -2,16 +2,16 @@ DMField Object: field 1 MPI processes
   type: shell
   2 components
   VERTEX continuity
-DM Object: mesh 1 MPI processes
-  type: plex
-mesh in 2 dimensions:
-  0-cells: 16
-  1-cells: 33
-  2-cells: 18
-Labels:
-  Face Sets: 1 strata with value/size (1 (12))
-  marker: 1 strata with value/size (1 (24))
-  depth: 3 strata with value/size (0 (16), 1 (33), 2 (18))
+  DM Object: mesh 1 MPI processes
+    type: plex
+  mesh in 2 dimensions:
+    0-cells:   16  
+    1-cells:   33  
+    2-cells:   18  
+  Labels:
+    Face Sets: 1 strata with value/size (1 (12))
+    marker: 1 strata with value/size (1 (24))
+    depth: 3 strata with value/size (0 (16), 1 (33), 2 (18))
 Vec Object: Test Points 1 MPI processes
   type: mpi
 Process [0]
@@ -44,11 +44,8 @@ rH:
 10:   0.0000e+00   2.0000e+00   4.0000e+00   0.0000e+00   0.0000e+00
 15:   4.0000e+00
 PetscQuadrature Object: Test quadrature 1 MPI processes
-  type not yet set
-Quadrature on 1 points
-  (-0.333333
-, -0.333333
-) 2.
+  type: GaussJacobi
+  Quadrature on 1 points of order 1
 IS Object: FE Test Cells 1 MPI processes
   type: general
 Number of indices in set 2

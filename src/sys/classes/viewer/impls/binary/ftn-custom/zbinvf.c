@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,char* name
 {
   char *c1;
   FIXCHAR(name,len,c1);
-  *ierr = PetscViewerBinaryOpen(MPI_Comm_f2c(*(MPI_Fint*)&*comm),c1,*type,binv);
+  *ierr = PetscViewerBinaryOpen(MPI_Comm_f2c(*(MPI_Fint*)&*comm),c1,*type,binv);if (*ierr) return;
   FREECHAR(name,c1);
 }
 

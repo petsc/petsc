@@ -194,10 +194,14 @@ $(OBJDIR)/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/sys/f90-mod/pets
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)
 
-.PHONY: clean all 
+.PHONY: clean all print
 
-clean: 
+clean:
 	${RM} -r $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
+
+# make print VAR=the-variable
+print:
+	@echo $($(VAR))
 
 allobj.d := $(srcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include

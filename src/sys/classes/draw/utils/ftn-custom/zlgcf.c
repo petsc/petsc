@@ -11,6 +11,6 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawlgsetoptionsprefix_(PetscDrawLG *lg,cha
 {
   char *t;
   FIXCHAR(prefix,len,t);
-  *ierr = PetscDrawLGSetOptionsPrefix(*lg,t);
+  *ierr = PetscDrawLGSetOptionsPrefix(*lg,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }

@@ -396,13 +396,9 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     if (!nox) def = PETSC_DRAW_WIN32;
 #elif defined(PETSC_HAVE_X)
     if (!nox) def = PETSC_DRAW_X;
-#elif defined(PETSC_HAVE_GLUT)
-    if (!nox) def = PETSC_DRAW_GLUT;
-#elif defined(PETSC_HAVE_OPENGLES)
-    if (!nox) def = PETSC_DRAW_OPENGLES;
 #else
     ierr = PetscOptionsHasName(NULL,NULL,"-nox_warning",&warn);CHKERRQ(ierr);
-    if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X windows, Microsoft Graphics, OpenGL ES, or GLUT/OpenGL on this machine\nproceeding without graphics\n");
+    if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X windows or Microsoft Graphics on this machine\nproceeding without graphics\n");
 #endif
   }
   ierr = PetscObjectOptionsBegin((PetscObject)draw);CHKERRQ(ierr);

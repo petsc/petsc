@@ -24,7 +24,7 @@ PETSC_EXTERN void PETSC_STDCALL pcgamgsettype_(PC *pc,char* type PETSC_MIXED_LEN
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = PCGAMGSetType(*pc,t);
+  *ierr = PCGAMGSetType(*pc,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

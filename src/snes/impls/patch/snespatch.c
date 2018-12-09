@@ -29,7 +29,7 @@ static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCPatchComputeOperator_Internal(patch->pc, x, M, pcpatch->currentPatch);CHKERRQ(ierr);
+  ierr = PCPatchComputeOperator_Internal(patch->pc, x, M, pcpatch->currentPatch, PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

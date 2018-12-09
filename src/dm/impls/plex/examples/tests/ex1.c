@@ -1,4 +1,4 @@
-static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n";
+static char help[] = "Tests various DMPlex routines to construct, refine and distribute a mesh.\n\n";
 
 #include <petscdmplex.h>
 
@@ -19,6 +19,7 @@ typedef struct {
   PetscBool     simplex2tensor;                  /* Refine simplicials in hexes */
   DomainShape   domainShape;                     /* Shape of the region to be meshed */
   PetscInt      *domainBoxSizes;                 /* Sizes of the box mesh */
+  PetscReal     *domainBoxL,*domainBoxU;         /* Lower left, upper right corner of the box mesh */
   DMBoundaryType periodicity[3];                 /* The domain periodicity */
   char          filename[PETSC_MAX_PATH_LEN];    /* Import mesh from file */
   char          bdfilename[PETSC_MAX_PATH_LEN];  /* Import mesh boundary from file */
@@ -29,15 +30,18 @@ typedef struct {
   PetscBool     check[3];                        /* Runs DMPlex checks on the mesh */
   PetscReal     extrude_thickness;               /* Thickness of extrusion */
   PetscInt      extrude_layers;                  /* Layers to be extruded */
+  PetscBool     testp4est[2];
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char      *dShapes[2] = {"box", "cylinder"};
-  PetscInt        shape, bd, n;
-  static PetscInt domainBoxSizes[3] = {1,1,1};
-  PetscBool       flg;
-  PetscErrorCode  ierr;
+  const char       *dShapes[2] = {"box", "cylinder"};
+  PetscInt         shape, bd, n;
+  static PetscInt  domainBoxSizes[3] = {1,1,1};
+  static PetscReal domainBoxL[3] = {0.,0.,0.};
+  static PetscReal domainBoxU[3] = {1.,1.,1.};
+  PetscBool        flg;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   options->debug             = 0;
@@ -48,6 +52,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cellWedge         = PETSC_FALSE;
   options->domainShape       = BOX;
   options->domainBoxSizes    = NULL;
+  options->domainBoxL        = NULL;
+  options->domainBoxU        = NULL;
   options->periodicity[0]    = DM_BOUNDARY_NONE;
   options->periodicity[1]    = DM_BOUNDARY_NONE;
   options->periodicity[2]    = DM_BOUNDARY_NONE;
@@ -63,6 +69,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->check[2]          = PETSC_FALSE;
   options->extrude_layers    = 2;
   options->extrude_thickness = 0.1;
+  options->testp4est[0]      = PETSC_FALSE;
+  options->testp4est[1]      = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -78,6 +86,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->domainShape = (DomainShape) shape;
   ierr = PetscOptionsIntArray("-domain_box_sizes","The sizes of the box domain","ex1.c", domainBoxSizes, (n=3,&n), &flg);CHKERRQ(ierr);
   if (flg) { options->domainShape = BOX; options->domainBoxSizes = domainBoxSizes;}
+  ierr = PetscOptionsRealArray("-domain_box_ll","Coordinates of the lower left corner of the box domain","ex1.c", domainBoxL, (n=3,&n), &flg);CHKERRQ(ierr);
+  if (flg) { options->domainBoxL = domainBoxL;}
+  ierr = PetscOptionsRealArray("-domain_box_ur","Coordinates of the upper right corner of the box domain","ex1.c", domainBoxU, (n=3,&n), &flg);CHKERRQ(ierr);
+  if (flg) { options->domainBoxU = domainBoxU;}
   bd = options->periodicity[0];
   ierr = PetscOptionsEList("-x_periodicity", "The x-boundary periodicity", "ex1.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[0]], &bd, NULL);CHKERRQ(ierr);
   options->periodicity[0] = (DMBoundaryType) bd;
@@ -98,6 +110,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-check_symmetry", "Run DMPlexCheckSymmetry", "ex1.c", options->check[0], &options->check[0], NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-check_skeleton", "Run DMPlexCheckSkeleton", "ex1.c", options->check[1], &options->check[1], NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-check_faces", "Run DMPlexCheckFaces", "ex1.c", options->check[2], &options->check[2], NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_p4est_seq", "Test p4est with sequential base DM", "ex1.c", options->testp4est[0], &options->testp4est[0], NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_p4est_par", "Test p4est with parallel base DM", "ex1.c", options->testp4est[1], &options->testp4est[1], NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -119,6 +133,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   const char    *filename             = user->filename;
   const char    *bdfilename           = user->bdfilename;
   const char    *extfilename          = user->extfilename;
+  PetscBool      testp4est_seq        = user->testp4est[0];
+  PetscBool      testp4est_par        = user->testp4est[1];
   PetscInt       triSizes_n2[2]       = {4, 4};
   PetscInt       triPoints_n2[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
   PetscInt       triSizes_n8[8]       = {1, 1, 1, 1, 1, 1, 1, 1};
@@ -167,9 +183,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     case BOX:
       if (cellWedge) {
         if (dim != 3) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a wedge mesh, not %D", dim);
-        ierr = DMPlexCreateWedgeBoxMesh(comm, user->domainBoxSizes, NULL, NULL, user->periodicity, PETSC_FALSE, interpolate, dm);CHKERRQ(ierr);
+        ierr = DMPlexCreateWedgeBoxMesh(comm, user->domainBoxSizes, user->domainBoxL, user->domainBoxU, user->periodicity, PETSC_FALSE, interpolate, dm);CHKERRQ(ierr);
       } else {
-        ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->domainBoxSizes, NULL, NULL, user->periodicity, interpolate, dm);CHKERRQ(ierr);
+        ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->domainBoxSizes, user->domainBoxL, user->domainBoxU, user->periodicity, interpolate, dm);CHKERRQ(ierr);
       }
       break;
     case CYLINDER:
@@ -184,10 +200,43 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
   }
-
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
+  ierr = DMViewFromOptions(*dm,NULL,"-init_dm_view");CHKERRQ(ierr);
+  ierr = DMGetDimension(*dm,&dim);CHKERRQ(ierr);
+
+  if (testp4est_seq) {
+#if defined(PETSC_HAVE_P4EST)
+    DM dmConv = NULL;
+
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPlexRefineSimplexToTensor(*dm, &dmConv);CHKERRQ(ierr);
+    if (dmConv) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = dmConv;
+    }
+    user->cellSimplex = PETSC_FALSE;
+
+    ierr = DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv);CHKERRQ(ierr);
+    if (dmConv) {
+      ierr = DMSetFromOptions(dmConv);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = dmConv;
+    }
+    ierr = DMSetUp(*dm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-conv_seq_1_dm_view");CHKERRQ(ierr);
+    ierr = DMConvert(*dm,DMPLEX,&dmConv);CHKERRQ(ierr);
+    if (dmConv) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = dmConv;
+    }
+    ierr = DMViewFromOptions(*dm, NULL, "-conv_seq_2_dm_view");CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
+#endif
+  }
+
   ierr = PetscLogStagePop();CHKERRQ(ierr);
-  {
+  if (!testp4est_seq) {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
 
@@ -233,6 +282,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = distributedMesh;
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-distributed_dm_view");CHKERRQ(ierr);
     /* Refine mesh using a volume constraint */
     ierr = PetscLogStagePush(user->stages[STAGE_REFINE]);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
@@ -247,8 +297,41 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogStagePush(user->stages[STAGE_REFINE]);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
+
+  if (testp4est_par) {
+#if defined(PETSC_HAVE_P4EST)
+    DM dmConv = NULL;
+
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPlexRefineSimplexToTensor(*dm, &dmConv);CHKERRQ(ierr);
+    if (dmConv) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = dmConv;
+    }
+    user->cellSimplex = PETSC_FALSE;
+
+    ierr = DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv);CHKERRQ(ierr);
+    if (dmConv) {
+      ierr = DMSetFromOptions(dmConv);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = dmConv;
+    }
+    ierr = DMSetUp(*dm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-conv_par_1_dm_view");CHKERRQ(ierr);
+    ierr = DMConvert(*dm,DMPLEX,&dmConv);CHKERRQ(ierr);
+    if (dmConv) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = dmConv;
+    }
+    ierr = DMViewFromOptions(*dm, NULL, "-conv_par_2_dm_view");CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
+#endif
+  }
+
   if (user->overlap) {
     DM overlapMesh = NULL;
+
     /* Add the level-1 overlap to refined mesh */
     ierr = PetscLogStagePush(user->stages[STAGE_OVERLAP]);CHKERRQ(ierr);
     ierr = DMPlexDistributeOverlap(*dm, 1, NULL, &overlapMesh);CHKERRQ(ierr);
@@ -259,6 +342,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
+
   if (simplex2tensor) {
     DM rdm = NULL;
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
@@ -285,110 +369,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-typedef struct ex1_stats
-{
-  PetscReal min, max, sum, squaresum;
-  PetscInt  count;
-}
-ex1_stats_t;
-
-static void ex1_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype)
-{
-  PetscInt i, N = *len;
-
-  for (i = 0; i < N; i++) {
-    ex1_stats_t *A = (ex1_stats_t *) a;
-    ex1_stats_t *B = (ex1_stats_t *) b;
-
-    B->min = PetscMin(A->min,B->min);
-    B->max = PetscMax(A->max,B->max);
-    B->sum += A->sum;
-    B->squaresum += A->squaresum;
-    B->count += A->count;
-  }
-}
-
-static PetscErrorCode TestCellShape(DM dm)
-{
-  PetscMPIInt    rank,size;
-  PetscInt       dim, c, cStart, cEnd, cMax, count = 0;
-  ex1_stats_t    stats, globalStats;
-  PetscReal      *J, *invJ, min = 0, max = 0, mean = 0, stdev = 0;
-  MPI_Comm       comm = PetscObjectComm((PetscObject)dm);
-  DM             dmCoarse;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  stats.min = PETSC_MAX_REAL;
-  stats.max = PETSC_MIN_REAL;
-  stats.sum = stats.squaresum = 0.;
-  stats.count = 0;
-
-  ierr = DMGetCoordinateDim(dm,&dim);CHKERRQ(ierr);
-
-  ierr = PetscMalloc2(dim * dim, &J, dim * dim, &invJ);CHKERRQ(ierr);
-
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm,&cMax,NULL,NULL,NULL);CHKERRQ(ierr);
-  cMax = cMax < 0 ? cEnd : cMax;
-  for (c = cStart; c < cMax; c++) {
-    PetscInt  i;
-    PetscReal frobJ = 0., frobInvJ = 0., cond2, cond, detJ;
-
-    ierr = DMPlexComputeCellGeometryAffineFEM(dm,c,NULL,J,invJ,&detJ);CHKERRQ(ierr);
-    if (detJ < 0.0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted", c);
-
-    for (i = 0; i < dim * dim; i++) {
-      frobJ += J[i] * J[i];
-      frobInvJ += invJ[i] * invJ[i];
-    }
-    cond2 = frobJ * frobInvJ;
-    cond  = PetscSqrtReal(cond2);
-
-    stats.min = PetscMin(stats.min,cond);
-    stats.max = PetscMax(stats.max,cond);
-    stats.sum += cond;
-    stats.squaresum += cond2;
-    stats.count++;
-  }
-
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) {
-    PetscMPIInt    blockLengths[2] = {4,1};
-    MPI_Aint       blockOffsets[2] = {offsetof(ex1_stats_t,min),offsetof(ex1_stats_t,count)};
-    MPI_Datatype   blockTypes[2]   = {MPIU_REAL,MPIU_INT}, statType;
-    MPI_Op         statReduce;
-
-    ierr = MPI_Type_create_struct(2,blockLengths,blockOffsets,blockTypes,&statType);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&statType);CHKERRQ(ierr);
-    ierr = MPI_Op_create(ex1_stats_reduce, PETSC_TRUE, &statReduce);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&stats,&globalStats,1,statType,statReduce,0,comm);CHKERRQ(ierr);
-    ierr = MPI_Op_free(&statReduce);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&statType);CHKERRQ(ierr);
-  } else {
-    ierr = PetscMemcpy(&globalStats,&stats,sizeof(stats));CHKERRQ(ierr);
-  }
-
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    count = globalStats.count;
-    min = globalStats.min;
-    max = globalStats.max;
-    mean = globalStats.sum / globalStats.count;
-    stdev = globalStats.count > 1 ? PetscSqrtReal((globalStats.squaresum - globalStats.count * mean * mean) / (globalStats.count - 1) ) : 0.0;
-  }
-  ierr = PetscPrintf(comm,"Mesh with %D cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);CHKERRQ(ierr);
-
-  ierr = PetscFree2(J,invJ);CHKERRQ(ierr);
-
-  ierr = DMGetCoarseDM(dm,&dmCoarse);CHKERRQ(ierr);
-  if (dmCoarse) {
-    ierr = TestCellShape(dmCoarse);CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}
-
 int main(int argc, char **argv)
 {
   AppCtx         user;                 /* user-defined work context */
@@ -398,7 +378,7 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
   if (user.testShape) {
-    ierr = TestCellShape(user.dm);CHKERRQ(ierr);
+    ierr = DMPlexCheckCellShape(user.dm,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -547,10 +527,10 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_7
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
   test:
     suffix: gmsh_8
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
   test:
     suffix: gmsh_9
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
@@ -720,7 +700,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: glvis_2d_tet_per_mfem
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_boundary -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
 
   test:
     suffix: glvis_2d_quad
@@ -728,24 +708,24 @@ int main(int argc, char **argv)
 
   test:
     suffix: glvis_2d_quad_per
-    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -x_periodicity periodic -y_periodicity periodic -dm_view glvis:
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -x_periodicity periodic -y_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary
 
   test:
     suffix: glvis_2d_quad_per_mfem
-    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -x_periodicity periodic -y_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_mfem
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -x_periodicity periodic -y_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -viewer_glvis_dm_plex_enable_mfem
 
   test:
     suffix: glvis_3d_tet
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_view glvis:
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_view glvis:
 
   test:
     suffix: glvis_3d_tet_per
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view glvis: -interpolate
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_plex_gmsh_periodic -dm_view glvis: -interpolate -viewer_glvis_dm_plex_enable_boundary
 
   test:
     suffix: glvis_3d_tet_per_mfem
     TODO: broken
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
 
   test:
     suffix: glvis_3d_hex
@@ -757,6 +737,136 @@ int main(int argc, char **argv)
 
   test:
     suffix: glvis_3d_hex_per_mfem
-    args: -dim 3 -cell_simplex 0 -domain_shape box -domain_box_sizes 3,3,3 -x_periodicity periodic -y_periodicity periodic -z_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_mfem -interpolate
+    args: -dim 3 -cell_simplex 0 -domain_shape box -domain_box_sizes 3,3,3 -x_periodicity periodic -y_periodicity periodic -z_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -viewer_glvis_dm_plex_enable_mfem -interpolate
+
+  # Test P4EST
+  testset:
+    requires: p4est
+    args: -interpolate -dm_view -test_p4est_seq -test_shape -check_symmetry -check_skeleton -check_faces -dm_forest_minimum_refinement 1
+    test:
+      suffix: p4est_periodic
+      args: -dim 2 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -domain_box_sizes 3,5 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
+    test:
+      suffix: p4est_periodic_3d
+      args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
+    test:
+      suffix: p4est_gmsh_periodic
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic
+    test:
+      suffix: p4est_gmsh_surface
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
+    test:
+      suffix: p4est_hyb_2d
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -dm_plex_gmsh_hybrid
+    test:
+      suffix: p4est_hyb_3d
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_plex_gmsh_hybrid
+    test:
+      requires: ctetgen
+      suffix: p4est_s2t_bugfaces_3d
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 0 -dim 3 -domain_box_sizes 1,1 -cell_simplex
+    test:
+      suffix: p4est_bug_overlapsf
+      nsize: 3
+      args: -dim 3 -cell_simplex 0 -domain_box_sizes 2,2,1 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash  -petscpartitioner_type simple
+    test:
+      suffix: p4est_gmsh_s2t_3d
+      args: -dm_forest_initial_refinement 1 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+    test:
+      suffix: p4est_gmsh_s2t_3d_hash
+      args: -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+    test:
+      requires: long_runtime
+      suffix: p4est_gmsh_periodic_3d
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_plex_gmsh_periodic
+
+  testset:
+    requires: p4est
+    nsize: 6
+    args: -interpolate -test_p4est_par -test_shape -check_symmetry -check_skeleton -check_faces -dm_forest_minimum_refinement 1 -dm_forest_partition_overlap 0
+    test:
+      suffix: p4est_par_periodic
+      args: -dim 2 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -domain_box_sizes 3,5 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
+    test:
+      suffix: p4est_par_periodic_3d
+      args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
+    test:
+      suffix: p4est_par_gmsh_periodic
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic
+    test:
+      suffix: p4est_par_gmsh_surface
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
+    test:
+      suffix: p4est_par_gmsh_s2t_3d
+      args: -dm_forest_initial_refinement 1 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+    test:
+      suffix: p4est_par_gmsh_s2t_3d_hash
+      args: -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+    test:
+      requires: long_runtime
+      suffix: p4est_par_gmsh_periodic_3d
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_plex_gmsh_periodic
+
+  testset:
+    requires: p4est
+    nsize: 6
+    args: -interpolate -test_p4est_par -test_shape -check_symmetry -check_skeleton -check_faces -dm_forest_minimum_refinement 1 -dm_forest_partition_overlap 1 -petscpartitioner_type simple
+    test:
+      suffix: p4est_par_ovl_periodic
+      args: -dim 2 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -domain_box_sizes 3,5 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
+    test:
+      suffix: p4est_par_ovl_periodic_3d
+      args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
+    test:
+      suffix: p4est_par_ovl_gmsh_periodic
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic
+    test:
+      suffix: p4est_par_ovl_gmsh_surface
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
+    test:
+      suffix: p4est_par_ovl_gmsh_s2t_3d
+      args: -dm_forest_initial_refinement 1 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+    test:
+      suffix: p4est_par_ovl_gmsh_s2t_3d_hash
+      args: -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+    test:
+      requires: long_runtime
+      suffix: p4est_par_ovl_gmsh_periodic_3d
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_plex_gmsh_periodic
+    test:
+      suffix: p4est_par_ovl_hyb_2d
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -dm_plex_gmsh_hybrid
+    test:
+      suffix: p4est_par_ovl_hyb_3d
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_plex_gmsh_hybrid
+
+  test:
+    TODO: broken
+    requires: p4est
+    nsize: 2
+    suffix: p4est_bug_labels_noovl
+    args: -interpolate -test_p4est_seq -test_shape -check_symmetry -check_skeleton -check_faces -dm_forest_minimum_refinement 0 -dm_forest_partition_overlap 1 -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 3,3 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -dm_forest_print_label_error
+
+  test:
+    TODO: broken #probably this can be drop once we fix this problem
+    requires: p4est
+    nsize: 21
+    suffix: p4est_bug_labels
+    args: -dim 2 -interpolate -test_p4est_seq -test_shape -check_symmetry -check_skeleton -check_faces -cell_simplex 0 -domain_box_sizes 5,4,5 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash  -petscpartitioner_type simple -dm_forest_print_label_error
+
+  test:
+    TODO: broken
+    requires: p4est
+    nsize: 2
+    suffix: p4est_bug_distribute_overlap
+    args: -interpolate -test_p4est_seq -test_shape -check_symmetry -check_skeleton -check_faces -dm_forest_minimum_refinement 0 -dm_forest_partition_overlap 0 -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 3,3 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -overlap 1
+
+  test:
+    suffix: glvis_2d_hyb
+    args: -dim 2 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -dm_plex_gmsh_hybrid -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
+
+  test:
+    suffix: glvis_3d_hyb
+    args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_plex_gmsh_hybrid -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
 
 TEST*/

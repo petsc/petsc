@@ -32,11 +32,15 @@ typedef struct {
   PetscInt           **cellNodeMap;        /* [field][cell][dof in cell]: global dofs in cell TODO Free this after its use in PCPatchCreateCellPatchDiscretisationInfo() */
   IS                   dofs;               /* [patch][cell in patch][dof in cell]: patch local dof */
   IS                   offs;               /* [patch][point in patch]: patch local offset (same layout as 'points', used for filling up patchSection) */
+  IS                   dofsWithArtificial;
+  IS                   offsWithArtificial;
   PetscSection         patchSection;       /* Maps points -> patch local dofs */
   IS                   globalBcNodes;      /* Global dofs constrained by global Dirichlet conditions TODO Replace these with process local constrained dofs */
   IS                   ghostBcNodes;       /* Global dofs constrained by global Dirichlet conditions on this process and possibly others (patch overlaps boundary) */
   PetscSection         gtolCounts;         /* ?? Indices to extract from local to patch vectors */
+  PetscSection    gtolCountsWithArtificial;/* ?? Indices to extract from local to patch vectors including those with artifical bcs*/
   IS                   gtol;
+  IS                   gtolWithArtificial;
   PetscInt            *bs;                 /* [field] block size per field (can come from global operators?) */
   PetscInt            *nodesPerCell;       /* [field] Dofs per cell TODO Change "node" to "dof" everywhere */
   PetscInt             totalDofsPerCell;   /* Dofs per cell counting all fields */
@@ -53,10 +57,15 @@ typedef struct {
   IS                   cellIS;             /* Temporary IS for each cell patch */
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */
+  PetscBool            multiplicative;     /* Gauss-Seidel instead of Jacobi?  */
+  PCCompositeType      local_composition_type; /* locally additive or multiplicative? */
   /* Patch solves */
   Mat                 *mat;                /* System matrix for each patch */
+  Mat                 *matWithArtificial;   /* System matrix including dofs with artificial bcs for each patch */
   MatType              sub_mat_type;       /* Matrix type for patch systems */
   Vec                 *patchX, *patchY;    /* RHS and solution for each patch */
+  IS                  *dofMappingWithoutToWithArtificial;
+  Vec                 *patchXWithArtificial;    /* like patchX but extra entries to include dofs with artificial bcs*/
   Vec                 *patch_dof_weights;  /* Weighting for dof in each patch */
   Vec                  localX, localY;     /* ??? */
   Vec                  dof_weights;        /* In how many patches does each dof lie? */
@@ -93,6 +102,6 @@ PETSC_EXTERN PetscLogEvent PC_Patch_Apply;
 PETSC_EXTERN PetscLogEvent PC_Patch_Prealloc;
 
 PETSC_EXTERN PetscErrorCode PCPatchComputeFunction_Internal(PC, Vec, Vec, PetscInt);
-PETSC_EXTERN PetscErrorCode PCPatchComputeOperator_Internal(PC, Vec, Mat, PetscInt);
+PETSC_EXTERN PetscErrorCode PCPatchComputeOperator_Internal(PC, Vec, Mat, PetscInt, PetscBool);
 
 #endif

@@ -11,7 +11,7 @@ PETSC_EXTERN void PETSC_STDCALL snespythonsettype_(SNES *snes, char* name PETSC_
 {
   char *t;
   FIXCHAR(name,len,t);
-  *ierr = SNESPythonSetType(*snes,t);
+  *ierr = SNESPythonSetType(*snes,t);if (*ierr) return;
   FREECHAR(name,t);
 }
 

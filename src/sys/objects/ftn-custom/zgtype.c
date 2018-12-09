@@ -21,7 +21,7 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectsettype_(PetscObject *obj,char* type 
   char *t1;
 
   FIXCHAR(type,len,t1);
-  *ierr = PetscObjectSetType(*obj,t1);
+  *ierr = PetscObjectSetType(*obj,t1);if (*ierr) return;
   FREECHAR(type,t1);
 }
 

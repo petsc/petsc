@@ -15,7 +15,31 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
 #include <petscksp.h>
+#include <petscviewerhdf5.h>
 
+static PetscErrorCode VecLoadIfExists_Private(Vec b,PetscViewer fd,PetscBool *has)
+{
+  PetscBool      hdf5=PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscObjectTypeCompare((PetscObject)fd,PETSCVIEWERHDF5,&hdf5);CHKERRQ(ierr);
+  if (hdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = PetscViewerHDF5HasObject(fd,(PetscObject)b,has);CHKERRQ(ierr);
+    if (*has) {ierr = VecLoad(b,fd);CHKERRQ(ierr);}
+#else
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc must be configured with HDF5 to use this feature");
+#endif
+  } else {
+    PetscErrorCode ierrp;
+    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
+    ierrp = VecLoad(b,fd);
+    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
+    *has  = ierrp ? PETSC_FALSE : PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
 
 int main(int argc,char **args)
 {
@@ -26,13 +50,19 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
   char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
   KSPType        ksptype;
-  PetscErrorCode ierr,ierrp;
+  PetscErrorCode ierr;
+  PetscBool      has;
   PetscInt       its,n,m;
   PetscReal      norm;
   PetscBool      nonzero_guess=PETSC_TRUE;
   PetscBool      solve_normal=PETSC_TRUE;
+  PetscBool      hdf5=PETSC_FALSE;
+  PetscBool      test_custom_layout=PETSC_FALSE;
+  PetscMPIInt    rank,size;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   /*
      Determine files from which we read the linear system
      (matrix, right-hand-side and initial guess vector).
@@ -44,6 +74,14 @@ int main(int argc,char **args)
      or the normal equation (-solve_normal 1).
   */
   ierr = PetscOptionsGetBool(NULL,NULL,"-solve_normal",&solve_normal,NULL);CHKERRQ(ierr);
+  /*
+     Decide whether to use the HDF5 reader.
+  */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-hdf5",&hdf5,NULL);CHKERRQ(ierr);
+  /*
+     Decide whether custom matrix layout will be tested.
+  */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_custom_layout",&test_custom_layout,NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -67,45 +105,82 @@ int main(int argc,char **args)
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  if (hdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc must be configured with HDF5 to use this feature");
+#endif
+  } else {
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  }
 
   /*
-     Load the matrix and vector; then destroy the viewer.
+     Load the matrix.
+     Matrix type is set automatically but you can override it by MatSetType() prior to MatLoad().
+     Do that only if you really insist on the given type.
   */
-  ierr  = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr  = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr  = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr  = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
-  ierrp = VecLoad(b,fd);
-  ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
-  ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (ierrp) {   /* if file contains no RHS, then use a vector of all ones */
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  if (test_custom_layout) {
+    /* Perturb the local sizes and create the matrix anew */
+    PetscInt m1,n1;
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    m = rank ? m-1 : m+size-1;
+    n = rank ? n-1 : n+size-1;
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
+    ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+    ierr = MatLoad(A,fd);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m1,&n1);CHKERRQ(ierr);
+    if (m1 != m || n1 != n) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_SUP,"resulting sizes differ from demanded ones: %D %D != %D %D",m1,n1,m,n);
+  }
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+
+  /*
+     Load the RHS vector if it is present in the file, otherwise use a vector of all ones.
+  */
+  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
+  ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
+  ierr = VecLoadIfExists_Private(b,fd,&has);CHKERRQ(ierr);
+  if (!has) {
     PetscScalar one = 1.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load RHS, so use a vector of all ones.\n");CHKERRQ(ierr);
-    ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = VecSet(b,one);CHKERRQ(ierr);
   }
 
+  /*
+     Load the initial guess vector if it is present in the file, otherwise use a vector of all zeros.
+  */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"x0");CHKERRQ(ierr);
+  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-
   /* load file_x0 if it is specified, otherwise try to reuse file */
   if (file_x0[0]) {
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    if (hdf5) {
+#if defined(PETSC_HAVE_HDF5)
+      ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+#endif
+    } else {
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    }
   }
-  ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
-  ierrp = VecLoad(x,fd);
-  ierr = PetscPopErrorHandler();CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  if (ierrp) {
+  ierr = VecLoadIfExists_Private(x,fd,&has);CHKERRQ(ierr);
+  if (!has) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n");CHKERRQ(ierr);
-    ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     nonzero_guess=PETSC_FALSE;
   }
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
 
@@ -164,6 +239,7 @@ int main(int argc,char **args)
   } else {
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   }
+  ierr = PetscObjectSetName((PetscObject)x,"x");CHKERRQ(ierr);
 
   /*
       Conclude profiling this stage
@@ -220,50 +296,60 @@ int main(int argc,char **args)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
 
    # Test handling failing VecLoad without abort
-   test:
-      suffix: 3
-      nsize: {{1 2}separate output}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
-      args: -f_x0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_x0
-      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
-   test:
-      suffix: 3a
-      nsize: {{1 2}separate output}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
-      args: -f_x0 NONEXISTING_FILE
-      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
-   test:
-      suffix: 3b
-      nsize: {{1 2}separate output}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0  # this file includes all A, b and x0
-      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
+   testset:
+     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+     args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
+     test:
+        suffix: 3
+        nsize: {{1 2}separate output}
+        args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+        args: -f_x0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_x0
+     test:
+        suffix: 3a
+        nsize: {{1 2}separate output}
+        args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+        args: -f_x0 NONEXISTING_FILE
+     test:
+        suffix: 3b
+        nsize: {{1 2}separate output}
+        args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0  # this file includes all A, b and x0
+     test:
+        # Load square matrix, RHS and initial guess from HDF5 (Version 7.3 MAT-File)
+        suffix: 3b_hdf5
+        requires: hdf5 zlib
+        nsize: {{1 2}separate output}
+        args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0.mat -hdf5
 
    # Test least-square algorithms
+   testset:
+     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+     args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+     test:
+        suffix: 4
+        nsize: {{1 2 4}}
+        args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+        args: -solve_normal 1 -ksp_type cg
+     test:
+        suffix: 4a
+        nsize: {{1 2 4}}
+        args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+        args: -solve_normal 0 -ksp_type {{cgls lsqr}separate output}
+     test:
+        # Test KSPLSQR-specific options
+        suffix: 4b
+        nsize: 2
+        args: -ksp_converged_reason -ksp_rtol 1e-3 -ksp_max_it 200 -ksp_view
+        args: -solve_normal 0 -ksp_type lsqr -ksp_convergence_test lsqr -ksp_lsqr_monitor -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
+
    test:
-      suffix: 4
-      nsize: {{1 2 4}}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+      # Load rectangular matrix from HDF5 (Version 7.3 MAT-File)
+      suffix: 4a_lsqr_hdf5
+      nsize: {{1 2 4 8}}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/matlab/rectangular_ultrasound_4889x841.mat -hdf5
       args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
-      args: -solve_normal 1 -ksp_type cg
-   test:
-      suffix: 4a
-      nsize: {{1 2 4}}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
-      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
-      args: -solve_normal 0 -ksp_type {{cgls lsqr}separate output}
-   test:
-      # Test KSPLSQR-specific options
-      suffix: 4b
-      nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
-      args: -ksp_converged_reason -ksp_rtol 1e-3 -ksp_max_it 200 -ksp_view
-      args: -solve_normal 0 -ksp_type lsqr -ksp_convergence_test lsqr -ksp_lsqr_monitor -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
+      args: -solve_normal 0 -ksp_type lsqr
+      args: -test_custom_layout {{0 1}}
 
    # Test for correct cgls convergence reason
    test:

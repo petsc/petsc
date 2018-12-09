@@ -93,13 +93,16 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
-      PetscInt       off, d;
+      PetscInt       val, off, d;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
         in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
-      if (label) {ierr = DMLabelGetValue(label, v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);}
+      if (label) {
+        ierr = DMLabelGetValue(label, v, &val);CHKERRQ(ierr);
+        in.pointmarkerlist[idx] = val;
+      }
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }
@@ -111,13 +114,17 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
     for (e = eStart; e < eEnd; ++e) {
       const PetscInt  idx = e - eStart;
       const PetscInt *cone;
+      PetscInt        val;
 
       ierr = DMPlexGetCone(boundary, e, &cone);CHKERRQ(ierr);
 
       in.segmentlist[idx*2+0] = cone[0] - vStart;
       in.segmentlist[idx*2+1] = cone[1] - vStart;
 
-      if (label) {ierr = DMLabelGetValue(label, e, &in.segmentmarkerlist[idx]);CHKERRQ(ierr);}
+      if (label) {
+        ierr = DMLabelGetValue(label, e, &val);CHKERRQ(ierr);
+        in.segmentmarkerlist[idx] = val;
+      }
     }
   }
 #if 0 /* Do not currently support holes */
@@ -228,13 +235,16 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
-      PetscInt       off, d;
+      PetscInt       off, d, val;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
         in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
-      if (label) {ierr = DMLabelGetValue(label, v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);}
+      if (label) {
+        ierr = DMLabelGetValue(label, v, &val);CHKERRQ(ierr);
+        in.pointmarkerlist[idx] = val;
+      }
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }

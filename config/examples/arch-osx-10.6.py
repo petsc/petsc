@@ -16,6 +16,8 @@ configure_options = [
   '--download-scalapack',
   '--download-strumpack',
   '--download-fblaslapack', #vecLib has incomplete lapack - so unuseable by strumpack
+  '--download-codipack=1',
+  '--download-adblaslapack=1',
   ]
 
 if __name__ == '__main__':

@@ -12,6 +12,6 @@ PETSC_EXTERN void PETSC_STDCALL tsadaptdspsetfilter_(TSAdapt *tsadapt,char* name
   char *t;
 
   FIXCHAR(name,len,t);
-  *ierr = TSAdaptDSPSetFilter(*tsadapt,t);
+  *ierr = TSAdaptDSPSetFilter(*tsadapt,t);if (*ierr) return;
   FREECHAR(name,t);
 }

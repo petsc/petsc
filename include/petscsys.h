@@ -392,7 +392,7 @@ M*/
 
 /*MC
     PETSC_COMM_WORLD - the equivalent of the MPI_COMM_WORLD communicator which represents
-           all the processs that PETSc knows about.
+           all the processes that PETSc knows about.
 
    Level: beginner
 

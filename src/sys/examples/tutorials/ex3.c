@@ -26,9 +26,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   int            i,imax=10000,icount;
-#if defined(PETSC_USE_LOG)
   PetscLogEvent  USER_EVENT,check_USER_EVENT;
-#endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
@@ -40,11 +38,9 @@ int main(int argc,char **argv)
       - The user can also optionally log floating point operations
         with the routine PetscLogFlops().
   */
-#if defined(PETSC_USE_LOG)
   ierr = PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventGetId("User event",&check_USER_EVENT);CHKERRQ(ierr);
   if (USER_EVENT != check_USER_EVENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Event Ids do not match");
-#endif
   ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
 
   icount = 0;
@@ -77,6 +73,9 @@ int main(int argc,char **argv)
 
 
 /*TEST
+
+   build:
+     requires: define(PETSC_USE_LOG)
 
    test:
 

@@ -11,7 +11,7 @@ PETSC_EXTERN void PETSC_STDCALL matpythonsettype_(Mat *mat, char* name PETSC_MIX
 {
   char *t;
   FIXCHAR(name,len,t);
-  *ierr = MatPythonSetType(*mat,t);
+  *ierr = MatPythonSetType(*mat,t);if (*ierr) return;
   FREECHAR(name,t);
 }
 

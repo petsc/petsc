@@ -9,7 +9,6 @@
 
 from __future__ import print_function
 import os
-import string
 import shutil
 import operator
 import sys
@@ -184,8 +183,8 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
     ctr = 0;
     print("Processing gcov files")
     for file in gcov_filenames:
-        tmp_filename = string.replace(file,'_',os.sep)
-        src_file = string.split(tmp_filename,'.lines')[0]
+        tmp_filename = file.replace('_',os.sep)
+        src_file = tmp_filename.split('.lines')[0]
         gcov_file = gcov_dir+os.sep+file
         gcov_fid = open(gcov_file,'r')
         nlines_not_tested = 0
@@ -197,7 +196,7 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
             lines_not_tested.append(temp_line2)
         if nlines_not_tested :
             nsrc_files_not_tested += 1
-            k = string.rfind(src_file,os.sep)
+            k = src_file.rfind(os.sep)
             src_not_tested_filename.append(src_file[k+1:])
             src_not_tested_path.append(src_file[:k])
             src_not_tested_lines.append(lines_not_tested)
@@ -230,7 +229,7 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
             continue
         temp_list = []
         temp_list.append(src_not_tested_filename[file_ctr])
-        temp_list.append(string.split(outhtml_file,sep)[1]) # Relative path of hyperlink
+        temp_list.append(outhtml_file.split(sep)[1]) # Relative path of hyperlink
         temp_list.append(src_not_tested_nlines[file_ctr])
 
         outhtml_fid = open(outhtml_file,"w")

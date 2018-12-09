@@ -57,6 +57,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DTPL_ENABLE_CGNS:BOOL=OFF')
     args.append('-DNetCDF_DIR:PATH='+self.netcdf.directory)
     args.append('-DHDF5_DIR:PATH='+self.hdf5.directory)
+    args.append('-DPnetcdf_LIBRARY_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'lib'))
+    args.append('-DPnetcdf_INCLUDE_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'include'))
     if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     if self.compilerFlags.debugging:

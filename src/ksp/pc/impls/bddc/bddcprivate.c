@@ -2742,10 +2742,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
     ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
     recompute_zerodiag = PETSC_FALSE;
     ierr = MatGetLocalSize(pcbddc->local_mat,&n,NULL);CHKERRQ(ierr);
-    if (n) {
-      has_null_pressures = PETSC_FALSE;
-      have_null = PETSC_FALSE;
-    }
+    if (n) have_null = PETSC_FALSE;
   }
 
   /* final check for null pressures */

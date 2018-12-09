@@ -14,7 +14,7 @@ PETSC_EXTERN void PETSC_STDCALL tsarkimexsettype_(TS *ts,char* type PETSC_MIXED_
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = TSARKIMEXSetType(*ts,t);
+  *ierr = TSARKIMEXSetType(*ts,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

@@ -22,6 +22,7 @@ if __name__ == '__main__':
     '--download-netcdf',
     '--download-parmetis',
     '--download-triangle',
+    '--download-p4est',
     '--with-cuda',
     '--with-shared-libraries',
   ]

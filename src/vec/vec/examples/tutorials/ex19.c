@@ -29,19 +29,23 @@ int main(int argc,char **argv)
   ierr = VecSetSizes(x1, PETSC_DECIDE, n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x1);CHKERRQ(ierr);
 
+  /* initialize x1 */
   ierr = VecGetLocalSize(x1, &nlocal);CHKERRQ(ierr);
   ierr = VecGetArray(x1, &array);CHKERRQ(ierr);
   for (i = 0; i < nlocal; i++) array[i] = rank + 1;
   ierr = VecRestoreArray(x1, &array);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x1);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x1);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD, &x2);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x2, "TestVec2");CHKERRQ(ierr);
   ierr = VecSetSizes(x2, PETSC_DECIDE, n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x2, 2);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x2);CHKERRQ(ierr);
-  ierr = VecCopy(x1, x2);CHKERRQ(ierr);
+
+  /* initialize x2 */
+  ierr = VecGetLocalSize(x2, &nlocal);CHKERRQ(ierr);
+  ierr = VecGetArray(x2, &array);CHKERRQ(ierr);
+  for (i = 0; i < nlocal; i++) array[i] = rank + 1;
+  ierr = VecRestoreArray(x2, &array);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "ex19.h5", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
@@ -114,3 +118,24 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+     build:
+       requires: hdf5
+
+     test:
+       nsize: 1
+
+     test:
+       nsize: 2
+       suffix: 2
+
+     test:
+       nsize: 3
+       suffix: 3
+
+     test:
+       nsize: 4
+       suffix: 4
+
+TEST*/

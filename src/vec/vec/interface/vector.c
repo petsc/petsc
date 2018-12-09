@@ -693,7 +693,7 @@ PetscErrorCode  VecGetLocalSize(Vec x,PetscInt *size)
    Note:
    The high argument is one more than the last element stored locally.
 
-   Fortran: NULL_INTEGER should be used instead of NULL
+   Fortran: PETSC_NULL_INTEGER should be used instead of NULL
 
    Level: beginner
 

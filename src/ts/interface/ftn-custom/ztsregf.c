@@ -14,7 +14,7 @@ PETSC_EXTERN void PETSC_STDCALL tssettype_(TS *ts,char* type PETSC_MIXED_LEN(len
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = TSSetType(*ts,t);
+  *ierr = TSSetType(*ts,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL kspsettype_(KSP *ksp,char* type PETSC_MIXED_LEN(
   char *t;
 
   FIXCHAR(type,len,t);
-  *ierr = KSPSetType(*ksp,t);
+  *ierr = KSPSetType(*ksp,t);if (*ierr) return;
   FREECHAR(type,t);
 }
 

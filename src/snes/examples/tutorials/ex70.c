@@ -56,7 +56,7 @@ static char help[] = "Poiseuille flow problem. Viscous, laminar flow in a 2D cha
 #include <petscksp.h>
 
 typedef struct {
-  PetscBool userPC, userKSP; /* user defined preconditioner and matrix for the Schur complement */
+  PetscBool userPC, userKSP, matsymmetric; /* user defined preconditioner and matrix for the Schur complement */
   PetscInt  nx, ny;  /* nb of cells in x- and y-direction */
   PetscReal hx, hy;  /* mesh size in x- and y-direction */
   Mat       A;       /* block matrix */
@@ -260,6 +260,9 @@ PetscErrorCode StokesRhs(Stokes *s)
   for (row = start; row < end; row++) {
     ierr = StokesGetPosition(s, row, &i, &j);CHKERRQ(ierr);
     ierr = StokesRhsMass(s, i, j, &val);CHKERRQ(ierr);
+    if (s->matsymmetric) {
+      val = -1.0*val;
+    }
     ierr = VecSetValue(b1, row, val, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecRestoreSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
@@ -338,7 +341,9 @@ PetscErrorCode StokesSetupMatBlock10(Stokes *s)
   PetscFunctionBeginUser;
   /* A[2] is minus transpose of A[1] */
   ierr = MatTranspose(s->subA[1], MAT_INITIAL_MATRIX, &s->subA[2]);CHKERRQ(ierr);
-  ierr = MatScale(s->subA[2], -1.0);CHKERRQ(ierr);
+  if (!s->matsymmetric) {
+    ierr = MatScale(s->subA[2], -1.0);CHKERRQ(ierr);
+  }
   ierr = MatSetOptionsPrefix(s->subA[2], "a10_");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -668,16 +673,18 @@ int main(int argc, char **argv)
   KSP            ksp;
   PetscErrorCode ierr;
 
-  ierr     = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  s.nx     = 4;
-  s.ny     = 6;
-  ierr     = PetscOptionsGetInt(NULL,NULL, "-nx", &s.nx, NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetInt(NULL,NULL, "-ny", &s.ny, NULL);CHKERRQ(ierr);
-  s.hx     = 2.0/s.nx;
-  s.hy     = 1.0/s.ny;
-  s.userPC = s.userKSP = PETSC_FALSE;
-  ierr     = PetscOptionsHasName(NULL,NULL, "-user_pc", &s.userPC);CHKERRQ(ierr);
-  ierr     = PetscOptionsHasName(NULL,NULL, "-user_ksp", &s.userKSP);CHKERRQ(ierr);
+  ierr           = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  s.nx           = 4;
+  s.ny           = 6;
+  ierr           = PetscOptionsGetInt(NULL,NULL, "-nx", &s.nx, NULL);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetInt(NULL,NULL, "-ny", &s.ny, NULL);CHKERRQ(ierr);
+  s.hx           = 2.0/s.nx;
+  s.hy           = 1.0/s.ny;
+  s.matsymmetric = PETSC_FALSE;
+  ierr           = PetscOptionsGetBool(NULL,NULL, "-mat_set_symmetric", &s.matsymmetric,NULL);CHKERRQ(ierr);
+  s.userPC       = s.userKSP = PETSC_FALSE;
+  ierr           = PetscOptionsHasName(NULL,NULL, "-user_pc", &s.userPC);CHKERRQ(ierr);
+  ierr           = PetscOptionsHasName(NULL,NULL, "-user_ksp", &s.userKSP);CHKERRQ(ierr);
 
   ierr = StokesSetupMatrix(&s);CHKERRQ(ierr);
   ierr = StokesSetupIndexSets(&s);CHKERRQ(ierr);
@@ -734,5 +741,21 @@ int main(int argc, char **argv)
       suffix: 4_pcksp
       nsize: 2
       args: -nx 16 -ny 24 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_type bjacobi -fieldsplit_1_pc_type jacobi -fieldsplit_1_inner_ksp_type preonly -fieldsplit_1_upper_ksp_type preonly -fieldsplit_1_upper_pc_type jacobi
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -nx 4 -ny 8 -mat_set_symmetric -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type gkb -fieldsplit_0_ksp_type cg -fieldsplit_0_pc_type jacobi -fieldsplit_0_ksp_rtol 1e-10
+
+   test:
+      suffix: 6
+      nsize: 2
+      args: -nx 4 -ny 8 -mat_set_symmetric -ksp_type preonly -pc_type fieldsplit -pc_fieldsplit_type gkb -fieldsplit_0_ksp_type cg -fieldsplit_0_pc_type jacobi -fieldsplit_0_ksp_rtol 1e-10
+
+   test:
+      suffix: 7
+      nsize: 2
+      args: -nx 4 -ny 8 -mat_set_symmetric -ksp_type preonly -pc_type fieldsplit -pc_fieldsplit_type gkb -pc_fieldsplit_gkb_tol 1e-4 -pc_fieldsplit_gkb_nu 5 -fieldsplit_0_ksp_type cg -fieldsplit_0_pc_type jacobi -fieldsplit_0_ksp_rtol 1e-6
+
 
 TEST*/

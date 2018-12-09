@@ -34,7 +34,7 @@ PETSC_EXTERN void PETSC_STDCALL matmffdsettype_(Mat *mat,char* ftype PETSC_MIXED
 {
   char *t;
   FIXCHAR(ftype,len,t);
-  *ierr = MatMFFDSetType(*mat,t);
+  *ierr = MatMFFDSetType(*mat,t);if (*ierr) return;
   FREECHAR(ftype,t);
 }
 
@@ -42,7 +42,7 @@ PETSC_EXTERN void PETSC_STDCALL matmffdsetoptionsprefix_(Mat *mat,char* prefix P
 {
   char *t;
   FIXCHAR(prefix,len,t);
-  *ierr = MatMFFDSetOptionsPrefix(*mat,t);
+  *ierr = MatMFFDSetOptionsPrefix(*mat,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 

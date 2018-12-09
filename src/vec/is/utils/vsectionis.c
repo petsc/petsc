@@ -1202,7 +1202,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
       }
     }
   }
-  /* Calculate new sizes, get proccess offset, and calculate point offsets */
+  /* Calculate new sizes, get process offset, and calculate point offsets */
   if (s->perm) {ierr = ISGetIndices(s->perm, &pind);CHKERRQ(ierr);}
   for (p = 0, off = 0; p < pEnd-pStart; ++p) {
     const PetscInt q = pind ? pind[p] : p;
@@ -2238,8 +2238,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   }
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,NULL,NULL,NULL);CHKERRQ(ierr);
-  rpEnd = PetscMin(rpEnd,nroots);CHKERRQ(ierr);
-  rpEnd = PetscMax(rpStart,rpEnd);CHKERRQ(ierr);
+  rpEnd = PetscMin(rpEnd,nroots);
+  rpEnd = PetscMax(rpStart,rpEnd);
   ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
   ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
   ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);

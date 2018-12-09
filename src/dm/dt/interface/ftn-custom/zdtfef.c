@@ -22,6 +22,6 @@ PETSC_EXTERN void PETSC_STDCALL petscfecreatedefault_(MPI_Fint *comm,PetscInt *d
   char *tprefix;
 
   FIXCHAR(prefix,len,tprefix);
-  *ierr = PetscFECreateDefault(MPI_Comm_f2c(*comm), *dim, *Nc, *isSimplex, tprefix, *qorder, fe);
+  *ierr = PetscFECreateDefault(MPI_Comm_f2c(*comm), *dim, *Nc, *isSimplex, tprefix, *qorder, fe);if (*ierr) return;
   FREECHAR(prefix,tprefix);
 }
