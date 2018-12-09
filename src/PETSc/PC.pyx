@@ -676,8 +676,8 @@ cdef class PC(Object):
                                    subspaceOffsets,
                                    ghostBcNodes,
                                    globalBcNodes):
-        cdef PetscInt numSubSpaces
-        cdef PetscInt numGhostBcs, numGlobalBcs
+        cdef PetscInt numSubSpaces = 0
+        cdef PetscInt numGhostBcs = 0, numGlobalBcs = 0
         cdef PetscInt *nodesPerCell = NULL
         cdef const_PetscInt **ccellNodeMaps = NULL
         cdef PetscDM *cdms = NULL
@@ -685,7 +685,7 @@ cdef class PC(Object):
         cdef PetscInt *csubspaceOffsets = NULL
         cdef PetscInt *cghostBcNodes = NULL
         cdef PetscInt *cglobalBcNodes = NULL
-        cdef PetscInt i
+        cdef PetscInt i = 0
 
         bs = iarray_i(bs, &numSubSpaces, &cbs)
         ghostBcNodes = iarray_i(ghostBcNodes, &numGhostBcs, &cghostBcNodes)
