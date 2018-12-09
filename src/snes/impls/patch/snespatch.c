@@ -275,3 +275,54 @@ PetscErrorCode SNESPatchSetType(SNES snes, SNESCompositeType type)
   ierr = PetscTryMethod(snes, "SNESPatchSetType_C", (SNES,SNESCompositeType), (snes,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM *dms, PetscInt *bs, PetscInt *nodesPerCell, const PetscInt **cellNodeMap,
+                                            const PetscInt *subspaceOffsets, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
+{
+  SNES_Patch    *patch = (SNES_Patch *) snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCPatchSetDiscretisationInfo(patch->pc, nsubspaces, dms, bs, nodesPerCell, cellNodeMap, subspaceOffsets, numGhostBcs, ghostBcNodes, numGlobalBcs, globalBcNodes);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, void *), void *ctx)
+{
+  SNES_Patch    *patch = (SNES_Patch *) snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCPatchSetComputeOperator(patch->pc, func, ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, void *), void *ctx)
+{
+  SNES_Patch    *patch = (SNES_Patch *) snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCPatchSetComputeFunction(patch->pc, func, ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode SNESPatchSetConstructType(SNES snes, PCPatchConstructType ctype, PetscErrorCode (*func)(PC, PetscInt *, IS **, IS *, void *), void *ctx)
+{
+  SNES_Patch    *patch = (SNES_Patch *) snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCPatchSetConstructType(patch->pc, ctype, func, ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode SNESPatchSetCellNumbering(SNES snes, PetscSection cellNumbering)
+{
+  SNES_Patch    *patch = (SNES_Patch *) snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCPatchSetCellNumbering(patch->pc, cellNumbering);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
