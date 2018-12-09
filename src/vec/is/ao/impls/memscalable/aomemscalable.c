@@ -1,7 +1,7 @@
 
 /*
     The memory scalable AO application ordering routines. These store the
-  local orderings on each processor.
+  orderings on each processor for that processor's range of values
 */
 
 #include <../src/vec/is/ao/aoimpl.h>          /*I  "petscao.h"   I*/
@@ -13,7 +13,8 @@ typedef struct {
 } AO_MemoryScalable;
 
 /*
-       All processors have the same data so processor 1 prints it
+       All processors ship the data to process 0 to be printed; note that this is not scalable because
+       process 0 allocates space for all the orderings entry across all the processes
 */
 PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 {
@@ -43,7 +44,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
     ierr = PetscMalloc2(map->N,&app,map->N,&petsc);CHKERRQ(ierr);
     len  = map->n;
     /* print local AO */
-    ierr = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",rank);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);
     for (i=0; i<len; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aomems->app_loc[i],i,aomems->petsc_loc[i]);CHKERRQ(ierr);
     }
@@ -93,7 +94,7 @@ PetscErrorCode AODestroy_MemoryScalable(AO ao)
    Output Parameter:
 .   ia - the mapped interges
  */
-PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscInt *maploc)
+PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const PetscInt *maploc)
 {
   PetscErrorCode    ierr;
   AO_MemoryScalable *aomems = (AO_MemoryScalable*)ao->data;
@@ -101,7 +102,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   PetscMPIInt       rank,size,tag1,tag2;
   PetscInt          *owner,*start,*sizes,nsends,nreceives;
   PetscInt          nmax,count,*sindices,*rindices,i,j,idx,lastidx,*sindices2,*rindices2;
-  PetscInt          *owners = aomems->map->range;
+  const PetscInt    *owners = aomems->map->range;
   MPI_Request       *send_waits,*recv_waits,*send_waits2,*recv_waits2;
   MPI_Status        recv_status;
   PetscMPIInt       nindices,source,widx;
@@ -121,15 +122,19 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   j       = 0;
   lastidx = -1;
   for (i=0; i<n; i++) {
-    /* if indices are NOT locally sorted, need to start search at the beginning */
-    if (lastidx > (idx = ia[i])) j = 0;
-    lastidx = idx;
-    for (; j<size; j++) {
-      if (idx >= owners[j] && idx < owners[j+1]) {
-        sizes[2*j]++;     /* num of indices to be sent */
-        sizes[2*j+1] = 1; /* send to proc[j] */
-        owner[i]      = j;
-        break;
+    if (ia[i] < 0) owner[i] = -1; /* mark negative entries (which are not to be mapped) with a special negative value */
+    if (ia[i] >= ao->N) owner[i] = -2; /* mark out of range entries with special negative value */
+    else {
+      /* if indices are NOT locally sorted, need to start search at the beginning */
+      if (lastidx > (idx = ia[i])) j = 0;
+      lastidx = idx;
+      for (; j<size; j++) {
+        if (idx >= owners[j] && idx < owners[j+1]) {
+          sizes[2*j]++;     /* num of indices to be sent */
+          sizes[2*j+1] = 1; /* send to proc[j] */
+          owner[i]     = j;
+          break;
+        }
       }
     }
   }
@@ -167,14 +172,14 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   for (i=1; i<size; i++) start[i] = start[i-1] + sizes[2*i-2];
   for (i=0; i<n; i++) {
     j = owner[i];
-    if (j != rank) {
+    if (j == -1) continue; /* do not remap negative entries in ia[] */
+    else if (j == -2) { /* out of range entries get mapped to -1 */
+      ia[i] = -1;
+      continue; 
+    } else if (j != rank) {
       sindices[start[j]++]  = ia[i];
     } else { /* compute my own map */
-      if (ia[i] >= owners[rank] && ia[i] < owners[rank+1]) {
-        ia[i] = maploc[ia[i]-owners[rank]];
-      } else {
-        ia[i] = -1;  /* ia[i] is not in the range of 0 and N-1, maps it to -1 */
-      }
+      ia[i] = maploc[ia[i]-owners[rank]];
     }
   }
 
