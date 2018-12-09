@@ -245,6 +245,7 @@ cdef extern from * nogil:
     # --- Patch ---
     ctypedef int (*PetscPCPatchComputeOperator)(PetscPC,
                                                 PetscInt,
+                                                PetscVec,
                                                 PetscMat,
                                                 PetscIS,
                                                 PetscInt,
@@ -279,11 +280,13 @@ cdef inline PC ref_PC(PetscPC pc):
 cdef int PCPatch_ComputeOperator(
     PetscPC pc,
     PetscInt point,
+    PetscVec vec,
     PetscMat mat,
     PetscIS cells,
     PetscInt ndof,
     const_PetscInt *dofmap,
     void *ctx) except PETSC_ERR_PYTHON with gil:
+    cdef Vec Vec = ref_Vec(vec)
     cdef Mat Mat = ref_Mat(mat)
     cdef PC Pc = ref_PC(pc)
     cdef IS Is = ref_IS(cells)
@@ -292,7 +295,7 @@ cdef int PCPatch_ComputeOperator(
     assert context is not None and type(context) is tuple
     (op, args, kargs) = context
     cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
-    op(Pc, toInt(point), Mat, Is, asarray(pydofs), *args, **kargs)
+    op(Pc, toInt(point), Vec, Mat, Is, asarray(pydofs), *args, **kargs)
     return 0
 
 
