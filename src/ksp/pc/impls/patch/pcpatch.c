@@ -1982,7 +1982,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
           IS rowis;
           ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
           ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
-          ierr = PCPatchComputeOperator_Private(pc, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
+          ierr = PCPatchComputeOperator_Internal(pc, NULL, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
           ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
           ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
           ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &multMat); CHKERRQ(ierr);
