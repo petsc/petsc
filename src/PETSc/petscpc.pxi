@@ -251,6 +251,14 @@ cdef extern from * nogil:
                                                 PetscInt,
                                                 const_PetscInt*,
                                                 void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscPCPatchComputeFunction)(PetscPC,
+                                                PetscInt,
+                                                PetscVec,
+                                                PetscVec,
+                                                PetscIS,
+                                                PetscInt,
+                                                const_PetscInt*,
+                                                void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscPCPatchConstructOperator)(PetscPC,
                                                   PetscInt*,
                                                   PetscIS**,
@@ -259,6 +267,7 @@ cdef extern from * nogil:
     int PCPatchSetCellNumbering(PetscPC, PetscSection)
     int PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscInt*, PetscInt*, const_PetscInt**, const_PetscInt*, PetscInt, const_PetscInt*, PetscInt, const_PetscInt*)
     int PCPatchSetComputeOperator(PetscPC, PetscPCPatchComputeOperator, void*)
+    int PCPatchSetComputeFunction(PetscPC, PetscPCPatchComputeFunction, void*)
     int PCPatchSetConstructType(PetscPC, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
 
 # --------------------------------------------------------------------

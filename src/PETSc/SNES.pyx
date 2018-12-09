@@ -19,6 +19,7 @@ class SNESType(object):
     ANDERSON     = S_(SNESANDERSON)
     ASPIN        = S_(SNESASPIN)
     COMPOSITE    = S_(SNESCOMPOSITE)
+    PATCH        = S_(SNESPATCH)
 
 class SNESNormSchedule(object):
     # native
@@ -732,6 +733,70 @@ cdef class SNES(Object):
         cdef PetscInt cn = 0
         CHKERR( SNESNASMGetNumber(self.snes, &cn) )
         return toInt(cn)
+
+    # --- Patch ---
+    def setPatchCellNumbering(self, Section sec not None):
+        CHKERR( SNESPatchSetCellNumbering(self.snes, sec.sec) )
+
+    def setPatchDiscretisationInfo(self, dms, bs,
+                                   cellNodeMaps,
+                                   subspaceOffsets,
+                                   ghostBcNodes,
+                                   globalBcNodes):
+        cdef PetscInt numSubSpaces
+        cdef PetscInt numGhostBcs, numGlobalBcs
+        cdef PetscInt *nodesPerCell = NULL
+        cdef const_PetscInt **ccellNodeMaps = NULL
+        cdef PetscDM *cdms = NULL
+        cdef PetscInt *cbs = NULL
+        cdef PetscInt *csubspaceOffsets = NULL
+        cdef PetscInt *cghostBcNodes = NULL
+        cdef PetscInt *cglobalBcNodes = NULL
+        cdef PetscInt i
+
+        bs = iarray_i(bs, &numSubSpaces, &cbs)
+        ghostBcNodes = iarray_i(ghostBcNodes, &numGhostBcs, &cghostBcNodes)
+        globalBcNodes = iarray_i(globalBcNodes, &numGlobalBcs, &cglobalBcNodes)
+        subspaceOffsets = iarray_i(subspaceOffsets, NULL, &csubspaceOffsets)
+
+        CHKERR( PetscMalloc(<size_t>numSubSpaces*sizeof(PetscInt), &nodesPerCell) )
+        CHKERR( PetscMalloc(<size_t>numSubSpaces*sizeof(PetscDM), &cdms) )
+        CHKERR( PetscMalloc(<size_t>numSubSpaces*sizeof(PetscInt*), &ccellNodeMaps) )
+        for i in range(numSubSpaces):
+            cdms[i] = (<DM?>dms[i]).dm
+            _, nodes = asarray(cellNodeMaps[i]).shape
+            cellNodeMaps[i] = iarray_i(cellNodeMaps[i], NULL, <PetscInt**>&(ccellNodeMaps[i]))
+            nodesPerCell[i] = asInt(nodes)
+
+        # TODO: refactor on the PETSc side to take ISes?
+        CHKERR( SNESPatchSetDiscretisationInfo(self.snes, numSubSpaces,
+                                               cdms, cbs, nodesPerCell,
+                                               ccellNodeMaps, csubspaceOffsets,
+                                               numGhostBcs, cghostBcNodes,
+                                               numGlobalBcs, cglobalBcNodes) )
+        CHKERR( PetscFree(nodesPerCell) )
+        CHKERR( PetscFree(cdms) )
+        CHKERR( PetscFree(ccellNodeMaps) )
+
+    def setPatchComputeOperator(self, operator, args=None, kargs=None):
+        if args is  None: args  = ()
+        if kargs is None: kargs = {}
+        context = (operator, args, kargs)
+        self.set_attr("__patch_compute_operator__", context)
+        CHKERR( SNESPatchSetComputeOperator(self.snes, PCPatch_ComputeOperator, <void*>context) )
+
+    def setPatchConstructType(self, typ, operator=None, args=None, kargs=None):
+        if args is  None: args  = ()
+        if kargs is None: kargs = {}
+
+        if typ in {PC.PatchConstructType.PYTHON, PC.PatchConstructType.USER} and operator is None:
+            raise ValueError("Must provide operator for USER or PYTHON type")
+        if operator is not None:
+            context = (operator, args, kargs)
+        else:
+            context = None
+        self.set_attr("__patch_construction_operator__", context)
+        CHKERR( SNESPatchSetConstructType(self.snes, typ, PCPatch_UserConstructOperator, <void*>context) )
 
     # --- application context ---
 
