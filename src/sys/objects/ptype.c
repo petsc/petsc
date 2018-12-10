@@ -4,6 +4,11 @@
 */
 #include <petscsys.h>  /*I   "petscsys.h"    I*/
 
+const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
+                                      "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE",
+                                      "OBJECT","FUNCTION",
+                                      "PetscDataType","PETSC_",0};
+
 /*@C
      PetscDataTypeToMPIDataType - Converts the PETSc name of a datatype to its MPI name.
 
