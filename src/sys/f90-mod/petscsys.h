@@ -76,6 +76,7 @@
       PetscEnum PETSC_OBJECT
       PetscEnum PETSC_FUNCTION
       PetscEnum PETSC_STRING
+      PetscEnum PETSC___FP16
       PetscEnum PETSC_STRUCT
       PetscEnum PETSC_DATATYPE_UNKNOWN
 
@@ -93,8 +94,8 @@
       parameter (PETSC_CHAR=6,PETSC_BIT_LOGICAL=7,PETSC_ENUM=8)
       parameter (PETSC_BOOL=9,PETSC___FLOAT128=10)
       parameter (PETSC_OBJECT=11,PETSC_FUNCTION=12)
-      parameter (PETSC_STRING=12,PETSC_STRUCT=13)
-      parameter (PETSC_DATATYPE_UNKNOWN=14)
+      parameter (PETSC_STRING=13,PETSC___FP16=14,PETSC_STRUCT=15)
+      parameter (PETSC_DATATYPE_UNKNOWN=16)
 !
 !
 !
