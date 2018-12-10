@@ -885,13 +885,10 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
   if (exists) PetscStackCallHDF5Return(exists,H5Oexists_by_name,(h5, name, H5P_DEFAULT));
   if (exists) {
     H5O_info_t info;
-    hid_t      obj;
 
     *has = PETSC_TRUE;
-    PetscStackCallHDF5Return(obj,H5Oopen,(h5, name, H5P_DEFAULT));
-    PetscStackCallHDF5(H5Oget_info,(obj, &info));
+    PetscStackCallHDF5(H5Oget_info_by_name,(h5, name, &info, H5P_DEFAULT));
     *otype = info.type;
-    PetscStackCallHDF5(H5Oclose,(obj));
   }
   PetscFunctionReturn(0);
 }
