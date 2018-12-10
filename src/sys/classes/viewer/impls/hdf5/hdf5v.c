@@ -871,6 +871,9 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
 {
   hid_t          h5;
   htri_t         exists;
+  PetscInt       i,n;
+  char           **hierarchy;
+  char           buf[PETSC_MAX_PATH_LEN]="";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -881,8 +884,32 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
   *has = PETSC_FALSE;
   *otype = H5O_TYPE_UNKNOWN;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
-  PetscStackCallHDF5Return(exists,H5Lexists,(h5, name, H5P_DEFAULT));
-  if (exists) PetscStackCallHDF5Return(exists,H5Oexists_by_name,(h5, name, H5P_DEFAULT));
+
+  /*
+     Unfortunately, H5Oexists_by_name() fails if any object in hierarchy is missing.
+     Hence, each of them needs to be tested separately:
+     1) whether it's a valid link
+     2) whether this link resolves to an object
+     See H5Oexists_by_name() documentation.
+  */
+  ierr = PetscStrToArray(name,'/',&n,&hierarchy);CHKERRQ(ierr);
+  if (!n) {
+    /*  Assume group "/" always exists in accordance with HDF5 >= 1.10.0. See H5Lexists() documentation. */
+    *has = PETSC_TRUE;
+    *otype = H5O_TYPE_GROUP;
+    ierr = PetscStrToArrayDestroy(n,hierarchy);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  for (i=0; i<n; i++) {
+    ierr = PetscStrcat(buf,"/");CHKERRQ(ierr);
+    ierr = PetscStrcat(buf,hierarchy[i]);CHKERRQ(ierr);
+    PetscStackCallHDF5Return(exists,H5Lexists,(h5, buf, H5P_DEFAULT));
+    if (exists) PetscStackCallHDF5Return(exists,H5Oexists_by_name,(h5, buf, H5P_DEFAULT));
+    if (!exists) break;
+  }
+  ierr = PetscStrToArrayDestroy(n,hierarchy);CHKERRQ(ierr);
+
+  /* If the object exists, get its type */
   if (exists) {
     H5O_info_t info;
 
