@@ -976,10 +976,8 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
 @*/
 PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
 {
-  hid_t          h5, dataset;
+  hid_t          h5;
   htri_t         hhas;
-  PetscBool      exists;
-  H5O_type_t     type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -989,19 +987,9 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscValidPointer(has, 4);
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, PETSC_FALSE, &exists, &type);CHKERRQ(ierr);
-  if (!exists) PetscFunctionReturn(0);
-  if (type == H5O_TYPE_DATASET) {
-    PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
-  } else if (type == H5O_TYPE_GROUP) {
-    PetscStackCallHDF5Return(dataset, H5Gopen2, (h5, parent, H5P_DEFAULT));
-  } else SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Only group and dataset attributes are supported");
-  PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
-  if (type == H5O_TYPE_DATASET) {
-    PetscStackCallHDF5(H5Dclose,(dataset));
-  } else if (type == H5O_TYPE_GROUP) {
-    PetscStackCallHDF5(H5Gclose,(dataset));
-  }
+  ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, PETSC_FALSE, has, NULL);CHKERRQ(ierr);
+  if (!*has) PetscFunctionReturn(0);
+  PetscStackCallHDF5Return(hhas,H5Aexists_by_name,(h5, parent, name, H5P_DEFAULT));
   *has = hhas ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
