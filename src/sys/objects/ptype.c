@@ -6,7 +6,8 @@
 
 const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
                                       "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE",
-                                      "OBJECT","FUNCTION",
+                                      "OBJECT","FUNCTION","STRING","FP16","STRUCT",
+                                      "UNKNOWN",
                                       "PetscDataType","PETSC_",0};
 
 /*@C
