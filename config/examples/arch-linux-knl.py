@@ -21,5 +21,6 @@ if __name__ == '__main__':
     '--download-metis=1',
     '--download-parmetis=1',
     '--download-superlu_dist=1',
+    '--with-cxx-dialect=C++11',
   ]
   configure.petsc_configure(configure_options)
