@@ -990,8 +990,10 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, PETSC_FALSE, &exists, &type);CHKERRQ(ierr);
-  if (!exists || type != H5O_TYPE_DATASET) PetscFunctionReturn(0);
-  PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
+  if (!exists) PetscFunctionReturn(0);
+  if (type == H5O_TYPE_DATASET) {
+    PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
+  } else SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Only dataset attributes are supported");
   PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
   PetscStackCallHDF5(H5Dclose,(dataset));
   *has = hhas ? PETSC_TRUE : PETSC_FALSE;
