@@ -185,6 +185,7 @@ struct _p_TS {
   void      *costintegrandctx;
   Vec       *vecs_drdu;
   Vec       *vecs_drdp;
+  Vec       vec_drdu_col,vec_drdp_col;
 
   /* first-order adjoint */
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
@@ -294,6 +295,9 @@ struct _p_TS {
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
   PetscBool       use_splitrhsfunction;
+
+  /* ---------------------- Quadrature integration support ---------------------------------*/
+  TS quadraturets;
 };
 
 struct _TSAdaptOps {

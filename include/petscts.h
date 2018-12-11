@@ -255,6 +255,7 @@ PETSC_EXTERN PetscErrorCode TSGetTimeError(TS,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
 
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode TSGetRHSJacobianP(TS,Mat*,PetscErrorCode(**)(TS,PetscReal,Vec,Mat,void*),void**);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSSetIJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianP(TS,PetscReal,Vec,Vec,PetscReal,Mat,PetscBool);
@@ -340,9 +341,11 @@ PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS,TSTrajectory*);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS,PetscInt*,Vec**,Vec**);
-PETSC_EXTERN PetscErrorCode TSSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscBool,void*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSCreateQuadratureTS then set up the sub-TS") PetscErrorCode TSSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscBool,void*);
 PETSC_EXTERN PetscErrorCode TSGetCostIntegral(TS,Vec*);
 PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS,PetscReal,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSCreateQuadratureTS(TS,PetscBool,TS*);
+PETSC_EXTERN PetscErrorCode TSGetQuadratureTS(TS,PetscBool*,TS*);
 
 PETSC_EXTERN PetscErrorCode TSAdjointSetFromOptions(PetscOptionItems*,TS);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitor(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*);
@@ -438,6 +441,7 @@ PETSC_EXTERN PetscErrorCode TSSetStepNumber(TS,PetscInt);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat,Mat,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobianP)(TS,PetscReal,Vec,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSSetRHSFunction(TS,Vec,TSRHSFunction,void*);
 PETSC_EXTERN PetscErrorCode TSGetRHSFunction(TS,Vec*,TSRHSFunction*,void**);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobian(TS,Mat,Mat,TSRHSJacobian,void*);

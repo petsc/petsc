@@ -26,7 +26,6 @@ typedef struct {
   Vec          *VecsDeltaLam;    /* Increment of the adjoint sensitivity w.r.t IC at stage                       */
   Vec          *VecsSensiTemp;
   Vec          VecDeltaMu;       /* Increment of the adjoint sensitivity w.r.t P at stage                        */
-  Vec          VecCostIntegral0; /* backup for roll-backs due to events                                          */
   Vec          *VecsDeltaLam2;   /* Increment of the 2nd-order adjoint sensitivity w.r.t IC at stage */
   Vec          VecDeltaMu2;      /* Increment of the 2nd-order adjoint sensitivity w.r.t P at stage */
   Vec          *VecsSensi2Temp;

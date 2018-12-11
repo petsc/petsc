@@ -27,10 +27,11 @@ typedef struct {
   PetscInt    beta;
   PetscReal   tf,tcl;
   /* Solver context */
-  TS          ts;
+  TS          ts,quadts;
   Vec         U;    /* solution will be stored here */
   Mat         Jac;  /* Jacobian matrix */
   Mat         Jacp; /* Jacobianp matrix */
+  Mat         DRDU,DRDP;
   SAMethod    sa;
 } AppCtx;
 
@@ -128,7 +129,7 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx0)
   PetscFunctionBeginUser;
   J[0][0] = 0;
   J[1][0] = 1.;
-  ierr  = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -149,30 +150,33 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DRDUFunction(TS ts,PetscReal t,Vec U,Vec *DRDU,AppCtx *ctx)
+/* Transpose of DRDU */
+static PetscErrorCode DRDUJacobianTranspose(TS ts,PetscReal t,Vec U,Mat DRDU,Mat B,AppCtx *ctx)
 {
-  PetscErrorCode     ierr;
-  PetscScalar        *ry;
-  const PetscScalar  *u;
+  PetscScalar       ru[2];
+  PetscInt          row[] = {0,1},col[] = {0};
+  const PetscScalar *u;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(DRDU[0],&ry);CHKERRQ(ierr);
-  ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(PetscMax(0.,u[0]-ctx->u_s),ctx->beta-1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(DRDU[0],&ry);CHKERRQ(ierr);
+  ru[0] = ctx->c*ctx->beta*PetscPowScalarInt(PetscMax(0.,u[0]-ctx->u_s),ctx->beta-1);CHKERRQ(ierr);
+  ru[1] = 0;
+  ierr = MatSetValues(DRDU,2,row,1,col,ru,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(DRDU,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(DRDU,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,AppCtx *ctx)
+static PetscErrorCode DRDPJacobianTranspose(TS ts,PetscReal t,Vec U,Mat DRDP,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar    *rp;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(drdp[0],&rp);CHKERRQ(ierr);
-  rp[0] = 0.;
-  ierr  = VecRestoreArray(drdp[0],&rp);CHKERRQ(ierr);
+  ierr = MatZeroEntries(DRDP);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(DRDP,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(DRDP,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -280,6 +284,10 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(ctx.Jacp);CHKERRQ(ierr);
   ierr = MatSetUp(ctx.Jacp);CHKERRQ(ierr);
   ierr = MatCreateVecs(ctx.Jac,&ctx.U,NULL);CHKERRQ(ierr);
+  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,&ctx.DRDP);CHKERRQ(ierr);
+  ierr = MatSetUp(ctx.DRDP);CHKERRQ(ierr);
+  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,&ctx.DRDU);CHKERRQ(ierr);
+  ierr = MatSetUp(ctx.DRDU);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -287,8 +295,8 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ctx.ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ctx.ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ctx.ts,TSCN);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ctx.ts,NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ctx.ts,ctx.Jac,ctx.Jac,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ctx.ts,NULL,(TSRHSFunction)RHSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ctx.ts,ctx.Jac,ctx.Jac,(TSRHSJacobian)RHSJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobianP(ctx.ts,ctx.Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 
   if (ctx.sa == SA_ADJ) {
@@ -296,9 +304,10 @@ int main(int argc,char **argv)
     ierr = MatCreateVecs(ctx.Jacp,&mu[0],NULL);CHKERRQ(ierr);
     ierr = TSSetSaveTrajectory(ctx.ts);CHKERRQ(ierr);
     ierr = TSSetCostGradients(ctx.ts,1,lambda,mu);CHKERRQ(ierr);
-    ierr = TSSetCostIntegrand(ctx.ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                              (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDUFunction,
-                              (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_TRUE,&ctx);CHKERRQ(ierr);
+    ierr = TSCreateQuadratureTS(ctx.ts,PETSC_FALSE,&ctx.quadts);CHKERRQ(ierr);
+    ierr = TSSetRHSFunction(ctx.quadts,NULL,(TSRHSFunction)CostIntegrand,&ctx);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ctx.quadts,ctx.DRDU,ctx.DRDU,(TSRHSJacobian)DRDUJacobianTranspose,&ctx);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobianP(ctx.quadts,ctx.DRDP,DRDPJacobianTranspose,&ctx);CHKERRQ(ierr);
   }
   if (ctx.sa == SA_TLM) {
     ierr = VecCreate(PETSC_COMM_WORLD,&qgrad[0]);CHKERRQ(ierr);
@@ -307,9 +316,10 @@ int main(int argc,char **argv)
     ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,&sp);CHKERRQ(ierr);
     ierr = TSForwardSetSensitivities(ctx.ts,1,sp);CHKERRQ(ierr);
     ierr = TSForwardSetIntegralGradients(ctx.ts,1,qgrad);CHKERRQ(ierr);
-    ierr = TSSetCostIntegrand(ctx.ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                              (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDUFunction,
-                              (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_TRUE,&ctx);CHKERRQ(ierr);
+    ierr = TSCreateQuadratureTS(ctx.ts,PETSC_TRUE,&ctx.quadts);CHKERRQ(ierr);
+    ierr = TSSetRHSFunction(ctx.quadts,NULL,(TSRHSFunction)CostIntegrand,&ctx);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ctx.quadts,ctx.DRDU,ctx.DRDU,(TSRHSJacobian)DRDUJacobianTranspose,&ctx);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobianP(ctx.quadts,ctx.DRDP,DRDPJacobianTranspose,&ctx);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -372,6 +382,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&ctx.Jac);CHKERRQ(ierr);
   ierr = MatDestroy(&ctx.Jacp);CHKERRQ(ierr);
+  ierr = MatDestroy(&ctx.DRDP);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx.U);CHKERRQ(ierr);
   if (ctx.sa == SA_ADJ) {
     ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
@@ -435,7 +446,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetTimeStep(ctx->ts,0.03125);CHKERRQ(ierr);
 
   /* reinitialize the integral value */
-  ierr = TSGetCostIntegral(ctx->ts,&q);CHKERRQ(ierr);
+  ierr = TSGetQuadratureTS(ctx->ts,NULL,&ctx->quadts);CHKERRQ(ierr);
+  ierr = TSGetSolution(ctx->quadts,&q);CHKERRQ(ierr);
   ierr = VecSet(q,0.0);CHKERRQ(ierr);
 
   if (ctx->sa == SA_TLM) { /* reset the forward sensitivities */
@@ -487,7 +499,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
     ierr = VecRestoreArray(G,&x_ptr);CHKERRQ(ierr);
   }
 
-  ierr = TSGetCostIntegral(ctx->ts,&q);CHKERRQ(ierr);
+  ierr = TSGetSolution(ctx->quadts,&q);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   *f   = -ctx->Pm + x_ptr[0];
   ierr = VecRestoreArray(q,&x_ptr);CHKERRQ(ierr);

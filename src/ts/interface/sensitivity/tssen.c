@@ -29,7 +29,7 @@ $ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
     Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
 
 .keywords: TS, sensitivity
-.seealso:
+.seealso: TSGetRHSJacobianP()
 @*/
 PetscErrorCode TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 {
@@ -46,6 +46,43 @@ PetscErrorCode TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscR
     ierr = MatDestroy(&ts->Jacprhs);CHKERRQ(ierr);
     ts->Jacprhs = Amat;
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSGetRHSJacobianP - Gets the function that computes the Jacobian of G w.r.t. the parameters P where U_t = G(U,P,t), as well as the location to store the matrix.
+
+  Logically Collective on TS
+
+  Input Parameters:
+. ts - TS context obtained from TSCreate()
+
+  Output Parameters:
++ Amat - JacobianP matrix
+. func - function
+- ctx - [optional] user-defined function context
+
+  Calling sequence of func:
+$ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
++   t - current timestep
+.   U - input vector (current ODE solution)
+.   A - output matrix
+-   ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+  Notes:
+    Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
+
+.keywords: TS, sensitivity
+.seealso: TSSetRHSJacobianP()
+@*/
+PetscErrorCode TSGetRHSJacobianP(TS ts,Mat *Amat,PetscErrorCode (**func)(TS,PetscReal,Vec,Mat,void*),void **ctx)
+{
+  PetscFunctionBegin;
+  if (func) *func = ts->rhsjacobianp;
+  if (ctx) *ctx  = ts->rhsjacobianpctx;
+  if (Amat) *Amat = ts->Jacprhs;
   PetscFunctionReturn(0);
 }
 
@@ -212,7 +249,7 @@ $   PetscErroCode drduf(TS ts,PetscReal t,Vec U,Vec *dRdU,void *ctx);
     Calling sequence of drdpf:
 $   PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *dRdP,void *ctx);
 
-    Level: intermediate
+    Level: deprecated
 
     Notes:
     For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
@@ -278,10 +315,14 @@ PetscErrorCode TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,PetscE
 @*/
 PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
 {
+  TS             quadts;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(v,2);
-  *v = ts->vec_costintegral;
+  ierr = TSGetQuadratureTS(ts,NULL,&quadts);CHKERRQ(ierr);
+  *v = quadts->vec_sol;
   PetscFunctionReturn(0);
 }
 
@@ -300,7 +341,7 @@ PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
    Most users should not need to explicitly call this routine, as it
    is used internally within the sensitivity analysis context.
 
-   Level: developer
+   Level: deprecated
 
 .keywords: TS, compute
 
@@ -1032,10 +1073,10 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 
   if (!ts->Jacp && ts->Jacprhs) ts->Jacp = ts->Jacprhs;
 
-  if (ts->vec_costintegral) { /* if there is integral in the cost function */
-    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdu);CHKERRQ(ierr);
+  if (ts->quadraturets) { /* if there is integral in the cost function */
+    ierr = VecDuplicate(ts->vecs_sensi[0],&ts->vec_drdu_col);CHKERRQ(ierr);
     if (ts->vecs_sensip){
-      ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+      ierr = VecDuplicate(ts->vecs_sensip[0],&ts->vec_drdp_col);CHKERRQ(ierr);
     }
   }
 
@@ -1066,6 +1107,10 @@ PetscErrorCode TSAdjointReset(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->vecs_integral_sensip) {
+    ierr = VecDestroy(&ts->vec_drdu_col);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vec_drdp_col);CHKERRQ(ierr);
+  }
   if (ts->ops->adjointreset) {
     ierr = (*ts->ops->adjointreset)(ts);CHKERRQ(ierr);
   }
@@ -1561,7 +1606,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
     ierr = TSAdjointMonitor(ts,ts->steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
     ierr = TSAdjointEventHandler(ts);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
-    if (ts->vec_costintegral && !ts->costintegralfwd) {
+    if ((ts->vec_costintegral || ts->quadraturets) && !ts->costintegralfwd) {
       ierr = TSAdjointCostIntegral(ts);CHKERRQ(ierr);
     }
   }
@@ -1662,8 +1707,8 @@ PetscErrorCode TSForwardSetUp(TS ts)
   if (ts->forwardsetupcalled) PetscFunctionReturn(0);
   if (ts->vec_costintegral && !ts->vecs_integral_sensip ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSForwardSetIntegralGradients() before TSSetCostIntegrand()");
   if (ts->vecs_integral_sensip) {
-    ierr = VecDuplicateVecs(ts->vec_sol,ts->numcost,&ts->vecs_drdu);CHKERRQ(ierr);
-    ierr = VecDuplicateVecs(ts->vecs_integral_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+    ierr = VecDuplicate(ts->vec_sol,&ts->vec_drdu_col);CHKERRQ(ierr);
+    ierr = VecDuplicate(ts->vecs_integral_sensip[0],&ts->vec_drdp_col);CHKERRQ(ierr);
   }
   if (!ts->Jacp && ts->Jacprhs) ts->Jacp = ts->Jacprhs;
 
@@ -1694,6 +1739,10 @@ PetscErrorCode TSForwardReset(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->vecs_integral_sensip) {
+    ierr = VecDestroy(&ts->vec_drdu_col);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vec_drdp_col);CHKERRQ(ierr);
+  }
   if (ts->ops->forwardreset) {
     ierr = (*ts->ops->forwardreset)(ts);CHKERRQ(ierr);
   }
@@ -1904,7 +1953,7 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts,Mat didp)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameters:
-+  ns - nu
++  ns - number of stages
 -  S - tangent linear sensitivities at the intermediate stages
 
    Level: advanced
@@ -1922,5 +1971,72 @@ PetscErrorCode TSForwardGetStages(TS ts,PetscInt *ns,Mat **S)
   else {
     ierr = (*ts->ops->forwardgetstages)(ts,ns,S);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSCreateQuadratureTS - Create a sub-TS that evaluates integrals over time
+
+   Input Parameter:
++  ts - the TS context obtained from TSCreate()
+-  fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
+
+   Output Parameters:
+.  quadts - the child TS context
+
+   Level: intermediate
+
+.keywords: TS, quadrature evaluation
+
+.seealso: TSGetQuadratureTS()
+@*/
+PetscErrorCode TSCreateQuadratureTS(TS ts,PetscBool fwd,TS *quadts)
+{
+  char prefix[128];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(quadts,2);
+  ierr = TSDestroy(&ts->quadraturets);CHKERRQ(ierr);
+  ierr = TSCreate(PetscObjectComm((PetscObject)ts),&ts->quadraturets);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)ts->quadraturets,(PetscObject)ts,1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)ts->quadraturets);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%squad_",((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "");CHKERRQ(ierr);
+  ierr = TSSetOptionsPrefix(ts->quadraturets,prefix);CHKERRQ(ierr);
+  *quadts = ts->quadraturets;
+
+  if (ts->numcost) {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,ts->numcost,&(*quadts)->vec_sol);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,1,&(*quadts)->vec_sol);CHKERRQ(ierr);
+  }
+  ierr = VecDuplicate((*quadts)->vec_sol,&ts->vec_costintegrand);CHKERRQ(ierr);
+  ts->costintegralfwd = fwd;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetQuadratureTS - Return the sub-TS that evaluates integrals over time
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameters:
++  fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
+-  quadts - the child TS context
+
+   Level: intermediate
+
+.keywords: TS, quadrature evaluation
+
+.seealso: TSCreateQuadratureTS()
+@*/
+PetscErrorCode TSGetQuadratureTS(TS ts,PetscBool *fwd,TS *quadts)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (fwd) *fwd = ts->costintegralfwd;
+  if (quadts) *quadts = ts->quadraturets;
   PetscFunctionReturn(0);
 }

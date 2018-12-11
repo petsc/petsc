@@ -2590,6 +2590,11 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
+  if (ts->quadraturets) {
+    ierr = TSSetUp(ts->quadraturets);CHKERRQ(ierr);
+    ierr = VecDuplicate(ts->quadraturets->vec_sol,&ts->vec_costintegrand);CHKERRQ(ierr);
+  }
+
   ierr = TSGetRHSJacobian(ts,NULL,NULL,&rhsjac,NULL);CHKERRQ(ierr);
   if (ts->rhsjacobian.reuse && rhsjac == TSComputeRHSJacobianConstant) {
     Mat Amat,Pmat;
@@ -2688,13 +2693,12 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
 
-  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdu);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
-
+  ierr = MatDestroy(&ts->Jacprhs);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
-  ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
-  ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
-
+  if (ts->quadraturets) {
+    ierr = TSReset(ts->quadraturets);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
+  }
   while (ilink) {
     next = ilink->next;
     ierr = TSDestroy(&ilink->ts);CHKERRQ(ierr);
@@ -2750,6 +2754,7 @@ PetscErrorCode  TSDestroy(TS *ts)
   ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
   ierr = TSAdjointMonitorCancel((*ts));CHKERRQ(ierr);
 
+  ierr = TSDestroy(&(*ts)->quadraturets);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3857,7 +3862,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       if (ts->testjacobiantranspose) {
         ierr = TSRHSJacobianTestTranspose(ts,NULL);CHKERRQ(ierr);
       }
-      if (ts->vec_costintegral && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
+      if (ts->quadraturets && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
       if (ts->forward_solve) { /* compute forward sensitivities before event handling because postevent() may change RHS and jump conditions may have to be applied */
