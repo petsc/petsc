@@ -944,12 +944,11 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, H5O_TYPE_DATASET, &exists);CHKERRQ(ierr);
-  if (exists) {
-    PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
-    PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
-    PetscStackCallHDF5(H5Dclose,(dataset));
-    *has = hhas ? PETSC_TRUE : PETSC_FALSE;
-  }
+  if (!exists) PetscFunctionReturn(0);
+  PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
+  PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
+  PetscStackCallHDF5(H5Dclose,(dataset));
+  *has = hhas ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
