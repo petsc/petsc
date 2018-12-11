@@ -870,6 +870,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, const char name[], H5O_type_t otype, PetscBool *has)
 {
   hid_t          h5;
+  htri_t         exists;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -878,7 +879,9 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
   PetscValidIntPointer(has, 4);
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
-  if (H5Lexists(h5, name, H5P_DEFAULT)) {
+  PetscStackCallHDF5Return(exists,H5Lexists,(h5, name, H5P_DEFAULT));
+  if (exists) PetscStackCallHDF5Return(exists,H5Oexists_by_name,(h5, name, H5P_DEFAULT));
+  if (exists) {
     H5O_info_t info;
     hid_t      obj;
 
