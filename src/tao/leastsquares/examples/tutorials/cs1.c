@@ -21,12 +21,10 @@ Reference:     None
                
 */
 
-
-
 static char help[] = "Finds the least-squares solution to the underconstraint linear model Ax = b, with L1-norm regularizer. \n\
             A is a M*N real flat matrix (M<N), x is sparse. \n\
             We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||D*x||_1, where lambda (by default 1e-4) is a user specified weight.\n\
-            D is the P*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x.\n";
+            D is the K*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x.\n";
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
    Routines: TaoCreate();
@@ -45,32 +43,34 @@ T*/
 
 #define M 3
 #define N 5
-#define P 5
+#define K 4
 
 /* User-defined application context */
 typedef struct {
   /* Working space. linear least square:  f(x) = A*x - b */
   PetscReal A[M][N];    /* array of coefficients */
   PetscReal b[M];       /* array of observations */
-  PetscReal D[P][N];    /* array of coefficients for 0.5*||Ax-b||^2 + lambda*||D*x||_1 */
-  PetscReal j[M][N];    /* dense jacobian matrix array. For linear least square, j = A. For nonlinear least square, it is different from A */
-  PetscInt  idm[M];     /* Matrix indices for jacobian */
+  PetscReal D[K][N];    /* array of coefficients for 0.5*||Ax-b||^2 + lambda*||D*x||_1 */
+  PetscReal J[M][N];    /* dense jacobian matrix array. For linear least square, J = A. For nonlinear least square, it is different from A */
+  PetscInt  idm[M];     /* Matrix row, column indices for jacobian and dictionary */
   PetscInt  idn[N];
+  PetscInt  idk[K];
 } AppCtx;
 
 /* User provided Routines */
-PetscErrorCode InitializeData(AppCtx *user);
+PetscErrorCode InitializeData(AppCtx *);
 PetscErrorCode FormStartingPoint(Vec);
-PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
-PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
+PetscErrorCode FormDictionaryMatrix(Mat,AppCtx *);
+PetscErrorCode EvaluateFunction(Tao,Vec,Vec,void *);
+PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,Mat,void *);
 
 
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;               /* used to check for functions returning nonzeros */
-  Vec            x, f;               /* solution, function */
-  Mat            J, D;               /* Jacobian matrix, Transform matrix */
+  Vec            x,f;               /* solution, function f(x) = A*x-b */
+  Mat            J,D;               /* Jacobian matrix, Transform matrix */
   Tao            tao;                /* Tao solver context */
   PetscInt       i;                  /* iteration information */
   PetscReal      hist[100],resid[100];
@@ -78,29 +78,38 @@ int main(int argc,char **argv)
   AppCtx         user;               /* user-defined work context */
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
-  /* Allocate vectors */
+
+  /* Allocate solution and vector function vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,M,&f);CHKERRQ(ierr);
 
   /* Allocate Jacobian and Dictionary matrix. */
   ierr = MatCreateSeqDense(MPI_COMM_SELF,M,N,NULL,&J);CHKERRQ(ierr);
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,P,N,NULL,&D);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,K,N,NULL,&D);CHKERRQ(ierr); /* XH: TODO: dense -> sparse/dense/shell etc, do it on fly  */
 
   for (i=0;i<M;i++) user.idm[i] = i;
-
   for (i=0;i<N;i++) user.idn[i] = i;
+  for (i=0;i<K;i++) user.idk[i] = i;
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOBRGN);CHKERRQ(ierr); 
 
- /* Set the function and Jacobian routines. */
+  /* User set application context: A, D matrice, and b vector. */   
   ierr = InitializeData(&user);CHKERRQ(ierr);
-  ierr = FormStartingPoint(x);CHKERRQ(ierr);
-  ierr = ComputeDictionaryMatrix(D);CHKERRQ(ierr):   /*XH todo: fill in value of D*/
 
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
-  ierr = TaoSetDictionaryMatrix(tao,D);CHKERRQ(ierr); /*XH todo: bound D to tao*/
+  /* Set initial guess */
+  ierr = FormStartingPoint(x);CHKERRQ(ierr);
+
+  /* Fill the content of matrix D from user application Context */
+  ierr = FormDictionaryMatrix(D,&user);CHKERRQ(ierr);
+
+  /* Bind x to tao->solution. */
+  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr); 
+  /* Bind D to tao->data->D */
+  ierr = TaoBRGNSetDictionaryMatrix(tao,D);CHKERRQ(ierr); /* TaoBRNGSetDictionaryMatrix() */
+
+  /* Set the function and Jacobian routines. */
   ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)&user);CHKERRQ(ierr);
 
@@ -108,18 +117,18 @@ int main(int argc,char **argv)
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);
+  
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
 
-  /* XH: Debug: Do we really need to assembly the vector?
+  /* XH: Debug: Do we really need to assembly the vector? should be called after completing all calls to VecSetValues()
      Assemble vector, using the 2-step process: VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition by placing code between these two statements.
   */
+  /* Is it neccssary to use TaoGetSolutionVector(tao, &x); */
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-
-  
   /* XH: Debug: View the result, function and Jacobian.  */    
   PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n");  
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -140,10 +149,7 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-PetscErrorCode ComputeDictionaryMatrix(Mat D) /*XH */
-{
-  /*XH: todo*/
-}
+
 /*--------------------------------------------------------------------*/
 PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
@@ -167,7 +173,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   }
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  PetscLogFlops(6*M);
+  PetscLogFlops(M*N*2);
   PetscFunctionReturn(0);
 }
 
@@ -182,22 +188,38 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr); /* not used for linear least square, but keep for future nonlinear least square) */
-  /* For linear least square, we can just set j=A, but for nonlinear least square, we require x to compute j, keep codes here for future nonlinear least square*/
-  for (m=0; m<M; m++) {
-    for (n=0; n<N; n++) {  
-      user->j[m][n] = user->A[m][n];
+  /* XH: TODO:  For linear least square, we can just set J=A fixed once, instead of keep update it! Maybe just create a function getFixedJacobian?
+    For nonlinear least square, we require x to compute J, keep codes here for future nonlinear least square*/
+  for (m=0; m<M; ++m) {
+    for (n=0; n<N; ++n) {  
+      user->J[m][n] = user->A[m][n];
     }
   }
 
-  /* Assemble the matrix */
-  ierr = MatSetValues(J, M, user->idm, N, user->idn, (PetscReal *)user->j, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetValues(J,M,user->idm,N,user->idn,(PetscReal *)user->J,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);  /* not used for linear least square, but keep for future nonlinear least square) */
-  PetscLogFlops(M * 13);
+  PetscLogFlops(0);  /* 0 for linear least square, >0 for nonlinear least square */
   PetscFunctionReturn(0);
 }
+
+/* ------------------------------------------------------------ */
+/* Currently fixed matrix, in future may be dynamic for D(x)? */
+PetscErrorCode FormDictionaryMatrix(Mat D,AppCtx *user) 
+{  
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetValues(D,K,user->idk,N,user->idn,(PetscReal *)user->D,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  
+  PetscLogFlops(0); /* 0 for fixed dictionary matrix, >0 for varying dictionary matrix */
+  PetscFunctionReturn(0);
+}
+
 
 /* ------------------------------------------------------------ */
 PetscErrorCode FormStartingPoint(Vec X)
@@ -208,7 +230,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  for (n=0; n<N; n++) x[0] = 1000.0;  
+  for (n=0; n<N; n++) x[0] = 0.0;  /* XH: i.e. VecSet(x, 0); */
   VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -217,10 +239,11 @@ PetscErrorCode FormStartingPoint(Vec X)
 PetscErrorCode InitializeData(AppCtx *user)
 {
   PetscReal *b=user->b; /* **A=user->A, but we don't kown the dimension of A in this way, how to fix? */
-  PetscInt  m,n,p; /* loop index for M,N,P dimension. */
+  PetscInt  m,n,k; /* loop index for M,N,K dimension. */
 
   PetscFunctionBegin;
   /* b = A*x while x = [0;0;1;0;0] here*/
+  m = 0;
   b[m++] = 0.28;
   b[m++] = 0.55;
   b[m++] = 0.96;
@@ -236,15 +259,18 @@ PetscErrorCode InitializeData(AppCtx *user)
   
   /* initialize to 0 */
   /* C99 can use: char ZEROARRAY[1024] = {0}; Can we do the same thing here?*/
-  for (p=0; p<P; p++) {
+  for (k=0; k<K; k++) {
     for (n=0; n<N; n++) {
-      user->D[p][n] = 0.0;
+      user->D[k][n] = 0.0;
     }
   }
-  /* Choice I: set D to identity matrix for testing */
-  for (n=0; n<N; n++) user->D[n][n] = 1.0;
-  /* Choice II: set D to Backward difference matrix, with zero extended boundary assumption */
-  /* for (n=1;n<N;n++) user->D[n][n-1] = -1.0; */
+  /* Choice I: set D to identity matrix of size N*N for testing */
+  /* for (k=0; k<K; k++) user->D[k][k] = 1.0; */
+  /* Choice II: set D to Backward difference matrix of size (N-1)*N, with zero extended boundary assumption */
+  for (k=0;k<K;k++) {
+      user->D[k][k]   = -1.0; 
+      user->D[k][k+1] = 1.0; 
+  }
   
 
   PetscFunctionReturn(0);
@@ -267,3 +293,32 @@ PetscErrorCode InitializeData(AppCtx *user)
 
 TEST*/
 
+
+/* XH: hack code for test, can be removed: set gn->D as identity/gradient  matrix here for text , how to set D matrix from user data?*/    
+  /*
+  if (!gn->D){
+    ierr = MatCreate(PETSC_COMM_SELF,&gn->D);CHKERRQ(ierr);
+    ierr = MatSetSizes(gn->D,PETSC_DECIDE,PETSC_DECIDE,K,N);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(gn->D);CHKERRQ(ierr);        
+    ierr = MatSetUp(gn->D);CHKERRQ(ierr);    
+
+    for (i=0; i<K; i++) {           
+        v = 1.0;
+        n = i+1; 
+        ierr = MatSetValues(gn->D,1,&i,1,&n,&v,INSERT_VALUES);CHKERRQ(ierr);
+        v = -1.0;        
+        ierr = MatSetValues(gn->D,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(gn->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(gn->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  */
+      /* identity matrix */
+    /*
+    for (i=0; i<K; i++) {
+        v = 1.0        
+        ierr = MatSetValues(gn->D,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    */
+    /* gradient matrix */
+    /* [-1, 1, 0,...; 0, -1, 1, 0, ...] */
