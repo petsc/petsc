@@ -307,6 +307,26 @@ cdef int PCPatch_ComputeOperator(
     op(Pc, toInt(point), Vec, Mat, Is, asarray(pydofs), *args, **kargs)
     return 0
 
+cdef int PCPatch_ComputeFunction(
+    PetscPC pc,
+    PetscInt point,
+    PetscVec vec,
+    PetscVec out,
+    PetscIS cells,
+    PetscInt ndof,
+    const_PetscInt *dofmap,
+    void *ctx) except PETSC_ERR_PYTHON with gil:
+    cdef Vec Vec = ref_Vec(vec)
+    cdef Mat Out = ref_Vec(out)
+    cdef PC Pc = ref_PC(pc)
+    cdef IS Is = ref_IS(cells)
+    cdef object context = Pc.get_attr("__patch_compute_function__")
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple
+    (op, args, kargs) = context
+    cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
+    op(Pc, toInt(point), Vec, Out, Is, asarray(pydofs), *args, **kargs)
+    return 0
 
 cdef int PCPatch_UserConstructOperator(
     PetscPC pc,

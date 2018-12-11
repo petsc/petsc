@@ -786,6 +786,13 @@ cdef class SNES(Object):
         self.set_attr("__patch_compute_operator__", context)
         CHKERR( SNESPatchSetComputeOperator(self.snes, PCPatch_ComputeOperator, <void*>context) )
 
+    def setPatchComputeFunction(self, function, args=None, kargs=None):
+        if args is  None: args  = ()
+        if kargs is None: kargs = {}
+        context = (function, args, kargs)
+        self.set_attr("__patch_compute_function__", context)
+        CHKERR( SNESPatchSetComputeFunction(self.snes, PCPatch_ComputeFunction, <void*>context) )
+
     def setPatchConstructType(self, typ, operator=None, args=None, kargs=None):
         if args is  None: args  = ()
         if kargs is None: kargs = {}
