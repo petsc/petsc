@@ -155,8 +155,9 @@ static PetscErrorCode SNESDestroy_Patch(SNES snes)
 
 static PetscErrorCode SNESSetFromOptions_Patch(PetscOptionItems *PetscOptionsObject, SNES snes)
 {
-  SNES_Patch     *patch = (SNES_Patch *) snes->data;
+  SNES_Patch    *patch = (SNES_Patch *) snes->data;
   PetscBool      flg;
+  const char    *prefix;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -165,6 +166,8 @@ static PetscErrorCode SNESSetFromOptions_Patch(PetscOptionItems *PetscOptionsObj
   if (flg) {ierr = SNESPatchSetType(snes, patch->type);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)snes, &prefix);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)patch->pc, prefix);CHKERRQ(ierr);
   ierr = PCSetFromOptions(patch->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -188,7 +191,10 @@ static PetscErrorCode SNESView_Patch(SNES snes,PetscViewer viewer)
 
 static PetscErrorCode SNESSolve_Patch(SNES snes)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = SNESSetConvergedReason(snes, SNES_CONVERGED_ITS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
