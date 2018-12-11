@@ -874,8 +874,8 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(has, 3);
+  PetscValidCharPointer(name, 2);
+  PetscValidIntPointer(has, 4);
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   if (H5Lexists(h5, name, H5P_DEFAULT)) {
