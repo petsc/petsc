@@ -379,7 +379,6 @@ def parseTest(testStr,srcfile,verbosity):
           testname+="_"+val
 
   if len(comments): subdict['comments']="\n".join(comments).lstrip("\n")
-  #if "_" not in testname: testname+='_1'
 
   # A test block can create multiple tests.  This does that logic
   testnames,subdicts=splitTests(testname,subdict)

@@ -382,7 +382,6 @@ class generateExamples(Petsc):
 
     # Output file is special because of subtests override
     defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
-    if not "_" in defroot: defroot=defroot+"_1"
     subst['defroot']=defroot
     subst['label']=self.nameSpace(defroot,self.srcrelpath(subst['srcdir']))
     subst['redirect_file']=defroot+".tmp"
