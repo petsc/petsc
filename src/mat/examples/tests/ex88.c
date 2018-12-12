@@ -89,14 +89,18 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
   ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
   if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,x,y) produces incorrect result");
+#endif
 
   ierr = VecSet(W2,-1.0);CHKERRQ(ierr);
   ierr = MatMultAdd(A,W1,W2,W2);CHKERRQ(ierr);
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
   ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
   if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,y,y) produces incorrect result");
+#endif
   ierr = VecDestroy(&diff);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer,"Testing MatMultTranposeAdd\n");CHKERRQ(ierr);
@@ -107,14 +111,18 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
   ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
   if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTranposeAdd(A,x,x,y) produces incorrect result");
+#endif
 
   ierr = VecSet(W2,-1.0);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd(A,W1,W2,W2);CHKERRQ(ierr);
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
   ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
   if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTranposeAdd(A,x,y,y) produces incorrect result");
+#endif
   ierr = VecDestroy(&diff);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer,"Testing MatGetDiagonal\n");CHKERRQ(ierr);
