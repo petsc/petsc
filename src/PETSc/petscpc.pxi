@@ -316,8 +316,8 @@ cdef int PCPatch_ComputeFunction(
     PetscInt ndof,
     const_PetscInt *dofmap,
     void *ctx) except PETSC_ERR_PYTHON with gil:
+    cdef Vec Out = ref_Vec(out)
     cdef Vec Vec = ref_Vec(vec)
-    cdef Mat Out = ref_Vec(out)
     cdef PC Pc = ref_PC(pc)
     cdef IS Is = ref_IS(cells)
     cdef object context = Pc.get_attr("__patch_compute_function__")
