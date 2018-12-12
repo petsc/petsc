@@ -1,7 +1,7 @@
 ts:
   view: true
-  final_time: 1.4
   max:
     steps: 10
+    time: 1.4
 snes:
   max_it: 5
