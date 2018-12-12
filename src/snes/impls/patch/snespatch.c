@@ -11,25 +11,23 @@ typedef struct {
 
 static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, void *ctx)
 {
-  SNES           patchsolver = (SNES) ctx;
-  SNES_Patch    *patch       = (SNES_Patch *) patchsolver->data;
-  PC_PATCH      *pcpatch     = (PC_PATCH *) patch->pc->data;
+  PC             pc      = (PC) ctx;
+  PC_PATCH      *pcpatch = (PC_PATCH *) pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCPatchComputeFunction_Internal(patch->pc, x, F, pcpatch->currentPatch);CHKERRQ(ierr);
+  ierr = PCPatchComputeFunction_Internal(pc, x, F, pcpatch->currentPatch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, Mat M, void *ctx)
 {
-  SNES           patchsolver = (SNES) ctx;
-  SNES_Patch    *patch       = (SNES_Patch *) patchsolver->data;
-  PC_PATCH      *pcpatch     = (PC_PATCH *) patch->pc->data;
+  PC             pc      = (PC) ctx;
+  PC_PATCH      *pcpatch = (PC_PATCH *) pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCPatchComputeOperator_Internal(patch->pc, x, M, pcpatch->currentPatch, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PCPatchComputeOperator_Internal(pc, x, M, pcpatch->currentPatch, PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -61,8 +59,8 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
   for (i = 0; i < patch->npatch; ++i) {
     SNES snes = (SNES) patch->solver[i];
 
-    ierr = SNESSetFunction(snes, patch->patchX[i], SNESPatchComputeResidual_Private, snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes, patch->mat[i], patch->mat[i], SNESPatchComputeJacobian_Private, snes);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes, patch->patchX[i], SNESPatchComputeResidual_Private, pc);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes, patch->mat[i], patch->mat[i], SNESPatchComputeJacobian_Private, pc);CHKERRQ(ierr);
   }
   if (!pc->setupcalled && patch->optionsSet) for (i = 0; i < patch->npatch; ++i) {ierr = SNESSetFromOptions((SNES) patch->solver[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -76,7 +74,9 @@ static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec x, Vec y)
   PetscFunctionBegin;
   patch->currentPatch = i;
   ierr = PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
-  ierr = SNESSolve((SNES) patch->solver[i], x, y);CHKERRQ(ierr);
+  ierr = VecCopy(x, y);CHKERRQ(ierr);
+  ierr = SNESSolve((SNES) patch->solver[i], NULL, y);CHKERRQ(ierr); /* FIXME: RHS for FAS */
+  ierr = VecAXPY(y, -1.0, x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -191,9 +191,15 @@ static PetscErrorCode SNESView_Patch(SNES snes,PetscViewer viewer)
 
 static PetscErrorCode SNESSolve_Patch(SNES snes)
 {
+  SNES_Patch *patch = (SNES_Patch *) snes->data;
+  Vec x, y;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = SNESGetSolution(snes, &x);CHKERRQ(ierr);
+  ierr = SNESGetSolutionUpdate(snes, &y);CHKERRQ(ierr);
+  ierr = PCApply(patch->pc, x, y);
+  ierr = VecAXPY(x, 1.0, y);CHKERRQ(ierr); /* FIXME: line search */
   ierr = SNESSetConvergedReason(snes, SNES_CONVERGED_ITS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -208,7 +214,7 @@ static PetscErrorCode SNESPatchSetType_Patch(SNES snes, SNESCompositeType type)
 }
 
 /*MC
-  SNESPATCH - Build a preconditioner by composing together many nonlinear solvers on patches
+  SNESPATCH - Solve a nonlinear problem by composing together many nonlinear solvers on patches
 
   Options Database Keys:
 . -snes_patch_type <type: one of additive, multiplicative, symmetric_multiplicative> - Sets composition type
