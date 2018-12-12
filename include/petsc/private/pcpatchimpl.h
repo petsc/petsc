@@ -63,11 +63,11 @@ typedef struct {
   Mat                 *mat;                /* System matrix for each patch */
   Mat                 *matWithArtificial;   /* System matrix including dofs with artificial bcs for each patch */
   MatType              sub_mat_type;       /* Matrix type for patch systems */
-  Vec                 *patchX, *patchY;    /* RHS and solution for each patch */
+  Vec                 *patchRHS, *patchUpdate;  /* RHS and solution for each patch */
   IS                  *dofMappingWithoutToWithArtificial;
-  Vec                 *patchXWithArtificial;    /* like patchX but extra entries to include dofs with artificial bcs*/
+  Vec                 *patchRHSWithArtificial;    /* like patchRHS but extra entries to include dofs with artificial bcs*/
   Vec                 *patch_dof_weights;  /* Weighting for dof in each patch */
-  Vec                  localX, localY;     /* ??? */
+  Vec                  localRHS, localUpdate;     /* ??? */
   Vec                  dof_weights;        /* In how many patches does each dof lie? */
   PetscBool            symmetrise_sweep;   /* Should we sweep forwards->backwards, backwards->forwards? */
   PetscBool            optionsSet;         /* SetFromOptions was called on this PC */
@@ -92,6 +92,10 @@ typedef struct {
   PetscBool            viewMatrix;         /* View matrix for each patch */
   PetscViewer          viewerMatrix;       /*   Viewer for patch matrix */
   PetscViewerFormat    formatMatrix;       /*   Format for patch matrix */
+  /* Extra variables for SNESPATCH */
+  Vec                 *patchState;         /* State vectors for patch solvers */
+  Vec                  localState;         /* Scatter vector for state */
+  Vec                 *patchResidual;      /* Work vectors for patch residual evaluation*/
 } PC_PATCH;
 
 PETSC_EXTERN PetscLogEvent PC_Patch_CreatePatches;
@@ -103,5 +107,6 @@ PETSC_EXTERN PetscLogEvent PC_Patch_Prealloc;
 
 PETSC_EXTERN PetscErrorCode PCPatchComputeFunction_Internal(PC, Vec, Vec, PetscInt);
 PETSC_EXTERN PetscErrorCode PCPatchComputeOperator_Internal(PC, Vec, Mat, PetscInt, PetscBool);
+PETSC_EXTERN PetscErrorCode PCPatch_ScatterLocal_Private(PC, PetscInt, Vec, Vec, InsertMode, ScatterMode, PetscBool);
 
 #endif

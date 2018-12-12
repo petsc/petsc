@@ -3,6 +3,7 @@
 */
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 #include <petsc/private/pcpatchimpl.h> /* We need internal access to PCPatch right now, until that part is moved to Plex */
+#include <petscsf.h>
 
 typedef struct {
   PC pc; /* The linear patch preconditioner */
@@ -55,28 +56,46 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
       ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) snes);CHKERRQ(ierr);
       patch->solver[i] = (PetscObject) snes;
     }
+
+    ierr = PetscMalloc1(patch->npatch, &patch->patchResidual);CHKERRQ(ierr);
+    ierr = PetscMalloc1(patch->npatch, &patch->patchState);CHKERRQ(ierr);
+    for (i = 0; i < patch->npatch; ++i) {
+      ierr = VecDuplicate(patch->patchRHS[i], &patch->patchResidual[i]);CHKERRQ(ierr);
+      ierr = VecDuplicate(patch->patchUpdate[i], &patch->patchState[i]);CHKERRQ(ierr);
+    }
+    ierr = VecDuplicate(patch->localUpdate, &patch->localState);CHKERRQ(ierr);
   }
   for (i = 0; i < patch->npatch; ++i) {
     SNES snes = (SNES) patch->solver[i];
 
-    ierr = SNESSetFunction(snes, patch->patchX[i], SNESPatchComputeResidual_Private, pc);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes, patch->patchResidual[i], SNESPatchComputeResidual_Private, pc);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes, patch->mat[i], patch->mat[i], SNESPatchComputeJacobian_Private, pc);CHKERRQ(ierr);
   }
   if (!pc->setupcalled && patch->optionsSet) for (i = 0; i < patch->npatch; ++i) {ierr = SNESSetFromOptions((SNES) patch->solver[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec x, Vec y)
+static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec patchRHS, Vec patchUpdate)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
+  PetscInt       pStart;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   patch->currentPatch = i;
   ierr = PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
-  ierr = VecCopy(x, y);CHKERRQ(ierr);
-  ierr = SNESSolve((SNES) patch->solver[i], NULL, y);CHKERRQ(ierr); /* FIXME: RHS for FAS */
-  ierr = VecAXPY(y, -1.0, x);CHKERRQ(ierr);
+
+  /* Scatter the overlapped global state to our patch state vector */
+  ierr = PetscSectionGetChart(patch->gtolCounts, &pStart, NULL);CHKERRQ(ierr);
+  ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchState[i], INSERT_VALUES, SCATTER_FORWARD, PETSC_FALSE);CHKERRQ(ierr);
+
+  /* Set initial guess to be current state*/
+  ierr = VecCopy(patch->patchState[i], patchUpdate);CHKERRQ(ierr);
+  /* Solve for new state */
+  ierr = SNESSolve((SNES) patch->solver[i], patchRHS, patchUpdate);CHKERRQ(ierr);
+  /* To compute update, subtract off previous state */
+  ierr = VecAXPY(patchUpdate, -1.0, patch->patchState[i]);CHKERRQ(ierr);
+
   ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -88,9 +107,23 @@ static PetscErrorCode PCReset_PATCH_Nonlinear(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+
   if (patch->solver) {
     for (i = 0; i < patch->npatch; ++i) {ierr = SNESReset((SNES) patch->solver[i]);CHKERRQ(ierr);}
   }
+
+  if (patch->patchResidual) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchResidual[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(patch->patchResidual);CHKERRQ(ierr);
+  }
+
+  if (patch->patchState) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchState[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(patch->patchState);CHKERRQ(ierr);
+  }
+
+  ierr = VecDestroy(&patch->localState);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -192,14 +225,35 @@ static PetscErrorCode SNESView_Patch(SNES snes,PetscViewer viewer)
 static PetscErrorCode SNESSolve_Patch(SNES snes)
 {
   SNES_Patch *patch = (SNES_Patch *) snes->data;
-  Vec x, y;
+  PC_PATCH   *pcpatch = (PC_PATCH *) patch->pc->data;
+  Vec rhs, update, state;
+  const PetscScalar *globalState  = NULL;
+  PetscScalar       *localState   = NULL;
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESGetSolution(snes, &x);CHKERRQ(ierr);
-  ierr = SNESGetSolutionUpdate(snes, &y);CHKERRQ(ierr);
-  ierr = PCApply(patch->pc, x, y);
-  ierr = VecAXPY(x, 1.0, y);CHKERRQ(ierr); /* FIXME: line search */
+
+  ierr = SNESGetSolution(snes, &state);CHKERRQ(ierr);
+  ierr = SNESGetSolutionUpdate(snes, &update);CHKERRQ(ierr);
+  ierr = SNESGetRhs(snes, &rhs);CHKERRQ(ierr);
+
+  /* These happen in a loop */
+  {
+  /* Scatter state vector to overlapped vector on all patches.
+     The vector pcpatch->localState is scattered to each patch
+     in PCApply_PATCH_Nonlinear. */
+  ierr = VecGetArrayRead(state, &globalState);CHKERRQ(ierr);
+  ierr = VecGetArray(pcpatch->localState, &localState);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(pcpatch->defaultSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(pcpatch->defaultSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
+  ierr = VecRestoreArray(pcpatch->localState, &localState);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(state, &globalState);CHKERRQ(ierr);
+
+  ierr = PCApply(patch->pc, rhs, update);
+  ierr = VecAXPY(state, 1.0, update);CHKERRQ(ierr); /* FIXME: replace with line search */
+  }
+
   ierr = SNESSetConvergedReason(snes, SNES_CONVERGED_ITS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
