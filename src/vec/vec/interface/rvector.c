@@ -601,7 +601,9 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,3,y,1);
   VecCheckSameSize(x,1,y,3);
-  if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
+  if (x == y) {
+    SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
+  }
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   VecLocked(y,1);
 
