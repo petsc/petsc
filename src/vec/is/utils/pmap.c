@@ -278,7 +278,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlob
 
   PetscFunctionBegin;
   ierr = ISLocalToGlobalMappingGetBlockSize(ltog,&bs);CHKERRQ(ierr);
-  if (in->bs > 0 && in->bs != bs) SETERRQ2(in->comm,PETSC_ERR_PLIB,"Blocksize of layout %D must match that of mapping %D",in->bs,bs);
+  if (in->bs > 0 && (bs != 1) && in->bs != bs) SETERRQ2(in->comm,PETSC_ERR_PLIB,"Blocksize of layout %D must match that of mapping %D (or the latter must be 1)",in->bs,bs);
   ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&in->mapping);CHKERRQ(ierr);
   in->mapping = ltog;
