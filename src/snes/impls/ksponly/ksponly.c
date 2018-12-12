@@ -48,7 +48,6 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   SNESCheckKSPSolve(snes);
 
   ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
-  snes->linear_its += lits;
   ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
   snes->iter++;
 
