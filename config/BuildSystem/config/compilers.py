@@ -852,7 +852,7 @@ class Configure(config.base.Configure):
         # Check for full dylib library name
         m = re.match(r'^/.*\.dylib$', arg)
         if m:
-          if not arg.endwith('LTO.dylib') and not arg in lflags:
+          if not arg.endswith('LTO.dylib') and not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             flibs.append(arg)
