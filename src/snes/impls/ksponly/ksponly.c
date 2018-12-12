@@ -39,9 +39,8 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   snes->reason = SNES_CONVERGED_ITS;
   SNESCheckKSPSolve(snes);
 
-  ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
-  snes->linear_its += lits;
-  ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
+  ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
   snes->iter++;
 
   /* Take the computed step. */

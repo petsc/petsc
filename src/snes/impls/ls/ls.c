@@ -223,9 +223,8 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
     SNESCheckKSPSolve(snes);
-    ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
-    snes->linear_its += lits;
-    ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo) {
       ierr = SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y);CHKERRQ(ierr);
