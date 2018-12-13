@@ -879,10 +879,14 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name, 2);
-  PetscValidIntPointer(has, 3);
-  PetscValidIntPointer(otype, 4);
-  *has = PETSC_FALSE;
-  *otype = H5O_TYPE_UNKNOWN;
+  if (has) {
+    PetscValidIntPointer(has, 3);
+    *has = PETSC_FALSE;
+  }
+  if (otype) {
+    PetscValidIntPointer(otype, 4);
+    *otype = H5O_TYPE_UNKNOWN;
+  }
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
 
   /*
@@ -895,8 +899,8 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
   ierr = PetscStrToArray(name,'/',&n,&hierarchy);CHKERRQ(ierr);
   if (!n) {
     /*  Assume group "/" always exists in accordance with HDF5 >= 1.10.0. See H5Lexists() documentation. */
-    *has = PETSC_TRUE;
-    *otype = H5O_TYPE_GROUP;
+    if (has)   *has   = PETSC_TRUE;
+    if (otype) *otype = H5O_TYPE_GROUP;
     ierr = PetscStrToArrayDestroy(n,hierarchy);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -910,13 +914,13 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
   ierr = PetscStrToArrayDestroy(n,hierarchy);CHKERRQ(ierr);
 
   /* If the object exists, get its type */
-  if (exists) {
+  if (exists && otype) {
     H5O_info_t info;
 
-    *has = PETSC_TRUE;
     PetscStackCallHDF5(H5Oget_info_by_name,(h5, name, &info, H5P_DEFAULT));
     *otype = info.type;
   }
+  if (has) *has = exists;
   PetscFunctionReturn(0);
 }
 
