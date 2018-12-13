@@ -867,7 +867,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, const char name[], PetscBool *has, H5O_type_t *otype)
+static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, const char name[], PetscBool createGroup, PetscBool *has, H5O_type_t *otype)
 {
   hid_t          h5;
   htri_t         exists;
@@ -909,7 +909,14 @@ static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, cons
     ierr = PetscStrcat(buf,hierarchy[i]);CHKERRQ(ierr);
     PetscStackCallHDF5Return(exists,H5Lexists,(h5, buf, H5P_DEFAULT));
     if (exists) PetscStackCallHDF5Return(exists,H5Oexists_by_name,(h5, buf, H5P_DEFAULT));
-    if (!exists) break;
+    if (!exists) {
+      if (createGroup) {
+        hid_t group;
+        PetscStackCallHDF5Return(group,H5Gcreate2,(h5, buf, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+        PetscStackCallHDF5(H5Gclose,(group));
+        exists = PETSC_TRUE;
+      } else break;
+    }
   }
   ierr = PetscStrToArrayDestroy(n,hierarchy);CHKERRQ(ierr);
 
@@ -946,7 +953,7 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
   PetscFunctionBegin;
   *has = PETSC_FALSE;
   if (obj->name) {
-    ierr = PetscViewerHDF5HasObject_Internal(viewer, obj->name, has, &type);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5HasObject_Internal(viewer, obj->name, PETSC_FALSE, has, &type);CHKERRQ(ierr);
     *has = (type == H5O_TYPE_DATASET) ? PETSC_TRUE : PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -982,7 +989,7 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscValidPointer(has, 4);
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, &exists, &type);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, PETSC_FALSE, &exists, &type);CHKERRQ(ierr);
   if (!exists || type != H5O_TYPE_DATASET) PetscFunctionReturn(0);
   PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
   PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
