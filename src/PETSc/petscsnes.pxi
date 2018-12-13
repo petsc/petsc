@@ -130,7 +130,7 @@ cdef extern from * nogil:
 
     int SNESSetInitialGuess"SNESSetComputeInitialGuess"(PetscSNES,PetscSNESInitialGuessFunction,void*)
     int SNESSetFunction(PetscSNES,PetscVec,PetscSNESFunctionFunction,void*)
-    int SNESGetFunction(PetscSNES,PetscVec*,PetscSNESFunctionFunction*,void**)
+    int SNESGetFunction(PetscSNES,PetscVec*,void*,void**)
     int SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)
     int SNESSetJacobian(PetscSNES,PetscMat,PetscMat,PetscSNESJacobianFunction,void*)
     int SNESGetJacobian(PetscSNES,PetscMat*,PetscMat*,PetscSNESJacobianFunction*,void**)
