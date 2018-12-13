@@ -4,6 +4,7 @@
 #error "PETSc needs HDF5 version >= 1.8.0"
 #endif
 
+static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer, const char[], PetscBool, PetscBool*, H5O_type_t*);
 static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool*);
 
 typedef struct GroupList {
@@ -802,7 +803,8 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscValidPointer(name, 3);
   PetscValidPointer(value, 4);
 
-  ierr = PetscViewerHDF5HasAttribute(viewer, parent, name, &has);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, PETSC_TRUE, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, &has);CHKERRQ(ierr);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
   if (datatype == PETSC_STRING) {
     size_t len;
