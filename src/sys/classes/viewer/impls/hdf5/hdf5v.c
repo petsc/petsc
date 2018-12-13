@@ -4,6 +4,8 @@
 #error "PETSc needs HDF5 version >= 1.8.0"
 #endif
 
+static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool*);
+
 typedef struct GroupList {
   const char       *name;
   struct GroupList *next;
@@ -976,8 +978,6 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
 @*/
 PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
 {
-  hid_t          h5;
-  htri_t         hhas;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -986,9 +986,20 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscValidPointer(name, 3);
   PetscValidPointer(has, 4);
   *has = PETSC_FALSE;
-  ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, PETSC_FALSE, has, NULL);CHKERRQ(ierr);
   if (!*has) PetscFunctionReturn(0);
+  ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, has);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
+{
+  hid_t          h5;
+  htri_t         hhas;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   PetscStackCallHDF5Return(hhas,H5Aexists_by_name,(h5, parent, name, H5P_DEFAULT));
   *has = hhas ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
