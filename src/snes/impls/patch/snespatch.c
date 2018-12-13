@@ -50,9 +50,9 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
       ierr = SNESCreate(PETSC_COMM_SELF, &snes);CHKERRQ(ierr);
       ierr = SNESSetOptionsPrefix(snes, prefix);CHKERRQ(ierr);
       ierr = SNESAppendOptionsPrefix(snes, "sub_");CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) snes, (PetscObject) pc, 1);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject) snes, (PetscObject) pc, 2);CHKERRQ(ierr);
       ierr = SNESGetKSP(snes, &subksp);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) subksp, (PetscObject) pc, 1);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject) subksp, (PetscObject) pc, 2);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) snes);CHKERRQ(ierr);
       patch->solver[i] = (PetscObject) snes;
     }
