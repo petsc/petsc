@@ -96,6 +96,7 @@ typedef struct {
   Vec                 *patchState;         /* State vectors for patch solvers */
   Vec                  localState;         /* Scatter vector for state */
   Vec                 *patchResidual;      /* Work vectors for patch residual evaluation*/
+  const char          *classname;          /* "snes" or "pc" for options */
 } PC_PATCH;
 
 PETSC_EXTERN PetscLogEvent PC_Patch_CreatePatches;

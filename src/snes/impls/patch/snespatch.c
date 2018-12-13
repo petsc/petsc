@@ -288,6 +288,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_Patch    *patch;
+  PC_PATCH      *patchpc;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(snes, &patch);CHKERRQ(ierr);
@@ -306,10 +307,13 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   ierr = PCCreate(PetscObjectComm((PetscObject) snes), &patch->pc);CHKERRQ(ierr);
   ierr = PCSetType(patch->pc, PCPATCH);CHKERRQ(ierr);
 
-  ((PC_PATCH *) patch->pc->data)->setupsolver   = PCSetUp_PATCH_Nonlinear;
-  ((PC_PATCH *) patch->pc->data)->applysolver   = PCApply_PATCH_Nonlinear;
-  ((PC_PATCH *) patch->pc->data)->resetsolver   = PCReset_PATCH_Nonlinear;
-  ((PC_PATCH *) patch->pc->data)->destroysolver = PCDestroy_PATCH_Nonlinear;
+  patchpc = (PC_PATCH*) patch->pc->data;
+  patchpc->classname = "snes";
+
+  patchpc->setupsolver   = PCSetUp_PATCH_Nonlinear;
+  patchpc->applysolver   = PCApply_PATCH_Nonlinear;
+  patchpc->resetsolver   = PCReset_PATCH_Nonlinear;
+  patchpc->destroysolver = PCDestroy_PATCH_Nonlinear;
 
   ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESPatchSetType_C", SNESPatchSetType_Patch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
