@@ -1923,6 +1923,36 @@ static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, PetscInt pStart)
+{
+  PC_PATCH      *patch = (PC_PATCH *) pc->data;
+  Mat multMat;
+  PetscErrorCode ierr;
+
+  if (patch->save_operators) {
+    multMat = patch->matWithArtificial[i];
+  } else {
+    /*Very inefficient, hopefully we can just assemble the rectangular matrix in the first place.*/
+    Mat matSquare;
+    PetscInt dof;
+    IS rowis;
+    ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
+    ierr = PCPatchComputeOperator_Internal(pc, NULL, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &multMat); CHKERRQ(ierr);
+    ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
+    ierr = ISDestroy(&rowis); CHKERRQ(ierr);
+  }
+  ierr = MatMult(multMat, patch->patchUpdate[i], patch->patchRHSWithArtificial[i]); CHKERRQ(ierr);
+  ierr = VecScale(patch->patchRHSWithArtificial[i], -1.0); CHKERRQ(ierr);
+  ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchRHSWithArtificial[i], patch->localRHS, ADD_VALUES, SCATTER_REVERSE, PETSC_TRUE); CHKERRQ(ierr);
+  if (!patch->save_operators) {
+    ierr = MatDestroy(&multMat); CHKERRQ(ierr);
+  }
+}
+
 static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
 {
   PC_PATCH          *patch    = (PC_PATCH *) pc->data;
@@ -1974,29 +2004,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
       ierr = (*patch->applysolver)(pc, i, patch->patchRHS[i], patch->patchUpdate[i]);CHKERRQ(ierr);
       ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchUpdate[i], patch->localUpdate, ADD_VALUES, SCATTER_REVERSE, PETSC_FALSE);CHKERRQ(ierr);
       if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
-        Mat multMat;
-        if (patch->save_operators) {
-          multMat = patch->matWithArtificial[i];
-        } else {
-          /*Very inefficient, hopefully we can just assemble the rectangular matrix in the first place.*/
-          Mat matSquare;
-          PetscInt dof;
-          IS rowis;
-          ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
-          ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
-          ierr = PCPatchComputeOperator_Internal(pc, NULL, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
-          ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
-          ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
-          ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &multMat); CHKERRQ(ierr);
-          ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
-          ierr = ISDestroy(&rowis); CHKERRQ(ierr);
-        }
-        ierr = MatMult(multMat, patch->patchUpdate[i], patch->patchRHSWithArtificial[i]); CHKERRQ(ierr);
-        ierr = VecScale(patch->patchRHSWithArtificial[i], -1.0); CHKERRQ(ierr);
-        ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchRHSWithArtificial[i], patch->localRHS, ADD_VALUES, SCATTER_REVERSE, PETSC_TRUE); CHKERRQ(ierr);
-        if (!patch->save_operators) {
-          ierr = MatDestroy(&multMat); CHKERRQ(ierr);
-        }
+        ierr = (*patch->updatemultiplicative)(pc, i, pStart);CHKERRQ(ierr);
       }
     }
   }
@@ -2372,6 +2380,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->applysolver        = PCApply_PATCH_Linear;
   patch->resetsolver        = PCReset_PATCH_Linear;
   patch->destroysolver      = PCDestroy_PATCH_Linear;
+  patch->updatemultiplicative = PCUpdateMultiplicative_PATCH_Linear;
 
   pc->data                 = (void *) patch;
   pc->ops->apply           = PCApply_PATCH;

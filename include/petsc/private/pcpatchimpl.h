@@ -78,6 +78,7 @@ typedef struct {
   PetscErrorCode     (*applysolver)(PC, PetscInt, Vec, Vec);
   PetscErrorCode     (*resetsolver)(PC);
   PetscErrorCode     (*destroysolver)(PC);
+  PetscErrorCode     (*updatemultiplicative)(PC, PetscInt, PetscInt);
   /* Monitoring */
   PetscBool            viewPatches;        /* View information about patch construction */
   PetscBool            viewCells;          /* View cells for each patch */

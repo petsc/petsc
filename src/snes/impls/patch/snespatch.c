@@ -140,6 +140,14 @@ static PetscErrorCode PCDestroy_PATCH_Nonlinear(PC pc)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCUpdateMultiplicative_PATCH_Nonlinear(PC pc, PetscInt i, PetscInt pStart)
+{
+  PC_PATCH      *patch = (PC_PATCH *) pc->data;
+  PetscErrorCode ierr;
+
+  ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchUpdate[i], patch->localState, ADD_VALUES, SCATTER_REVERSE, PETSC_FALSE);CHKERRQ(ierr);
+}
+
 static PetscErrorCode SNESSetUp_Patch(SNES snes)
 {
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
@@ -295,6 +303,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   patchpc->applysolver   = PCApply_PATCH_Nonlinear;
   patchpc->resetsolver   = PCReset_PATCH_Nonlinear;
   patchpc->destroysolver = PCDestroy_PATCH_Nonlinear;
+  patchpc->updatemultiplicative = PCUpdateMultiplicative_PATCH_Nonlinear;
 
   PetscFunctionReturn(0);
 }
