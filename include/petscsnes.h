@@ -814,7 +814,6 @@ PETSC_EXTERN PetscErrorCode SNESCompositeGetSNES(SNES,PetscInt,SNES *);
 PETSC_EXTERN PetscErrorCode SNESCompositeGetNumber(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESCompositeSetDamping(SNES,PetscInt,PetscReal);
 
-PETSC_EXTERN PetscErrorCode SNESPatchSetType(SNES,SNESCompositeType);
 PETSC_EXTERN PetscErrorCode SNESPatchSetDiscretisationInfo(SNES,PetscInt,DM*,PetscInt*,PetscInt*,const PetscInt**,const PetscInt*,PetscInt,const PetscInt*,PetscInt,const PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESPatchSetComputeOperator(SNES, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, void *), void*);
 PETSC_EXTERN PetscErrorCode SNESPatchSetComputeFunction(SNES, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, void *), void*);

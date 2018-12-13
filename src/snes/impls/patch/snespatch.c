@@ -7,7 +7,6 @@
 
 typedef struct {
   PC pc; /* The linear patch preconditioner */
-  SNESCompositeType type;
 } SNES_Patch;
 
 static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, void *ctx)
@@ -194,11 +193,6 @@ static PetscErrorCode SNESSetFromOptions_Patch(PetscOptionItems *PetscOptionsObj
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject, "Patch nonlinear preconditioner options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-snes_patch_type", "Type of composition", "SNESPatchSetType", SNESCompositeTypes, (PetscEnum) patch->type, (PetscEnum *) &patch->type, &flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESPatchSetType(snes, patch->type);CHKERRQ(ierr);}
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-
   ierr = PetscObjectGetOptionsPrefix((PetscObject)snes, &prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)patch->pc, prefix);CHKERRQ(ierr);
   ierr = PCSetFromOptions(patch->pc);CHKERRQ(ierr);
@@ -214,7 +208,7 @@ static PetscErrorCode SNESView_Patch(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  type - %s\n",SNESCompositeTypes[patch->type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"SNESPATCH\n");CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PCView(patch->pc, viewer);CHKERRQ(ierr);
@@ -258,20 +252,8 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESPatchSetType_Patch(SNES snes, SNESCompositeType type)
-{
-  SNES_Patch *patch = (SNES_Patch *) snes->data;
-
-  PetscFunctionBegin;
-  patch->type = type;
-  PetscFunctionReturn(0);
-}
-
 /*MC
   SNESPATCH - Solve a nonlinear problem by composing together many nonlinear solvers on patches
-
-  Options Database Keys:
-. -snes_patch_type <type: one of additive, multiplicative, symmetric_multiplicative> - Sets composition type
 
   Level: intermediate
 
@@ -303,7 +285,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
   snes->data = (void *) patch;
-  patch->type = SNES_COMPOSITE_ADDITIVE;
   ierr = PCCreate(PetscObjectComm((PetscObject) snes), &patch->pc);CHKERRQ(ierr);
   ierr = PCSetType(patch->pc, PCPATCH);CHKERRQ(ierr);
 
@@ -315,34 +296,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   patchpc->resetsolver   = PCReset_PATCH_Nonlinear;
   patchpc->destroysolver = PCDestroy_PATCH_Nonlinear;
 
-  ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESPatchSetType_C", SNESPatchSetType_Patch);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  SNESPatchSetType - Sets the type of composition.
-
-  Logically Collective on SNES
-
-  Input Parameter:
-+ snes - the preconditioner context
-- type - SNES_COMPOSITE_ADDITIVE (default), SNES_COMPOSITE_MULTIPLICATIVE, etc.
-
-  Options Database Key:
-. -snes_composite_type <type: one of additive, multiplicative, etc> - Sets composite preconditioner type
-
-  Level: Developer
-
-.keywords: SNES, set, type, composite preconditioner, additive, multiplicative
-@*/
-PetscErrorCode SNESPatchSetType(SNES snes, SNESCompositeType type)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidLogicalCollectiveEnum(snes,type, 2);
-  ierr = PetscTryMethod(snes, "SNESPatchSetType_C", (SNES,SNESCompositeType), (snes,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
