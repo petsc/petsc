@@ -272,10 +272,12 @@ cdef class SNES(Object):
 
     def getFunction(self):
         cdef Vec f = Vec()
-        CHKERR( SNESGetFunction(self.snes, &f.vec, NULL, NULL) )
+        cdef void* ctx
+        CHKERR( SNESGetFunction(self.snes, &f.vec, NULL, &ctx) )
         PetscINCREF(f.obj)
-        cdef object function = self.get_attr('__function__')
-        return (f, function)
+        cdef object context = <object>ctx
+        assert context is not None and type(context) is tuple # sanity check
+        return (f, context)
 
     def setUpdate(self, update, args=None, kargs=None):
         if update is not None:
