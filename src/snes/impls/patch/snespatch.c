@@ -228,10 +228,12 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
 {
   SNES_Patch *patch = (SNES_Patch *) snes->data;
   PC_PATCH   *pcpatch = (PC_PATCH *) patch->pc->data;
-  Vec rhs, update, state;
+  SNESLineSearch ls;
+  Vec rhs, update, state, residual;
   const PetscScalar *globalState  = NULL;
   PetscScalar       *localState   = NULL;
-
+  PetscInt its = 0;
+  PetscReal xnorm = 0.0, ynorm = 0.0, fnorm = 0.0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -240,23 +242,62 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
   ierr = SNESGetSolutionUpdate(snes, &update);CHKERRQ(ierr);
   ierr = SNESGetRhs(snes, &rhs);CHKERRQ(ierr);
 
-  /* These happen in a loop */
-  {
-  /* Scatter state vector to overlapped vector on all patches.
-     The vector pcpatch->localState is scattered to each patch
-     in PCApply_PATCH_Nonlinear. */
-  ierr = VecGetArrayRead(state, &globalState);CHKERRQ(ierr);
-  ierr = VecGetArray(pcpatch->localState, &localState);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(pcpatch->defaultSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(pcpatch->defaultSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
-  ierr = VecRestoreArray(pcpatch->localState, &localState);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(state, &globalState);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes, &residual, NULL, NULL);CHKERRQ(ierr);
+  ierr = SNESGetLineSearch(snes, &ls);CHKERRQ(ierr);
 
-  ierr = PCApply(patch->pc, rhs, update);
-  ierr = VecAXPY(state, 1.0, update);CHKERRQ(ierr); /* FIXME: replace with line search */
+  ierr = SNESSetConvergedReason(snes, SNES_CONVERGED_ITERATING);CHKERRQ(ierr);
+  ierr = VecSet(update, 0.0);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes, state, residual);CHKERRQ(ierr);
+
+  ierr = VecNorm(state, NORM_2, &xnorm);CHKERRQ(ierr);
+  ierr = VecNorm(residual, NORM_2, &fnorm);CHKERRQ(ierr);
+  snes->ttol = fnorm*snes->rtol;
+
+  if (snes->ops->converged) {
+    ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  } else {
+    ierr = SNESConvergedSkip(snes,its,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);
+  }
+  ierr = SNESLogConvergenceHistory(snes, fnorm, 0);CHKERRQ(ierr); /* should we count lits from the patches? */
+  ierr = SNESMonitor(snes, its, fnorm);CHKERRQ(ierr);
+
+  /* The main solver loop */
+  for (its = 0; its < snes->max_its; its++) {
+
+    ierr = SNESSetIterationNumber(snes, its);CHKERRQ(ierr);
+
+    /* Scatter state vector to overlapped vector on all patches.
+       The vector pcpatch->localState is scattered to each patch
+       in PCApply_PATCH_Nonlinear. */
+    ierr = VecGetArrayRead(state, &globalState);CHKERRQ(ierr);
+    ierr = VecGetArray(pcpatch->localState, &localState);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(pcpatch->defaultSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(pcpatch->defaultSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
+    ierr = VecRestoreArray(pcpatch->localState, &localState);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(state, &globalState);CHKERRQ(ierr);
+
+    /* The looping over patches happens here */
+    ierr = PCApply(patch->pc, rhs, update);
+
+    /* Apply a line search. This will often be basic with
+       damping = 1/(max number of patches a dof can be in),
+       but not always */
+    ierr = VecScale(update, -1.0);CHKERRQ(ierr);
+    ierr = SNESLineSearchApply(ls, state, residual, &fnorm, update);CHKERRQ(ierr);
+
+    ierr = VecNorm(state, NORM_2, &xnorm);CHKERRQ(ierr);
+    ierr = VecNorm(update, NORM_2, &ynorm);CHKERRQ(ierr);
+
+    if (snes->ops->converged) {
+      ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    } else {
+      ierr = SNESConvergedSkip(snes,its,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);
+    }
+    ierr = SNESLogConvergenceHistory(snes, fnorm, 0);CHKERRQ(ierr); /* FIXME: should we count lits? */
+    ierr = SNESMonitor(snes, its, fnorm);CHKERRQ(ierr);
   }
 
-  ierr = SNESSetConvergedReason(snes, SNES_CONVERGED_ITS);CHKERRQ(ierr);
+  if (its == snes->max_its) { ierr = SNESSetConvergedReason(snes, SNES_DIVERGED_MAX_IT);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
