@@ -871,10 +871,27 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t h5, const char name[], PetscBool createGroup, PetscBool *exists_)
+{
+  htri_t exists;
+  hid_t group;
+
+  PetscFunctionBegin;
+  PetscStackCallHDF5Return(exists,H5Lexists,(h5, name, H5P_DEFAULT));
+  if (exists) PetscStackCallHDF5Return(exists,H5Oexists_by_name,(h5, name, H5P_DEFAULT));
+  if (!exists && createGroup) {
+    PetscStackCallHDF5Return(group,H5Gcreate2,(h5, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+    PetscStackCallHDF5(H5Gclose,(group));
+    exists = PETSC_TRUE;
+  }
+  *exists_ = (PetscBool) exists;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const char name[], PetscBool createGroup, PetscBool *has, H5O_type_t *otype)
 {
   hid_t          h5;
-  htri_t         exists;
+  PetscBool      exists;
   PetscInt       i,n;
   char           **hierarchy;
   char           buf[PETSC_MAX_PATH_LEN]="";
@@ -911,16 +928,8 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   for (i=0; i<n; i++) {
     ierr = PetscStrcat(buf,"/");CHKERRQ(ierr);
     ierr = PetscStrcat(buf,hierarchy[i]);CHKERRQ(ierr);
-    PetscStackCallHDF5Return(exists,H5Lexists,(h5, buf, H5P_DEFAULT));
-    if (exists) PetscStackCallHDF5Return(exists,H5Oexists_by_name,(h5, buf, H5P_DEFAULT));
-    if (!exists) {
-      if (createGroup) {
-        hid_t group;
-        PetscStackCallHDF5Return(group,H5Gcreate2,(h5, buf, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-        PetscStackCallHDF5(H5Gclose,(group));
-        exists = PETSC_TRUE;
-      } else break;
-    }
+    ierr = PetscViewerHDF5Traverse_Inner_Internal(h5, buf, createGroup, &exists);CHKERRQ(ierr);
+    if (!exists) break;
   }
   ierr = PetscStrToArrayDestroy(n,hierarchy);CHKERRQ(ierr);
 
