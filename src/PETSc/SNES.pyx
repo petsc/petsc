@@ -401,15 +401,19 @@ cdef class SNES(Object):
         return normsched
 
     def setConvergenceTest(self, converged, args=None, kargs=None):
-        if converged is not None:
+        if converged == "skip":
+            self.set_attr('__converged__', None)
+            CHKERR( SNESSetConvergenceTest(self.snes, SNESConvergedSkip, NULL, NULL) )
+        elif converged is None or converged == "default":
+            self.set_attr('__converged__', None)
+            CHKERR( SNESSetConvergenceTest(self.snes, SNESConvergedDefault, NULL, NULL) )
+        else:
+            assert callable(converged)
             if args  is None: args  = ()
             if kargs is None: kargs = {}
             context = (converged, args, kargs)
             self.set_attr('__converged__', context)
             CHKERR( SNESSetConvergenceTest(self.snes, SNES_Converged, <void*>context, NULL) )
-        else:
-            CHKERR( SNESSetConvergenceTest(self.snes, SNESConvergedDefault, NULL, NULL) )
-            self.set_attr('__converged__', None)
 
     def getConvergenceTest(self):
         return self.get_attr('__converged__')
