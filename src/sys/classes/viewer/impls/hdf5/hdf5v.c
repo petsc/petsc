@@ -936,6 +936,37 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
 }
 
 /*@
+ PetscViewerHDF5HasGroup - Check whether the current (pushed) group exists in the HDF5 file
+
+  Input Parameters:
+. viewer - The HDF5 viewer
+
+  Output Parameter:
+. has    - Flag for group existence
+
+  Notes:
+  If the path exists but is not a group, this returns PETSC_FALSE as well.
+
+  Level: advanced
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5OpenGroup()
+@*/
+PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, PetscBool *has)
+{
+  H5O_type_t type;
+  const char *name;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidIntPointer(has,2);
+  ierr = PetscViewerHDF5GetGroup(viewer, &name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, name, PETSC_FALSE, has, &type);CHKERRQ(ierr);
+  *has = (type == H5O_TYPE_GROUP) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
  PetscViewerHDF5HasObject - Check whether a dataset with the same name as given object exists in the HDF5 file
 
   Input Parameters:
