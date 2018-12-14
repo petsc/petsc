@@ -1320,14 +1320,15 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
 
 static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
 {
-  PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
-  PetscErrorCode    ierr;
-  PC_FieldSplitLink ilinkA = jac->head,ilinkD = ilinkA->next;
-  KSP               ksp = ilinkA->ksp;
-  Vec               u,v,Hu,d,work1,work2;
-  PetscScalar       alpha,z,nrmz2,*vecz;
-  PetscReal         lowbnd,nu,beta;
-  PetscInt          j,iterGKB;
+  PC_FieldSplit      *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode     ierr;
+  PC_FieldSplitLink  ilinkA = jac->head,ilinkD = ilinkA->next;
+  KSP                ksp = ilinkA->ksp;
+  Vec                u,v,Hu,d,work1,work2;
+  PetscScalar        alpha,z,nrmz2,*vecz;
+  PetscReal          lowbnd,nu,beta;
+  PetscInt           j,iterGKB;
+  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1358,6 +1359,8 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   /* Transform rhs from [q,tilde{b}] to [0,b] */
   ierr = PetscLogEventBegin(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+  if(reason < 0 && reason != KSP_DIVERGED_ITS) pc->failedreason = PC_SUBPC_ERROR;
   ierr = PetscLogEventEnd(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
   ierr = MatMultHermitianTranspose(jac->B,ilinkA->y,work1);CHKERRQ(ierr);
   ierr = VecAXPBY(work1,1.0/nu,-1.0,ilinkD->x);CHKERRQ(ierr);            /* c = b - B'*x        */
@@ -1370,6 +1373,8 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                       /* u = H^{-1}*B*v      */
   ierr  = PetscLogEventBegin(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
   ierr  = KSPSolve(ksp,work2,u);CHKERRQ(ierr);
+  ierr  = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+  if(reason < 0 && reason != KSP_DIVERGED_ITS) pc->failedreason = PC_SUBPC_ERROR;
   ierr  = PetscLogEventEnd(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
   ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                          /* alpha = u'*H*u      */
   ierr  = VecDot(Hu,u,&alpha);CHKERRQ(ierr);
@@ -1404,6 +1409,8 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     ierr  = VecAXPY(work2,-beta,Hu);CHKERRQ(ierr);
     ierr  = PetscLogEventBegin(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
     ierr  = KSPSolve(ksp,work2,u);CHKERRQ(ierr);
+    ierr  = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+    if(reason < 0 && reason != KSP_DIVERGED_ITS) pc->failedreason = PC_SUBPC_ERROR;
     ierr  = PetscLogEventEnd(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
     ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                      /* alpha = u'*H*u            */
     ierr  = VecDot(Hu,u,&alpha);CHKERRQ(ierr);
