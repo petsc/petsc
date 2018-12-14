@@ -799,8 +799,8 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(parent, 2);
-  PetscValidPointer(name, 3);
+  PetscValidCharPointer(parent, 2);
+  PetscValidCharPointer(name, 3);
   PetscValidPointer(value, 4);
 
   ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_TRUE, NULL, NULL);CHKERRQ(ierr);
@@ -850,8 +850,8 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(parent, 2);
-  PetscValidPointer(name, 3);
+  PetscValidCharPointer(parent, 2);
+  PetscValidCharPointer(name, 3);
   PetscValidPointer(value, 4);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
@@ -955,6 +955,9 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidHeader(obj,2);
+  PetscValidIntPointer(has,3);
   *has = PETSC_FALSE;
   if (obj->name) {
     ierr = PetscViewerHDF5Traverse_Internal(viewer, obj->name, PETSC_FALSE, has, &type);CHKERRQ(ierr);
@@ -984,9 +987,9 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(parent, 2);
-  PetscValidPointer(name, 3);
-  PetscValidPointer(has, 4);
+  PetscValidCharPointer(parent,2);
+  PetscValidCharPointer(name,3);
+  PetscValidIntPointer(has,4);
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_FALSE, has, NULL);CHKERRQ(ierr);
   if (!*has) PetscFunctionReturn(0);
