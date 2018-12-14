@@ -4,7 +4,7 @@
 #error "PETSc needs HDF5 version >= 1.8.0"
 #endif
 
-static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer, const char[], PetscBool, PetscBool*, H5O_type_t*);
+static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer, const char[], PetscBool, PetscBool*, H5O_type_t*);
 static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool*);
 
 typedef struct GroupList {
@@ -803,7 +803,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscValidPointer(name, 3);
   PetscValidPointer(value, 4);
 
-  ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, PETSC_TRUE, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_TRUE, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, &has);CHKERRQ(ierr);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
   if (datatype == PETSC_STRING) {
@@ -871,7 +871,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5HasObject_Internal(PetscViewer viewer, const char name[], PetscBool createGroup, PetscBool *has, H5O_type_t *otype)
+static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const char name[], PetscBool createGroup, PetscBool *has, H5O_type_t *otype)
 {
   hid_t          h5;
   htri_t         exists;
@@ -957,7 +957,7 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
   PetscFunctionBegin;
   *has = PETSC_FALSE;
   if (obj->name) {
-    ierr = PetscViewerHDF5HasObject_Internal(viewer, obj->name, PETSC_FALSE, has, &type);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5Traverse_Internal(viewer, obj->name, PETSC_FALSE, has, &type);CHKERRQ(ierr);
     *has = (type == H5O_TYPE_DATASET) ? PETSC_TRUE : PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -988,7 +988,7 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscValidPointer(name, 3);
   PetscValidPointer(has, 4);
   *has = PETSC_FALSE;
-  ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, PETSC_FALSE, has, NULL);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_FALSE, has, NULL);CHKERRQ(ierr);
   if (!*has) PetscFunctionReturn(0);
   ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, has);CHKERRQ(ierr);
   PetscFunctionReturn(0);
