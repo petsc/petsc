@@ -52,7 +52,7 @@ typedef struct {
   /* Patch system assembly */
   PetscErrorCode     (*usercomputeop)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, void *);
   void                *usercomputeopctx;
-  PetscErrorCode     (*usercomputef)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, void *);
+  PetscErrorCode     (*usercomputef)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
   void                *usercomputefctx;
   IS                   cellIS;             /* Temporary IS for each cell patch */
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
@@ -95,6 +95,7 @@ typedef struct {
   PetscViewerFormat    formatMatrix;       /*   Format for patch matrix */
   /* Extra variables for SNESPATCH */
   Vec                 *patchState;         /* State vectors for patch solvers */
+  Vec                 *patchStateWithArtificial; /* State vectors for patch solvers with boundary data */
   Vec                  localState;         /* Scatter vector for state */
   Vec                 *patchResidual;      /* Work vectors for patch residual evaluation*/
   const char          *classname;          /* "snes" or "pc" for options */

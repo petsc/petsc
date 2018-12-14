@@ -13,10 +13,31 @@ static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, 
 {
   PC             pc      = (PC) ctx;
   PC_PATCH      *pcpatch = (PC_PATCH *) pc->data;
+  PetscInt       pt, size;
+  const PetscInt *indices;
+  const PetscScalar *X;
+  PetscScalar   *XWithArtificial;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCPatchComputeFunction_Internal(pc, x, F, pcpatch->currentPatch);CHKERRQ(ierr);
+
+  /* scatter from x to patch->patchStateWithArtificial[pt] */
+  pt = pcpatch->currentPatch;
+  ierr = ISGetSize(pcpatch->dofMappingWithoutToWithArtificial[pt], &size);CHKERRQ(ierr);
+
+  ierr = ISGetIndices(pcpatch->dofMappingWithoutToWithArtificial[pt], &indices);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x, &X);CHKERRQ(ierr);
+  ierr = VecGetArray(pcpatch->patchStateWithArtificial[pt], &XWithArtificial);CHKERRQ(ierr);
+
+  for (PetscInt i = 0; i < size; ++i) {
+    XWithArtificial[indices[i]] = X[i];
+  }
+
+  ierr = VecRestoreArray(pcpatch->patchStateWithArtificial[pt], &XWithArtificial);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x, &X);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(pcpatch->dofMappingWithoutToWithArtificial[pt], &indices);CHKERRQ(ierr);
+
+  ierr = PCPatchComputeFunction_Internal(pc, pcpatch->patchStateWithArtificial[pt], F, pt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -35,13 +56,14 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
   const char    *prefix;
-  PetscInt       i;
+  PetscInt       i, pStart, dof;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     ierr = PetscMalloc1(patch->npatch, &patch->solver);CHKERRQ(ierr);
     ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(patch->gtolCounts, &pStart, NULL);CHKERRQ(ierr);
     for (i = 0; i < patch->npatch; ++i) {
       SNES snes;
       KSP  subksp;
@@ -58,9 +80,14 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
 
     ierr = PetscMalloc1(patch->npatch, &patch->patchResidual);CHKERRQ(ierr);
     ierr = PetscMalloc1(patch->npatch, &patch->patchState);CHKERRQ(ierr);
+    ierr = PetscMalloc1(patch->npatch, &patch->patchStateWithArtificial);CHKERRQ(ierr);
     for (i = 0; i < patch->npatch; ++i) {
       ierr = VecDuplicate(patch->patchRHS[i], &patch->patchResidual[i]);CHKERRQ(ierr);
       ierr = VecDuplicate(patch->patchUpdate[i], &patch->patchState[i]);CHKERRQ(ierr);
+
+      ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, i+pStart, &dof);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchStateWithArtificial[i]);CHKERRQ(ierr);
+      ierr = VecSetUp(patch->patchStateWithArtificial[i]);CHKERRQ(ierr);
     }
     ierr = VecDuplicate(patch->localUpdate, &patch->localState);CHKERRQ(ierr);
   }
@@ -87,6 +114,7 @@ static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec patchRHS, V
   /* Scatter the overlapped global state to our patch state vector */
   ierr = PetscSectionGetChart(patch->gtolCounts, &pStart, NULL);CHKERRQ(ierr);
   ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchState[i], INSERT_VALUES, SCATTER_FORWARD, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchStateWithArtificial[i], INSERT_VALUES, SCATTER_FORWARD, PETSC_TRUE);CHKERRQ(ierr);
 
   /* Set initial guess to be current state*/
   ierr = VecCopy(patch->patchState[i], patchUpdate);CHKERRQ(ierr);
@@ -119,6 +147,11 @@ static PetscErrorCode PCReset_PATCH_Nonlinear(PC pc)
   if (patch->patchState) {
     for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchState[i]);CHKERRQ(ierr);}
     ierr = PetscFree(patch->patchState);CHKERRQ(ierr);
+  }
+
+  if (patch->patchStateWithArtificial) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchStateWithArtificial[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(patch->patchStateWithArtificial);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&patch->localState);CHKERRQ(ierr);
@@ -374,7 +407,7 @@ PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, void *), void *ctx)
+PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
 {
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
   PetscErrorCode ierr;
