@@ -250,6 +250,7 @@ cdef extern from * nogil:
                                                 PetscIS,
                                                 PetscInt,
                                                 const_PetscInt*,
+                                                const_PetscInt*,
                                                 void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscPCPatchComputeFunction)(PetscPC,
                                                 PetscInt,
@@ -295,6 +296,7 @@ cdef int PCPatch_ComputeOperator(
     PetscIS cells,
     PetscInt ndof,
     const_PetscInt *dofmap,
+    const_PetscInt *dofmapWithArtificial,
     void *ctx) except PETSC_ERR_PYTHON with gil:
     cdef Vec Vec = ref_Vec(vec)
     cdef Mat Mat = ref_Mat(mat)
@@ -305,7 +307,13 @@ cdef int PCPatch_ComputeOperator(
     assert context is not None and type(context) is tuple
     (op, args, kargs) = context
     cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
-    op(Pc, toInt(point), Vec, Mat, Is, asarray(pydofs), *args, **kargs)
+    cdef PetscInt[:] pydofsWithArtificial
+    if dofmapWithArtificial != NULL:
+        pydofsWithArtificial = <PetscInt[:ndof]>dofmapWithArtificial
+        artifical = asarray(pydofsWithArtificial)
+    else:
+        artifical = None
+    op(Pc, toInt(point), Vec, Mat, Is, asarray(pydofs), artifical, *args, **kargs)
     return 0
 
 cdef int PCPatch_ComputeFunction(
