@@ -5726,7 +5726,7 @@ PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, Petsc
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabeGetNumValues(), DMSetLabelValue()
+.seealso: DMLabelGetNumValues(), DMSetLabelValue()
 @*/
 PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
 {
