@@ -99,6 +99,7 @@ typedef struct {
   Vec                  localState;         /* Scatter vector for state */
   Vec                 *patchResidual;      /* Work vectors for patch residual evaluation*/
   const char          *classname;          /* "snes" or "pc" for options */
+  PetscBool            isNonlinear;        /* we need to do some things differently in nonlinear mode */
 } PC_PATCH;
 
 PETSC_EXTERN PetscLogEvent PC_Patch_CreatePatches;

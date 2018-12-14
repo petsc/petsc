@@ -393,6 +393,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
 
   patchpc = (PC_PATCH*) patch->pc->data;
   patchpc->classname = "snes";
+  patchpc->isNonlinear = PETSC_TRUE;
 
   patchpc->setupsolver   = PCSetUp_PATCH_Nonlinear;
   patchpc->applysolver   = PCApply_PATCH_Nonlinear;

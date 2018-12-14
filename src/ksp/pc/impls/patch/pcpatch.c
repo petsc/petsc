@@ -926,7 +926,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   ierr = PetscSectionSetChart(gtolCounts, vStart, vEnd);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) patch->gtolCounts, "Patch Global Index Section");CHKERRQ(ierr);
 
-  ierr = PetscStrncmp(patch->classname, "snes", sizeof("snes"), &isNonlinear);
+  isNonlinear = patch->isNonlinear;
   if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE || isNonlinear)
   {
     ierr = PetscMalloc1(numPoints*Nf, &offsArrayWithArtificial);CHKERRQ(ierr);
@@ -1549,7 +1549,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
-  ierr = PetscStrncmp(patch->classname, "snes", sizeof("snes"), &isNonlinear);
+  isNonlinear = patch->isNonlinear;
   if (!patch->usercomputeop) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback\n");
   if(withArtificial) {
     ierr = ISGetIndices(patch->dofsWithArtificial, &dofsArray);CHKERRQ(ierr);
@@ -1719,7 +1719,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
     ierr = PetscLogEventBegin(PC_Patch_CreatePatches, pc, 0, 0, 0);CHKERRQ(ierr);
 
-    ierr = PetscStrncmp(patch->classname, "snes", sizeof("snes"), &isNonlinear);
+    isNonlinear = patch->isNonlinear;
     if (!patch->nsubspaces) {
       DM           dm;
       PetscDS      prob;
@@ -2377,6 +2377,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   PetscHSetICreate(&patch->subspaces_to_exclude);
 
   patch->classname = "pc";
+  patch->isNonlinear = PETSC_FALSE;
 
   /* Set some defaults */
   patch->combined           = PETSC_FALSE;
