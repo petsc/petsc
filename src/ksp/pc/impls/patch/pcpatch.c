@@ -534,7 +534,7 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, Petsc
 
 .seealso: PCPatchGetComputeOperator(), PCPatchSetComputeFunction(), PCPatchSetDiscretisationInfo()
 @*/
-PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, void *), void *ctx)
+PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
 {
   PC_PATCH *patch = (PC_PATCH *) pc->data;
 
@@ -1501,7 +1501,7 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patchNum, Vec x, Mat J, IS cellIS, PetscInt n, const PetscInt *l2p, void *ctx)
+static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patchNum, Vec x, Mat J, IS cellIS, PetscInt n, const PetscInt *l2p, const PetscInt *l2pWithArtificial, void *ctx)
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   DM              dm;
@@ -1541,17 +1541,23 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   const PetscInt *dofsArray;
+  const PetscInt *dofsArrayWithArtificial = NULL;
   const PetscInt *cellsArray;
   PetscInt        ncell, offset, pStart, pEnd;
+  PetscBool       isNonlinear;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
+  ierr = PetscStrncmp(patch->classname, "snes", sizeof("snes"), &isNonlinear);
   if (!patch->usercomputeop) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback\n");
   if(withArtificial) {
     ierr = ISGetIndices(patch->dofsWithArtificial, &dofsArray);CHKERRQ(ierr);
   } else {
     ierr = ISGetIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
+  }
+  if (isNonlinear) {
+    ierr = ISGetIndices(patch->dofsWithArtificial, &dofsArrayWithArtificial);CHKERRQ(ierr);
   }
   ierr = ISGetIndices(patch->cells, &cellsArray);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(patch->cellCounts, &pStart, &pEnd);CHKERRQ(ierr);
@@ -1568,14 +1574,16 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   PetscStackPush("PCPatch user callback");
   /* Cannot reuse the same IS because the geometry info is being cached in it */
   ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
-  ierr = patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, patch->usercomputeopctx);CHKERRQ(ierr);
+  ierr = patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, dofsArrayWithArtificial ? dofsArrayWithArtificial + offset*patch->totalDofsPerCell : NULL, patch->usercomputeopctx);CHKERRQ(ierr);
   PetscStackPop;
   ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
-  if(withArtificial)
-  {
+  if(withArtificial) {
     ierr = ISRestoreIndices(patch->dofsWithArtificial, &dofsArray);CHKERRQ(ierr);
   } else {
     ierr = ISRestoreIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
+  }
+  if (isNonlinear) {
+    ierr = ISRestoreIndices(patch->dofsWithArtificial, &dofsArrayWithArtificial);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(patch->cells, &cellsArray);CHKERRQ(ierr);
   if (patch->viewMatrix) {
@@ -1942,6 +1950,8 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, Pet
   Mat multMat;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+
   if (patch->save_operators) {
     multMat = patch->matWithArtificial[i];
   } else {
@@ -1964,6 +1974,7 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, Pet
   if (!patch->save_operators) {
     ierr = MatDestroy(&multMat); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)

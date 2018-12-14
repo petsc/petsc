@@ -50,7 +50,7 @@ typedef struct {
   PetscInt             vankadim;           /* In Vanka construction, should we eliminate any entities of a certain dimension on the initial patch? */
   PetscInt             ignoredim;          /* In Vanka construction, should we eliminate any entities of a certain dimension on the boundary? */
   /* Patch system assembly */
-  PetscErrorCode     (*usercomputeop)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, void *);
+  PetscErrorCode     (*usercomputeop)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
   void                *usercomputeopctx;
   PetscErrorCode     (*usercomputef)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
   void                *usercomputefctx;
