@@ -16,28 +16,28 @@ static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, 
   PetscInt       pt, size;
   const PetscInt *indices;
   const PetscScalar *X;
-  PetscScalar   *XWithArtificial;
+  PetscScalar   *XWithAll;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
-  /* scatter from x to patch->patchStateWithArtificial[pt] */
+  /* scatter from x to patch->patchStateWithAll[pt] */
   pt = pcpatch->currentPatch;
-  ierr = ISGetSize(pcpatch->dofMappingWithoutToWithArtificial[pt], &size);CHKERRQ(ierr);
+  ierr = ISGetSize(pcpatch->dofMappingWithoutToWithAll[pt], &size);CHKERRQ(ierr);
 
-  ierr = ISGetIndices(pcpatch->dofMappingWithoutToWithArtificial[pt], &indices);CHKERRQ(ierr);
+  ierr = ISGetIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices);CHKERRQ(ierr);
   ierr = VecGetArrayRead(x, &X);CHKERRQ(ierr);
-  ierr = VecGetArray(pcpatch->patchStateWithArtificial[pt], &XWithArtificial);CHKERRQ(ierr);
+  ierr = VecGetArray(pcpatch->patchStateWithAll[pt], &XWithAll);CHKERRQ(ierr);
 
   for (PetscInt i = 0; i < size; ++i) {
-    XWithArtificial[indices[i]] = X[i];
+    XWithAll[indices[i]] = X[i];
   }
 
-  ierr = VecRestoreArray(pcpatch->patchStateWithArtificial[pt], &XWithArtificial);CHKERRQ(ierr);
+  ierr = VecRestoreArray(pcpatch->patchStateWithAll[pt], &XWithAll);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x, &X);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(pcpatch->dofMappingWithoutToWithArtificial[pt], &indices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices);CHKERRQ(ierr);
 
-  ierr = PCPatchComputeFunction_Internal(pc, pcpatch->patchStateWithArtificial[pt], F, pt);CHKERRQ(ierr);
+  ierr = PCPatchComputeFunction_Internal(pc, pcpatch->patchStateWithAll[pt], F, pt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -48,27 +48,27 @@ static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, 
   PetscInt       pt, size;
   const PetscInt *indices;
   const PetscScalar *X;
-  PetscScalar   *XWithArtificial;
+  PetscScalar   *XWithAll;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* scatter from x to patch->patchStateWithArtificial[pt] */
+  /* scatter from x to patch->patchStateWithAll[pt] */
   pt = pcpatch->currentPatch;
-  ierr = ISGetSize(pcpatch->dofMappingWithoutToWithArtificial[pt], &size);CHKERRQ(ierr);
+  ierr = ISGetSize(pcpatch->dofMappingWithoutToWithAll[pt], &size);CHKERRQ(ierr);
 
-  ierr = ISGetIndices(pcpatch->dofMappingWithoutToWithArtificial[pt], &indices);CHKERRQ(ierr);
+  ierr = ISGetIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices);CHKERRQ(ierr);
   ierr = VecGetArrayRead(x, &X);CHKERRQ(ierr);
-  ierr = VecGetArray(pcpatch->patchStateWithArtificial[pt], &XWithArtificial);CHKERRQ(ierr);
+  ierr = VecGetArray(pcpatch->patchStateWithAll[pt], &XWithAll);CHKERRQ(ierr);
 
   for (PetscInt i = 0; i < size; ++i) {
-    XWithArtificial[indices[i]] = X[i];
+    XWithAll[indices[i]] = X[i];
   }
 
-  ierr = VecRestoreArray(pcpatch->patchStateWithArtificial[pt], &XWithArtificial);CHKERRQ(ierr);
+  ierr = VecRestoreArray(pcpatch->patchStateWithAll[pt], &XWithAll);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x, &X);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(pcpatch->dofMappingWithoutToWithArtificial[pt], &indices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices);CHKERRQ(ierr);
 
-  ierr = PCPatchComputeOperator_Internal(pc, pcpatch->patchStateWithArtificial[pt], M, pcpatch->currentPatch, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PCPatchComputeOperator_Internal(pc, pcpatch->patchStateWithAll[pt], M, pcpatch->currentPatch, PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -100,14 +100,14 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
 
     ierr = PetscMalloc1(patch->npatch, &patch->patchResidual);CHKERRQ(ierr);
     ierr = PetscMalloc1(patch->npatch, &patch->patchState);CHKERRQ(ierr);
-    ierr = PetscMalloc1(patch->npatch, &patch->patchStateWithArtificial);CHKERRQ(ierr);
+    ierr = PetscMalloc1(patch->npatch, &patch->patchStateWithAll);CHKERRQ(ierr);
     for (i = 0; i < patch->npatch; ++i) {
       ierr = VecDuplicate(patch->patchRHS[i], &patch->patchResidual[i]);CHKERRQ(ierr);
       ierr = VecDuplicate(patch->patchUpdate[i], &patch->patchState[i]);CHKERRQ(ierr);
 
-      ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, i+pStart, &dof);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchStateWithArtificial[i]);CHKERRQ(ierr);
-      ierr = VecSetUp(patch->patchStateWithArtificial[i]);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(patch->gtolCountsWithAll, i+pStart, &dof);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchStateWithAll[i]);CHKERRQ(ierr);
+      ierr = VecSetUp(patch->patchStateWithAll[i]);CHKERRQ(ierr);
     }
     ierr = VecDuplicate(patch->localUpdate, &patch->localState);CHKERRQ(ierr);
   }
@@ -133,8 +133,8 @@ static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec patchRHS, V
 
   /* Scatter the overlapped global state to our patch state vector */
   ierr = PetscSectionGetChart(patch->gtolCounts, &pStart, NULL);CHKERRQ(ierr);
-  ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchState[i], INSERT_VALUES, SCATTER_FORWARD, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchStateWithArtificial[i], INSERT_VALUES, SCATTER_FORWARD, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchState[i], INSERT_VALUES, SCATTER_FORWARD, SCATTER_INTERIOR);CHKERRQ(ierr);
+  ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchStateWithAll[i], INSERT_VALUES, SCATTER_FORWARD, SCATTER_WITHALL);CHKERRQ(ierr);
 
   /* Set initial guess to be current state*/
   ierr = VecCopy(patch->patchState[i], patchUpdate);CHKERRQ(ierr);
@@ -169,9 +169,9 @@ static PetscErrorCode PCReset_PATCH_Nonlinear(PC pc)
     ierr = PetscFree(patch->patchState);CHKERRQ(ierr);
   }
 
-  if (patch->patchStateWithArtificial) {
-    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchStateWithArtificial[i]);CHKERRQ(ierr);}
-    ierr = PetscFree(patch->patchStateWithArtificial);CHKERRQ(ierr);
+  if (patch->patchStateWithAll) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchStateWithAll[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(patch->patchStateWithAll);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&patch->localState);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Nonlinear(PC pc, PetscInt i, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchUpdate[i], patch->localState, ADD_VALUES, SCATTER_REVERSE, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchUpdate[i], patch->localState, ADD_VALUES, SCATTER_REVERSE, SCATTER_INTERIOR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -34,13 +34,17 @@ typedef struct {
   IS                   offs;               /* [patch][point in patch]: patch local offset (same layout as 'points', used for filling up patchSection) */
   IS                   dofsWithArtificial;
   IS                   offsWithArtificial;
+  IS                   dofsWithAll;
+  IS                   offsWithAll;
   PetscSection         patchSection;       /* Maps points -> patch local dofs */
   IS                   globalBcNodes;      /* Global dofs constrained by global Dirichlet conditions TODO Replace these with process local constrained dofs */
   IS                   ghostBcNodes;       /* Global dofs constrained by global Dirichlet conditions on this process and possibly others (patch overlaps boundary) */
   PetscSection         gtolCounts;         /* ?? Indices to extract from local to patch vectors */
   PetscSection    gtolCountsWithArtificial;/* ?? Indices to extract from local to patch vectors including those with artifical bcs*/
+  PetscSection    gtolCountsWithAll;/* ?? Indices to extract from local to patch vectors including those in artificial or global bcs*/
   IS                   gtol;
   IS                   gtolWithArtificial;
+  IS                   gtolWithAll;
   PetscInt            *bs;                 /* [field] block size per field (can come from global operators?) */
   PetscInt            *nodesPerCell;       /* [field] Dofs per cell TODO Change "node" to "dof" everywhere */
   PetscInt             totalDofsPerCell;   /* Dofs per cell counting all fields */
@@ -65,6 +69,7 @@ typedef struct {
   MatType              sub_mat_type;       /* Matrix type for patch systems */
   Vec                 *patchRHS, *patchUpdate;  /* RHS and solution for each patch */
   IS                  *dofMappingWithoutToWithArtificial;
+  IS                  *dofMappingWithoutToWithAll;
   Vec                 *patchRHSWithArtificial;    /* like patchRHS but extra entries to include dofs with artificial bcs*/
   Vec                 *patch_dof_weights;  /* Weighting for dof in each patch */
   Vec                  localRHS, localUpdate;     /* ??? */
@@ -95,7 +100,7 @@ typedef struct {
   PetscViewerFormat    formatMatrix;       /*   Format for patch matrix */
   /* Extra variables for SNESPATCH */
   Vec                 *patchState;         /* State vectors for patch solvers */
-  Vec                 *patchStateWithArtificial; /* State vectors for patch solvers with boundary data */
+  Vec                 *patchStateWithAll;  /* State vectors for patch solvers with all boundary data */
   Vec                  localState;         /* Scatter vector for state */
   Vec                 *patchResidual;      /* Work vectors for patch residual evaluation*/
   const char          *classname;          /* "snes" or "pc" for options */
@@ -111,6 +116,7 @@ PETSC_EXTERN PetscLogEvent PC_Patch_Prealloc;
 
 PETSC_EXTERN PetscErrorCode PCPatchComputeFunction_Internal(PC, Vec, Vec, PetscInt);
 PETSC_EXTERN PetscErrorCode PCPatchComputeOperator_Internal(PC, Vec, Mat, PetscInt, PetscBool);
-PETSC_EXTERN PetscErrorCode PCPatch_ScatterLocal_Private(PC, PetscInt, Vec, Vec, InsertMode, ScatterMode, PetscBool);
+typedef enum {SCATTER_INTERIOR, SCATTER_WITHARTIFICIAL, SCATTER_WITHALL} PatchScatterType;
+PETSC_EXTERN PetscErrorCode PCPatch_ScatterLocal_Private(PC, PetscInt, Vec, Vec, InsertMode, ScatterMode, PatchScatterType);
 
 #endif
