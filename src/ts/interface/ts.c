@@ -81,7 +81,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_max_time <time> - maximum time to compute to
 .  -ts_max_steps <steps> - maximum number of time-steps to take
 .  -ts_init_time <time> - initial time to start computation
-.  -ts_final_time <time> - final time to compute to
+.  -ts_final_time <time> - final time to compute to (deprecated: use -ts_max_time)
 .  -ts_dt <dt> - initial time step
 .  -ts_exact_final_time <stepover,interpolate,matchstep> whether to stop at the exact given final time and how to compute the solution at that ti,e
 .  -ts_max_snes_failures <maxfailures> - Maximum number of nonlinear solve failures allowed
@@ -146,10 +146,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   /* Handle generic TS options */
+  ierr = PetscOptionsDeprecated("-ts_final_time","-ts_max_time","3.10",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_max_time","Maximum time to run to","TSSetMaxTime",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetMaxSteps",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_final_time","Final time to run to","TSSetMaxTime",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
   if (flg) {ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);

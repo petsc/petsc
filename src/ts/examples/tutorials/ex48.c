@@ -700,9 +700,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -debug 1 -dim 2 -dm_refine 1 -x_periodicity PERIODIC -ts_max_steps 1 -ts_final_time 10. -ts_dt 1.0
+    args: -debug 1 -dim 2 -dm_refine 1 -x_periodicity PERIODIC -ts_max_steps 1 -ts_max_time 10. -ts_dt 1.0
   test:
     suffix: 1
-    args: -debug 1 -dim 3 -dm_refine 1 -z_periodicity PERIODIC -ts_max_steps 1 -ts_final_time 10. -ts_dt 1.0 -domain_lo -2,-1,-1 -domain_hi 2,1,1
+    args: -debug 1 -dim 3 -dm_refine 1 -z_periodicity PERIODIC -ts_max_steps 1 -ts_max_time 10. -ts_dt 1.0 -domain_lo -2,-1,-1 -domain_hi 2,1,1
 
 TEST*/
