@@ -92,8 +92,8 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      suffix: 0
       args: -ksp_view
-      output_file: output/ex6_0.out
 
    test:
       suffix: 1
