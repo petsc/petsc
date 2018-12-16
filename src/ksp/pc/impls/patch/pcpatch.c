@@ -76,6 +76,44 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCPatchConstruct_Owned(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
+{
+  DMLabel         ghost = NULL;
+  const PetscInt *leaves;
+  PetscInt        nleaves, pStart, pEnd, loc;
+  PetscBool       isFiredrake;
+  DM              plex;
+  PetscBool       flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscHSetIClear(ht);
+
+  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(plex, &pStart, &pEnd);CHKERRQ(ierr);
+
+  ierr = DMHasLabel(dm, "pyop2_ghost", &isFiredrake);CHKERRQ(ierr);
+  if (isFiredrake) {
+    ierr = DMGetLabel(dm, "pyop2_ghost", &ghost);CHKERRQ(ierr);
+    ierr = DMLabelCreateIndex(ghost, pStart, pEnd);CHKERRQ(ierr);
+  } else {
+    PetscSF sf;
+    ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sf, NULL, &nleaves, &leaves, NULL);CHKERRQ(ierr);
+    nleaves = PetscMax(nleaves, 0);
+  }
+
+  for (PetscInt point = pStart; point < pEnd; ++point) {
+    if (ghost) {ierr = DMLabelHasPoint(ghost, point, &flg);CHKERRQ(ierr);}
+    else       {ierr = PetscFindInt(point, nleaves, leaves, &loc);CHKERRQ(ierr); flg = loc >=0 ? PETSC_TRUE : PETSC_FALSE;}
+    /* Not an owned entity, don't make a cell patch. */
+    if (flg) continue;
+    ierr = PetscHSetIAdd(ht, point);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
 /* The user's already set the patches in patch->userIS. Build the hash tables */
 static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
 {
@@ -359,6 +397,10 @@ PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscE
     patch->user_patches     = PETSC_FALSE;
     patch->patchconstructop = PCPatchConstruct_Vanka;
     break;
+  case PC_PATCH_OWNED:
+    patch->user_patches     = PETSC_FALSE;
+    patch->patchconstructop = PCPatchConstruct_Owned;
+    break;
   case PC_PATCH_USER:
   case PC_PATCH_PYTHON:
     patch->user_patches     = PETSC_TRUE;
@@ -384,6 +426,7 @@ PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, Petsc
   switch (patch->ctype) {
   case PC_PATCH_STAR:
   case PC_PATCH_VANKA:
+  case PC_PATCH_OWNED:
     break;
   case PC_PATCH_USER:
   case PC_PATCH_PYTHON:
@@ -742,6 +785,8 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   if (patch->user_patches) {
     ierr = patch->userpatchconstructionop(pc, &patch->npatch, &patch->userIS, &patch->iterationSet, patch->userpatchconstructctx);CHKERRQ(ierr);
     vStart = 0; vEnd = patch->npatch;
+  } else if (patch->ctype == PC_PATCH_OWNED) {
+    vStart = 0; vEnd = 1;
   } else if (patch->codim < 0) {
     if (patch->dim < 0) {ierr = DMPlexGetDepthStratum(plex,  0,            &vStart, &vEnd);CHKERRQ(ierr);}
     else                {ierr = DMPlexGetDepthStratum(plex,  patch->dim,   &vStart, &vEnd);CHKERRQ(ierr);}
