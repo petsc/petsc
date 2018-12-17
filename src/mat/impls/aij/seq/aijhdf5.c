@@ -7,7 +7,6 @@
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 {
-  hid_t           file_id, group_matrix_id;
   const PetscInt  *i_glob = NULL;
   PetscInt        *i = NULL;
   const PetscInt  *j = NULL;
@@ -38,10 +37,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   }
 
   ierr = PetscViewerHDF5PushGroup(viewer,mat_name);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5OpenGroup(viewer,&file_id,&group_matrix_id);CHKERRQ(ierr);
-
-  ierr = PetscViewerHDF5ReadAttribute(viewer,mat_name,c_name,PETSC_INT,&N);CHKERRQ(ierr);
-
+  ierr = PetscViewerHDF5ReadAttribute(viewer,NULL,c_name,PETSC_INT,&N);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSizes(viewer, i_name, NULL, &M);CHKERRQ(ierr);
   --M;  /* i has size M+1 as there is global number of nonzeros stored at the end */
 
@@ -114,10 +110,6 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = VecLoad(vec_a,viewer);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vec_a,&a);CHKERRQ(ierr);
 
-  /* close group */
-  PetscStackCallHDF5(H5Gclose,(group_matrix_id));
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-
   /* populate matrix */
   if (!((PetscObject)mat)->type_name) {
     ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
@@ -135,6 +127,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
     ierr = MatTranspose(mat,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);
   }
 
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&jmap);CHKERRQ(ierr);
   ierr = PetscFree(i);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is_i,&i_glob);CHKERRQ(ierr);
