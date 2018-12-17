@@ -33,6 +33,21 @@ struct _n_HDF5ReadCtx {
 };
 typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
 
+static PetscErrorCode PetscViewerHDF5GetAbsolutePath_Internal(PetscViewer viewer, const char objname[], char **fullpath)
+{
+  const char *group;
+  char buf[PETSC_MAX_PATH_LEN]="";
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
+  ierr = PetscStrcat(buf, group);CHKERRQ(ierr);
+  ierr = PetscStrcat(buf, "/");CHKERRQ(ierr);
+  ierr = PetscStrcat(buf, objname);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(buf, fullpath);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode   ierr;
@@ -995,8 +1010,7 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, PetscBool *has)
 PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, PetscBool *has)
 {
   H5O_type_t type;
-  const char *group;
-  char buf[PETSC_MAX_PATH_LEN]="";
+  char *path;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1005,12 +1019,10 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
   PetscValidIntPointer(has,3);
   *has = PETSC_FALSE;
   if (!obj->name) PetscFunctionReturn(0);
-  ierr = PetscViewerHDF5HasGroup(viewer, has);CHKERRQ(ierr);
-  if (!*has) PetscFunctionReturn(0);
-  ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(buf, PETSC_MAX_PATH_LEN, "%s/%s", group, obj->name);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, buf, PETSC_FALSE, has, &type);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, obj->name, &path);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, path, PETSC_FALSE, has, &type);CHKERRQ(ierr);
   *has = (type == H5O_TYPE_DATASET) ? PETSC_TRUE : PETSC_FALSE;
+  ierr = PetscFree(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
