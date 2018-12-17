@@ -36,7 +36,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (nevents) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %5.2f seconds\n",rank,(double)t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %5.2f seconds -> Processor[%d]\n",(double)t,rank);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] =  1.0*rank;
@@ -166,7 +166,7 @@ int main(int argc,char **argv)
   PetscScalar    *u;
   PetscInt       direction=-1;
   PetscBool      terminate=PETSC_FALSE;
-  PetscBool      rhs_form=PETSC_FALSE;
+  PetscBool      rhs_form=PETSC_FALSE,hist=PETSC_TRUE;
   TSAdapt        adapt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -222,6 +222,7 @@ int main(int argc,char **argv)
      the same event occuring multiple times in the same interval. A maximum step size
      limit is enforced here to avoid this issue. */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
   ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
 
   /* Set direction and terminate flag for the event */
@@ -234,6 +235,37 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
+  if (hist) { /* replay following history */
+    TSTrajectory tj;
+    PetscReal    tf,t0,dt;
+
+    ierr = TSGetTime(ts,&tf);CHKERRQ(ierr);
+    ierr = TSSetMaxTime(ts,tf);CHKERRQ(ierr);
+    ierr = TSSetStepNumber(ts,0);CHKERRQ(ierr);
+    ierr = TSRestartStep(ts);CHKERRQ(ierr);
+    ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
+    ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+    ierr = TSSetEventHandler(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
+    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSAdaptSetType(adapt,TSADAPTHISTORY);CHKERRQ(ierr);
+    ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
+    ierr = TSAdaptHistorySetTrajectory(adapt,tj,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = TSAdaptHistoryGetStep(adapt,0,&t0,&dt);CHKERRQ(ierr);
+    /* this example fails with single (or smaller) precision */
+#if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL__FP16)
+    ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
+    ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
+    ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+#endif
+    ierr = TSSetTime(ts,t0);CHKERRQ(ierr);
+    ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+    ierr = TSResetTrajectory(ts);CHKERRQ(ierr);
+    ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+    u[0] = 1.0*rank;
+    u[1] = 20.0;
+    ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+    ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -249,50 +281,43 @@ int main(int argc,char **argv)
    test:
       suffix: a
       nsize: 2
-      args: -snes_stol 1e-4
+      args: -ts_trajectory_type memory -snes_stol 1e-4
       filter: sort -b
-      filter_output: sort -b
 
    test:
       suffix: b
       nsize: 2
-      args: -ts_type arkimex -snes_stol 1e-4
+      args: -ts_trajectory_type memory -ts_type arkimex -snes_stol 1e-4
       filter: sort -b
-      filter_output: sort -b
 
    test:
       suffix: c
       nsize: 2
-      args: -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4
+      args: -ts_trajectory_type memory -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4
       filter: sort -b
-      filter_output: sort -b
 
    test:
       suffix: d
       nsize: 2
-      args: -ts_type alpha -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4
+      args: -ts_trajectory_type memory -ts_type alpha -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4
       filter: sort -b
-      filter_output: sort -b
 
    test:
       suffix: e
       nsize: 2
-      args: -ts_type bdf -ts_adapt_dt_max 0.015 -ts_max_steps 3000
+      args: -ts_trajectory_type memory -ts_type bdf -ts_adapt_dt_max 0.015 -ts_max_steps 3000
       filter: sort -b
-      filter_output: sort -b
 
    test:
       suffix: f
       nsize: 2
-      args: -rhs-form -ts_type rk -ts_rk_type 3bs
+      args: -ts_trajectory_type memory -rhs-form -ts_type rk -ts_rk_type 3bs
       filter: sort -b
-      filter_output: sort -b
 
    test:
       suffix: g
       nsize: 2
-      args: -rhs-form -ts_type rk -ts_rk_type 5bs
+      args: -ts_trajectory_type memory -rhs-form -ts_type rk -ts_rk_type 5bs
       filter: sort -b
-      filter_output: sort -b
 
 TEST*/
