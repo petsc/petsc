@@ -76,7 +76,7 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPatchConstruct_Owned(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
+static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
 {
   DMLabel         ghost = NULL;
   const PetscInt *leaves;
@@ -397,9 +397,9 @@ PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscE
     patch->user_patches     = PETSC_FALSE;
     patch->patchconstructop = PCPatchConstruct_Vanka;
     break;
-  case PC_PATCH_OWNED:
+  case PC_PATCH_PARDECOMP:
     patch->user_patches     = PETSC_FALSE;
-    patch->patchconstructop = PCPatchConstruct_Owned;
+    patch->patchconstructop = PCPatchConstruct_Pardecomp;
     break;
   case PC_PATCH_USER:
   case PC_PATCH_PYTHON:
@@ -426,7 +426,7 @@ PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, Petsc
   switch (patch->ctype) {
   case PC_PATCH_STAR:
   case PC_PATCH_VANKA:
-  case PC_PATCH_OWNED:
+  case PC_PATCH_PARDECOMP:
     break;
   case PC_PATCH_USER:
   case PC_PATCH_PYTHON:
@@ -785,7 +785,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   if (patch->user_patches) {
     ierr = patch->userpatchconstructionop(pc, &patch->npatch, &patch->userIS, &patch->iterationSet, patch->userpatchconstructctx);CHKERRQ(ierr);
     vStart = 0; vEnd = patch->npatch;
-  } else if (patch->ctype == PC_PATCH_OWNED) {
+  } else if (patch->ctype == PC_PATCH_PARDECOMP) {
     vStart = 0; vEnd = 1;
   } else if (patch->codim < 0) {
     if (patch->dim < 0) {ierr = DMPlexGetDepthStratum(plex,  0,            &vStart, &vEnd);CHKERRQ(ierr);}
