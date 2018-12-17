@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, DF, FILE_MODE_READ, &viewer);CHKERRQ(ierr);
 
-  /* test group/dataset querying */
+  /* test group/dataset querying, and attribute querying (relative path) */
   for (p=0; p<np; p++) {
     ierr = PetscViewerHDF5PushGroup(viewer, path[p]);CHKERRQ(ierr);
     ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
@@ -93,12 +93,16 @@ int main(int argc,char **argv)
         ierr = PetscViewerHDF5HasObject(viewer, (PetscObject)vecs[s], &has);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "-   %s/%s dataset? %D\n", group, name, has);CHKERRQ(ierr);
       }
+      for (a=0; a<na; a++) {
+        ierr = PetscViewerHDF5HasAttribute(viewer, names[s], attr[a], &has);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "  - %s/%s/%s attribute? %D\n", group, names[s], attr[a], has);CHKERRQ(ierr);
+      }
     }
 
     ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   }
 
-  /* test attribute querying including nonexisting attributes */
+  /* test attribute querying including nonexisting attributes (absolute path) */
   for (p=0; p<np; p++) for (s=0; s<ns; s++) {
     ierr = PetscSNPrintf(buf, sizeof(buf), "%s/%s", path[p], names[s]);CHKERRQ(ierr);
     for (a=0; a<na; a++) {
