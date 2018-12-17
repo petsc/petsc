@@ -466,7 +466,10 @@ PetscErrorCode TSEventHandler(TS ts)
     ierr = TSPostEvent(ts,t,U);CHKERRQ(ierr);
 
     dt = event->ptime_end - t;
-    if (PetscAbsReal(dt) < PETSC_SMALL) dt += PetscMin(event->timestep_orig,event->timestep_prev); /* XXX Should be done better */
+    if (PetscAbsReal(dt) < PETSC_SMALL) { /* we hit the event, continue with the candidate time step */
+      dt = event->timestep_prev;
+      event->status = TSEVENT_NONE;
+    }
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     event->iterctr = 0;
     PetscFunctionReturn(0);
