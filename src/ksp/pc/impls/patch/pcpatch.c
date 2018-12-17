@@ -1506,31 +1506,49 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
     if (point >= pEnd) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Operator point %D not in [%D, %D)\n", point, pStart, pEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(patch->cellCounts, point, &ncell);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(patch->cellCounts, point, &offset);CHKERRQ(ierr);
-    ierr = PetscCalloc1(rsize, &dnnz);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(PC_Patch_Prealloc, pc, 0, 0, 0);CHKERRQ(ierr);
-    /* XXX: This uses N^2 bits to store the sparsity pattern on a
-     * patch.  This is probably OK if the patches are not too big,
-     * but could use quite a bit of memory for planes in 3D.
-     * Should we switch based on the value of rsize to a
-     * hash-table (slower, but more memory efficient) approach? */
-    ierr = PetscBTCreate(rsize*rsize, &bt);CHKERRQ(ierr);
-    for (c = 0; c < ncell; ++c) {
-      const PetscInt *idx = dofsArray + (offset + c)*patch->totalDofsPerCell;
-      for (i = 0; i < patch->totalDofsPerCell; ++i) {
-        const PetscInt row = idx[i];
-        if (row < 0) continue;
-        for (j = 0; j < patch->totalDofsPerCell; ++j) {
-          const PetscInt col = idx[j];
-          const PetscInt key = row*rsize + col;
-          if (col < 0) continue;
-          if (!PetscBTLookupSet(bt, key)) ++dnnz[row];
+    /* A PetscBT uses N^2 bits to store the sparsity pattern on a
+     * patch. This is probably OK if the patches are not too big,
+     * but uses too much memory. We therefore switch based on rsize. */
+    if (rsize < 3000) { /* FIXME: I picked this switch value out of my hat */
+      ierr = PetscCalloc1(rsize, &dnnz);CHKERRQ(ierr);
+      ierr = PetscBTCreate(rsize*rsize, &bt);CHKERRQ(ierr);
+      for (c = 0; c < ncell; ++c) {
+        const PetscInt *idx = dofsArray + (offset + c)*patch->totalDofsPerCell;
+        for (i = 0; i < patch->totalDofsPerCell; ++i) {
+          const PetscInt row = idx[i];
+          if (row < 0) continue;
+          for (j = 0; j < patch->totalDofsPerCell; ++j) {
+            const PetscInt col = idx[j];
+            const PetscInt key = row*rsize + col;
+            if (col < 0) continue;
+            if (!PetscBTLookupSet(bt, key)) ++dnnz[row];
+          }
         }
       }
+      ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
+      ierr = MatXAIJSetPreallocation(*mat, 1, dnnz, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscFree(dnnz);CHKERRQ(ierr);
+      ierr = PCPatchZeroFillMatrix_Private(*mat, ncell, patch->totalDofsPerCell, &dofsArray[offset*patch->totalDofsPerCell]);CHKERRQ(ierr);
+    } else { /* rsize too big, use MATPREALLOCATOR */
+      Mat preallocator;
+      PetscScalar* vals;
+
+      ierr = PetscCalloc1(patch->totalDofsPerCell*patch->totalDofsPerCell, &vals);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_SELF, &preallocator);CHKERRQ(ierr);
+      ierr = MatSetType(preallocator, MATPREALLOCATOR);CHKERRQ(ierr);
+      ierr = MatSetSizes(preallocator, rsize, rsize, rsize, rsize);CHKERRQ(ierr);
+      ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+      for (c = 0; c < ncell; ++c) {
+        const PetscInt *idx = dofsArray + (offset + c)*patch->totalDofsPerCell;
+        ierr = MatSetValues(preallocator, patch->totalDofsPerCell, idx, patch->totalDofsPerCell, idx, vals, INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(vals);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(preallocator, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(preallocator, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatPreallocatorPreallocate(preallocator, PETSC_TRUE, *mat);CHKERRQ(ierr);
+      ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
     }
-    ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
-    ierr = MatXAIJSetPreallocation(*mat, 1, dnnz, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscFree(dnnz);CHKERRQ(ierr);
-    ierr = PCPatchZeroFillMatrix_Private(*mat, ncell, patch->totalDofsPerCell, &dofsArray[offset*patch->totalDofsPerCell]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PC_Patch_Prealloc, pc, 0, 0, 0);CHKERRQ(ierr);
     if(withArtificial) {
       ierr = ISRestoreIndices(patch->dofsWithArtificial, &dofsArray);CHKERRQ(ierr);
