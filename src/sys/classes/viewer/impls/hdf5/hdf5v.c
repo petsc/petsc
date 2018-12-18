@@ -797,27 +797,28 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 
   Input Parameters:
 + viewer - The HDF5 viewer
-. parent - The parent name
+. dataset - The parent dataset name, relative to the current group. NULL means a group-wise attribute.
 . name   - The attribute name
 . datatype - The attribute type
 - value    - The attribute value
 
   Level: advanced
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadAttribute(), PetscViewerHDF5HasAttribute()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *value)
+PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char dataset[], const char name[], PetscDataType datatype, const void *value)
 {
+  char           *parent;
   hid_t          h5, dataspace, obj, attribute, dtype;
   PetscBool      has;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidCharPointer(parent, 2);
+  if (dataset) PetscValidCharPointer(dataset, 2);
   PetscValidCharPointer(name, 3);
   PetscValidPointer(value, 4);
-
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, dataset, &parent);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_TRUE, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, &has);CHKERRQ(ierr);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
@@ -839,6 +840,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscStackCallHDF5(H5Aclose,(attribute));
   PetscStackCallHDF5(H5Oclose,(obj));
   PetscStackCallHDF5(H5Sclose,(dataspace));
+  ierr = PetscFree(parent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -847,7 +849,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 
   Input Parameters:
 + viewer - The HDF5 viewer
-. parent - The parent name
+. dataset - The parent dataset name, relative to the current group. NULL means a group-wise attribute.
 . name   - The attribute name
 - datatype - The attribute type
 
@@ -856,18 +858,20 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 
   Level: advanced
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5HasAttribute()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, void *value)
+PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char dataset[], const char name[], PetscDataType datatype, void *value)
 {
+  char           *parent;
   hid_t          h5, obj, attribute, atype, dtype;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidCharPointer(parent, 2);
+  if (dataset) PetscValidCharPointer(dataset, 2);
   PetscValidCharPointer(name, 3);
   PetscValidPointer(value, 4);
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, dataset, &parent);CHKERRQ(ierr);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   PetscStackCallHDF5Return(obj,H5Oopen,(h5, parent, H5P_DEFAULT));
@@ -883,6 +887,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscStackCallHDF5(H5Aclose,(attribute));
   /* H5Oclose can be used to close groups, datasets, or committed datatypes */
   PetscStackCallHDF5(H5Oclose,(obj));
+  ierr = PetscFree(parent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
