@@ -42,6 +42,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObject(PetscViewer,PetscObject,Pet
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer,const char[],const char[],PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer,const char[],const char[],PetscDataType,const void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer, const char[], const char[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer,PetscObject,const char[],PetscDataType,void*);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer,PetscObject,const char[],PetscDataType,const void*);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObjectAttribute(PetscViewer,PetscObject,const char[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteSDS(PetscViewer,float *,int,int *,int);
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
