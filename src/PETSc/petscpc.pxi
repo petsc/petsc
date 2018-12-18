@@ -324,7 +324,7 @@ cdef int PCPatch_ComputeFunction(
     PetscIS cells,
     PetscInt ndof,
     const_PetscInt *dofmap,
-    const_PetscInt *dofmapWithArtificial,
+    const_PetscInt *dofmapWithAll,
     void *ctx) except PETSC_ERR_PYTHON with gil:
     cdef Vec Out = ref_Vec(out)
     cdef Vec Vec = ref_Vec(vec)
@@ -335,8 +335,8 @@ cdef int PCPatch_ComputeFunction(
     assert context is not None and type(context) is tuple
     (op, args, kargs) = context
     cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
-    cdef PetscInt[:] pydofsWithArtificial = <PetscInt[:ndof]>dofmapWithArtificial
-    op(Pc, toInt(point), Vec, Out, Is, asarray(pydofs), asarray(pydofsWithArtificial), *args, **kargs)
+    cdef PetscInt[:] pydofsWithAll = <PetscInt[:ndof]>dofmapWithAll
+    op(Pc, toInt(point), Vec, Out, Is, asarray(pydofs), asarray(pydofsWithAll), *args, **kargs)
     return 0
 
 cdef int PCPatch_UserConstructOperator(
