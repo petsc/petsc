@@ -71,7 +71,7 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-     requires: !complex !defined(PETSC_USE_64BIT_INDICES)
+     requires: !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
      TODO: need to provide ASCII matrix to read in
