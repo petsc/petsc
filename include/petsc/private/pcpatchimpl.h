@@ -53,6 +53,7 @@ typedef struct {
                                                 you're building the patch around */
   PetscInt             vankadim;           /* In Vanka construction, should we eliminate any entities of a certain dimension on the initial patch? */
   PetscInt             ignoredim;          /* In Vanka construction, should we eliminate any entities of a certain dimension on the boundary? */
+  PetscInt             pardecomp_overlap;  /* In parallel decomposition construction, how much overlap? */
   /* Patch system assembly */
   PetscErrorCode     (*usercomputeop)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
   void                *usercomputeopctx;

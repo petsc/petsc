@@ -78,13 +78,16 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
 
 static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
 {
+  PC_PATCH       *patch = (PC_PATCH *) vpatch;
   DMLabel         ghost = NULL;
   const PetscInt *leaves;
   PetscInt        nleaves, pStart, pEnd, loc;
   PetscBool       isFiredrake;
   DM              plex;
   PetscBool       flg;
-  PetscErrorCode ierr;
+  PetscInt        starSize;
+  PetscInt       *star = NULL;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscHSetIClear(ht);
@@ -109,6 +112,38 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
     /* Not an owned entity, don't make a cell patch. */
     if (flg) continue;
     ierr = PetscHSetIAdd(ht, point);CHKERRQ(ierr);
+  }
+
+  /* Now build the overlap for the patch */
+  for (PetscInt overlapi = 0; overlapi < patch->pardecomp_overlap; ++overlapi) {
+    PetscInt index = 0;
+    PetscInt *htpoints = NULL;
+    PetscInt htsize;
+
+    ierr = PetscHSetIGetSize(ht, &htsize);CHKERRQ(ierr);
+    ierr = PetscMalloc1(htsize, &htpoints);CHKERRQ(ierr);
+    ierr = PetscHSetIGetElems(ht, &index, htpoints);CHKERRQ(ierr);
+
+    for (PetscInt i = 0; i < htsize; ++i) {
+      point = htpoints[i];
+
+      ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+      for (PetscInt si = 0; si < starSize*2; si += 2) {
+        const PetscInt starp = star[si];
+        PetscInt       closureSize;
+        PetscInt      *closure = NULL, ci;
+
+        /* now loop over all entities in the closure of starp */
+        ierr = DMPlexGetTransitiveClosure(dm, starp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        for (PetscInt ci = 0; ci < closureSize*2; ci += 2) {
+          const PetscInt closstarp = closure[ci];
+          ierr = PetscHSetIAdd(ht, closstarp);CHKERRQ(ierr);
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm, starp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(htpoints);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -820,7 +855,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
     PetscInt       chtSize, loc = -1;
     PetscBool      flg;
 
-    if (!patch->user_patches) {
+    if (!patch->user_patches && patch->ctype != PC_PATCH_PARDECOMP) {
       if (ghost) {ierr = DMLabelHasPoint(ghost, v, &flg);CHKERRQ(ierr);}
       else       {ierr = PetscFindInt(v, nleaves, leaves, &loc);CHKERRQ(ierr); flg = loc >=0 ? PETSC_TRUE : PETSC_FALSE;}
       /* Not an owned entity, don't make a cell patch. */
@@ -2424,6 +2459,9 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_ignore_dim", patch->classname);
   ierr = PetscOptionsInt(option, "Topological dimension of entities for completion to ignore", "PCPATCH", patch->ignoredim, &patch->ignoredim, &flg);CHKERRQ(ierr);
 
+  ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_pardecomp_overlap", patch->classname);
+  ierr = PetscOptionsInt(option, "What overlap should we use in construct type pardecomp?", "PCPATCH", patch->pardecomp_overlap, &patch->pardecomp_overlap, &flg);CHKERRQ(ierr);
+
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_sub_mat_type", patch->classname);
   ierr = PetscOptionsFList(option, "Matrix type for patch solves", "PCPatchSetSubMatType", MatList, NULL, sub_mat_type, PETSC_MAX_PATH_LEN, &flg);CHKERRQ(ierr);
   if (flg) {ierr = PCPatchSetSubMatType(pc, sub_mat_type);CHKERRQ(ierr);}
@@ -2578,6 +2616,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->dim                = -1;
   patch->vankadim           = -1;
   patch->ignoredim          = -1;
+  patch->pardecomp_overlap  = 0;
   patch->patchconstructop   = PCPatchConstruct_Star;
   patch->symmetrise_sweep   = PETSC_FALSE;
   patch->npatch             = 0;
