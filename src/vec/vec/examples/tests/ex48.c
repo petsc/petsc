@@ -62,6 +62,7 @@ int main(int argc,char **argv)
   }
 
   /* test attribute writing */
+  integer--;
   for (p=0; p<np-1; p++) for (s=0; s<ns-1; s++) {
     a = 0;
     ierr = PetscSNPrintf(buf, sizeof(buf), "%s/%s", path[p], names[s]);CHKERRQ(ierr);
@@ -71,6 +72,22 @@ int main(int argc,char **argv)
     ierr = PetscViewerHDF5WriteAttribute(viewer, buf, attr[a], dts[a], &boolean1);CHKERRQ(ierr); a++;
     ierr = PetscViewerHDF5WriteAttribute(viewer, buf, attr[a], dts[a], string);CHKERRQ(ierr);    a++;
     if (a != na-1) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "a != na-1, %D != %D", a, na-1);
+  }
+  integer++;
+
+  /* test attribute (re)writing and use of pushed groups */
+  for (p=0; p<np-1; p++) {
+    ierr = PetscViewerHDF5PushGroup(viewer, path[p]);CHKERRQ(ierr);
+    for (s=0; s<ns-1; s++) {
+      a = 0;
+      ierr = PetscViewerHDF5WriteAttribute(viewer, names[s], attr[a], dts[a], &integer);CHKERRQ(ierr);  a++;
+      ierr = PetscViewerHDF5WriteAttribute(viewer, names[s], attr[a], dts[a], &real);CHKERRQ(ierr);     a++;
+      ierr = PetscViewerHDF5WriteAttribute(viewer, names[s], attr[a], dts[a], &boolean0);CHKERRQ(ierr); a++;
+      ierr = PetscViewerHDF5WriteAttribute(viewer, names[s], attr[a], dts[a], &boolean1);CHKERRQ(ierr); a++;
+      ierr = PetscViewerHDF5WriteAttribute(viewer, names[s], attr[a], dts[a], string);CHKERRQ(ierr);    a++;
+      if (a != na-1) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "a != na-1, %D != %D", a, na-1);
+    }
+    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
