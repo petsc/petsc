@@ -128,7 +128,6 @@ int main(int argc,char **argv)
     }
   }
 
-#if 0
   /* test attribute reading */
   for (p=0; p<np-1; p++) for (s=0; s<ns-1; s++) {
     integer = -1;
@@ -159,7 +158,6 @@ int main(int argc,char **argv)
 #endif
     if (a != na-1) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "a != na-1, %D != %D", a, na-1);
   }
-#endif
 
   /* test attribute reading using pushed groups */
   for (p=0; p<np-1; p++) {
