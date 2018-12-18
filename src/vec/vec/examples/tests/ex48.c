@@ -128,6 +128,7 @@ int main(int argc,char **argv)
     }
   }
 
+#if 0
   /* test attribute reading */
   for (p=0; p<np-1; p++) for (s=0; s<ns-1; s++) {
     integer = -1;
@@ -157,6 +158,36 @@ int main(int argc,char **argv)
     a++;
 #endif
     if (a != na-1) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "a != na-1, %D != %D", a, na-1);
+  }
+#endif
+
+  /* test attribute reading using pushed groups */
+  for (p=0; p<np-1; p++) {
+    ierr = PetscViewerHDF5PushGroup(viewer, path[p]);CHKERRQ(ierr);
+    for (s=0; s<ns-1; s++) {
+      a = 0;
+      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &integer);CHKERRQ(ierr);  a++;
+      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &real);CHKERRQ(ierr);     a++;
+      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &boolean0);CHKERRQ(ierr); a++;
+      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &boolean1);CHKERRQ(ierr); a++;
+#if !defined(READ_STRING_TODO)
+      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &string1);CHKERRQ(ierr);  a++;
+#else
+      a++;
+#endif
+      if (a != na-1) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "a != na-1, %D != %D", a, na-1);
+      a = 0;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], names[s], attr[a], integer);CHKERRQ(ierr);  a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%f\n", path[p], names[s], attr[a], real);CHKERRQ(ierr);     a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], names[s], attr[a], boolean0);CHKERRQ(ierr); a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], names[s], attr[a], boolean1);CHKERRQ(ierr); a++;
+#if !defined(READ_STRING_TODO)
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%s\n", path[p], names[s], attr[a], string1);CHKERRQ(ierr);  a++;
+#else
+      a++;
+#endif
+    }
+    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&vecs[1]);CHKERRQ(ierr);
