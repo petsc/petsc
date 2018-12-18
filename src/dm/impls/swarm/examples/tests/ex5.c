@@ -299,28 +299,17 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
       for (d = 0; d < dim; ++d) {ierr = PetscRandomGetValue(rndp, &value);CHKERRQ(ierr); coords[n*dim+d] += PetscRealPart(value);}
       user->func(dim, 0.0, &coords[n*dim], 1, &vals[c], user);
     }
-    /* TODO: SET PARTICLE INITIAL CONDITIONS FOR OSCILLATIONS AROUND A POINT (CENTROID?) */
-
-    /* generalize for more dimensions (dim*2) rewrite in terms of loops over dim */
-    
-    
   }
-  
+  /* Set initial conditions for multi particles for an orbiting system for each particle around an origin */
+
   for (p = 0; p < Np*Ncell; ++p) {
         
         initialConditions[p*2*dim+0*dim+0] = p+1;
-        initialConditions[p*2*dim+0*dim+1] = p+1;
-        initialConditions[p*2*dim+1*dim+0] = -(p+1);
-        initialConditions[p*2*dim+1*dim+1] = p+1;
+        initialConditions[p*2*dim+0*dim+1] = 0;
+        initialConditions[p*2*dim+1*dim+0] = 0;
+        initialConditions[p*2*dim+1*dim+1] = PetscSqrtReal(1000/(p+1));
       
   }
-  for(p=0; p<Np*Ncell; ++p){
-      PetscPrintf(PETSC_COMM_WORLD,"%g \n",initialConditions[p*2*dim+0*dim+0]);
-      PetscPrintf(PETSC_COMM_WORLD,"%g \n",initialConditions[p*2*dim+0*dim+1]);
-      PetscPrintf(PETSC_COMM_WORLD,"%g \n",initialConditions[p*2*dim+1*dim+0]);
-      PetscPrintf(PETSC_COMM_WORLD,"%g \n",initialConditions[p*2*dim+1*dim+1]);
-    }
-
 
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
@@ -351,15 +340,10 @@ static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec V,Vec Posres,void *ctx)
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   Np  /= dim;
-  PetscPrintf(PETSC_COMM_WORLD,"Begin looping rsedidual with Np = %D \n", Np);
   for (p = 0; p < Np; ++p) {
-     PetscPrintf(PETSC_COMM_WORLD, "The particle is %g \n", p );
      for(d = 0; d < dim; ++d){
-     
        /* store residual positons in the format x, y in the function vector */
-       PetscPrintf(PETSC_COMM_WORLD, "Postion in loop is %g \n", p*dim+d);
        posres[p*dim+d] = v[p*dim+d];
-     
      }
   }
 
@@ -374,6 +358,7 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
   
   const PetscScalar *x;
   const PetscReal   G = 1; /* Actually: 6.67408e-11 */
+  PetscScalar       rsqr, r;
   PetscInt          Np, p, dim, d;
   DM                dm;
   PetscScalar       *vres;
@@ -390,10 +375,10 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
 
   Np/=dim;
   for(p = 0; p < Np; ++p){
-    PetscScalar rsqr = 0;
+    rsqr = 0;
     for(d = 0; d < dim; ++d) rsqr += PetscSqr(x[p*dim+d]);
-    
-    for(d=0; d< dim; ++d) vres[p*dim+d] = (G*1000)*x[p*dim+d]/rsqr;
+    r = PetscSqrtReal(rsqr);
+    for(d=0; d< dim; ++d) vres[p*dim+d] = PetscSqrtReal((G*1000)*x[p*dim+d]/r)*(x[p*dim+d]/r);
     
   }
 
@@ -421,7 +406,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts,PetscReal t,Vec U,Vec R,void *c
 
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  Np/=dim;
+  Np /= dim;
   for( p = 0; p < Np; ++p){
     for(d=0; d < dim; ++d) rsqr += PetscSqr(u[p*dim+d]);
     
@@ -490,7 +475,6 @@ int main(int argc,char **argv)
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
   ierr = VecViewFromOptions(f, NULL, "-kinematics_view");CHKERRQ(ierr);
   ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
-  PetscPrintf(comm,"Dimension in main: %D \n", dim);
   ierr = VecGetLocalSize(f, &locSize);CHKERRQ(ierr);
 
   
@@ -509,6 +493,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(comm, locSize/2, idx2, PETSC_OWN_POINTER, &is2);CHKERRQ(ierr);
   
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
+  /* DM Needs to be set before splits so it propogates to sub TSs */
   ierr = TSSetDM(ts, sw);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBASICSYMPLECTIC);CHKERRQ(ierr);
 
@@ -522,8 +507,8 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,NULL,RHSFunctionParticles,&user);CHKERRQ(ierr);
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.00001);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.0001);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,1000);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
@@ -533,6 +518,9 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = VecViewFromOptions(f, NULL, "-init_view");CHKERRQ(ierr);
+
+
+  /* DM for all sub TSs needs to be set manually, will update in TS source to fix this issue, for now quick workaround */
   ierr = TSSolve(ts,f);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = VecGetArray(f, &y);CHKERRQ(ierr);
