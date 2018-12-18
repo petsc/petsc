@@ -62,7 +62,7 @@ PETSC_EXTERN void PETSC_STDCALL petscsectionsetfieldname_(PetscSection *s, Petsc
 }
 
 PETSC_EXTERN void PETSC_STDCALL  petscsfdistributesection_(PetscSF sf,PetscSection rootSection,PetscInt **remoteOffsets,PetscSection leafSection, int *__ierr ){
-  if (remoteOffsets != PETSC_NULL_INTEGER) {
+  if (remoteOffsets != PETSC_NULL_INTEGER_Fortran) {
     PetscError(PETSC_COMM_SELF, __LINE__, "PetscSFDistributeSection_Fortran", __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL,
                "The remoteOffsets argument must be PETSC_NULL_INTEGER in Fortran");
     *__ierr = 1;
