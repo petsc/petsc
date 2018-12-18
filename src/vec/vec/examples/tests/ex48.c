@@ -90,6 +90,23 @@ int main(int argc,char **argv)
     ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   }
 
+  /* test object attribute (re) writing */
+  for (p=0; p<np; p++) {
+    ierr = PetscViewerHDF5PushGroup(viewer, path[p]);CHKERRQ(ierr);
+    for (s=0; s<ns; s++) {
+      if (vecs[s]) {ierr = PetscViewerHDF5HasObject(viewer, (PetscObject)vecs[s], &has);CHKERRQ(ierr);}
+      if (!has) continue;
+      a = 0;
+      ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &integer);CHKERRQ(ierr);  a++;
+      ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &real);CHKERRQ(ierr);     a++;
+      ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &boolean0);CHKERRQ(ierr); a++;
+      ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &boolean1);CHKERRQ(ierr); a++;
+      ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], string);CHKERRQ(ierr);    a++;
+      if (a != na-1) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "a != na-1, %D != %D", a, na-1);
+    }
+    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  }
+
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, DF, FILE_MODE_READ, &viewer);CHKERRQ(ierr);
 
@@ -103,12 +120,19 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Has %s group? %D\n", path[p], has);CHKERRQ(ierr);
 
     for (s=0; s<ns; s++) {
+      has = PETSC_FALSE;
       if (vecs[s]) {
         ierr = PetscObjectGetName((PetscObject)vecs[s], &name);CHKERRQ(ierr);
         ierr = PetscStrcmp(names[s], name, &has);CHKERRQ(ierr);
         if (!has) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "current object name %s not equal to anticipated %s", name, names[s]);
         ierr = PetscViewerHDF5HasObject(viewer, (PetscObject)vecs[s], &has);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "-   %s/%s dataset? %D\n", group, name, has);CHKERRQ(ierr);
+      }
+      if (has) {
+        for (a=0; a<na; a++) {
+          ierr = PetscViewerHDF5HasObjectAttribute(viewer, (PetscObject) vecs[s], attr[a], &has);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD, "  - %s/%s/%s object attribute? %D\n", group, names[s], attr[a], has);CHKERRQ(ierr);
+        }
       }
       for (a=0; a<na; a++) {
         ierr = PetscViewerHDF5HasAttribute(viewer, names[s], attr[a], &has);CHKERRQ(ierr);
@@ -159,28 +183,31 @@ int main(int argc,char **argv)
     if (a != na-1) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "a != na-1, %D != %D", a, na-1);
   }
 
-  /* test attribute reading using pushed groups */
-  for (p=0; p<np-1; p++) {
+  /* test object attribute reading using pushed groups */
+  for (p=0; p<np; p++) {
     ierr = PetscViewerHDF5PushGroup(viewer, path[p]);CHKERRQ(ierr);
-    for (s=0; s<ns-1; s++) {
+    for (s=0; s<ns; s++) {
+      if (vecs[s]) {ierr = PetscViewerHDF5HasObject(viewer, (PetscObject)vecs[s], &has);CHKERRQ(ierr);}
+      if (!has) continue;
       a = 0;
-      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &integer);CHKERRQ(ierr);  a++;
-      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &real);CHKERRQ(ierr);     a++;
-      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &boolean0);CHKERRQ(ierr); a++;
-      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &boolean1);CHKERRQ(ierr); a++;
+      ierr = PetscViewerHDF5ReadObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &integer);CHKERRQ(ierr);  a++;
+      ierr = PetscViewerHDF5ReadObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &real);CHKERRQ(ierr);     a++;
+      ierr = PetscViewerHDF5ReadObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &boolean0);CHKERRQ(ierr); a++;
+      ierr = PetscViewerHDF5ReadObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &boolean1);CHKERRQ(ierr); a++;
 #if !defined(READ_STRING_TODO)
-      ierr = PetscViewerHDF5ReadAttribute(viewer, names[s], attr[a], dts[a], &string1);CHKERRQ(ierr);  a++;
+      ierr = PetscViewerHDF5ReadObjectAttribute(viewer, (PetscObject)vecs[s], attr[a], dts[a], &string1);CHKERRQ(ierr);  a++;
 #else
       a++;
 #endif
       if (a != na-1) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "a != na-1, %D != %D", a, na-1);
+      ierr = PetscObjectGetName((PetscObject)vecs[s], &name);CHKERRQ(ierr);
       a = 0;
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], names[s], attr[a], integer);CHKERRQ(ierr);  a++;
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%f\n", path[p], names[s], attr[a], real);CHKERRQ(ierr);     a++;
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], names[s], attr[a], boolean0);CHKERRQ(ierr); a++;
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], names[s], attr[a], boolean1);CHKERRQ(ierr); a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], name, attr[a], integer);CHKERRQ(ierr);  a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%f\n", path[p], name, attr[a], real);CHKERRQ(ierr);     a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], name, attr[a], boolean0);CHKERRQ(ierr); a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], name, attr[a], boolean1);CHKERRQ(ierr); a++;
 #if !defined(READ_STRING_TODO)
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%s\n", path[p], names[s], attr[a], string1);CHKERRQ(ierr);  a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%s\n", path[p], name, attr[a], string1);CHKERRQ(ierr);  a++;
 #else
       a++;
 #endif
