@@ -455,7 +455,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
-  else ksp->reason = 0;
+  else ksp->reason = KSP_CONVERGED_ITERATING;
   if (ksp->reason || ksp->max_it==0) {
     if (ksp->max_it==0) ksp->reason = KSP_DIVERGED_ITS; /* This for a V(0,x) cycle */
     PetscFunctionReturn(0);
