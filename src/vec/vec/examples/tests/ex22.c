@@ -1,10 +1,6 @@
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
-/*T
-   requires: x
-T*/
-
 #include <petscvec.h>
 
 int main(int argc,char **argv)

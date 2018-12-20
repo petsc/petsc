@@ -320,7 +320,7 @@ PetscErrorCode MatMultTransposeAdd_Shell(Mat A,Vec x,Vec y,Vec z)
   if (y == z) {
     if (!shell->left_add_work) {ierr = VecDuplicate(z,&shell->left_add_work);CHKERRQ(ierr);}
     ierr = MatMultTranspose(A,x,shell->left_add_work);CHKERRQ(ierr);
-    ierr = VecWAXPY(z,1.0,shell->left_add_work,y);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,shell->left_add_work);CHKERRQ(ierr);
   } else {
     ierr = MatMultTranspose(A,x,z);CHKERRQ(ierr);
     ierr = VecAXPY(z,1.0,y);CHKERRQ(ierr);

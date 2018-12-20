@@ -1529,13 +1529,13 @@ int main(int argc,char *argv[])
 
     test:
       suffix: 2
-      args: -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1
+      args: -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_max_time 1
       filter:  sed "s/at 48/at 0/g"
       requires: !complex !single
 
     test:
       suffix: 3
-      args: -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1
+      args: -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_max_time 1
       nsize: 3
       filter:  sed "s/at 48/at 0/g"
       requires: !complex !single

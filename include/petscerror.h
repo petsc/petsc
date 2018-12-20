@@ -648,7 +648,7 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can 
     Concepts: error messages^printing
     Concepts: printing^error messages
 
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscErrorHandlerPush(), PetscVFPrintf(), PetscHelpPrintf()
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscPushErrorHandler(), PetscVFPrintf(), PetscHelpPrintf()
 M*/
 PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[],...);
 
