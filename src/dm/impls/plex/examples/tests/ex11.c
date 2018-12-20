@@ -10,7 +10,7 @@ static PetscErrorCode TestInsertion()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMLabelCreate("Test Label", &label);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label);CHKERRQ(ierr);
   ierr = DMLabelSetDefaultValue(label, -100);CHKERRQ(ierr);
   for (i = 0; i < N; ++i) {
     ierr = DMLabelSetValue(label, i, values[i%5]);CHKERRQ(ierr);

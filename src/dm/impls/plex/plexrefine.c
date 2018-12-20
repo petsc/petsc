@@ -428,7 +428,7 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
   if (depth > 0) ierr = DMLabelSetStratumBounds(depthLabel, depth, cStartNew, cEndNew);CHKERRQ(ierr);
   {
     DM_Plex *plex = (DM_Plex *) rdm->data;
-    ierr = DMLabelGetState(depthLabel, &plex->depthState);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject) depthLabel, &plex->depthState);CHKERRQ(ierr);
   }
   if (!refiner) PetscFunctionReturn(0);
   switch (refiner) {

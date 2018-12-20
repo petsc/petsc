@@ -2620,7 +2620,7 @@ PetscErrorCode DMPlexStratify(DM dm)
       ierr = DMLabelAddStratum(label,v);CHKERRQ(ierr);
     }
   }
-  ierr = DMLabelGetState(label, &mesh->depthState);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject) label, &mesh->depthState);CHKERRQ(ierr);
 
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   if (cMax >= 0 || fMax >= 0 || eMax >= 0 || vMax >= 0) {

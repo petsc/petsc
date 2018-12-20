@@ -1282,9 +1282,9 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, DMLabel adaptLabel)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  adaptLabel->refct++;
   if (forest->adaptLabel) {ierr = DMLabelDestroy(&forest->adaptLabel);CHKERRQ(ierr);}
   forest->adaptLabel = adaptLabel;
+  ierr = PetscObjectReference((PetscObject) adaptLabel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1597,11 +1597,10 @@ PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
   ierr = DMForestTemplate(dm,comm,dmRefined);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"refine",&refine);CHKERRQ(ierr);
   if (!refine) {
-    ierr = DMLabelCreate("refine",&refine);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, "refine",&refine);CHKERRQ(ierr);
     ierr = DMLabelSetDefaultValue(refine,DM_ADAPT_REFINE);CHKERRQ(ierr);
-  }
-  else {
-    refine->refct++;
+  } else {
+    ierr = PetscObjectReference((PetscObject) refine);CHKERRQ(ierr);
   }
   ierr = DMForestSetAdaptivityLabel(*dmRefined,refine);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&refine);CHKERRQ(ierr);
@@ -1632,10 +1631,10 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   ierr = DMForestSetAdaptivityPurpose(*dmCoarsened,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
   if (!coarsen) {
-    ierr = DMLabelCreate("coarsen",&coarsen);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, "coarsen",&coarsen);CHKERRQ(ierr);
     ierr = DMLabelSetDefaultValue(coarsen,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   } else {
-    coarsen->refct++;
+    ierr = PetscObjectReference((PetscObject) coarsen);CHKERRQ(ierr);
   }
   ierr = DMForestSetAdaptivityLabel(*dmCoarsened,coarsen);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&coarsen);CHKERRQ(ierr);

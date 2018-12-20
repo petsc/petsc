@@ -749,7 +749,7 @@ static herr_t ReadLabelStratumHDF5_Static(hid_t g_id, const char *name, const H5
   ierr = PetscOptionsStringToInt(name, &value);
   ierr = ISCreate(PetscObjectComm((PetscObject) viewer), &stratumIS);
   ierr = PetscObjectSetName((PetscObject) stratumIS, "indices");
-  ierr = DMLabelGetName(label, &lname);
+  ierr = PetscObjectGetName((PetscObject) label, &lname);
   ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s/%s", lname, name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
   {
