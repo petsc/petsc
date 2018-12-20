@@ -307,7 +307,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
         initialConditions[p*2*dim+0*dim+0] = p+1;
         initialConditions[p*2*dim+0*dim+1] = 0;
         initialConditions[p*2*dim+1*dim+0] = 0;
-        initialConditions[p*2*dim+1*dim+1] = PetscSqrtReal(1000/(p+1));
+        initialConditions[p*2*dim+1*dim+1] = 1;
       
   }
 
@@ -378,7 +378,7 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
     rsqr = 0;
     for(d = 0; d < dim; ++d) rsqr += PetscSqr(x[p*dim+d]);
     r = PetscSqrtReal(rsqr);
-    for(d=0; d< dim; ++d) vres[p*dim+d] = PetscSqrtReal((G*1000)*x[p*dim+d]/r)*(x[p*dim+d]/r);
+    for(d=0; d< dim; ++d) vres[p*dim+d] = 1000*(-x[p*dim+d])/rsqr;
     
   }
 
@@ -429,21 +429,37 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 {
   PetscErrorCode    ierr;
   const PetscScalar *u;
-  PetscReal         dt;
-  PetscScalar       energy,menergy;
+  PetscReal         dt, vsqr, rsqr;
+  PetscInt          Np, dim, p, d;
+  DM                dm;
+  PetscScalar       kenergy, penergy;
   AppCtx*           user = (AppCtx*)ctx;
 
   PetscFunctionBeginUser;
+  PetscPrintf(PETSC_COMM_WORLD, "Step %u \n", step);
   if (step%user->nts == 0) {
+    ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-    menergy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0]-user->omega*user->omega*dt*u[0]*u[1])/2.;
-    energy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0])/2.;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"At time %.6lf, Energy = %8g, Modified Energy = %8g \n",t,(double)energy,(double)menergy);CHKERRQ(ierr);
+    ierr = TSGetDM(ts, dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, dim);CHKERRQ(ierr);
+    Np /= 2*dim;
+    for (p = 0; p < Np ; ++p){
+      vsqr = 0;
+      for(d = 0; d< dim; ++d){
+          vsqr += PetscSqr(u[(p*2+1)*dim + d]);
+          rsqr += PetscSqr(u[(p*2+0)*dim + d]);
+      }
+      kenergy  = .5*vsqr;
+      penergy  = -1000/PetscSqrtReal(rsqr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"At time %.6lf, for particle %g,  Kinetic Energy = %8g, Potential Energy = %8g \n", t, p, (double)kenergy, (double)penergy);CHKERRQ(ierr);
+    }
     ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
+
+/* run 3 delta ts and run richardson extrapolation to get the energy */
 
 int main(int argc,char **argv)
 {
@@ -519,36 +535,10 @@ int main(int argc,char **argv)
 
   ierr = VecViewFromOptions(f, NULL, "-init_view");CHKERRQ(ierr);
 
-
-  /* DM for all sub TSs needs to be set manually, will update in TS source to fix this issue, for now quick workaround */
   ierr = TSSolve(ts,f);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = VecGetArray(f, &y);CHKERRQ(ierr);
-  for (int p = 0; p < user.particlesPerCell; p += 4) {
-    ierr = PetscPrintf(comm,"The particle solution for (x, xv, y, yv) at time %.6lf is [%g %g %g %g]\n",(double)ftime,y[p],y[p+2], y[p+1], y[p+3]);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Energy: %g\n",(double) (y[2]*y[2]+user.omega*user.omega*y[0]*y[0]-user.omega*user.omega*ftime*y[0]*y[2])/2.);
-    ierr = PetscPrintf(comm,"Modified energy: %g\n", (double) (y[2]*y[2]+user.omega*user.omega*y[0]*y[0])/2.);
-  }
-  ierr = VecRestoreArray(f, &y);CHKERRQ(ierr);
-  ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
-  
-  
-  
-  
-  /* Compute energy of particles */
-  ierr = DMSwarmGetField(sw, "kinematics", NULL, NULL, (void **) &kCheck);CHKERRQ(ierr);
-  for (int p = 0; p < user.particlesPerCell; p += 4) {
-    ierr = PetscPrintf(comm,"The particle solution for (x, v) at time %.6lf is [%g %g]\n",(double)ftime,kCheck[p],kCheck[p+2]);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Energy: %g\n",(double) (kCheck[2]*kCheck[2]+user.omega*user.omega*kCheck[0]*kCheck[0]-user.omega*user.omega*ftime*kCheck[0]*kCheck[2])/2.);
-    ierr = PetscPrintf(comm,"Modified energy: %g\n", (double) (kCheck[2]*kCheck[2]+user.omega*user.omega*kCheck[0]*kCheck[0])/2.);
-  }
-  /* end energy computation */
- 
-  ierr = PetscPrintf(comm,"The exact solution for (x, v) time %.6lf is [%g %g]\n",(double)ftime,(double)0.2*PetscCosReal(user.omega*ftime),(double)-0.2*user.omega*PetscSinReal(user.omega*ftime));CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"The exact solution for energy is: %g\n", (double) (kCheck[2]*kCheck[2]+user.omega*user.omega*kCheck[0]*kCheck[0])/2.);
-  ierr = PetscPrintf(comm,"The exact solution for modified energy is: %g\n", (double) (-0.2*user.omega*PetscSinReal(user.omega*ftime)*-0.2*user.omega*PetscSinReal(user.omega*ftime)+ user.omega*user.omega*0.2*PetscCosReal(user.omega*ftime)*0.2*PetscCosReal(user.omega*ftime) )/2.);
-  
 
+  ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
   ierr = ISDestroy(&is2);CHKERRQ(ierr);
@@ -562,9 +552,9 @@ int main(int argc,char **argv)
    build:
      requires: !single !complex
    test:
-     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 -monitor
    test:
      suffix: 2
-     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 2 
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 2 -monitor
 
 TEST*/
