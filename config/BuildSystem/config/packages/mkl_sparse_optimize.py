@@ -48,9 +48,18 @@ class Configure(config.package.Package):
     if result:
       self.addDefine('HAVE_MKL_SPARSE_SP2M_FEATURE', 1)
 
+  def checkMklSpblasDeprecated(self):
+    deprecated_test='#include <mkl_spblas.h>\nMKL_DEPRECATED void foo();\n'
+    result = self.checkCompile(deprecated_test)
+    self.log.write('Checking to see if original MKL SpBLAS is declared deprecated: result ' + str(int(result)) + '\n')
+    if result:
+      self.addDefine('MKL_SPBLAS_DEPRECATED', 1)
+
+
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
     if self.found:
       self.executeTest(self.checksSupportBaijCrossCase)
       self.executeTest(self.checkHaveUsableSp2m)
+      self.executeTest(self.checkMklSpblasDeprecated)
 
