@@ -144,11 +144,11 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
-  /* Versions of MKL that don't have mkl_sparse_sp2m() still support the old, non-inspector-executor interfaces. For these versions,
-   * we simply exit. Versions that do have mkl_sparse_sp2m() (version 18, update 2 and later) have deprecated the old interfaces.
-   * In this case, we must use the new inspector-executor interfaces, but we can still use the old, non-inspector-executor code by
-   * not calling mkl_sparse_optimize() later. */
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
+  /* For MKL versions that still support the old, non-inspector-executor interfaces versions, we simply exit here if the no_SpMV2
+   * option has been specified. For versions that have deprecated the old interfaces (version 18, update 2 and later), we must
+   * use the new inspector-executor interfaces, but we can still use the old, non-inspector-executor code by not calling
+   * mkl_sparse_optimize() later. */
   if (aijmkl->no_SpMV2) PetscFunctionReturn(0);
 #endif
 
@@ -338,7 +338,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
 PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -423,7 +423,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
 PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -507,7 +507,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
 PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -620,7 +620,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
 PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
