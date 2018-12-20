@@ -498,7 +498,7 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 @*/
 PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
 {
-  PetscInt       size;
+  PetscMPIInt    size;
   PetscBool      isascii;
   PetscErrorCode ierr;
 
@@ -508,7 +508,7 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
   ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject) part), &size);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(v, "Graph Partitioner: %D MPI Process%s\n", size, size > 1 ? "es" : "");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "Graph Partitioner: %d MPI Process%s\n", size, size > 1 ? "es" : "");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(v, "  type: %s\n", part->hdr.type_name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(v, "edge cut: %D\n", part->edgeCut);CHKERRQ(ierr);
