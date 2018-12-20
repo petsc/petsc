@@ -1009,12 +1009,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->transposematmult = MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
-  /* In the same release in which MKL introduced mkl_sparse_sp2m() (version 18, update 2), the old sparse BLAS interfaces were
-   * marked as deprecated. If "no_SpMV2" has been specified by the user and MKL 18u2 or later is being used, we use the new
-   * _SpMV2 routines (set above), but do not call mkl_sparse_optimize(), which results in the old numerical kernels (without the
-   * inspector-executor model) being used. For versions in which the older interface has not been deprecated, we use the old
-   * interface. */
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
+  /* In MKL version 18, update 2, the old sparse BLAS interfaces were marked as deprecated. If "no_SpMV2" has been specified by the
+   * user and the old SpBLAS interfaces are deprecated in our MKL version, we use the new _SpMV2 routines (set above), but do not
+   * call mkl_sparse_optimize(), which results in the old numerical kernels (without the inspector-executor model) being used. For
+   * versions in which the older interface has not been deprecated, we use the old interface. */
   if (aijmkl->no_SpMV2) {
     B->ops->mult             = MatMult_SeqAIJMKL;
     B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL;
