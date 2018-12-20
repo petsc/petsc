@@ -333,12 +333,11 @@ To check if the libraries are working do:
 make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> test
 \end{bashlisting}
 
-A larger set of legacy tests can be run with 
+A comprehensive  set of tests can be run with 
 \begin{bashlisting}
 make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> alltests
 \end{bashlisting}
-
-The new testing system is available by running
+or
 \begin{bashlisting}
 make -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
 \end{bashlisting}
@@ -397,7 +396,7 @@ Some examples are:
 \begin{bashlisting}
 make -f gmakefile test search='ts%'                      # Run all TS examples
 make -f gmakefile test searchin='tutorials'              # Run all tutorials
-make -f gmakefile test search 'ts%' searchin='tutorials' # Run all TS tutorials
+make -f gmakefile test search='ts%' searchin='tutorials' # Run all TS tutorials
 make -f gmakefile test argsearch='cuda'                  # Run examples with cuda in arguments
 \end{bashlisting}
 
