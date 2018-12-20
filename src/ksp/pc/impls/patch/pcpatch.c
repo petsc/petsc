@@ -2015,6 +2015,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = ISGetIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
 
         ierr = PetscSectionGetDof(patch->gtolCounts, p, &numPatchDofs);CHKERRQ(ierr);
+        if (numPatchDofs == 0) continue;
 
         ierr = PetscSectionGetOffset(patch->gtolCounts, p, &offset);CHKERRQ(ierr);
         ierr = ISGetIndices(patch->gtolWithArtificial, &gtolArrayWithArtificial);CHKERRQ(ierr);
@@ -2022,9 +2023,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = PetscSectionGetOffset(patch->gtolCountsWithArtificial, p, &offsetWithArtificial);CHKERRQ(ierr);
 
         ierr = PetscMalloc1(numPatchDofs, &patchWithoutArtificialToWithArtificialArray);CHKERRQ(ierr);
-
-        ierr = ISCreateGeneral(PETSC_COMM_SELF, numPatchDofs, patchWithoutArtificialToWithArtificialArray, PETSC_OWN_POINTER, &patch->dofMappingWithoutToWithArtificial[p-pStart]);CHKERRQ(ierr);
-        if (numPatchDofs == 0) continue;
         for (i=0; i<numPatchDofsWithArtificial; i++) {
           if (gtolArrayWithArtificial[i+offsetWithArtificial] == gtolArray[offset+dofWithoutArtificialCounter]) {
             patchWithoutArtificialToWithArtificialArray[dofWithoutArtificialCounter] = i;
@@ -2033,6 +2031,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
               break;
           }
         }
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, numPatchDofs, patchWithoutArtificialToWithArtificialArray, PETSC_OWN_POINTER, &patch->dofMappingWithoutToWithArtificial[p-pStart]);CHKERRQ(ierr);
         ierr = ISRestoreIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
         ierr = ISRestoreIndices(patch->gtolWithArtificial, &gtolArrayWithArtificial);CHKERRQ(ierr);
       }
@@ -2048,6 +2047,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = ISGetIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
 
         ierr = PetscSectionGetDof(patch->gtolCounts, p, &numPatchDofs);CHKERRQ(ierr);
+        if (numPatchDofs == 0) continue;
 
         ierr = PetscSectionGetOffset(patch->gtolCounts, p, &offset);CHKERRQ(ierr);
         ierr = ISGetIndices(patch->gtolWithAll, &gtolArrayWithAll);CHKERRQ(ierr);
@@ -2056,8 +2056,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
         ierr = PetscMalloc1(numPatchDofs, &patchWithoutAllToWithAllArray);CHKERRQ(ierr);
 
-        ierr = ISCreateGeneral(PETSC_COMM_SELF, numPatchDofs, patchWithoutAllToWithAllArray, PETSC_OWN_POINTER, &patch->dofMappingWithoutToWithAll[p-pStart]);CHKERRQ(ierr);
-        if (numPatchDofs == 0) continue;
         for (i=0; i<numPatchDofsWithAll; i++) {
           if (gtolArrayWithAll[i+offsetWithAll] == gtolArray[offset+dofWithoutAllCounter]) {
             patchWithoutAllToWithAllArray[dofWithoutAllCounter] = i;
@@ -2066,6 +2064,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
               break;
           }
         }
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, numPatchDofs, patchWithoutAllToWithAllArray, PETSC_OWN_POINTER, &patch->dofMappingWithoutToWithAll[p-pStart]);CHKERRQ(ierr);
         ierr = ISRestoreIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
         ierr = ISRestoreIndices(patch->gtolWithAll, &gtolArrayWithAll);CHKERRQ(ierr);
       }
