@@ -1976,9 +1976,22 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
 . dmInterface - The new interface DM, or NULL
 - dmHybrid - The new DM with cohesive cells
 
+  Note: The hybridLabel indicates what parts of the original mesh impinged on the on division surface. For points
+  directly on the division surface, they are labeled with their dimension, so an edge 7 on the division surface would be
+  7 (1) in hybridLabel. For points that impinge from the positive side, they are labeled with 100+dim, so an edge 6 with
+  one vertex 3 on the surface would be 6 (101) and 3 (0) in hybridLabel. If an edge 9 from the negative side of the
+  surface also hits vertex 3, it would be 9 (-101) in hybridLabel.
+
+  The splitLabel indicates what points in the new hybrid mesh were the result of splitting points in the original
+  mesh. The label value is +=100+dim for each point. For example, if two edges 10 and 14 in the hybrid resulting from
+  splitting an edge in the original mesh, you would have 10 (101) and 14 (-101) in the splitLabel.
+
+  The dmInterface is a DM built from the original division surface. It has a label which can be retrieved using
+  DMPlexGetSubpointMap() which maps each point back to the point in the surface of the original mesh.
+
   Level: developer
 
-.seealso: DMPlexConstructCohesiveCells(), DMPlexLabelCohesiveComplete(), DMCreate()
+.seealso: DMPlexConstructCohesiveCells(), DMPlexLabelCohesiveComplete(), DMPlexGetSubpointMap(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DMLabel *hybridLabel, DMLabel *splitLabel, DM *dmInterface, DM *dmHybrid)
 {
