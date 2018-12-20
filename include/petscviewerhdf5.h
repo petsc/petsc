@@ -38,6 +38,7 @@ PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t,PetscDataType
 
 #endif  /* defined(PETSC_HAVE_HDF5) */
 
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObject(PetscViewer,PetscObject,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer,const char[],const char[],PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer,const char[],const char[],PetscDataType,const void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer, const char[], const char[], PetscBool *);
@@ -57,4 +58,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer,PetscBo
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer,PetscBool*);
 
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetAIJNames(PetscViewer,const char[],const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetAIJNames(PetscViewer,const char*[],const char*[],const char*[],const char*[]);
 #endif

@@ -26,6 +26,7 @@ configure_options = [
   #'--download-suitesparse=1',
   #'--download-chaco=1',
   #'--download-spai=1',
+  '--download-p4est=1',
 
   ]
 

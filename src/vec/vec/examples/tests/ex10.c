@@ -2,10 +2,6 @@
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
 
-/*T
-   requires: x
-T*/
-
 #include <petscvec.h>
 
 int main(int argc,char **argv)

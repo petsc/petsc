@@ -1,14 +1,14 @@
   0 KSP Residual norm 1659.98 
   1 KSP Residual norm 422.747 
   2 KSP Residual norm 173.126 
-  3 KSP Residual norm 63.5226 
+  3 KSP Residual norm 63.5227 
   4 KSP Residual norm 20.5406 
-  5 KSP Residual norm 6.25314 
-  6 KSP Residual norm 0.854913 
-  7 KSP Residual norm 0.386128 
+  5 KSP Residual norm 6.25316 
+  6 KSP Residual norm 0.854912 
+  7 KSP Residual norm 0.386131 
   8 KSP Residual norm 0.408699 
-  9 KSP Residual norm 0.0365479 
- 10 KSP Residual norm 0.0168153 
+  9 KSP Residual norm 0.0365478 
+ 10 KSP Residual norm 0.0168152 
  11 KSP Residual norm 0.0109723 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
@@ -115,14 +115,12 @@ PC Object: 8 MPI processes
                         package used to perform factorization: petsc
                         total: nonzeros=36, allocated nonzeros=36
                         total number of mallocs used during MatSetValues calls =0
-                          using I-node routines: found 2 nodes, limit used is 5
                 linear system matrix = precond matrix:
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=6, cols=6, bs=6
                   total: nonzeros=36, allocated nonzeros=36
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 2 nodes, limit used is 5
             Down solver (pre-smoother) on level 1 -------------------------------
               KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI processes
                 type: richardson
@@ -140,7 +138,6 @@ PC Object: 8 MPI processes
                   rows=24, cols=24, bs=6
                   total: nonzeros=576, allocated nonzeros=576
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 5 nodes, limit used is 5
             Up solver (post-smoother) same as down solver (pre-smoother)
             Down solver (pre-smoother) on level 2 -------------------------------
               KSP Object: (pc_bddc_dirichlet_mg_levels_2_) 1 MPI processes
@@ -160,7 +157,6 @@ PC Object: 8 MPI processes
                   total: nonzeros=6300, allocated nonzeros=6300
                   total number of mallocs used during MatSetValues calls =0
                     has attached near null space
-                    using I-node routines: found 48 nodes, limit used is 5
             Up solver (post-smoother) same as down solver (pre-smoother)
             linear system matrix = precond matrix:
             Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
@@ -169,7 +165,6 @@ PC Object: 8 MPI processes
               total: nonzeros=6300, allocated nonzeros=6300
               total number of mallocs used during MatSetValues calls =0
                 has attached near null space
-                using I-node routines: found 48 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
         type: seqaij
@@ -177,7 +172,6 @@ PC Object: 8 MPI processes
         total: nonzeros=6300, allocated nonzeros=6300
         total number of mallocs used during MatSetValues calls =0
           has attached near null space
-          using I-node routines: found 48 nodes, limit used is 5
   --- Correction solver (rank 0)
     KSP Object: (pc_bddc_neumann_) 1 MPI processes
       type: preonly
@@ -198,14 +192,12 @@ PC Object: 8 MPI processes
               package used to perform factorization: petsc
               total: nonzeros=30915, allocated nonzeros=30915
               total number of mallocs used during MatSetValues calls =0
-                using I-node routines: found 85 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: (pc_bddc_neumann_) 1 MPI processes
         type: seqaij
         rows=279, cols=279, bs=3
         total: nonzeros=14265, allocated nonzeros=14265
         total number of mallocs used during MatSetValues calls =0
-          using I-node routines: found 93 nodes, limit used is 5
   --- Coarse solver
     KSP Object: (pc_bddc_coarse_) 8 MPI processes
       type: preonly
@@ -222,7 +214,6 @@ PC Object: 8 MPI processes
         rows=87, cols=87
         total: nonzeros=5277, allocated nonzeros=6796
         total number of mallocs used during MatSetValues calls =0
-          using I-node (on process 0) routines: found 3 nodes, limit used is 5
           KSP Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
@@ -239,7 +230,6 @@ PC Object: 8 MPI processes
               rows=87, cols=87
               total: nonzeros=5277, allocated nonzeros=5277
               total number of mallocs used during MatSetValues calls =0
-                using I-node routines: found 25 nodes, limit used is 5
   linear system matrix = precond matrix:
   Mat Object: 8 MPI processes
     type: is

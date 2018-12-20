@@ -1,0 +1,38 @@
+AO Object: 2 MPI processes
+  type: memoryscalable
+Number of elements in ordering 16
+PETSc->App  App->PETSc
+Process [0]
+  0    7      0    7
+  1    6      1    6
+  2    5      2    5
+  3    4      3    4
+  4    3      4    3
+  5    2      5    2
+  6    1      6    1
+  7    0      7    0
+Process [1]
+  8   15      8   15
+  9   14      9   14
+ 10   13     10   13
+ 11   12     11   12
+ 12   11     12   11
+ 13   10     13   10
+ 14    9     14    9
+ 15    8     15    8
+proc = 0 : 0 -> 7 
+proc = 0 : -1 -> -1 
+proc = 0 : 1 -> 6 
+proc = 0 : 2 -> 5 
+proc = 0 : -1 -> -1 
+proc = 0 : 4 -> 3 
+proc = 0 : 5 -> 2 
+proc = 0 : 6 -> 1 
+proc = 1 : -1 -> -1 
+proc = 1 : 8 -> 8 
+proc = 1 : 9 -> 9 
+proc = 1 : 10 -> 10 
+proc = 1 : -1 -> -1 
+proc = 1 : 12 -> 12 
+proc = 1 : 13 -> 13 
+proc = 1 : 14 -> 14 

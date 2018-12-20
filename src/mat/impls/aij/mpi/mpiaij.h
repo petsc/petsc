@@ -104,6 +104,7 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat,IS,IS,M
 PETSC_INTERN PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIAIJ(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatLoad_MPIAIJ_Binary(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat);
 PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);

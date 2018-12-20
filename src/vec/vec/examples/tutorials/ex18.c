@@ -18,7 +18,7 @@ T*/
 
 PetscScalar func(PetscScalar a)
 {
-  return 2*a/(1+a*a);
+  return (PetscScalar)2.*a/((PetscScalar)1.+a*a);
 }
 
 int main(int argc,char **argv)
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
   k    = 0;
   for (i=rstart; i<rend; i++) {
-    xarray[k] = i*h;
+    xarray[k] = (PetscScalar)i*h;
     xarray[k] = func(xarray[k]);
     k++;
   }
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   /*
       Return the value of the integral.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %g\n",(double)result);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %g\n",(double)PetscRealPart(result));CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&xend);CHKERRQ(ierr);
 
@@ -101,3 +101,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+     test:
+       nsize: 1
+
+     test:
+       nsize: 2
+       suffix: 2
+
+TEST*/

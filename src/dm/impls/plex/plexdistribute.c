@@ -1085,10 +1085,10 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   if (original) {
     PetscInt numCones;
 
-    ierr = PetscSectionGetStorageSize(originalConeSection,&numCones);CHKERRQ(ierr); ierr = PetscMalloc1(numCones,&globCones);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(originalConeSection,&numCones);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numCones,&globCones);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApplyBlock(original, numCones, cones, globCones);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     globCones = cones;
   }
   ierr = DMPlexGetCones(dmParallel, &newCones);CHKERRQ(ierr);
@@ -1104,7 +1104,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
     PetscInt  p;
     PetscBool valid = PETSC_TRUE;
     for (p = 0; p < newConesSize; ++p) {
-      if (newCones[p] < 0) {valid = PETSC_FALSE; ierr = PetscPrintf(PETSC_COMM_SELF, "Point %d not in overlap SF\n", p);CHKERRQ(ierr);}
+      if (newCones[p] < 0) {valid = PETSC_FALSE; ierr = PetscPrintf(PETSC_COMM_SELF, "[%d] Point %D not in overlap SF\n", PetscGlobalRank,p);CHKERRQ(ierr);}
     }
     if (!valid) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
   }
@@ -1659,9 +1659,10 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   if (nroots >= 0) {
-    IS                     isOriginal;
-    PetscInt               n, size, nleaves;
-    PetscInt              *numbering_orig, *numbering_new;
+    IS        isOriginal;
+    PetscInt  n, size, nleaves;
+    PetscInt  *numbering_orig, *numbering_new;
+
     /* Get the original point numbering */
     ierr = DMPlexCreatePointNumbering(dm, &isOriginal);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreateIS(isOriginal, &ltogOriginal);CHKERRQ(ierr);
@@ -1956,14 +1957,15 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
 . dm - the original DMPlex object
 
   Output Parameters:
-. gatherMesh - the gathered DM object, or NULL
++ sf - the PetscSF used for point distribution (optional)
+- gatherMesh - the gathered DM object, or NULL
 
   Level: intermediate
 
 .keywords: mesh
 .seealso: DMPlexDistribute(), DMPlexGetRedundantDM()
 @*/
-PetscErrorCode DMPlexGetGatherDM(DM dm, DM *gatherMesh)
+PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 {
   MPI_Comm       comm;
   PetscMPIInt    size;
@@ -1974,6 +1976,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, DM *gatherMesh)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gatherMesh,2);
   *gatherMesh = NULL;
+  if (sf) *sf = NULL;
   comm = PetscObjectComm((PetscObject)dm);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) PetscFunctionReturn(0);
@@ -1982,7 +1985,8 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, DM *gatherMesh)
   ierr = PetscPartitionerCreate(comm,&gatherPart);CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(gatherPart,PETSCPARTITIONERGATHER);CHKERRQ(ierr);
   ierr = DMPlexSetPartitioner(dm,gatherPart);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm,0,NULL,gatherMesh);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(dm,0,sf,gatherMesh);CHKERRQ(ierr);
+
   ierr = DMPlexSetPartitioner(dm,oldPart);CHKERRQ(ierr);
   ierr = PetscPartitionerDestroy(&gatherPart);CHKERRQ(ierr);
   ierr = PetscPartitionerDestroy(&oldPart);CHKERRQ(ierr);
@@ -1996,20 +2000,21 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, DM *gatherMesh)
 . dm - the original DMPlex object
 
   Output Parameters:
-. redundantMesh - the redundant DM object, or NULL
++ sf - the PetscSF used for point distribution (optional)
+- redundantMesh - the redundant DM object, or NULL
 
   Level: intermediate
 
 .keywords: mesh
 .seealso: DMPlexDistribute(), DMPlexGetGatherDM()
 @*/
-PetscErrorCode DMPlexGetRedundantDM(DM dm, DM *redundantMesh)
+PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
 {
   MPI_Comm       comm;
   PetscMPIInt    size, rank;
   PetscInt       pStart, pEnd, p;
   PetscInt       numPoints = -1;
-  PetscSF        migrationSF, sfPoint;
+  PetscSF        migrationSF, sfPoint, gatherSF;
   DM             gatherDM, dmCoord;
   PetscSFNode    *points;
   PetscErrorCode ierr;
@@ -2023,9 +2028,10 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, DM *redundantMesh)
   if (size == 1) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     *redundantMesh = dm;
+    if (sf) *sf = NULL;
     PetscFunctionReturn(0);
   }
-  ierr = DMPlexGetGatherDM(dm,&gatherDM);CHKERRQ(ierr);
+  ierr = DMPlexGetGatherDM(dm,&gatherSF,&gatherDM);CHKERRQ(ierr);
   if (!gatherDM) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = DMPlexGetChart(gatherDM,&pStart,&pEnd);CHKERRQ(ierr);
@@ -2046,7 +2052,15 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, DM *redundantMesh)
   ierr = DMGetCoordinateDM(*redundantMesh, &dmCoord);CHKERRQ(ierr);
   if (dmCoord) {ierr = DMSetPointSF(dmCoord, sfPoint);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&sfPoint);CHKERRQ(ierr);
+  if (sf) {
+    PetscSF tsf;
+
+    ierr = PetscSFCompose(gatherSF,migrationSF,&tsf);CHKERRQ(ierr);
+    ierr = DMPlexStratifyMigrationSF(dm, tsf, sf);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&tsf);CHKERRQ(ierr);
+  }
   ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&gatherSF);CHKERRQ(ierr);
   ierr = DMDestroy(&gatherDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

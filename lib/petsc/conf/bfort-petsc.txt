@@ -139,6 +139,7 @@ nativeptr PetscIntStack
 nativeptr PetscLayout
 nativeptr PetscObjectList
 nativeptr PetscOptions
+nativeptr PetscPartitioner
 nativeptr PetscDS
 nativeptr PetscSegBuffer
 nativeptr PetscSpace

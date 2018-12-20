@@ -2929,11 +2929,11 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
   Input Parameters:
 + dm - The empty DM object, usually from DMCreate() and DMSetDimension()
 . depth - The depth of the DAG
-. numPoints - The number of points at each depth
+. numPoints - Array of size depth + 1 containing the number of points at each depth
 . coneSize - The cone size of each point
 . cones - The concatenation of the cone points for each point, the cone list must be oriented correctly for each point
 . coneOrientations - The orientation of each cone point
-- vertexCoords - An array of numVertices*dim numbers, the coordinates of each vertex
+- vertexCoords - An array of numPoints[0]*spacedim numbers representing the coordinates of each vertex, with spacedim the value set via DMSetCoordinateDim()
 
   Output Parameter:
 . dm - The DM

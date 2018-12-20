@@ -24,9 +24,9 @@ struct _n_User {
   PetscReal next_output;
   PetscInt  steps;
   PetscReal ftime,x_ob[2];
-  Mat       A;             /* Jacobian matrix */
-  Mat       Jacp;          /* JacobianP matrix */
-  Vec       x,lambda[2],mup[2];        /* adjoint variables */
+  Mat       A;                  /* Jacobian matrix */
+  Mat       Jacp;               /* JacobianP matrix */
+  Vec       x,lambda[2],mup[2]; /* adjoint variables */
 };
 
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
@@ -66,14 +66,14 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
   J[1][0] = -2.*mu*x[1]*x[0]-1.;
   J[0][1] = 1.0;
   J[1][1] = mu*(1.0-x[0]*x[0]);
-  ierr    = MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (A != B) {
+  if (B && A != B) {
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);  
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -88,7 +88,7 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   J[0][0] = 0;
   J[1][0] = (1.-x[0]*x[0])*x[1];
-  ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
@@ -198,6 +198,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&(user.ftime));CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&user.steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   user.x_ob[0] = x_ptr[0];
@@ -263,7 +264,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user.lambda[1]);CHKERRQ(ierr);
   ierr = VecDestroy(&user.mup[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&user.mup[1]);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
@@ -308,7 +308,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 2;   x_ptr[1] = 0.66666654321;
+  x_ptr[0] = 2;
+  x_ptr[1] = 0.66666654321;
   ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,0.5);CHKERRQ(ierr);
@@ -342,10 +343,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
   ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
+  x_ptr[0] = 0.0;
+  x_ptr[1] = 1.0;
   ierr = VecRestoreArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
-
   ierr = VecGetArray(user->mup[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user->mup[0],&x_ptr);CHKERRQ(ierr);

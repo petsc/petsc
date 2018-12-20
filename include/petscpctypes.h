@@ -1,8 +1,6 @@
 #if !defined(_PETSCPCTYPES_H)
 #define _PETSCPCTYPES_H
 
-#include <petscdmtypes.h>
-
 /*S
      PC - Abstract PETSc object that manages all preconditioners including direct solvers such as PCLU
 
@@ -83,7 +81,6 @@ typedef const char* PCType;
 E*/
 typedef enum { PC_SIDE_DEFAULT=-1,PC_LEFT,PC_RIGHT,PC_SYMMETRIC} PCSide;
 #define PC_SIDE_MAX (PC_SYMMETRIC + 1)
-PETSC_EXTERN const char *const *const PCSides;
 
 /*E
     PCRichardsonConvergedReason - reason a PCApplyRichardson method terminates
@@ -109,7 +106,6 @@ typedef enum {
 .seealso:
 E*/
 typedef enum { PC_JACOBI_DIAGONAL,PC_JACOBI_ROWMAX,PC_JACOBI_ROWSUM} PCJacobiType;
-PETSC_EXTERN const char *const PCJacobiTypes[];
 
 /*E
     PCASMType - Type of additive Schwarz method to use
@@ -131,7 +127,6 @@ $                        Not very good.
 .seealso: PCASMSetType()
 E*/
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
-PETSC_EXTERN const char *const PCASMTypes[];
 
 /*E
     PCGASMType - Type of generalized additive Schwarz method to use (differs from ASM in allowing multiple processors per subdomain).
@@ -162,7 +157,6 @@ $                        Not very good.
 .seealso: PCGASMSetType()
 E*/
 typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_GASM_NONE = 0} PCGASMType;
-PETSC_EXTERN const char *const PCGASMTypes[];
 
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed
@@ -181,7 +175,6 @@ $                         alpha I + R
 .seealso: PCCompositeSetType()
 E*/
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL,PC_COMPOSITE_SCHUR,PC_COMPOSITE_GKB} PCCompositeType;
-PETSC_EXTERN const char *const PCCompositeTypes[];
 
 /*E
     PCFieldSplitSchurPreType - Determines how to precondition Schur complement
@@ -191,7 +184,6 @@ PETSC_EXTERN const char *const PCCompositeTypes[];
 .seealso: PCFieldSplitSetSchurPre()
 E*/
 typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_SELFP,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER,PC_FIELDSPLIT_SCHUR_PRE_FULL} PCFieldSplitSchurPreType;
-PETSC_EXTERN const char *const PCFieldSplitSchurPreTypes[];
 
 /*E
     PCFieldSplitSchurFactType - determines which off-diagonal parts of the approximate block factorization to use
@@ -206,7 +198,6 @@ typedef enum {
   PC_FIELDSPLIT_SCHUR_FACT_UPPER,
   PC_FIELDSPLIT_SCHUR_FACT_FULL
 } PCFieldSplitSchurFactType;
-PETSC_EXTERN const char *const PCFieldSplitSchurFactTypes[];
 
 /*E
     PCPARMSGlobalType - Determines the global preconditioner method in PARMS
@@ -216,7 +207,7 @@ PETSC_EXTERN const char *const PCFieldSplitSchurFactTypes[];
 .seealso: PCPARMSSetGlobal()
 E*/
 typedef enum {PC_PARMS_GLOBAL_RAS,PC_PARMS_GLOBAL_SCHUR,PC_PARMS_GLOBAL_BJ} PCPARMSGlobalType;
-PETSC_EXTERN const char *const PCPARMSGlobalTypes[];
+
 /*E
     PCPARMSLocalType - Determines the local preconditioner method in PARMS
 
@@ -225,7 +216,6 @@ PETSC_EXTERN const char *const PCPARMSGlobalTypes[];
 .seealso: PCPARMSSetLocal()
 E*/
 typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PARMS_LOCAL_ARMS} PCPARMSLocalType;
-PETSC_EXTERN const char *const PCPARMSLocalTypes[];
 
 /*E
     PCGAMGType - type of generalized algebraic multigrid (PCGAMG) method
@@ -265,7 +255,6 @@ typedef const char *PCGAMGClassicalType;
 
 E*/
 typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PCMGType;
-PETSC_EXTERN const char *const PCMGTypes[];
 #define PC_MG_CASCADE PC_MG_KASKADE;
 
 /*E
@@ -281,7 +270,6 @@ PETSC_EXTERN const char *const PCMGTypes[];
 
 E*/
 typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
-PETSC_EXTERN const char *const PCMGCycleTypes[];
 
 /*E
     PCMGalerkinType - Determines if the coarse grid operators are computed via the Galerkin process
@@ -300,7 +288,6 @@ PETSC_EXTERN const char *const PCMGCycleTypes[];
 
 E*/
 typedef enum { PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE, PC_MG_GALERKIN_EXTERNAL} PCMGGalerkinType;
-PETSC_EXTERN const char *const PCMGGalerkinTypes[];
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space
@@ -310,8 +297,6 @@ PETSC_EXTERN const char *const PCMGGalerkinTypes[];
 .seealso: PCExoticSetType(), PCEXOTIC
 E*/
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
-PETSC_EXTERN const char *const PCExoticTypes[];
-PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
 /*E
     PCPatchConstructType - The algorithm used to construct patches for the preconditioner
@@ -321,7 +306,6 @@ PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 .seealso: PCPatchSetConstructType(), PCEXOTIC
 E*/
 typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
-PETSC_EXTERN const char *const PCPatchConstructTypes[];
 
 /*E
     PCFailedReason - indicates type of PC failure
@@ -331,5 +315,4 @@ PETSC_EXTERN const char *const PCPatchConstructTypes[];
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
 E*/
 typedef enum {PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTOR_NUMERIC_ZEROPIVOT,PC_FACTOR_OUTMEMORY,PC_FACTOR_OTHER,PC_SUBPC_ERROR} PCFailedReason;
-PETSC_EXTERN const char *const PCFailedReasons[];
 #endif

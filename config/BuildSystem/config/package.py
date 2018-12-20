@@ -65,11 +65,11 @@ class Package(config.base.Configure):
     self.parallelMake           = 1  # 1 indicates the package supports make -j np option
 
     self.precisions             = ['__fp16','single','double','__float128']; # Floating point precision package works with
-    self.complex                = 1   # 0 means cannot use complex
-    self.requires32bitint       = 0;  # 1 means that the package will not work with 64 bit integers
+    self.complex                = 1  # 0 means cannot use complex
+    self.requires32bitint       = 0  # 1 means that the package will not work with 64 bit integers
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
-    self.requirec99flag         = 0 # package must be compiled with C99 flags
+    self.requirec99flag         = 0  # package must be compiled with C99 flags
 
     # Outside coupling
     self.defaultInstallDir      = os.path.abspath('externalpackages')
@@ -498,9 +498,14 @@ class Package(config.base.Configure):
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
       self.log.write('Have to rebuild '+self.PACKAGE+', '+makefile+' != '+makefileSaved+'\n')
       return 1
-    if os.path.isfile(gcommfile) and (not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(gcommfile))):
-      self.log.write('Have to rebuild '+self.PACKAGE+', '+gcommfile+' != '+gcommfileSaved+'\n')
-      return 1
+    else:
+      self.log.write('Makefile '+makefileSaved+' has correct checksum\n')
+    if os.path.isfile(gcommfile):
+      if not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(gcommfile)):
+        self.log.write('Have to rebuild '+self.PACKAGE+', '+gcommfile+' != '+gcommfileSaved+'\n')
+        return 1
+      else:
+        self.log.write('Commit file '+gcommfileSaved+' has correct checksum\n')
     self.log.write('Do not need to rebuild '+self.PACKAGE+'\n')
     return 0
 
@@ -661,7 +666,7 @@ class Package(config.base.Configure):
         retriever.saveLog()
         pkgdir = self.getDir()
         if not pkgdir:
-          raise RuntimeError('Could not located downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
+          raise RuntimeError('Could not locate downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
         retriever.restoreLog()
         return pkgdir

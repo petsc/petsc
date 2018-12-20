@@ -2,7 +2,6 @@
     0 SNES Function norm < 1.e-11
     1 SNES Function norm < 1.e-11
       0 SNES Function norm < 1.e-11
-      1 SNES Function norm < 1.e-11
         0 SNES Function norm < 1.e-11
         1 SNES Function norm < 1.e-11
       0 SNES Function norm < 1.e-11
@@ -49,7 +48,7 @@ SNES Object: 4 MPI processes
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=1
-      total number of function evaluations=3
+      total number of function evaluations=4
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_1_) 4 MPI processes
         type: bt

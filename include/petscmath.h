@@ -462,7 +462,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 */
 PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 {
-#if   defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
+#if   defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
   return PetscComplex(x,y);
 #elif defined(_Imaginary_I)
   return x + y * _Imaginary_I;
@@ -686,6 +686,7 @@ PETSC_STATIC_INLINE PetscBool PetscIsNanScalar(PetscScalar v) {return PetscIsNan
 PETSC_STATIC_INLINE PetscBool PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
 PETSC_STATIC_INLINE PetscBool PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
 
+PETSC_EXTERN PetscBool PetscIsCloseAtTol(PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscBool PetscEqualReal(PetscReal,PetscReal);
 PETSC_EXTERN PetscBool PetscEqualScalar(PetscScalar,PetscScalar);
 
@@ -700,7 +701,11 @@ typedef PetscReal MatReal;
 struct petsc_mpiu_2scalar {PetscScalar a,b;};
 PETSC_EXTERN MPI_Datatype MPIU_2SCALAR PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2scalar);
 
-#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
+#if !defined(MPI_2INT)
+struct petsc_mpiu_2mpiint {PetscMPIInt a,b;};
+PETSC_EXTERN MPI_Datatype MPI_2INT PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2mpiint);
+#endif
+#if defined(PETSC_USE_64BIT_INDICES)
 struct petsc_mpiu_2int {PetscInt a,b;};
 PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2int);
 #else

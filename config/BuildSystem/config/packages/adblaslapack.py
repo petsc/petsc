@@ -16,6 +16,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.CoDiPack = framework.require('config.packages.CoDiPack',self)
+    self.deps     = [self.CoDiPack]
     return
 
   def Install(self):

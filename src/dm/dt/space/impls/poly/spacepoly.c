@@ -13,14 +13,13 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer viewer)
+static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer v)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space of degree %D\n", sp->degree);CHKERRQ(ierr);}
-  else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space of degree %D\n", sp->degree);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(v, "%s space of degree %D\n", poly->tensor ? "Tensor polynomial" : "Polynomial", sp->degree);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

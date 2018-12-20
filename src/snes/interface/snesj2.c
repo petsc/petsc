@@ -60,7 +60,7 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat J,Mat B,voi
 
   PetscFunctionBegin;
   if (color) PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,6);
-  else {ierr  = PetscObjectQuery((PetscObject)B,"SNESMatFDColoring",(PetscObject*)&color);CHKERRQ(ierr);}
+  if (!color) {ierr  = PetscObjectQuery((PetscObject)B,"SNESMatFDColoring",(PetscObject*)&color);CHKERRQ(ierr);}
 
   if (!color) {
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);

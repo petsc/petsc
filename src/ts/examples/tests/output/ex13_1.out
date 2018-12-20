@@ -1,0 +1,383 @@
+TSTrajectorySet: stepnum 1, time 2. (stages 0)
+TSTrajectorySet: stepnum 4, time 9. (stages 0)
+TSTrajectorySet: stepnum 9, time 1. (stages 0)
+TSTrajectorySet: stepnum 2, time 3. (stages 0)
+TSTrajectorySet: stepnum 3, time 6. (stages 0)
+TSTrajectorySet: stepnum 6, time 7. (stages 0)
+TSTrajectorySet: stepnum 5, time 5. (stages 0)
+TSTrajectorySet: stepnum 8, time 10. (stages 0)
+TSTrajectorySet: stepnum 0, time 4. (stages 0)
+TSTrajectorySet: stepnum 7, time 8. (stages 0)
+Requested by GetVecs 1 1: stepnum -1, time 1.
+  Reconstructing at time 1., order 3
+    New snapshot 0
+      Requested by GetVecs 1 0: stepnum 0, time 4.
+      TSTrajectoryGet: stepnum 0, stages 0
+    New snapshot 1
+      Requested by GetVecs 1 0: stepnum 2, time 3.
+      TSTrajectoryGet: stepnum 2, stages 0
+    New snapshot 2
+      Requested by GetVecs 1 0: stepnum 1, time 2.
+      TSTrajectoryGet: stepnum 1, stages 0
+    New snapshot 3
+      Requested by GetVecs 1 0: stepnum 9, time 1.
+      TSTrajectoryGet: stepnum 9, stages 0
+  Retrieving solution from exact step
+    Reusing snapshot 3 step 9, time 1.
+  Interpolating derivative with 4 snapshots
+ f(1.) = 1. (reconstructed 1.)
+df(1.) = 3. (reconstructed 3.)
+Requested by GetVecs 1 1: stepnum -1, time 9.9
+  Reconstructing at time 9.9, order 3
+    Discarding snapshot 0 at time 4.
+      Requested by GetVecs 1 0: stepnum 8, time 10.
+      TSTrajectoryGet: stepnum 8, stages 0
+    Discarding snapshot 1 at time 3.
+      Requested by GetVecs 1 0: stepnum 4, time 9.
+      TSTrajectoryGet: stepnum 4, stages 0
+    Discarding snapshot 2 at time 2.
+      Requested by GetVecs 1 0: stepnum 7, time 8.
+      TSTrajectoryGet: stepnum 7, stages 0
+    Discarding snapshot 3 at time 1.
+      Requested by GetVecs 1 0: stepnum 6, time 7.
+      TSTrajectoryGet: stepnum 6, stages 0
+  Interpolating solution with 4 snapshots
+  Interpolating derivative with 4 snapshots
+ f(9.9) = 970.299 (reconstructed 970.299)
+df(9.9) = 294.03 (reconstructed 294.03)
+Requested by GetVecs 1 1: stepnum -1, time 3.
+  Reconstructing at time 3., order 3
+    Discarding snapshot 0 at time 10.
+      Requested by GetVecs 1 0: stepnum 0, time 4.
+      TSTrajectoryGet: stepnum 0, stages 0
+    Discarding snapshot 1 at time 9.
+      Requested by GetVecs 1 0: stepnum 2, time 3.
+      TSTrajectoryGet: stepnum 2, stages 0
+    Discarding snapshot 2 at time 8.
+      Requested by GetVecs 1 0: stepnum 1, time 2.
+      TSTrajectoryGet: stepnum 1, stages 0
+    Discarding snapshot 3 at time 7.
+      Requested by GetVecs 1 0: stepnum 9, time 1.
+      TSTrajectoryGet: stepnum 9, stages 0
+  Retrieving solution from exact step
+    Reusing snapshot 1 step 2, time 3.
+  Interpolating derivative with 4 snapshots
+ f(3.) = 27. (reconstructed 27.)
+df(3.) = 27. (reconstructed 27.)
+Requested by GetVecs 1 1: stepnum -1, time 1.1
+  Reconstructing at time 1.1, order 3
+    Reusing snapshot 0, step 0, time 4.
+    Reusing snapshot 1, step 2, time 3.
+    Reusing snapshot 2, step 1, time 2.
+    Reusing snapshot 3, step 9, time 1.
+  Interpolating solution with 4 snapshots
+  Interpolating derivative with 4 snapshots
+ f(1.1) = 1.331 (reconstructed 1.331)
+df(1.1) = 3.63 (reconstructed 3.63)
+Requested by GetVecs 1 1: stepnum -1, time 1.1
+  State vector cached
+  Derivative vector cached
+ f(1.1) = 1.331 (reconstructed 1.331)
+df(1.1) = 3.63 (reconstructed 3.63)
+Requested by GetVecs 1 1: stepnum -1, time 5.6
+  Reconstructing at time 5.6, order 3
+    Reusing snapshot 0, step 0, time 4.
+    Discarding snapshot 1 at time 3.
+      Requested by GetVecs 1 0: stepnum 6, time 7.
+      TSTrajectoryGet: stepnum 6, stages 0
+    Discarding snapshot 2 at time 2.
+      Requested by GetVecs 1 0: stepnum 3, time 6.
+      TSTrajectoryGet: stepnum 3, stages 0
+    Discarding snapshot 3 at time 1.
+      Requested by GetVecs 1 0: stepnum 5, time 5.
+      TSTrajectoryGet: stepnum 5, stages 0
+  Interpolating solution with 4 snapshots
+  Interpolating derivative with 4 snapshots
+ f(5.6) = 175.616 (reconstructed 175.616)
+df(5.6) = 94.08 (reconstructed 94.08)
+Requested by GetVecs 1 0: stepnum -1, time 5.6
+  State vector cached
+ f(5.6) = 175.616 (reconstructed 175.616)
+Requested by GetVecs 1 0: stepnum -1, time 1.1
+  Reconstructing at time 1.1, order 3
+    Reusing snapshot 0, step 0, time 4.
+    Discarding snapshot 1 at time 7.
+      Requested by GetVecs 1 0: stepnum 2, time 3.
+      TSTrajectoryGet: stepnum 2, stages 0
+    Discarding snapshot 2 at time 6.
+      Requested by GetVecs 1 0: stepnum 1, time 2.
+      TSTrajectoryGet: stepnum 1, stages 0
+    Discarding snapshot 3 at time 5.
+      Requested by GetVecs 1 0: stepnum 9, time 1.
+      TSTrajectoryGet: stepnum 9, stages 0
+  Interpolating solution with 4 snapshots
+ f(1.1) = 1.331 (reconstructed 1.331)
+Requested by GetVecs 1 0: stepnum -1, time 1.1
+  State vector cached
+ f(1.1) = 1.331 (reconstructed 1.331)
+Requested by GetVecs 1 0: stepnum -1, time 3.
+  Reconstructing at time 3., order 3
+  Retrieving solution from exact step
+    Reusing snapshot 1 step 2, time 3.
+ f(3.) = 27. (reconstructed 27.)
+Requested by GetVecs 1 0: stepnum -1, time 9.9
+  Reconstructing at time 9.9, order 3
+    Discarding snapshot 0 at time 4.
+      Requested by GetVecs 1 0: stepnum 8, time 10.
+      TSTrajectoryGet: stepnum 8, stages 0
+    Discarding snapshot 1 at time 3.
+      Requested by GetVecs 1 0: stepnum 4, time 9.
+      TSTrajectoryGet: stepnum 4, stages 0
+    Discarding snapshot 2 at time 2.
+      Requested by GetVecs 1 0: stepnum 7, time 8.
+      TSTrajectoryGet: stepnum 7, stages 0
+    Discarding snapshot 3 at time 1.
+      Requested by GetVecs 1 0: stepnum 6, time 7.
+      TSTrajectoryGet: stepnum 6, stages 0
+  Interpolating solution with 4 snapshots
+ f(9.9) = 970.299 (reconstructed 970.299)
+Requested by GetVecs 1 0: stepnum -1, time 1.
+  Reconstructing at time 1., order 3
+  Retrieving solution from exact step
+    Discarding snapshot 0 at time 10.
+      Requested by GetVecs 1 0: stepnum 9, time 1.
+      TSTrajectoryGet: stepnum 9, stages 0
+ f(1.) = 1. (reconstructed 1.)
+Requested by GetVecs 0 1: stepnum -1, time 5.6
+  Derivative vector cached
+df(5.6) = 94.08 (reconstructed 94.08)
+Requested by GetVecs 0 1: stepnum -1, time 1.1
+  Reconstructing at time 1.1, order 3
+    Reusing snapshot 0, step 9, time 1.
+    Discarding snapshot 1 at time 9.
+      Requested by GetVecs 1 0: stepnum 0, time 4.
+      TSTrajectoryGet: stepnum 0, stages 0
+    Discarding snapshot 2 at time 8.
+      Requested by GetVecs 1 0: stepnum 2, time 3.
+      TSTrajectoryGet: stepnum 2, stages 0
+    Discarding snapshot 3 at time 7.
+      Requested by GetVecs 1 0: stepnum 1, time 2.
+      TSTrajectoryGet: stepnum 1, stages 0
+  Interpolating derivative with 4 snapshots
+df(1.1) = 3.63 (reconstructed 3.63)
+Requested by GetVecs 0 1: stepnum -1, time 1.1
+  Derivative vector cached
+df(1.1) = 3.63 (reconstructed 3.63)
+Requested by GetVecs 0 1: stepnum -1, time 3.
+  Reconstructing at time 3., order 3
+    Reusing snapshot 1, step 0, time 4.
+    Reusing snapshot 2, step 2, time 3.
+    Reusing snapshot 3, step 1, time 2.
+    Reusing snapshot 0, step 9, time 1.
+  Interpolating derivative with 4 snapshots
+df(3.) = 27. (reconstructed 27.)
+Requested by GetVecs 0 1: stepnum -1, time 9.9
+  Reconstructing at time 9.9, order 3
+    Discarding snapshot 1 at time 4.
+      Requested by GetVecs 1 0: stepnum 8, time 10.
+      TSTrajectoryGet: stepnum 8, stages 0
+    Discarding snapshot 2 at time 3.
+      Requested by GetVecs 1 0: stepnum 4, time 9.
+      TSTrajectoryGet: stepnum 4, stages 0
+    Discarding snapshot 3 at time 2.
+      Requested by GetVecs 1 0: stepnum 7, time 8.
+      TSTrajectoryGet: stepnum 7, stages 0
+    Discarding snapshot 0 at time 1.
+      Requested by GetVecs 1 0: stepnum 6, time 7.
+      TSTrajectoryGet: stepnum 6, stages 0
+  Interpolating derivative with 4 snapshots
+df(9.9) = 294.03 (reconstructed 294.03)
+Requested by GetVecs 0 1: stepnum -1, time 1.
+  Reconstructing at time 1., order 3
+    Discarding snapshot 1 at time 10.
+      Requested by GetVecs 1 0: stepnum 0, time 4.
+      TSTrajectoryGet: stepnum 0, stages 0
+    Discarding snapshot 2 at time 9.
+      Requested by GetVecs 1 0: stepnum 2, time 3.
+      TSTrajectoryGet: stepnum 2, stages 0
+    Discarding snapshot 3 at time 8.
+      Requested by GetVecs 1 0: stepnum 1, time 2.
+      TSTrajectoryGet: stepnum 1, stages 0
+    Discarding snapshot 0 at time 7.
+      Requested by GetVecs 1 0: stepnum 9, time 1.
+      TSTrajectoryGet: stepnum 9, stages 0
+  Interpolating derivative with 4 snapshots
+df(1.) = 3. (reconstructed 3.)
+Requested by GetVecs 1 1: stepnum -1, time 1.
+  Reconstructing at time 1., order 3
+    Reusing snapshot 1, step 0, time 4.
+    Reusing snapshot 2, step 2, time 3.
+    Reusing snapshot 3, step 1, time 2.
+    Reusing snapshot 0, step 9, time 1.
+  Retrieving solution from exact step
+    Reusing snapshot 0 step 9, time 1.
+  Interpolating derivative with 4 snapshots
+ f(1.) = 1. (reconstructed 1.)
+df(1.) = 3. (reconstructed 3.)
+Requested by GetVecs 1 1: stepnum -1, time 9.9
+  Reconstructing at time 9.9, order 3
+    Discarding snapshot 1 at time 4.
+      Requested by GetVecs 1 0: stepnum 8, time 10.
+      TSTrajectoryGet: stepnum 8, stages 0
+    Discarding snapshot 2 at time 3.
+      Requested by GetVecs 1 0: stepnum 4, time 9.
+      TSTrajectoryGet: stepnum 4, stages 0
+    Discarding snapshot 3 at time 2.
+      Requested by GetVecs 1 0: stepnum 7, time 8.
+      TSTrajectoryGet: stepnum 7, stages 0
+    Discarding snapshot 0 at time 1.
+      Requested by GetVecs 1 0: stepnum 6, time 7.
+      TSTrajectoryGet: stepnum 6, stages 0
+  Interpolating solution with 4 snapshots
+  Interpolating derivative with 4 snapshots
+ f(9.9) = 970.299 (reconstructed 970.299)
+df(9.9) = 294.03 (reconstructed 294.03)
+Requested by GetVecs 1 1: stepnum -1, time 3.
+  Reconstructing at time 3., order 3
+    Discarding snapshot 1 at time 10.
+      Requested by GetVecs 1 0: stepnum 0, time 4.
+      TSTrajectoryGet: stepnum 0, stages 0
+    Discarding snapshot 2 at time 9.
+      Requested by GetVecs 1 0: stepnum 2, time 3.
+      TSTrajectoryGet: stepnum 2, stages 0
+    Discarding snapshot 3 at time 8.
+      Requested by GetVecs 1 0: stepnum 1, time 2.
+      TSTrajectoryGet: stepnum 1, stages 0
+    Discarding snapshot 0 at time 7.
+      Requested by GetVecs 1 0: stepnum 9, time 1.
+      TSTrajectoryGet: stepnum 9, stages 0
+  Retrieving solution from exact step
+    Reusing snapshot 2 step 2, time 3.
+  Interpolating derivative with 4 snapshots
+ f(3.) = 27. (reconstructed 27.)
+df(3.) = 27. (reconstructed 27.)
+Requested by GetVecs 1 1: stepnum -1, time 1.1
+  Reconstructing at time 1.1, order 3
+    Reusing snapshot 1, step 0, time 4.
+    Reusing snapshot 2, step 2, time 3.
+    Reusing snapshot 3, step 1, time 2.
+    Reusing snapshot 0, step 9, time 1.
+  Interpolating solution with 4 snapshots
+  Interpolating derivative with 4 snapshots
+ f(1.1) = 1.331 (reconstructed 1.331)
+df(1.1) = 3.63 (reconstructed 3.63)
+Requested by GetVecs 1 1: stepnum -1, time 1.1
+  State vector cached
+  Derivative vector cached
+ f(1.1) = 1.331 (reconstructed 1.331)
+df(1.1) = 3.63 (reconstructed 3.63)
+Requested by GetVecs 1 1: stepnum -1, time 5.6
+  Reconstructing at time 5.6, order 3
+    Reusing snapshot 1, step 0, time 4.
+    Discarding snapshot 2 at time 3.
+      Requested by GetVecs 1 0: stepnum 6, time 7.
+      TSTrajectoryGet: stepnum 6, stages 0
+    Discarding snapshot 3 at time 2.
+      Requested by GetVecs 1 0: stepnum 3, time 6.
+      TSTrajectoryGet: stepnum 3, stages 0
+    Discarding snapshot 0 at time 1.
+      Requested by GetVecs 1 0: stepnum 5, time 5.
+      TSTrajectoryGet: stepnum 5, stages 0
+  Interpolating solution with 4 snapshots
+  Interpolating derivative with 4 snapshots
+ f(5.6) = 175.616 (reconstructed 175.616)
+df(5.6) = 94.08 (reconstructed 94.08)
+TSTrajectorySet: stepnum 0, time 1. (stages 0)
+TSTrajectorySet: stepnum 1, time 2. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 2.
+  Reconstructing at time 2., order 3
+    New snapshot 0
+      Requested by GetVecs 1 0: stepnum 1, time 2.
+      TSTrajectoryGet: stepnum 1, stages 0
+    New snapshot 1
+      Requested by GetVecs 1 0: stepnum 0, time 1.
+      TSTrajectoryGet: stepnum 0, stages 0
+  Interpolating derivative with 2 snapshots
+df(2.) = 12. (reconstructed 7.)
+TSTrajectorySet: stepnum 2, time 3. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 3.
+  Reconstructing at time 3., order 3
+    Reusing snapshot 0, step 1, time 2.
+    Reusing snapshot 1, step 0, time 1.
+    New snapshot 2
+      Requested by GetVecs 1 0: stepnum 2, time 3.
+      TSTrajectoryGet: stepnum 2, stages 0
+  Interpolating derivative with 3 snapshots
+df(3.) = 27. (reconstructed 25.)
+TSTrajectorySet: stepnum 3, time 4. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 4.
+  Reconstructing at time 4., order 3
+    Reusing snapshot 2, step 2, time 3.
+    Reusing snapshot 0, step 1, time 2.
+    Reusing snapshot 1, step 0, time 1.
+    New snapshot 3
+      Requested by GetVecs 1 0: stepnum 3, time 4.
+      TSTrajectoryGet: stepnum 3, stages 0
+  Interpolating derivative with 4 snapshots
+df(4.) = 48. (reconstructed 48.)
+TSTrajectorySet: stepnum 4, time 5. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 5.
+  Reconstructing at time 5., order 3
+    Reusing snapshot 3, step 3, time 4.
+    Reusing snapshot 2, step 2, time 3.
+    Reusing snapshot 0, step 1, time 2.
+    Discarding snapshot 1 at time 1.
+      Requested by GetVecs 1 0: stepnum 4, time 5.
+      TSTrajectoryGet: stepnum 4, stages 0
+  Interpolating derivative with 4 snapshots
+df(5.) = 75. (reconstructed 75.)
+TSTrajectorySet: stepnum 5, time 6. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 6.
+  Reconstructing at time 6., order 3
+    Reusing snapshot 1, step 4, time 5.
+    Reusing snapshot 3, step 3, time 4.
+    Reusing snapshot 2, step 2, time 3.
+    Discarding snapshot 0 at time 2.
+      Requested by GetVecs 1 0: stepnum 5, time 6.
+      TSTrajectoryGet: stepnum 5, stages 0
+  Interpolating derivative with 4 snapshots
+df(6.) = 108. (reconstructed 108.)
+TSTrajectorySet: stepnum 6, time 7. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 7.
+  Reconstructing at time 7., order 3
+    Reusing snapshot 0, step 5, time 6.
+    Reusing snapshot 1, step 4, time 5.
+    Reusing snapshot 3, step 3, time 4.
+    Discarding snapshot 2 at time 3.
+      Requested by GetVecs 1 0: stepnum 6, time 7.
+      TSTrajectoryGet: stepnum 6, stages 0
+  Interpolating derivative with 4 snapshots
+df(7.) = 147. (reconstructed 147.)
+TSTrajectorySet: stepnum 7, time 8. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 8.
+  Reconstructing at time 8., order 3
+    Reusing snapshot 2, step 6, time 7.
+    Reusing snapshot 0, step 5, time 6.
+    Reusing snapshot 1, step 4, time 5.
+    Discarding snapshot 3 at time 4.
+      Requested by GetVecs 1 0: stepnum 7, time 8.
+      TSTrajectoryGet: stepnum 7, stages 0
+  Interpolating derivative with 4 snapshots
+df(8.) = 192. (reconstructed 192.)
+TSTrajectorySet: stepnum 8, time 9. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 9.
+  Reconstructing at time 9., order 3
+    Reusing snapshot 3, step 7, time 8.
+    Reusing snapshot 2, step 6, time 7.
+    Reusing snapshot 0, step 5, time 6.
+    Discarding snapshot 1 at time 5.
+      Requested by GetVecs 1 0: stepnum 8, time 9.
+      TSTrajectoryGet: stepnum 8, stages 0
+  Interpolating derivative with 4 snapshots
+df(9.) = 243. (reconstructed 243.)
+TSTrajectorySet: stepnum 9, time 10. (stages 0)
+Requested by GetVecs 0 1: stepnum -1, time 10.
+  Reconstructing at time 10., order 3
+    Reusing snapshot 1, step 8, time 9.
+    Reusing snapshot 3, step 7, time 8.
+    Reusing snapshot 2, step 6, time 7.
+    Discarding snapshot 0 at time 6.
+      Requested by GetVecs 1 0: stepnum 9, time 10.
+      TSTrajectoryGet: stepnum 9, stages 0
+  Interpolating derivative with 4 snapshots
+df(10.) = 300. (reconstructed 300.)

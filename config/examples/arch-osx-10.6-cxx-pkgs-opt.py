@@ -23,6 +23,7 @@ configure_options = [
   '--download-triangle=1',
   '--download-superlu=1',
   '--download-superlu_dist=1',
+  '--with-cxx-dialect=C++11',
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-parms=1',
@@ -36,6 +37,9 @@ configure_options = [
   '--download-saws',
   '--download-revolve=1',
   '--download-ctetgen=1',
+  '--download-mfem=1',
+  '--download-glvis=1',
+  '--with-opengl=1',
   ]
 
 if __name__ == '__main__':

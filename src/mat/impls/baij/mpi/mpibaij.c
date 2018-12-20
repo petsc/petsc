@@ -3423,8 +3423,12 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
   PetscMPIInt    tag    = ((PetscObject)viewer)->tag;
   PetscInt       *dlens = NULL,*odlens = NULL,*mask = NULL,*masked1 = NULL,*masked2 = NULL,rowcount,odcount;
   PetscInt       dcount,kmax,k,nzcount,tmp,mend;
+  PetscBool      isbinary;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ2(PetscObjectComm((PetscObject)newmat),PETSC_ERR_SUP,"Viewer type %s not yet supported for reading %s matrices",((PetscObject)viewer)->type_name,((PetscObject)newmat)->type_name);
+
   /* force binary viewer to load .info file if it has not yet done so */
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);

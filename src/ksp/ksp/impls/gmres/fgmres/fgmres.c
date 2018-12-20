@@ -640,7 +640,7 @@ PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
                              vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the
+.   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
                                    stability of the classical Gram-Schmidt  orthogonalization.
 .   -ksp_gmres_krylov_monitor - plot the Krylov space generated
 .   -ksp_fgmres_modifypcnochange - do not change the preconditioner between iterations

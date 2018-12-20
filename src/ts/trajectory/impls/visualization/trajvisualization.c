@@ -88,6 +88,7 @@ M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj,TS ts)
 {
   PetscFunctionBegin;
-  tj->ops->set  = TSTrajectorySet_Visualization;
+  tj->ops->set    = TSTrajectorySet_Visualization;
+  tj->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

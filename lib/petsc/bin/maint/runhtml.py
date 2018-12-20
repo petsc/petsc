@@ -23,7 +23,7 @@ if len(sys.argv) < 4:
 
 ######### Packages to list ########
 
-packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","Metis","ML","MOAB","MUMPS","NetCDF","Pardiso","Parmetis","ptscotch","SPAI","STRUMPACK","Suitesparse","SuperLU","SuperLU_dist","cTetgen","triangle","ViennaCL"];
+packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","Metis","ML","MOAB","MUMPS","NetCDF","Pardiso","Parmetis","ptscotch","SPAI","STRUMPACK","Suitesparse","SuperLU","SuperLU_dist","cTetgen","triangle","ViennaCL",'p4est'];
 
 
 

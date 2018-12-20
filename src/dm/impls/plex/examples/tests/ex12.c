@@ -1,6 +1,7 @@
 static char help[] = "Partition a mesh in parallel, perhaps with overlap\n\n";
 
 #include <petscdmplex.h>
+#include <petscsf.h>
 
 /* Sample usage:
 
@@ -135,7 +136,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = DMPlexDistribute(*dm, overlap, NULL, &pdm);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexGetRedundantDM(*dm, &pdm);CHKERRQ(ierr);
+    PetscSF sf;
+
+    ierr = DMPlexGetRedundantDM(*dm, &sf, &pdm);CHKERRQ(ierr);
+    if (sf) {
+      DM test;
+
+      ierr = DMPlexCreate(comm,&test);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)test, "Test SF-migrated Redundant Mesh");CHKERRQ(ierr);
+      ierr = DMPlexMigrate(*dm, sf, test);CHKERRQ(ierr);
+      ierr = DMViewFromOptions(test, NULL, "-redundant_migrated_dm_view");CHKERRQ(ierr);
+      ierr = DMDestroy(&test);CHKERRQ(ierr);
+    }
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   }
   if (pdm) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -239,7 +252,7 @@ int main(int argc, char **argv)
     suffix: 8
     requires: triangle
     nsize: 2
-    args: -test_redundant -dm_view ascii::ascii_info_detail
+    args: -test_redundant -redundant_migrated_dm_view ascii::ascii_info_detail -dm_view ascii::ascii_info_detail
   test:
     suffix: lb_0
     nsize: 4

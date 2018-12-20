@@ -287,11 +287,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     PetscStackCallHDF5Return(chunkspace,H5Pcreate,(H5P_DATASET_CREATE));
     PetscStackCallHDF5(H5Pset_chunk,(chunkspace, dim, chunkDims));
 
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     PetscStackCallHDF5Return(dset_id,H5Dcreate2,(group, isname, inttype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
-#else
-    PetscStackCallHDF5Return(dset_id,H5Dcreate,(group, isname, inttype, filespace, H5P_DEFAULT));
-#endif
     PetscStackCallHDF5(H5Pclose,(chunkspace));
   } else {
     PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, isname, H5P_DEFAULT));
