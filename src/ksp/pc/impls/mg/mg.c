@@ -206,11 +206,14 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PetscMPIInt    size;
   const char     *prefix;
   PC             ipc;
+  PetscBool      ismg;
   PetscInt       n;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,levels,2);
+  ierr = PetscObjectTypeCompare((PetscObject) pc, PCMG, &ismg);CHKERRQ(ierr);
+  if (!ismg) PetscFunctionReturn(0);
   if (mg->nlevels == levels) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (mglevels) {
@@ -929,12 +932,16 @@ PetscErrorCode PCSetUp_MG(PC pc)
 @*/
 PetscErrorCode  PCMGGetLevels(PC pc,PetscInt *levels)
 {
-  PC_MG *mg = (PC_MG*)pc->data;
+  PC_MG         *mg = (PC_MG*)pc->data;
+  PetscBool      ismg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(levels,2);
-  *levels = mg->nlevels;
+  ierr = PetscObjectTypeCompare((PetscObject) pc, PCMG, &ismg);CHKERRQ(ierr);
+  if (ismg) {*levels = mg->nlevels;}
+  else      {*levels = 0;}
   PetscFunctionReturn(0);
 }
 
