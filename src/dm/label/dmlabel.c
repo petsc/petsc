@@ -1162,9 +1162,11 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 2);
-  if (label) {ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);}
+  if (label) {
+    PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+    ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
+  }
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   /* Bcast name */
