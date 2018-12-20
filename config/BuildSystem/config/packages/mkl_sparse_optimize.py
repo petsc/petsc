@@ -41,8 +41,16 @@ class Configure(config.package.Package):
         self.addDefine('MKL_SUPPORTS_BAIJ_ZERO_BASED', 1)
         self.log.write('Found MKL spblas supports zero based indexing: result\n')
 
+  def checkHaveUsableSp2m(self):
+    sp2m_test = '#include <mkl_spblas.h>\nsparse_request_t request = SPARSE_STAGE_FULL_MULT_NO_VAL;\n'
+    result = self.checkCompile(sp2m_test)
+    self.log.write('Looking for mkl_sparse_sp2m() that is usable for MatMultSymbolic()/Numeric(): result ' + str(int(result)) + '\n')
+    if result:
+      self.addDefine('HAVE_MKL_SPARSE_SP2M_FEATURE', 1)
+
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
     if self.found:
       self.executeTest(self.checksSupportBaijCrossCase)
+      self.executeTest(self.checkHaveUsableSp2m)
 
