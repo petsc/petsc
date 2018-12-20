@@ -255,6 +255,7 @@ int main(int argc, char **argv)
     args: -test_redundant -redundant_migrated_dm_view ascii::ascii_info_detail -dm_view ascii::ascii_info_detail
   test:
     suffix: lb_0
+    requires: parmetis
     nsize: 4
     args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view
 
@@ -309,6 +310,7 @@ int main(int argc, char **argv)
     args: -test_redundant -dm_view ascii::ascii_info_detail -partition_balance
   test:
     suffix: lb_1
+    requires: parmetis
     nsize: 4
     args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -partition_balance
 TEST*/
