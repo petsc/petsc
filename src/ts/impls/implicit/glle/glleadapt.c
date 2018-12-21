@@ -106,8 +106,7 @@ PetscErrorCode  TSGLLEAdaptFinalizePackage(void)
 
 /*@C
   TSGLLEAdaptInitializePackage - This function initializes everything in the TSGLLEAdapt package. It is
-  called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
-  TSCreate_GLLE() when using static libraries.
+  called from TSInitializePackage().
 
   Level: developer
 

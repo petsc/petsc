@@ -27,10 +27,9 @@ PetscErrorCode TaoLineSearchFinalizePackage(void)
 
 /*@C
   TaoLineSearchInitializePackage - This function registers the line-search
-  algorithms in TAO.
-  When using static libraries, this function is called from the
-  first entry to TaoCreate(); when using shared libraries, it is called
-  from PetscDLLibraryRegister()
+  algorithms in TAO.  When using shared or static libraries, this function is called from the
+  first entry to TaoCreate(); when using dynamic, it is called
+  from PetscDLLibraryRegister_tao()
 
   Level: developer
 

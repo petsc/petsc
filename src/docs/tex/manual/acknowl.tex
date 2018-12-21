@@ -1,9 +1,9 @@
 % Acknowledgements for PETSc Users Manual
 %
-%   this information is a DUPLICATE of misc/acknwldg.htm
+%   this information is a DUPLICATE of misc/acknwldg.html
 %                MAKE SURE THEY MATCH!!!
 %
-\noindent {\bf Acknowledgments:}
+\chapter{Acknowledgments}
 
 \medskip \medskip \noindent
 We thank all PETSc users for their many suggestions, bug reports, and
@@ -38,7 +38,7 @@ Earlier contributors to PETSc include:
   \item Todd Munson - the LUSOL (sparse solver in MINOS) interface (\lstinline{MATSOLVERLUSOL}) and several Krylov methods;
   \item Adam Powell - the PETSc Debian package;
   \item Robert Scheichl - the MINRES implementation (\lstinline{KSPMINRES});
-  \item Kerry Stevens - the pthread-based \lstinline{Vec} and \lstinline{Mat} classes plus the various thread pools (deprecated);
+  \item Kerry Stevens - the pthread-based \lstinline{Vec} and \lstinline{Mat} classes plus the various thread pools (no longer available);
   \item Karen Toonen - design and implementation of much of the PETSc web pages;
   \item Desire Nuentsa Wakam - the deflated GMRES implementation (\lstinline{KSPDGMRES});
   \item Liyang Xu - the interface to PVODE, now SUNDIALS/CVODE (\lstinline{TSSUNDIALS});
@@ -64,7 +64,6 @@ PETSc interfaces to the following external software:
 \begin{itemize}
   \item BLAS and LAPACK - numerical linear algebra;
   \item Chaco - A graph partitioning package;\\\href{http://www.cs.sandia.gov/CRF/chac.html}{http://www.cs.sandia.gov/CRF/chac.html}
-  \item ESSL -         IBM's math library for fast sparse direct LU factorization;
   \item Elemental -  Jack Poulson's parallel dense matrix solver package;\\\href{http://libelemental.org/}{http://libelemental.org/}
   \item HDF5 - the data model, library, and file format for storing and managing data,\\\href{https://support.hdfgroup.org/HDF5/}{https://support.hdfgroup.org/HDF5/}
   \item hypre -    the LLNL preconditioner library;\\\href{http://www.llnl.gov/CASC/hypre}{http://www.llnl.gov/CASC/hypre}
@@ -72,17 +71,17 @@ PETSc interfaces to the following external software:
                       Systems Optimization Laboratory, Stanford University;\\
                      \href{http://www.sbsi-sol-optimize.com/}{http://www.sbsi-sol-optimize.com/}
   \item MATLAB -      see page \pageref{ch_matlab};
+  \item Metis/ParMeTiS - see page \pageref{sec_partitioning}, parallel graph partitioner,\\
+                     \href{http://www-users.cs.umn.edu/~karypis/metis/}{http://www-users.cs.umn.edu/\~{}karypis/metis/}
   \item MUMPS -      see page \pageref{sec_externalsol}, MUltifrontal Massively Parallel sparse direct Solver developed by Patrick Amestoy,
                      Iain Duff, Jacko Koster, and Jean-Yves L'Excellent; \\
                      \href{http://www.enseeiht.fr/lima/apo/MUMPS/credits.html}{http://www.enseeiht.fr/lima/apo/MUMPS/credits.html}
-  \item Metis/ParMeTiS - see page \pageref{sec_partitioning}, parallel graph partitioner,\\
-                     \href{http://www-users.cs.umn.edu/~karypis/metis/}{http://www-users.cs.umn.edu/\~{}karypis/metis/}
   \item Party -     A graph partitioning package; \\ 
                \href{http://www2.cs.uni-paderborn.de/cs/ag-monien/PERSONAL/ROBSY/party.html}{http://www2.cs.uni-paderborn.de/cs/ag-monien/PERSONAL/ROBSY/party.html}
-             \item PaStiX -     Parallel LU and Cholesky solvers; \\\href{http://pastix.gforge.inria.fr/}{http://pastix.gforge.inria.fr/}
+             \item PaStiX -     Parallel sparse LU and Cholesky solvers; \\\href{http://pastix.gforge.inria.fr/}{http://pastix.gforge.inria.fr/}
              \item PTScotch -    A graph partitioning package; \\\href{http://www.labri.fr/Perso/~pelegrin/scotch/}{http://www.labri.fr/Perso/\~{}pelegrin/scotch/}
   \item SPAI -        for parallel sparse approximate inverse preconditioning;\\ \href{https://cccs.unibas.ch/lehre/software-packages/}{https://cccs.unibas.ch/lehre/software-packages/}
-  \item SuiteSparse - see page \pageref{sec_externalsol}, developed by Timothy A. Davis;\\
+  \item SuiteSparse - sequential sparse solvers, see page \pageref{sec_externalsol}, developed by Timothy A. Davis;\\
                     \href{http://faculty.cse.tamu.edu/davis/suitesparse.html}{http://faculty.cse.tamu.edu/davis/suitesparse.html}
   \item SUNDIALS/CVODE - see page \pageref{sec_sundials}, parallel ODE integrator;\\
                      \href{http://www.llnl.gov/CASC/sundials/}{http://www.llnl.gov/CASC/sundials/}

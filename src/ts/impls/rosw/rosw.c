@@ -628,8 +628,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
 
 /*@C
   TSRosWInitializePackage - This function initializes everything in the TSRosW package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_RosW()
-  when using static libraries.
+  from TSInitializePackage().
 
   Level: developer
 
