@@ -44,10 +44,10 @@ class Configure(config.package.Package):
   def checkHaveUsableSp2m(self):
     sp2m_test = '#include <mkl_spblas.h>\nsparse_request_t request = SPARSE_STAGE_FULL_MULT_NO_VAL;\n'
     result = self.checkCompile(sp2m_test)
-    self.log.write('Looking for mkl_sparse_sp2m() that is usable for MatMultSymbolic()/Numeric(): result ' + str(int(result)) + '\n')
+    self.log.write('Looking for mkl_sparse_sp2m() that is usable for MatMatMultSymbolic()/Numeric(): result ' + str(int(result)) + '\n')
     if result:
       # We append _FEATURE at the end to avoid confusion, because some versions of MKL have mkl_sparse_sp2m(), but not a version
-      # that is usable for implementing MatMultSymbolic()/Numeric().
+      # that is usable for implementing MatMatMultSymbolic()/Numeric().
       self.addDefine('HAVE_MKL_SPARSE_SP2M_FEATURE', 1)
 
   def checkMklSpblasDeprecated(self):
