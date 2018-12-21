@@ -62,7 +62,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   if(!aijmkl->no_SpMV2) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
 #endif
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
@@ -772,7 +772,7 @@ PetscErrorCode MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,P
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 {
   Mat_SeqAIJMKL       *a, *b, *c;
@@ -810,7 +810,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 
   PetscFunctionReturn(0);
 }
-#endif /* PETSC_HAVE_MKL_SPARSE_SP2M */
+#endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PetscErrorCode MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat*C)
@@ -844,7 +844,7 @@ PetscErrorCode MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReus
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 {
   Mat_SeqAIJMKL       *a, *p, *c;
@@ -891,7 +891,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 }
 #endif
 
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   Mat_SeqAIJMKL       *a, *p;
@@ -999,7 +999,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
   B->ops->matmult          = MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
-# if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+# if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
   B->ops->matmultnumeric   = MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #   if !defined(PETSC_USE_COMPLEX)
   B->ops->ptap             = MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2;
@@ -1030,7 +1030,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   if(!aijmkl->no_SpMV2) {
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijmkl_seqaijmkl_C",MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
 #endif
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
