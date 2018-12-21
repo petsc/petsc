@@ -728,7 +728,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       PetscInt           nRefine, nCoarsen;
 
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-      ierr = DMLabelCreate("adapt", &adaptLabel);CHKERRQ(ierr);
+      ierr = DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel);CHKERRQ(ierr);
       ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
       ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
       cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;

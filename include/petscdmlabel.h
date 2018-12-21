@@ -12,15 +12,13 @@
 .seealso:  DM, DMPlexCreate(), DMPlexCreateLabel()
 S*/
 typedef struct _n_DMLabel *DMLabel;
-PETSC_EXTERN PetscErrorCode DMLabelCreate(const char [], DMLabel *);
+PETSC_EXTERN PetscErrorCode DMLabelCreate(MPI_Comm, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMLabelReset(DMLabel);
 PETSC_EXTERN PetscErrorCode DMLabelDestroy(DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelGetState(DMLabel, PetscObjectState *);
 PETSC_EXTERN PetscErrorCode DMLabelGetDefaultValue(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetDefaultValue(DMLabel, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelDuplicate(DMLabel, DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelGetName(DMLabel, const char **);
-PETSC_EXTERN PetscErrorCode DMLabelSetName(DMLabel, const char *);
 PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);

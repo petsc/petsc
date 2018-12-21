@@ -630,7 +630,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &sStart, &sEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
-  ierr = DMLabelCreate("Overlap adjacency", &ovAdjByRank);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "Overlap adjacency", &ovAdjByRank);CHKERRQ(ierr);
   /* Handle leaves: shared with the root point */
   for (l = 0; l < nleaves; ++l) {
     PetscInt adjSize = PETSC_DETERMINE, a;
@@ -703,7 +703,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
     ierr = PetscObjectSetName((PetscObject) sfProc, "Process SF");CHKERRQ(ierr);
     ierr = PetscSFSetGraph(sfProc, size, size, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
-  ierr = DMLabelCreate("Overlap label", ovLabel);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "Overlap label", ovLabel);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelInvert(dm, ovAdjByRank, sfProc, *ovLabel);CHKERRQ(ierr);
   /* Add owned points, except for shared local points */
   for (p = pStart; p < pEnd; ++p) {ierr = DMLabelSetValue(*ovLabel, p, rank);CHKERRQ(ierr);}
@@ -1204,7 +1204,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   /* If the user has changed the depth label, communicate it instead */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
-  if (depthLabel) {ierr = DMLabelGetState(depthLabel, &depthState);CHKERRQ(ierr);}
+  if (depthLabel) {ierr = PetscObjectStateGet((PetscObject) depthLabel, &depthState);CHKERRQ(ierr);}
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
   ierr = MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
   if (sendDepth) {
@@ -1219,10 +1219,14 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   for (l = numLabels-1; l >= 0; --l) {
     DMLabel     label = NULL, labelNew = NULL;
     PetscBool   isDepth, lisOutput = PETSC_TRUE, isOutput;
+    const char *name = NULL;
 
-    if (hasLabels) {ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);}
-    /* Skip "depth" because it is recreated */
-    if (hasLabels) {ierr = PetscStrcmp(label->name, "depth", &isDepth);CHKERRQ(ierr);}
+    if (hasLabels) {
+      ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+      /* Skip "depth" because it is recreated */
+      ierr = PetscObjectGetName((PetscObject) label, &name);CHKERRQ(ierr);
+      ierr = PetscStrcmp(name, "depth", &isDepth);CHKERRQ(ierr);
+    }
     ierr = MPI_Bcast(&isDepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
     if (isDepth && !sendDepth) continue;
     ierr = DMLabelDistribute(label, migrationSF, &labelNew);CHKERRQ(ierr);
@@ -1241,9 +1245,10 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     }
     ierr = DMAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
     /* Put the output flag in the new label */
-    if (hasLabels) {ierr = DMGetLabelOutput(dm, label->name, &lisOutput);CHKERRQ(ierr);}
+    if (hasLabels) {ierr = DMGetLabelOutput(dm, name, &lisOutput);CHKERRQ(ierr);}
     ierr = MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
-    ierr = DMSetLabelOutput(dmParallel, labelNew->name, isOutput);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) labelNew, &name);CHKERRQ(ierr);
+    ierr = DMSetLabelOutput(dmParallel, name, isOutput);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1759,7 +1764,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     /* Convert partition to DMLabel */
     PetscInt proc, pStart, pEnd, npoints, poffset;
     const PetscInt *points;
-    ierr = DMLabelCreate("Point Partition", &lblPartition);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, "Point Partition", &lblPartition);CHKERRQ(ierr);
     ierr = ISGetIndices(cellPart, &points);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(cellPartSection, &pStart, &pEnd);CHKERRQ(ierr);
     for (proc = pStart; proc < pEnd; proc++) {
@@ -1784,7 +1789,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     ierr = PetscObjectSetName((PetscObject) sfProcess, "Process SF");CHKERRQ(ierr);
     ierr = PetscSFSetGraph(sfProcess, size, size, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
-  ierr = DMLabelCreate("Point migration", &lblMigration);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "Point migration", &lblMigration);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelInvert(dm, lblPartition, sfProcess, lblMigration);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelCreateSF(dm, lblMigration, &sfMigration);CHKERRQ(ierr);
   /* Stratify the SF in case we are migrating an already parallel plex */
