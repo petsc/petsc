@@ -1,7 +1,10 @@
-ParMetis Graph Partitioner:
-ParMetis Graph Partitioner:
-ParMetis Graph Partitioner:
-ParMetis Graph Partitioner:
+Graph Partitioner: 2 MPI Processes
+  type: parmetis
+  edge cut: 2
+  balance:  0
+  ParMetis type: kway
+  load imbalance ratio 1.05
+  debug flag 0
 DM Object: Simplicial Mesh 2 MPI processes
   type: plex
 Simplicial Mesh in 2 dimensions:
