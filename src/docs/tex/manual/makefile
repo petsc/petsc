@@ -65,6 +65,7 @@ manual.pdf: chk_loc chk intro.tex abstract.tex acknowl.tex manual.tex part1.tex 
 	${CP} manual1.aux intro.aux
 	${PDFLATEX} ${PDFLATEXOPTS} intro  ${GONULL}
 	${RM} part1tmp.tex part2tmp.tex acknowltemp.tex tmp ${MANUAL_LISTINGS_INCLUDE}
+	${MV} intro.pdf ${LOC}/docs/
 #	${MAKE} rclean
 
 # Wrap some listings so that they can be processed
