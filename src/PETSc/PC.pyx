@@ -107,6 +107,7 @@ class PCFieldSplitSchurFactType(object):
 class PCPatchConstructType(object):
     STAR                     = PC_PATCH_STAR
     VANKA                    = PC_PATCH_VANKA
+    PARDECOMP                = PC_PATCH_PARDECOMP
     USER                     = PC_PATCH_USER
     PYTHON                   = PC_PATCH_PYTHON
 

@@ -104,6 +104,7 @@ cdef extern from * nogil:
     ctypedef enum PetscPCPatchConstructType "PCPatchConstructType":
         PC_PATCH_STAR
         PC_PATCH_VANKA
+        PC_PATCH_PARDECOMP
         PC_PATCH_USER
         PC_PATCH_PYTHON
 
