@@ -659,10 +659,10 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI 
         if (ignoredim >= 0 && seenpoint >= iStart && seenpoint < iEnd) continue;
         ierr = PetscHSetIAdd(cht, seenpoint);CHKERRQ(ierr);
       }
+      ierr = DMPlexRestoreTransitiveClosure(dm, ownedpoint, PETSC_TRUE, NULL, &closure);CHKERRQ(ierr);
     }
+    ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, NULL, &star);CHKERRQ(ierr);
   }
-  ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, NULL, &closure);CHKERRQ(ierr);
-  ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_FALSE, NULL, &star);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
