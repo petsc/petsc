@@ -270,6 +270,12 @@ int main(int argc,char **argv)
     ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
     ierr = TSAdaptHistorySetTrajectory(adapt,tj,PETSC_FALSE);CHKERRQ(ierr);
     ierr = TSAdaptHistoryGetStep(adapt,0,&t0,&dt);CHKERRQ(ierr);
+    /* this example fails with single (or smaller) precision */
+#if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL__FP16)
+    ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
+    ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
+    ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+#endif
     ierr = TSSetTime(ts,t0);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     ierr = TSResetTrajectory(ts);CHKERRQ(ierr);
