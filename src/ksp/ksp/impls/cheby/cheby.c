@@ -48,6 +48,7 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp,PetscReal a,PetscR
   if (a != 0.0 || b != 0.0 || c != 0.0 || d != 0.0) {
     if (!cheb->kspest) { /* should this block of code be moved to KSPSetUp_Chebyshev()? */
       ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&cheb->kspest);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(cheb->kspest,ksp->errorifnotconverged);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)cheb->kspest,(PetscObject)ksp,1);CHKERRQ(ierr);
       ierr = KSPSetPC(cheb->kspest,ksp->pc);CHKERRQ(ierr);
       /* use PetscObjectSet/AppendOptionsPrefix() instead of KSPSet/AppendOptionsPrefix() so that the PC prefix is not changed */
