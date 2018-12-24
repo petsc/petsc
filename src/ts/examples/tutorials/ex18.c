@@ -112,7 +112,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   d    = options->dim;
   ierr = PetscOptionsRealArray("-source_loc", "The source location", "ex18.c", options->source, &d, &flg);CHKERRQ(ierr);
   if (flg && d != options->dim) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -150,7 +150,7 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
       if (func->func == call->func && func->ctx == call->ctx) options->maxMonitorFunc = PetscMax(options->maxMonitorFunc, func->offset);
     }
   }
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

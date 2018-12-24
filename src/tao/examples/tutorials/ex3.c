@@ -69,7 +69,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   ierr = PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex2.c", user->use_riesz, &user->use_riesz, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-f", "filename to read", "ex2.c", filename, filename, sizeof(filename), &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (!flg) {
     ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);

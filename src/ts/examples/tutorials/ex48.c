@@ -236,7 +236,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->periodicity[2] = (DMBoundaryType) bd;
   ii = options->dim;
   ierr = PetscOptionsIntArray("-cells", "Number of cells in each dimension", "ex48.c", options->cells, &ii, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   options->a = (options->domain_hi[0]-options->domain_lo[0])/2.0;
   options->b = (options->domain_hi[1]-options->domain_lo[1])/2.0;
   for (ii = 0; ii < options->dim; ++ii) {
@@ -380,7 +380,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
     PetscBool flg;
     ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex48",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
       DM dmConv;
       ierr = DMConvert(*dm,convType,&dmConv);CHKERRQ(ierr);

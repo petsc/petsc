@@ -1820,7 +1820,7 @@ int main(int argc, char **argv)
 
     ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
       DM dmConv;
 

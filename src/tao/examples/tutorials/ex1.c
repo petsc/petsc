@@ -42,7 +42,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   run  = options->runType;
   ierr = PetscOptionsEList("-run_type", "The run type", "ex1.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
   options->runType = (RunType) run;
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
