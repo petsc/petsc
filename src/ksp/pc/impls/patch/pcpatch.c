@@ -2015,7 +2015,10 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = ISGetIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
 
         ierr = PetscSectionGetDof(patch->gtolCounts, p, &numPatchDofs);CHKERRQ(ierr);
-        if (numPatchDofs == 0) continue;
+        if (numPatchDofs == 0) {
+          patch->dofMappingWithoutToWithArtificial[p-pStart] = NULL;
+          continue;
+        }
 
         ierr = PetscSectionGetOffset(patch->gtolCounts, p, &offset);CHKERRQ(ierr);
         ierr = ISGetIndices(patch->gtolWithArtificial, &gtolArrayWithArtificial);CHKERRQ(ierr);
@@ -2047,7 +2050,10 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = ISGetIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
 
         ierr = PetscSectionGetDof(patch->gtolCounts, p, &numPatchDofs);CHKERRQ(ierr);
-        if (numPatchDofs == 0) continue;
+        if (numPatchDofs == 0) {
+          patch->dofMappingWithoutToWithArtificial[p-pStart] = NULL;
+          continue;
+        }
 
         ierr = PetscSectionGetOffset(patch->gtolCounts, p, &offset);CHKERRQ(ierr);
         ierr = ISGetIndices(patch->gtolWithAll, &gtolArrayWithAll);CHKERRQ(ierr);
@@ -2634,6 +2640,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->resetsolver        = PCReset_PATCH_Linear;
   patch->destroysolver      = PCDestroy_PATCH_Linear;
   patch->updatemultiplicative = PCUpdateMultiplicative_PATCH_Linear;
+  patch->dofMappingWithoutToWithArtificial = NULL;
+  patch->dofMappingWithoutToWithAll = NULL;
 
   pc->data                 = (void *) patch;
   pc->ops->apply           = PCApply_PATCH;
