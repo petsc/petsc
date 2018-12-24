@@ -129,8 +129,8 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 */
 static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 {
-  PetscInt                    p;
-  const PetscInt              *points;
+  PetscInt       p;
+  const PetscInt *points;
   PetscErrorCode ierr;
 
   if (!label->validIS[v]) return 0;
@@ -151,19 +151,24 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 PETSC_STATIC_INLINE PetscErrorCode DMLabelLookupStratum(DMLabel label, PetscInt value, PetscInt *index)
 {
   PetscInt v;
+
   PetscFunctionBegin;
+  *index = -1;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  for (*index = -1, v = 0; v < label->numStrata; ++v)
-    if (label->stratumValues[v] == value) { *index = v; break; }
+  for (v = 0; v < label->numStrata; ++v) {
+    if (label->stratumValues[v] == value) {
+      *index = v; break;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMLabelNewStratum(DMLabel label, PetscInt value, PetscInt *index)
 {
-  PetscInt   v, *tmpV, *tmpS;
-  IS         *tmpP;
-  PetscHSetI *tmpH;
-  PetscBool  *tmpB;
+  PetscInt       v, *tmpV, *tmpS;
+  IS             *tmpP;
+  PetscHSetI     *tmpH;
+  PetscBool      *tmpB;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -622,8 +627,8 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 @*/
 PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 {
-  PetscInt                    v;
-  PetscErrorCode              ierr;
+  PetscInt       v;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
@@ -767,7 +772,7 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 @*/
 PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exists)
 {
-  PetscInt v;
+  PetscInt       v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1629,7 +1634,7 @@ static PetscErrorCode PetscSectionSymView_Label(PetscSectionSym sym, PetscViewer
 PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
 {
   PetscSectionSym_Label *sl;
-  PetscErrorCode ierr;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,1);
