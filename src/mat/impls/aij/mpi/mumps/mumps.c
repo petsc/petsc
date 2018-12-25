@@ -2453,7 +2453,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
   Level: beginner
 
     Notes:
-    When a MUMPS factorization fails inside a KSP solve, for example with a KSP_DIVERGED_PCSETUP_FAILED, one can find the MUMPS information about the failure by calling
+    When a MUMPS factorization fails inside a KSP solve, for example with a KSP_DIVERGED_PC_FAILED, one can find the MUMPS information about the failure by calling
 $          KSPGetPC(ksp,&pc);
 $          PCFactorGetMatrix(pc,&mat);
 $          MatMumpsGetInfo(mat,....);

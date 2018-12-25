@@ -12,17 +12,11 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
   PC_MG_Levels   *mgc,*mglevels = *mglevelsin;
   PetscErrorCode ierr;
   PetscInt       cycles = (mglevels->level == 1) ? 1 : (PetscInt) mglevels->cycles;
-  PC             subpc;
-  PCFailedReason pcreason;
 
   PetscFunctionBegin;
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSolve(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);  /* pre-smooth */
-  ierr = KSPGetPC(mglevels->smoothd,&subpc);CHKERRQ(ierr);
-  ierr = PCGetSetUpFailedReason(subpc,&pcreason);CHKERRQ(ierr);
-  if (pcreason) {
-    pc->failedreason = PC_SUBPC_ERROR;
-  }
+  ierr = KSPCheckSolve(mglevels->smoothd,pc,mglevels->x);CHKERRQ(ierr);
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   if (mglevels->level) {  /* not the coarsest grid */
     if (mglevels->eventresidual) {ierr = PetscLogEventBegin(mglevels->eventresidual,0,0,0,0);CHKERRQ(ierr);}
@@ -58,6 +52,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
     if (mglevels->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSolve(mglevels->smoothu,mglevels->b,mglevels->x);CHKERRQ(ierr);    /* post smooth */
+    ierr = KSPCheckSolve(mglevels->smoothu,pc,mglevels->x);CHKERRQ(ierr);
     if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
@@ -843,7 +838,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSetUp(mglevels[i]->smoothd);CHKERRQ(ierr);
-    if (mglevels[i]->smoothd->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    if (mglevels[i]->smoothd->reason == KSP_DIVERGED_PC_FAILED) {
       pc->failedreason = PC_SUBPC_ERROR;
     }
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
@@ -867,7 +862,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothu,PETSC_TRUE);CHKERRQ(ierr);
       if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = KSPSetUp(mglevels[i]->smoothu);CHKERRQ(ierr);
-      if (mglevels[i]->smoothu->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+      if (mglevels[i]->smoothu->reason == KSP_DIVERGED_PC_FAILED) {
         pc->failedreason = PC_SUBPC_ERROR;
       }
       if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
@@ -876,7 +871,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSetUp(mglevels[0]->smoothd);CHKERRQ(ierr);
-  if (mglevels[0]->smoothd->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+  if (mglevels[0]->smoothd->reason == KSP_DIVERGED_PC_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;
   }
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}

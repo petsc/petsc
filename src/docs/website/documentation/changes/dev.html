@@ -123,7 +123,13 @@
         <li>Added -mat_mffd_complex to use complex number trick instead of differencing to evaluate product; requires real functions but complex configuration</li>        
         </ul>
       <h4>PC:</h4>
+      <ul>
+        <li>        PCGetSetUpFailedReason is now PCGetFailedReason()</li>
+      </ul>
       <h4>KSP:</h4>
+      <ul>
+        <li>        KSP_DIVERGED_PCSETUP_FAILED replaced with KSP_DIVERGED_PC_FAILED</li>
+      </ul>
       <h4>SNES:</h4>
       <ul>
         <li>Added SNESKSPTRANSPOSEONLY: a linear solver only SNES that solves the transposed linear system.</li>

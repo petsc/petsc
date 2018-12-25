@@ -453,6 +453,7 @@ PetscErrorCode  PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D,
   ierr = MatMult(pcis->A_BB,v,vec1_B);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,v,vec1_D);CHKERRQ(ierr);
   ierr = KSPSolve(pcis->ksp_D,vec1_D,vec2_D);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(pcis->ksp_D,pc,vec2_D);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_BI,vec2_D,vec2_B);CHKERRQ(ierr);
   ierr = VecAXPY(vec1_B,-1.0,vec2_B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -565,6 +566,7 @@ PetscErrorCode  PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
   }
   /* Solving the system for vec2_N */
   ierr = KSPSolve(pcis->ksp_N,vec1_N,vec2_N);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(pcis->ksp_N,pc,vec2_N);CHKERRQ(ierr);
   /* Extracting the local interface vector out of the solution */
   ierr = VecScatterBegin(pcis->N_to_B,vec2_N,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->N_to_B,vec2_N,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

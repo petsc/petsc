@@ -143,6 +143,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = PCApplySymmetricLeft(pc,B,BS);CHKERRQ(ierr);
 
   ierr       = VecNorm(BS,NORM_2,&bsnrm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,bsnrm);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = bsnrm;
@@ -178,6 +179,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
       if (!i) {
         ierr = VecCopy(P,X);CHKERRQ(ierr);
         ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);
+        KSPCheckNorm(ksp,xnorm);
         scal = pcgP->delta / xnorm;
         ierr = VecScale(X,scal);CHKERRQ(ierr);
       } else {
@@ -208,6 +210,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
       ierr = VecCopy(W,X);CHKERRQ(ierr);        /*  x = w  */
       ierr = VecAXPY(X,step,P);CHKERRQ(ierr);   /*  x <- step*p + x  */
       ierr = VecNorm(X,NORM_2,&pcgP->ltsnrm);CHKERRQ(ierr);
+      KSPCheckNorm(ksp,pcgP->ltsnrm);
 
       if (pcgP->ltsnrm > pcgP->delta) {
         /* Since the trial iterate is outside the trust region,
@@ -236,7 +239,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = VecCopy(X,W);CHKERRQ(ierr);  /* update interior iterate */
         ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
         ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
-
+        KSPCheckNorm(ksp,rnrm);
         ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
         ksp->rnorm = rnrm;
         ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);

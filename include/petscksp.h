@@ -91,6 +91,7 @@ PETSC_EXTERN PetscErrorCode KSPReset(KSP);
 PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPSetSkipPCSetFromOptions(KSP,PetscBool);
+PETSC_EXTERN PetscErrorCode KSPCheckSolve(KSP,PC,Vec);
 
 PETSC_EXTERN PetscFunctionList KSPList;
 PETSC_EXTERN PetscFunctionList KSPGuessList;
@@ -445,7 +446,7 @@ typedef enum {/* converged */
               KSP_DIVERGED_INDEFINITE_PC       = -8,
               KSP_DIVERGED_NANORINF            = -9,
               KSP_DIVERGED_INDEFINITE_MAT      = -10,
-              KSP_DIVERGED_PCSETUP_FAILED      = -11,
+              KSP_DIVERGED_PC_FAILED           = -11,
 
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 PETSC_EXTERN const char *const*KSPConvergedReasons;
@@ -563,7 +564,7 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_PCSETUP_FAILED - It was not possible to build the requested preconditioner. This is usually due to a 
+     KSP_DIVERGED_PC_FAILED - It was not possible to build or use the requested preconditioner. This is usually due to a 
      zero pivot in a factorization. It can also result from a failure in a subpreconditioner inside a nested preconditioner
      such as PCFIELDSPLIT.
 

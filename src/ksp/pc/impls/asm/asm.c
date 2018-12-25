@@ -449,7 +449,7 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
   for (i=0; i<osm->n_local_true; i++) {
     ierr = KSPSetUp(osm->ksp[i]);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(osm->ksp[i],&reason);CHKERRQ(ierr);
-    if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    if (reason == KSP_DIVERGED_PC_FAILED) {
       pc->failedreason = PC_SUBPC_ERROR;
     }
   }
@@ -496,6 +496,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
       /* solve the overlapping i-block */
       ierr = PetscLogEventBegin(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0);CHKERRQ(ierr);
       ierr = KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]);CHKERRQ(ierr);
+      ierr = KSPCheckSolve(osm->ksp[i],pc,osm->y[i]);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0);CHKERRQ(ierr);
 
       if (osm->lprolongation) { /* interpolate the non-overalapping i-block solution to the local solution (only for restrictive additive) */
@@ -569,6 +570,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
     /* solve the overlapping i-block */
     ierr = PetscLogEventBegin(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0);CHKERRQ(ierr);
     ierr = KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(osm->ksp[i],pc,osm->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0);CHKERRQ(ierr);
 
     if (osm->lprolongation) { /* interpolate the non-overalapping i-block solution to the local solution */

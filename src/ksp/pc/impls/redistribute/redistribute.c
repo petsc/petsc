@@ -242,6 +242,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
   ierr = VecScatterBegin(red->scatter,red->work,red->b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->scatter,red->work,red->b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = KSPSolve(red->ksp,red->b,red->x);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(red->ksp,pc,red->x);CHKERRQ(ierr);
   ierr = VecScatterBegin(red->scatter,red->x,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->scatter,red->x,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

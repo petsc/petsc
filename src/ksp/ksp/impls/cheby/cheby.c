@@ -48,6 +48,7 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp,PetscReal a,PetscR
   if (a != 0.0 || b != 0.0 || c != 0.0 || d != 0.0) {
     if (!cheb->kspest) { /* should this block of code be moved to KSPSetUp_Chebyshev()? */
       ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&cheb->kspest);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(cheb->kspest,ksp->errorifnotconverged);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)cheb->kspest,(PetscObject)ksp,1);CHKERRQ(ierr);
       ierr = KSPSetPC(cheb->kspest,ksp->pc);CHKERRQ(ierr);
       /* use PetscObjectSet/AppendOptionsPrefix() instead of KSPSet/AppendOptionsPrefix() so that the PC prefix is not changed */
@@ -326,6 +327,8 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   if (cheb->kspest) {
     PetscObjectId    amatid,    pmatid;
     PetscObjectState amatstate, pmatstate;
+    PCFailedReason   pcreason;
+    PC               pc;
 
     ierr = PetscObjectGetId((PetscObject)Amat,&amatid);CHKERRQ(ierr);
     ierr = PetscObjectGetId((PetscObject)Pmat,&pmatid);CHKERRQ(ierr);
@@ -365,21 +368,19 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
         }
       }
       ierr = KSPSolve(cheb->kspest,B,ksp->work[0]);CHKERRQ(ierr);
-
       ierr = KSPGetConvergedReason(cheb->kspest,&reason);CHKERRQ(ierr);
-      if (reason < 0) {
+      ierr = KSPGetPC(cheb->kspest,&pc);CHKERRQ(ierr);
+      ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
+      if (reason < 0 || pcreason) {
         if (reason == KSP_DIVERGED_ITS) {
           ierr = PetscInfo(ksp,"Eigen estimator ran for prescribed number of iterations\n");CHKERRQ(ierr);
         } else {
           PetscInt its;
           ierr = KSPGetIterationNumber(cheb->kspest,&its);CHKERRQ(ierr);
-          if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-            ierr = PetscInfo(ksp,"Eigen estimator KSP_DIVERGED_PCSETUP_FAILED\n");CHKERRQ(ierr);
-            ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
-            ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
-          } else {
-            SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Eigen estimator failed: %s at iteration %D",KSPConvergedReasons[reason],its);
-          }
+          ksp->reason = KSP_DIVERGED_PC_FAILED;
+          ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
+          ierr = PetscInfo3(ksp,"Eigen estimator failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
+          PetscFunctionReturn(0);
         }
       } else if (reason==KSP_CONVERGED_RTOL ||reason==KSP_CONVERGED_ATOL) {
         ierr = PetscInfo(ksp,"Eigen estimator converged prematurely. Should not happen except for small or low rank problem\n");CHKERRQ(ierr);
@@ -456,6 +457,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       } else {
         ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
+      KSPCheckNorm(ksp,rnorm);
       ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
       ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
@@ -483,6 +485,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
         ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}r */
         ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
+      KSPCheckNorm(ksp,rnorm);
       ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
       ierr         = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);

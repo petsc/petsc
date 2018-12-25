@@ -1158,12 +1158,15 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
 
 static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
 {
-  PetscErrorCode ierr;
-  Mat            F,A;
-  MatNullSpace   nsp;
-  Vec            X,B,Xl,Bl;
-  KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
-  PC_BDDC        *pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
+  PetscErrorCode     ierr;
+  Mat                F,A;
+  MatNullSpace       nsp;
+  Vec                X,B,Xl,Bl;
+  KSP_FETIDP         *fetidp = (KSP_FETIDP*)ksp->data;
+  PC_BDDC            *pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
+  KSPConvergedReason reason;
+  PC                 pc;
+  PCFailedReason     pcreason;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
@@ -1181,6 +1184,16 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
     ierr = KSPSolveTranspose(fetidp->innerksp,Bl,Xl);CHKERRQ(ierr);
   } else {
     ierr = KSPSolve(fetidp->innerksp,Bl,Xl);CHKERRQ(ierr);
+  }
+  ierr = KSPGetConvergedReason(fetidp->innerksp,&reason);CHKERRQ(ierr);
+  ierr = KSPGetPC(fetidp->innerksp,&pc);CHKERRQ(ierr);
+  ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
+  if ((reason < 0 && reason != KSP_DIVERGED_ITS) || pcreason) {
+    PetscInt its;
+    ierr = KSPGetIterationNumber(fetidp->innerksp,&its);CHKERRQ(ierr);
+    ksp->reason = KSP_DIVERGED_PC_FAILED;
+    ierr = VecSetInf(Xl);CHKERRQ(ierr);
+    ierr = PetscInfo3(ksp,"Inner KSP solve failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
   }
   ierr = PCBDDCMatFETIDPGetSolution(F,Xl,X);CHKERRQ(ierr);
   ierr = MatGetNullSpace(A,&nsp);CHKERRQ(ierr);
