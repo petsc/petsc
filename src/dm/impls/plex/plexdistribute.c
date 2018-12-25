@@ -1459,8 +1459,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
   ierr = PetscSFBcastBegin(sf, MPIU_INT, globalNumbersOfLocalOwnedVertices, leafGlobalNumbers);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_INT, globalNumbersOfLocalOwnedVertices, leafGlobalNumbers);CHKERRQ(ierr);
 
-    /*vtxdist = cum_sum_vertices*/
-
+  /* Now start building the data structur for ParMETIS */
+  /* vtxdist = cum_sum_vertices */
 
   numNonExclusivelyOwnedConnectTo = 0;
   numLeafs = 0;
@@ -1547,7 +1547,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
   ierr = PetscFree(tpwgts);CHKERRQ(ierr);
   ierr = PetscFree(options);CHKERRQ(ierr);
 
-  /* Now rename things so that the vertex resembling the exclusively owned points stays on the same rank */
+  /* Now rename the result so that the vertex resembling the exclusively owned points stays on the same rank */
 
   ierr = PetscMalloc1(size, &firstVertices);CHKERRQ(ierr);
   ierr = PetscMalloc1(size, &renumbering);CHKERRQ(ierr);
@@ -1559,6 +1559,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
   for(i=0; i<cumSumVertices[rank+1]-cumSumVertices[rank]; i++) {
     part[i] = renumbering[part[i]];
   }
+  /* Check if the renumbering worked (this can fail when ParMETIS gives fewer partitions than there are processes) */
   failed = (PetscInt)(part[0] != rank);
   MPI_Allreduce(&failed, &failedGlobal, 1, MPIU_INT, MPI_SUM, comm);
 
@@ -1572,6 +1573,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
   ierr = PetscFree(adjncy);CHKERRQ(ierr);
 
 
+  /* Figure out the new owners of the vertices that are up for grabs and their numbers on the new owners */
   PetscInt *newOwners, *newNumbers;
   ierr = PetscMalloc1(pEnd-pStart, &newOwners);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart, &newNumbers);CHKERRQ(ierr);
@@ -1609,6 +1611,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
   PetscSFBcastBegin(sf, MPIU_INT, newNumbers, newNumbers);
   PetscSFBcastEnd(sf, MPIU_INT, newNumbers, newNumbers);
 
+  /* Now count how many leafs we have on each processor. */
   leafCounter=0;
   for(i=0; i<pEnd-pStart; i++) {
     if(toBalance[i]){
