@@ -464,6 +464,9 @@ cdef class DMPlex(DM):
         PetscINCREF(part.obj)
         return part
 
+    def rebalanceSharedPoints(self, entityDepth, useInitialGuess=True, parallel=True):
+        CHKERR( DMPlexRebalanceSharedPoints(self.dm, entityDepth, useInitialGuess, parallel) )
+
     def distribute(self, overlap=0):
         cdef PetscDM dmParallel = NULL
         cdef PetscInt coverlap = asInt(overlap)
