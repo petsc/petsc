@@ -10,5 +10,6 @@ PETSC_EXTERN PetscErrorCode TSHistoryGetHistory(TSHistory,PetscInt*,const PetscR
 PETSC_EXTERN PetscErrorCode TSHistoryGetLocFromTime(TSHistory,PetscReal,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSHistoryUpdate(TSHistory,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSHistoryGetTimeStep(TSHistory,PetscBool,PetscInt,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSHistoryGetTime(TSHistory,PetscBool,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSHistoryGetNumSteps(TSHistory,PetscInt*);
 #endif
