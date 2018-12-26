@@ -120,7 +120,7 @@ static PetscErrorCode cross_u_2d(PetscInt dim, PetscReal time, const PetscReal x
   const PetscReal alpha = 50*4;
   const PetscReal xy    = (x[0]-0.5)*(x[1]-0.5);
 
-  *u = PetscSinScalar(alpha*xy) * (alpha*PetscAbsScalar(xy) < 2*PETSC_PI ? 1 : 0.01);
+  *u = PetscSinReal(alpha*xy) * (alpha*PetscAbsReal(xy) < 2*PETSC_PI ? 1 : 0.01);
   return 0;
 }
 
@@ -153,7 +153,7 @@ static void f0_cross_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   const PetscReal alpha = 50*4;
   const PetscReal xy    = (x[0]-0.5)*(x[1]-0.5);
 
-  f0[0] = PetscSinScalar(alpha*xy) * (alpha*PetscAbsScalar(xy) < 2*PETSC_PI ? 1 : 0.01);
+  f0[0] = PetscSinReal(alpha*xy) * (alpha*PetscAbsReal(xy) < 2*PETSC_PI ? 1 : 0.01);
 }
 
 static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
