@@ -2642,9 +2642,10 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     requires: triangle
     TODO: how did this ever get in master when there is no support for this
     args: -ufv_vtk_interval 0 -simplex -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+
   test:
     suffix: adv_0
-    TODO: broken
+    requires: exodusii
     args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
 
   test:
@@ -2655,12 +2656,10 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
 
   # Test GLVis visualization of PetscFV fields
   test:
-    TODO: this example abuse of hybrid meshes for ghost cells
     suffix: glvis_adv_2d_tet
     args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
 
   test:
-    TODO: this example abuse of hybrid meshes for ghost cells
     suffix: glvis_adv_2d_quad
     args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
 
