@@ -88,11 +88,31 @@ PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step, PetscReal *t)
+{
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveBoolComm(tsh->comm,backward,2);
+  PetscValidLogicalCollectiveIntComm(tsh->comm,step,3);
+  if (!t) PetscFunctionReturn(0);
+  PetscValidRealPointer(t,4);
+  if (!tsh->sorted) {
+    PetscErrorCode ierr;
+
+    ierr = PetscSortRealWithArrayInt(tsh->n,tsh->hist,tsh->hist_id);CHKERRQ(ierr);
+    tsh->sorted = PETSC_TRUE;
+  }
+  if (step < 0 || step >= tsh->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,tsh->n);
+  if (!backward) *t = tsh->hist[step];
+  else           *t = tsh->hist[tsh->n-step-1];
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt step, PetscReal *dt)
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveBoolComm(tsh->comm,backward,2);
   PetscValidLogicalCollectiveIntComm(tsh->comm,step,3);
+  if (!dt) PetscFunctionReturn(0);
   PetscValidRealPointer(dt,4);
   if (!tsh->sorted) {
     PetscErrorCode ierr;

@@ -1162,48 +1162,48 @@ int main(int argc, char **argv)
 /*TEST
   # 2D serial P1 test 0-4
   test:
-    suffix: 0
+    suffix: 2d_p1_0
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 1
+    suffix: 2d_p1_1
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 2
+    suffix: 2d_p1_2
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 3
+    suffix: 2d_p1_neumann_0
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
   test:
-    suffix: 4
+    suffix: 2d_p1_neumann_1
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   # 2D serial P2 test 5-8
   test:
-    suffix: 5
+    suffix: 2d_p2_0
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 6
+    suffix: 2d_p2_1
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 7
+    suffix: 2d_p2_neumann_0
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
   test:
-    suffix: 8
+    suffix: 2d_p2_neumann_1
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
@@ -1219,24 +1219,24 @@ int main(int argc, char **argv)
 
   # 3D serial P1 test 9-12
   test:
-    suffix: 9
+    suffix: 3d_p1_0
     requires: ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
-    suffix: 10
+    suffix: 3d_p1_1
     requires: ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
-    suffix: 11
+    suffix: 3d_p1_2
     requires: ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
-    suffix: 12
+    suffix: 3d_p1_neumann_0
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
+    args: -run_type test -dim 3 -bc_type neumann   -interpolate 1 -petscspace_degree 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   # Analytic variable coefficient 13-20
   test:
@@ -1422,85 +1422,85 @@ int main(int argc, char **argv)
 
   # 2D serial P1 test with field bc
   test:
-    suffix: field_bc_p1_0
+    suffix: field_bc_2d_p1_0
     requires: triangle
     args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p1_1
+    suffix: field_bc_2d_p1_1
     requires: triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p1_2
+    suffix: field_bc_2d_p1_neumann_0
     requires: triangle
     args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p1_3
+    suffix: field_bc_2d_p1_neumann_1
     requires: triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   # 3D serial P1 test with field bc
   test:
-    suffix: field_bc_p1_4
+    suffix: field_bc_3d_p1_0
     requires: ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p1_5
+    suffix: field_bc_3d_p1_1
     requires: ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p1_6
+    suffix: field_bc_3d_p1_neumann_0
     requires: ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p1_7
+    suffix: field_bc_3d_p1_neumann_1
     requires: ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   # 2D serial P2 test with field bc
   test:
-    suffix: field_bc_p2_0
+    suffix: field_bc_2d_p2_0
     requires: triangle
     args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p2_1
+    suffix: field_bc_2d_p2_1
     requires: triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p2_2
+    suffix: field_bc_2d_p2_neumann_0
     requires: triangle
     args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p2_3
+    suffix: field_bc_2d_p2_neumann_1
     requires: triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   # 3D serial P2 test with field bc
   test:
-    suffix: field_bc_p2_4
+    suffix: field_bc_3d_p2_0
     requires: ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p2_5
+    suffix: field_bc_3d_p2_1
     requires: ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p2_6
+    suffix: field_bc_3d_p2_neumann_0
     requires: ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p2_7
+    suffix: field_bc_3d_p2_neumann_1
     requires: ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
