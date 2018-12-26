@@ -450,6 +450,8 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define PetscLogEventSetActiveAll(a,b)     0
 #define PetscLogEventGetId(a,b)            (*(b)=0,0)
 #define PetscLogEventGetPerfInfo(a,b,c)    0
+#define PetscLogEventSetDof(a,b,c)         0
+#define PetscLogEventSetError(a,b,c)       0
 
 #define PetscLogPLB                        0
 #define PetscLogPLE                        0
