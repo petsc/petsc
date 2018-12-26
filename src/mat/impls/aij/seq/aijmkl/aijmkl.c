@@ -62,7 +62,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   if(!aijmkl->no_SpMV2) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
 #endif
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
@@ -144,11 +144,11 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
-  /* Versions of MKL that don't have mkl_sparse_sp2m() still support the old, non-inspector-executor interfaces. For these versions,
-   * we simply exit. Versions that do have mkl_sparse_sp2m() (version 18, update 2 and later) have deprecated the old interfaces.
-   * In this case, we must use the new inspector-executor interfaces, but we can still use the old, non-inspector-executor code by
-   * not calling mkl_sparse_optimize() later. */
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
+  /* For MKL versions that still support the old, non-inspector-executor interfaces versions, we simply exit here if the no_SpMV2
+   * option has been specified. For versions that have deprecated the old interfaces (version 18, update 2 and later), we must
+   * use the new inspector-executor interfaces, but we can still use the old, non-inspector-executor code by not calling
+   * mkl_sparse_optimize() later. */
   if (aijmkl->no_SpMV2) PetscFunctionReturn(0);
 #endif
 
@@ -338,7 +338,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
 PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -423,7 +423,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
 PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -507,7 +507,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
 PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -620,7 +620,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
 PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -772,7 +772,7 @@ PetscErrorCode MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,P
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 {
   Mat_SeqAIJMKL       *a, *b, *c;
@@ -810,7 +810,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 
   PetscFunctionReturn(0);
 }
-#endif /* PETSC_HAVE_MKL_SPARSE_SP2M */
+#endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PetscErrorCode MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat*C)
@@ -844,7 +844,7 @@ PetscErrorCode MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReus
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 {
   Mat_SeqAIJMKL       *a, *p, *c;
@@ -891,7 +891,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 }
 #endif
 
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   Mat_SeqAIJMKL       *a, *p;
@@ -999,7 +999,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
   B->ops->matmult          = MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
-# if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+# if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
   B->ops->matmultnumeric   = MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #   if !defined(PETSC_USE_COMPLEX)
   B->ops->ptap             = MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2;
@@ -1009,12 +1009,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->transposematmult = MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
-  /* In the same release in which MKL introduced mkl_sparse_sp2m() (version 18, update 2), the old sparse BLAS interfaces were
-   * marked as deprecated. If "no_SpMV2" has been specified by the user and MKL 18u2 or later is being used, we use the new
-   * _SpMV2 routines (set above), but do not call mkl_sparse_optimize(), which results in the old numerical kernels (without the
-   * inspector-executor model) being used. For versions in which the older interface has not been deprecated, we use the old
-   * interface. */
+#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
+  /* In MKL version 18, update 2, the old sparse BLAS interfaces were marked as deprecated. If "no_SpMV2" has been specified by the
+   * user and the old SpBLAS interfaces are deprecated in our MKL version, we use the new _SpMV2 routines (set above), but do not
+   * call mkl_sparse_optimize(), which results in the old numerical kernels (without the inspector-executor model) being used. For
+   * versions in which the older interface has not been deprecated, we use the old interface. */
   if (aijmkl->no_SpMV2) {
     B->ops->mult             = MatMult_SeqAIJMKL;
     B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL;
@@ -1031,7 +1030,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   if(!aijmkl->no_SpMV2) {
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijmkl_seqaijmkl_C",MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
 #endif
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
