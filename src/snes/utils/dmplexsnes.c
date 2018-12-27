@@ -1615,19 +1615,14 @@ PetscErrorCode DMPlexComputeBdResidualSingle(DM dm, PetscReal t, DMLabel label, 
 PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   PetscDS        prob;
-  PetscInt       dim, numBd, bd;
-  DMLabel        depthLabel;
+  PetscInt       numBd, bd;
   DMField        coordField = NULL;
-  IS             facetIS;
+  IS             facetIS    = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(depthLabel,dim - 1,&facetIS);CHKERRQ(ierr);
   ierr = PetscDSGetNumBoundary(prob, &numBd);CHKERRQ(ierr);
-  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     DMBoundaryConditionType type;
     const char             *bdLabel;
@@ -1641,6 +1636,15 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
     ierr = PetscDSGetDiscretization(prob, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if ((id != PETSCFE_CLASSID) || (type & DM_BC_ESSENTIAL)) continue;
+    if (!facetIS) {
+      DMLabel  depthLabel;
+      PetscInt dim;
+
+      ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+      ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+      ierr = DMLabelGetStratumIS(depthLabel, dim - 1, &facetIS);CHKERRQ(ierr);
+      ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
+    }
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     ierr = DMPlexComputeBdResidual_Single_Internal(dm, t, label, numValues, values, field, locX, locX_t, locF, coordField, facetIS);CHKERRQ(ierr);
   }

@@ -23,7 +23,7 @@
 -draw_coordinates 0.46,0.98,0.54,1.02
 
 -ts_type rosw
--ts_final_time 300.0
+-ts_max_time 300.0
 -ts_dt 0.01
 -ts_adapt_dt_max .01
 

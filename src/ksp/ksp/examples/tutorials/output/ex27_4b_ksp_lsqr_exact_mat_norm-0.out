@@ -163,7 +163,7 @@ KSP Object: 2 MPI processes
 PC Object: 2 MPI processes
   type: none
   linear system matrix = precond matrix:
-  Mat Object: 2 MPI processes
+  Mat Object: A 2 MPI processes
     type: mpiaij
     rows=4889, cols=841
     total: nonzeros=110171, allocated nonzeros=110171

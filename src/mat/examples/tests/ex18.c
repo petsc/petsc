@@ -164,7 +164,7 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      output_file: output/ex18_0.out
+      suffix: 0
 
    test:
       suffix: 1

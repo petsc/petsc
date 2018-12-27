@@ -126,8 +126,7 @@ class Help(Info):
 #    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s\n'
     format    = '  -%s\n       %s\n'
     formatDef = '  -%s\n       %s  current: %s\n'
-    items = self.sections.items()
-    items.sort(key=lambda a: a[1][0])
+    items = sorted(self.sections.items(), key=lambda a: a[1][0])
     for section, names in items:
       if sections and not section.lower() in sections: continue
       f.write(section+':\n')

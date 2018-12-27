@@ -8,9 +8,6 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
      Scatter first and third block to first processor and
      second and third block to second processor
 */
-/*T
-   requires: x
-T*/
 
 #include <petscvec.h>
 
