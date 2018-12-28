@@ -1376,8 +1376,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 
 /*@C
  PCGAMGInitializePackage - This function initializes everything in the PCGAMG package. It is called
-    from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate_GAMG()
-    when using static libraries.
+    from PCInitializePackage().
 
  Level: developer
 

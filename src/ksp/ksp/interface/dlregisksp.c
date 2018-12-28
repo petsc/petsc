@@ -37,8 +37,8 @@ PetscErrorCode  PCFinalizePackage(void)
 
 /*@C
   PCInitializePackage - This function initializes everything in the PC package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscksp() when using dynamic libraries, and on the first call to PCCreate()
+  when using shared static libraries.
 
   Level: developer
 
@@ -144,8 +144,8 @@ PetscErrorCode  KSPFinalizePackage(void)
 
 /*@C
   KSPInitializePackage - This function initializes everything in the KSP package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to KSPCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscksp() when using dynamic libraries, and on the first call to KSPCreate()
+  when using shared or static libraries.
 
   Level: developer
 

@@ -3058,8 +3058,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
 /*@C
  PCBDDCInitializePackage - This function initializes everything in the PCBDDC package. It is called
-    from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate_BDDC()
-    when using static libraries.
+    from PCInitializePackage().
 
  Level: developer
 

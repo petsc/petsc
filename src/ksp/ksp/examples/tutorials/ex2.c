@@ -1,7 +1,6 @@
 
 static char help[] = "Solves a linear system in parallel with KSP.\n\
 Input parameters include:\n\
-  -random_exact_sol : use a random exact solution vector\n\
   -view_exact_sol   : write exact solution vector to stdout\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
@@ -13,15 +12,8 @@ Input parameters include:\n\
    Processors: n
 T*/
 
-
-
 /*
-  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
-  automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
+  Include "petscksp.h" so that we can use KSP solvers.
 */
 #include <petscksp.h>
 
@@ -30,15 +22,11 @@ int main(int argc,char **args)
   Vec            x,b,u;    /* approx solution, RHS, exact solution */
   Mat            A;        /* linear system matrix */
   KSP            ksp;      /* linear solver context */
-  PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
+  PetscBool      flg;
   PetscScalar    v;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage;
-#endif
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
@@ -87,8 +75,6 @@ int main(int argc,char **args)
      would first do all variables for y = h, then y = 2h etc.
 
    */
-  ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
     if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
@@ -106,7 +92,6 @@ int main(int argc,char **args)
   */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
   ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -136,18 +121,9 @@ int main(int argc,char **args)
   /*
      Set exact solution; then compute right-hand-side vector.
      By default we use an exact solution of a vector with all
-     elements of 1.0;  Alternatively, using the runtime option
-     -random_sol forms a solution vector with random components.
+     elements of 1.0;  
   */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-  } else {
-    ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  }
+  ierr = VecSet(u,1.0);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
   /*
@@ -160,10 +136,6 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /*
-     Create linear solver context
-  */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /*
@@ -182,8 +154,7 @@ int main(int argc,char **args)
        KSPSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
-                          PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*
     Set runtime options, e.g.,
@@ -201,12 +172,8 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                      Check solution and clean up
+                      Check the solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /*
-     Check the error
-  */
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -235,7 +202,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 
