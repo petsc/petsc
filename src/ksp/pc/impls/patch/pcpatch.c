@@ -1655,6 +1655,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       PC subpc;
 
       ierr = KSPCreate(PETSC_COMM_SELF, &patch->ksp[i]);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(patch->ksp[i],pc->erroriffailure);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(patch->ksp[i], prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(patch->ksp[i], "sub_");CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject) patch->ksp[i], (PetscObject) pc, 1);CHKERRQ(ierr);
