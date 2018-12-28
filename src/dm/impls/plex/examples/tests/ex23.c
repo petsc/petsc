@@ -104,7 +104,7 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, App
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMLabelCreate("sub", &label);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "sub", &label);CHKERRQ(ierr);
   ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
   ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   ierr = DMPlexCreateSubmesh(dm, label, 1, PETSC_TRUE, subdm);CHKERRQ(ierr);

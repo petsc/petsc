@@ -117,7 +117,7 @@ PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCt
   PetscFunctionBegin;
   if (numGroups < 2) {*label = NULL; PetscFunctionReturn(0);}
   if (numGroups != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Test only coded for 2 groups, not %D", numGroups);
-  ierr = DMLabelCreate("groups", label);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "groups", label);CHKERRQ(ierr);
   for (c = 0; c < 10; ++c) {ierr = DMLabelSetValue(*label, groupA[c], 101);CHKERRQ(ierr);}
   for (c = 0; c < 6;  ++c) {ierr = DMLabelSetValue(*label, groupB[c], 1001);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

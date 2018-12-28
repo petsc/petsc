@@ -2018,10 +2018,10 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DML
     const char *name;
     char        sname[PETSC_MAX_PATH_LEN];
 
-    ierr = DMLabelGetName(hlabel, &name);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) hlabel, &name);CHKERRQ(ierr);
     ierr = PetscStrncpy(sname, name, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     ierr = PetscStrcat(sname, " split");CHKERRQ(ierr);
-    ierr = DMLabelCreate(sname, &slabel);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, sname, &slabel);CHKERRQ(ierr);
   }
   ierr = DMPlexLabelCohesiveComplete(dm, hlabel, bdlabel, PETSC_FALSE, idm);CHKERRQ(ierr);
   if (dmInterface) {*dmInterface = idm;}
@@ -2792,7 +2792,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   /* Create subpointMap which marks the submesh */
-  ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "subpoint_map", &subpointMap);CHKERRQ(ierr);
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
   if (vertexLabel) {ierr = DMPlexMarkSubmesh_Uninterpolated(dm, vertexLabel, value, subpointMap, &numSubFaces, &nFV, subdm);CHKERRQ(ierr);}
@@ -2934,7 +2934,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   /* Create subpointMap which marks the submesh */
-  ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "subpoint_map", &subpointMap);CHKERRQ(ierr);
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
   if (cellHeight) {
     if (isCohesive) {ierr = DMPlexMarkCohesiveSubmesh_Interpolated(dm, label, value, subpointMap, subdm);CHKERRQ(ierr);}
@@ -2963,7 +2963,6 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
-  ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   cMax = (cMax < 0) ? cEnd : cMax;
@@ -3004,6 +3003,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       }
     }
   }
+  ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Set cones */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
@@ -3281,7 +3281,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   /* Create subpointMap which marks the submesh */
-  ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "subpoint_map", &subpointMap);CHKERRQ(ierr);
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
   ierr = DMPlexMarkCohesiveSubmesh_Uninterpolated(dm, hasLagrange, label, value, subpointMap, &numSubFaces, &nFV, &subCells, subdm);CHKERRQ(ierr);
@@ -3603,7 +3603,7 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   tmp  = mesh->subpointMap;
   mesh->subpointMap = subpointMap;
-  ++mesh->subpointMap->refct;
+  ierr = PetscObjectReference((PetscObject) mesh->subpointMap);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&tmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

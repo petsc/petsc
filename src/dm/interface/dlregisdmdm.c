@@ -58,6 +58,7 @@ PetscErrorCode  DMInitializePackage(void)
 
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("DM Label",&DMLABEL_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("GraphPartitioner",&PETSCPARTITIONER_CLASSID);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_HYPRE)
@@ -111,7 +112,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMSwarmRmvPnts",         DM_CLASSID,&DMSWARM_RemovePoints);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmSort",            DM_CLASSID,&DMSWARM_Sort);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmSetSizes",        DM_CLASSID,&DMSWARM_SetSizes);CHKERRQ(ierr);
-  
+
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {

@@ -651,7 +651,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "marker", &markers);CHKERRQ(ierr);
-    ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);
+    if (markers) {ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);}
     if (size > 1) {
       PetscSF sf;
 
@@ -2620,7 +2620,7 @@ PetscErrorCode DMPlexStratify(DM dm)
       ierr = DMLabelAddStratum(label,v);CHKERRQ(ierr);
     }
   }
-  ierr = DMLabelGetState(label, &mesh->depthState);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject) label, &mesh->depthState);CHKERRQ(ierr);
 
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   if (cMax >= 0 || fMax >= 0 || eMax >= 0 || vMax >= 0) {

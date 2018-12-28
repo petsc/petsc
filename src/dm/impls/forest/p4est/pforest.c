@@ -1103,7 +1103,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMForestTemplate(dm,MPI_COMM_NULL,&coarseDM);CHKERRQ(ierr);
       ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_ADAPT_COARSEN);CHKERRQ(ierr);
-      ierr = DMLabelCreate("coarsen",&coarsen);CHKERRQ(ierr);
+      ierr = DMLabelCreate(PETSC_COMM_SELF, "coarsen",&coarsen);CHKERRQ(ierr);
       ierr = DMLabelSetDefaultValue(coarsen,DM_ADAPT_COARSEN);CHKERRQ(ierr);
       ierr = DMForestSetAdaptivityLabel(coarseDM,coarsen);CHKERRQ(ierr);
       ierr = DMLabelDestroy(&coarsen);CHKERRQ(ierr);
@@ -3226,25 +3226,27 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
     DMLabel   baseLabel;
     DMLabel   label = next->label;
     PetscBool isDepth, isGhost, isVTK, isSpmap;
+    const char *name;
 
-    ierr = PetscStrcmp(label->name,"depth",&isDepth);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) label, &name);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
     if (isDepth) {
       next = next->next;
       continue;
     }
-    ierr = PetscStrcmp(label->name,"ghost",&isGhost);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
     if (isGhost) {
       next = next->next;
       continue;
     }
-    ierr = PetscStrcmp(label->name,"vtk",&isVTK);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
     if (isVTK) {
       next = next->next;
       continue;
     }
-    ierr = PetscStrcmp(label->name,"_forest_base_subpoint_map",&isSpmap);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name,"_forest_base_subpoint_map",&isSpmap);CHKERRQ(ierr);
     if (!isSpmap) {
-      ierr = DMGetLabel(base,label->name,&baseLabel);CHKERRQ(ierr);
+      ierr = DMGetLabel(base,name,&baseLabel);CHKERRQ(ierr);
       if (!baseLabel) {
         next = next->next;
         continue;
@@ -3308,12 +3310,12 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         if (print) {
           PetscInt i;
 
-          ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Failed to find cell with point %D in its closure for label %s (starSize %D)\n",PetscGlobalRank,p,baseLabel ? baseLabel->name : "_forest_base_subpoint_map",starSize);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Failed to find cell with point %D in its closure for label %s (starSize %D)\n",PetscGlobalRank,p,baseLabel ? ((PetscObject)baseLabel)->name : "_forest_base_subpoint_map",starSize);
           for (i = 0; i < starSize; i++) { ierr = PetscPrintf(PETSC_COMM_SELF,"  star[%D] = %D,%D\n",i,star[2*i],star[2*i+1]);CHKERRQ(ierr); }
         }
         ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,NULL,&star);CHKERRQ(ierr);
         if (zerosupportpoint) continue;
-        else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %D in its closure for label %s. Rerun with -dm_forest_print_label_error for more information",p,baseLabel ? baseLabel->name : "_forest_base_subpoint_map");
+        else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %D in its closure for label %s. Rerun with -dm_forest_print_label_error for more information",p,baseLabel ? ((PetscObject) baseLabel)->name : "_forest_base_subpoint_map");
       }
       ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,NULL,&star);CHKERRQ(ierr);
 
@@ -3629,11 +3631,12 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 #endif
     while (next) {
       DMLabel    nextLabel = next->label;
-      const char *name     = nextLabel->name;
+      const char *name;
       PetscBool  isDepth, isGhost, isVTK;
       DMLabel    label;
       PetscInt   p;
 
+      ierr = PetscObjectGetName((PetscObject) nextLabel, &name);CHKERRQ(ierr);
       ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
       if (isDepth) {
         next = next->next;
