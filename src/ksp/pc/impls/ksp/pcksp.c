@@ -27,14 +27,10 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   PetscErrorCode     ierr;
   PetscInt           its;
   PC_KSP             *jac = (PC_KSP*)pc->data;
-  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   ierr = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(jac->ksp,&reason);CHKERRQ(ierr);
-  if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-    pc->failedreason = PC_SUBPC_ERROR;
-  }
+  ierr = KSPCheckSolve(jac->ksp,pc,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
@@ -45,14 +41,10 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
   PetscErrorCode     ierr;
   PetscInt           its;
   PC_KSP             *jac = (PC_KSP*)pc->data;
-  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   ierr = KSPSolveTranspose(jac->ksp,x,y);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(jac->ksp,&reason);CHKERRQ(ierr);
-  if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-    pc->failedreason = PC_SUBPC_ERROR;
-  }
+  ierr = KSPCheckSolve(jac->ksp,pc,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);

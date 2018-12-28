@@ -28,3 +28,4 @@ PetscErrorCode  KSPPythonSetType(KSP ksp,const char pyname[])
   ierr = PetscTryMethod(ksp,"KSPPythonSetType_C",(KSP, const char[]),(ksp,pyname));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+

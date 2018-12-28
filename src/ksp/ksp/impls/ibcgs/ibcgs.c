@@ -96,6 +96,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   ierr = KSPInitialResidual(ksp,Xn_1,Tn,Sn,Rn_1,B);CHKERRQ(ierr);
 
   ierr = VecNorm(Rn_1,NORM_2,&rnorm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,rnorm);
   ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -123,6 +124,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   /* the paper says phin_1 should be initialized to zero, it is actually R0'R0 */
   ierr = VecDot(R0,R0,&phin_1);CHKERRQ(ierr);
+  KSPCheckDot(ksp,phin_1);
 
   /* sigman_1 = rn_1'un_1  */
   ierr = VecDot(R0,Un_1,&sigman_1);CHKERRQ(ierr);

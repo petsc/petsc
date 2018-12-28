@@ -59,6 +59,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
   ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /* z  <- B*r       */
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
+  KSPCheckDot(ksp,dp);
   if (PetscAbsScalar(dp) < symmlq->haptol) {
     ierr        = PetscInfo2(ksp,"Detected happy breakdown %g tolerance %g\n",(double)PetscAbsScalar(dp),(double)symmlq->haptol);CHKERRQ(ierr);
     ksp->rnorm  = 0.0;  /* what should we really put here? */
@@ -84,6 +85,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   ierr  = VecScale(U,ibeta);CHKERRQ(ierr);    /* u <- ibeta*u; */
   ierr  = VecCopy(U,Wbar);CHKERRQ(ierr);       /* w_bar <- u;   */
   ierr  = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);     /*   np <- ||z||        */
+  KSPCheckNorm(ksp,np);
   ierr = KSPLogResidualHistory(ksp,np);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
   ksp->rnorm = np;
@@ -126,6 +128,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     ierr    = VecAXPY(Z,-beta,UOLD);CHKERRQ(ierr); /*  z <- z - beta * u_old; */
     betaold = beta;                                /* beta_k                  */
     ierr    = VecDot(R,Z,&dp);CHKERRQ(ierr);       /* dp <- r'*z;             */
+    KSPCheckDot(ksp,dp);
     if (PetscAbsScalar(dp) < symmlq->haptol) {
       ierr = PetscInfo2(ksp,"Detected happy breakdown %g tolerance %g\n",(double)PetscAbsScalar(dp),(double)symmlq->haptol);CHKERRQ(ierr);
       dp   = 0.0;

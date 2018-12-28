@@ -189,6 +189,7 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   if (!red->useparallelmat) {
     ierr = KSPSolve(red->ksp,x,y);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(red->ksp,pc,y);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -202,6 +203,7 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 
   /* apply preconditioner on each processor */
   ierr = KSPSolve(red->ksp,red->xsub,red->ysub);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(red->ksp,pc,red->ysub);CHKERRQ(ierr);
   ierr = VecResetArray(red->xsub);CHKERRQ(ierr);
   ierr = VecRestoreArray(red->xdup,&array);CHKERRQ(ierr);
 
@@ -226,6 +228,7 @@ static PetscErrorCode PCApplyTranspose_Redundant(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   if (!red->useparallelmat) {
     ierr = KSPSolveTranspose(red->ksp,x,y);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(red->ksp,pc,y);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -239,6 +242,7 @@ static PetscErrorCode PCApplyTranspose_Redundant(PC pc,Vec x,Vec y)
 
   /* apply preconditioner on each processor */
   ierr = KSPSolveTranspose(red->ksp,red->xsub,red->ysub);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(red->ksp,pc,red->ysub);CHKERRQ(ierr);
   ierr = VecResetArray(red->xsub);CHKERRQ(ierr);
   ierr = VecRestoreArray(red->xdup,&array);CHKERRQ(ierr);
 

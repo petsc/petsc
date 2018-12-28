@@ -76,6 +76,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   ierr = KSP_MatMult(sub_ksp,tsirm->A,x,tsirm->r);CHKERRQ(ierr);
   ierr = VecAXPY(tsirm->r,-1,b);CHKERRQ(ierr);
   ierr = VecNorm(tsirm->r,NORM_2,&norm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,norm);
   ksp->its = 0;
   ierr = KSPConvergedDefault(ksp,ksp->its,norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(sub_ksp,PETSC_TRUE);CHKERRQ(ierr);

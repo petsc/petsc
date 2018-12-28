@@ -624,7 +624,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
   PetscFunctionBegin;
   ierr = KSPSetUp(subksp);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(subksp,&reason);CHKERRQ(ierr);
-  if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
+  if (reason == KSP_DIVERGED_PC_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
@@ -644,6 +644,7 @@ static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
      of the inner preconditioner automatically unless we pass down the outter preconditioners reuse flag.*/
   ierr = KSPSetReusePreconditioner(jac->ksp[0],pc->reusepreconditioner);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(jac->ksp[0],pc,bjac->y);CHKERRQ(ierr);
   ierr = VecRestoreLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
   ierr = VecRestoreLocalVector(y, bjac->y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -732,6 +733,7 @@ static PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(jac->ksp[0],pc,bjac->y);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->x);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->y);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
@@ -890,7 +892,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
   for (i=0; i<n_local; i++) {
     ierr = KSPSetUp(jac->ksp[i]);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(jac->ksp[i],&reason);CHKERRQ(ierr);
-    if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    if (reason == KSP_DIVERGED_PC_FAILED) {
       pc->failedreason = PC_SUBPC_ERROR;
     }
   }
@@ -923,6 +925,7 @@ static PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 
     ierr = PetscLogEventBegin(PC_ApplyOnBlocks,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
     ierr = KSPSolve(jac->ksp[i],bjac->x[i],bjac->y[i]);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(jac->ksp[i],pc,bjac->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PC_ApplyOnBlocks,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
 
     ierr = VecResetArray(bjac->x[i]);CHKERRQ(ierr);
@@ -959,6 +962,7 @@ static PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 
     ierr = PetscLogEventBegin(PC_ApplyTransposeOnBlocks,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
     ierr = KSPSolveTranspose(jac->ksp[i],bjac->x[i],bjac->y[i]);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(jac->ksp[i],pc,bjac->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PC_ApplyTransposeOnBlocks,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
 
     ierr = VecResetArray(bjac->x[i]);CHKERRQ(ierr);
@@ -1169,9 +1173,10 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   /* apply preconditioner on each matrix block */
   ierr = PetscLogEventBegin(PC_ApplyOnBlocks,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(jac->ksp[0],pc,mpjac->ysub);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplyOnBlocks,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(jac->ksp[0],&reason);CHKERRQ(ierr);
-  if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
+  if (reason == KSP_DIVERGED_PC_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;
   }
 

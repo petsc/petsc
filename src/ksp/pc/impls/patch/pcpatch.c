@@ -1820,6 +1820,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
         ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);
       }
       ierr = KSPSolve(patch->ksp[i], patch->patchX[i], patch->patchY[i]);CHKERRQ(ierr);
+      ierr = KSPCheckSolve(patch->ksp[i],pc,patch->patchY[i]);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
 
       if (!patch->save_operators) {
@@ -2072,7 +2073,7 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
     }
     ierr = KSPSetUp(patch->ksp[i]);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(patch->ksp[i], &reason);CHKERRQ(ierr);
-    if (reason == KSP_DIVERGED_PCSETUP_FAILED) pc->failedreason = PC_SUBPC_ERROR;
+    if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
 }

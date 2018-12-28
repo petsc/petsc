@@ -58,6 +58,7 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   ierr = MatMultTranspose(A,r,p);CHKERRQ(ierr); /* p_0 = A^T * r_0    */
   ierr = VecCopy(p,ss);CHKERRQ(ierr);           /* s_0 = p_0          */
   ierr = VecNorm(ss,NORM_2,&gamma);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,gamma);
   ksp->rnorm = gamma;
   ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   gamma = gamma*gamma;                          /* gamma = norm2(s)^2 */

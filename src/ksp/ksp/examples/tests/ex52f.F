@@ -57,7 +57,7 @@
       call KSPSolve(ksp,b,x,ierr)
       call KSPGetConvergedReason(ksp,reason,ierr)
       call KSPGetPC(ksp,pc,ierr)
-      call PCGetSetUpFailedReason(pc,pcreason,ierr)
+      call PCGetFailedReason(pc,pcreason,ierr)
       call PCFactorGetMatrix(pc,F,ierr)
       call MatFactorGetError(F,ferr,ierr)
       call MatFactorGetErrorZeroPivot(F,pivot,row,ierr)

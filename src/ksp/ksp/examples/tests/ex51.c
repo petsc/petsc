@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
   if (reason) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp() failed due to %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
-    ierr = PCGetSetUpFailedReason(pc,&pcreason);CHKERRQ(ierr);
+    ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Success!\n");CHKERRQ(ierr);
@@ -81,11 +81,11 @@ int main(int argc,char **args)
   ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
   if (reason) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp() failed due to %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
-    ierr = PCGetSetUpFailedReason(pc,&pcreason);CHKERRQ(ierr);
+    ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Success!\n");CHKERRQ(ierr);
-    ierr = PCGetSetUpFailedReason(pc,&pcreason);CHKERRQ(ierr);
+    ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
   }
 

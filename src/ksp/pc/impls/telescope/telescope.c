@@ -479,6 +479,7 @@ static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
   /* solve */
   if (isActiveRank(sred->psubcomm)) {
     ierr = KSPSolve(sred->ksp,xred,yred);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(sred->ksp,pc,yred);CHKERRQ(ierr);
   }
   /* return vector */
   ierr = VecGetArray(xtmp,&array);CHKERRQ(ierr);
