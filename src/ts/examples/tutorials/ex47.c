@@ -150,7 +150,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   form = options->formType;
   ierr = PetscOptionsEList("-form_type", "The weak form type", "ex47.c", formTypes, 2, formTypes[options->formType], &form, NULL);CHKERRQ(ierr);
   options->formType = (WeakFormType) form;
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

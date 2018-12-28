@@ -45,7 +45,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-run_type", "The run type", "ex2.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
   options->runType = (RunType) run;
   ierr = PetscOptionsBool("-use_dual_penalty", "Penalize deviation from both goals", "ex2.c", options->useDualPenalty, &options->useDualPenalty, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
