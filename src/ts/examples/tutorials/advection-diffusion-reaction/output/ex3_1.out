@@ -11,31 +11,29 @@
 10 TS dt 0.0134319 time 0.0890911
 11 TS dt 0.0134682 time 0.102523
 12 TS dt 0.0134977 time 0.115991
-13 TS dt 0.0135237 time 0.129489
-14 TS dt 0.00490871 time 0.133782
-15 TS dt 0.010074 time 0.138691
-16 TS dt 0.0135707 time 0.148765
-17 TS dt 0.013607 time 0.162336
-18 TS dt 0.00443555 time 0.165994
-19 TS dt 0.00853853 time 0.17043
-20 TS dt 0.0135363 time 0.178968
-21 TS dt 0.0136954 time 0.192504
-22 TS dt 0.00535735 time 0.197245
-23 TS dt 0.0108939 time 0.202602
-24 TS dt 0.0137448 time 0.213496
-25 TS dt 0.0137631 time 0.227241
-26 TS dt 0.00362895 time 0.229783
-27 TS dt 0.00578029 time 0.233412
-28 TS dt 0.0111986 time 0.239193
-29 TS dt 0.013832 time 0.250391
-30 TS dt 0.013781 time 0.264223
-31 TS dt 0.00305704 time 0.26618
-32 TS dt 0.0043779 time 0.269237
-33 TS dt 0.0076831 time 0.273615
-34 TS dt 0.0135611 time 0.281298
-35 TS dt 0.0139794 time 0.29486
-36 TS dt 0.00580298 time 0.299731
-37 TS dt 0.0115935 time 0.305534
+13 TS dt 0.0135275 time 0.129489
+14 TS dt 0.0131882 time 0.143016
+15 TS dt 0.00344526 time 0.145052
+16 TS dt 0.00501127 time 0.148498
+17 TS dt 0.00930381 time 0.153509
+18 TS dt 0.0135664 time 0.162813
+19 TS dt 0.0136135 time 0.176379
+20 TS dt 0.00482811 time 0.179584
+21 TS dt 0.0086442 time 0.184412
+22 TS dt 0.0135853 time 0.193057
+23 TS dt 0.0137158 time 0.206642
+24 TS dt 0.00510151 time 0.210132
+25 TS dt 0.00947805 time 0.215234
+26 TS dt 0.0137112 time 0.224712
+27 TS dt 0.0137788 time 0.238423
+28 TS dt 0.00438721 time 0.241296
+29 TS dt 0.00730922 time 0.245684
+30 TS dt 0.0132986 time 0.252993
+31 TS dt 0.0138857 time 0.266291
+32 TS dt 0.0063261 time 0.271276
+33 TS dt 0.0123577 time 0.277602
+34 TS dt 0.013959 time 0.28996
+35 TS dt 0.013358 time 0.303919
 TS Object: 1 MPI processes
   type: arkimex
     ARK IMEX 3
@@ -46,10 +44,10 @@ TS Object: 1 MPI processes
     Nonstiff abscissa     c =  0.000000  0.871733  0.600000  1.000000 
   maximum steps=1000
   maximum time=0.3
-  total number of nonlinear solver iterations=294
-  total number of linear solver iterations=588
+  total number of nonlinear solver iterations=270
+  total number of linear solver iterations=656
   total number of nonlinear solve failures=0
-  total number of rejected steps=12
+  total number of rejected steps=10
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
   TSAdapt Object: 1 MPI processes
     type: basic
@@ -63,7 +61,7 @@ TS Object: 1 MPI processes
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-    total number of linear solver iterations=4
+    total number of linear solver iterations=5
     total number of function evaluations=3
     norm schedule ALWAYS
     SNESLineSearch Object: 1 MPI processes
