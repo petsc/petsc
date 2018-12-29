@@ -383,7 +383,55 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   PetscFunctionReturn(0);
 }
 
-/* This can be hooked into SetValue(),  ClearValue(), etc. for updating */
+/*@
+  DMLabelComputeIndex - Create an index structure for membership determination, automatically determining the bounds
+
+  Input Parameter:
+. label  - The DMLabel
+
+  Level: intermediate
+
+.seealso: DMLabelHasPoint(), DMLabelCreateIndex(), DMLabelDestroyIndex(), DMLabelGetValue(), DMLabelSetValue()
+@*/
+PetscErrorCode DMLabelComputeIndex(DMLabel label)
+{
+  PetscInt       pStart = PETSC_MAX_INT, pEnd = -1, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
+  for (v = 0; v < label->numStrata; ++v) {
+    const PetscInt *points;
+    PetscInt       i;
+
+    ierr = ISGetIndices(label->points[v], &points);CHKERRQ(ierr);
+    for (i = 0; i < label->stratumSizes[v]; ++i) {
+      const PetscInt point = points[i];
+
+      pStart = PetscMin(point,   pStart);
+      pEnd   = PetscMax(point+1, pEnd);
+    }
+    ierr = ISRestoreIndices(label->points[v], &points);CHKERRQ(ierr);
+  }
+  label->pStart = pStart == PETSC_MAX_INT ? -1 : pStart;
+  label->pEnd   = pEnd;
+  ierr = DMLabelCreateIndex(label, label->pStart, label->pEnd);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMLabelCreateIndex - Create an index structure for membership determination
+
+  Input Parameters:
++ label  - The DMLabel
+. pStart - The smallest point
+- pEnd   - The largest point + 1
+
+  Level: intermediate
+
+.seealso: DMLabelHasPoint(), DMLabelComputeIndex(), DMLabelDestroyIndex(), DMLabelGetValue(), DMLabelSetValue()
+@*/
 PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
 {
   PetscInt       v;
@@ -395,6 +443,7 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
   ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
   label->pStart = pStart;
   label->pEnd   = pEnd;
+  /* This can be hooked into SetValue(),  ClearValue(), etc. for updating */
   ierr = PetscBTCreate(pEnd - pStart, &label->bt);CHKERRQ(ierr);
   for (v = 0; v < label->numStrata; ++v) {
     const PetscInt *points;
@@ -412,6 +461,16 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelDestroyIndex - Destroy the index structure
+
+  Input Parameter:
+. label - the DMLabel
+
+  Level: intermediate
+
+.seealso: DMLabelHasPoint(), DMLabelCreateIndex(), DMLabelGetValue(), DMLabelSetValue()
+@*/
 PetscErrorCode DMLabelDestroyIndex(DMLabel label)
 {
   PetscErrorCode ierr;
@@ -421,6 +480,40 @@ PetscErrorCode DMLabelDestroyIndex(DMLabel label)
   label->pStart = -1;
   label->pEnd   = -1;
   ierr = PetscBTDestroy(&label->bt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMLabelGetBounds - Return the smallest and largest point in the label
+
+  Input Parameter:
+. label - the DMLabel
+
+  Output Parameters:
++ pStart - The smallest point
+- pEnd   - The largest point + 1
+
+  Note: This will compute an index for the label if one does not exist.
+
+  Level: intermediate
+
+.seealso: DMLabelHasPoint(), DMLabelCreateIndex(), DMLabelGetValue(), DMLabelSetValue()
+@*/
+PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  if ((label->pStart == -1) && (label->pEnd == -1)) {ierr = DMLabelComputeIndex(label);CHKERRQ(ierr);}
+  if (pStart) {
+    PetscValidPointer(pStart, 2);
+    *pStart = label->pStart;
+  }
+  if (pEnd) {
+    PetscValidPointer(pEnd, 3);
+    *pEnd = label->pEnd;
+  }
   PetscFunctionReturn(0);
 }
 
