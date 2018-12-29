@@ -1575,6 +1575,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   a       = (Mat_MPIDense*)mat->data;
   ierr    = PetscMemcpy(mat->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
+  mat->ops->destroy = MatDestroy_MPIDense;
   mat->factortype   = A->factortype;
   mat->assembled    = PETSC_TRUE;
   mat->preallocated = PETSC_TRUE;

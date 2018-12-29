@@ -101,20 +101,6 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat *M)
-{
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *a    = (Mat_MPIAIJ*)A->data;
-  Mat_PtAPMPI    *ptap = a->ptap;
-
-  PetscFunctionBegin;
-  ierr = (*ptap->duplicate)(A,op,M);CHKERRQ(ierr);
-
-  (*M)->ops->destroy   = ptap->destroy;   /* = MatDestroy_MPIAIJ, *M doesn't duplicate A's special structure! */
-  (*M)->ops->duplicate = ptap->duplicate; /* = MatDuplicate_MPIAIJ */
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
 {
   PetscErrorCode ierr;
@@ -317,7 +303,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ptap->duplicate      = Cmpi->ops->duplicate;
   Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
   Cmpi->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
-  Cmpi->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;
 
   /* attach the supporting struct to Cmpi for reuse */
   c       = (Mat_MPIAIJ*)Cmpi->data;
@@ -831,7 +816,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ptap->duplicate           = Cmpi->ops->duplicate;
   Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy        = MatDestroy_MPIAIJ_MatMatMult;
-  Cmpi->ops->duplicate      = MatDuplicate_MPIAIJ_MatMatMult;
 
   /* attach the supporting struct to Cmpi for reuse */
   c       = (Mat_MPIAIJ*)Cmpi->data;
@@ -1118,7 +1102,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   ptap->duplicate      = Cmpi->ops->duplicate;
   Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
   Cmpi->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
-  Cmpi->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;
 
   /* attach the supporting struct to Cmpi for reuse */
   c       = (Mat_MPIAIJ*)Cmpi->data;
