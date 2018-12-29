@@ -1376,11 +1376,14 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   if (!fe->subspaces) {ierr = PetscCalloc1(dim, &fe->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!fe->subspaces[height-1]) {
-      PetscFE sub;
+      PetscFE     sub;
+      const char *name;
 
       ierr = PetscSpaceGetHeightSubspace(P, height, &subP);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetHeightSubspace(Q, height, &subQ);CHKERRQ(ierr);
       ierr = PetscFECreate(PetscObjectComm((PetscObject) fe), &sub);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) fe,  &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) sub,  name);CHKERRQ(ierr);
       ierr = PetscFEGetType(fe, &fetype);CHKERRQ(ierr);
       ierr = PetscFESetType(sub, fetype);CHKERRQ(ierr);
       ierr = PetscFESetBasisSpace(sub, subP);CHKERRQ(ierr);
@@ -1537,5 +1540,34 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
   ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscFESetName - Names the FE and its subobjects
+
+  Not collective
+
+  Input Parameters:
++ fe   - The PetscFE
+- name - The name
+
+  Level: beginner
+
+.keywords: PetscFE, finite element
+.seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscFESetName(PetscFE fe, const char name[])
+{
+  PetscSpace     P;
+  PetscDualSpace Q;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFEGetBasisSpace(fe, &P);CHKERRQ(ierr);
+  ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) P,  name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) Q,  name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
