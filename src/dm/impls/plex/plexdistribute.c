@@ -1509,6 +1509,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
     }
   }
 
+  ierr = PetscSortInt(counter, adjncy); CHKERRQ(ierr);
+
   for(i=0; i<pEnd-pStart; i++) {
     if(toBalance[i]) {
       if(isNonExclusivelyOwned[i]) {
@@ -1517,6 +1519,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
         for(j=0; j<degree[i]; j++) {
           adjncy[counter] = cumSumVertices[locationsOfLeafs[cumSumDegrees[i]+j]];
           counter++;
+        }
+        if(degree[i]>0) {
+          ierr = PetscSortInt(degree[i]+1, &adjncy[counter-degree[i]-1]); CHKERRQ(ierr);
         }
       }
     }
@@ -1534,7 +1539,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
     tpwgts[i] = 1./(ncon*nparts);
   }
   ierr = PetscMalloc1(1, &ubvec);CHKERRQ(ierr);
-  ubvec[0] = 1.05;
+  ubvec[0] = 1.01;
   ierr = PetscMalloc1(1, &options);CHKERRQ(ierr);
   options[0] = 0;
 
