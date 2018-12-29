@@ -622,10 +622,13 @@ PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpac
 {
   PetscInt       order, Nc;
   PetscBool      cont, tensor;
+  const char    *name;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) sp), spNew);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) sp,     &name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *spNew,  name);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetType(*spNew, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetOrder(sp, &order);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(*spNew, order);CHKERRQ(ierr);
