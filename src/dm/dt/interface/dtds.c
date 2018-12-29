@@ -646,6 +646,51 @@ PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
 }
 
 /*@
+  PetscDSGetHybrid - Returns the flag for a hybrid (cohesive) cell
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. isHybrid - The flag
+
+  Level: developer
+
+.seealso: PetscDSSetHybrid(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetHybrid(PetscDS prob, PetscBool *isHybrid)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(isHybrid, 2);
+  *isHybrid = prob->isHybrid;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSSetHybrid - Set the flag for a hybrid (cohesive) cell
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- isHybrid - The flag
+
+  Level: developer
+
+.seealso: PetscDSGetHybrid(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSetHybrid(PetscDS prob, PetscBool isHybrid)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  prob->isHybrid = isHybrid;
+  PetscFunctionReturn(0);
+}
+
+/*@
   PetscDSGetTotalDimension - Returns the total size of the approximation space for this system
 
   Not collective
