@@ -5,6 +5,19 @@ PetscClassId PETSCDS_CLASSID = 0;
 PetscFunctionList PetscDSList              = NULL;
 PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
+/* A PetscDS (Discrete System) encodes a set of equations posed in a discrete space, which represents a set of
+   nonlinear continuum equations. The equations can have multiple fields, each field having a different
+   discretization. In addition, different pieces of the domain can have different field combinations and equations.
+
+   The DS provides the user a description of the approximation space on any given cell. It also gives pointwise
+   functions representing the equations.
+
+   Each field is associated with a label, marking the cells on which it is supported. Note that a field can be
+   supported on the closure of a cell not in the label due to overlap of the boundary of neighboring cells. The DM
+   then creates a DS for each set of cells with identical approximation spaces. When assembling, the user asks for
+   the space associated with a given cell. DMPlex uses the labels associated with each DS in the default integration loop.
+*/
+
 /*@C
   PetscDSRegister - Adds a new PetscDS implementation
 
@@ -133,6 +146,8 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Discrete System with %d fields\n", prob->Nf);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "  cell total dim %D total comp %D\n", prob->totDim, prob->totComp);CHKERRQ(ierr);
+  if (prob->isHybrid) {ierr = PetscViewerASCIIPrintf(viewer, "  hybrid cell\n");CHKERRQ(ierr);}
   for (f = 0; f < prob->Nf; ++f) {
     PetscObject     obj;
     PetscClassId    id;
@@ -144,6 +159,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     ierr = PetscObjectGetName(obj, &name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Field %s", name ? name : "<unknown>");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {
       ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);
       ierr = PetscFEGetQuadrature((PetscFE) obj, &q);CHKERRQ(ierr);
@@ -170,6 +186,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, " (Nq %D Nqc %D)", Nq, Nqc);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {ierr = PetscFEView((PetscFE) obj, viewer);CHKERRQ(ierr);}
     else if (id == PETSCFV_CLASSID) {ierr = PetscFVView((PetscFV) obj, viewer);CHKERRQ(ierr);}
@@ -306,7 +323,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 PetscErrorCode PetscDSSetUp(PetscDS prob)
 {
   const PetscInt Nf = prob->Nf;
-  PetscInt       dim, dimEmbed, work, NcMax = 0, NqMax = 0, f;
+  PetscInt       dim, dimEmbed, work, NcMax = 0, NqMax = 0, NsMax = 1, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -353,11 +370,16 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     NcMax          = PetscMax(NcMax, Nc);
     prob->totDim  += Nb;
     prob->totComp += Nc;
+    /* There are two faces for all fields but the cohesive field on a hybrid cell */
+    if (prob->isHybrid && (f < Nf-1)) prob->totDim += Nb;
   }
   work = PetscMax(prob->totComp*dim, PetscSqr(NcMax*dim));
   /* Allocate works space */
-  ierr = PetscMalloc5(prob->totComp,&prob->u,prob->totComp,&prob->u_t,prob->totComp*dimEmbed,&prob->u_x,dimEmbed,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
-  ierr = PetscMalloc6(NqMax*NcMax,&prob->f0,NqMax*NcMax*dim,&prob->f1,NqMax*NcMax*NcMax,&prob->g0,NqMax*NcMax*NcMax*dim,&prob->g1,NqMax*NcMax*NcMax*dim,&prob->g2,NqMax*NcMax*NcMax*dim*dim,&prob->g3);CHKERRQ(ierr);
+  if (prob->isHybrid) NsMax = 2;
+  ierr = PetscMalloc5(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed,&prob->u_x,dimEmbed,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscMalloc6(NsMax*NqMax*NcMax,&prob->f0,NsMax*NqMax*NcMax*dim,&prob->f1,
+                      NsMax*NsMax*NqMax*NcMax*NcMax,&prob->g0,NsMax*NsMax*NqMax*NcMax*NcMax*dim,&prob->g1,
+                      NsMax*NsMax*NqMax*NcMax*NcMax*dim,&prob->g2,NsMax*NsMax*NqMax*NcMax*NcMax*dim*dim,&prob->g3);CHKERRQ(ierr);
   if (prob->ops->setup) {ierr = (*prob->ops->setup)(prob);CHKERRQ(ierr);}
   prob->setup = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -646,6 +668,51 @@ PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
 }
 
 /*@
+  PetscDSGetHybrid - Returns the flag for a hybrid (cohesive) cell
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. isHybrid - The flag
+
+  Level: developer
+
+.seealso: PetscDSSetHybrid(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetHybrid(PetscDS prob, PetscBool *isHybrid)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(isHybrid, 2);
+  *isHybrid = prob->isHybrid;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSSetHybrid - Set the flag for a hybrid (cohesive) cell
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- isHybrid - The flag
+
+  Level: developer
+
+.seealso: PetscDSGetHybrid(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSetHybrid(PetscDS prob, PetscBool isHybrid)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  prob->isHybrid = isHybrid;
+  PetscFunctionReturn(0);
+}
+
+/*@
   PetscDSGetTotalDimension - Returns the total size of the approximation space for this system
 
   Not collective
@@ -748,7 +815,7 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
   PetscValidPointer(disc, 3);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
-  if (prob->disc[f]) {ierr = PetscObjectDereference(prob->disc[f]);CHKERRQ(ierr);}
+  ierr = PetscObjectDereference(prob->disc[f]);CHKERRQ(ierr);
   prob->disc[f] = disc;
   ierr = PetscObjectReference(disc);CHKERRQ(ierr);
   {
