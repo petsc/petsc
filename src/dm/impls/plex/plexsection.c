@@ -513,11 +513,11 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     }
   }
   /* Handle discretization */
+  ierr = PetscCalloc3(Nf,&labels,Nf,&numComp,Nf*(dim+1),&numDof);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
     PetscObject obj;
 
     ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
-  ierr = PetscCalloc3(Nf,&labels,Nf,&numComp,Nf*(dim+1),&numDof);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {
     labels[f] = NULL;
     if (isFE[f]) {
       PetscFE         fe = (PetscFE) obj;
