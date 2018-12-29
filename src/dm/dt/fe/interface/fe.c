@@ -921,6 +921,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   DM             dm;
   DMLabel        label;
   PetscReal      *xi, *v, *J, detJ;
+  const char     *name;
   PetscQuadrature origin, fullQuad, subQuad;
   PetscErrorCode ierr;
 
@@ -957,6 +958,8 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   ierr = PetscFESetNumComponents(*trFE,numComp);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(*trFE,bsubsp);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(*trFE,dsubsp);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) fe, &name);CHKERRQ(ierr);
+  if (name) {ierr = PetscFESetName(*trFE, name);CHKERRQ(ierr);}
   ierr = PetscFEGetQuadrature(fe,&fullQuad);CHKERRQ(ierr);
   ierr = PetscQuadratureGetOrder(fullQuad,&order);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm,refPoint,&coneSize);CHKERRQ(ierr);
