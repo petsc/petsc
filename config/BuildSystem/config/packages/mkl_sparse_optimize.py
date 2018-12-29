@@ -51,8 +51,12 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MKL_SPARSE_SP2M_FEATURE', 1)
 
   def checkMklSpblasDeprecated(self):
-    deprecated_test='#include <mkl_spblas.h>\nMKL_DEPRECATED void foo();\n'
-    result = self.checkCompile(deprecated_test)
+    # Some versions of MKL use MKL_DEPRECATED and others just use DEPRECATED, so we must check for both.
+    deprecated_test1='#include <mkl_spblas.h>\nDEPRECATED void foo();\n'
+    deprecated_test2='#include <mkl_spblas.h>\nMKL_DEPRECATED void foo();\n'
+    result1 = self.checkCompile(deprecated_test1)
+    result2 = self.checkCompile(deprecated_test2)
+    result = result1 or result2
     self.log.write('Checking to see if original MKL SpBLAS is declared deprecated: result ' + str(int(result)) + '\n')
     if result:
       self.addDefine('MKL_SPBLAS_DEPRECATED', 1)
