@@ -4191,6 +4191,21 @@ PetscErrorCode DMSetDS(DM dm, PetscDS prob)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMGetNumFields - Get the number of fields in the DM
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. Nf - The number of fields
+
+  Level: intermediate
+
+.seealso: DMSetNumFields(), DMSetField()
+@*/
 PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
 {
   PetscErrorCode ierr;
@@ -4201,6 +4216,19 @@ PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMSetNumFields - Set the number of fields in the DM
+
+  Logically collective on DM
+
+  Input Parameters:
++ dm - The DM
+- Nf - The number of fields
+
+  Level: intermediate
+
+.seealso: DMGetNumFields(), DMSetField()
+@*/
 PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 {
   PetscInt       Nf, f;
