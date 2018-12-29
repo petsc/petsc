@@ -5,6 +5,19 @@ PetscClassId PETSCDS_CLASSID = 0;
 PetscFunctionList PetscDSList              = NULL;
 PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
+/* A PetscDS (Discrete System) encodes a set of equations posed in a discrete space, which represents a set of
+   nonlinear continuum equations. The equations can have multiple fields, each field having a different
+   discretization. In addition, different pieces of the domain can have different field combinations and equations.
+
+   The DS provides the user a description of the approximation space on any given cell. It also gives pointwise
+   functions representing the equations.
+
+   Each field is associated with a label, marking the cells on which it is supported. Note that a field can be
+   supported on the closure of a cell not in the label due to overlap of the boundary of neighboring cells. The DM
+   then creates a DS for each set of cells with identical approximation spaces. When assembling, the user asks for
+   the space associated with a given cell. DMPlex uses the labels associated with each DS in the default integration loop.
+*/
+
 /*@C
   PetscDSRegister - Adds a new PetscDS implementation
 
