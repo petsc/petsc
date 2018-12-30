@@ -275,6 +275,6 @@ int main(int argc, char **argv)
       requires: !single  !complex c99
 
     test:
-      TODO: broken, was not nightly tested
+      TODO: broken, was not nightly tested, SNES solve eventually fails, -snes_test_jacobian indicates Jacobian is wrong, but even -snes_mf_operator fails
 
 TEST*/

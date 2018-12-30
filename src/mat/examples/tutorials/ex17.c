@@ -6,8 +6,6 @@ static char help[] = "Example of using graph partitioning with a matrix in which
    Processors: n
 T*/
 
-
-
 #include <petscmat.h>
 
 int main(int argc, char **args)
@@ -70,7 +68,6 @@ int main(int argc, char **args)
   return ierr;
 }
 
-
 /*TEST
 
    build:
@@ -78,7 +75,7 @@ int main(int argc, char **args)
 
    test:
       nsize: 8
-      args: -emptyranks 0,2,4 -bigranks 1,3,7
-      TODO: Need to determine if deprecated
+      args: -emptyranks 0,2,4 -bigranks 1,3,7 -mat_partitioning_type average
+      # cannot test with external package partitioners since they produce different results on different systems
 
 TEST*/

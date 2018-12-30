@@ -24,21 +24,19 @@ int main(int argc,char **args)
 {
   Mat             A;                      /* matrix */
   PetscViewer     fd;                     /* viewer */
-  char            file[2][PETSC_MAX_PATH_LEN];           /* input file name */
+  char            file[PETSC_MAX_PATH_LEN];           /* input file name */
   IS              isrow,iscol;            /* row and column permutations */
   PetscErrorCode  ierr;
   MatOrderingType rtype = MATORDERINGRCM;
-  PetscBool       flg,PetscPreLoad = PETSC_FALSE;
+  PetscBool       flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 option");
-  ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) PetscPreLoad = PETSC_TRUE;
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
   /* -----------------------------------------------------------
                   Beginning of loop
@@ -52,7 +50,6 @@ int main(int argc,char **args)
         -log_view) can be done with the larger one (that actually
         is the system of interest).
   */
-  PetscPreLoadBegin(PetscPreLoad,"Load");
 
   /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                          Load system i
@@ -62,7 +59,7 @@ int main(int argc,char **args)
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
   /*
      Load the matrix; then destroy the viewer.
@@ -72,12 +69,8 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
-
-  /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  PetscPreLoadStage("Reordering");
   ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
+  ierr = ISView(isrow,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -86,7 +79,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-  PetscPreLoadEnd();
 
   ierr = PetscFinalize();
   return ierr;
@@ -98,7 +90,6 @@ int main(int argc,char **args)
 
    test:
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
-      TODO: Need to develop comparison test
+      args: -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 TEST*/

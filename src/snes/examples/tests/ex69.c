@@ -444,6 +444,5 @@ PetscErrorCode SNESComputeJacobian_MyShell(SNES snes,Vec X,Mat A,Mat B,void *ctx
    test:
       suffix: 8
       args: -snes_converged_reason -ksp_converged_reason -error_in_domain -snes_mf
-      TODO: Need to determine if deprecated
 
 TEST*/

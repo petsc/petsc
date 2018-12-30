@@ -162,8 +162,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
       ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
     if (lambda <= minlambda) {
-      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
+      SNESCheckFunctionNorm(snes,g);
     }
     lambda = .5*lambda;
   }
