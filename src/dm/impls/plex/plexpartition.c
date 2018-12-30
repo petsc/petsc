@@ -50,7 +50,7 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
 @*/
 PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
 {
-  PetscInt       p, pStart, pEnd, a, adjSize, idx, size;
+  PetscInt       dim, depth, p, pStart, pEnd, a, adjSize, idx, size;
   PetscInt      *adj = NULL, *vOffsets = NULL, *graph = NULL;
   IS             cellNumbering;
   const PetscInt *cellNum;
@@ -66,6 +66,22 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  if (dim != depth) {
+    /* We do not handle the uninterpolated case here */
+    ierr = DMPlexCreateNeighborCSR(dm, height, numVertices, offsets, adjacency);CHKERRQ(ierr);
+    /* DMPlexCreateNeighborCSR does not make a numbering */
+    if (globalNumbering) {ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, globalNumbering);CHKERRQ(ierr);}
+    /* Different behavior for empty graphs */
+    if (!*numVertices) {
+      ierr = PetscMalloc1(1, offsets);CHKERRQ(ierr);
+      (*offsets)[0] = 0;
+    }
+    /* Broken in parallel */
+    if (rank && *numVertices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
+    PetscFunctionReturn(0);
+  }
   ierr = DMPlexGetHeightStratum(dm, height, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
