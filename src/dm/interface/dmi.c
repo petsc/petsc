@@ -198,13 +198,13 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
       for (f = 0; f < numFields; ++f) {
         PetscObject disc;
 
-        ierr = DMGetField(dm, fields[f], &disc);CHKERRQ(ierr);
-        ierr = DMSetField(*subdm, f, disc);CHKERRQ(ierr);
+        ierr = DMGetField(dm, fields[f], NULL, &disc);CHKERRQ(ierr);
+        ierr = DMSetField(*subdm, f, NULL, disc);CHKERRQ(ierr);
       }
       if (numFields == 1 && is) {
         PetscObject disc, space, pmat;
 
-        ierr = DMGetField(*subdm, 0, &disc);CHKERRQ(ierr);
+        ierr = DMGetField(*subdm, 0, NULL, &disc);CHKERRQ(ierr);
         ierr = PetscObjectQuery(disc, "nullspace", &space);CHKERRQ(ierr);
         if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nullspace", space);CHKERRQ(ierr);}
         ierr = PetscObjectQuery(disc, "nearnullspace", &space);CHKERRQ(ierr);
@@ -296,8 +296,8 @@ PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, 
       for (f = 0; f < Nfs[i]; ++f, ++supf) {
         PetscObject disc;
 
-        ierr = DMGetField(dms[i], f, &disc);CHKERRQ(ierr);
-        ierr = DMSetField(*superdm, supf, disc);CHKERRQ(ierr);
+        ierr = DMGetField(dms[i], f, NULL, &disc);CHKERRQ(ierr);
+        ierr = DMSetField(*superdm, supf, NULL, disc);CHKERRQ(ierr);
       }
     }
   }

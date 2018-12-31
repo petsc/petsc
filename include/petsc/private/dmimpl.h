@@ -162,6 +162,11 @@ struct _n_Boundary {
   DMBoundary  next;
 };
 
+typedef struct _n_Field {
+  PetscObject disc;
+  DMLabel     label;
+} RegionField;
+
 PETSC_EXTERN PetscErrorCode DMDestroyLabelLinkList(DM);
 
 struct _p_DM {
@@ -226,6 +231,8 @@ struct _p_DM {
   /* Fields are represented by objects */
   PetscDS                 prob;
   DMBoundary              boundary;          /* List of boundary conditions */
+  PetscInt                Nf;                   /* Number of fields defined on the total domain */
+  RegionField            *fields;               /* Array of discretization fields with regions of validity */
   /* Output structures */
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */

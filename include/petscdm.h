@@ -228,8 +228,10 @@ PETSC_EXTERN PetscErrorCode DMGetDS(DM, PetscDS *);
 PETSC_EXTERN PetscErrorCode DMSetDS(DM, PetscDS);
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
-PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
-PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, PetscObject);
+PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, DMLabel *, PetscObject *);
+PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, DMLabel, PetscObject);
+PETSC_EXTERN PetscErrorCode DMAddField(DM, DMLabel, PetscObject);
+PETSC_EXTERN PetscErrorCode DMClearFields(DM);
 
 /*MC
   DMInterpolationInfo - Structure for holding information about interpolation on a mesh

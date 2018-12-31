@@ -4074,7 +4074,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
       PetscObject  obj;
       PetscClassId id;
 
-      ierr = DMGetField(coarse, i, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(coarse, i, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj,&id);CHKERRQ(ierr);
       if (id == PETSCFV_CLASSID) {
         fv      = (PetscFV) obj;
@@ -4524,7 +4524,7 @@ PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, P
         PetscObject  obj;
         PetscClassId classid;
 
-        ierr = DMGetField(dmIn, i, &obj);CHKERRQ(ierr);
+        ierr = DMGetField(dmIn, i, NULL, &obj);CHKERRQ(ierr);
         ierr = PetscObjectGetClassId(obj, &classid);CHKERRQ(ierr);
         if (classid == PETSCFV_CLASSID) {
           ierr = DMPlexGetDataFVM(dmIn,(PetscFV)obj,&cellGeom,&faceGeom,&dmGrad);CHKERRQ(ierr);

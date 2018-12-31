@@ -2919,7 +2919,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
       PetscClassId id;
       PetscObject  disc;
 
-      ierr = DMGetField(coordDM,0,&disc);CHKERRQ(ierr);
+      ierr = DMGetField(coordDM,0,NULL,&disc);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
         fe = (PetscFE) disc;
@@ -3001,7 +3001,7 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
       PetscClassId id;
       PetscObject  disc;
 
-      ierr = DMGetField(coordDM,0,&disc);CHKERRQ(ierr);
+      ierr = DMGetField(coordDM,0,NULL,&disc);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
         fe = (PetscFE) disc;

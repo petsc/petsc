@@ -17,7 +17,7 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
     PetscObject  obj;
     PetscClassId id;
 
-    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, f, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
     else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
@@ -36,7 +36,7 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
           const PetscScalar ***flips;
           const PetscInt    *numDof;
 
-          ierr = DMGetField(dm,f,(PetscObject *) &fe);CHKERRQ(ierr);
+          ierr = DMGetField(dm,f,NULL,(PetscObject *) &fe);CHKERRQ(ierr);
           ierr = PetscFEGetDualSpace(fe,&dspace);CHKERRQ(ierr);
           ierr = PetscDualSpaceGetSymmetries(dspace,&perms,&flips);CHKERRQ(ierr);
           ierr = PetscDualSpaceGetNumDof(dspace,&numDof);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
     PetscObject  obj;
     PetscClassId id;
 
-    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, f, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
     else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
@@ -408,7 +408,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscObject  obj;
     PetscClassId id;
 
-    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, f, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
     else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
@@ -513,14 +513,11 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     }
   }
   /* Handle discretization */
-    PetscObject obj;
-
-    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
   ierr = PetscCalloc3(Nf,&labels,Nf,&numComp,Nf*(dim+1),&numDof);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    labels[f] = NULL;
+    labels[f] = dm->fields[f].label;
     if (isFE[f]) {
-      PetscFE         fe = (PetscFE) obj;
+      PetscFE         fe = (PetscFE) dm->fields[f].disc;
       const PetscInt *numFieldDof;
       PetscInt        d;
 
@@ -528,7 +525,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       ierr = PetscFEGetNumDof(fe, &numFieldDof);CHKERRQ(ierr);
       for (d = 0; d < dim+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
     } else {
-      PetscFV fv = (PetscFV) obj;
+      PetscFV fv = (PetscFV) dm->fields[f].disc;
 
       ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
       numDof[f*(dim+1)+dim] = numComp[f];
@@ -545,9 +542,11 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscFE     fe;
     const char *name;
 
-    ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) fe, &name);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
+    if (isFE[f]) {
+      ierr = DMGetField(dm, f, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) fe, &name);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
+    }
   }
   ierr = DMSetSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);

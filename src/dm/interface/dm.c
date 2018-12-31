@@ -3708,7 +3708,7 @@ PetscErrorCode DMSetSection(DM dm, PetscSection section)
       const char *name;
 
       ierr = PetscSectionGetFieldName(dm->defaultSection, f, &name);CHKERRQ(ierr);
-      ierr = DMGetField(dm, f, &disc);CHKERRQ(ierr);
+      ierr = DMGetField(dm, f, NULL, &disc);CHKERRQ(ierr);
       ierr = PetscObjectSetName(disc, name);CHKERRQ(ierr);
     }
   }
@@ -4191,6 +4191,52 @@ PetscErrorCode DMSetDS(DM dm, PetscDS prob)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMFieldEnlarge_Static(DM dm, PetscInt NfNew)
+{
+  RegionField   *tmpr;
+  PetscInt       Nf = dm->Nf, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Nf >= NfNew) PetscFunctionReturn(0);
+  ierr = PetscMalloc1(NfNew, &tmpr);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) tmpr[f] = dm->fields[f];
+  for (f = Nf; f < NfNew; ++f) {tmpr[f].disc = NULL; tmpr[f].label = NULL;}
+  ierr = PetscFree(dm->fields);CHKERRQ(ierr);
+  dm->Nf     = NfNew;
+  dm->fields = tmpr;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMClearFields - Remove all fields from the DM
+
+  Logically collective on DM
+
+  Input Parameter:
+. dm - The DM
+
+  Level: intermediate
+
+.seealso: DMGetNumFields(), DMSetNumFields(), DMSetField()
+@*/
+PetscErrorCode DMClearFields(DM dm)
+{
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for (f = 0; f < dm->Nf; ++f) {
+    ierr = PetscObjectDestroy(&dm->fields[f].disc);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&dm->fields[f].label);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(dm->fields);CHKERRQ(ierr);
+  dm->fields = NULL;
+  dm->Nf     = 0;
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMGetNumFields - Get the number of fields in the DM
 
@@ -4208,11 +4254,10 @@ PetscErrorCode DMSetDS(DM dm, PetscDS prob)
 @*/
 PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSGetNumFields(dm->prob, numFields);CHKERRQ(ierr);
+  PetscValidPointer(numFields, 2);
+  *numFields = dm->Nf;
   PetscFunctionReturn(0);
 }
 
@@ -4236,12 +4281,12 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   for (f = Nf; f < numFields; ++f) {
     PetscContainer obj;
 
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject) dm), &obj);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(dm->prob, f, (PetscObject) obj);CHKERRQ(ierr);
+    ierr = DMAddField(dm, NULL, (PetscObject) obj);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&obj);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4256,20 +4301,22 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 + dm - The DM
 - f  - The field number
 
-  Output Parameter:
-. field - The discretization object
+  Output Parameters:
++ label - The label indicating the support of the field, or NULL for the entire mesh
+- field - The discretization object
 
-  Level: developer
+  Level: intermediate
 
-.seealso: DMSetField()
+.seealso: DMAddField(), DMSetField()
 @*/
-PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
+PetscErrorCode DMGetField(DM dm, PetscInt f, DMLabel *label, PetscObject *field)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSGetDiscretization(dm->prob, f, field);CHKERRQ(ierr);
+  PetscValidPointer(field, 3);
+  if ((f < 0) || (f >= dm->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, dm->Nf);
+  if (label) *label = dm->fields[f].label;
+  if (field) *field = dm->fields[f].disc;
   PetscFunctionReturn(0);
 }
 
@@ -4279,21 +4326,62 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
   Logically collective on DM
 
   Input Parameters:
-+ dm - The DM
-. f  - The field number
++ dm    - The DM
+. f     - The field number
+. label - The label indicating the support of the field, or NULL for the entire mesh
 - field - The discretization object
 
-  Level: developer
+  Level: intermediate
 
-.seealso: DMGetField()
+.seealso: DMAddField(), DMGetField()
 @*/
-PetscErrorCode DMSetField(DM dm, PetscInt f, PetscObject field)
+PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject field)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSSetDiscretization(dm->prob, f, field);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
+  PetscValidHeader(field, 4);
+  if ((f < 0) || (f >= dm->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, dm->Nf);
+  ierr = DMFieldEnlarge_Static(dm, f+1);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&dm->fields[f].label);CHKERRQ(ierr);
+  ierr = PetscObjectDestroy(&dm->fields[f].disc);CHKERRQ(ierr);
+  dm->fields[f].label = label;
+  dm->fields[f].disc  = field;
+  ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMAddField - Add the discretization object for the given DM field
+
+  Logically collective on DM
+
+  Input Parameters:
++ dm    - The DM
+. label - The label indicating the support of the field, or NULL for the entire mesh
+- field - The discretization object
+
+  Level: intermediate
+
+.seealso: DMSetField(), DMGetField()
+@*/
+PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
+{
+  PetscInt       Nf = dm->Nf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
+  PetscValidHeader(field, 3);
+  ierr = DMFieldEnlarge_Static(dm, Nf+1);CHKERRQ(ierr);
+  dm->fields[Nf].label = label;
+  dm->fields[Nf].disc  = field;
+  ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
