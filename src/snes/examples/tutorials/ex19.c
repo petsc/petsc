@@ -1094,14 +1094,14 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: cuda_1
       nsize: 1
       requires: cuda
-      args: -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -ksp_monitor
+      args: -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -ksp_monitor -mg_levels_ksp_max_it 3
 
 
    test:
       suffix: cuda_2
       nsize: 3
       requires: cuda
-      args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor
+      args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 3
 
 
 TEST*/

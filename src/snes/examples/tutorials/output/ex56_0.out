@@ -2,20 +2,18 @@
 [0] 27 equations in vector, 9 vertices
   0 SNES Function norm 122.396 
     0 KSP Residual norm 122.396 
-    1 KSP Residual norm 20.4712 
-    2 KSP Residual norm 3.95132 
-    3 KSP Residual norm 0.177226 
-    4 KSP Residual norm 0.0209704 
-    5 KSP Residual norm 0.00279931 
-    6 KSP Residual norm 0.000488048 
-    7 KSP Residual norm 4.70194e-05 
-    8 KSP Residual norm 5.46433e-06 
-    9 KSP Residual norm 5.09879e-07 
-   10 KSP Residual norm 2.68207e-08 
-   11 KSP Residual norm 5.0246e-09 
-   12 KSP Residual norm 1.981e-10 
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  1 SNES Function norm 1.982e-10 
+    1 KSP Residual norm 10.5879 
+    2 KSP Residual norm 4.47644 
+    3 KSP Residual norm 0.430378 
+    4 KSP Residual norm 0.169764 
+    5 KSP Residual norm 0.0144873 
+    6 KSP Residual norm 0.00124148 
+    7 KSP Residual norm 3.25675e-05 
+    8 KSP Residual norm 8.83885e-07 
+    9 KSP Residual norm 2.71426e-08 
+   10 KSP Residual norm 8.602e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  1 SNES Function norm 8.601e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 DM Object: Mesh (ex56_) 4 MPI processes
   type: plex
@@ -33,23 +31,29 @@ Labels:
 [0] 441 equations in vector, 147 vertices
   0 SNES Function norm 49.7106 
     0 KSP Residual norm 49.7106 
-    1 KSP Residual norm 14.4214 
-    2 KSP Residual norm 2.69247 
-    3 KSP Residual norm 0.446918 
-    4 KSP Residual norm 0.0708066 
-    5 KSP Residual norm 0.0122289 
-    6 KSP Residual norm 0.00202641 
-    7 KSP Residual norm 0.000326444 
-    8 KSP Residual norm 5.96305e-05 
-    9 KSP Residual norm 9.35165e-06 
-   10 KSP Residual norm 1.64454e-06 
-   11 KSP Residual norm 2.93752e-07 
-   12 KSP Residual norm 4.78063e-08 
-   13 KSP Residual norm 7.49307e-09 
-   14 KSP Residual norm 1.39213e-09 
-   15 KSP Residual norm 2.325e-10 
-  Linear solve converged due to CONVERGED_RTOL iterations 15
-  1 SNES Function norm 2.325e-10 
+    1 KSP Residual norm 23.7057 
+    2 KSP Residual norm 7.45749 
+    3 KSP Residual norm 2.4817 
+    4 KSP Residual norm 0.704292 
+    5 KSP Residual norm 0.190909 
+    6 KSP Residual norm 0.0502739 
+    7 KSP Residual norm 0.012723 
+    8 KSP Residual norm 0.00409053 
+    9 KSP Residual norm 0.0011966 
+   10 KSP Residual norm 0.000357392 
+   11 KSP Residual norm 0.000106264 
+   12 KSP Residual norm 2.83195e-05 
+   13 KSP Residual norm 7.418e-06 
+   14 KSP Residual norm 2.10676e-06 
+   15 KSP Residual norm 5.97565e-07 
+   16 KSP Residual norm 1.5725e-07 
+   17 KSP Residual norm 5.45591e-08 
+   18 KSP Residual norm 1.7807e-08 
+   19 KSP Residual norm 4.7093e-09 
+   20 KSP Residual norm 1.25723e-09 
+   21 KSP Residual norm 3.015e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 21
+  1 SNES Function norm 3.015e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 DM Object: Mesh (ex56_) 4 MPI processes
   type: plex

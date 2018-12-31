@@ -788,7 +788,7 @@ static PetscErrorCode CheckSolution(Vec sol,Vec solRef)
   ierr = VecNorm(diff,NORM_2,&errAbs);CHKERRQ(ierr);
   ierr = VecNorm(solRef,NORM_2,&normsolRef);CHKERRQ(ierr);
   errRel = errAbs/normsolRef;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error (abs): %g\nError (rel): %g\n",errAbs,errRel);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel);CHKERRQ(ierr);
   ierr = VecDestroy(&diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -805,7 +805,7 @@ static PetscErrorCode CheckSolution(Vec sol,Vec solRef)
       suffix: 2
       requires: !single
       nsize: 4
-      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_1_ksp_type gmres -fieldsplit_1_ksp_max_it 20
+      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_mg_levels_ksp_max_it 3 -fieldsplit_1_ksp_type gmres -fieldsplit_1_ksp_max_it 20
 
    test:
       suffix: direct_umfpack
