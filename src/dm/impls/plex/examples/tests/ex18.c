@@ -616,7 +616,7 @@ int main(int argc, char **argv)
     test:
       # Add back in 'none' and 'parallel'
       suffix: 1_tri_dist1
-      args: -distribute 1 -interpolate {{parallel}separate output}
+      args: -distribute 1 -interpolate {{serial}separate output}
     test:
       suffix: 1_quad_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
