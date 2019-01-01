@@ -1325,7 +1325,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
 
 @*/
 
-PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
+PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess)
 {
   PetscSF sf;
   PetscInt ierr, i, j;
@@ -1386,7 +1386,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
     isExclusivelyOwned[i] = PETSC_FALSE;
   }
   for(i=0; i<nleafs; i++) {
-    isLeaf[ilocal[i]] = PETSC_TRUE;
+    isLeaf[ilocal[i]-pStart] = PETSC_TRUE;
   }
 
   numExclusivelyOwned=0;
@@ -1544,9 +1544,15 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm)
   options[0] = 0;
 
   ierr = PetscMalloc1(cumSumVertices[rank+1]-cumSumVertices[rank], &part);CHKERRQ(ierr);
-  PetscStackPush("ParMETIS_V3_PartKway");
-  ierr = ParMETIS_V3_PartKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
-  PetscStackPop;
+  if(useInitialGuess) {
+	PetscStackPush("ParMETIS_V3_RefineKway");
+	ierr = ParMETIS_V3_RefineKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+	PetscStackPop;
+  } else {
+    PetscStackPush("ParMETIS_V3_PartKway");
+    ierr = ParMETIS_V3_PartKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+    PetscStackPop;
+  }
 
   ierr = PetscFree(ubvec);CHKERRQ(ierr);
   ierr = PetscFree(tpwgts);CHKERRQ(ierr);
