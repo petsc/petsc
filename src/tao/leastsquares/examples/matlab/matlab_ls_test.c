@@ -42,15 +42,11 @@ static PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat JPre, void *pt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatConvert(J, MATSEQAIJ, MAT_INPLACE_MATRIX, &J);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)X,"X");CHKERRQ(ierr);
   ierr = PetscMatlabEnginePut(user->mengine,(PetscObject)X);CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(user->mengine,"J = jac(X);");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)J,"J");CHKERRQ(ierr);
   ierr = PetscMatlabEngineGet(user->mengine,(PetscObject)J);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatConvert(J, MATSEQDENSE, MAT_INPLACE_MATRIX, &J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -85,7 +81,7 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   ierr = TaoSetResidualRoutine(tao,F,EvaluateResidual,(void*)user);CHKERRQ(ierr);
 
   /* Create Jacobian matrix and set residual Jacobian routine */  
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user->m,user->n,NULL,&J);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,user->m,user->n,user->n,NULL,&J);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)J,"J");CHKERRQ(ierr);
   ierr = TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)user);CHKERRQ(ierr);
 
@@ -96,6 +92,7 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   /* Finish the problem */
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -128,7 +125,7 @@ int main(int argc, char **argv)
     user.delta = (double)tmp;
 
     /* Ignore return code for now -- do not stop testing on inf or nan errors */
-    ierr = TaoPounders(&user);
+    ierr = TaoPounders(&user);CHKERRQ(ierr);
 
     ierr = PetscMatlabEngineEvaluate(user.mengine,"ProblemFinalize");CHKERRQ(ierr);
   }
