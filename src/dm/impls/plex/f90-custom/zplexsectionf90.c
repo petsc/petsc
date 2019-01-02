@@ -17,7 +17,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, F90Array1d *ptrL, F
   IS       *bcComps;
   IS       *bcPoints;
 
-  if (!ptrL->dummy) {*ierr = F90Array1dAccess(ptrL, MPIU_FORTRANADDR, (void**) &labels  PETSC_F90_2PTR_PARAM(ptrLd));if (*ierr) return;}
+  *ierr = F90Array1dAccess(ptrL, MPIU_FORTRANADDR, (void**) &labels  PETSC_F90_2PTR_PARAM(ptrLd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrC, MPIU_INT, (void**) &numComp PETSC_F90_2PTR_PARAM(ptrCd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrD, MPIU_INT, (void**) &numDof  PETSC_F90_2PTR_PARAM(ptrDd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrF, MPIU_INT, (void**) &bcField PETSC_F90_2PTR_PARAM(ptrFd));if (*ierr) return;

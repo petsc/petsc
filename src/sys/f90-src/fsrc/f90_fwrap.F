@@ -79,8 +79,12 @@
       PetscFortranAddr address
       PetscInt start
 
-      start = lbound(ptr,1)
-      call F90Array1dGetAddrFortranAddr(ptr(start),address)
+      if (associated(ptr) .eqv. .false.) then
+        address = 0
+      else
+        start = lbound(ptr,1)
+        call F90Array1dGetAddrFortranAddr(ptr(start),address)
+      endif
       end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
