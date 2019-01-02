@@ -3338,6 +3338,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
   ierr    = MatSetType(mat,((PetscObject)matin)->type_name);CHKERRQ(ierr);
   ierr    = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
+  mat->ops->destroy = MatDestroy_MPIBAIJ;
   mat->factortype   = matin->factortype;
   mat->preallocated = PETSC_TRUE;
   mat->assembled    = PETSC_TRUE;

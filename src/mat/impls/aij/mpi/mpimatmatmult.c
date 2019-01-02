@@ -1213,8 +1213,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P,Mat A,M
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat,MatDuplicateOption,Mat*);
-
 /* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,PetscReal fill,Mat *C)
 {
@@ -1449,13 +1447,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* attach the supporting struct to Cmpi for reuse */
   c = (Mat_MPIAIJ*)Cmpi->data;
   c->ptap         = ptap;
-  ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
 
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP;
   *C                     = Cmpi;
   PetscFunctionReturn(0);
 }
@@ -2030,7 +2026,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)

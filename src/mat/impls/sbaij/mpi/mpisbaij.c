@@ -2531,6 +2531,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   ierr = PetscLayoutReference(matin->rmap,&mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutReference(matin->cmap,&mat->cmap);CHKERRQ(ierr);
 
+  mat->ops->destroy = MatDestroy_MPISBAIJ;
   mat->factortype   = matin->factortype;
   mat->preallocated = PETSC_TRUE;
   mat->assembled    = PETSC_TRUE;
@@ -2542,7 +2543,6 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   a->nbs = oldmat->nbs;
   a->Mbs = oldmat->Mbs;
   a->Nbs = oldmat->Nbs;
-
 
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
