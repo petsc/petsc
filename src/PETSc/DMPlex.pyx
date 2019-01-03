@@ -572,7 +572,7 @@ cdef class DMPlex(DM):
         if perm is not None: cperm = perm.iset
         # create section
         cdef Section sec = Section()
-        CHKERR( DMPlexCreateSection(self.dm, dim, ncomp, icomp, idof,
+        CHKERR( DMPlexCreateSection(self.dm, NULL, icomp, idof,
                                     nbc, bcfield, bccomps, bcpoints,
                                     cperm, &sec.sec) )
         return sec
