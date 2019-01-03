@@ -12,7 +12,7 @@
       PetscSection :: section
       PetscInt :: dim,numFields,numBC
       PetscInt :: i,val
-      DMLabel, pointer :: nolabel(:)
+      DMLabel, pointer :: nolabel(:) => NULL()
       PetscInt, target, dimension(3) ::  numComp
       PetscInt, pointer :: pNumComp(:)
       PetscInt, target, dimension(12) ::  numDof
