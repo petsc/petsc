@@ -74,7 +74,7 @@
       call DMGetStratumIS(dm, 'marker', one, bcPointIS(1),ierr);CHKERRA(ierr)
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
-      call DMSetNumFields(dm, numFields);CHKERRA(ierr)
+      call DMSetNumFields(dm, numFields,ierr);CHKERRA(ierr)
       call DMPlexCreateSection(dm,nolabel,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr)
       CHKERRA(ierr)
       call ISDestroy(bcCompIS(1), ierr);CHKERRA(ierr)
