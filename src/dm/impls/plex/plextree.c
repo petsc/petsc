@@ -1664,7 +1664,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
   ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
   maxFields = PetscMax(1,numFields);
   ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
-  ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm,refTree);CHKERRQ(ierr);
   ierr = DMGetDefaultConstraints(refTree,&refConSec,&refCmat);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(refTree,&refAnSec,&refAnIS);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(dm,&anSec,&anIS);CHKERRQ(ierr);
@@ -3976,7 +3976,6 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
 
 static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarseLocal, DM fine, Vec vecFine, PetscSF coarseToFine, PetscInt *cids, Vec grad, Vec cellGeom)
 {
-  PetscDS           ds;
   PetscSF           coarseToFineEmbedded;
   PetscSection      globalCoarse, globalFine;
   PetscSection      localCoarse, localFine;
@@ -4198,8 +4197,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     ierr = DMGetWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
     ierr = DMGetWorkArray(fine,maxDof,MPIU_SCALAR,&pointWork);CHKERRQ(ierr);
     ierr = DMPlexGetReferenceTree(fine,&refTree);CHKERRQ(ierr);
-    ierr = DMGetDS(fine,&ds);CHKERRQ(ierr);
-    ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
+    ierr = DMCopyDisc(fine,refTree);CHKERRQ(ierr);
     ierr = DMPlexReferenceTreeGetChildrenMatrices(refTree,&refPointFieldMats,&refPointFieldN);CHKERRQ(ierr);
     ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL);CHKERRQ(ierr);
     ierr = DMPlexGetAnchors(refTree,&refAnSec,NULL);CHKERRQ(ierr);
@@ -4314,7 +4312,6 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
 
 static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coarse, Vec vecCoarse, PetscSF coarseToFine, PetscInt *cids)
 {
-  PetscDS        ds;
   DM             refTree;
   PetscSection   multiRootSec, rootIndicesSec;
   PetscSection   globalCoarse, globalFine;
@@ -4337,8 +4334,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
   ierr = VecSetOption(vecFine,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = VecSetOption(vecCoarse,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetReferenceTree(coarse,&refTree);CHKERRQ(ierr);
-  ierr = DMGetDS(coarse,&ds);CHKERRQ(ierr);
-  ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(coarse,refTree);CHKERRQ(ierr);
   ierr = DMGetDefaultConstraints(refTree,&cSecRef,NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cSecRef,&pRefStart,&pRefEnd);CHKERRQ(ierr);
   ierr = DMPlexReferenceTreeGetInjector(refTree,&injRef);CHKERRQ(ierr);

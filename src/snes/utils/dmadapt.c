@@ -900,7 +900,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = DMPlexSetSNESLocalFEM(odm, ctx, ctx, ctx);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(adaptor->snes);CHKERRQ(ierr);
       /* Transfer system */
-      ierr = DMSetDS(odm, prob);CHKERRQ(ierr);
+      ierr = DMCopyDisc(adaptor->idm, odm);CHKERRQ(ierr);
       /* Transfer solution */
       ierr = DMCreateGlobalVector(odm, &ox);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) x, &name);CHKERRQ(ierr);

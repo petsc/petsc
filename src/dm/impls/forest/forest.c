@@ -131,7 +131,6 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   MatType                    mtype;
   PetscInt                   dim, overlap, ref, factor;
   DMForestAdaptivityStrategy strat;
-  PetscDS                    ds;
   void                       *ctx;
   PetscErrorCode             (*map)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], void*);
   void                       *mapCtx;
@@ -164,8 +163,7 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
     ierr = (forest->ftemplate)(dm, *tdm);CHKERRQ(ierr);
   }
   ierr = DMForestSetAdaptivityForest(*tdm,dm);CHKERRQ(ierr);
-  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-  ierr = DMSetDS(*tdm,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm,*tdm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*tdm,&ctx);CHKERRQ(ierr);
   {

@@ -299,14 +299,16 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupPrimalProblem(PetscDS prob, AppCtx *user)
+static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
   switch (user->solType) {
   case SOL_VLAP_QUADRATIC:
@@ -361,12 +363,11 @@ static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt dummy, MatNullSp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupFE(DM dm, PetscInt Nc, PetscBool simplex, const char name[], PetscErrorCode (*setup)(PetscDS, AppCtx *), void *ctx)
+PetscErrorCode SetupFE(DM dm, PetscInt Nc, PetscBool simplex, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
   DM             cdm  = dm;
   PetscFE        fe;
-  PetscDS        prob;
   char           prefix[PETSC_MAX_PATH_LEN];
   PetscInt       dim;
   PetscErrorCode ierr;
@@ -378,11 +379,11 @@ PetscErrorCode SetupFE(DM dm, PetscInt Nc, PetscBool simplex, const char name[],
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, Nc, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = (*setup)(prob, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = (*setup)(dm, user);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     if (user->useNearNullspace) {ierr = DMSetNearNullSpaceConstructor(cdm, 0, CreateElasticityNullSpace);CHKERRQ(ierr);}
     /* TODO: Check whether the boundary of coarse meshes is marked */
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);

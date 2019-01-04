@@ -189,11 +189,9 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
       ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
     }
-    if (dm->prob) {
+    if (dm->probs) {
       PetscInt Nf;
 
-      ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
-      if (nF != Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", Nf, nF);
       ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
         PetscObject disc;
@@ -201,6 +199,9 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
         ierr = DMGetField(dm, fields[f], NULL, &disc);CHKERRQ(ierr);
         ierr = DMSetField(*subdm, f, NULL, disc);CHKERRQ(ierr);
       }
+      ierr = DMCreateDS(*subdm);CHKERRQ(ierr);
+      ierr = PetscDSGetNumFields(dm->probs[0].ds, &Nf);CHKERRQ(ierr);
+      if (nF != Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", Nf, nF);
       if (numFields == 1 && is) {
         PetscObject disc, space, pmat;
 
@@ -212,9 +213,9 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
         ierr = PetscObjectQuery(disc, "pmat", &pmat);CHKERRQ(ierr);
         if (pmat) {ierr = PetscObjectCompose((PetscObject) *is, "pmat", pmat);CHKERRQ(ierr);}
       }
-      ierr = PetscDSCopyConstants(dm->prob, (*subdm)->prob);CHKERRQ(ierr);
-      ierr = PetscDSCopyBoundary(dm->prob, (*subdm)->prob);CHKERRQ(ierr);
-      ierr = PetscDSSelectEquations(dm->prob, numFields, fields, (*subdm)->prob);CHKERRQ(ierr);
+      ierr = PetscDSCopyConstants(dm->probs[0].ds, (*subdm)->probs[0].ds);CHKERRQ(ierr);
+      ierr = PetscDSCopyBoundary(dm->probs[0].ds, (*subdm)->probs[0].ds);CHKERRQ(ierr);
+      ierr = PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds);CHKERRQ(ierr);
     }
     if (dm->coarseMesh) {
       ierr = DMCreateSubDM(dm->coarseMesh, numFields, fields, NULL, &(*subdm)->coarseMesh);CHKERRQ(ierr);
@@ -290,7 +291,7 @@ PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, 
     }
   }
   /* Preserve discretizations */
-  if (len && dms[0]->prob) {
+  if (len && dms[0]->probs) {
     ierr = DMSetNumFields(*superdm, Nf);CHKERRQ(ierr);
     for (i = 0, supf = 0; i < len; ++i) {
       for (f = 0; f < Nfs[i]; ++f, ++supf) {
@@ -300,6 +301,7 @@ PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, 
         ierr = DMSetField(*superdm, supf, NULL, disc);CHKERRQ(ierr);
       }
     }
+    ierr = DMCreateDS(*superdm);CHKERRQ(ierr);
   }
   /* Preserve nullspaces */
   for (i = 0, supf = 0; i < len; ++i) {

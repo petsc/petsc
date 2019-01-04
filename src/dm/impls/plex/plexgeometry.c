@@ -1717,9 +1717,10 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
   if (dm->coordinateDM) {
     PetscClassId id;
     PetscInt     numFields;
-    PetscDS      prob = dm->coordinateDM->prob;
+    PetscDS      prob;
     PetscObject  disc;
 
+    ierr = DMGetDS(dm->coordinateDM, &prob);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(prob, &numFields);CHKERRQ(ierr);
     if (numFields) {
       ierr = PetscDSGetDiscretization(prob,0,&disc);CHKERRQ(ierr);

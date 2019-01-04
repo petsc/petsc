@@ -525,11 +525,13 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
 
 PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
+  PetscDS        prob;
   PetscInt       numBd, b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumBoundary(prob, &numBd);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     DMBoundaryConditionType type;
     const char             *labelname;

@@ -391,6 +391,7 @@ PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numCom
 
 PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
 {
+  PetscDS        probBC;
   PetscSection   section;
   DMLabel       *labels;
   IS            *bcPoints, *bcComps;
@@ -419,7 +420,8 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &probBC);CHKERRQ(ierr);
+  ierr = PetscDSGetNumBoundary(probBC, &numBd);CHKERRQ(ierr);
   if (!Nf && numBd) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
   for (bd = 0; bd < numBd; ++bd) {
     PetscInt                field;
@@ -427,7 +429,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     const char             *labelName;
     DMLabel                 label;
 
-    ierr = PetscDSGetBoundary(dm->prob, bd, &type, NULL, &labelName, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(probBC, bd, &type, NULL, &labelName, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMGetLabel(dm,labelName,&label);CHKERRQ(ierr);
     if (label && isFE[field] && (type & DM_BC_ESSENTIAL)) ++numBC;
   }
@@ -454,13 +456,13 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     DMBoundaryConditionType type;
     PetscBool               duplicate = PETSC_FALSE;
 
-    ierr = PetscDSGetBoundary(dm->prob, bd, &type, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(probBC, bd, &type, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     if (!isFE[field] || !label) continue;
     /* Only want to modify label once */
     for (bd2 = 0; bd2 < bd; ++bd2) {
       const char *bdname;
-      ierr = PetscDSGetBoundary(dm->prob, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(probBC, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
       if (duplicate) break;
     }

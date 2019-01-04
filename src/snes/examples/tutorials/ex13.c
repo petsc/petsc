@@ -197,12 +197,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupPrimalProblem(PetscDS prob, AppCtx *user)
+static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, 1, &id, user);CHKERRQ(ierr);
@@ -210,32 +212,35 @@ static PetscErrorCode SetupPrimalProblem(PetscDS prob, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupAdjointProblem(PetscDS prob, AppCtx *user)
+static PetscErrorCode SetupAdjointProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_unity_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupErrorProblem(PetscDS prob, AppCtx *user)
+static PetscErrorCode SetupErrorProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetObjective(prob, 0, obj_error_u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(PetscDS, AppCtx *), AppCtx *user)
+static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *user)
 {
   DM             cdm = dm;
   PetscFE        fe;
-  PetscDS        prob;
   char           prefix[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
@@ -245,15 +250,14 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), user->dim, 1, user->simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = (*setup)(prob, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = (*setup)(dm, user);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm,cdm);CHKERRQ(ierr);
     /* TODO: Check whether the boundary of coarse meshes is marked */
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

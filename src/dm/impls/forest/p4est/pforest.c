@@ -358,7 +358,6 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   PetscBool      isPlex;
   PetscInt       dim;
   void           *ctx;
-  PetscDS        ds;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -374,8 +373,7 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   ierr = DMForestSetBaseDM(*pforest,dm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*pforest,ctx);CHKERRQ(ierr);
-  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-  ierr = DMSetDS(*pforest,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm,*pforest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2204,7 +2202,7 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   ierr  = DMGetDS(dmA,&ds);CHKERRQ(ierr);
   ierr  = DMGetDS(dmB,&dsB);CHKERRQ(ierr);
   newDS = (PetscBool) (ds != dsB);
-  ierr  = DMSetDS(dmB,ds);CHKERRQ(ierr);
+  ierr  = DMCopyDisc(dmA,dmB);CHKERRQ(ierr);
   ierr  = DMGetOutputSequenceNumber(dmA,&num,&val);CHKERRQ(ierr);
   ierr  = DMSetOutputSequenceNumber(dmB,num,val);CHKERRQ(ierr);
   if (newDS) {
@@ -4767,8 +4765,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
   ierr = DMPlexSetMaxProjectionHeight(plex,mh);CHKERRQ(ierr);
 
   ierr = DMClone(base,&basec);CHKERRQ(ierr);
-  ierr = DMGetDS(dmVecIn,&ds);CHKERRQ(ierr);
-  ierr = DMSetDS(basec,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dmVecIn,basec);CHKERRQ(ierr);
   if (sfRed) {
     ierr = PetscObjectReference((PetscObject)vecIn);CHKERRQ(ierr);
     vecInLocal = vecIn;

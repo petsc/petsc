@@ -1779,7 +1779,6 @@ int main(int argc, char **argv)
   if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
   ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
 
-  ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&prob);CHKERRQ(ierr);
   ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
@@ -1807,13 +1806,13 @@ int main(int argc, char **argv)
     }
   }
   /* FV is now structured with one field having all physics as components */
+  ierr = DMAddField(dm, NULL, (PetscObject) fvm);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
   ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
   ierr = (*mod->setupbc)(prob,phys);CHKERRQ(ierr);
   ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
-  ierr = DMSetDS(dm,prob);CHKERRQ(ierr);
-  ierr = PetscDSDestroy(&prob);CHKERRQ(ierr);
   {
     char      convType[256];
     PetscBool flg;

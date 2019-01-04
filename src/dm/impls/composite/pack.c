@@ -1069,16 +1069,19 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 
   /* loop over packed objects, handling one at at time */
   while (next) {
+    PetscDS prob;
+
     ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),next->n,next->grstart,1,&(*is)[cnt]);CHKERRQ(ierr);
-    if (dm->prob) {
+    ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+    if (prob) {
       MatNullSpace space;
       Mat          pmat;
       PetscObject  disc;
       PetscInt     Nf;
 
-      ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+      ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
       if (cnt < Nf) {
-        ierr = PetscDSGetDiscretization(dm->prob, cnt, &disc);CHKERRQ(ierr);
+        ierr = PetscDSGetDiscretization(prob, cnt, &disc);CHKERRQ(ierr);
         ierr = PetscObjectQuery(disc, "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
         if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
         ierr = PetscObjectQuery(disc, "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
