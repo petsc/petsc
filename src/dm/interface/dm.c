@@ -51,6 +51,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
   ierr = PetscHeaderCreate(v, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
 
+  v->setupcalled              = PETSC_FALSE;
+  v->setfromoptionscalled     = PETSC_FALSE;
   v->ltogmap                  = NULL;
   v->bs                       = 1;
   v->coloringtype             = IS_COLORING_GLOBAL;
@@ -822,7 +824,7 @@ PetscErrorCode  DMSetUp(DM dm)
 .seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
 
 @*/
-PetscErrorCode  DMSetFromOptions(DM dm)
+PetscErrorCode DMSetFromOptions(DM dm)
 {
   char           typeName[256];
   PetscBool      flg;
@@ -830,15 +832,9 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (dm->prob) {
-    ierr = PetscDSSetFromOptions(dm->prob);CHKERRQ(ierr);
-  }
-  if (dm->sf) {
-    ierr = PetscSFSetFromOptions(dm->sf);CHKERRQ(ierr);
-  }
-  if (dm->defaultSF) {
-    ierr = PetscSFSetFromOptions(dm->defaultSF);CHKERRQ(ierr);
-  }
+  dm->setfromoptionscalled = PETSC_TRUE;
+  if (dm->sf) {ierr = PetscSFSetFromOptions(dm->sf);CHKERRQ(ierr);}
+  if (dm->defaultSF) {ierr = PetscSFSetFromOptions(dm->defaultSF);CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);

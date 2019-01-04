@@ -17,7 +17,6 @@ typedef struct {
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);
   PetscErrorCode             (*destroy)(DM);
   PetscErrorCode             (*ftemplate)(DM,DM);
-  PetscBool                  setfromoptionscalled;
   PetscBool                  computeAdaptSF;
   PetscErrorCode             (*mapcoordinates)(DM,PetscInt,PetscInt,const PetscReal[],PetscReal[],void*);
   void                       *mapcoordinatesctx;
