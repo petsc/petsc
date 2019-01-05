@@ -248,13 +248,13 @@ int main(int argc, char **argv)
     ierr = PetscFVSetLimiter(fv,limiter);CHKERRQ(ierr);
     ierr = PetscLimiterDestroy(&limiter);CHKERRQ(ierr);
     ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
-    ierr = DMSetField(base,0,(PetscObject)fv);CHKERRQ(ierr);
+    ierr = DMSetField(base,0,NULL,(PetscObject)fv);CHKERRQ(ierr);
     ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
   } else {
     PetscFE fe;
 
     ierr = PetscFECreateDefault(comm,dim,Nf,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-    ierr = DMSetField(base,0,(PetscObject)fe);CHKERRQ(ierr);
+    ierr = DMSetField(base,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   }
 
