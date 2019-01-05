@@ -189,16 +189,17 @@
       End Interface
 
       Interface
-        Subroutine DMPlexCreateSection(m,d,nF,nC,nD,nB,bF,bC,bP,pm,sc,e)
+        Subroutine DMPlexCreateSection(m,l,nC,nD,nB,bF,bC,bP,pm,sc,e)
           use petscdmdef
           PetscSection sc
-          PetscInt     d, nF, nB
+          PetscInt     nB
+          DMLabel,  pointer :: l(:)
           PetscInt, pointer :: nC(:)
           PetscInt, pointer :: nD(:)
           PetscInt, pointer :: bF(:)
-          IS,  pointer :: bC(:)
-          IS,  pointer :: bP(:)
-          IS pm
+          IS,       pointer :: bC(:)
+          IS,       pointer :: bP(:)
+          IS        pm
           PetscErrorCode e
           DM m
         End Subroutine

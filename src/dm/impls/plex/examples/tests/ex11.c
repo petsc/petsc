@@ -146,7 +146,8 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     PetscInt     dof[]     = {0,0,0,1};
     PetscInt     N;
 
-    ierr = DMPlexCreateSection(dm, dim, 1, numComp, dof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
+    ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
+    ierr = DMPlexCreateSection(dm, NULL, numComp, dof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
     ierr = DMSetSection(dm, s);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(dm, &v);CHKERRQ(ierr);

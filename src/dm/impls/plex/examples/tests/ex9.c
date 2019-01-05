@@ -335,7 +335,8 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
     }
   }
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
+  ierr = DMSetNumFields(dm, user->numFields);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, NULL, user->numComponents, user->numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
   ierr = DMSetSection(dm, s);CHKERRQ(ierr);
   if (useIndex) {ierr = DMPlexCreateClosureIndex(dm, s);CHKERRQ(ierr);}
   if (useSpectral) {ierr = DMPlexCreateSpectralClosurePermutation(dm, PETSC_DETERMINE, s);CHKERRQ(ierr);}

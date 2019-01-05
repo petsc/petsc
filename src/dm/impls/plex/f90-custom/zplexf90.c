@@ -21,7 +21,6 @@
 #define dmplexgetmeet_                  DMPLEXGETMEET
 #define dmplexgetfullmeet_              DMPLEXGETFULLMEET
 #define dmplexrestoremeet_              DMPLEXRESTOREMEET
-#define dmplexcreatesection_            DMPLEXCREATESECTION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmplexgetcone_                  dmplexgetcone
 #define dmplexrestorecone_              dmplexrestorecone
@@ -41,7 +40,6 @@
 #define dmplexgetmeet_                  dmplexgetmeet
 #define dmplexgetfullmeet_              dmplexgetfullmeet
 #define dmplexrestoremeet_              dmplexrestoremeet
-#define dmplexcreatesection_            dmplexcreatesection
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -204,20 +202,3 @@ PETSC_EXTERN void PETSC_STDCALL dmplexrestoremeet_(DM *dm, PetscInt *numPoints, 
   *ierr = DMPlexRestoreMeet(*dm, 0, NULL, NULL, (const PetscInt**) &coveredPoints);if (*ierr) return;
   *ierr = F90Array1dDestroy(cptr, MPIU_INT PETSC_F90_2PTR_PARAM(cptrd));if (*ierr) return;
 }
-
-PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrCp, F90Array1d *ptrP, IS *perm, PetscSection *section, int *ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrCpd) PETSC_F90_2PTR_PROTO(ptrPd))
-{
-  PetscInt *numComp;
-  PetscInt *numDof;
-  PetscInt *bcField;
-  IS       *bcComps;
-  IS       *bcPoints;
-
-  *ierr = F90Array1dAccess(ptrC, MPIU_INT, (void**) &numComp PETSC_F90_2PTR_PARAM(ptrCd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrD, MPIU_INT, (void**) &numDof PETSC_F90_2PTR_PARAM(ptrDd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrF, MPIU_INT, (void**) &bcField PETSC_F90_2PTR_PARAM(ptrFd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrCp, MPIU_FORTRANADDR, (void**) &bcComps PETSC_F90_2PTR_PARAM(ptrCpd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrP, MPIU_FORTRANADDR, (void**) &bcPoints PETSC_F90_2PTR_PARAM(ptrPd));if (*ierr) return;
-  *ierr = DMPlexCreateSection(*dm, *dim, *numFields, numComp, numDof, *numBC, bcField, bcComps, bcPoints, *perm, section);
-}
-
