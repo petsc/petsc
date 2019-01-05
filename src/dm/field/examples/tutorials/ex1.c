@@ -318,7 +318,8 @@ int main(int argc, char **argv)
     } else {
       ierr = PetscFECreateDefault(comm,dim,nc,simplex,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
       ierr = PetscFESetName(fe,"MyPetscFE");CHKERRQ(ierr);
-      ierr = DMSetField(dm,0,(PetscObject)fe);CHKERRQ(ierr);
+      ierr = DMSetField(dm,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
+      ierr = DMCreateDS(dm);CHKERRQ(ierr);
       ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
       ierr = DMCreateLocalVector(dm,&fieldvec);CHKERRQ(ierr);
       {
