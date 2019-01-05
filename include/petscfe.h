@@ -168,6 +168,7 @@ PETSC_EXTERN PetscErrorCode PetscFEGetType(PetscFE, PetscFEType *);
 PETSC_EXTERN PetscErrorCode PetscFESetUp(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFESetFromOptions(PetscFE);
 PETSC_STATIC_INLINE PetscErrorCode PetscFEViewFromOptions(PetscFE A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscFESetName(PetscFE, const char []);
 
 PETSC_EXTERN PetscErrorCode PetscFEView(PetscFE,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFERegister(const char [], PetscErrorCode (*)(PetscFE));
