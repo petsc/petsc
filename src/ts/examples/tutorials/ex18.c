@@ -804,7 +804,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscQuadrature q;
   PetscFE         fe[2];
   PetscFV         fv;
-  PetscDS         prob = NULL;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -825,20 +824,19 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFVSetSpatialDimension(fv, dim);CHKERRQ(ierr);
   ierr = PetscFVSetQuadrature(fv, q);CHKERRQ(ierr);
 
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
+  if (user->useFV) {ierr = DMSetField(dm, 1, NULL, (PetscObject) fv);CHKERRQ(ierr);}
+  else             {ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);}
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, user);CHKERRQ(ierr);
+
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
-    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-    if (user->useFV) {ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fv);CHKERRQ(ierr);}
-    else             {ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);}
-
-    ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
-
     /* Coordinates were never localized for coarse meshes */
     if (cdm) {ierr = DMLocalizeCoordinates(cdm);CHKERRQ(ierr);}
   }
-  ierr = PetscDSViewFromOptions(prob, NULL, "-ds_view");CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
