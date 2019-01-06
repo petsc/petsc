@@ -1248,7 +1248,6 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin,MatDuplicateOption cpvalues,Mat *n
   ierr    = MatSetSizes(mat,matin->rmap->n,matin->cmap->n,matin->rmap->N,matin->cmap->N);CHKERRQ(ierr);
   ierr    = MatSetBlockSizesFromMats(mat,matin,matin);CHKERRQ(ierr);
   ierr    = MatSetType(mat,((PetscObject)matin)->type_name);CHKERRQ(ierr);
-  ierr    = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   a       = (Mat_MPISELL*)mat->data;
 
   mat->factortype   = matin->factortype;

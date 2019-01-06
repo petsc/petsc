@@ -2129,7 +2129,6 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,A->rmap->N,A->cmap->n,A->rmap->N,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   c    = (Mat_SeqSBAIJ*)C->data;
 
   C->preallocated       = PETSC_TRUE;

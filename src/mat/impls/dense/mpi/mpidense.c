@@ -1574,7 +1574,6 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   ierr    = MatSetSizes(mat,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr    = MatSetType(mat,((PetscObject)A)->type_name);CHKERRQ(ierr);
   a       = (Mat_MPIDense*)mat->data;
-  ierr    = PetscMemcpy(mat->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   mat->factortype   = A->factortype;
   mat->assembled    = PETSC_TRUE;

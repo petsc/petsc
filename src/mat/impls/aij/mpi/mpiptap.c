@@ -88,20 +88,6 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
-{
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *a     = (Mat_MPIAIJ*)A->data;
-  Mat_PtAPMPI    *ptap  = a->ptap;
-
-  PetscFunctionBegin;
-  ierr = (*ptap->duplicate)(A,op,M);CHKERRQ(ierr);
-  (*M)->ops->destroy   = ptap->destroy;
-  (*M)->ops->duplicate = ptap->duplicate;
-  (*M)->ops->view      = ptap->view;
-  PetscFunctionReturn(0);
-}
-
 PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -614,7 +600,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP;
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
   *C                     = Cmpi;
   PetscFunctionReturn(0);
@@ -957,7 +942,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP;
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
   *C                     = Cmpi;
   PetscFunctionReturn(0);
