@@ -2629,6 +2629,9 @@ PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n,Mat *mat[])
     }
   }
 
+  /* Destroy Dummy submatrices created for reuse */
+  ierr = MatDestroySubMatrices_Dummy(n,mat);CHKERRQ(ierr);
+
   ierr = PetscFree(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
