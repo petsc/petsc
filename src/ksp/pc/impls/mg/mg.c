@@ -172,29 +172,7 @@ PetscErrorCode PCReset_MG(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*@C
-   PCMGSetLevels - Sets the number of levels to use with MG.
-   Must be called before any other MG routine.
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
-.  levels - the number of levels
--  comms - optional communicators for each level; this is to allow solving the coarser problems
-           on smaller sets of processors.
-
-   Level: intermediate
-
-   Notes:
-     If the number of levels is one then the multigrid uses the -mg_levels prefix
-  for setting the level options rather than the -mg_coarse prefix.
-
-.keywords: MG, set, levels, multigrid
-
-.seealso: PCMGSetType(), PCMGGetLevels()
-@*/
-PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
+PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
@@ -206,14 +184,11 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PetscMPIInt    size;
   const char     *prefix;
   PC             ipc;
-  PetscBool      ismg;
   PetscInt       n;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,levels,2);
-  ierr = PetscObjectTypeCompare((PetscObject) pc, PCMG, &ismg);CHKERRQ(ierr);
-  if (!ismg) PetscFunctionReturn(0);
   if (mg->nlevels == levels) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (mglevels) {
@@ -295,6 +270,39 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   }
   mg->levels = mglevels;
   ierr = PCMGSetType(pc,mgtype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PCMGSetLevels - Sets the number of levels to use with MG.
+   Must be called before any other MG routine.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+.  levels - the number of levels
+-  comms - optional communicators for each level; this is to allow solving the coarser problems
+           on smaller sets of processors.
+
+   Level: intermediate
+
+   Notes:
+     If the number of levels is one then the multigrid uses the -mg_levels prefix
+  for setting the level options rather than the -mg_coarse prefix.
+
+.keywords: MG, set, levels, multigrid
+
+.seealso: PCMGSetType(), PCMGGetLevels()
+@*/
+PetscErrorCode PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (comms) PetscValidPointer(comms,3);
+  ierr = PetscUseMethod(pc,"PCMGSetLevels_C",(PC,PetscInt,MPI_Comm*),(pc,levels,comms));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -913,6 +921,15 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
 /* -------------------------------------------------------------------------------------*/
 
+PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels)
+{
+  PC_MG *mg = (PC_MG *) pc->data;
+
+  PetscFunctionBegin;
+  *levels = mg->nlevels;
+  PetscFunctionReturn(0);
+}
+
 /*@
    PCMGGetLevels - Gets the number of levels to use with MG.
 
@@ -930,18 +947,15 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
 .seealso: PCMGSetLevels()
 @*/
-PetscErrorCode  PCMGGetLevels(PC pc,PetscInt *levels)
+PetscErrorCode PCMGGetLevels(PC pc,PetscInt *levels)
 {
-  PC_MG         *mg = (PC_MG*)pc->data;
-  PetscBool      ismg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(levels,2);
-  ierr = PetscObjectTypeCompare((PetscObject) pc, PCMG, &ismg);CHKERRQ(ierr);
-  if (ismg) {*levels = mg->nlevels;}
-  else      {*levels = 0;}
+  *levels = 0;
+  ierr = PetscUseMethod(pc,"PCMGGetLevels_C",(PC,PetscInt*),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1301,5 +1315,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   pc->ops->view           = PCView_MG;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetGalerkin_C",PCMGSetGalerkin_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGetLevels_C",PCMGGetLevels_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetLevels_C",PCMGSetLevels_MG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
