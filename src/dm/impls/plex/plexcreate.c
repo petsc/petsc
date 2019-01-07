@@ -1013,11 +1013,12 @@ $  8----4----9----5----10
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
 {
-  PetscInt       i;
   PetscInt       fac[3] = {0, 0, 0};
   PetscReal      low[3] = {0, 0, 0};
   PetscReal      upp[3] = {1, 1, 1};
   DMBoundaryType bdt[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
+  PetscInt       i, n;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1025,6 +1026,13 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   if (lower) for (i = 0; i < dim; ++i) low[i] = lower[i];
   if (upper) for (i = 0; i < dim; ++i) upp[i] = upper[i];
   if (periodicity) for (i = 0; i < dim; ++i) bdt[i] = periodicity[i];
+  /* Allow bounds to be specified from the command line */
+  n    = 3;
+  ierr = PetscOptionsGetRealArray(NULL, NULL, "-dm_plex_box_lower", low, &n, &flg);CHKERRQ(ierr);
+  if (flg && (n != dim)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Lower box point had %D values, should have been %D", n, dim);
+  n    = 3;
+  ierr = PetscOptionsGetRealArray(NULL, NULL, "-dm_plex_box_upper", upp, &n, &flg);CHKERRQ(ierr);
+  if (flg && (n != dim)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Upper box point had %D values, should have been %D", n, dim);
 
   if (dim == 1)      {ierr = DMPlexCreateLineMesh_Internal(comm, fac[0], low[0], upp[0], bdt[0], dm);CHKERRQ(ierr);}
   else if (simplex)  {ierr = DMPlexCreateBoxMesh_Simplex_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
