@@ -5632,6 +5632,9 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
   case MAT_STRUCTURE_ONLY:
     mat->structure_only = flg;
     break;
+  case MAT_REUSE:
+    mat->reuse = flg;
+    break;
   default:
     break;
   }
@@ -5693,6 +5696,9 @@ PetscErrorCode MatGetOption(Mat mat,MatOption op,PetscBool *flg)
     break;
   case MAT_SPD:
     *flg = mat->spd;
+    break;
+  case MAT_REUSE:
+    *flg = mat->reuse;
     break;
   default:
     break;

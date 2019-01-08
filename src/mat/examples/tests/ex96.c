@@ -50,14 +50,14 @@ int main(int argc,char **argv)
   Vec            x,v1,v2,v3,v4;
   PetscReal      norm,norm_tmp,norm_tmp1,tol=100.*PETSC_MACHINE_EPSILON;
   PetscRandom    rdm;
-  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
+  PetscBool      Test_MatMatMult=PETSC_FALSE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_TRUE,flg;
   const PetscInt *ia,*ja;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
 
   user.ratio     = 2;
-  user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
+  user.coarse.mx = 20; user.coarse.my = 20; user.coarse.mz = 20;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
@@ -102,6 +102,8 @@ int main(int argc,char **argv)
 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  if (!rank) printf("A %d, %d\n",M,N);
+
   /* set val=one to A */
   if (size == 1) {
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
@@ -146,6 +148,7 @@ int main(int argc,char **argv)
 
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
+  if (!rank) printf("P %d, %d\n",M,N);
 
   /* Create vectors v1 and v2 that are compatible with A */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);

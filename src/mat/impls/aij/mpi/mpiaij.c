@@ -1835,6 +1835,9 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_STRUCTURE_ONLY:
     /* The option is handled directly by MatSetOption() */
     break;
+  case MAT_REUSE:
+    /* The option is handled directly by MatSetOption() */
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }

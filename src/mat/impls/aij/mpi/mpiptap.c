@@ -634,11 +634,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 #if defined(PETSC_USE_INFO)
   PetscReal           apfill;
 #endif
+  PetscBool           reuse=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-ptap_reuse",&reuse,NULL);CHKERRQ(ierr);
 
   if (size > 1) ao = (Mat_SeqAIJ*)(a->B)->data;
 
@@ -646,6 +649,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,mtype);CHKERRQ(ierr);
+  if (reuse) {
+    if (!rank) printf("set ptap_reuse as %d....\n",reuse);
+    ierr = MatSetOption(Cmpi,MAT_REUSE,PETSC_TRUE);CHKERRQ(ierr);
+  }
 
   /* Do dense axpy in MatPtAPNumeric_MPIAIJ_MPIAIJ() */
   Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ;
@@ -944,6 +951,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
   *C                     = Cmpi;
+
+  reuse = PETSC_FALSE;
+  ierr = MatGetOption(Cmpi,MAT_REUSE,&reuse);CHKERRQ(ierr);
+  if (!rank) printf("get ptap_reuse %d\n",reuse);
   PetscFunctionReturn(0);
 }
 
