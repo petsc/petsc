@@ -13,19 +13,27 @@ int main(int argc, char **args)
   Mat             A;
   MatPartitioning part;
   IS              is;
-  PetscInt        r,N = 10, start, end;
+  PetscInt        r,N = 10, start, end, *vweights;
+  PetscBool       set_vweights=PETSC_FALSE;
+  PetscMPIInt     rank;
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc, &args, (char*) 0, help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A, 3, NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL);CHKERRQ(ierr);
-
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_vertex_weights",&set_vweights,NULL);
   /* Create a linear mesh */
   ierr = MatGetOwnershipRange(A, &start, &end);CHKERRQ(ierr);
+  if (set_vweights) {
+    ierr = PetscMalloc1(end-start,&vweights);CHKERRQ(ierr);
+    for (r = start; r < end; ++r)
+      vweights[r-start] = rank+1;
+  }
   for (r = start; r < end; ++r) {
     if (r == 0) {
       PetscInt    cols[2];
@@ -58,6 +66,9 @@ int main(int argc, char **args)
 
   ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part, A);CHKERRQ(ierr);
+  if (set_vweights) {
+    ierr = MatPartitioningSetVertexWeights(part,vweights);CHKERRQ(ierr);
+  }
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   ierr = MatPartitioningApply(part, &is);CHKERRQ(ierr);
   ierr = ISView(is, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -100,4 +111,10 @@ int main(int argc, char **args)
       nsize: 3
       requires: parmetis
       args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100
+
+   test:
+      suffix: 6
+      nsize: 3
+      requires: parmetis
+      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100 -test_vertex_weights 1
 TEST*/
