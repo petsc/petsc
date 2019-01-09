@@ -13,7 +13,7 @@
 */
 
 PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination);
-PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destination,Mat *sadj, ISLocalToGlobalMapping *mapping);
+PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS vweights,IS destination,IS* svweights,Mat *sadj,ISLocalToGlobalMapping *mapping);
 PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts);
 
 typedef struct {
@@ -43,7 +43,9 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   PetscInt                     *coarse_vertex_weights = 0;
   PetscMPIInt                   size,rank;
   MPI_Comm                      comm,scomm;
-  IS                            destination,fineparts_temp;
+  IS                            destination,fineparts_temp, vweights, svweights;
+  PetscInt                      nsvwegihts,*fp_vweights;
+  const PetscInt                *svweights_indices;
   ISLocalToGlobalMapping        mapping;
   PetscErrorCode                ierr;
 
@@ -127,10 +129,24 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
 
   ierr = PetscCalloc1(mat_localsize, &fineparts_indices_tmp);CHKERRQ(ierr);
 
+  if (part->vertex_weights) {
+    ierr = ISCreateGeneral(comm,mat_localsize,part->vertex_weights,PETSC_COPY_VALUES,&vweights);CHKERRQ(ierr);
+  }
+
   for(i=0; i<hpart->ncoarseparts; i+=size){
     ierr = MatPartitioningHierarchical_DetermineDestination(part,hpart->coarseparts,i,i+size,&destination);CHKERRQ(ierr);
     /* assemble a submatrix for partitioning subdomains  */
-    ierr = MatPartitioningHierarchical_AssembleSubdomain(adj,destination,&sadj,&mapping);CHKERRQ(ierr);
+    ierr = MatPartitioningHierarchical_AssembleSubdomain(adj,part->vertex_weights? vweights:NULL,destination,part->vertex_weights? &svweights:NULL,&sadj,&mapping);CHKERRQ(ierr);
+
+    if (part->vertex_weights) {
+      ierr = ISGetLocalSize(svweights,&nsvwegihts);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nsvwegihts,&fp_vweights);CHKERRQ(ierr);
+      ierr = ISGetIndices(svweights,&svweights_indices);CHKERRQ(ierr);
+      ierr = PetscMemcpy(fp_vweights,svweights_indices,nsvwegihts*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = ISRestoreIndices(svweights,&svweights_indices);CHKERRQ(ierr);
+      ierr = ISDestroy(&svweights);CHKERRQ(ierr);
+    }
+
     ierr = ISDestroy(&destination);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)sadj,&scomm);CHKERRQ(ierr);
     /* create a fine partitioner */
@@ -153,6 +169,9 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     }
     ierr = MatPartitioningSetAdjacency(finePart,sadj);CHKERRQ(ierr);
     ierr = MatPartitioningSetNParts(finePart, offsets[rank+1+i]-offsets[rank+i]);CHKERRQ(ierr);
+    if (part->vertex_weights) {
+      ierr = MatPartitioningSetVertexWeights(finePart,fp_vweights);CHKERRQ(ierr);
+    }
     ierr = MatPartitioningApply(finePart,&fineparts_temp);CHKERRQ(ierr);
     ierr = MatDestroy(&sadj);CHKERRQ(ierr);
     ierr = MatPartitioningDestroy(&finePart);CHKERRQ(ierr);
@@ -166,6 +185,10 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     ierr = ISDestroy(&hpart->fineparts);CHKERRQ(ierr);
     ierr = ISDestroy(&fineparts_temp);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
+  }
+
+  if (part->vertex_weights) {
+    ierr = ISDestroy(&vweights);CHKERRQ(ierr);
   }
 
   ierr = ISCreateGeneral(comm,mat_localsize,fineparts_indices_tmp,PETSC_OWN_POINTER,&hpart->fineparts);CHKERRQ(ierr);
@@ -243,7 +266,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
 }
 
 
-PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destination,Mat *sadj, ISLocalToGlobalMapping *mapping)
+PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS vweights, IS destination,IS *svweights,Mat *sadj,ISLocalToGlobalMapping *mapping)
 {
   IS              irows,icols;
   PetscInt        irows_ln;
@@ -263,6 +286,9 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = ISLocalToGlobalMappingCreate(comm,1,irows_ln,irows_indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
   ierr = MatCreateSubMatrices(adj,1,&irows,&icols,MAT_INITIAL_MATRIX,&sadj);CHKERRQ(ierr);
+  if (vweights && svweights) {
+    ierr = ISCreateSubIS(vweights,irows,svweights);CHKERRQ(ierr);
+  }
   ierr = ISDestroy(&irows);CHKERRQ(ierr);
   ierr = ISDestroy(&icols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
