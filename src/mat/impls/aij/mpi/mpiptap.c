@@ -974,6 +974,12 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   const PetscScalar *vals;
 
   PetscFunctionBegin;
+  if (!C->reuse && ptap->reuse == MAT_REUSE_MATRIX) {
+    MPI_Comm comm;
+    ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
+    SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Call MatSetOption(C,MAT_REUSE,PETSC_TRUE) or '-matptap_reuse'");
+  }
+
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
   /* 1) get R = Pd^T,Ro = Po^T */
   if (ptap->reuse == MAT_REUSE_MATRIX) {
