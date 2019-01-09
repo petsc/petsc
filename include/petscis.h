@@ -101,6 +101,7 @@ PETSC_EXTERN PetscErrorCode ISEmbed(IS,IS,PetscBool,IS*);
 PETSC_EXTERN PetscErrorCode ISSortPermutation(IS,PetscBool,IS*);
 PETSC_EXTERN PetscErrorCode ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
 PETSC_EXTERN PetscErrorCode ISRenumber(IS,IS,PetscInt*,IS*);
+PETSC_EXTERN PetscErrorCode ISCreateSubIS(IS,IS,IS*);
 
 /* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;

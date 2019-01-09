@@ -158,6 +158,62 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscFunctionReturn(0);
 }
 
+
+/*@
+   ISCreateSubIS - Create a sub index set from a global index set selecting some components.
+
+   Collective on IS
+
+   Input Parmeters:
+.  is - the index set
+.  comps - which components we will extract from is
+
+   Output Parameters:
+.  subis - the new sub index set
+
+   Level: intermediate
+
+.seealso: VecGetSubVector(), MatCreateSubMatrix()
+@*/
+PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
+{
+  PetscSF         sf;
+  const PetscInt  *is_indices,*comps_indices;
+  PetscInt        *subis_indices,nroots,nleaves,*mine,i,owner,lidx;
+  PetscSFNode     *remote;
+  PetscErrorCode  ierr;
+  MPI_Comm        comm;
+
+  PetscFunctionBegin;
+
+  ierr = PetscObjectGetComm((PetscObject)is, &comm);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(comps,&nleaves);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&nroots);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
+  ierr = ISGetIndices(comps,&comps_indices);CHKERRQ(ierr);
+  for (i=0; i<nleaves; i++) {
+    mine[i] = i;
+    ierr = PetscLayoutFindOwnerIndex(is->map,comps_indices[i],&owner, &lidx);CHKERRQ(ierr);
+    remote[i].rank = owner;
+    remote[i].index = lidx;
+  }
+  ierr = ISRestoreIndices(comps,&comps_indices);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);\
+  ierr = PetscSFSetGraph(sf,nroots,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(nleaves,&subis_indices);CHKERRQ(ierr);
+  ierr = ISGetIndices(is, &is_indices);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,is_indices,subis_indices);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,is_indices,subis_indices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&is_indices);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nleaves,subis_indices,PETSC_OWN_POINTER,subis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*@
    ISIdentity - Determines whether index set is the identity mapping.
 
