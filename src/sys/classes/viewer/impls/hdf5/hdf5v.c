@@ -833,7 +833,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char data
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (dataset) PetscValidCharPointer(dataset, 2);
   PetscValidCharPointer(name, 3);
-  PetscValidPointer(value, 4);
+  PetscValidPointer(value, 5);
   ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, dataset, &parent);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_TRUE, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, &has);CHKERRQ(ierr);
@@ -886,7 +886,7 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(obj,2);
   PetscValidCharPointer(name,3);
-  PetscValidPointer(value,4);
+  PetscValidPointer(value,5);
   ierr = PetscViewerHDF5CheckNamedObject_Internal(viewer, obj);CHKERRQ(ierr);
   ierr = PetscViewerHDF5WriteAttribute(viewer, obj->name, name, datatype, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -919,7 +919,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char datas
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (dataset) PetscValidCharPointer(dataset, 2);
   PetscValidCharPointer(name, 3);
-  PetscValidPointer(value, 4);
+  PetscValidPointer(value, 5);
   ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, dataset, &parent);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_FALSE, &has, NULL);CHKERRQ(ierr);
   if (has) {ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, &has);CHKERRQ(ierr);}
@@ -971,7 +971,7 @@ PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObjec
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(obj,2);
   PetscValidCharPointer(name,3);
-  PetscValidPointer(value, 4);
+  PetscValidPointer(value, 5);
   ierr = PetscViewerHDF5CheckNamedObject_Internal(viewer, obj);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadAttribute(viewer, obj->name, name, datatype, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
