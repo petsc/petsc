@@ -185,6 +185,9 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
   MPI_Comm        comm;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(comps,IS_CLASSID,2);
+  PetscValidPointer(subis,3);
 
   ierr = PetscObjectGetComm((PetscObject)is, &comm);CHKERRQ(ierr);
   ierr = ISGetLocalSize(comps,&nleaves);CHKERRQ(ierr);
