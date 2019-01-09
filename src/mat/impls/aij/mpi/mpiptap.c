@@ -36,6 +36,51 @@ PetscErrorCode MatView_MPIAIJ_PtAP(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatDestroy_MPIAIJ_PtAPMPI_private(Mat_PtAPMPI *ptap)
+{
+  PetscErrorCode      ierr;
+  Mat_Merge_SeqsToMPI *merge=ptap->merge;
+
+  PetscFunctionBegin;
+  ierr = PetscFree2(ptap->startsj_s,ptap->startsj_r);CHKERRQ(ierr);
+  ierr = PetscFree(ptap->bufa);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->P_oth);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
+  ierr = MatDestroy(&ptap->Rd);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->Ro);CHKERRQ(ierr);
+  if (ptap->AP_loc) { /* used by alg_rap */
+    Mat_SeqAIJ *ap = (Mat_SeqAIJ*)(ptap->AP_loc)->data;
+    ierr = PetscFree(ap->i);CHKERRQ(ierr);
+    ierr = PetscFree2(ap->j,ap->a);CHKERRQ(ierr);
+    ierr = MatDestroy(&ptap->AP_loc);CHKERRQ(ierr);
+  } else { /* used by alg_ptap */
+    ierr = PetscFree(ptap->api);CHKERRQ(ierr);
+    ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&ptap->C_loc);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->C_oth);CHKERRQ(ierr);
+  if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
+
+  if (merge) { /* used by alg_ptap */
+    ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
+    ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
+    ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
+    ierr = PetscFree(merge->bi);CHKERRQ(ierr);
+    ierr = PetscFree(merge->bj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->coi);CHKERRQ(ierr);
+    ierr = PetscFree(merge->coj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
+    ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 {
   PetscErrorCode ierr;
@@ -44,44 +89,9 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 
   PetscFunctionBegin;
   if (ptap) {
-    Mat_Merge_SeqsToMPI *merge=ptap->merge;
-    ierr = PetscFree2(ptap->startsj_s,ptap->startsj_r);CHKERRQ(ierr);
-    ierr = PetscFree(ptap->bufa);CHKERRQ(ierr);
-    ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
-    ierr = MatDestroy(&ptap->P_oth);CHKERRQ(ierr);
-    ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
-    ierr = MatDestroy(&ptap->Rd);CHKERRQ(ierr); 
-    ierr = MatDestroy(&ptap->Ro);CHKERRQ(ierr); 
-    if (ptap->AP_loc) { /* used by alg_rap */
-      Mat_SeqAIJ *ap = (Mat_SeqAIJ*)(ptap->AP_loc)->data;
-      ierr = PetscFree(ap->i);CHKERRQ(ierr);
-      ierr = PetscFree2(ap->j,ap->a);CHKERRQ(ierr);
-      ierr = MatDestroy(&ptap->AP_loc);CHKERRQ(ierr);
-    } else { /* used by alg_ptap */
-      ierr = PetscFree(ptap->api);CHKERRQ(ierr);
-      ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
+    if (A->reuse) {
+      ierr = MatDestroy_MPIAIJ_PtAPMPI_private(a->ptap);CHKERRQ(ierr);
     }
-    ierr = MatDestroy(&ptap->C_loc);CHKERRQ(ierr);
-    ierr = MatDestroy(&ptap->C_oth);CHKERRQ(ierr);
-    if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
-
-    if (merge) { /* used by alg_ptap */
-      ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
-      ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
-      ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
-      ierr = PetscFree(merge->bi);CHKERRQ(ierr);
-      ierr = PetscFree(merge->bj);CHKERRQ(ierr);
-      ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
-      ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
-      ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
-      ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-      ierr = PetscFree(merge->coi);CHKERRQ(ierr);
-      ierr = PetscFree(merge->coj);CHKERRQ(ierr);
-      ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-      ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
-      ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
-    }
-
     ierr = ptap->destroy(A);CHKERRQ(ierr);
     ierr = PetscFree(ptap);CHKERRQ(ierr);
   }
@@ -634,14 +644,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 #if defined(PETSC_USE_INFO)
   PetscReal           apfill;
 #endif
-  PetscBool           reuse=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetBool(NULL,NULL,"-ptap_reuse",&reuse,NULL);CHKERRQ(ierr);
 
   if (size > 1) ao = (Mat_SeqAIJ*)(a->B)->data;
 
@@ -649,10 +656,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,mtype);CHKERRQ(ierr);
-  if (reuse) {
-    if (!rank) printf("set ptap_reuse as %d....\n",reuse);
-    ierr = MatSetOption(Cmpi,MAT_REUSE,PETSC_TRUE);CHKERRQ(ierr);
-  }
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matptap_reuse",&Cmpi->reuse,NULL);CHKERRQ(ierr);
 
   /* Do dense axpy in MatPtAPNumeric_MPIAIJ_MPIAIJ() */
   Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ;
@@ -885,7 +890,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* (5) compute the local portion of Cmpi      */
   /* ------------------------------------------ */
   /* set initial free space to be Crmax, sufficient for holding nozeros in each row of Cmpi */
-  ierr          = PetscFreeSpaceGet(Crmax,&free_space);CHKERRQ(ierr); 
+  ierr          = PetscFreeSpaceGet(Crmax,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   ierr = PetscMalloc3(nrecv,&buf_ri_k,nrecv,&nextrow,nrecv,&nextci);CHKERRQ(ierr);
@@ -897,7 +902,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
 
   ierr = MatPreallocateInitialize(comm,pn,pn,dnz,onz);CHKERRQ(ierr);
-  ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr); 
+  ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr);
   for (i=0; i<pn; i++) {
     /* add C_loc into Cmpi */
     nzi  = c_loc->i[i+1] - c_loc->i[i];
@@ -951,13 +956,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
   *C                     = Cmpi;
-
-  reuse = PETSC_FALSE;
-  ierr = MatGetOption(Cmpi,MAT_REUSE,&reuse);CHKERRQ(ierr);
-  if (!rank) printf("get ptap_reuse %d\n",reuse);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
@@ -1067,5 +1067,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ptap->reuse = MAT_REUSE_MATRIX;
+
+  if (!C->reuse) {
+    /* Free supporting data structure ptap */
+    ierr = MatDestroy_MPIAIJ_PtAPMPI_private(ptap);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

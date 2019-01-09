@@ -143,9 +143,8 @@ int main(int argc,char **argv)
   ierr = DMSetFromOptions(user.coarse.da);CHKERRQ(ierr);
   ierr = DMSetUp(user.coarse.da);CHKERRQ(ierr);
 
-  /* Create interpolation between the levels */
+  /* Create interpolation between the fine and coarse grids */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
-
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
   if (!rank) printf("P %d, %d\n",M,N);
@@ -215,7 +214,7 @@ int main(int argc,char **argv)
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
-    for (i=0; i<1; i++) {
+    for (i=0; i<0; i++) {
       alpha -=0.1;
       ierr   = MatScale(A,alpha);CHKERRQ(ierr);
       ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -223,11 +222,12 @@ int main(int argc,char **argv)
 
     /* Test MatDuplicate()        */
     /*----------------------------*/
+#if 0
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
     ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr);
     ierr = MatDestroy(&C1);CHKERRQ(ierr);
     ierr = MatDestroy(&C2);CHKERRQ(ierr);
-
+#endif
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
     ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
