@@ -975,6 +975,10 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
   Output Parameter:
 . dm  - The DM object
 
+  Options Database Keys:
++ -dm_plex_box_lower <x,y,z> - Specify lower-left-bottom coordinates for the box
+- -dm_plex_box_upper <x,y,z> - Specify upper-right-top coordinates for the box
+
   Note: Here is the numbering returned for 2 faces in each direction for tensor cells:
 $ 10---17---11---18----12
 $  |         |         |
