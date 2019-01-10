@@ -173,6 +173,14 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 
    Level: intermediate
 
+   Example usage:
+   We have an index set (is) living on 3 processes with the following values:
+   | 4 9 0 | 2 6 7 | 10 11 1|
+   and another index set (comps) used to indicate which components of is  we want to take,
+   | 7 5  | 1 2 | 0 4|
+   The output index set (subis) should look like:
+   | 11 7 | 9 0 | 4 6|
+
 .seealso: VecGetSubVector(), MatCreateSubMatrix()
 @*/
 PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
@@ -195,8 +203,15 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
   ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
   ierr = ISGetIndices(comps,&comps_indices);CHKERRQ(ierr);
+  /*
+   * Construct a PetscSF in which "is" data serves as roots and "subis" is leaves.
+   * Root data are sent to leaves using PetscSFBcast().
+   * */
   for (i=0; i<nleaves; i++) {
     mine[i] = i;
+    /* Connect a remote root with the current leaf. The value on the remote root
+     * will be received by the current local leaf.
+     * */
     ierr = PetscLayoutFindOwnerIndex(is->map,comps_indices[i],&owner, &lidx);CHKERRQ(ierr);
     remote[i].rank = owner;
     remote[i].index = lidx;
