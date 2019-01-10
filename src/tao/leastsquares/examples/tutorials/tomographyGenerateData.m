@@ -15,7 +15,22 @@ NTau = ceil(sqrt(sum(WSz.^2))); NTau = NTau + rem(NTau-Ny,2); % number of discre
 SSz = [NTheta, NTau];
 L = XTM_Tensor_XH(WSz, NTheta, NTau);
 S = reshape(L*WGT(:), NTheta, NTau);
-
+%%
+  A = [0.81  0.91  0.28  0.96  0.96
+       0.91  0.63  0.55  0.16  0.49
+       0.13  0.10  0.96  0.97  0.80];
+  xGT = [0;0;1;0;0];
+  b = [0.28; 0.55; 0.96];
+  D = [-1 1 0 0 0;
+       0 -1 1 0 0;
+       0 0 -1 1 0;
+       0 0 0 -1 1];
+PetscBinaryWrite('cs1SparseMatrixA', A, 'precision', 'float64'); % do NOT need to convert A to sparse, always write as sparse matrix
+PetscBinaryWrite('cs1VecB', b, 'precision', 'float64');   
+PetscBinaryWrite('cs1VecXGT', xGT, 'precision', 'float64');
+A2 = PetscBinaryRead('cs1SparseMatrixA');
+b2 = PetscBinaryRead('cs1VecB');
+xGT2 = PetscBinaryRead('cs1VecXGT');
 %% Save data in petsc binary format, b = A*x
 PetscBinaryWrite('tomographySparseMatrixA', L, 'precision', 'float64');
 PetscBinaryWrite('tomographyVecXGT', WGT(:), 'precision', 'float64');
@@ -32,7 +47,7 @@ if isDemoMatLabReconstruction
     %% Reconstruction with solver from XH, with L1/TV regularizer.
     % Need 100/500/1000+ iteration to get good/very good/excellent result with small regularizer.
     % choose small maxSVDofA to make sure initial step size is not too small. 1.8e-6 and 1e-6 could make big difference for n=2 case
-    regType = 'TV'; % 'TV' or 'L1' % TV is better and cleaner for phantom example
+    regType = 'L1'; % 'TV' or 'L1' % TV is better and cleaner for phantom example        
     regWt = 1e-8*max(WGT(:)); % 1e-6 to 1e-8 both good for phantom, use 1e-8 for brain, especically WGT is scaled to maximum of 1 not 40
     maxIterA = 500; % 100 is not enough
     maxSVDofA = 1e-6; %svds(L, 1)*1e-4; % multiply by 1e-4 to make sure it is small enough so that first step in TwIST is long enough

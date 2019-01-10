@@ -59,7 +59,7 @@ typedef struct {
 } AppCtx;
 
 /* User provided Routines */
-PetscErrorCode InitializeData(AppCtx *);
+PetscErrorCode InitializeUserData(AppCtx *);
 PetscErrorCode FormStartingPoint(Vec);
 PetscErrorCode FormDictionaryMatrix(Mat,AppCtx *);
 PetscErrorCode EvaluateFunction(Tao,Vec,Vec,void *);
@@ -81,12 +81,12 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   /* Allocate solution and vector function vectors */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&x);CHKERRQ(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,M,&f);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,M,&f);CHKERRQ(ierr);
 
   /* Allocate Jacobian and Dictionary matrix. */
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,M,N,NULL,&J);CHKERRQ(ierr);
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,K,N,NULL,&D);CHKERRQ(ierr); /* XH: TODO: dense -> sparse/dense/shell etc, do it on fly  */
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,M,N,NULL,&J);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,K,N,NULL,&D);CHKERRQ(ierr); /* XH: TODO: dense -> sparse/dense/shell etc, do it on fly  */
 
   for (i=0;i<M;i++) user.idm[i] = i;
   for (i=0;i<N;i++) user.idn[i] = i;
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   ierr = TaoSetType(tao,TAOBRGN);CHKERRQ(ierr); 
 
   /* User set application context: A, D matrice, and b vector. */   
-  ierr = InitializeData(&user);CHKERRQ(ierr);
+  ierr = InitializeUserData(&user);CHKERRQ(ierr);
 
   /* Set initial guess */
   ierr = FormStartingPoint(x);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
   /* Bind x to tao->solution. */
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr); 
   /* Bind D to tao->data->D */
-  ierr = TaoBRGNSetDictionaryMatrix(tao,D);CHKERRQ(ierr); /* TaoBRNGSetDictionaryMatrix() */
+  ierr = TaoBRGNSetDictionaryMatrix(tao,D);CHKERRQ(ierr); 
 
   /* Set the function and Jacobian routines. */
   ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
@@ -237,7 +237,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 }
 
 /* ---------------------------------------------------------------------- */
-PetscErrorCode InitializeData(AppCtx *user)
+PetscErrorCode InitializeUserData(AppCtx *user)
 {
   PetscReal *b=user->b; /* **A=user->A, but we don't kown the dimension of A in this way, how to fix? */
   PetscInt  m,n,k; /* loop index for M,N,K dimension. */
