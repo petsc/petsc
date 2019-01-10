@@ -997,7 +997,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const char name[], PetscBool createGroup, PetscBool *has, H5O_type_t *otype)
 {
   hid_t          h5;
-  PetscBool      exists;
+  PetscBool      exists=PETSC_FALSE;
   PetscInt       i,n;
   char           **hierarchy;
   char           buf[PETSC_MAX_PATH_LEN]="";
