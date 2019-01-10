@@ -2051,7 +2051,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
         ierr = PetscSectionGetDof(patch->gtolCounts, p, &numPatchDofs);CHKERRQ(ierr);
         if (numPatchDofs == 0) {
-          patch->dofMappingWithoutToWithArtificial[p-pStart] = NULL;
+          patch->dofMappingWithoutToWithAll[p-pStart] = NULL;
           continue;
         }
 
