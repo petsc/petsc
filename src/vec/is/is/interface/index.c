@@ -212,6 +212,8 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
     /* Connect a remote root with the current leaf. The value on the remote root
      * will be received by the current local leaf.
      * */
+    owner = -1;
+    lidx =  -1;
     ierr = PetscLayoutFindOwnerIndex(is->map,comps_indices[i],&owner, &lidx);CHKERRQ(ierr);
     remote[i].rank = owner;
     remote[i].index = lidx;
