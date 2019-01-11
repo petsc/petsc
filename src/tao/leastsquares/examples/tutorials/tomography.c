@@ -54,7 +54,7 @@ typedef struct {
   /*PetscReal A[M][N]; */    /* array of coefficients */
   PetscInt  M,N,K;      /* Problem dimension: A is M*N Matrix, D is K*N Matrix */
   Mat       A,D;      /* Coefficients, Dictionary Transform of size M*N and K*N respectively. For linear least square, Jacobian Matrix J = A. For nonlinear least square, it is different from A */  
-  Vec       b,xGT;
+  Vec       b,xGT,xlb,xub; /* observation b, ground truth xGT, the lower bound and upper bound of x */
 } AppCtx;
 
 /* User provided Routines */
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOBRGN);CHKERRQ(ierr); 
+  ierr = TaoSetType(tao,TAOBRGN);CHKERRQ(ierr);
 
   /* User set application context: A, D matrice, and b vector. */   
   ierr = InitializeUserData(&user);CHKERRQ(ierr);
@@ -97,9 +97,11 @@ int main(int argc,char **argv)
   ierr = FormStartingPoint(x,&user);CHKERRQ(ierr);
   
   /* Bind x to tao->solution. */
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr); 
+  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  /* Sets the upper and lower bounds of x */
+  ierr = TaoSetVariableBounds(tao,user.xlb,user.xub);CHKERRQ(ierr);
   /* Bind user.D to tao->data->D */
-  ierr = TaoBRGNSetDictionaryMatrix(tao,user.D);CHKERRQ(ierr); 
+  ierr = TaoBRGNSetDictionaryMatrix(tao,user.D);CHKERRQ(ierr);
 
   /* Set the function and Jacobian routines. */
   ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
@@ -123,15 +125,15 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   /* Save x (reconstruction of object) vector to a binary file, which maybe read from Matlab and convert to a 2D image for comparison. */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,resultFile,FILE_MODE_WRITE,&fd);CHKERRQ(ierr);    
-  ierr = VecView(x,fd);CHKERRQ(ierr);  
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,resultFile,FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
+  ierr = VecView(x,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* compute the error */
   ierr = VecAXPY(x,-1,user.xGT);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&v1);CHKERRQ(ierr);
   ierr = VecNorm(user.xGT,NORM_2,&v2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "relative reconstruction error: ||x-xGT||/||xGT|| = %6.4e.\n", (double)(v1/v2));CHKERRQ(ierr);  
+  ierr = PetscPrintf(PETSC_COMM_SELF, "relative reconstruction error: ||x-xGT||/||xGT|| = %6.4e.\n", (double)(v1/v2));CHKERRQ(ierr);
 
   /* XH: Debug: View the result, function and Jacobian.  */      
 #if 0
@@ -155,7 +157,9 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&user.D);CHKERRQ(ierr);
   ierr = VecDestroy(&user.b);CHKERRQ(ierr);
   ierr = VecDestroy(&user.xGT);CHKERRQ(ierr);
-  
+  ierr = VecDestroy(&user.xlb);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.xub);CHKERRQ(ierr);
+
   ierr = PetscFinalize();
   return ierr;
 }
@@ -191,7 +195,7 @@ PetscErrorCode EvaluateJacobian(Tao tao,Vec X,Mat J,Mat Jpre,void *ptr)
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     J = user->A;  
     */
-    ierr = MatCopy(user->A,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);    
+    ierr = MatCopy(user->A,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }  
   PetscLogFlops(0);  /* 0 for linear least square, >0 for nonlinear least square */
   PetscFunctionReturn(0);
@@ -229,18 +233,22 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   https://www.mcs.anl.gov/petsc/petsc-current/src/mat/examples/tutorials/ex12.c
  */
   /* Load the A matrix, b vector, and xGT vector from a binary file. */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,dataFile,FILE_MODE_READ,&fd);CHKERRQ(ierr);  
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,dataFile,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&user->A);CHKERRQ(ierr);
-  ierr = MatSetType(user->A,MATSEQAIJ);CHKERRQ(ierr);  
+  ierr = MatSetType(user->A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad(user->A,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->b);CHKERRQ(ierr);
-  ierr = VecLoad(user->b,fd);CHKERRQ(ierr);  
+  ierr = VecLoad(user->b,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->xGT);CHKERRQ(ierr);
-  ierr = VecLoad(user->xGT,fd);CHKERRQ(ierr);  
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);    
+  ierr = VecLoad(user->xGT,fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  ierr = VecDuplicate(user->xGT,&(user->xlb));CHKERRQ(ierr);
+  ierr = VecSet(user->xlb,0.0);CHKERRQ(ierr);
+  ierr = VecDuplicate(user->xGT,&(user->xub));CHKERRQ(ierr);
+  ierr = VecSet(user->xub,PETSC_INFINITY);CHKERRQ(ierr);
 
   /* Specify the size */
-  ierr = MatGetSize(user->A,&user->M,&user->N);CHKERRQ(ierr);  
+  ierr = MatGetSize(user->A,&user->M,&user->N);CHKERRQ(ierr);
 
   /* Specify D */
   /* Todo: let user specify dictChoice from input */ 
@@ -255,8 +263,8 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 
   ierr = MatCreate(PETSC_COMM_SELF,&user->D);CHKERRQ(ierr);
   ierr = MatSetSizes(user->D,PETSC_DECIDE,PETSC_DECIDE,user->K,user->N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user->D);CHKERRQ(ierr);        
-  ierr = MatSetUp(user->D);CHKERRQ(ierr);    
+  ierr = MatSetFromOptions(user->D);CHKERRQ(ierr);
+  ierr = MatSetUp(user->D);CHKERRQ(ierr);
 
   switch (dictChoice) {
     case 0: /* 0:identity */ 
@@ -280,20 +288,20 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 
    /* Verify the norms for A, D, b, xGT, only used in the debug?*/
 /* #if 0 */
-  ierr = MatNorm(user->A,NORM_FROBENIUS,&v);CHKERRQ(ierr);  
-  ierr = PetscPrintf(PETSC_COMM_SELF, "A has size %dx%d and Frobenius-norm: %6.4e.\n", user->M, user->N, (double)v);CHKERRQ(ierr);  
+  ierr = MatNorm(user->A,NORM_FROBENIUS,&v);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "A has size %dx%d and Frobenius-norm: %6.4e.\n", user->M, user->N, (double)v);CHKERRQ(ierr);
 
-  ierr = MatNorm(user->D,NORM_FROBENIUS,&v);CHKERRQ(ierr);  
-  ierr = MatGetSize(user->D,&k,&n);CHKERRQ(ierr);  
-  ierr = PetscPrintf(PETSC_COMM_SELF, "D has size %dx%d and Frobenius-norm: %6.4e.\n", k, n, (double)v);CHKERRQ(ierr);  
+  ierr = MatNorm(user->D,NORM_FROBENIUS,&v);CHKERRQ(ierr);
+  ierr = MatGetSize(user->D,&k,&n);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "D has size %dx%d and Frobenius-norm: %6.4e.\n", k, n, (double)v);CHKERRQ(ierr);
 
-  ierr = VecNorm(user->b,NORM_2,&v);CHKERRQ(ierr);  
-  ierr = VecGetSize(user->b,&user->M);CHKERRQ(ierr);  
-  ierr = PetscPrintf(PETSC_COMM_SELF, "b has size %d and 2-norm: %6.4e.\n", user->M, (double)v);CHKERRQ(ierr);  
+  ierr = VecNorm(user->b,NORM_2,&v);CHKERRQ(ierr);
+  ierr = VecGetSize(user->b,&user->M);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "b has size %d and 2-norm: %6.4e.\n", user->M, (double)v);CHKERRQ(ierr);
 
-  ierr = VecNorm(user->xGT,NORM_2,&v);CHKERRQ(ierr);  
-  ierr = VecGetSize(user->xGT,&user->N);CHKERRQ(ierr);  
-  ierr = PetscPrintf(PETSC_COMM_SELF, "xGT has size %d and 2-norm: %6.4e.\n", user->N, (double)v);CHKERRQ(ierr);  
+  ierr = VecNorm(user->xGT,NORM_2,&v);CHKERRQ(ierr);
+  ierr = VecGetSize(user->xGT,&user->N);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "xGT has size %d and 2-norm: %6.4e.\n", user->N, (double)v);CHKERRQ(ierr);
 /* #endif */
 
   PetscFunctionReturn(0);

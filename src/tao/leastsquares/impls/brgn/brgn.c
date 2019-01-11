@@ -10,10 +10,10 @@ static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
   ierr = MatMult(gn->subsolver->ls_jac,in,gn->r_work);CHKERRQ(ierr);
   ierr = MatMultTranspose(gn->subsolver->ls_jac,gn->r_work,out);CHKERRQ(ierr);
   /* out = out + lambda*D'*(diag.*(D*in)) */
-  ierr = MatMult(gn->D,in,gn->y);CHKERRQ(ierr);  /* y = D*in */
-  ierr = VecPointwiseMult(gn->y_work,gn->diag,gn->y);CHKERRQ(ierr);     /* y_work = diag.*(D*in), where diag = epsilon^2 ./ sqrt(x.^2+epsilon^2).^3 */
-  ierr = MatMultTranspose(gn->D,gn->y_work,gn->x_work);CHKERRQ(ierr);   /* x_work = D'*(diag.*(D*in)) */
-  ierr = VecAXPY(out,gn->lambda,gn->x_work);CHKERRQ(ierr);  
+  ierr = MatMult(gn->D,in,gn->y);CHKERRQ(ierr);/* y = D*in */
+  ierr = VecPointwiseMult(gn->y_work,gn->diag,gn->y);CHKERRQ(ierr);   /* y_work = diag.*(D*in), where diag = epsilon^2 ./ sqrt(x.^2+epsilon^2).^3 */
+  ierr = MatMultTranspose(gn->D,gn->y_work,gn->x_work);CHKERRQ(ierr); /* x_work = D'*(diag.*(D*in)) */
+  ierr = VecAXPY(out,gn->lambda,gn->x_work);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -32,10 +32,10 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
   ierr = VecDotBegin(tao->ls_res,tao->ls_res,fcn);CHKERRQ(ierr);
   ierr = VecDotEnd(tao->ls_res,tao->ls_res,fcn);CHKERRQ(ierr);
   /* add the second term lambda*sum(sqrt(y.^2+epsilon^2) - epsilon), where y = D*x*/
-  ierr = MatMult(gn->D,X,gn->y);CHKERRQ(ierr);  /* y = D*x */
+  ierr = MatMult(gn->D,X,gn->y);CHKERRQ(ierr);/* y = D*x */
   ierr = VecPointwiseMult(gn->y_work,gn->y,gn->y);CHKERRQ(ierr);
   ierr = VecShift(gn->y_work,gn->epsilon*gn->epsilon);CHKERRQ(ierr);
-  ierr = VecSqrtAbs(gn->y_work);CHKERRQ(ierr);      /* gn->y_work = sqrt(y.^2+epsilon^2) */ 
+  ierr = VecSqrtAbs(gn->y_work);CHKERRQ(ierr);  /* gn->y_work = sqrt(y.^2+epsilon^2) */ 
   ierr = VecSum(gn->y_work,&yESum);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = VecGetSize(gn->y,&K);CHKERRQ(ierr);
   *fcn = 0.5*(*fcn) + gn->lambda*(yESum - K*gn->epsilon);
@@ -45,7 +45,7 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
   ierr = MatMultTranspose(tao->ls_jac,tao->ls_res,G);CHKERRQ(ierr);
   /* compute G = G + lambda*D'*(y./sqrt(y.^2+epsilon^2)),where y = D*x */  
   ierr = VecPointwiseDivide(gn->y_work,gn->y,gn->y_work);CHKERRQ(ierr); /* reuse y_work = y./sqrt(y.^2+epsilon^2) */
-  ierr = MatMultTranspose(gn->D,gn->y_work,gn->x_work);CHKERRQ(ierr);  
+  ierr = MatMultTranspose(gn->D,gn->y_work,gn->x_work);CHKERRQ(ierr);
   ierr = VecAXPY(G,gn->lambda,gn->x_work);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -61,12 +61,12 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
   ierr = TaoComputeResidualJacobian(tao,X,tao->ls_jac,tao->ls_jac_pre);CHKERRQ(ierr);
 
   /* calculate and store diagonal matrix as a vector: diag = epsilon^2 ./ sqrt(x.^2+epsilon^2).^3* --> diag = epsilon^2 ./ sqrt(y.^2+epsilon^2).^3,where y = D*x */  
-  ierr = MatMult(gn->D,X,gn->y);CHKERRQ(ierr);  /* y = D*x */
+  ierr = MatMult(gn->D,X,gn->y);CHKERRQ(ierr);/* y = D*x */
   ierr = VecPointwiseMult(gn->y_work,gn->y,gn->y);CHKERRQ(ierr);
   ierr = VecShift(gn->y_work,gn->epsilon*gn->epsilon);CHKERRQ(ierr);
-  ierr = VecCopy(gn->y_work,gn->diag);CHKERRQ(ierr);                     /* gn->diag = y.^2+epsilon^2 */
-  ierr = VecSqrtAbs(gn->y_work);CHKERRQ(ierr);                            /* gn->y_work = sqrt(y.^2+epsilon^2) */ 
-  ierr = VecPointwiseMult(gn->diag,gn->y_work,gn->diag);CHKERRQ(ierr);  /* gn->diag = sqrt(y.^2+epsilon^2).^3 */
+  ierr = VecCopy(gn->y_work,gn->diag);CHKERRQ(ierr);                  /* gn->diag = y.^2+epsilon^2 */
+  ierr = VecSqrtAbs(gn->y_work);CHKERRQ(ierr);                        /* gn->y_work = sqrt(y.^2+epsilon^2) */ 
+  ierr = VecPointwiseMult(gn->diag,gn->y_work,gn->diag);CHKERRQ(ierr);/* gn->diag = sqrt(y.^2+epsilon^2).^3 */
   ierr = VecReciprocal(gn->diag);CHKERRQ(ierr);
   ierr = VecScale(gn->diag,gn->epsilon*gn->epsilon);CHKERRQ(ierr);
 
@@ -214,7 +214,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     ierr = MatSetType(gn->H,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(gn->H);CHKERRQ(ierr);
     ierr = MatShellSetOperation(gn->H,MATOP_MULT,(void (*)(void))GNHessianProd);CHKERRQ(ierr);
-    ierr = MatShellSetContext(gn->H,(void*)gn);CHKERRQ(ierr);    
+    ierr = MatShellSetContext(gn->H,(void*)gn);CHKERRQ(ierr);
     /* Subsolver setup,include initial vector and dicttionary D */
     ierr = TaoSetUpdate(gn->subsolver,GNHookFunction,(void*)gn);CHKERRQ(ierr);
     ierr = TaoSetInitialVector(gn->subsolver,tao->solution);CHKERRQ(ierr);

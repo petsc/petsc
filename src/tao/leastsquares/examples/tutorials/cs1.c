@@ -94,7 +94,7 @@ int main(int argc,char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOBRGN);CHKERRQ(ierr); 
+  ierr = TaoSetType(tao,TAOBRGN);CHKERRQ(ierr);
 
   /* User set application context: A, D matrice, and b vector. */   
   ierr = InitializeUserData(&user);CHKERRQ(ierr);
@@ -106,9 +106,9 @@ int main(int argc,char **argv)
   ierr = FormDictionaryMatrix(D,&user);CHKERRQ(ierr);
 
   /* Bind x to tao->solution. */
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr); 
+  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
   /* Bind D to tao->data->D */
-  ierr = TaoBRGNSetDictionaryMatrix(tao,D);CHKERRQ(ierr); 
+  ierr = TaoBRGNSetDictionaryMatrix(tao,D);CHKERRQ(ierr);
 
   /* Set the function and Jacobian routines. */
   ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
@@ -201,7 +201,7 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);  /* not used for linear least square, but keep for future nonlinear least square) */
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);/* not used for linear least square, but keep for future nonlinear least square) */
   PetscLogFlops(0);  /* 0 for linear least square, >0 for nonlinear least square */
   PetscFunctionReturn(0);
 }
@@ -300,8 +300,8 @@ TEST*/
   if (!gn->D){
     ierr = MatCreate(PETSC_COMM_SELF,&gn->D);CHKERRQ(ierr);
     ierr = MatSetSizes(gn->D,PETSC_DECIDE,PETSC_DECIDE,K,N);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(gn->D);CHKERRQ(ierr);        
-    ierr = MatSetUp(gn->D);CHKERRQ(ierr);    
+    ierr = MatSetFromOptions(gn->D);CHKERRQ(ierr);
+    ierr = MatSetUp(gn->D);CHKERRQ(ierr);
 
     for (i=0; i<K; i++) {           
         v = 1.0;

@@ -63,11 +63,10 @@ if isDemoMatLabReconstruction
     paraTwist = {'xSz', WSz, 'regFun', regType, 'regWt', regWt, 'isNonNegative', 1, 'maxIterA', maxIterA, 'xGT', WGT, 'maxSVDofA', maxSVDofA};
     WRec = solveTwist(S, L, paraTwist{:});    
     figure(figNo+3); W = WRec;  imagesc(W); axis image; title(sprintf('Rec twist, PSNR=%.2fdB, %s, regWt=%.1e, maxIter=%d', difference(W, WGT), regType, regWt, maxIterA));
-    tilefigs;
-    m
+    tilefigs;    
     % comparison of tao-brgn with matlab-twist
     xRec2 = PetscBinaryRead('tomographyResult_x');
     WRec2 = reshape(xRec2, Ny, Nx);
     figure, multAxes(@imagesc, {WGT, WRec2, WRec}); multAxes(@axis, 'image'); linkAxesXYZLimColorView; multAxes(@colorbar);
-    multAxes(@title, {'Ground Truth', sprintf('Reconstruction-Tao-brgn,psnr=%.2fdB', psnr(WRec2, WGT)), sprintf('Reconstruction-Matlab-Twist, psnr=%.2fdB', psnr(WRec, WGT))});
+    multAxes(@title, {'Ground Truth', sprintf('Reconstruction-Tao-brgn-nonnegative,psnr=%.2fdB', psnr(WRec2, WGT)), sprintf('Reconstruction-Matlab-Twist, psnr=%.2fdB', psnr(WRec, WGT))});
 end
