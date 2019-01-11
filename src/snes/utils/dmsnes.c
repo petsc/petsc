@@ -162,7 +162,6 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   nkdm->pctx         = kdm->pctx;
   nkdm->jacobianctx  = kdm->jacobianctx;
   nkdm->objectivectx = kdm->objectivectx;
-  nkdm->data         = kdm->data;
 
   /*
   nkdm->fortran_func_pointers[0] = kdm->fortran_func_pointers[0];

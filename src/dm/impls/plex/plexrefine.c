@@ -10372,6 +10372,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
     ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
     ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
+    ierr = DMPlexSetRegularRefinement(*dmRefined, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
     if (localized) {ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);}
   } else {
@@ -10396,6 +10397,8 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
 
       ierr = DMPlexGetCellRefiner_Internal(cdm, &cellRefiner);CHKERRQ(ierr);
       ierr = DMPlexRefineUniform_Internal(cdm, cellRefiner, &dmRefined[r]);CHKERRQ(ierr);
+      ierr = DMSetCoarsenLevel(dmRefined[r], cdm->leveldown);CHKERRQ(ierr);
+      ierr = DMSetRefineLevel(dmRefined[r], cdm->levelup+1);CHKERRQ(ierr);
       ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
       if (localized) {ierr = DMLocalizeCoordinates(dmRefined[r]);CHKERRQ(ierr);}
       ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);

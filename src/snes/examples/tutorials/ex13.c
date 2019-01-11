@@ -518,6 +518,44 @@ int main(int argc, char **argv)
     requires: triangle
     args: -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
+    suffix: 2d_p1_scalable
+    requires: triangle long_runtime
+    args: -potential_petscspace_order 1 -dm_refine 3 -num_refine 3 -snes_convergence_estimate \
+      -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned \
+      -pc_type gamg \
+        -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 \
+        -pc_gamg_coarse_eq_limit 1000 \
+        -pc_gamg_square_graph 1 \
+        -pc_gamg_threshold 0.05 \
+        -pc_gamg_threshold_scale .0 \
+      -mg_levels_ksp_type chebyshev \
+        -mg_levels_ksp_max_it 1 \
+        -mg_levels_esteig_ksp_type cg \
+        -mg_levels_esteig_ksp_max_it 10 \
+        -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
+        -mg_levels_pc_type jacobi \
+      -matptap_via scalable
+  test:
+    suffix: 2d_p1_gmg_vcycle
+    requires: triangle
+    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
+          -ksp_rtol 5e-10 -pc_type mg \
+            -mg_levels_ksp_max_it 1 \
+            -mg_levels_esteig_ksp_type cg \
+            -mg_levels_esteig_ksp_max_it 10 \
+            -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
+            -mg_levels_pc_type jacobi
+  test:
+    suffix: 2d_p1_gmg_fcycle
+    requires: triangle
+    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
+          -ksp_rtol 5e-10 -pc_type mg -pc_mg_type full \
+            -mg_levels_ksp_max_it 2 \
+            -mg_levels_esteig_ksp_type cg \
+            -mg_levels_esteig_ksp_max_it 10 \
+            -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
+            -mg_levels_pc_type jacobi
+  test:
     suffix: 2d_p2_0
     requires: triangle
     args: -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
@@ -537,16 +575,16 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_0
     requires: ctetgen
-    args: -dim 3 -potential_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_0
     requires: ctetgen
-    args: -dim 3 -potential_petscspace_degree 2 -convest_num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 2 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p3_0
     requires: ctetgen
     timeoutfactor: 2
-    args: -dim 3 -potential_petscspace_degree 3 -convest_num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 3 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q1_0
     args: -dim 3 -simplex 0 -potential_petscspace_degree 1 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate
