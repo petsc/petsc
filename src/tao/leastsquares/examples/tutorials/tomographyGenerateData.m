@@ -26,15 +26,24 @@ S = reshape(L*WGT(:), NTheta, NTau);
        0 0 -1 1 0;
        0 0 0 -1 1];
 PetscBinaryWrite('cs1SparseMatrixA', A, 'precision', 'float64'); % do NOT need to convert A to sparse, always write as sparse matrix
-PetscBinaryWrite('cs1VecB', b, 'precision', 'float64');   
-PetscBinaryWrite('cs1VecXGT', xGT, 'precision', 'float64');
-A2 = PetscBinaryRead('cs1SparseMatrixA');
-b2 = PetscBinaryRead('cs1VecB');
-xGT2 = PetscBinaryRead('cs1VecXGT');
+[A2, b2, xGT2] = PetscBinaryRead('cs1Data_A_b_xGT');
+% PetscBinaryWrite('cs1VecB', b, 'precision', 'float64');   
+% PetscBinaryWrite('cs1VecXGT', xGT, 'precision', 'float64');
+% PetscBinaryWrite('cs1Data_A_b_xGT', A, b, xGT, 'precision', 'float64');
+% A2 = PetscBinaryRead('cs1SparseMatrixA');
+% b2 = PetscBinaryRead('cs1VecB');
+% xGT2 = PetscBinaryRead('cs1VecXGT');
 %% Save data in petsc binary format, b = A*x
-PetscBinaryWrite('tomographySparseMatrixA', L, 'precision', 'float64');
-PetscBinaryWrite('tomographyVecXGT', WGT(:), 'precision', 'float64');
-PetscBinaryWrite('tomographyVecB', S(:), 'precision', 'float64');
+% save to one file
+PetscBinaryWrite('tomographyData_A_b_xGT', L, S(:), WGT(:), 'precision', 'float64');
+[A2, b2, xGT2] = PetscBinaryRead('tomographyData_A_b_xGT');
+difference(full(A2), full(L));
+difference(b2, S(:));
+difference(xGT2, WGT(:));
+% Save to separate files
+% PetscBinaryWrite('tomographySparseMatrixA', L, 'precision', 'float64');
+% PetscBinaryWrite('tomographyVecXGT', WGT(:), 'precision', 'float64');
+% PetscBinaryWrite('tomographyVecB', S(:), 'precision', 'float64');
 
 %% Below we shows the matlab reconstruction using 
 isDemoMatLabReconstruction = 1; % 1/0
@@ -55,4 +64,10 @@ if isDemoMatLabReconstruction
     WRec = solveTwist(S, L, paraTwist{:});    
     figure(figNo+3); W = WRec;  imagesc(W); axis image; title(sprintf('Rec twist, PSNR=%.2fdB, %s, regWt=%.1e, maxIter=%d', difference(W, WGT), regType, regWt, maxIterA));
     tilefigs;
+    m
+    % comparison of tao-brgn with matlab-twist
+    xRec2 = PetscBinaryRead('tomographyResult_x');
+    WRec2 = reshape(xRec2, Ny, Nx);
+    figure, multAxes(@imagesc, {WGT, WRec2, WRec}); multAxes(@axis, 'image'); linkAxesXYZLimColorView; multAxes(@colorbar);
+    multAxes(@title, {'Ground Truth', sprintf('Reconstruction-Tao-brgn,psnr=%.2fdB', psnr(WRec2, WGT)), sprintf('Reconstruction-Matlab-Twist, psnr=%.2fdB', psnr(WRec, WGT))});
 end
