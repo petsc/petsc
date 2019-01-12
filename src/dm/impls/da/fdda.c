@@ -1576,7 +1576,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   PetscMPIInt            rank,size;
 
   PetscFunctionBegin;
-  if (dd->bx == DM_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"With fill provided not implemented with periodic boundary conditions");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
 
@@ -1585,6 +1584,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&bx,0,0,0);CHKERRQ(ierr);
+  if (s > 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Matrix creation for 1d not implemented correctly for stencil width larger than 1");
   ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
 
@@ -1601,6 +1601,10 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
     for (j=0; j<nc; j++) {
       ocols[cnt] = ((!rank) ? 0 : (s - i)*(ofill[j+1] - ofill[j]));
       cols[cnt]  = dfill[j+1] - dfill[j] + (s + i)*(ofill[j+1] - ofill[j]);
+      if (!rank && (dd->bx == DM_BOUNDARY_PERIODIC)) {
+        if (size > 1) ocols[cnt] += (s - i)*(ofill[j+1] - ofill[j]);
+        else cols[cnt] += (s - i)*(ofill[j+1] - ofill[j]);
+      }
       maxcnt = PetscMax(maxcnt,ocols[cnt]+cols[cnt]);
       cnt++;
     }
@@ -1617,6 +1621,10 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
     for (j=0; j<nc; j++) {
       ocols[cnt] = ((rank == (size-1)) ? 0 : (i - nx + s + 1)*(ofill[j+1] - ofill[j]));
       cols[cnt]  = dfill[j+1] - dfill[j] + (s + nx - i - 1)*(ofill[j+1] - ofill[j]);
+      if ((rank == size-1) && (dd->bx == DM_BOUNDARY_PERIODIC)) {
+        if (size > 1) ocols[cnt] += (i - nx + s + 1)*(ofill[j+1] - ofill[j]);
+        else cols[cnt] += (i - nx + s + 1)*(ofill[j+1] - ofill[j]);
+      }
       maxcnt = PetscMax(maxcnt,ocols[cnt]+cols[cnt]);
       cnt++;
     }
@@ -1645,6 +1653,11 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
         if (rank) {
           for (l=0; l<s; l++) {
             for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i - s + l)*nc + ofill[k];
+          }
+        }
+        if (!rank && (dd->bx == DM_BOUNDARY_PERIODIC)) {
+          for (l=0; l<s; l++) {
+            for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (m + i - s - l)*nc + ofill[k];
           }
         }
         if (dfill) {
@@ -1704,6 +1717,11 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
         if (rank < size-1) {
           for (l=0; l<s; l++) {
             for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i + s - l)*nc + ofill[k];
+          }
+        }
+        if ((rank == size-1) && (dd->bx == DM_BOUNDARY_PERIODIC)) {
+          for (l=0; l<s; l++) {
+            for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i - s - l - m + 2)*nc + ofill[k];
           }
         }
         ierr = MatSetValues(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
