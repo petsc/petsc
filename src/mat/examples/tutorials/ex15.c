@@ -26,7 +26,7 @@ int main(int argc, char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A, 3, NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_vertex_weights",&set_vweights,NULL);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_vertex_weights",&set_vweights,NULL);CHKERRQ(ierr);
   /* Create a linear mesh */
   ierr = MatGetOwnershipRange(A, &start, &end);CHKERRQ(ierr);
   if (set_vweights) {
