@@ -156,8 +156,6 @@ int main(int argc,char **argv)
   for (p=0; p<np-1; p++) for (s=0; s<ns-1; s++) {
     integer = -1;
     real = -1.0;
-    boolean0 = -1;
-    boolean1 = -1;
     a = 0;
     ierr = PetscSNPrintf(buf, sizeof(buf), "%s/%s", path[p], names[s]);CHKERRQ(ierr);
     ierr = PetscViewerHDF5ReadAttribute(viewer, buf, attr[a], dts[a], &integer);CHKERRQ(ierr);  a++;
@@ -173,8 +171,8 @@ int main(int argc,char **argv)
     a = 0;
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s=%D\n", buf, attr[a], integer);CHKERRQ(ierr);  a++;
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s=%f\n", buf, attr[a], real);CHKERRQ(ierr);     a++;
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s=%D\n", buf, attr[a], boolean0);CHKERRQ(ierr); a++;
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s=%D\n", buf, attr[a], boolean1);CHKERRQ(ierr); a++;
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s=%s\n", buf, attr[a], PetscBools[boolean0]);CHKERRQ(ierr); a++;
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s=%s\n", buf, attr[a], PetscBools[boolean1]);CHKERRQ(ierr); a++;
 #if !defined(READ_STRING_TODO)
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s=%s\n", buf, attr[a], string1);CHKERRQ(ierr);  a++;
 #else
@@ -204,8 +202,8 @@ int main(int argc,char **argv)
       a = 0;
       ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], name, attr[a], integer);CHKERRQ(ierr);  a++;
       ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%f\n", path[p], name, attr[a], real);CHKERRQ(ierr);     a++;
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], name, attr[a], boolean0);CHKERRQ(ierr); a++;
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%D\n", path[p], name, attr[a], boolean1);CHKERRQ(ierr); a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%s\n", path[p], name, attr[a], PetscBools[boolean0]);CHKERRQ(ierr); a++;
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%s\n", path[p], name, attr[a], PetscBools[boolean1]);CHKERRQ(ierr); a++;
 #if !defined(READ_STRING_TODO)
       ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "%s/%s/%s=%s\n", path[p], name, attr[a], string1);CHKERRQ(ierr);  a++;
 #else
