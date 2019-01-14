@@ -304,6 +304,21 @@ E*/
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 
 /*E
+   PCBDDCInterfaceExtType - Defines how interface balancing is extended into the interior of subdomains.
+
+   Level: intermediate
+
+   Values:
++  PC_BDDC_INTERFACE_EXT_DIRICHLET - solves Dirichlet interior problem; this is the standard BDDC algorithm
+-  PC_BDDC_INTERFACE_EXT_LUMP - skips interior solve; sometimes called M_1 and associated with "lumped FETI-DP"
+
+E*/
+typedef enum {
+  PC_BDDC_INTERFACE_EXT_DIRICHLET,
+  PC_BDDC_INTERFACE_EXT_LUMP
+} PCBDDCInterfaceExtType;
+
+/*E
     PCPatchConstructType - The algorithm used to construct patches for the preconditioner
 
    Level: beginner

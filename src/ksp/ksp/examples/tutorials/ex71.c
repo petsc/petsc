@@ -632,5 +632,15 @@ int main(int argc,char **args)
    test:
      suffix: aij_dmda_preall
      args: -dm_mat_type aij -dm_preallocate_only {{0 1}} -dirichlet {{0 1}}
+ testset:
+   nsize: 4
+   args: -dim 2 -cells 16,16 -periodicity 1,1 -random_initial_guess -sub_0_pc_bddc_switch_static -use_composite_pc -ksp_monitor -ksp_converged_reason -ksp_type gmres -ksp_view_singularvalues -ksp_view_eigenvalues -sub_0_pc_bddc_use_edges 0 -sub_0_pc_bddc_coarse_pc_type svd -sub_1_ksp_ksp_max_it 1 -sub_1_ksp_ksp_richardson_scale 2.3
+   test:
+     args: -sub_0_pc_bddc_interface_ext_type lump
+     suffix: composite_bddc_lumped
+   test:
+     args: -sub_0_pc_bddc_interface_ext_type dirichlet
+     suffix: composite_bddc_dirichlet
+
 
 TEST*/
