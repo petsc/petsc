@@ -389,8 +389,7 @@ typedef enum {MAT_OPTION_MIN = -3,
               MAT_SUBSET_OFF_PROC_ENTRIES = 20,
               MAT_SUBMAT_SINGLEIS = 21,
               MAT_STRUCTURE_ONLY = 22,
-              MAT_REUSE = 23,
-              MAT_OPTION_MAX = 24} MatOption;
+              MAT_OPTION_MAX = 23} MatOption;
 
 PETSC_EXTERN const char *const *MatOptions;
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
@@ -1464,7 +1463,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_ILUFACTOR_SYMBOLIC=30,
                MATOP_ICCFACTOR_SYMBOLIC=31,
                MATOP_GET_DIAGONAL_BLOCK=32,
-               /* MATOP_PLACEHOLDER_33=33, */
+               MATOP_FREE_INTER_STRUCT=33,
                MATOP_DUPLICATE=34,
                MATOP_FORWARD_SOLVE=35,
                MATOP_BACKWARD_SOLVE=36,
@@ -1581,6 +1580,7 @@ PETSC_EXTERN PetscErrorCode MatSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat,MatOperation,void(**)(void));
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatHasCongruentLayouts(Mat,PetscBool *);
+PETSC_EXTERN PetscErrorCode MatFreeIntermediateDataStructures(Mat);
 
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat,MatOperation,void(**)(void));

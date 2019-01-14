@@ -5632,9 +5632,6 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
   case MAT_STRUCTURE_ONLY:
     mat->structure_only = flg;
     break;
-  case MAT_REUSE:
-    mat->reuse = flg;
-    break;
   default:
     break;
   }
@@ -5696,9 +5693,6 @@ PetscErrorCode MatGetOption(Mat mat,MatOption op,PetscBool *flg)
     break;
   case MAT_SPD:
     *flg = mat->spd;
-    break;
-  case MAT_REUSE:
-    *flg = mat->reuse;
     break;
   default:
     break;
@@ -11109,5 +11103,38 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
     if (*cong) mat->congruentlayouts = 1;
     else       mat->congruentlayouts = 0;
   } else *cong = mat->congruentlayouts ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatFreeIntermediateDataStructures - Free intermediate data structures created for reuse,
+    e.g., matrx product of MatPtAP in MPIAIJ format
+
+   Collective on mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
+.  mat - the matrix with intermediate data structures released
+
+   Level: advanced
+
+   Notes:
+
+.keywords: matrix
+
+.seealso: MatPtAP(), MatMatMult()
+@*/
+PetscErrorCode MatFreeIntermediateDataStructures(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (mat->ops->freeintermediatedatastructures) {
+    ierr = (*mat->ops->freeintermediatedatastructures)(mat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
