@@ -117,10 +117,15 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   PetscInt       cdnz,conz,k0,k1;
   MPI_Comm       comm;
   PetscMPIInt    size;
+  PetscBool      freestruct;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  if (!ptap) {
+    SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
+  }
 
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*-----------------------------------------------------*/
@@ -176,6 +181,16 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = PetscObjectOptionsBegin((PetscObject)C);CHKERRQ(ierr);
+  PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+  /* supporting struct ptap consumes almost same amount of memory as C=AP, release it if C will not be updated by A and P */
+  freestruct = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
+  if (freestruct) {
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -303,6 +318,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ptap->duplicate      = Cmpi->ops->duplicate;
   Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
   Cmpi->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c       = (Mat_MPIAIJ*)Cmpi->data;
@@ -570,16 +586,22 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscScalar    *pa_loc,*pa_oth,*pa,valtmp,*ca;
   PetscInt       cm          = C->rmap->n,anz,pnz;
   Mat_PtAPMPI    *ptap       = c->ptap;
-  PetscScalar    *apa_sparse = ptap->apa;
+  PetscScalar    *apa_sparse;
   PetscInt       *api,*apj,*apJ,i,j,k,row;
   PetscInt       cstart = C->cmap->rstart;
   PetscInt       cdnz,conz,k0,k1,nextp;
   MPI_Comm       comm;
   PetscMPIInt    size;
+  PetscBool      freestruct;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  if (!ptap) {
+    SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
+  }
+  apa_sparse = ptap->apa;
 
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*-----------------------------------------------------*/
@@ -676,6 +698,16 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = PetscObjectOptionsBegin((PetscObject)C);CHKERRQ(ierr);
+  PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+  /* supporting struct ptap consumes almost same amount of memory as C=AP, release it if C will not be updated by A and P */
+  freestruct = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
+  if (freestruct) {
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -816,6 +848,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ptap->duplicate           = Cmpi->ops->duplicate;
   Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy        = MatDestroy_MPIAIJ_MatMatMult;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c       = (Mat_MPIAIJ*)Cmpi->data;

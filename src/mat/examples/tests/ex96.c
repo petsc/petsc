@@ -102,7 +102,7 @@ int main(int argc,char **argv)
 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  if (!rank) printf("A %d, %d\n",M,N);
+  /* if (!rank) printf("A %d, %d\n",M,N); */
 
   /* set val=one to A */
   if (size == 1) {
@@ -147,7 +147,7 @@ int main(int argc,char **argv)
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
-  if (!rank) printf("P %d, %d\n",M,N);
+  /* if (!rank) printf("P %d, %d\n",M,N); */
 
   /* Create vectors v1 and v2 that are compatible with A */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
@@ -171,6 +171,8 @@ int main(int argc,char **argv)
       ierr   = MatScale(A_tmp,alpha);CHKERRQ(ierr);
       ierr   = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
+    /* Free intermediate data structures created for reuse of C=Pt*A*P */
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
 
     /* Test MatDuplicate()        */
     /*----------------------------*/
@@ -281,7 +283,19 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+      args: -Mx 10 -My 5 -Mz 10
+      output_file: output/ex96_1.out
+
+   test:
+      suffix: nonscalable
       nsize: 3
       args: -Mx 10 -My 5 -Mz 10
+      output_file: output/ex96_1.out
+
+   test:
+      suffix: scalable
+      nsize: 3
+      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable
+      output_file: output/ex96_1.out
 
 TEST*/
