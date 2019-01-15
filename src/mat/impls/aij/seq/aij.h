@@ -59,7 +59,7 @@ typedef struct {
   PetscInt    *api,*apj;       /* symbolic structure of A*P */
   PetscScalar *apa;            /* temporary array for storing one row of A*P */
   PetscErrorCode (*destroy)(Mat);
-} Mat_PtAP;
+} Mat_AP;
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -121,7 +121,7 @@ typedef struct {
   ISColoring  coloring;                       /* set with MatADSetColoring() used by MatADSetValues() */
 
   PetscScalar         *matmult_abdense;    /* used by MatMatMult() */
-  Mat_PtAP            *ptap;               /* used by MatPtAP() */
+  Mat_AP              *ap;                 /* used by MatPtAP() */
   Mat_MatMatMatMult   *matmatmatmult;      /* used by MatMatMatMult() */
   Mat_RARt            *rart;               /* used by MatRARt() */
   Mat_MatMatTransMult *abt;                /* used by MatMatTransposeMult() */

@@ -71,15 +71,15 @@ PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,Pet
 PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJ     *a    = (Mat_SeqAIJ*)A->data;
-  Mat_PtAP       *ptap = a->ptap;
+  Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
+  Mat_AP         *ap = a->ap;
 
   PetscFunctionBegin;
-  ierr = PetscFree(ptap->apa);CHKERRQ(ierr);
-  ierr = PetscFree(ptap->api);CHKERRQ(ierr);
-  ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
-  ierr = (ptap->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscFree(ptap);CHKERRQ(ierr);
+  ierr = PetscFree(ap->apa);CHKERRQ(ierr);
+  ierr = PetscFree(ap->api);CHKERRQ(ierr);
+  ierr = PetscFree(ap->apj);CHKERRQ(ierr);
+  ierr = (ap->destroy)(A);CHKERRQ(ierr);
+  ierr = PetscFree(ap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

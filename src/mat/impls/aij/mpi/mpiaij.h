@@ -33,7 +33,7 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*view)(Mat,PetscViewer);
-} Mat_PtAPMPI;
+} Mat_APMPI;
 
 typedef struct {
   Mat A,B;                             /* local submatrices: A (diag part),
@@ -71,7 +71,7 @@ typedef struct {
   PetscInt *ld;                    /* number of entries per row left of diagona block */
 
   /* Used by MatMatMult() and MatPtAP() */
-  Mat_PtAPMPI *ptap;
+  Mat_APMPI *ap;
 
   /* used by MatMatMatMult() */
   Mat_MatMatMatMult *matmatmatmult;

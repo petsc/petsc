@@ -16,7 +16,7 @@ PetscErrorCode MatView_MPIAIJ_PtAP(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
-  Mat_PtAPMPI       *ptap=a->ptap;
+  Mat_APMPI         *ptap=a->ap;
   PetscBool         iascii;
   PetscViewerFormat format;
 
@@ -40,7 +40,7 @@ PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_PtAP(Mat A)
 {
   PetscErrorCode      ierr;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data;
-  Mat_PtAPMPI         *ptap=a->ptap;
+  Mat_APMPI           *ptap=a->ap;
   Mat_Merge_SeqsToMPI *merge=ptap->merge;
 
   PetscFunctionBegin;
@@ -84,7 +84,7 @@ PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_PtAP(Mat A)
   }
 
   A->ops->destroy = ptap->destroy;
-  ierr = PetscFree(a->ptap);CHKERRQ(ierr);
+  ierr = PetscFree(a->ap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -176,7 +176,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ        *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ        *ap,*p_loc,*p_oth,*c_seq;
-  Mat_PtAPMPI       *ptap = c->ptap;
+  Mat_APMPI         *ptap = c->ap;
   Mat               AP_loc,C_loc,C_oth;
   PetscInt          i,rstart,rend,cm,ncols,row,*api,*apj,am = A->rmap->n,apnz;
   PetscScalar       *apa;
@@ -296,7 +296,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
-  Mat_PtAPMPI         *ptap;
+  Mat_APMPI           *ptap;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c;
   MPI_Comm            comm;
   PetscMPIInt         size,rank;
@@ -334,7 +334,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,mtype);CHKERRQ(ierr);
 
-  /* create struct Mat_PtAPMPI and attached it to C later */
+  /* create struct Mat_APMPI and attached it to C later */
   ierr        = PetscNew(&ptap);CHKERRQ(ierr);
   ptap->reuse = MAT_INITIAL_MATRIX;
   ptap->algType = 0;
@@ -618,7 +618,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   /* attach the supporting struct to Cmpi for reuse */
   c = (Mat_MPIAIJ*)Cmpi->data;
-  c->ptap         = ptap;
+  c->ap           = ptap;
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
   ptap->view      = Cmpi->ops->view;
@@ -636,7 +636,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
-  Mat_PtAPMPI         *ptap;
+  Mat_APMPI           *ptap;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c;
   MPI_Comm            comm;
   PetscMPIInt         size,rank;
@@ -678,7 +678,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* Do dense axpy in MatPtAPNumeric_MPIAIJ_MPIAIJ() */
   Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ;
 
-  /* create struct Mat_PtAPMPI and attached it to C later */
+  /* create struct Mat_APMPI and attached it to C later */
   ierr        = PetscNew(&ptap);CHKERRQ(ierr);
   ptap->reuse = MAT_INITIAL_MATRIX;
   ptap->algType = 1;
@@ -961,7 +961,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* attach the supporting struct to Cmpi for reuse */
   c = (Mat_MPIAIJ*)Cmpi->data;
-  c->ptap         = ptap;
+  c->ap           = ptap;
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
   ptap->view      = Cmpi->ops->view;
@@ -982,7 +982,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ        *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ        *ap,*p_loc,*p_oth=NULL,*c_seq;
-  Mat_PtAPMPI       *ptap = c->ptap;
+  Mat_APMPI         *ptap = c->ap;
   Mat               AP_loc,C_loc,C_oth;
   PetscInt          i,rstart,rend,cm,ncols,row;
   PetscInt          *api,*apj,am = A->rmap->n,j,col,apnz;
