@@ -90,10 +90,11 @@ int main(int argc,char **argv)
     ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   }
 
-  /* test object attribute (re) writing */
+  /* test object attribute (re)writing */
   for (p=0; p<np; p++) {
     ierr = PetscViewerHDF5PushGroup(viewer, path[p]);CHKERRQ(ierr);
     for (s=0; s<ns; s++) {
+      has = PETSC_FALSE;
       if (vecs[s]) {ierr = PetscViewerHDF5HasObject(viewer, (PetscObject)vecs[s], &has);CHKERRQ(ierr);}
       if (!has) continue;
       a = 0;
