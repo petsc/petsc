@@ -1519,6 +1519,69 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatShift_SeqAIJ(Mat A,PetscScalar v)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  const PetscInt    *diag = (const PetscInt*)a->diag;
+  const PetscInt    *ii = (const PetscInt*) a->i;
+  PetscInt          i,*mdiag = NULL;
+  PetscErrorCode    ierr;
+  PetscInt          cnt = 0; /* how many diagonals are missing */
+
+  PetscFunctionBegin;
+  if (!A->preallocated || !a->nz) {
+    ierr = MatSeqAIJSetPreallocation(A,1,NULL);CHKERRQ(ierr);
+    ierr = MatShift_Basic(A,v);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  if (a->diagonaldense) {
+    cnt = 0;
+  } else {
+    ierr = PetscCalloc1(A->rmap->n,&mdiag);CHKERRQ(ierr);
+    for (i=0; i<A->rmap->n; i++) {
+      if (diag[i] >= ii[i+1]) {
+        cnt++;
+        mdiag[i] = 1;
+      }
+    }
+  }
+  if (!cnt) {
+    ierr = MatShift_Basic(A,v);CHKERRQ(ierr);
+  } else {
+    const PetscScalar *olda = a->a;  /* preserve pointers to current matrix nonzeros structure and values */
+    const PetscInt    *oldj = a->j, *oldi = a->i;
+    PetscBool         singlemalloc = a->singlemalloc,free_a = a->free_a,free_ij = a->free_ij;
+
+    a->a = NULL;
+    a->j = NULL;
+    a->i = NULL;
+    /* increase the values in imax for each row where a diagonal is being inserted then reallocate the matrix data structures */
+    for (i=0; i<A->rmap->n; i++) {
+      a->imax[i] += mdiag[i];
+    }
+    ierr = MatSeqAIJSetPreallocation_SeqAIJ(A,0,a->imax);CHKERRQ(ierr);
+
+    /* copy old values into new matrix data structure */
+    for (i=0; i<A->rmap->n; i++) {
+      ierr = MatSetValues(A,1,&i,a->imax[i] - mdiag[i],&oldj[oldi[i]],&olda[oldi[i]],ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(A,i,i,v,ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (singlemalloc) {
+      ierr = PetscFree3(olda,oldj,oldi);CHKERRQ(ierr);
+    } else {
+      if (free_a)  {ierr = PetscFree(olda);CHKERRQ(ierr);}
+      if (free_ij) {ierr = PetscFree(oldj);CHKERRQ(ierr);}
+      if (free_ij) {ierr = PetscFree(oldi);CHKERRQ(ierr);}
+    }
+  }
+  ierr = PetscFree(mdiag);CHKERRQ(ierr);
+  a->diagonaldense = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /*
      Checks for missing diagonals
 */
@@ -3186,19 +3249,6 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet coded");
   ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatShift_SeqAIJ(Mat Y,PetscScalar a)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)Y->data;
-
-  PetscFunctionBegin;
-  if (!Y->preallocated || !aij->nz) {
-    ierr = MatSeqAIJSetPreallocation(Y,1,NULL);CHKERRQ(ierr);
-  }
-  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
