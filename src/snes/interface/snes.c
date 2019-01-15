@@ -1944,7 +1944,7 @@ PetscErrorCode SNESGetUpdateNorm(SNES snes, PetscReal *ynorm)
 }
 
 /*@
-  SNESGetFunctionNorm - Gets the last computed norm of the solution
+  SNESGetSolutionNorm - Gets the last computed norm of the solution
 
   Not Collective
 
