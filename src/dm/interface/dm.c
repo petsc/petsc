@@ -4895,7 +4895,7 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
 
   Note:
   The points are vertices in the Hasse diagram encoding the topology. This is explained in
-  http://arxiv.org/abs/0908.4427. If not points exist of this dimension in the storage scheme,
+  http://arxiv.org/abs/0908.4427. If no points exist of this dimension in the storage scheme,
   then the interval is empty.
 
   Level: intermediate
@@ -5400,8 +5400,7 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
       ierr = PetscSectionGetDof(section, v, &dd);CHKERRQ(ierr);
       if (dd) {d = dd; break;}
     }
-    if (d < 0) d = PETSC_DEFAULT;
-    ierr = DMSetCoordinateDim(dm, d);CHKERRQ(ierr);
+    if (d >= 0) {ierr = DMSetCoordinateDim(dm, d);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
