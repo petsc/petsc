@@ -138,6 +138,7 @@ int main(int argc,char **argv)
   /* C = R*A*P */
   ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
 
   /* Test C == PtAP */
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP);CHKERRQ(ierr);
@@ -158,7 +159,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
 /*TEST
 
    test:
@@ -166,5 +166,12 @@ int main(int argc,char **argv)
    test:
       suffix: 2
       nsize: 2
+      args: -matmatmatmult_via scalable
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -matmatmatmult_via nonscalable
+      output_file: output/ex111_1.out
 
 TEST*/

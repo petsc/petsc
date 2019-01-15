@@ -1485,6 +1485,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
+
   *C                     = Cmpi;
   PetscFunctionReturn(0);
 }
@@ -1499,8 +1501,15 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   PetscInt          i,rstart,rend,cm,ncols,row;
   const PetscInt    *cols;
   const PetscScalar *vals;
+  PetscBool         freestruct;
 
   PetscFunctionBegin;
+  if (!ptap) {
+    MPI_Comm comm;
+    ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
+    SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
+  }
+
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
 
   if (ptap->reuse == MAT_REUSE_MATRIX) {
@@ -1552,6 +1561,16 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ptap->reuse = MAT_REUSE_MATRIX;
+
+  ierr = PetscObjectOptionsBegin((PetscObject)C);CHKERRQ(ierr);
+  PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+  /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
+  freestruct = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
+  if (freestruct) {
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1577,6 +1596,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   PetscInt            *ai,*aj,*coi,*coj,*poJ,*pdJ;
   Mat                 A_loc;
   Mat_SeqAIJ          *a_loc;
+  PetscBool           freestruct;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
@@ -1584,6 +1604,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ptap  = c->ap;
+  if (!ptap) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
   merge = ptap->merge;
 
   /* 2) compute numeric C_seq = P_loc^T*A_loc */
@@ -1713,6 +1734,16 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   ierr = PetscFree(abuf_r[0]);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
+
+  ierr = PetscObjectOptionsBegin((PetscObject)C);CHKERRQ(ierr);
+  PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+  /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
+  freestruct = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
+  if (freestruct) {
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2059,6 +2090,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
 
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)
