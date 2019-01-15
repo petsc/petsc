@@ -118,20 +118,27 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   }
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   /* Create a user managed depth label, so that we can leave out edges */
-  if (!rank) {
-    DMLabel  label;
-    PetscInt i;
+  {
+    DMLabel label;
+    PetscInt numValues, maxValues = 0, v;
 
     ierr = DMCreateLabel(dm, "depth");CHKERRQ(ierr);
     ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
-    for (i = 0; i < 25; ++i) {
-      if (i < 2)       {ierr = DMLabelSetValue(label, i, 3);CHKERRQ(ierr);}
-      else if (i < 13) {ierr = DMLabelSetValue(label, i, 2);CHKERRQ(ierr);}
-      else             {
-        if (i==13) {ierr = DMLabelAddStratum(label, 1);CHKERRQ(ierr);}
-        ierr = DMLabelSetValue(label, i, 0);CHKERRQ(ierr);
+    if (!rank) {
+      PetscInt i;
+
+      for (i = 0; i < 25; ++i) {
+        if (i < 2)       {ierr = DMLabelSetValue(label, i, 3);CHKERRQ(ierr);}
+        else if (i < 13) {ierr = DMLabelSetValue(label, i, 2);CHKERRQ(ierr);}
+        else             {
+          if (i==13) {ierr = DMLabelAddStratum(label, 1);CHKERRQ(ierr);}
+          ierr = DMLabelSetValue(label, i, 0);CHKERRQ(ierr);
+        }
       }
     }
+    ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+    for (v = numValues; v < maxValues; ++v) {ierr = DMLabelAddStratum(label,v);CHKERRQ(ierr);}
   }
   ierr = DMPlexDistribute(dm, 1, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
