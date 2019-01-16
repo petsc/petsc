@@ -172,6 +172,7 @@ int main(int argc,char **args)
   PetscInt               nel,nen;        /* Number of elements & element nodes */
   const PetscInt         *e_loc;         /* Local indices of element nodes (in local element order) */
   PetscInt               *e_glo = NULL;  /* Global indices of element nodes (in local element order) */
+  PetscInt               nodes[3];
   PetscBool              ismatis;
 #if defined(PETSC_USE_LOG)
   PetscLogStage          stages[2];
@@ -180,25 +181,26 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD,&user);CHKERRQ(ierr);
+  for (i=0; i<3; i++) nodes[i] = user.cells[i] + !user.per[i];
   switch (user.dim) {
   case 3:
     ierr = DMDACreate3d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
                                          user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
                                          user.per[2] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
-                                         DMDA_STENCIL_BOX,user.cells[0]+1,user.cells[1]+1,user.cells[2]+1,
+                                         DMDA_STENCIL_BOX,nodes[0],nodes[1],nodes[2],
                                          PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,user.dof,
                                          1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
     break;
   case 2:
     ierr = DMDACreate2d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
                                          user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
-                                         DMDA_STENCIL_BOX,user.cells[0]+1,user.cells[1]+1,
+                                         DMDA_STENCIL_BOX,nodes[0],nodes[1],
                                          PETSC_DECIDE,PETSC_DECIDE,user.dof,
                                          1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
     break;
   case 1:
     ierr = DMDACreate1d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
-                                         user.cells[0]+1,user.dof,1,PETSC_NULL,&da);CHKERRQ(ierr);
+                        nodes[0],user.dof,1,PETSC_NULL,&da);CHKERRQ(ierr);
     break;
   default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
   }
@@ -215,11 +217,11 @@ int main(int argc,char **args)
     ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     switch (user.dim) {
     case 3:
-      user.cells[2] = P-1;
+      user.cells[2] = P - !user.per[2];
     case 2:
-      user.cells[1] = N-1;
+      user.cells[1] = N - !user.per[1];
     case 1:
-      user.cells[0] = M-1;
+      user.cells[0] = M - !user.per[0];
       break;
     default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
     }
