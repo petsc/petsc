@@ -83,6 +83,7 @@ typedef struct {
   PetscBool    per[3];
   PetscBool    test;
   PetscScalar *elemMat;
+  PetscBool    use_composite_pc;
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -104,6 +105,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->per[0]    = PETSC_FALSE;
   options->per[1]    = PETSC_FALSE;
   options->per[2]    = PETSC_FALSE;
+  options->use_composite_pc = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm,NULL,"Problem Options",NULL);CHKERRQ(ierr);
   pde  = options->pde;
@@ -115,6 +117,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-use_global","Test MatSetValues",__FILE__,options->useglobal,&options->useglobal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dirichlet","Use dirichlet BC",__FILE__,options->dirbc,&options->dirbc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_assembly","Test MATIS assembly",__FILE__,options->test,&options->test,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_composite_pc","Multiplicative composite with BDDC + Richardson/Jacobi",__FILE__,options->use_composite_pc,&options->use_composite_pc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   for (n=options->dim;n<3;n++) options->cells[n] = 0;
@@ -385,7 +388,24 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCBDDC);CHKERRQ(ierr);
+  if (user.use_composite_pc) {
+    PC pcksp,pcjacobi;
+    KSP ksprich;
+    ierr = PCSetType(pc,PCCOMPOSITE);CHKERRQ(ierr);
+    ierr = PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
+    ierr = PCCompositeAddPC(pc,PCBDDC);CHKERRQ(ierr);
+    ierr = PCCompositeAddPC(pc,PCKSP);CHKERRQ(ierr);
+    ierr = PCCompositeGetPC(pc,1,&pcksp);CHKERRQ(ierr);
+    ierr = PCKSPGetKSP(pcksp,&ksprich);CHKERRQ(ierr);
+    ierr = KSPSetType(ksprich,KSPRICHARDSON);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksprich,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
+    ierr = KSPSetNormType(ksprich,KSP_NORM_NONE);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksprich,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksprich,&pcjacobi);CHKERRQ(ierr);
+    ierr = PCSetType(pcjacobi,PCJACOBI);CHKERRQ(ierr);
+  } else {
+    ierr = PCSetType(pc,PCBDDC);CHKERRQ(ierr);
+  }
   /* ierr = PCBDDCSetDirichletBoundaries(pc,zero);CHKERRQ(ierr); */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
