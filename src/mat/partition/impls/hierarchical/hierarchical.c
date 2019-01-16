@@ -12,9 +12,9 @@
   of several small subdomains.
 */
 
-PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination);
-PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destination,Mat *sadj, ISLocalToGlobalMapping *mapping);
-PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts);
+PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning,IS,PetscInt,PetscInt,IS*);
+PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat,IS,IS,IS*,Mat*,ISLocalToGlobalMapping*);
+PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat,IS,ISLocalToGlobalMapping,IS*);
 
 typedef struct {
   char*                fineparttype; /* partitioner on fine level */
@@ -43,7 +43,9 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   PetscInt                     *coarse_vertex_weights = 0;
   PetscMPIInt                   size,rank;
   MPI_Comm                      comm,scomm;
-  IS                            destination,fineparts_temp;
+  IS                            destination,fineparts_temp, vweights, svweights;
+  PetscInt                      nsvwegihts,*fp_vweights;
+  const PetscInt                *svweights_indices;
   ISLocalToGlobalMapping        mapping;
   PetscErrorCode                ierr;
 
@@ -117,20 +119,33 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   }
 
   ierr = MatPartitioningSetPartitionWeights(coarsePart, part_weights);CHKERRQ(ierr);
-
-  /* It looks nontrivial to support part weights,
-   * I will return back to implement it when have
-   * an idea.
-   *  */
   ierr = MatPartitioningApply(coarsePart,&hpart->coarseparts);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&coarsePart);CHKERRQ(ierr);
 
   ierr = PetscCalloc1(mat_localsize, &fineparts_indices_tmp);CHKERRQ(ierr);
 
+  /* Wrap the original vertex weights into an index set so that we can extract the corresponding
+   * vertex weights for each big subdomain using ISCreateSubIS().
+   * */
+  if (part->vertex_weights) {
+    ierr = ISCreateGeneral(comm,mat_localsize,part->vertex_weights,PETSC_COPY_VALUES,&vweights);CHKERRQ(ierr);
+  }
+
   for(i=0; i<hpart->ncoarseparts; i+=size){
+    /* Determine where we want to send big subdomains */
     ierr = MatPartitioningHierarchical_DetermineDestination(part,hpart->coarseparts,i,i+size,&destination);CHKERRQ(ierr);
-    /* assemble a submatrix for partitioning subdomains  */
-    ierr = MatPartitioningHierarchical_AssembleSubdomain(adj,destination,&sadj,&mapping);CHKERRQ(ierr);
+    /* Assemble a submatrix and its vertex weights for partitioning subdomains  */
+    ierr = MatPartitioningHierarchical_AssembleSubdomain(adj,part->vertex_weights? vweights:NULL,destination,part->vertex_weights? &svweights:NULL,&sadj,&mapping);CHKERRQ(ierr);
+    /* We have to create a new array to hold vertex weights since coarse partitioner needs to own the vertex-weights array */
+    if (part->vertex_weights) {
+      ierr = ISGetLocalSize(svweights,&nsvwegihts);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nsvwegihts,&fp_vweights);CHKERRQ(ierr);
+      ierr = ISGetIndices(svweights,&svweights_indices);CHKERRQ(ierr);
+      ierr = PetscMemcpy(fp_vweights,svweights_indices,nsvwegihts*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = ISRestoreIndices(svweights,&svweights_indices);CHKERRQ(ierr);
+      ierr = ISDestroy(&svweights);CHKERRQ(ierr);
+    }
+
     ierr = ISDestroy(&destination);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)sadj,&scomm);CHKERRQ(ierr);
     /* create a fine partitioner */
@@ -153,11 +168,14 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     }
     ierr = MatPartitioningSetAdjacency(finePart,sadj);CHKERRQ(ierr);
     ierr = MatPartitioningSetNParts(finePart, offsets[rank+1+i]-offsets[rank+i]);CHKERRQ(ierr);
+    if (part->vertex_weights) {
+      ierr = MatPartitioningSetVertexWeights(finePart,fp_vweights);CHKERRQ(ierr);
+    }
     ierr = MatPartitioningApply(finePart,&fineparts_temp);CHKERRQ(ierr);
     ierr = MatDestroy(&sadj);CHKERRQ(ierr);
     ierr = MatPartitioningDestroy(&finePart);CHKERRQ(ierr);
+    /* Send partition back to the original owners */
     ierr = MatPartitioningHierarchical_ReassembleFineparts(adj,fineparts_temp,mapping,&hpart->fineparts);CHKERRQ(ierr);
-
     ierr = ISGetIndices(hpart->fineparts,&fineparts_indices);CHKERRQ(ierr);
     for (j=0;j<mat_localsize;j++)
       if (fineparts_indices[j] >=0) fineparts_indices_tmp[j] = fineparts_indices[j];
@@ -168,10 +186,15 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
   }
 
+  if (part->vertex_weights) {
+    ierr = ISDestroy(&vweights);CHKERRQ(ierr);
+  }
+
   ierr = ISCreateGeneral(comm,mat_localsize,fineparts_indices_tmp,PETSC_OWN_POINTER,&hpart->fineparts);CHKERRQ(ierr);
   ierr = ISGetIndices(hpart->fineparts,&fineparts_indices);CHKERRQ(ierr);
   ierr = ISGetIndices(hpart->coarseparts,&coarseparts_indices);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs*adj->rmap->n,&parts_indices);CHKERRQ(ierr);
+  /* Modify the local indices to the global indices by combing the coarse partition and the fine partitions */
   for(i=0; i<adj->rmap->n; i++){
     for(j=0; j<bs; j++){
       parts_indices[bs*i+j] = fineparts_indices[i]+offsets[coarseparts_indices[i]];
@@ -243,7 +266,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
 }
 
 
-PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destination,Mat *sadj, ISLocalToGlobalMapping *mapping)
+PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS vweights, IS destination,IS *svweights,Mat *sadj,ISLocalToGlobalMapping *mapping)
 {
   IS              irows,icols;
   PetscInt        irows_ln;
@@ -263,6 +286,9 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = ISLocalToGlobalMappingCreate(comm,1,irows_ln,irows_indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
   ierr = MatCreateSubMatrices(adj,1,&irows,&icols,MAT_INITIAL_MATRIX,&sadj);CHKERRQ(ierr);
+  if (vweights && svweights) {
+    ierr = ISCreateSubIS(vweights,irows,svweights);CHKERRQ(ierr);
+  }
   ierr = ISDestroy(&irows);CHKERRQ(ierr);
   ierr = ISDestroy(&icols);CHKERRQ(ierr);
   PetscFunctionReturn(0);

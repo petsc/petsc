@@ -11,31 +11,31 @@
 10 TS dt 0.0134319 time 0.0890911
 11 TS dt 0.0134682 time 0.102523
 12 TS dt 0.0134977 time 0.115991
-13 TS dt 0.0135237 time 0.129489
-14 TS dt 0.00490871 time 0.133782
-15 TS dt 0.010074 time 0.138691
-16 TS dt 0.0135707 time 0.148765
-17 TS dt 0.013607 time 0.162336
-18 TS dt 0.00443555 time 0.165994
-19 TS dt 0.00853853 time 0.17043
-20 TS dt 0.0135363 time 0.178968
-21 TS dt 0.0136954 time 0.192504
-22 TS dt 0.00535735 time 0.197245
-23 TS dt 0.0108939 time 0.202602
-24 TS dt 0.0137448 time 0.213496
-25 TS dt 0.0137631 time 0.227241
-26 TS dt 0.00362895 time 0.229783
-27 TS dt 0.00578029 time 0.233412
-28 TS dt 0.0111986 time 0.239193
-29 TS dt 0.013832 time 0.250391
-30 TS dt 0.013781 time 0.264223
-31 TS dt 0.00305704 time 0.26618
-32 TS dt 0.0043779 time 0.269237
-33 TS dt 0.0076831 time 0.273615
-34 TS dt 0.0135611 time 0.281298
-35 TS dt 0.0139794 time 0.29486
-36 TS dt 0.00580298 time 0.299731
-37 TS dt 0.0115935 time 0.305534
+13 TS dt 0.0135234 time 0.129489
+14 TS dt 0.00490209 time 0.133765
+15 TS dt 0.010054 time 0.138667
+16 TS dt 0.0135705 time 0.148721
+17 TS dt 0.0136072 time 0.162291
+18 TS dt 0.0044453 time 0.165928
+19 TS dt 0.00854231 time 0.170374
+20 TS dt 0.0135388 time 0.178916
+21 TS dt 0.0136941 time 0.192455
+22 TS dt 0.00534212 time 0.197115
+23 TS dt 0.0109289 time 0.202458
+24 TS dt 0.0137448 time 0.213386
+25 TS dt 0.013759 time 0.227131
+26 TS dt 0.00363987 time 0.229661
+27 TS dt 0.00579118 time 0.233301
+28 TS dt 0.011225 time 0.239092
+29 TS dt 0.0138304 time 0.250317
+30 TS dt 0.0137685 time 0.264148
+31 TS dt 0.00304461 time 0.266083
+32 TS dt 0.00434287 time 0.269128
+33 TS dt 0.00758785 time 0.273471
+34 TS dt 0.0135107 time 0.281059
+35 TS dt 0.0139798 time 0.294569
+36 TS dt 0.00591528 time 0.299561
+37 TS dt 0.0116405 time 0.305476
 TS Object: 1 MPI processes
   type: arkimex
     ARK IMEX 3
@@ -130,7 +130,7 @@ TS Object: 1 MPI processes
               left preconditioning
               using PRECONDITIONED norm type for convergence test
             estimating eigenvalues using noisy right hand side
-          maximum iterations=2, nonzero initial guess
+          maximum iterations=3, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
@@ -160,7 +160,7 @@ TS Object: 1 MPI processes
               left preconditioning
               using PRECONDITIONED norm type for convergence test
             estimating eigenvalues using noisy right hand side
-          maximum iterations=2, nonzero initial guess
+          maximum iterations=3, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test

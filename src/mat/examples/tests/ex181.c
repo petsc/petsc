@@ -5,7 +5,7 @@ static char help[] = "Tests MatCreateSubmatrix() with entire matrix, modified fr
 
 int main(int argc,char **args)
 {
-  Mat            C,A;
+  Mat            C,A,Adup;
   PetscInt       i,j,m = 3,n = 2,rstart,rend;
   PetscMPIInt    size,rank;
   PetscErrorCode ierr;
@@ -45,7 +45,7 @@ int main(int argc,char **args)
      Generate a new matrix consisting every row and column of the original matrix
   */
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
- 
+
   /* Create parallel IS with the rows we want on THIS processor */
   if (detect_bug && !rank) {
     ierr = ISCreateStride(PETSC_COMM_WORLD,1,rstart,1,&isrow);CHKERRQ(ierr);
@@ -61,12 +61,16 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = MatCreateSubMatrix(C,isrow,NULL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
+  /* Test MatDuplicate */
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&Adup);CHKERRQ(ierr);
+  ierr = MatDestroy(&Adup);CHKERRQ(ierr);
+
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);

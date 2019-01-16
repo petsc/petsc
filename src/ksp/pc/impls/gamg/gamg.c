@@ -1346,6 +1346,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc->ops->destroy        = PCDestroy_GAMG;
   mg->view                = PCView_GAMG;
 
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGetLevels_C",PCMGGetLevels_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetLevels_C",PCMGSetLevels_MG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetProcEqLim_C",PCGAMGSetProcEqLim_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCoarseEqLim_C",PCGAMGSetCoarseEqLim_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetRepartition_C",PCGAMGSetRepartition_GAMG);CHKERRQ(ierr);

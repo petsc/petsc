@@ -8,7 +8,6 @@
 !   Concepts: KSP^basic parallel example
 !   Concepts: PC^setting a user-defined shell preconditioner
 !   Processors: n
-!!   TODO: Need to determine if deprecated
 !T*/
 
 

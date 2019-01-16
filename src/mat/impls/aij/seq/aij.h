@@ -370,6 +370,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqMat_SeqAIJ(Mat,IS,IS,MatStructure,Mat);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt*);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_Dummy(Mat);
+PETSC_INTERN PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt, Mat*[]);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReuse,Mat*);
 
 /*

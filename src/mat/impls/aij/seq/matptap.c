@@ -56,15 +56,21 @@ PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,Pet
       break;
 #if defined(PETSC_HAVE_HYPRE)
     case 2:
+      ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A,P,fill,C);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
 #endif
     default:
+      ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
     }
   }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

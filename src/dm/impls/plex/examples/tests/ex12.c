@@ -3,12 +3,33 @@ static char help[] = "Partition a mesh in parallel, perhaps with overlap\n\n";
 #include <petscdmplex.h>
 #include <petscsf.h>
 
+/* Sample usage:
+
+Load a file in serial and distribute it on 24 processes:
+
+  make -f ./gmakefile test globsearch="dm_impls_plex_tests-ex12_0" EXTRA_OPTIONS="-filename $PETSC_DIR/share/petsc/datafiles/meshes/squaremotor-30.exo -orig_dm_view -dm_view" NP=24
+
+Load a file in serial and distribute it on 24 processes using a custom partitioner:
+
+  make -f ./gmakefile test globsearch="dm_impls_plex_tests-ex12_0" EXTRA_OPTIONS="-filename $PETSC_DIR/share/petsc/datafiles/meshes/cylinder.med -petscpartitioner_type simple -orig_dm_view -dm_view" NP=24
+
+Load a file in serial, distribute it, and then redistribute it on 24 processes using two different partitioners:
+
+  make -f ./gmakefile test globsearch="dm_impls_plex_tests-ex12_0" EXTRA_OPTIONS="-filename $PETSC_DIR/share/petsc/datafiles/meshes/squaremotor-30.exo -petscpartitioner_type simple -load_balance -lb_petscpartitioner_type parmetis -orig_dm_view -dm_view" NP=24
+
+Load a file in serial, distribute it randomly, refine it in parallel, and then redistribute it on 24 processes using two different partitioners, and view to VTK:
+
+  make -f ./gmakefile test globsearch="dm_impls_plex_tests-ex12_0" EXTRA_OPTIONS="-filename $PETSC_DIR/share/petsc/datafiles/meshes/squaremotor-30.exo -petscpartitioner_type shell -petscpartitioner_shell_random -dm_refine 1 -load_balance -lb_petscpartitioner_type parmetis -prelb_dm_view vtk:$PWD/prelb.vtk -dm_view vtk:$PWD/balance.vtk -dm_partition_view" NP=24
+
+*/
+
 enum {STAGE_LOAD, STAGE_DISTRIBUTE, STAGE_REFINE, STAGE_REDISTRIBUTE};
 
 typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;                          /* The topological mesh dimension */
   PetscBool cellSimplex;                  /* Use simplices or hexes */
+  PetscInt  cells[3];                     /* The initial domain division */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscInt  overlap;                      /* The cell overlap to use during partitioning */
   PetscBool testPartition;                /* Use a fixed partitioning for testing */
@@ -20,11 +41,15 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
+  PetscInt       n;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options->dim              = 2;
   options->cellSimplex      = PETSC_TRUE;
+  options->cells[0]         = 2;
+  options->cells[1]         = 2;
+  options->cells[2]         = 2;
   options->filename[0]      = '\0';
   options->overlap          = 0;
   options->testPartition    = PETSC_FALSE;
@@ -35,6 +60,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex12.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  n = 3;
+  ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex12.c", options->cells, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex12.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
@@ -52,7 +79,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DM             distMesh        = NULL;
+  DM             pdm             = NULL;
   PetscInt       dim             = user->dim;
   PetscBool      cellSimplex     = user->cellSimplex;
   const char    *filename        = user->filename;
@@ -77,16 +104,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
   if (len) {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else     {ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  else     {ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
-  ierr = DMPlexSetPartitionBalance(*dm, user->partitionBalance);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
   if (!user->testRedundant) {
+    PetscPartitioner part;
+
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+    ierr = DMPlexSetPartitionBalance(*dm, user->partitionBalance);CHKERRQ(ierr);
     if (user->testPartition) {
-      const PetscInt  *sizes = NULL;
-      const PetscInt  *points = NULL;
-      PetscPartitioner part;
+      const PetscInt *sizes = NULL;
+      const PetscInt *points = NULL;
 
       if (!rank) {
         if (dim == 2 && cellSimplex && size == 2) {
@@ -101,15 +131,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           sizes = quadSizes; points = quadPoints;
         }
       }
-      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     }
-    ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, overlap, NULL, &pdm);CHKERRQ(ierr);
   } else {
     PetscSF sf;
 
-    ierr = DMPlexGetRedundantDM(*dm, &sf, &distMesh);CHKERRQ(ierr);
+    ierr = DMPlexGetRedundantDM(*dm, &sf, &pdm);CHKERRQ(ierr);
     if (sf) {
       DM test;
 
@@ -121,30 +150,34 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   }
-  if (distMesh) {
+  if (pdm) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = distMesh;
+    *dm  = pdm;
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   if (user->loadBalance) {
+    PetscPartitioner part;
+
     ierr = DMViewFromOptions(*dm, NULL, "-prelb_dm_view");CHKERRQ(ierr);
     ierr = DMPlexSetOptionsPrefix(*dm, "lb_");CHKERRQ(ierr);
     ierr = PetscLogStagePush(user->stages[STAGE_REDISTRIBUTE]);CHKERRQ(ierr);
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) part, "lb_");CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     if (user->testPartition) {
-      PetscPartitioner part;
       PetscInt         reSizes_n2[2]  = {2, 2};
       PetscInt         rePoints_n2[4] = {2, 3, 0, 1};
       if (rank) {rePoints_n2[0] = 1; rePoints_n2[1] = 2, rePoints_n2[2] = 0, rePoints_n2[3] = 3;}
 
-      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
     }
     ierr = DMPlexSetPartitionBalance(*dm, user->partitionBalance);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
-    if (distMesh) {
+    ierr = DMPlexDistribute(*dm, overlap, NULL, &pdm);CHKERRQ(ierr);
+    if (pdm) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distMesh;
+      *dm  = pdm;
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
@@ -220,6 +253,11 @@ int main(int argc, char **argv)
     requires: triangle
     nsize: 2
     args: -test_redundant -redundant_migrated_dm_view ascii::ascii_info_detail -dm_view ascii::ascii_info_detail
+  test:
+    suffix: lb_0
+    requires: parmetis
+    nsize: 4
+    args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view
 
   # Same tests as above, but with balancing of the shared point partition
   test:
@@ -270,4 +308,9 @@ int main(int argc, char **argv)
     requires: triangle
     nsize: 2
     args: -test_redundant -dm_view ascii::ascii_info_detail -partition_balance
+  test:
+    suffix: lb_1
+    requires: parmetis
+    nsize: 4
+    args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -partition_balance
 TEST*/

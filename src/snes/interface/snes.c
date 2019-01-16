@@ -559,7 +559,6 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
 {
   SNES           snes = (SNES)ctx;
   PetscErrorCode ierr;
-  Mat            Asave = A,Bsave = B;
   Vec            X,Xnamed = NULL;
   DM             dmsave;
   void           *ctxsave;
@@ -578,17 +577,23 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
       ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     }
   }
-  /* put the previous context back */
+  /* Make sure KSP DM has the Jacobian computation routine */
+  {
+    DMSNES sdm;
 
+    ierr = DMGetDMSNES(snes->dm, &sdm);CHKERRQ(ierr);
+    if (!sdm->ops->computejacobian) {
+      ierr = DMCopyDMSNES(dmsave, snes->dm);CHKERRQ(ierr);
+    }
+  }
+  /* Compute the operators */
   ierr = SNESComputeJacobian(snes,X,A,B);CHKERRQ(ierr);
+  /* Put the previous context back */
   if (snes->dm != dmsave && jac == SNESComputeJacobianDefaultColor) {
     ierr = SNESSetJacobian(snes,NULL,NULL,jac,ctxsave);CHKERRQ(ierr);
   }
 
-  if (A != Asave || B != Bsave) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"No support for changing matrices at this time");
-  if (Xnamed) {
-    ierr = DMRestoreNamedGlobalVector(snes->dm,"SNESVecSol",&Xnamed);CHKERRQ(ierr);
-  }
+  if (Xnamed) {ierr = DMRestoreNamedGlobalVector(snes->dm,"SNESVecSol",&Xnamed);CHKERRQ(ierr);}
   snes->dm = dmsave;
   PetscFunctionReturn(0);
 }

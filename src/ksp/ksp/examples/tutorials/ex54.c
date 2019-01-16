@@ -224,7 +224,7 @@ int main(int argc,char **args)
       suffix: seqaijmkl
       nsize: 4
       requires: mkl_sparse
-      args: -ne 19 -alpha 1.e-3 -pc_type gamg -pc_gamg_agg_nsmooths 1 -ksp_monitor -ksp_converged_reason -ksp_type cg -mat_seqaij_type seqaijmkl
+      args: -ne 19 -alpha 1.e-3 -pc_type gamg -pc_gamg_agg_nsmooths 1  -mg_levels_ksp_max_it 3 -ksp_monitor -ksp_converged_reason -ksp_type cg -mat_seqaij_type seqaijmkl
 
    test:
       suffix: Classical
@@ -234,7 +234,7 @@ int main(int argc,char **args)
    test:
       suffix: geo
       nsize: 4
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_levels_esteig_ksp_type cg
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_levels_esteig_ksp_type cg  -mg_levels_ksp_max_it 3
       requires: triangle
       output_file: output/ex54_0.out
 

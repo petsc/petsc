@@ -2597,13 +2597,10 @@ PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, Pe
 @*/
 PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection *subs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s,PETSC_SECTION_CLASSID,1);
   PetscValidPointer(subs,3);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
-  ierr = PetscObjectReference((PetscObject) s->field[field]);CHKERRQ(ierr);
   *subs = s->field[field];
   PetscFunctionReturn(0);
 }

@@ -1247,6 +1247,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (mat->preallocated) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix has already been preallocated");
   mat->preallocated = PETSC_TRUE;
   /* Note:  For now, when data is specified above, this assumes the user correctly
    allocates the local dense storage space.  We should add error checking. */
@@ -1573,7 +1574,6 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   ierr    = MatSetSizes(mat,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr    = MatSetType(mat,((PetscObject)A)->type_name);CHKERRQ(ierr);
   a       = (Mat_MPIDense*)mat->data;
-  ierr    = PetscMemcpy(mat->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   mat->factortype   = A->factortype;
   mat->assembled    = PETSC_TRUE;
@@ -1614,7 +1614,7 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
   n = (newmat->cmap->n < 0) ? PETSC_DECIDE : newmat->cmap->n;
 
   ierr = MatSetSizes(newmat,m,n,M,N);CHKERRQ(ierr);
-  if (!a->A || !((Mat_SeqDense*)(a->A->data))->user_alloc) {
+  if (!a->A) {
     ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   }
   ierr = MatDenseGetArray(newmat,&array);CHKERRQ(ierr);
@@ -1789,7 +1789,7 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
 
   ierr = MatSetSizes(newmat,m,n,M,N);CHKERRQ(ierr);
   a = (Mat_MPIDense*)newmat->data;
-  if (!a->A || !((Mat_SeqDense*)(a->A->data))->user_alloc) {
+  if (!a->A) {
     ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   }
 
