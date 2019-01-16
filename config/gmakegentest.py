@@ -80,8 +80,8 @@ class generateExamples(Petsc):
     gmakegen.py has basic structure for finding the files, writing out
       the dependencies, etc.
   """
-  def __init__(self,petsc_dir=None, petsc_arch=None, pkg_pkgs=None, testdir='tests', verbose=False, single_ex=False, srcdir=None):
-    super(generateExamples, self).__init__(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_pkgs=pkg_pkgs, verbose=verbose)
+  def __init__(self,petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None, pkg_name=None, pkg_pkgs=None, testdir='tests', verbose=False, single_ex=False, srcdir=None):
+    super(generateExamples, self).__init__(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_arch=pkg_arch, pkg_name=pkg_name, pkg_pkgs=pkg_pkgs, verbose=verbose)
 
     self.single_ex=single_ex
     self.srcdir=srcdir
@@ -752,18 +752,30 @@ class generateExamples(Petsc):
         # Rest should be packages that we can just get from conf
         if requirement == "complex":
           petscconfvar="PETSC_USE_COMPLEX"
+          pkgconfvar="PETSC_USE_COMPLEX"
         else:
           petscconfvar="PETSC_HAVE_"+requirement.upper()
-        if self.conf.get(petscconfvar):
+          pkgconfvar=self.pkg_name.upper()+'_HAVE_'+requirement.upper()
+        petsccv = self.conf.get(petscconfvar)
+        pkgcv = self.conf.get(pkgconfvar)
+
+        if petsccv or pkgcv:
           if isNull:
-            testDict['SKIP'].append("Not "+petscconfvar+" requirement not met")
-            continue
+            if petsccv:
+              testDict['SKIP'].append("Not "+petscconfvar+" requirement not met")
+              continue
+            else:
+              testDict['SKIP'].append("Not "+pkgconfvar+" requirement not met")
+              continue
           continue  # Success
         elif not isNull:
-          if debug: print("requirement not found: ", requirement)
-          testDict['SKIP'].append(petscconfvar+" requirement not met")
-          continue
-
+          if not petsccv and not pkgcv:
+            if debug: print("requirement not found: ", requirement)
+            if self.pkg_name == 'petsc':
+              testDict['SKIP'].append(petscconfvar+" requirement not met")
+            else:
+              testDict['SKIP'].append(petscconfvar+" or "+pkgconfvar+" requirement not met")
+            continue
     return testDict['SKIP'] == []
 
   def genPetscTests_summarize(self,dataDict):
@@ -957,7 +969,7 @@ class generateExamples(Petsc):
     fd.close()
     return
 
-def main(petsc_dir=None, petsc_arch=None, pkg_pkgs=None, verbose=False, single_ex=False, srcdir=None, testdir=None):
+def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None, pkg_name=None, pkg_pkgs=None, verbose=False, single_ex=False, srcdir=None, testdir=None):
     # Allow petsc_arch to have both petsc_dir and petsc_arch for convenience
     testdir=os.path.normpath(testdir)
     if petsc_arch:
@@ -967,7 +979,7 @@ def main(petsc_dir=None, petsc_arch=None, pkg_pkgs=None, verbose=False, single_e
     output = os.path.join(testdir, 'testfiles')
 
     pEx=generateExamples(petsc_dir=petsc_dir, petsc_arch=petsc_arch,
-                         pkg_pkgs=pkg_pkgs,
+                         pkg_dir=pkg_dir, pkg_arch=pkg_arch, pkg_name=pkg_name, pkg_pkgs=pkg_pkgs,
                          verbose=verbose, single_ex=single_ex, srcdir=srcdir,
                          testdir=testdir)
     dataDict=pEx.walktree(os.path.join(pEx.srcdir))
@@ -982,6 +994,9 @@ if __name__ == '__main__':
     parser.add_option('--srcdir', help='Set location of sources different from PETSC_DIR/src', default=None)
     parser.add_option('-s', '--single_executable', dest='single_executable', action="store_false", help='Whether there should be single executable per src subdir.  Default is false')
     parser.add_option('-t', '--testdir', dest='testdir',  help='Test directory [$PETSC_ARCH/tests]')
+    parser.add_option('--pkg-dir', help='Set the directory of the package (different from PETSc) you want to generate the makefile rules for', default=None)
+    parser.add_option('--pkg-name', help='Set the name of the package you want to generate the makefile rules for', default=None)
+    parser.add_option('--pkg-arch', help='Set the package arch name you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-pkgs', help='Set the package folders (comma separated list, different from the usual sys,vec,mat etc) you want to generate the makefile rules for', default=None)
 
     opts, extra_args = parser.parse_args()
@@ -993,7 +1008,7 @@ if __name__ == '__main__':
       opts.testdir = os.path.join(opts.petsc_arch, 'tests')
 
     main(petsc_dir=opts.petsc_dir, petsc_arch=opts.petsc_arch,
-         pkg_pkgs=opts.pkg_pkgs,
+         pkg_dir=opts.pkg_dir,pkg_arch=opts.pkg_arch,pkg_name=opts.pkg_name,pkg_pkgs=opts.pkg_pkgs,
          verbose=opts.verbose,
          single_ex=opts.single_executable, srcdir=opts.srcdir,
          testdir=opts.testdir)
