@@ -36,7 +36,7 @@ PetscErrorCode MatView_MPIAIJ_PtAP(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_PtAP(Mat A)
+PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat A)
 {
   PetscErrorCode      ierr;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data;
@@ -628,7 +628,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
-  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
   *C                     = Cmpi;
   PetscFunctionReturn(0);
 }
@@ -971,7 +971,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
-  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
   *C                     = Cmpi;
   PetscFunctionReturn(0);
 }

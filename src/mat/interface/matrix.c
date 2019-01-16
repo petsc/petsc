@@ -11108,7 +11108,7 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
 
 /*@
     MatFreeIntermediateDataStructures - Free intermediate data structures created for reuse,
-    e.g., matrx product of MatPtAP in MPIAIJ format
+    e.g., matrx product of MatPtAP.
 
    Collective on mat
 

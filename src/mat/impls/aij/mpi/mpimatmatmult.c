@@ -318,7 +318,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ptap->duplicate      = Cmpi->ops->duplicate;
   Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
   Cmpi->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
-  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c       = (Mat_MPIAIJ*)Cmpi->data;
@@ -848,7 +848,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ptap->duplicate           = Cmpi->ops->duplicate;
   Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy        = MatDestroy_MPIAIJ_MatMatMult;
-  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c       = (Mat_MPIAIJ*)Cmpi->data;
@@ -1485,7 +1485,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
 
   *C                     = Cmpi;
   PetscFunctionReturn(0);
@@ -2090,7 +2090,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
 
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)

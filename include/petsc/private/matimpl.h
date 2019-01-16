@@ -396,7 +396,6 @@ struct _p_Mat {
   PetscBool              subsetoffprocentries;
   PetscBool              submat_singleis; /* for efficient PCSetUP_ASM() */
   PetscBool              structure_only;
-  PetscBool              reuse;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadFlag       valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif

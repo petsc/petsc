@@ -124,7 +124,7 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat,Mat,Mat);
-PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_PtAP(Mat);
+PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat);
 PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_BC(Mat);
 
 #if defined(PETSC_HAVE_HYPRE)
