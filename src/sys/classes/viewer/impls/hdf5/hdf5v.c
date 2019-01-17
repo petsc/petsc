@@ -1265,7 +1265,7 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
     bs = (PetscInt) dims[bsInd];
     if (bs == 1) ctx->dim2 = PETSC_TRUE; /* vector with blocksize of 1, still stored as 2D array */
   } else {
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Number of dimensions %d not %d as expected", rdim, dim);
   }
   len = dims[lenInd];
   if (ctx->horizontal) {
