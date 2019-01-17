@@ -108,7 +108,7 @@ class Configure(config.package.Package):
         self.logPrint('Unable to parse CUDA version from header. Probably a buggy preprocessor')
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
-    if self.CUDAVersion and int(self.CUDAVersion) < int(self.CUDAMinVersion):
+    if self.CUDAVersion and self.CUDAVersion < self.CUDAMinVersion:
       raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.verToStr(self.CUDAMinVersion)+' or higher. Found version '+self.verToStr(self.CUDAVersion))
     return
 
