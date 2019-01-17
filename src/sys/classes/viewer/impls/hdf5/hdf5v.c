@@ -1349,10 +1349,6 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5ReadInitialize_Private(viewer, name, &h);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace);CHKERRQ(ierr);
-
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
     H5T_class_t clazz = H5Tget_class(datatype);
@@ -1361,6 +1357,11 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 #else
   if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
 #endif
+
+  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace);CHKERRQ(ierr);
+
   unitsize = H5Tget_size(datatype);
   if (h->complexVal) unitsize *= 2;
   if (unitsize <= 0 || unitsize > PetscMax(sizeof(PetscInt),sizeof(PetscScalar))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Sanity check failed: HDF5 function H5Tget_size(datatype) returned suspicious value %D",unitsize);
