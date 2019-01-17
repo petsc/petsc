@@ -41,7 +41,7 @@ PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat A)
   PetscErrorCode      ierr;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data;
   Mat_APMPI           *ptap=a->ap;
-  Mat_Merge_SeqsToMPI *merge=ptap->merge;
+  Mat_Merge_SeqsToMPI *merge;
 
   PetscFunctionBegin;
   if (!ptap) PetscFunctionReturn(0);
@@ -66,6 +66,9 @@ PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat A)
   ierr = MatDestroy(&ptap->C_oth);CHKERRQ(ierr);
   if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
 
+  ierr = MatDestroy(&ptap->Pt);CHKERRQ(ierr);
+
+  merge=ptap->merge;
   if (merge) { /* used by alg_ptap */
     ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
     ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
