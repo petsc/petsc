@@ -427,36 +427,19 @@ static PetscErrorCode RHSFunctionParticles(TS ts,PetscReal t,Vec U,Vec R,void *c
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 {
-  PetscErrorCode    ierr;
+  
   const PetscScalar *u;
+  PetscDraw         draw;
   PetscReal         dt, vsqr, rsqr;
   PetscInt          Np, dim, p, d;
   DM                dm;
   PetscScalar       kenergy, penergy;
   AppCtx*           user = (AppCtx*)ctx;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  PetscPrintf(PETSC_COMM_WORLD, "Step %u \n", step);
-  if (step%user->nts == 0) {
-    ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
-    ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-    ierr = TSGetDM(ts, dm);CHKERRQ(ierr);
-    ierr = DMGetDimension(dm, dim);CHKERRQ(ierr);
-    Np /= 2*dim;
-    for (p = 0; p < Np ; ++p){
-      vsqr = 0;
-      for(d = 0; d< dim; ++d){
-          vsqr += PetscSqr(u[(p*2+1)*dim + d]);
-          rsqr += PetscSqr(u[(p*2+0)*dim + d]);
-      }
-      kenergy  = .5*vsqr;
-      penergy  = -1000/PetscSqrtReal(rsqr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"At time %.6lf, for particle %g,  Kinetic Energy = %8g, Potential Energy = %8g \n", t, p, (double)kenergy, (double)penergy);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
+
 }
 
 /* run 3 delta ts and run richardson extrapolation to get the energy */
@@ -526,10 +509,11 @@ int main(int argc,char **argv)
   ierr = TSSetTimeStep(ts,0.0001);CHKERRQ(ierr);
   ierr = TSSetMaxSteps(ts,1000);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
+  
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
-
+  
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
