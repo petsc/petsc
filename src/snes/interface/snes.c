@@ -1610,6 +1610,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->max_its           = 50;
   snes->max_funcs         = 10000;
   snes->norm              = 0.0;
+  snes->xnorm             = 0.0;
+  snes->ynorm             = 0.0;
   snes->normschedule      = SNES_NORM_ALWAYS;
   snes->functype          = SNES_FUNCTION_DEFAULT;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -1913,6 +1915,56 @@ PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(norm, 2);
   *norm = snes->norm;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  SNESGetUpdateNorm - Gets the last computed norm of the Newton update
+
+  Not Collective
+
+  Input Parameter:
+. snes - the SNES context
+
+  Output Parameter:
+. ynorm - the last computed update norm
+
+  Level: developer
+
+.keywords: SNES, nonlinear, set, function, norm, type
+.seealso: SNESSetNormSchedule(), SNESComputeFunction(), SNESGetFunctionNorm()
+@*/
+PetscErrorCode SNESGetUpdateNorm(SNES snes, PetscReal *ynorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(ynorm, 2);
+  *ynorm = snes->ynorm;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  SNESGetSolutionNorm - Gets the last computed norm of the solution
+
+  Not Collective
+
+  Input Parameter:
+. snes - the SNES context
+
+  Output Parameter:
+. xnorm - the last computed solution norm
+
+  Level: developer
+
+.keywords: SNES, nonlinear, set, function, norm, type
+.seealso: SNESSetNormSchedule(), SNESComputeFunction(), SNESGetFunctionNorm(), SNESGetUpdateNorm()
+@*/
+PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(xnorm, 2);
+  *xnorm = snes->xnorm;
   PetscFunctionReturn(0);
 }
 
