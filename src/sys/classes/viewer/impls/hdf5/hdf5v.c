@@ -638,29 +638,18 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
 @*/
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
 {
-  hid_t          file_id, group;
-  htri_t         found;
+  hid_t          file_id;
+  H5O_type_t     type;
   const char     *groupName = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetGroup(viewer, &groupName);CHKERRQ(ierr);
-  /* Open group */
-  if (groupName) {
-    PetscBool root;
-
-    ierr = PetscStrcmp(groupName, "/", &root);CHKERRQ(ierr);
-    PetscStackCall("H5Lexists",found = H5Lexists(file_id, groupName, H5P_DEFAULT));
-    if (!root && (found <= 0)) {
-      PetscStackCallHDF5Return(group,H5Gcreate2,(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT));
-      PetscStackCallHDF5(H5Gclose,(group));
-    }
-    PetscStackCallHDF5Return(group,H5Gopen2,(file_id, groupName, H5P_DEFAULT));
-  } else group = file_id;
-
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, groupName, PETSC_TRUE, NULL, &type);CHKERRQ(ierr);
+  if (type != H5O_TYPE_GROUP) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Path %s resolves to something which is not a group", groupName);
+  PetscStackCallHDF5Return(*groupId,H5Gopen2,(file_id, groupName ? groupName : "/", H5P_DEFAULT));
   *fileId  = file_id;
-  *groupId = group;
   PetscFunctionReturn(0);
 }
 
@@ -996,6 +985,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t 
 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const char name[], PetscBool createGroup, PetscBool *has, H5O_type_t *otype)
 {
+  const char     rootGroupName[] = "/";
   hid_t          h5;
   PetscBool      exists=PETSC_FALSE;
   PetscInt       i,n;
@@ -1005,7 +995,8 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidCharPointer(name, 2);
+  if (name) PetscValidCharPointer(name, 2);
+  else name = rootGroupName;
   if (has) {
     PetscValidIntPointer(has, 3);
     *has = PETSC_FALSE;
@@ -1227,7 +1218,7 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
   PetscFunctionBegin;
   h = *ctx;
   PetscStackCallHDF5(H5Pclose,(h->plist));
-  if (h->group != h->file) PetscStackCallHDF5(H5Gclose,(h->group));
+  PetscStackCallHDF5(H5Gclose,(h->group));
   PetscStackCallHDF5(H5Sclose,(h->dataspace));
   PetscStackCallHDF5(H5Dclose,(h->dataset));
   ierr = PetscFree(*ctx);CHKERRQ(ierr);

@@ -890,9 +890,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
 #endif
   /* Close/release resources */
-  if (group != file_id) {
-    PetscStackCallHDF5(H5Gclose,(group));
-  }
+  PetscStackCallHDF5(H5Gclose,(group));
   PetscStackCallHDF5(H5Pclose,(plist_id));
   PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Sclose,(memspace));
