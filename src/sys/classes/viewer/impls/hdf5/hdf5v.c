@@ -638,29 +638,18 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
 @*/
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
 {
-  hid_t          file_id, group;
-  htri_t         found;
+  hid_t          file_id;
+  H5O_type_t     type;
   const char     *groupName = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetGroup(viewer, &groupName);CHKERRQ(ierr);
-  /* Open group */
-  if (groupName) {
-    PetscBool root;
-
-    ierr = PetscStrcmp(groupName, "/", &root);CHKERRQ(ierr);
-    PetscStackCall("H5Lexists",found = H5Lexists(file_id, groupName, H5P_DEFAULT));
-    if (!root && (found <= 0)) {
-      PetscStackCallHDF5Return(group,H5Gcreate2,(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT));
-      PetscStackCallHDF5(H5Gclose,(group));
-    }
-    PetscStackCallHDF5Return(group,H5Gopen2,(file_id, groupName, H5P_DEFAULT));
-  } else group = file_id;
-
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, groupName, PETSC_TRUE, NULL, &type);CHKERRQ(ierr);
+  if (type != H5O_TYPE_GROUP) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Path %s resolves to something which is not a group", groupName);
+  PetscStackCallHDF5Return(*groupId,H5Gopen2,(file_id, groupName ? groupName : "/", H5P_DEFAULT));
   *fileId  = file_id;
-  *groupId = group;
   PetscFunctionReturn(0);
 }
 
@@ -764,7 +753,7 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
   else if (ptype == PETSC_LONG)        *htype = H5T_NATIVE_LONG;
   else if (ptype == PETSC_SHORT)       *htype = H5T_NATIVE_SHORT;
   else if (ptype == PETSC_ENUM)        *htype = H5T_NATIVE_DOUBLE;
-  else if (ptype == PETSC_BOOL)        *htype = H5T_NATIVE_DOUBLE;
+  else if (ptype == PETSC_BOOL)        *htype = H5T_NATIVE_INT;
   else if (ptype == PETSC_FLOAT)       *htype = H5T_NATIVE_FLOAT;
   else if (ptype == PETSC_CHAR)        *htype = H5T_NATIVE_CHAR;
   else if (ptype == PETSC_BIT_LOGICAL) *htype = H5T_NATIVE_UCHAR;
@@ -996,6 +985,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t 
 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const char name[], PetscBool createGroup, PetscBool *has, H5O_type_t *otype)
 {
+  const char     rootGroupName[] = "/";
   hid_t          h5;
   PetscBool      exists=PETSC_FALSE;
   PetscInt       i,n;
@@ -1005,7 +995,8 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidCharPointer(name, 2);
+  if (name) PetscValidCharPointer(name, 2);
+  else name = rootGroupName;
   if (has) {
     PetscValidIntPointer(has, 3);
     *has = PETSC_FALSE;
@@ -1043,6 +1034,7 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   if (exists && otype) {
     H5O_info_t info;
 
+    /* We could use H5Iget_type() here but that would require opening the object. This way we only need its name. */
     PetscStackCallHDF5(H5Oget_info_by_name,(h5, name, &info, H5P_DEFAULT));
     *otype = info.type;
   }
@@ -1207,6 +1199,7 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   PetscStackCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
   ierr = PetscViewerHDF5GetTimestep(viewer, &h->timestep);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasAttribute(viewer,name,"complex",&h->complexVal);CHKERRQ(ierr);
+  if (h->complexVal) {ierr = PetscViewerHDF5ReadAttribute(viewer,name,"complex",PETSC_BOOL,&h->complexVal);CHKERRQ(ierr);}
   /* MATLAB stores column vectors horizontally */
   ierr = PetscViewerHDF5HasAttribute(viewer,name,"MATLAB_class",&h->horizontal);CHKERRQ(ierr);
   /* Create property list for collective dataset read */
@@ -1227,7 +1220,7 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
   PetscFunctionBegin;
   h = *ctx;
   PetscStackCallHDF5(H5Pclose,(h->plist));
-  if (h->group != h->file) PetscStackCallHDF5(H5Gclose,(h->group));
+  PetscStackCallHDF5(H5Gclose,(h->group));
   PetscStackCallHDF5(H5Sclose,(h->dataspace));
   PetscStackCallHDF5(H5Dclose,(h->dataset));
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
@@ -1265,11 +1258,11 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
     bs = (PetscInt) dims[bsInd];
     if (bs == 1) ctx->dim2 = PETSC_TRUE; /* vector with blocksize of 1, still stored as 2D array */
   } else {
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
+    SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Number of dimensions %d not %d as expected", rdim, dim);
   }
   len = dims[lenInd];
   if (ctx->horizontal) {
-    if (len != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot have horizontal array with number of rows > 1. In case of MATLAB MAT-file, vectors must be saved as column vectors.");
+    if (len != 1) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Cannot have horizontal array with number of rows > 1. In case of MATLAB MAT-file, vectors must be saved as column vectors.");
     len = bs;
     bs = 1;
   }
@@ -1281,7 +1274,7 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   } else if (map->bs != bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %D, not %D as expected",bs,map->bs);
   if (map->N < 0) {
     ierr = PetscLayoutSetSize(map, N);CHKERRQ(ierr);
-  } else if (map->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %D, not %D as expected",N,map->N);
+  } else if (map->N != N) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %D, not %D as expected",N,map->N);
   PetscFunctionReturn(0);
 }
 
@@ -1349,10 +1342,6 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5ReadInitialize_Private(viewer, name, &h);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace);CHKERRQ(ierr);
-
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
     H5T_class_t clazz = H5Tget_class(datatype);
@@ -1361,6 +1350,11 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 #else
   if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
 #endif
+
+  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace);CHKERRQ(ierr);
+
   unitsize = H5Tget_size(datatype);
   if (h->complexVal) unitsize *= 2;
   if (unitsize <= 0 || unitsize > PetscMax(sizeof(PetscInt),sizeof(PetscScalar))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Sanity check failed: HDF5 function H5Tget_size(datatype) returned suspicious value %D",unitsize);
