@@ -138,6 +138,29 @@ PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
 }
 
 /*@
+   SNESSetJacobianDomainError - tells SNES that computeJacobian does not make sense any more. For example there is a negative element transformation.
+
+   Logically Collective on SNES
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Level: advanced
+
+.keywords: SNES, view
+
+.seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError()
+@*/
+PetscErrorCode  SNESSetJacobianDomainError(SNES snes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (snes->errorifnotconverged) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"User code indicates computeJacobian does not make sense");
+  snes->jacobiandomainerror = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@
    SNESGetFunctionDomainError - Gets the status of the domain error after a call to SNESComputeFunction;
 
    Logically Collective on SNES
@@ -160,6 +183,32 @@ PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(domainerror, 2);
   *domainerror = snes->domainerror;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESGetJacobianDomainError - Gets the status of the Jacobian domain error after a call to SNESComputeJacobian;
+
+   Logically Collective on SNES
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Output Parameters:
+.  domainerror - Set to PETSC_TRUE if there's a jacobian domain error; PETSC_FALSE otherwise.
+
+   Level: advanced
+
+.keywords: SNES, view
+
+.seealso: SNESSetFunctionDomainError(), SNESComputeFunction(),SNESGetFunctionDomainError()
+@*/
+PetscErrorCode  SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(domainerror, 2);
+  *domainerror = snes->jacobiandomainerror;
   PetscFunctionReturn(0);
 }
 

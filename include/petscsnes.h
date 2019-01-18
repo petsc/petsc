@@ -243,6 +243,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_INNER               = -7, /* inner solve failed */
               SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_DIVERGED_DTOL                = -9, /* || F || > divtol*||F_initial|| */
+              SNES_DIVERGED_JACOBIAN_DOMAIN     = -10, /* Jacobian calculation does not make sense */
 
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
 PETSC_EXTERN const char *const*SNESConvergedReasons;

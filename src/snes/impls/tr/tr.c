@@ -141,6 +141,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    SNESCheckJacobianDomainerror(snes);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,F,Ytmp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
