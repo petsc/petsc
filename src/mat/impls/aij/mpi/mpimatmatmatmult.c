@@ -82,8 +82,7 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
   PetscInt          nalg=2,alg=0; /* set default algorithm */
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
-  PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),((PetscObject)B)->prefix,"MatMatMatMult","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-matmatmatmult_via","Algorithmic approach","MatMatMatMult",algTypes,nalg,algTypes[alg],&alg,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
