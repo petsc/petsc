@@ -165,7 +165,17 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
     }
+
+    {
+      Mat_MPIAIJ *c  = (Mat_MPIAIJ*)(*C)->data;
+      Mat_APMPI  *ap = c->ap;
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
+      ap->freestruct = PETSC_FALSE;
+      ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",ap->freestruct,&ap->freestruct, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
   }
+
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
@@ -184,7 +194,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   PetscScalar       *apa;
   const PetscInt    *cols;
   const PetscScalar *vals;
-  PetscBool         freestruct;
 
   PetscFunctionBegin;
   if (!ptap) {
@@ -283,14 +292,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
 
   ptap->reuse = MAT_REUSE_MATRIX;
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
   /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
-  freestruct = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
-  if (freestruct) {
+  if (ptap->freestruct) {
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -990,7 +995,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscScalar       *apa;
   const PetscInt    *cols;
   const PetscScalar *vals;
-  PetscBool         freestruct;
 
   PetscFunctionBegin;
   if (!ptap) {
@@ -1094,12 +1098,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ptap->reuse = MAT_REUSE_MATRIX;
 
   /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
-  freestruct = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
-  if (freestruct) {
+  if (ptap->freestruct) {
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

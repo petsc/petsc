@@ -73,7 +73,17 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,
       break;
     }
     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+
+    if (alg == 0 || alg == 1) {
+      Mat_MPIAIJ *c  = (Mat_MPIAIJ*)(*C)->data;
+      Mat_APMPI  *ap = c->ap;
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
+      ap->freestruct = PETSC_FALSE;
+      ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",ap->freestruct,&ap->freestruct, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
   }
+
   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
@@ -116,15 +126,12 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   PetscInt       cdnz,conz,k0,k1;
   MPI_Comm       comm;
   PetscMPIInt    size;
-  PetscBool      freestruct;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  if (!ptap) {
-    SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
-  }
+  if (!ptap) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
 
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*-----------------------------------------------------*/
@@ -181,14 +188,9 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
-  /* supporting struct ptap consumes almost same amount of memory as C=AP, release it if C will not be updated by A and P */
-  freestruct = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
-  if (freestruct) {
+  if (ptap->freestruct) {
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -590,7 +592,6 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt       cdnz,conz,k0,k1,nextp;
   MPI_Comm       comm;
   PetscMPIInt    size;
-  PetscBool      freestruct;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
@@ -697,13 +698,9 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
-  freestruct = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
-  if (freestruct) {
+  if (ptap->freestruct) {
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1210,9 +1207,11 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,Pets
       ierr = MatMatMult(Pt,A,MAT_INITIAL_MATRIX,fill,C);CHKERRQ(ierr);
       c        = (Mat_MPIAIJ*)(*C)->data;
       ptap     = c->ap;
-      ptap->Pt = Pt;
+      if (ptap) {
+       ptap->Pt = Pt;
+       (*C)->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
+      }
       (*C)->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult;
-      (*C)->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
       PetscFunctionReturn(0);
     }
       break;
@@ -1221,7 +1220,17 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,Pets
       break;
     }
     ierr = PetscLogEventEnd(MAT_TransposeMatMultSymbolic,P,A,0,0);CHKERRQ(ierr);
+
+    {
+      Mat_MPIAIJ *c  = (Mat_MPIAIJ*)(*C)->data;
+      Mat_APMPI  *ap = c->ap;
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
+      ap->freestruct = PETSC_FALSE;
+      ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",ap->freestruct,&ap->freestruct, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
   }
+
   ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,P,A,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->mattransposemultnumeric)(P,A,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,P,A,0,0);CHKERRQ(ierr);
@@ -1235,7 +1244,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P,Mat A,M
   Mat_MPIAIJ     *c=(Mat_MPIAIJ*)C->data;
   Mat_APMPI      *ptap= c->ap;
   Mat            Pt;
-  PetscBool      freestruct;
 
   PetscFunctionBegin;
   if (!ptap) {
@@ -1249,13 +1257,9 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P,Mat A,M
   ierr = MatMatMultNumeric(Pt,A,C);CHKERRQ(ierr);
 
   /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
-  freestruct = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
-  if (freestruct) {
+  if (ptap->freestruct) {
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1514,7 +1518,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   PetscInt          i,rstart,rend,cm,ncols,row;
   const PetscInt    *cols;
   const PetscScalar *vals;
-  PetscBool         freestruct;
 
   PetscFunctionBegin;
   if (!ptap) {
@@ -1576,13 +1579,9 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   ptap->reuse = MAT_REUSE_MATRIX;
 
   /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
-  freestruct = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
-  if (freestruct) {
+  if (ptap->freestruct) {
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1608,7 +1607,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   PetscInt            *ai,*aj,*coi,*coj,*poJ,*pdJ;
   Mat                 A_loc;
   Mat_SeqAIJ          *a_loc;
-  PetscBool           freestruct;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
@@ -1747,13 +1745,9 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
-  freestruct = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",freestruct, &freestruct, NULL);CHKERRQ(ierr);
-  if (freestruct) {
+  if (ptap->freestruct) {
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
