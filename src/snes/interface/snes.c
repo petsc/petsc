@@ -151,7 +151,7 @@ PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
 
 .seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError()
 @*/
-PetscErrorCode  SNESSetJacobianDomainError(SNES snes)
+PetscErrorCode SNESSetJacobianDomainError(SNES snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -203,7 +203,7 @@ PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 
 .seealso: SNESSetFunctionDomainError(), SNESComputeFunction(),SNESGetFunctionDomainError()
 @*/
-PetscErrorCode  SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
+PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);

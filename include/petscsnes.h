@@ -176,6 +176,8 @@ PETSC_EXTERN PetscErrorCode SNESPythonSetType(SNES,const char[]);
 
 PETSC_EXTERN PetscErrorCode SNESSetFunctionDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESGetFunctionDomainError(SNES, PetscBool *);
+PETSC_EXTERN PetscErrorCode SNESGetJacobianDomainError(SNES,PetscBool*);
+PETSC_EXTERN PetscErrorCode SNESSetJacobianDomainError(SNES);
 
 /*E
     SNESConvergedReason - reason a SNES method was said to
