@@ -1034,6 +1034,7 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   if (exists && otype) {
     H5O_info_t info;
 
+    /* We could use H5Iget_type() here but that would require opening the object. This way we only need its name. */
     PetscStackCallHDF5(H5Oget_info_by_name,(h5, name, &info, H5P_DEFAULT));
     *otype = info.type;
   }
