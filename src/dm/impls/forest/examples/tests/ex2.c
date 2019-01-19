@@ -257,6 +257,7 @@ int main(int argc, char **argv)
     ierr = DMSetField(base,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   }
+  ierr = DMCreateDS(base);CHKERRQ(ierr);
 
   if (use_bcs) {
     PetscDS  prob;
