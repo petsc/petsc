@@ -223,6 +223,7 @@ static PetscErrorCode SetupAdjointProblem(DM dm, AppCtx *user)
   ierr = PetscDSSetResidual(prob, 0, f0_unity_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSSetObjective(prob, 0, obj_error_u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -233,7 +234,6 @@ static PetscErrorCode SetupErrorProblem(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetObjective(prob, 0, obj_error_u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -477,13 +477,13 @@ int main(int argc, char **argv)
       ierr = DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(dm, uErr, INSERT_VALUES, uErrLoc);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmErrAux, &uErr);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmErr, "dmAux", (PetscObject) dmErrAux);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmErr, "A", (PetscObject) uErrLoc);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmAdj, "dmAux", (PetscObject) dmErrAux);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmAdj, "A", (PetscObject) uErrLoc);CHKERRQ(ierr);
       /*   Compute cellwise error estimate */
       ierr = VecSet(errorEst, 0.0);CHKERRQ(ierr);
-      ierr = DMPlexComputeCellwiseIntegralFEM(dmErr, uAdj, errorEst, &user);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmErr, "dmAux", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmErr, "A", NULL);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellwiseIntegralFEM(dmAdj, uAdj, errorEst, &user);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmAdj, "dmAux", NULL);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmAdj, "A", NULL);CHKERRQ(ierr);
       ierr = DMRestoreLocalVector(dmErrAux, &uErrLoc);CHKERRQ(ierr);
       ierr = DMDestroy(&dmErrAux);CHKERRQ(ierr);
       /*   Plot cellwise error vector */
