@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 import os,shutil, string, re
-from distutils.sysconfig import parse_makefile
 import sys
 import logging, time
 import types
@@ -368,8 +367,10 @@ class generateExamples(Petsc):
       subst['mpiexec']='petsc_mpiexec_valgrind ' + self.conf['MPIEXEC']
     else:
       subst['mpiexec']=self.conf['MPIEXEC']
-    subst['petsc_dir']=self.petsc_dir # not self.conf['PETSC_DIR'] as this could be windows path
-    subst['petsc_arch']=self.petsc_arch
+    subst['pkg_name']=self.pkg_name
+    subst['pkg_dir']=self.pkg_dir
+    subst['pkg_arch']=self.petsc_arch
+
     if self.inInstallDir:
       # Case 2
       subst['CONFIG_DIR']=os.path.join(os.path.dirname(self.srcdir),'config')
