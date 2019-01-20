@@ -5,6 +5,7 @@
 #define __PETSCDMPLEX_H
 
 #include <petscdm.h>
+#include <petscdmplextypes.h>
 #include <petscdt.h>
 #include <petscfe.h>
 #include <petscfv.h>
