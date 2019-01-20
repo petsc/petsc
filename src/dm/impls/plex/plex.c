@@ -6560,15 +6560,16 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
 PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 {
   PetscInt       pMax[4];
-  PetscInt       dim, vStart, vEnd, cStart, cEnd, c, h;
+  PetscInt       dim, depth, vStart, vEnd, cStart, cEnd, c, h;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &pMax[dim], &pMax[dim-1], &pMax[1], &pMax[0]);CHKERRQ(ierr);
-  for (h = cellHeight; h < dim; ++h) {
+  for (h = cellHeight; h < PetscMin(depth, dim); ++h) {
     ierr = DMPlexGetHeightStratum(dm, h, &cStart, &cEnd);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt *cone, *ornt, *faces;
