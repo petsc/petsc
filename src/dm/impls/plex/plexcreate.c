@@ -2293,14 +2293,14 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
 
     ierr = PetscOptionsBool("-dm_plex_check_symmetry", "Check that the adjacency information in the mesh is symmetric", "DMPlexCheckSymmetry", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
     if (flg && flg2) {ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);}
-    ierr = PetscOptionsEnum("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices", "DMPlexCheckSkeleton", cellTypes, 0, &ct, &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices", "DMPlexCheckSkeleton", cellTypes, (PetscEnum) 0, &ct, &flg);CHKERRQ(ierr);
     if (flg) {
       PetscBool isSimplex = ct ? PETSC_FALSE : PETSC_TRUE;
 
       if (ct == (PetscEnum) DM_PLEX_CELLTYPE_UNKNOWN) {ierr = DMPlexIsSimplex_Static(dm, &isSimplex);CHKERRQ(ierr);}
       ierr = DMPlexCheckSkeleton(dm, isSimplex, 0);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEnum("-dm_plex_check_faces", "Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type", "DMPlexCheckFaces", cellTypes, 0, &ct, &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-dm_plex_check_faces", "Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type", "DMPlexCheckFaces", cellTypes, (PetscEnum) 0, &ct, &flg);CHKERRQ(ierr);
     if (flg) {
       PetscBool isSimplex = ct ? PETSC_FALSE : PETSC_TRUE;
 
