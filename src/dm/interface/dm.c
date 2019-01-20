@@ -4678,13 +4678,19 @@ PetscErrorCode DMCreateDS(DM dm)
    2) Hybrid cells
   */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
-  pSize = PetscMax(depth, dim) + 1;
-  ierr = PetscMalloc3(pSize, &pStart, pSize, &pEnd, pSize, &pMax);CHKERRQ(ierr);
-  for (d = 0; d < depth; ++d) {ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);}
-  ierr = DMPlexGetHybridBounds(dm, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
+  {
+    DM plex;
+
+    ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+    pSize = PetscMax(depth, dim) + 1;
+    ierr = PetscMalloc3(pSize, &pStart, pSize, &pEnd, pSize, &pMax);CHKERRQ(ierr);
+    for (d = 0; d < depth; ++d) {ierr = DMPlexGetDepthStratum(plex, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);}
+    ierr = DMPlexGetHybridBounds(plex, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
+    ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  }
   /* Create default DS */
   ierr = DMGetRegionDS(dm, NULL, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetCoordinateDimension(prob, dimEmbed);CHKERRQ(ierr);
