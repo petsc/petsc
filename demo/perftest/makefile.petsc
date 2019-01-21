@@ -14,7 +14,7 @@ OBJSF=${SOURCEF:.f90=.o}
 ${EXECUTABLE}.exe: ${SOURCEC} ${SOURCEF}
 	${PETSC_FCOMPILE}
 	${PETSC_COMPILE}
-	${CLINKER} -o $@ ${PETSC_TS_LIB} ${OBJSC} ${OBJSF}
+	${CLINKER} -o $@ ${OBJSC} ${OBJSF} ${PETSC_TS_LIB}
 	${RM} ${OBJSC} ${OBJSF}
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
