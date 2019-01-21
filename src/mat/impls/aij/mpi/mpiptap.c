@@ -166,7 +166,7 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
       break;
     }
 
-    {
+    if (alg == 0 || alg == 1) {
       Mat_MPIAIJ *c  = (Mat_MPIAIJ*)(*C)->data;
       Mat_APMPI  *ap = c->ap;
       ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
