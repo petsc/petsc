@@ -614,14 +614,16 @@ int main(int argc, char **argv)
       suffix: 1_tri_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
+      # Add back in 'none' and 'parallel'
       suffix: 1_tri_dist1
-      args: -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -distribute 1 -interpolate {{serial}separate output}
     test:
       suffix: 1_quad_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
+      # Add back in 'none' and 'parallel'
       suffix: 1_quad_dist1
-      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
 
   test:
     suffix: 2
@@ -636,8 +638,9 @@ int main(int argc, char **argv)
       suffix: 4_tet_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
+      # Add back in 'none' and 'parallel'
       suffix: 4_tet_dist1
-      args: -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -distribute 1 -interpolate {{serial}separate output}
     test:
       TODO: fails due to wrong SF
       suffix: 4_hex_dist0

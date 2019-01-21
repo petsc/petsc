@@ -114,7 +114,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = DMLabelCreate("Test Label", &label);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label);CHKERRQ(ierr);
   ierr = TestSetup(label, &user);CHKERRQ(ierr);
   ierr = TestLookup(label, &user);CHKERRQ(ierr);
   ierr = TestClear(label,&user);CHKERRQ(ierr);

@@ -335,9 +335,6 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
       ierr = DMPlexSetConeSize(dm, f, 4);CHKERRQ(ierr);
     }
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-    for (v = 0; v < numFaces+numVertices; ++v) {
-      ierr = DMSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
-    }
 
     /* Side 0 (Top) */
     for (vy = 0; vy < faces[1]; vy++) {
@@ -345,6 +342,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         voffset = numFaces + vertices[0]*vertices[1]*(vertices[2]-1) + vy*vertices[0] + vx;
         cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]+1; cone[3] = voffset+vertices[0];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+1, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -355,6 +357,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         voffset = numFaces + vy*(faces[0]+1) + vx;
         cone[0] = voffset+1; cone[1] = voffset; cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]+1;
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+1, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -365,6 +372,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         voffset = numFaces + vz*vertices[0]*vertices[1] + vx;
         cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]*vertices[1]+1; cone[3] = voffset+vertices[0]*vertices[1];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+1, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -376,6 +388,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset+vertices[0]*vertices[1]+1;
         cone[2] = voffset+1; cone[3] = voffset;
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+1, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -387,6 +404,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         cone[0] = voffset; cone[1] = voffset+vertices[0]*vertices[1];
         cone[2] = voffset+vertices[0]*vertices[1]+vertices[0]; cone[3] = voffset+vertices[0];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[1]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -398,6 +420,11 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset;
         cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]*vertices[1]+vertices[0];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", iface, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1);CHKERRQ(ierr);
+        ierr    = DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], 1);CHKERRQ(ierr);
         iface++;
       }
     }
@@ -975,6 +1002,10 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
   Output Parameter:
 . dm  - The DM object
 
+  Options Database Keys:
++ -dm_plex_box_lower <x,y,z> - Specify lower-left-bottom coordinates for the box
+- -dm_plex_box_upper <x,y,z> - Specify upper-right-top coordinates for the box
+
   Note: Here is the numbering returned for 2 faces in each direction for tensor cells:
 $ 10---17---11---18----12
 $  |         |         |
@@ -1013,11 +1044,12 @@ $  8----4----9----5----10
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
 {
-  PetscInt       i;
   PetscInt       fac[3] = {0, 0, 0};
   PetscReal      low[3] = {0, 0, 0};
   PetscReal      upp[3] = {1, 1, 1};
   DMBoundaryType bdt[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
+  PetscInt       i, n;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1025,6 +1057,13 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   if (lower) for (i = 0; i < dim; ++i) low[i] = lower[i];
   if (upper) for (i = 0; i < dim; ++i) upp[i] = upper[i];
   if (periodicity) for (i = 0; i < dim; ++i) bdt[i] = periodicity[i];
+  /* Allow bounds to be specified from the command line */
+  n    = 3;
+  ierr = PetscOptionsGetRealArray(NULL, NULL, "-dm_plex_box_lower", low, &n, &flg);CHKERRQ(ierr);
+  if (flg && (n != dim)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Lower box point had %D values, should have been %D", n, dim);
+  n    = 3;
+  ierr = PetscOptionsGetRealArray(NULL, NULL, "-dm_plex_box_upper", upp, &n, &flg);CHKERRQ(ierr);
+  if (flg && (n != dim)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Upper box point had %D values, should have been %D", n, dim);
 
   if (dim == 1)      {ierr = DMPlexCreateLineMesh_Internal(comm, fac[0], low[0], upp[0], bdt[0], dm);CHKERRQ(ierr);}
   else if (simplex)  {ierr = DMPlexCreateBoxMesh_Simplex_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
@@ -2173,6 +2212,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   void            *tmp;
   DMLabelLinkList listTmp;
   DMLabel         depthTmp;
+  PetscInt        tmpI;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -2206,6 +2246,9 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   depthTmp  = dmA->depthLabel;
   dmA->depthLabel = dmB->depthLabel;
   dmB->depthLabel = depthTmp;
+  tmpI         = dmA->levelup;
+  dmA->levelup = dmB->levelup;
+  dmB->levelup = tmpI;
   PetscFunctionReturn(0);
 }
 

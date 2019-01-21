@@ -32,7 +32,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   Vec                W   = snes->work[3];
   Vec                *U  = qn->U;
   PetscInt           m = qn->m;
-  PetscInt           k,i,j,lits,l = m;
+  PetscInt           k,i,j,l = m;
   PetscReal          unorm,a,b;
   PetscReal          *lambda=qn->lambda;
   PetscScalar        gdot;
@@ -54,8 +54,6 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,D,W);CHKERRQ(ierr);
     SNESCheckKSPSolve(snes);
-    ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
-    snes->linear_its += lits;
     ierr              = VecCopy(W,Y);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(D,Y);CHKERRQ(ierr);
@@ -117,7 +115,7 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
   Vec            *T  = qn->V;
 
   /* ksp thing for Jacobian scaling */
-  PetscInt           h,k,j,i,lits;
+  PetscInt           h,k,j,i;
   PetscInt           m = qn->m;
   PetscScalar        gdot,udot;
   PetscInt           l = m;
@@ -137,9 +135,7 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
     SNESCheckKSPSolve(snes);
-    ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
-    snes->linear_its += lits;
-    ierr              = VecCopy(W,Y);CHKERRQ(ierr);
+    ierr = VecCopy(W,Y);CHKERRQ(ierr);
   } else {
     ierr = VecScale(Y,qn->scaling);CHKERRQ(ierr);
   }
@@ -180,7 +176,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
   PetscScalar    *YtdX  = qn->YtdX;
 
   /* ksp thing for Jacobian scaling */
-  PetscInt           k,i,j,g,lits;
+  PetscInt           k,i,j,g;
   PetscInt           m = qn->m;
   PetscScalar        t;
   PetscInt           l = m;
@@ -241,8 +237,6 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
     SNESCheckKSPSolve(snes);
-    ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
-    snes->linear_its += lits;
     ierr              = VecCopy(W, Y);CHKERRQ(ierr);
   } else {
     ierr = VecScale(Y, qn->scaling);CHKERRQ(ierr);
@@ -431,6 +425,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     ierr = SNESSetIterationNumber(snes, i+1);CHKERRQ(ierr);
     snes->norm = fnorm;
+    snes->xnorm = xnorm;
+    snes->ynorm = ynorm;
 
     ierr = SNESLogConvergenceHistory(snes,snes->norm,snes->iter);CHKERRQ(ierr);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);

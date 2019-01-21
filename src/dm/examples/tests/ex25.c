@@ -53,31 +53,31 @@ int main(int argc,char **argv)
          output_file: output/ex25_1.out
 
       test:
-         suffix: 1
+         suffix: 2
          nsize: 2
          filter: grep -v -i Process
          output_file: output/ex25_2.out
 
       test:
-         suffix: 2
+         suffix: 3
          nsize: 3
          filter: grep -v -i Process
          output_file: output/ex25_2.out
 
       test:
-         suffix: 3
+         suffix: 4
          nsize: 4
          filter: grep -v -i Process
          output_file: output/ex25_2.out
 
       test:
-         suffix: 4
+         suffix: 5
          nsize: 5
          filter: grep -v -i Process
          output_file: output/ex25_2.out
 
       test:
-         suffix: 5
+         suffix: 6
          nsize: 6
          filter: grep -v -i Process
          output_file: output/ex25_2.out

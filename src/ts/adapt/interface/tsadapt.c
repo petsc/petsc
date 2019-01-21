@@ -101,8 +101,7 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
 
 /*@C
   TSAdaptInitializePackage - This function initializes everything in the TSAdapt package. It is
-  called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
-  TSAdaptCreate() when using static libraries.
+  called from TSInitializePackage().
 
   Level: developer
 
@@ -605,7 +604,8 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt,PetscReal *hmin,PetscReal *hma
 .  -ts_adapt_dt_min <min> - minimum timestep to use
 .  -ts_adapt_dt_max <max> - maximum timestep to use
 .  -ts_adapt_scale_solve_failed <scale> - scale timestep by this factor if a solve fails
--  -ts_adapt_wnormtype <2 or infinity> - type of norm for computing error estimates
+.  -ts_adapt_wnormtype <2 or infinity> - type of norm for computing error estimates
+-  -ts_adapt_time_step_increase_delay - number of timesteps to delay increasing the time step after it has been decreased due to failed solver
 
    Level: advanced
 
@@ -658,6 +658,8 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   ierr = PetscOptionsEnum("-ts_adapt_wnormtype","Type of norm computed for error estimation","",NormTypes,(PetscEnum)adapt->wnormtype,(PetscEnum*)&adapt->wnormtype,NULL);CHKERRQ(ierr);
   if (adapt->wnormtype != NORM_2 && adapt->wnormtype != NORM_INFINITY) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
 
+  ierr = PetscOptionsInt("-ts_adapt_time_step_increase_delay","Number of timesteps to delay increasing the time step after it has been decreased due to failed solver","TSAdaptSetTimeStepIncreaseDelay",adapt->timestepjustdecreased_delay,&adapt->timestepjustdecreased_delay,NULL);CHKERRQ(ierr);
+  
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
 
@@ -842,6 +844,36 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
 }
 
 /*@
+   TSAdaptSetTimeStepIncreaseDelay - The number of timesteps to wait after a decrease in the timestep due to failed solver
+                                     before increasing the time step.
+
+   Logicially Collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+-  cnt - the number of timesteps
+
+   Options Database Key:
+.  -ts_adapt_time_step_increase_delay cnt - number of steps to delay the increase
+
+   Notes: This is to prevent an adaptor from bouncing back and forth between two nearby timesteps. The default is 0.
+          The successful use of this option is problem dependent
+
+   Developer Note: there is no theory to support this option
+
+   Level: advanced
+
+.seealso:
+@*/
+PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt,PetscInt cnt)
+{
+  PetscFunctionBegin;
+  adapt->timestepjustdecreased_delay = cnt;
+  PetscFunctionReturn(0);
+}
+
+  
+/*@
    TSAdaptCheckStage - checks whether to accept a stage, (e.g. reject and change time step size if nonlinear solve fails)
 
    Collective on TSAdapt
@@ -894,7 +926,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     new_dt = dt * adapt->scale_solve_failed;
     ierr = TSSetTimeStep(ts,new_dt);CHKERRQ(ierr);
-    adapt->timestepjustincreased += 4;
+    adapt->timestepjustdecreased += adapt->timestepjustdecreased_delay;
     if (adapt->monitor) {
       ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s step %3D stage rejected (%s) t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,SNESConvergedReasons[snesreason],(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
@@ -948,6 +980,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->matchstepfac[0]    = 0.01; /* allow 1% step size increase in the last step */
   adapt->matchstepfac[1]    = 2.0;  /* halve last step if it is greater than what remains divided this factor */
   adapt->wnormtype          = NORM_2;
+  adapt->timestepjustdecreased_delay = 0;
 
   *inadapt = adapt;
   PetscFunctionReturn(0);

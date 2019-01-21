@@ -43,8 +43,6 @@ PetscMPIInt Petsc_ShmComm_keyval   = MPI_KEYVAL_INVALID;
 */
 const char *const PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
 const char *const PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
-const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
-                                      "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","OBJECT","FUNCTION","PetscDataType","PETSC_",0};
 
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
@@ -681,11 +679,11 @@ int64_t Petsc_adios_group;
 +  -help [intro] - prints help method for each option; if intro is given the program stops after printing the introductory help message
 .  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
 .  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
-.  -on_error_emacs <machinename> causes emacsclient to jump to error file
-.  -on_error_abort calls abort() when error detected (no traceback)
-.  -on_error_mpiabort calls MPI_abort() when error detected
-.  -error_output_stderr prints error messages to stderr instead of the default stdout
-.  -error_output_none does not print the error messages (but handles errors in the same way as if this was not called)
+.  -on_error_emacs <machinename> - causes emacsclient to jump to error file
+.  -on_error_abort - calls abort() when error detected (no traceback)
+.  -on_error_mpiabort - calls MPI_abort() when error detected
+.  -error_output_stderr - prints error messages to stderr instead of the default stdout
+.  -error_output_none - does not print the error messages (but handles errors in the same way as if this was not called)
 .  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to

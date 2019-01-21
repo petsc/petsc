@@ -5,7 +5,6 @@ static char help[] = "Surface processes in geophysics.\n\n";
    Concepts: DMDA^using distributed arrays;
    Concepts: IS coloirng types;
    Processors: n
-   requires: !single
 T*/
 
 

@@ -233,7 +233,7 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
       NULL,
       NULL,
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
-      (int*)&mat_mkl_cpardiso->err);
+      (PetscInt*)&mat_mkl_cpardiso->err);
   }
 
   if (mat_mkl_cpardiso->ConvertToTriples == MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO) {
@@ -283,7 +283,7 @@ PetscErrorCode MatSolve_MKL_CPARDISO(Mat A,Vec b,Vec x)
     (void*)barray,
     (void*)xarray,
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
-    (int*)&mat_mkl_cpardiso->err);
+    (PetscInt*)&mat_mkl_cpardiso->err);
 
   if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
@@ -343,7 +343,7 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
       (void*)barray,
       (void*)xarray,
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
-      (int*)&mat_mkl_cpardiso->err);
+      (PetscInt*)&mat_mkl_cpardiso->err);
     if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
     ierr = MatDenseRestoreArrayRead(B,&barray);
     ierr = MatDenseRestoreArray(X,&xarray);
@@ -397,14 +397,13 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
 {
   Mat_MKL_CPARDISO    *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->data;
   PetscErrorCode      ierr;
-  PetscInt            icntl;
+  PetscInt            icntl,threads;
   PetscBool           flg;
-  int                 threads;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_CPARDISO Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mkl_cpardiso_65","Number of threads to use","None",threads,&threads,&flg);CHKERRQ(ierr);
-  if (flg) mkl_set_num_threads(threads);
+  if (flg) mkl_set_num_threads((int)threads);
 
   ierr = PetscOptionsInt("-mat_mkl_cpardiso_66","Maximum number of factors with identical sparsity structure that must be kept in memory at the same time","None",mat_mkl_cpardiso->maxfct,&icntl,&flg);CHKERRQ(ierr);
   if (flg) mat_mkl_cpardiso->maxfct = icntl;
@@ -580,7 +579,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const M
     NULL,
     NULL,
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
-    (int*)&mat_mkl_cpardiso->err);
+    (PetscInt*)&mat_mkl_cpardiso->err);
 
   if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\".Check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 

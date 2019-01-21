@@ -239,14 +239,14 @@ int main(int argc, char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "nb_cells: %D\n", user.nb_cells);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "alpha: %5.5g\n", user.alpha);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "beta:  %5.5g\n", user.beta);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "rho_a: %5.5g\n", user.rho_a);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "mu_a:  %5.5g\n", user.mu_a);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "D_a:   %5.5g\n", user.D_a);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "rho_h: %5.5g\n", user.rho_h);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "mu_h:  %5.5g\n", user.mu_h);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "D_h:   %5.5g\n", user.D_h);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "alpha: %5.5g\n", (double)user.alpha);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "beta:  %5.5g\n", (double)user.beta);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "rho_a: %5.5g\n", (double)user.rho_a);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "mu_a:  %5.5g\n", (double)user.mu_a);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "D_a:   %5.5g\n", (double)user.D_a);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "rho_h: %5.5g\n", (double)user.rho_h);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "mu_h:  %5.5g\n", (double)user.mu_h);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "D_h:   %5.5g\n", (double)user.D_h);CHKERRQ(ierr);
 
   /*
    * Create vector to hold the solution
@@ -356,8 +356,7 @@ int main(int argc, char **argv)
       requires: !single !complex c99
 
     test:
-      args: -ts_max_steps 8 
-      output_file: output/ex42.out 
-      TODO: broken
+      args: -ts_max_steps 8
+      output_file: output/ex42.out
 
 TEST*/

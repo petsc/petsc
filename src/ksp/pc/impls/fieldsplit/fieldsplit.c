@@ -468,6 +468,13 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           ierr = PetscObjectSetOptionsPrefix((PetscObject)(dms[i]), prefix);CHKERRQ(ierr);
           ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
+          {
+            PetscErrorCode (*func)(KSP,Mat,Mat,void*);
+            void            *ctx;
+
+            ierr = DMKSPGetComputeOperators(pc->dm, &func, &ctx);CHKERRQ(ierr);
+            ierr = DMKSPSetComputeOperators(dms[i],  func,  ctx);CHKERRQ(ierr);
+          }
           ierr = PetscObjectIncrementTabLevel((PetscObject)dms[i],(PetscObject)ilink->ksp,0);CHKERRQ(ierr);
           ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
         }
@@ -1065,6 +1072,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
    VecScatterEnd(ilink->sctx,xx,ilink->x,INSERT_VALUES,SCATTER_FORWARD) || \
    PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL) ||\
    KSPSolve(ilink->ksp,ilink->x,ilink->y) ||                               \
+   KSPCheckSolve(ilink->ksp,pc,ilink->y)  || \
    PetscLogEventEnd(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL) ||\
    VecScatterBegin(ilink->sctx,ilink->y,yy,ADD_VALUES,SCATTER_REVERSE) ||  \
    VecScatterEnd(ilink->sctx,ilink->y,yy,ADD_VALUES,SCATTER_REVERSE))
@@ -1075,7 +1083,6 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
   PetscErrorCode     ierr;
   PC_FieldSplitLink  ilinkA = jac->head, ilinkD = ilinkA->next;
   KSP                kspA   = ilinkA->ksp, kspLower = kspA, kspUpper = jac->kspupper;
-  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   switch (jac->schurfactorization) {
@@ -1086,15 +1093,13 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(kspA,&reason);CHKERRQ(ierr);
-    if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+    ierr = KSPCheckSolve(kspA,pc,ilinkA->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(jac->kspschur,&reason);CHKERRQ(ierr);
-    if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+    ierr = KSPCheckSolve(jac->kspschur,pc,ilinkD->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = VecScale(ilinkD->y,jac->schurscale);CHKERRQ(ierr);
     ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1107,8 +1112,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(kspA,&reason);CHKERRQ(ierr);
-    if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+    ierr = KSPCheckSolve(kspA,pc,ilinkA->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     ierr = MatMult(jac->C,ilinkA->y,ilinkD->x);CHKERRQ(ierr);
     ierr = VecScale(ilinkD->x,-1.);CHKERRQ(ierr);
@@ -1117,8 +1121,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(jac->kspschur,&reason);CHKERRQ(ierr);
-    if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+    ierr = KSPCheckSolve(jac->kspschur,pc,ilinkD->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1130,8 +1133,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(jac->kspschur,&reason);CHKERRQ(ierr);
-    if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+    ierr = KSPCheckSolve(jac->kspschur,pc,ilinkD->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);    ierr = MatMult(jac->B,ilinkD->y,ilinkA->x);CHKERRQ(ierr);
     ierr = VecScale(ilinkA->x,-1.);CHKERRQ(ierr);
     ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1139,8 +1141,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(kspA,&reason);CHKERRQ(ierr);
-    if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+    ierr = KSPCheckSolve(kspA,pc,ilinkA->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1152,8 +1153,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(KSP_Solve_FS_L,kspLower,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(kspLower,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(kspLower,&reason);CHKERRQ(ierr);
-    if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+    ierr = KSPCheckSolve(kspLower,pc,ilinkA->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve_FS_L,kspLower,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     ierr = MatMult(jac->C,ilinkA->y,ilinkD->x);CHKERRQ(ierr);
     ierr = VecScale(ilinkD->x,-1.0);CHKERRQ(ierr);
@@ -1162,8 +1162,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
 
     ierr = PetscLogEventBegin(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(jac->kspschur,&reason);CHKERRQ(ierr);
-    if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+    ierr = KSPCheckSolve(jac->kspschur,pc,ilinkD->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
@@ -1172,18 +1171,16 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
       ierr = VecAXPY(ilinkA->x,-1.0,ilinkA->y);CHKERRQ(ierr);
       ierr = PetscLogEventBegin(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
       ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
-      ierr = KSPGetConvergedReason(kspA,&reason);CHKERRQ(ierr);
-      if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+      ierr = KSPCheckSolve(kspA,pc,ilinkA->y);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
     } else {
       ierr = PetscLogEventBegin(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
       ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
+      ierr = KSPCheckSolve(kspA,pc,ilinkA->y);CHKERRQ(ierr);
       ierr = MatMult(jac->B,ilinkD->y,ilinkA->x);CHKERRQ(ierr);
       ierr = PetscLogEventBegin(KSP_Solve_FS_U,kspUpper,ilinkA->x,ilinkA->z,NULL);CHKERRQ(ierr);
       ierr = KSPSolve(kspUpper,ilinkA->x,ilinkA->z);CHKERRQ(ierr);
-      ierr = KSPGetConvergedReason(kspUpper,&reason);CHKERRQ(ierr);
-      if(reason < 0) pc->failedreason = PC_SUBPC_ERROR;
+      ierr = KSPCheckSolve(kspUpper,pc,ilinkA->z);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(KSP_Solve_FS_U,kspUpper,ilinkA->x,ilinkA->z,NULL);CHKERRQ(ierr);
       ierr = VecAXPY(ilinkA->y,-1.0,ilinkA->z);CHKERRQ(ierr);
     }
@@ -1200,7 +1197,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PetscErrorCode     ierr;
   PC_FieldSplitLink  ilink = jac->head;
   PetscInt           cnt,bs;
-  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
@@ -1213,11 +1209,8 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
       while (ilink) {
         ierr = PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
         ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+        ierr = KSPCheckSolve(ilink->ksp,pc,ilink->y);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
-        ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-        if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-          pc->failedreason = PC_SUBPC_ERROR;
-        }
         ilink = ilink->next;
       }
       ierr = VecStrideScatterAll(jac->y,y,INSERT_VALUES);CHKERRQ(ierr);
@@ -1225,10 +1218,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
       ierr = VecSet(y,0.0);CHKERRQ(ierr);
       while (ilink) {
         ierr = FieldSplitSplitSolveAdd(ilink,x,y);CHKERRQ(ierr);
-        ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-        if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-          pc->failedreason = PC_SUBPC_ERROR;
-        }
         ilink = ilink->next;
       }
     }
@@ -1239,11 +1228,8 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
     ierr = VecScatterEnd(ilink->sctx,x,ilink->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(ilink->ksp,pc,ilink->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-    if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-      pc->failedreason = PC_SUBPC_ERROR;
-    }
     ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
@@ -1257,11 +1243,8 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
     /* solve on second block variables */
     ierr = PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(ilink->ksp,pc,ilink->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-    if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-      pc->failedreason = PC_SUBPC_ERROR;
-    }
     ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (jac->type == PC_COMPOSITE_MULTIPLICATIVE || jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
@@ -1271,10 +1254,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
     }
     ierr = VecSet(y,0.0);CHKERRQ(ierr);
     ierr = FieldSplitSplitSolveAdd(ilink,x,y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-    if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-      pc->failedreason = PC_SUBPC_ERROR;
-    }
     cnt  = 1;
     while (ilink->next) {
       ilink = ilink->next;
@@ -1285,11 +1264,8 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
       ierr = VecScatterEnd(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
       ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+      ierr = KSPCheckSolve(ilink->ksp,pc,ilink->y);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
-      ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-      if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-        pc->failedreason = PC_SUBPC_ERROR;
-      }
       ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
@@ -1304,11 +1280,8 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
         ierr = VecScatterEnd(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
         ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+        ierr = KSPCheckSolve(ilink->ksp,pc,ilink->y);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
-        ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-        if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-          pc->failedreason = PC_SUBPC_ERROR;
-        }
         ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       }
@@ -1320,14 +1293,14 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
 
 static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
 {
-  PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
-  PetscErrorCode    ierr;
-  PC_FieldSplitLink ilinkA = jac->head,ilinkD = ilinkA->next;
-  KSP               ksp = ilinkA->ksp;
-  Vec               u,v,Hu,d,work1,work2;
-  PetscScalar       alpha,z,nrmz2,*vecz;
-  PetscReal         lowbnd,nu,beta;
-  PetscInt          j,iterGKB;
+  PC_FieldSplit      *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode     ierr;
+  PC_FieldSplitLink  ilinkA = jac->head,ilinkD = ilinkA->next;
+  KSP                ksp = ilinkA->ksp;
+  Vec                u,v,Hu,d,work1,work2;
+  PetscScalar        alpha,z,nrmz2,*vecz;
+  PetscReal          lowbnd,nu,beta;
+  PetscInt           j,iterGKB;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1358,6 +1331,7 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   /* Transform rhs from [q,tilde{b}] to [0,b] */
   ierr = PetscLogEventBegin(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(ksp,pc,ilinkA->y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ilinkA->event,ksp,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
   ierr = MatMultHermitianTranspose(jac->B,ilinkA->y,work1);CHKERRQ(ierr);
   ierr = VecAXPBY(work1,1.0/nu,-1.0,ilinkD->x);CHKERRQ(ierr);            /* c = b - B'*x        */
@@ -1370,6 +1344,7 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   ierr  = MatMult(jac->B,v,work2);CHKERRQ(ierr);                       /* u = H^{-1}*B*v      */
   ierr  = PetscLogEventBegin(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
   ierr  = KSPSolve(ksp,work2,u);CHKERRQ(ierr);
+  ierr  = KSPCheckSolve(ksp,pc,u);CHKERRQ(ierr);
   ierr  = PetscLogEventEnd(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
   ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                          /* alpha = u'*H*u      */
   ierr  = VecDot(Hu,u,&alpha);CHKERRQ(ierr);
@@ -1404,6 +1379,7 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
     ierr  = VecAXPY(work2,-beta,Hu);CHKERRQ(ierr);
     ierr  = PetscLogEventBegin(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
     ierr  = KSPSolve(ksp,work2,u);CHKERRQ(ierr);
+    ierr  = KSPCheckSolve(ksp,pc,u);CHKERRQ(ierr);
     ierr  = PetscLogEventEnd(ilinkA->event,ksp,work2,u,NULL);CHKERRQ(ierr);
     ierr  = MatMult(jac->H,u,Hu);CHKERRQ(ierr);                      /* alpha = u'*H*u            */
     ierr  = VecDot(Hu,u,&alpha);CHKERRQ(ierr);
@@ -1453,7 +1429,8 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
    VecScatterEnd(ilink->sctx,xx,ilink->y,INSERT_VALUES,SCATTER_FORWARD) || \
    PetscLogEventBegin(ilink->event,ilink->ksp,ilink->y,ilink->x,NULL) || \
    KSPSolveTranspose(ilink->ksp,ilink->y,ilink->x) ||                  \
-   PetscLogEventBegin(ilink->event,ilink->ksp,ilink->y,ilink->x,NULL) || \
+   KSPCheckSolve(ilink->ksp,pc,ilink->x) || \
+   PetscLogEventEnd(ilink->event,ilink->ksp,ilink->y,ilink->x,NULL) ||   \
    VecScatterBegin(ilink->sctx,ilink->x,yy,ADD_VALUES,SCATTER_REVERSE) || \
    VecScatterEnd(ilink->sctx,ilink->x,yy,ADD_VALUES,SCATTER_REVERSE))
 
@@ -1463,7 +1440,6 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
   PetscErrorCode     ierr;
   PC_FieldSplitLink  ilink = jac->head;
   PetscInt           bs;
-  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
@@ -1475,12 +1451,9 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
       ierr = VecStrideGatherAll(x,jac->x,INSERT_VALUES);CHKERRQ(ierr);
       while (ilink) {
         ierr = PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
-        ierr  = KSPSolveTranspose(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+        ierr = KSPSolveTranspose(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+        ierr = KSPCheckSolve(ilink->ksp,pc,ilink->y);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL);CHKERRQ(ierr);
-        ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-        if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-          pc->failedreason = PC_SUBPC_ERROR;
-        }
         ilink = ilink->next;
       }
       ierr = VecStrideScatterAll(jac->y,y,INSERT_VALUES);CHKERRQ(ierr);
@@ -1488,10 +1461,6 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
       ierr = VecSet(y,0.0);CHKERRQ(ierr);
       while (ilink) {
         ierr = FieldSplitSplitSolveAddTranspose(ilink,x,y);CHKERRQ(ierr);
-        ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-        if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-          pc->failedreason = PC_SUBPC_ERROR;
-        }
         ilink = ilink->next;
       }
     }
@@ -1503,10 +1472,6 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
     ierr = VecSet(y,0.0);CHKERRQ(ierr);
     if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
       ierr = FieldSplitSplitSolveAddTranspose(ilink,x,y);CHKERRQ(ierr);
-      ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-      if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-        pc->failedreason = PC_SUBPC_ERROR;
-      }
       while (ilink->next) {
         ilink = ilink->next;
         ierr  = MatMultTranspose(pc->mat,y,jac->w1);CHKERRQ(ierr);
@@ -1524,10 +1489,6 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
         ilink = ilink->next;
       }
       ierr = FieldSplitSplitSolveAddTranspose(ilink,x,y);CHKERRQ(ierr);
-      ierr = KSPGetConvergedReason(ilink->ksp,&reason);CHKERRQ(ierr);
-      if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
-        pc->failedreason = PC_SUBPC_ERROR;
-      }
       while (ilink->previous) {
         ilink = ilink->previous;
         ierr  = MatMultTranspose(pc->mat,y,jac->w1);CHKERRQ(ierr);

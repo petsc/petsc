@@ -117,7 +117,7 @@ PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCt
   PetscFunctionBegin;
   if (numGroups < 2) {*label = NULL; PetscFunctionReturn(0);}
   if (numGroups != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Test only coded for 2 groups, not %D", numGroups);
-  ierr = DMLabelCreate("groups", label);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "groups", label);CHKERRQ(ierr);
   for (c = 0; c < 10; ++c) {ierr = DMLabelSetValue(*label, groupA[c], 101);CHKERRQ(ierr);}
   for (c = 0; c < 6;  ++c) {ierr = DMLabelSetValue(*label, groupB[c], 1001);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -161,14 +161,16 @@ int main(int argc, char **argv)
   if (user.numGroups < 1) {
     ierr = DMPlexCreateDoublet(PETSC_COMM_WORLD, user.dim, user.cellSimplex, user.interpolate, user.refinementUniform, user.refinementLimit, &dm);CHKERRQ(ierr);
     ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-    ierr = DMPlexCreateSection(dm, user.dim, user.numFields, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
+    ierr = DMSetNumFields(dm, user.numFields);CHKERRQ(ierr);
+    ierr = DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
     ierr = DMSetSection(dm, s);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
     ierr = TestReordering(dm, &user);CHKERRQ(ierr);
   } else {
     ierr = CreateTestMesh(PETSC_COMM_WORLD, &dm, &user);CHKERRQ(ierr);
     ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-    ierr = DMPlexCreateSection(dm, user.dim, user.numFields, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
+    ierr = DMSetNumFields(dm, user.numFields);CHKERRQ(ierr);
+    ierr = DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
     ierr = DMSetSection(dm, s);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
     ierr = TestReorderingByGroup(dm, &user);CHKERRQ(ierr);

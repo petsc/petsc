@@ -24,7 +24,7 @@ static PetscErrorCode CreateAdaptivityLabel(DM forest,DMLabel *adaptLabel)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMLabelCreate("adapt",adaptLabel);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF,"adapt",adaptLabel);CHKERRQ(ierr);
   ierr = DMLabelSetDefaultValue(*adaptLabel,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   ierr = DMGetLabel(forest,"identity",&identLabel);CHKERRQ(ierr);
   ierr = DMForestGetCellChart(forest,&cStart,&cEnd);CHKERRQ(ierr);

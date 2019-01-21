@@ -1,12 +1,6 @@
-PTScotch Graph Partitioner:
-  using partitioning strategy DEFAULT
-  using load imbalance ratio 0.1
-PTScotch Graph Partitioner:
-  using partitioning strategy DEFAULT
-  using load imbalance ratio 0.1
-PTScotch Graph Partitioner:
-  using partitioning strategy DEFAULT
-  using load imbalance ratio 0.1
-PTScotch Graph Partitioner:
+Graph Partitioner: 8 MPI Processes
+  type: ptscotch
+  edge cut: 0
+  balance:  0
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.1

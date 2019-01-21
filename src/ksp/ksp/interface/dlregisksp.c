@@ -37,8 +37,8 @@ PetscErrorCode  PCFinalizePackage(void)
 
 /*@C
   PCInitializePackage - This function initializes everything in the PC package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscksp() when using dynamic libraries, and on the first call to PCCreate()
+  when using shared static libraries.
 
   Level: developer
 
@@ -111,7 +111,7 @@ const char *const KSPCGTypes[]                  = {"SYMMETRIC","HERMITIAN","KSPC
 const char *const KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS","KSPGMRESRefinementType","KSP_GMRES_CGS_",0};
 const char *const KSPNormTypes_Shifted[]        = {"DEFAULT","NONE","PRECONDITIONED","UNPRECONDITIONED","NATURAL","KSPNormType","KSP_NORM_",0};
 const char *const*const KSPNormTypes = KSPNormTypes_Shifted + 1;
-const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_PCSETUP_FAILED","DIVERGED_INDEFINITE_MAT","DIVERGED_NANORINF","DIVERGED_INDEFINITE_PC",
+const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_PC_FAILED","DIVERGED_INDEFINITE_MAT","DIVERGED_NANORINF","DIVERGED_INDEFINITE_PC",
                                                    "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG","DIVERGED_BREAKDOWN",
                                                    "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","","CONVERGED_ITERATING",
                                                    "CONVERGED_RTOL_NORMAL","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",
@@ -144,8 +144,8 @@ PetscErrorCode  KSPFinalizePackage(void)
 
 /*@C
   KSPInitializePackage - This function initializes everything in the KSP package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to KSPCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscksp() when using dynamic libraries, and on the first call to KSPCreate()
+  when using shared or static libraries.
 
   Level: developer
 

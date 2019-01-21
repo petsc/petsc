@@ -412,7 +412,7 @@ static PetscErrorCode CheckSolution(Vec sol,Vec solRef)
   ierr = VecNorm(diff,NORM_2,&errAbs);CHKERRQ(ierr);
   ierr = VecNorm(solRef,NORM_2,&normsolRef);CHKERRQ(ierr);
   errRel = errAbs/normsolRef;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error (abs): %g\nError (rel): %g\n",errAbs,errRel);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel);CHKERRQ(ierr);
   ierr = VecDestroy(&diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

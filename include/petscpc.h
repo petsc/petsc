@@ -39,7 +39,9 @@ PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
-PETSC_EXTERN PetscErrorCode PCGetSetUpFailedReason(PC,PCFailedReason*);
+PETSC_EXTERN PetscErrorCode PCGetFailedReason(PC,PCFailedReason*);
+PETSC_DEPRECATED("Use PCGetFailedReason") PETSC_STATIC_INLINE PetscErrorCode PCGetSetUpFailedReason(PC pc,PCFailedReason *reason)
+{ return PCGetFailedReason(pc,reason); }
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplySymmetricLeft(PC,Vec,Vec);

@@ -21,7 +21,7 @@
 ##pressure is in N/m2
 -pressure 5.06625e+06
 
--ts_final_time 6.5e-3
+-ts_max_time 6.5e-3
 -ts_max_steps 100000000
 
 -monitor_temp

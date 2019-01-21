@@ -61,9 +61,9 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
     hfac_lte = safety * PetscPowReal(enorm,((PetscReal)-1)/order);
   else
     hfac_lte = safety * PETSC_INFINITY;
-  if (adapt->timestepjustincreased){
+  if (adapt->timestepjustdecreased){
     hfac_lte = PetscMin(hfac_lte,1.0);
-    adapt->timestepjustincreased--;
+    adapt->timestepjustdecreased--;
   }
   h_lte = h * PetscClipInterval(hfac_lte,adapt->clip[0],adapt->clip[1]);
 

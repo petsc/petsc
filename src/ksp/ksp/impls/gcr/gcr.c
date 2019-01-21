@@ -61,6 +61,7 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
     ierr    = VecAXPY(r, -r_dot_v, v);CHKERRQ(ierr);
     if (ksp->its > ksp->chknorm) {
       ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
+      KSPCheckNorm(ksp,norm_r);
     }
     /* update the local counter and the global counter */
     ksp->its++;
@@ -101,7 +102,7 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp)
   ierr = KSP_MatMult(ksp,A, x, r);CHKERRQ(ierr);
   ierr = VecAYPX(r, -1.0, b);CHKERRQ(ierr); /* r = b - A x  */
   ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
-
+  KSPCheckNorm(ksp,norm_r);
   ksp->its    = 0;
   ksp->rnorm0 = norm_r;
 

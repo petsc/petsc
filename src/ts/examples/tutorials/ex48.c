@@ -236,7 +236,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->periodicity[2] = (DMBoundaryType) bd;
   ii = options->dim;
   ierr = PetscOptionsIntArray("-cells", "Number of cells in each dimension", "ex48.c", options->cells, &ii, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   options->a = (options->domain_hi[0]-options->domain_lo[0])/2.0;
   options->b = (options->domain_hi[1]-options->domain_lo[1])/2.0;
   for (ii = 0; ii < options->dim; ++ii) {
@@ -380,7 +380,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
     PetscBool flg;
     ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex48",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
       DM dmConv;
       ierr = DMConvert(*dm,convType,&dmConv);CHKERRQ(ierr);
@@ -700,9 +700,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -debug 1 -dim 2 -dm_refine 1 -x_periodicity PERIODIC -ts_max_steps 1 -ts_final_time 10. -ts_dt 1.0
+    args: -debug 1 -dim 2 -dm_refine 1 -x_periodicity PERIODIC -ts_max_steps 1 -ts_max_time 10. -ts_dt 1.0
   test:
     suffix: 1
-    args: -debug 1 -dim 3 -dm_refine 1 -z_periodicity PERIODIC -ts_max_steps 1 -ts_final_time 10. -ts_dt 1.0 -domain_lo -2,-1,-1 -domain_hi 2,1,1
+    args: -debug 1 -dim 3 -dm_refine 1 -z_periodicity PERIODIC -ts_max_steps 1 -ts_max_time 10. -ts_dt 1.0 -domain_lo -2,-1,-1 -domain_hi 2,1,1
 
 TEST*/

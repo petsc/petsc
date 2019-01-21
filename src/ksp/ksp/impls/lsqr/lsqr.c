@@ -108,6 +108,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   /* Test for nothing to do */
   ierr       = VecNorm(U,NORM_2,&rnorm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,rnorm);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = rnorm;
@@ -122,6 +123,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = KSP_MatMultTranspose(ksp,Amat,U,V);CHKERRQ(ierr);
   if (nopreconditioner) {
     ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,rnorm);
   } else {
     /* this is an application of the preconditioner for the normal equations; not the operator, see the manual page */
     ierr = PCApply(ksp->pc,V,Z);CHKERRQ(ierr);
@@ -157,6 +159,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     }
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,beta);
     if (beta > 0.0) {
       ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr); /* beta*U1 = Amat*V - alpha*U */
       if (!lsqr->exact_norm) {
@@ -168,6 +171,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
     if (nopreconditioner) {
       ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
+      KSPCheckNorm(ksp,alpha);
     } else {
       ierr = PCApply(ksp->pc,V1,Z);CHKERRQ(ierr);
       ierr = VecDotRealPart(V1,Z,&alpha);CHKERRQ(ierr);

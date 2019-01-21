@@ -666,6 +666,9 @@ PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetStepLimits(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
 PETSC_EXTERN PetscErrorCode TSAdaptHistorySetHistory(TSAdapt,PetscInt n,PetscReal hist[],PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt,TSTrajectory,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptHistoryGetStep(TSAdapt,PetscInt,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt,PetscInt);
 PETSC_EXTERN PetscErrorCode TSAdaptDSPSetFilter(TSAdapt,const char *);
 PETSC_EXTERN PetscErrorCode TSAdaptDSPSetPID(TSAdapt,PetscReal,PetscReal,PetscReal);
 

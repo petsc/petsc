@@ -497,7 +497,7 @@ class generateExamples(Petsc):
     fh.write('\n\n')
     return
 
-  def getLoopVarsHead(self,loopVars,i):
+  def getLoopVarsHead(self,loopVars,i,usedVars={}):
     """
     Generate a nicely indented string with the format loops
     Here is what the data structure looks like
@@ -508,6 +508,7 @@ class generateExamples(Petsc):
     outstr=''; indnt=self.indent
 
     for key in loopVars:
+      if key in usedVars: continue         # Do not duplicate setting vars
       for var in loopVars[key]['varlist']:
         varval=loopVars[key][var]
         outstr += "{0}_in=${{{0}:-{1}}}\n".format(*varval)
@@ -579,6 +580,7 @@ class generateExamples(Petsc):
       if (loopHead): fh.write(loopHead+"\n")
 
     # Subtests are special
+    allLoopVars=list(loopVars.keys())
     if 'subtests' in testDict:
       substP=subst   # Subtests can inherit args but be careful
       k=0  # for label suffixes
@@ -588,7 +590,8 @@ class generateExamples(Petsc):
         subst['label_suffix']='-'+string.ascii_letters[k]; k+=1
         sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
         if sLoopVars: 
-          (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j)
+          (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j,allLoopVars)
+          allLoopVars+=list(sLoopVars.keys())
           fh.write(sLoopHead+"\n")
         fh.write(self.getCmds(subst,j)+"\n")
         if sLoopVars: 

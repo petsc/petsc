@@ -1,5 +1,8 @@
 #include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE < 10800)
+#error "PETSc needs HDF5 version >= 1.8.0"
+#endif
 
 typedef struct GroupList {
   const char       *name;
@@ -616,18 +619,10 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
     ierr = PetscStrcmp(groupName, "/", &root);CHKERRQ(ierr);
     PetscStackCall("H5Lexists",found = H5Lexists(file_id, groupName, H5P_DEFAULT));
     if (!root && (found <= 0)) {
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
       PetscStackCallHDF5Return(group,H5Gcreate2,(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT));
-#else /* deprecated HDF5 1.6 API */
-      PetscStackCallHDF5Return(group,H5Gcreate,(file_id, groupName, 0));
-#endif
       PetscStackCallHDF5(H5Gclose,(group));
     }
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     PetscStackCallHDF5Return(group,H5Gopen2,(file_id, groupName, H5P_DEFAULT));
-#else
-    PetscStackCallHDF5Return(group,H5Gopen,(file_id, groupName));
-#endif
   } else group = file_id;
 
   *fileId  = file_id;
@@ -818,11 +813,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   if (has) {
     PetscStackCallHDF5Return(attribute,H5Aopen_name,(obj, name));
   } else {
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     PetscStackCallHDF5Return(attribute,H5Acreate2,(obj, name, dtype, dataspace, H5P_DEFAULT, H5P_DEFAULT));
-#else
-    PetscStackCallHDF5Return(attribute,H5Acreate,(obj, name, dtype, dataspace, H5P_DEFAULT));
-#endif
   }
   PetscStackCallHDF5(H5Awrite,(attribute, dtype, value));
   if (datatype == PETSC_STRING) PetscStackCallHDF5(H5Tclose,(dtype));
@@ -954,11 +945,7 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasObject_Internal(viewer, parent, H5O_TYPE_DATASET, &exists);CHKERRQ(ierr);
   if (exists) {
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     PetscStackCallHDF5Return(dataset, H5Dopen2, (h5, parent, H5P_DEFAULT));
-#else
-    PetscStackCallHDF5Return(dataset, H5Dopen, (h5, parent));
-#endif
     PetscStackCallHDF5Return(hhas, H5Aexists, (dataset, name));
     PetscStackCallHDF5(H5Dclose,(dataset));
     *has = hhas ? PETSC_TRUE : PETSC_FALSE;
@@ -976,11 +963,7 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   PetscFunctionBegin;
   ierr = PetscNew(&h);CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group);CHKERRQ(ierr);
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
   PetscStackCallHDF5Return(h->dataset,H5Dopen2,(h->group, name, H5P_DEFAULT));
-#else
-  PetscStackCallHDF5Return(h->dataset,H5Dopen,(h->group, name));
-#endif
   PetscStackCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
   ierr = PetscViewerHDF5GetTimestep(viewer, &h->timestep);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);

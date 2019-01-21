@@ -7,6 +7,7 @@
 #include <petscds.h>
 
 PetscClassId  DM_CLASSID;
+PetscClassId  DMLABEL_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction;
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_",0};
@@ -120,6 +121,8 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   dm->labels->refct++;
   (*newdm)->labels = dm->labels;
   (*newdm)->depthLabel = dm->depthLabel;
+  (*newdm)->leveldown  = dm->leveldown;
+  (*newdm)->levelup    = dm->levelup;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(*newdm, dim);CHKERRQ(ierr);
   if (dm->ops->clone) {
@@ -2940,6 +2943,27 @@ PetscErrorCode  DMGetCoarsenLevel(DM dm,PetscInt *level)
   PetscFunctionReturn(0);
 }
 
+/*@
+    DMSetCoarsenLevel - Sets the number of coarsenings that have generated this DM.
+
+    Not Collective
+
+    Input Parameters:
++   dm - the DM object
+-   level - number of coarsenings
+
+    Level: developer
+
+.seealso DMCoarsen(), DMGetCoarsenLevel(), DMGetRefineLevel(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
+@*/
+PetscErrorCode DMSetCoarsenLevel(DM dm,PetscInt level)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->leveldown = level;
+  PetscFunctionReturn(0);
+}
+
 
 
 /*@C
@@ -4190,6 +4214,21 @@ PetscErrorCode DMSetDS(DM dm, PetscDS prob)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMGetNumFields - Get the number of fields in the DM
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. Nf - The number of fields
+
+  Level: intermediate
+
+.seealso: DMSetNumFields(), DMSetField()
+@*/
 PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
 {
   PetscErrorCode ierr;
@@ -4200,6 +4239,19 @@ PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMSetNumFields - Set the number of fields in the DM
+
+  Logically collective on DM
+
+  Input Parameters:
++ dm - The DM
+- Nf - The number of fields
+
+  Level: intermediate
+
+.seealso: DMGetNumFields(), DMSetField()
+@*/
 PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 {
   PetscInt       Nf, f;
@@ -5590,13 +5642,15 @@ PetscErrorCode DMCreateLabel(DM dm, const char name[])
 {
   DMLabelLink    next  = dm->labels->next;
   PetscBool      flg   = PETSC_FALSE;
+  const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   while (next) {
-    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, lname, &flg);CHKERRQ(ierr);
     if (flg) break;
     next = next->next;
   }
@@ -5604,7 +5658,7 @@ PetscErrorCode DMCreateLabel(DM dm, const char name[])
     DMLabelLink tmpLabel;
 
     ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
-    ierr = DMLabelCreate(name, &tmpLabel->label);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, name, &tmpLabel->label);CHKERRQ(ierr);
     tmpLabel->output = PETSC_TRUE;
     tmpLabel->next   = dm->labels->next;
     dm->labels->next = tmpLabel;
@@ -5726,7 +5780,7 @@ PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, Petsc
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabeGetNumValues(), DMSetLabelValue()
+.seealso: DMLabelGetNumValues(), DMSetLabelValue()
 @*/
 PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
 {
@@ -5959,15 +6013,16 @@ PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
 @*/
 PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
 {
-  DMLabelLink next = dm->labels->next;
-  PetscInt  l    = 0;
+  DMLabelLink    next = dm->labels->next;
+  PetscInt       l    = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(name, 3);
   while (next) {
     if (l == n) {
-      *name = next->label->name;
+      ierr = PetscObjectGetName((PetscObject) next->label, name);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ++l;
@@ -5996,6 +6051,7 @@ PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
 PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
   DMLabelLink    next = dm->labels->next;
+  const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6004,7 +6060,8 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   PetscValidPointer(hasLabel, 3);
   *hasLabel = PETSC_FALSE;
   while (next) {
-    ierr = PetscStrcmp(name, next->label->name, hasLabel);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, lname, hasLabel);CHKERRQ(ierr);
     if (*hasLabel) break;
     next = next->next;
   }
@@ -6032,6 +6089,7 @@ PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 {
   DMLabelLink    next = dm->labels->next;
   PetscBool      hasLabel;
+  const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6040,7 +6098,8 @@ PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
   PetscValidPointer(label, 3);
   *label = NULL;
   while (next) {
-    ierr = PetscStrcmp(name, next->label->name, &hasLabel);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
       *label = next->label;
       break;
@@ -6104,12 +6163,14 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 {
   DMLabelLink    tmpLabel;
   PetscBool      hasLabel;
+  const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
-  if (hasLabel) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
+  ierr = PetscObjectGetName((PetscObject) label, &lname);CHKERRQ(ierr);
+  ierr = DMHasLabel(dm, lname, &hasLabel);CHKERRQ(ierr);
+  if (hasLabel) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", lname);
   ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
   tmpLabel->label  = label;
   tmpLabel->output = PETSC_TRUE;
@@ -6140,6 +6201,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
   DMLabelLink    next = dm->labels->next;
   DMLabelLink    last = NULL;
   PetscBool      hasLabel;
+  const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6148,7 +6210,8 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
   *label = NULL;
   if (!hasLabel) PetscFunctionReturn(0);
   while (next) {
-    ierr = PetscStrcmp(name, next->label->name, &hasLabel);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
       if (last) last->next       = next->next;
       else      dm->labels->next = next->next;
@@ -6187,6 +6250,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 {
   DMLabelLink    next = dm->labels->next;
+  const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6196,7 +6260,8 @@ PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
   while (next) {
     PetscBool flg;
 
-    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, lname, &flg);CHKERRQ(ierr);
     if (flg) {*output = next->output; PetscFunctionReturn(0);}
     next = next->next;
   }
@@ -6221,6 +6286,7 @@ PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 {
   DMLabelLink    next = dm->labels->next;
+  const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6229,7 +6295,8 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
   while (next) {
     PetscBool flg;
 
-    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, lname, &flg);CHKERRQ(ierr);
     if (flg) {next->output = output; PetscFunctionReturn(0);}
     next = next->next;
   }

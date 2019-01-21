@@ -50,12 +50,14 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr = VecNormBegin(RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
     ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);           /*   (RT,ART)           */
     ierr = VecNormEnd  (RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
+    KSPCheckNorm(ksp,dp);
   } else if (ksp->normtype == KSP_NORM_NONE) {
       dp   = 0.0; /* meaningless value that is passed to monitor and convergence test */
   } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);         /*   dp <- R'*R         */
     ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);          /*   (RT,ART)           */
     ierr = VecNormEnd  (R,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
+    KSPCheckNorm(ksp,dp);
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
     ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);           /*   (RT,ART)           */
     dp   = PetscSqrtReal(PetscAbsScalar(btop));                  /* dp = sqrt(R,AR)      */
@@ -80,6 +82,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr = KSP_PCApply(ksp,AP,Q);CHKERRQ(ierr);  /*   Q <- B* AP          */
 
     ierr = VecDot(AP,Q,&apq);CHKERRQ(ierr);
+    KSPCheckDot(ksp,apq);
     if (PetscRealPart(apq) <= 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       ierr        = PetscInfo(ksp,"KSPSolve_CR:diverging due to indefinite or negative definite PC\n");CHKERRQ(ierr);
@@ -97,6 +100,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       ierr = VecNormBegin(RT,NORM_2,&dp);CHKERRQ(ierr);      /*   dp <- || RT ||      */
       ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);
       ierr = VecNormEnd  (RT,NORM_2,&dp);CHKERRQ(ierr);      /*   dp <- || RT ||      */
+      KSPCheckNorm(ksp,dp);
     } else if (ksp->normtype == KSP_NORM_NATURAL) {
       ierr = VecDotEnd(RT,ART,&btop);CHKERRQ(ierr);
       dp   = PetscSqrtReal(PetscAbsScalar(btop));                /* dp = sqrt(R,AR)       */
@@ -108,6 +112,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
       ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);
       ierr = VecNormEnd  (R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
+      KSPCheckNorm(ksp,dp);
     } else SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
     if (PetscAbsScalar(btop) < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;

@@ -101,7 +101,7 @@ int main(int argc,char **argv)
        - Set timestepping duration info
      Then set runtime options, which can override these defaults.
      For example,
-          -ts_max_steps <maxsteps> -ts_final_time <maxtime>
+          -ts_max_steps <maxsteps> -ts_max_time <maxtime>
      to override the defaults set by TSSetMaxSteps()/TSSetMaxTime().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -373,12 +373,12 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat AA,Mat BB,void *ctx)
 /*TEST
 
    test:
-      args: -pc_type mg -da_refine 2  -ts_view  -ts_monitor -ts_max_time .3
+      args: -pc_type mg -da_refine 2  -ts_view  -ts_monitor -ts_max_time .3 -mg_levels_ksp_max_it 3
       requires: double
 
    test:
      suffix: 2
-     args:  -pc_type mg -da_refine 2  -ts_view  -ts_monitor_draw_solution -ts_monitor -ts_max_time .3
+     args:  -pc_type mg -da_refine 2  -ts_view  -ts_monitor_draw_solution -ts_monitor -ts_max_time .3 -mg_levels_ksp_max_it 3 
      requires: x
      output_file: output/ex3_1.out
      requires: double

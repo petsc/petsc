@@ -1838,6 +1838,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
       PC  subpc;
 
       ierr = KSPCreate(PETSC_COMM_SELF, &ksp);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(ksp, pc->erroriffailure);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(ksp, prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(ksp, "sub_");CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject) ksp, (PetscObject) pc, 1);CHKERRQ(ierr);
@@ -2154,6 +2155,7 @@ static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
   ierr = KSPSolve(ksp, x, y);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(ksp, pc, y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
   if (!patch->save_operators) {
     PC pc;
@@ -2527,7 +2529,7 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
     }
     ierr = KSPSetUp((KSP) patch->solver[i]);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason((KSP) patch->solver[i], &reason);CHKERRQ(ierr);
-    if (reason == KSP_DIVERGED_PCSETUP_FAILED) pc->failedreason = PC_SUBPC_ERROR;
+    if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
 }

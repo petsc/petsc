@@ -559,7 +559,6 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
 {
   SNES           snes = (SNES)ctx;
   PetscErrorCode ierr;
-  Mat            Asave = A,Bsave = B;
   Vec            X,Xnamed = NULL;
   DM             dmsave;
   void           *ctxsave;
@@ -578,17 +577,23 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
       ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     }
   }
-  /* put the previous context back */
+  /* Make sure KSP DM has the Jacobian computation routine */
+  {
+    DMSNES sdm;
 
+    ierr = DMGetDMSNES(snes->dm, &sdm);CHKERRQ(ierr);
+    if (!sdm->ops->computejacobian) {
+      ierr = DMCopyDMSNES(dmsave, snes->dm);CHKERRQ(ierr);
+    }
+  }
+  /* Compute the operators */
   ierr = SNESComputeJacobian(snes,X,A,B);CHKERRQ(ierr);
+  /* Put the previous context back */
   if (snes->dm != dmsave && jac == SNESComputeJacobianDefaultColor) {
     ierr = SNESSetJacobian(snes,NULL,NULL,jac,ctxsave);CHKERRQ(ierr);
   }
 
-  if (A != Asave || B != Bsave) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"No support for changing matrices at this time");
-  if (Xnamed) {
-    ierr = DMRestoreNamedGlobalVector(snes->dm,"SNESVecSol",&Xnamed);CHKERRQ(ierr);
-  }
+  if (Xnamed) {ierr = DMRestoreNamedGlobalVector(snes->dm,"SNESVecSol",&Xnamed);CHKERRQ(ierr);}
   snes->dm = dmsave;
   PetscFunctionReturn(0);
 }
@@ -1605,6 +1610,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->max_its           = 50;
   snes->max_funcs         = 10000;
   snes->norm              = 0.0;
+  snes->xnorm             = 0.0;
+  snes->ynorm             = 0.0;
   snes->normschedule      = SNES_NORM_ALWAYS;
   snes->functype          = SNES_FUNCTION_DEFAULT;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -1908,6 +1915,56 @@ PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(norm, 2);
   *norm = snes->norm;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  SNESGetUpdateNorm - Gets the last computed norm of the Newton update
+
+  Not Collective
+
+  Input Parameter:
+. snes - the SNES context
+
+  Output Parameter:
+. ynorm - the last computed update norm
+
+  Level: developer
+
+.keywords: SNES, nonlinear, set, function, norm, type
+.seealso: SNESSetNormSchedule(), SNESComputeFunction(), SNESGetFunctionNorm()
+@*/
+PetscErrorCode SNESGetUpdateNorm(SNES snes, PetscReal *ynorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(ynorm, 2);
+  *ynorm = snes->ynorm;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  SNESGetSolutionNorm - Gets the last computed norm of the solution
+
+  Not Collective
+
+  Input Parameter:
+. snes - the SNES context
+
+  Output Parameter:
+. xnorm - the last computed solution norm
+
+  Level: developer
+
+.keywords: SNES, nonlinear, set, function, norm, type
+.seealso: SNESSetNormSchedule(), SNESComputeFunction(), SNESGetFunctionNorm(), SNESGetUpdateNorm()
+@*/
+PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(xnorm, 2);
+  *xnorm = snes->xnorm;
   PetscFunctionReturn(0);
 }
 

@@ -11,6 +11,7 @@ static PetscErrorCode MatMult_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y)
   ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
   ierr = MatMultTranspose(ctx->BD,x,ctx->work);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(ctx->kBD,ctx->work,y);CHKERRQ(ierr);
+  /* No PC so cannot propagate up failure in KSPSolveTranspose() */
   PetscFunctionReturn(0);
 }
 
@@ -22,6 +23,7 @@ static PetscErrorCode MatMultTranspose_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
   ierr = KSPSolve(ctx->kBD,x,ctx->work);CHKERRQ(ierr);
+  /* No PC so cannot propagate up failure in KSPSolve() */
   ierr = MatMult(ctx->BD,ctx->work,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

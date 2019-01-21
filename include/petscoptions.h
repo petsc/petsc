@@ -64,6 +64,9 @@ PETSC_EXTERN PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*)(const char
 PETSC_EXTERN PetscErrorCode PetscOptionsMonitorCancel(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsMonitorDefault(const char[], const char[], void*);
 
+PETSC_EXTERN PetscErrorCode PetscObjectSetOptions(PetscObject,PetscOptions);
+PETSC_EXTERN PetscErrorCode PetscObjectGetOptions(PetscObject,PetscOptions*);
+
 PETSC_EXTERN PetscBool PetscOptionsPublish;
 
 

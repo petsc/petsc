@@ -24,8 +24,8 @@ PetscErrorCode  TSFinalizePackage(void)
 
 /*@C
   TSInitializePackage - This function initializes everything in the TS package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscts() when using dynamic libraries, and on the first call to TSCreate()
+  when using shared or static libraries.
 
   Level: developer
 

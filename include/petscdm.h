@@ -12,6 +12,7 @@
 PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
 PETSC_EXTERN PetscClassId DM_CLASSID;
+PETSC_EXTERN PetscClassId DMLABEL_CLASSID;
 
 #define DMLOCATEPOINT_POINT_NOT_FOUND -367
 
@@ -178,6 +179,7 @@ PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionScatters(DM,PetscInt,DM*,
 PETSC_EXTERN PetscErrorCode DMGetRefineLevel(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSetRefineLevel(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetCoarsenLevel(DM,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSetCoarsenLevel(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode VecGetDM(Vec, DM*);

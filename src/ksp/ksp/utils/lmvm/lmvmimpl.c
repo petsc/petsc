@@ -221,7 +221,7 @@ static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
   ierr = MatGetType(B, &lmvmType);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)B), mat);CHKERRQ(ierr);
   ierr = MatSetType(*mat, lmvmType);CHKERRQ(ierr);
-  
+
   A = *mat;
   mctx = (Mat_LMVM*)A->data;
   mctx->m = bctx->m;
@@ -230,7 +230,7 @@ static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
   mctx->ksp_atol = bctx->ksp_atol;
   mctx->shift = bctx->shift;
   ierr = KSPSetTolerances(mctx->J0ksp, mctx->ksp_rtol, mctx->ksp_atol, PETSC_DEFAULT, mctx->ksp_max_it);CHKERRQ(ierr);
-  
+
   ierr = MatLMVMAllocate(*mat, bctx->Xprev, bctx->Fprev);CHKERRQ(ierr);
   if (op == MAT_COPY_VALUES) {
     ierr = MatCopy(B, *mat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
 static PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  
+
   PetscFunctionBegin;
   if (!lmvm->allocated) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   lmvm->shift += PetscRealPart(a);

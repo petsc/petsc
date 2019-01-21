@@ -18,8 +18,8 @@ T*/
 int main(int argc,char **args)
 {
   Mat            A[3],B;                       /* matrix */
-  PetscViewer    fd;                      /* viewer */
-  char           file[PETSC_MAX_PATH_LEN];            /* input file name */
+  PetscViewer    fd;                           /* viewer */
+  char           file[PETSC_MAX_PATH_LEN];     /* input file name */
   PetscErrorCode ierr;
   PetscBool      flg;
   Vec            x,y,z,work;
@@ -27,8 +27,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
-     Determine files from which we read the two linear systems
-     (matrix and right-hand-side vector).
+     Determine files from which we read the matrix
   */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
@@ -65,7 +64,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
-  if (rnorm > 1.e-10) {
+  if (rnorm > 10000.0*PETSC_MACHINE_EPSILON) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add %g\n",(double)rnorm);CHKERRQ(ierr);
   }
 
@@ -75,7 +74,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
-  if (rnorm > 1.e-10) {
+  if (rnorm > 10000.0*PETSC_MACHINE_EPSILON) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add after merge %g\n",(double)rnorm);CHKERRQ(ierr);
   }
 
@@ -90,7 +89,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
-  if (rnorm > 1.e-10) {
+  if (rnorm > 10000.0*PETSC_MACHINE_EPSILON) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %g\n",(double)rnorm);CHKERRQ(ierr);
   }
 
@@ -101,7 +100,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
-  if (rnorm > 1.e-10) {
+  if (rnorm > 1000000.0*PETSC_MACHINE_EPSILON) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative after merge %g\n",(double)rnorm);CHKERRQ(ierr);
   }
 
@@ -121,16 +120,11 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
-
-
-
 /*TEST
 
    test:
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
-      TODO: Need to develop comparison test
 
 TEST*/
