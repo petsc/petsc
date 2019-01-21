@@ -106,8 +106,8 @@ cdef class DM(Object):
 
     #
 
-    def setDS(self, DS ds):
-        CHKERR( DMSetDS(self.dm, ds.ds) )
+    def copyDisc(self, DM dm):
+        CHKERR( DMCopyDisc(self.dm, dm.dm) )
 
     def getDS(self):
         cdef DS ds = DS()
