@@ -116,6 +116,7 @@ typedef struct {
   PetscBool   idiagvalid;                     /* current idiag[] and mdiag[] are valid */
   PetscScalar *ibdiag;                        /* inverses of block diagonals */
   PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
+  PetscBool   diagonaldense;                  /* all entries along the diagonal have been set; i.e. no missing diagonal terms */
   PetscScalar fshift,omega;                   /* last used omega and fshift */
 
   ISColoring  coloring;                       /* set with MatADSetColoring() used by MatADSetValues() */
