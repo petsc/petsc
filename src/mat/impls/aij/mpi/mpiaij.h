@@ -25,7 +25,7 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   PetscScalar *apa;            /* tmp array for store a row of A*P used in MatMatMult() */
   Mat         A_loc;           /* used by MatTransposeMatMult(), contains api and apj */
   Mat         Pt;              /* used by MatTransposeMatMult(), Pt = P^T */
-  PetscBool   scalable;        /* flag determines scalable or non-scalable implementation */
+  PetscBool   freestruct;      /* flag for MatFreeIntermediateDataStructures() */
   Mat         Rd,Ro,AP_loc,C_loc,C_oth;
   PetscInt    algType;         /* implementation algorithm */
 
@@ -33,7 +33,7 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*view)(Mat,PetscViewer);
-} Mat_PtAPMPI;
+} Mat_APMPI;
 
 typedef struct {
   Mat A,B;                             /* local submatrices: A (diag part),
@@ -71,7 +71,7 @@ typedef struct {
   PetscInt *ld;                    /* number of entries per row left of diagona block */
 
   /* Used by MatMatMult() and MatPtAP() */
-  Mat_PtAPMPI *ptap;
+  Mat_APMPI *ap;
 
   /* used by MatMatMatMult() */
   Mat_MatMatMatMult *matmatmatmult;
@@ -124,7 +124,8 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat,Mat,Mat);
-
+PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat);
+PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_BC(Mat);
 
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);

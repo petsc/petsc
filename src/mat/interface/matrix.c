@@ -11105,3 +11105,36 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
   } else *cong = mat->congruentlayouts ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+/*@
+    MatFreeIntermediateDataStructures - Free intermediate data structures created for reuse,
+    e.g., matrx product of MatPtAP.
+
+   Collective on mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
+.  mat - the matrix with intermediate data structures released
+
+   Level: advanced
+
+   Notes:
+
+.keywords: matrix
+
+.seealso: MatPtAP(), MatMatMult()
+@*/
+PetscErrorCode MatFreeIntermediateDataStructures(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (mat->ops->freeintermediatedatastructures) {
+    ierr = (*mat->ops->freeintermediatedatastructures)(mat);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

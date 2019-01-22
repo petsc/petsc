@@ -50,14 +50,14 @@ int main(int argc,char **argv)
   Vec            x,v1,v2,v3,v4;
   PetscReal      norm,norm_tmp,norm_tmp1,tol=100.*PETSC_MACHINE_EPSILON;
   PetscRandom    rdm;
-  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
+  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_TRUE,flg;
   const PetscInt *ia,*ja;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
 
   user.ratio     = 2;
-  user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
+  user.coarse.mx = 20; user.coarse.my = 20; user.coarse.mz = 20;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
@@ -102,6 +102,8 @@ int main(int argc,char **argv)
 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  /* if (!rank) printf("A %d, %d\n",M,N); */
+
   /* set val=one to A */
   if (size == 1) {
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
@@ -141,11 +143,11 @@ int main(int argc,char **argv)
   ierr = DMSetFromOptions(user.coarse.da);CHKERRQ(ierr);
   ierr = DMSetUp(user.coarse.da);CHKERRQ(ierr);
 
-  /* Create interpolation between the levels */
+  /* Create interpolation between the fine and coarse grids */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
-
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
+  /* if (!rank) printf("P %d, %d\n",M,N); */
 
   /* Create vectors v1 and v2 that are compatible with A */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
@@ -165,10 +167,12 @@ int main(int argc,char **argv)
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
     for (i=0; i<2; i++) {
-      alpha -=0.1;
+      alpha -= 0.1;
       ierr   = MatScale(A_tmp,alpha);CHKERRQ(ierr);
       ierr   = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
+    /* Free intermediate data structures created for reuse of C=Pt*A*P */
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
 
     /* Test MatDuplicate()        */
     /*----------------------------*/
@@ -213,10 +217,13 @@ int main(int argc,char **argv)
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
     for (i=0; i<1; i++) {
-      alpha -=0.1;
+      alpha -= 0.1;
       ierr   = MatScale(A,alpha);CHKERRQ(ierr);
       ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
+
+    /* Free intermediate data structures created for reuse of C=Pt*A*P */
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
 
     /* Test MatDuplicate()        */
     /*----------------------------*/
@@ -272,11 +279,22 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
 /*TEST
 
    test:
+      args: -Mx 10 -My 5 -Mz 10
+      output_file: output/ex96_1.out
+
+   test:
+      suffix: nonscalable
       nsize: 3
-      args: -Mx 10 -My 5
+      args: -Mx 10 -My 5 -Mz 10
+      output_file: output/ex96_1.out
+
+   test:
+      suffix: scalable
+      nsize: 3
+      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable
+      output_file: output/ex96_1.out
 
 TEST*/

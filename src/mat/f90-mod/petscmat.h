@@ -425,7 +425,7 @@
       parameter(MATOP_ILUFACTOR_SYMBOLIC=30)
       parameter(MATOP_ICCFACTOR_SYMBOLIC=31)
       parameter(MATOP_GET_DIAGONAL_BLOCK=32)
-!     parameter(MATOP_PLACEHOLDER_33=33)
+!     parameter(MATOP_FREE_INTER_STRUCT=33)
       parameter(MATOP_DUPLICATE=34)
       parameter(MATOP_FORWARD_SOLVE=35)
       parameter(MATOP_BACKWARD_SOLVE=36)
