@@ -535,6 +535,7 @@ cdef Mat mat_idiv(Mat self, other):
             R.reciprocal()
         self.diagonalScale(L, R)
     else:
+        other = 1/other
         self.scale(other)
     return self
 
