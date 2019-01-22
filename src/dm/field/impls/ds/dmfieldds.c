@@ -940,10 +940,10 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
             }
             break;
           default:
-            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not implemented yet\n");
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D not yet supported\n", coneSize);
           }
         default:
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not implemented yet\n");
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not yet supported\n", dim);
         }
       }
     }
