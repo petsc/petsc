@@ -4665,8 +4665,7 @@ PetscErrorCode DMCreateDS(DM dm)
 {
   MPI_Comm       comm;
   PetscDS        prob, probh = NULL;
-  PetscInt      *pStart, *pEnd, *pMax, pSize;
-  PetscInt       depth, dim, dimEmbed, d, f, s, field = 0, fieldh = 0;
+  PetscInt       dimEmbed, f, s, field = 0, fieldh = 0;
   PetscBool      doSetup = PETSC_TRUE;
   PetscErrorCode ierr;
 
@@ -4678,19 +4677,7 @@ PetscErrorCode DMCreateDS(DM dm)
    2) Hybrid cells
   */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
-  {
-    DM plex;
-
-    ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-    ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-    pSize = PetscMax(depth, dim) + 1;
-    ierr = PetscMalloc3(pSize, &pStart, pSize, &pEnd, pSize, &pMax);CHKERRQ(ierr);
-    for (d = 0; d < depth; ++d) {ierr = DMPlexGetDepthStratum(plex, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);}
-    ierr = DMPlexGetHybridBounds(plex, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
-    ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  }
   /* Create default DS */
   ierr = DMGetRegionDS(dm, NULL, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetCoordinateDimension(prob, dimEmbed);CHKERRQ(ierr);
@@ -4700,6 +4687,14 @@ PetscErrorCode DMCreateDS(DM dm)
     PetscInt lStart, lEnd;
 
     if (label) {
+      DM       plex;
+      PetscInt depth, pMax[4];
+
+      ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+      ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+      ierr = DMPlexGetHybridBounds(plex, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
+      ierr = DMDestroy(&plex);CHKERRQ(ierr);
+
       ierr = DMLabelGetBounds(label, &lStart, &lEnd);CHKERRQ(ierr);
       if (lStart < pMax[depth]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over hybrid cells right now");
       ierr = PetscDSCreate(comm, &probh);CHKERRQ(ierr);
@@ -4734,7 +4729,6 @@ PetscErrorCode DMCreateDS(DM dm)
     }
   }
   ierr = PetscDSDestroy(&probh);CHKERRQ(ierr);
-  ierr = PetscFree3(pStart, pEnd, pMax);CHKERRQ(ierr);
   /* Setup DSes */
   if (doSetup) {
     for (s = 0; s < dm->Nds; ++s) {ierr = PetscDSSetUp(dm->probs[s].ds);CHKERRQ(ierr);}
