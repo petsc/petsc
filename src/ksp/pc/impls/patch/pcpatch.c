@@ -106,12 +106,12 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
     nleaves = PetscMax(nleaves, 0);
   }
 
-  for (PetscInt point = pStart; point < pEnd; ++point) {
-    if (ghost) {ierr = DMLabelHasPoint(ghost, point, &flg);CHKERRQ(ierr);}
-    else       {ierr = PetscFindInt(point, nleaves, leaves, &loc);CHKERRQ(ierr); flg = loc >=0 ? PETSC_TRUE : PETSC_FALSE;}
+  for (PetscInt opoint = pStart; opoint < pEnd; ++opoint) {
+    if (ghost) {ierr = DMLabelHasPoint(ghost, opoint, &flg);CHKERRQ(ierr);}
+    else       {ierr = PetscFindInt(opoint, nleaves, leaves, &loc);CHKERRQ(ierr); flg = loc >=0 ? PETSC_TRUE : PETSC_FALSE;}
     /* Not an owned entity, don't make a cell patch. */
     if (flg) continue;
-    ierr = PetscHSetIAdd(ht, point);CHKERRQ(ierr);
+    ierr = PetscHSetIAdd(ht, opoint);CHKERRQ(ierr);
   }
 
   /* Now build the overlap for the patch */
@@ -125,9 +125,9 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
     ierr = PetscHSetIGetElems(ht, &index, htpoints);CHKERRQ(ierr);
 
     for (PetscInt i = 0; i < htsize; ++i) {
-      point = htpoints[i];
+      PetscInt opoint = htpoints[i];
 
-      ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(dm, opoint, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
       for (PetscInt si = 0; si < starSize*2; si += 2) {
         const PetscInt starp = star[si];
         PetscInt       closureSize;
@@ -141,7 +141,7 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, starp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       }
-      ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+      ierr = DMPlexRestoreTransitiveClosure(dm, opoint, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     }
     ierr = PetscFree(htpoints);CHKERRQ(ierr);
   }
