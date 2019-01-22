@@ -1072,7 +1072,7 @@ PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],
     ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),q,q*A->cmap->n,q*A->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
     /* generate the scatter context */
-    ierr = VecScatterCreate(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);
 
     ierr = ISDestroy(&from);CHKERRQ(ierr);
     ierr = ISDestroy(&to);CHKERRQ(ierr);
