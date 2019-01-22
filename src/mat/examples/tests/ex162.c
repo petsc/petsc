@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,4,4);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,4,NULL);
+  ierr = MatSeqAIJSetPreallocation(A,4,NULL);CHKERRQ(ierr);
 
   row = 0; coli[0] = 1; coli[1] = 3; vali[0] = 1.0; vali[1] = 2.0;
   ierr = MatSetValues(A,1,&row,2,coli,vali,ADD_VALUES);CHKERRQ(ierr);
