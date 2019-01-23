@@ -430,7 +430,7 @@ static PetscErrorCode VecMax_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
     ierr = VecMax(x,&_entry_loc,&_entry_val);CHKERRQ(ierr);
     if (_entry_val > *max) {
       *max = _entry_val;
-      *p   = _entry_loc + *cnt;
+      if(p) *p = _entry_loc + *cnt;
     }
     ierr = VecGetSize(x,&L);CHKERRQ(ierr);
     *cnt = *cnt + L;
@@ -456,7 +456,7 @@ static PetscErrorCode VecMax_Nest(Vec x,PetscInt *p,PetscReal *max)
 
   PetscFunctionBegin;
   cnt  = 0;
-  *p   = 0;
+  if (p) *p = 0;
   *max = PETSC_MIN_REAL;
   ierr = VecMax_Nest_Recursive(x,&cnt,p,max);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -477,7 +477,7 @@ static PetscErrorCode VecMin_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
     ierr = VecMin(x,&_entry_loc,&_entry_val);CHKERRQ(ierr);
     if (_entry_val < *min) {
       *min = _entry_val;
-      *p   = _entry_loc + *cnt;
+      if (p) *p = _entry_loc + *cnt;
     }
     ierr = VecGetSize(x,&L);CHKERRQ(ierr);
     *cnt = *cnt + L;
@@ -501,7 +501,7 @@ static PetscErrorCode VecMin_Nest(Vec x,PetscInt *p,PetscReal *min)
 
   PetscFunctionBegin;
   cnt  = 0;
-  *p   = 0;
+  if (p) *p = 0;
   *min = PETSC_MAX_REAL;
   ierr = VecMin_Nest_Recursive(x,&cnt,p,min);CHKERRQ(ierr);
   PetscFunctionReturn(0);
