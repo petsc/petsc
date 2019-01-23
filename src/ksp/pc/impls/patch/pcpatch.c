@@ -87,6 +87,7 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
   PetscBool       flg;
   PetscInt        starSize;
   PetscInt       *star = NULL;
+  PetscInt        opoint, overlapi;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -106,7 +107,7 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
     nleaves = PetscMax(nleaves, 0);
   }
 
-  for (PetscInt opoint = pStart; opoint < pEnd; ++opoint) {
+  for (opoint = pStart; opoint < pEnd; ++opoint) {
     if (ghost) {ierr = DMLabelHasPoint(ghost, opoint, &flg);CHKERRQ(ierr);}
     else       {ierr = PetscFindInt(opoint, nleaves, leaves, &loc);CHKERRQ(ierr); flg = loc >=0 ? PETSC_TRUE : PETSC_FALSE;}
     /* Not an owned entity, don't make a cell patch. */
@@ -115,33 +116,35 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
   }
 
   /* Now build the overlap for the patch */
-  for (PetscInt overlapi = 0; overlapi < patch->pardecomp_overlap; ++overlapi) {
+  for (overlapi = 0; overlapi < patch->pardecomp_overlap; ++overlapi) {
     PetscInt index = 0;
     PetscInt *htpoints = NULL;
     PetscInt htsize;
+    PetscInt i;
 
     ierr = PetscHSetIGetSize(ht, &htsize);CHKERRQ(ierr);
     ierr = PetscMalloc1(htsize, &htpoints);CHKERRQ(ierr);
     ierr = PetscHSetIGetElems(ht, &index, htpoints);CHKERRQ(ierr);
 
-    for (PetscInt i = 0; i < htsize; ++i) {
-      PetscInt opoint = htpoints[i];
+    for (i = 0; i < htsize; ++i) {
+      PetscInt hpoint = htpoints[i];
+      PetscInt si;
 
-      ierr = DMPlexGetTransitiveClosure(dm, opoint, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
-      for (PetscInt si = 0; si < starSize*2; si += 2) {
+      ierr = DMPlexGetTransitiveClosure(dm, hpoint, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+      for (si = 0; si < starSize*2; si += 2) {
         const PetscInt starp = star[si];
         PetscInt       closureSize;
         PetscInt      *closure = NULL, ci;
 
         /* now loop over all entities in the closure of starp */
         ierr = DMPlexGetTransitiveClosure(dm, starp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-        for (PetscInt ci = 0; ci < closureSize*2; ci += 2) {
+        for (ci = 0; ci < closureSize*2; ci += 2) {
           const PetscInt closstarp = closure[ci];
           ierr = PetscHSetIAdd(ht, closstarp);CHKERRQ(ierr);
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, starp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       }
-      ierr = DMPlexRestoreTransitiveClosure(dm, opoint, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+      ierr = DMPlexRestoreTransitiveClosure(dm, hpoint, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     }
     ierr = PetscFree(htpoints);CHKERRQ(ierr);
   }
