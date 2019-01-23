@@ -161,6 +161,30 @@ PetscErrorCode SNESSetJacobianDomainError(SNES snes)
 }
 
 /*@
+   SNESSetCheckJacobianDomainError - if or not to check jacobian domain error after each Jacobian evaluation. By default, we check Jacobian domain error
+   in the debug mode, and do not check it in the optimized mode.
+
+   Logically Collective on SNES
+
+   Input Parameters:
+.  snes - the SNES context
+.  flg  - indicates if or not to check jacobian domain error after each Jacobian evaluation
+
+   Level: advanced
+
+.keywords: SNES, view
+
+.seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError()
+@*/
+PetscErrorCode SNESSetCheckJacobianDomainError(SNES snes, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->checkjacdomainerror = flg;
+  PetscFunctionReturn(0);
+}
+
+/*@
    SNESGetFunctionDomainError - Gets the status of the domain error after a call to SNESComputeFunction;
 
    Logically Collective on SNES
@@ -856,6 +880,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsInt("-snes_max_linear_solve_fail","Maximum failures in linear solves allowed","SNESSetMaxLinearSolveFailures",snes->maxLinearSolveFailures,&snes->maxLinearSolveFailures,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_error_if_not_converged","Generate error if solver does not converge","SNESSetErrorIfNotConverged",snes->errorifnotconverged,&snes->errorifnotconverged,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_force_iteration","Force SNESSolve() to take at least one iteration","SNESSetForceIteration",snes->forceiteration,&snes->forceiteration,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_check_jacobian_domain_error","Check Jacobian domain error after Jacobian evaluation","SNESCheckJacobianDomainError",snes->checkjacdomainerror,&snes->checkjacdomainerror,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsInt("-snes_lag_preconditioner","How often to rebuild preconditioner","SNESSetLagPreconditioner",snes->lagpreconditioner,&lag,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -1723,6 +1748,11 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->maxLinearSolveFailures = 1;
 
   snes->vizerotolerance = 1.e-8;
+#if defined(PETSC_USE_DEBUG)
+  snes->checkjacdomainerror = PETSC_TRUE;
+#else
+  snes->checkjacdomainerror = PETSC_FALSE;
+#endif
 
   /* Set this to true if the implementation of SNESSolve_XXX does compute the residual at the final solution. */
   snes->alwayscomputesfinalresidual = PETSC_FALSE;

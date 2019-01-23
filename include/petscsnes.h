@@ -178,6 +178,7 @@ PETSC_EXTERN PetscErrorCode SNESSetFunctionDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESGetFunctionDomainError(SNES, PetscBool *);
 PETSC_EXTERN PetscErrorCode SNESGetJacobianDomainError(SNES,PetscBool*);
 PETSC_EXTERN PetscErrorCode SNESSetJacobianDomainError(SNES);
+PETSC_EXTERN PetscErrorCode SNESSetCheckJacobianDomainError(SNES,PetscBool);
 
 /*E
     SNESConvergedReason - reason a SNES method was said to

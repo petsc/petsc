@@ -721,36 +721,36 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
       suffix: 6
       requires: double !complex !single
       nsize: 4
-      args: -test_jacobian_domain_error -snes_converged_reason
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_check_jacobian_domain_error 1
 
    test:
       suffix: 7
       requires: double !complex !single
       nsize: 4
-      args: -test_jacobian_domain_error -snes_converged_reason -snes_type newtontr
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type newtontr -snes_check_jacobian_domain_error 1
 
    test:
       suffix: 8
       requires: double !complex !single
       nsize: 4
-      args: -test_jacobian_domain_error -snes_converged_reason -snes_type vinewtonrsls
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type vinewtonrsls -snes_check_jacobian_domain_error 1
 
    test:
       suffix: 9
       requires: double !complex !single
       nsize: 4
-      args: -test_jacobian_domain_error -snes_converged_reason -snes_type vinewtonssls
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type vinewtonssls -snes_check_jacobian_domain_error 1
 
    test:
       suffix: 10
       requires: double !complex !single
       nsize: 4
-      args: -test_jacobian_domain_error -snes_converged_reason -snes_type qn -snes_qn_scale_type jacobian
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type qn -snes_qn_scale_type jacobian -snes_check_jacobian_domain_error 1
 
    test:
       suffix: 11
       requires: double !complex !single
       nsize: 4
-      args: -test_jacobian_domain_error -snes_converged_reason -snes_type ms
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type ms -snes_check_jacobian_domain_error 1
 
 TEST*/
