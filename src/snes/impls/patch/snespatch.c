@@ -13,7 +13,7 @@ static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, 
 {
   PC             pc      = (PC) ctx;
   PC_PATCH      *pcpatch = (PC_PATCH *) pc->data;
-  PetscInt       pt, size;
+  PetscInt       pt, size, i;
   const PetscInt *indices;
   const PetscScalar *X;
   PetscScalar   *XWithAll;
@@ -29,7 +29,7 @@ static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, 
   ierr = VecGetArrayRead(x, &X);CHKERRQ(ierr);
   ierr = VecGetArray(pcpatch->patchStateWithAll[pt], &XWithAll);CHKERRQ(ierr);
 
-  for (PetscInt i = 0; i < size; ++i) {
+  for (i = 0; i < size; ++i) {
     XWithAll[indices[i]] = X[i];
   }
 
@@ -45,7 +45,7 @@ static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, 
 {
   PC             pc      = (PC) ctx;
   PC_PATCH      *pcpatch = (PC_PATCH *) pc->data;
-  PetscInt       pt, size;
+  PetscInt       pt, size, i;
   const PetscInt *indices;
   const PetscScalar *X;
   PetscScalar   *XWithAll;
@@ -60,7 +60,7 @@ static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, 
   ierr = VecGetArrayRead(x, &X);CHKERRQ(ierr);
   ierr = VecGetArray(pcpatch->patchStateWithAll[pt], &XWithAll);CHKERRQ(ierr);
 
-  for (PetscInt i = 0; i < size; ++i) {
+  for (i = 0; i < size; ++i) {
     XWithAll[indices[i]] = X[i];
   }
 
