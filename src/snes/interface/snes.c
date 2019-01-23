@@ -174,13 +174,39 @@ PetscErrorCode SNESSetJacobianDomainError(SNES snes)
 
 .keywords: SNES, view
 
-.seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError()
+.seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError(), SNESGetCheckJacobianDomainError()
 @*/
 PetscErrorCode SNESSetCheckJacobianDomainError(SNES snes, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   snes->checkjacdomainerror = flg;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESGetCheckJacobianDomainError - Get an indicator whether or not we are checking Jacobian domain errors after each Jacobian evaluation.
+
+   Logically Collective on SNES
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Output Parameters:
+.  flg  - PETSC_FALSE indicates that we don't check jacobian domain errors after each Jacobian evaluation
+
+   Level: advanced
+
+.keywords: SNES, view
+
+.seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError(), SNESSetCheckJacobianDomainError()
+@*/
+PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(flg, 2);
+  *flg = snes->checkjacdomainerror;
   PetscFunctionReturn(0);
 }
 
