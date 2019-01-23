@@ -1549,9 +1549,9 @@ PetscErrorCode MatShift_SeqAIJ(Mat A,PetscScalar v)
   if (!cnt) {
     ierr = MatShift_Basic(A,v);CHKERRQ(ierr);
   } else {
-    const PetscScalar *olda = a->a;  /* preserve pointers to current matrix nonzeros structure and values */
-    const PetscInt    *oldj = a->j, *oldi = a->i;
-    PetscBool         singlemalloc = a->singlemalloc,free_a = a->free_a,free_ij = a->free_ij;
+    PetscScalar *olda = a->a;  /* preserve pointers to current matrix nonzeros structure and values */
+    PetscInt    *oldj = a->j, *oldi = a->i;
+    PetscBool   singlemalloc = a->singlemalloc,free_a = a->free_a,free_ij = a->free_ij;
 
     a->a = NULL;
     a->j = NULL;
