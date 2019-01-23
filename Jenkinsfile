@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Configure') {
             steps {
-                sh "python ./config/examples/${arch_name}.py"
+                sh "./config/examples/${arch_name}.py"
             }
         }
         stage('Make') {
