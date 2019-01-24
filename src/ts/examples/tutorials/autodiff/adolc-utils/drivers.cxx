@@ -397,12 +397,12 @@ PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag,Mat A,PetscScalar *u_v
   Output parameter:
   A      - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *param,void *ctx)
+PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,PetscScalar *u_vec,PetscScalar *params,void *ctx)
 {
   AdolcCtx       *adctx = (AdolcCtx*)ctx;
   PetscErrorCode ierr;
   PetscInt       i,j = 0,m = adctx->m,n = adctx->n,p = adctx->num_params;
-  PetscScalar    **J,*concat;
+  PetscScalar    **J,*concat,**S;
 
   PetscFunctionBegin;
 
