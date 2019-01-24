@@ -12,8 +12,8 @@ class Configure(config.package.Package):
     self.cxx              = 0
     self.complex          = 1
     self.cudaArch         = ''
-    self.CUDAVersion      = ''
-    self.CUDAMinVersion   = '7050' # Minimal cuda version is 7.5
+    self.CUDAVersion      = 0
+    self.CUDAMinVersion   = (7, 5)
     self.hastests         = 0
     self.hastestsdatafiles= 0
     return
@@ -87,8 +87,11 @@ class Configure(config.package.Package):
     self.checkSizeofVoidP()
     return
 
-  def verToStr(self,ver):
-    return str(int(ver)/1000) + '.' + str(int(ver)/10%10)
+  def verToTuple(self,ver):
+    return (int(ver)/1000, int(ver)/10%10)
+
+  def verToStr(self,vertuple):
+    return '.'.join(str(x) for x in vertuple)
 
   def checkCUDAVersion(self):
     import re
@@ -100,12 +103,12 @@ class Configure(config.package.Package):
     if self.checkCompile(cuda_test):
       buf = self.outputPreprocess(cuda_test)
       try:
-        self.CUDAVersion = re.compile('\nint cuda_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
+        self.CUDAVersion = self.verToTuple(re.compile('\nint cuda_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1))
       except:
         self.logPrint('Unable to parse CUDA version from header. Probably a buggy preprocessor')
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
-    if self.CUDAVersion and int(self.CUDAVersion) < int(self.CUDAMinVersion):
+    if self.CUDAVersion and self.CUDAVersion < self.CUDAMinVersion:
       raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.verToStr(self.CUDAMinVersion)+' or higher. Found version '+self.verToStr(self.CUDAVersion))
     return
 
