@@ -34,5 +34,6 @@ Process 0:
   (   7) dim  2 offset  10 1. 0.5
 Process 1:
 PetscSF Object: 2 MPI processes
-  type not yet set
+  type: basic
+    sort=rank-order
   PetscSFSetGraph() has not been called yet

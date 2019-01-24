@@ -472,33 +472,6 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckMesh(DM dm, AppCtx *user)
-{
-  PetscReal      detJ, J[9], refVol = 1.0;
-  PetscReal      vol;
-  PetscInt       dim, depth, d, cStart, cEnd, c;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) {
-    refVol *= 2.0;
-  }
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, |J| = %g", c, (double)detJ);
-    if (user->debug) {PetscPrintf(PETSC_COMM_SELF, "FEM Volume: %g\n", (double)detJ*refVol);CHKERRQ(ierr);}
-    if (depth > 1) {
-      ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
-      if (vol <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, vol = %g", c, (double)vol);
-      if (user->debug) {PetscPrintf(PETSC_COMM_SELF, "FVM Volume: %g\n", (double)vol);CHKERRQ(ierr);}
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim            = user->dim;
@@ -579,6 +552,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Parallel Mesh");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -592,13 +566,10 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(dm, user.cellSimplex, 0);CHKERRQ(ierr);
   if (user.interpolate != NONE) {
     ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(dm, user.cellSimplex, 0);CHKERRQ(ierr);
   }
-  ierr = CheckMesh(dm, &user);CHKERRQ(ierr);
   ierr = DMPlexCheckConesConformOnInterfaces(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -609,7 +580,7 @@ int main(int argc, char **argv)
 
   testset:
     nsize: 2
-    args: -dm_view ascii::ascii_info_detail
+    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
     test:
       suffix: 1_tri_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
@@ -628,7 +599,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2
     nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail
+    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
 
   testset:
     # the same as 1% for 3D
@@ -654,7 +625,7 @@ int main(int argc, char **argv)
     # the same as 4_tet_dist0 but test different initial orientations
     suffix: 4_tet_test_orient
     nsize: 2
-    args: -dim 3 -distribute 0
+    args: -dim 3 -distribute 0 -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
     args: -rotate_interface_0 {{0 1 2 11 12 13}}
     args: -rotate_interface_1 {{0 1 2 11 12 13}}
 
@@ -662,7 +633,7 @@ int main(int argc, char **argv)
     requires: exodusii
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo
-    args: -cell_simplex 0 -dm_view ascii::ascii_info_detail
+    args: -cell_simplex 0 -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton tensor -dm_plex_check_geometry
     test:
       suffix: 5_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
@@ -672,27 +643,27 @@ int main(int argc, char **argv)
 
   testset:
     nsize: {{1 2 4}}
-    args: -use_generator
+    args: -use_generator -dm_plex_check_symmetry -dm_plex_check_geometry
     args: -distribute -interpolate {{none serial parallel}}
     test:
       suffix: 6_tri
       requires: triangle
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton simplex
     test:
       suffix: 6_quad
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton tensor
     test:
       suffix: 6_tet
       requires: ctetgen
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton simplex
     test:
       TODO: fails due to wrong SF
       suffix: 6_hex
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton tensor
 
   testset:
     nsize: {{1 2 4 5}}
-    args: -cell_simplex 0 -distribute -interpolate {{none serial parallel}}
+    args: -cell_simplex 0 -distribute -interpolate {{none serial parallel}} -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
     test:
       TODO: fails due to wrong SF
       suffix: 7_exo

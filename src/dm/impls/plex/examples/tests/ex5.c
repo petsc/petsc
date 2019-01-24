@@ -537,7 +537,6 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[4]       = {3, 4, 7, 8};
 
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
       for(p = 0; p < 8; ++p) {ierr = DMSetLabelValue(idm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       for(p = 0; p < 4; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
@@ -572,7 +571,6 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[6]       = {20, 21, 22, 23, 24, 25};
 
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
       for(p = 0; p < 6; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
@@ -593,7 +591,6 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[4]       = {7, 8, 16, 17};
 
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
       for(p = 0; p < 4; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
@@ -644,9 +641,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
   }
-  ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-  ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMHasLabel(*dm, "fault", &hasFault);CHKERRQ(ierr);
   if (hasFault) {
     DM      dmHybrid = NULL;
@@ -665,10 +661,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM      dmHybrid = NULL;
     DMLabel faultLabel, faultBdLabel, hybridLabel;
 
-    ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
-    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-    ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-    ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "faulted_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-faulted_dm_view");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "fault2", &faultLabel);CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "fault2Bd", &faultBdLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, NULL, &dmHybrid);CHKERRQ(ierr);
@@ -746,16 +741,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
   {
-    DM distributedMesh = NULL;
+    DM pdm = NULL;
 
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
-      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-      ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    if (pdm) {
+      ierr = DMViewFromOptions(pdm, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
+      *dm  = pdm;
     }
   }
   ierr = DMHasLabel(*dm, "pfault", &hasParallelFault);CHKERRQ(ierr);
@@ -772,10 +765,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     *dm  = dmHybrid;
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-  ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -794,53 +785,61 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-  # 2D Simplex
-  test:
-    suffix: tri_0
-    args: -dim 2 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: tri_1
-    nsize: 2
-    args: -dim 2 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: tri_t1_0
-    args: -dim 2 -test_num 1 -dm_view ascii::ascii_info_detail
-  # 2D Quads
-  test:
-    suffix: quad_0
-    args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: quad_1
-    nsize: 2
-    args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: quad_t1_0
-    args: -dim 2 -cell_simplex 0 -test_num 1 -dm_view ascii::ascii_info_detail
-    TODO: turn on test
-  # 3D Simplex
-  test:
-    suffix: tet_0
-    args: -dim 3 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: tet_1
-    nsize: 2
-    args: -dim 3 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: tet_t1_0
-    args: -dim 3 -test_num 1 -dm_view ascii::ascii_info_detail
-  # 3D Hex
-  test:
-    suffix: hex_0
-    args: -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: hex_1
-    nsize: 2
-    args: -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: hex_t1_0
-    args: -dim 3 -cell_simplex 0 -test_num 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: hex_t2_0
-    args: -dim 3 -cell_simplex 0 -test_num 2 -dm_view ascii::ascii_info_detail
+  testset:
+    args: -orig_dm_plex_check_symmetry -orig_dm_plex_check_skeleton simplex -orig_dm_plex_check_faces simplex \
+          -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton simplex -dm_plex_check_faces simplex
+    # 2D Simplex
+    test:
+      suffix: tri_0
+      args: -dim 2
+    test:
+      suffix: tri_1
+      nsize: 2
+      args: -dim 2
+    test:
+      suffix: tri_t1_0
+      args: -dim 2 -test_num 1
+    # 3D Simplex
+    test:
+      suffix: tet_0
+      args: -dim 3
+    test:
+      suffix: tet_1
+      nsize: 2
+      args: -dim 3
+    test:
+      suffix: tet_t1_0
+      args: -dim 3 -test_num 1
+
+  testset:
+    args: -orig_dm_plex_check_symmetry -orig_dm_plex_check_skeleton tensor -orig_dm_plex_check_faces tensor \
+          -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton tensor -dm_plex_check_faces tensor
+    # 2D Quads
+    test:
+      suffix: quad_0
+      args: -dim 2 -cell_simplex 0
+    test:
+      suffix: quad_1
+      nsize: 2
+      args: -dim 2 -cell_simplex 0
+    test:
+      suffix: quad_t1_0
+      args: -dim 2 -cell_simplex 0 -test_num 1 \
+            -faulted_dm_plex_check_symmetry -faulted_dm_plex_check_skeleton tensor -faulted_dm_plex_check_faces tensor
+      TODO: turn on test
+    # 3D Hex
+    test:
+      suffix: hex_0
+      args: -dim 3 -cell_simplex 0
+    test:
+      suffix: hex_1
+      nsize: 2
+      args: -dim 3 -cell_simplex 0
+    test:
+      suffix: hex_t1_0
+      args: -dim 3 -cell_simplex 0 -test_num 1
+    test:
+      suffix: hex_t2_0
+      args: -dim 3 -cell_simplex 0 -test_num 2
 
 TEST*/

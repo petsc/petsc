@@ -5,6 +5,7 @@
 #define __PETSCDMPLEX_H
 
 #include <petscdm.h>
+#include <petscdmplextypes.h>
 #include <petscdt.h>
 #include <petscfe.h>
 #include <petscfv.h>
@@ -144,6 +145,7 @@ PETSC_EXTERN PetscErrorCode DMPlexInvertCell(PetscInt, PetscInt, int []);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSkeleton(DM, PetscBool, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckFaces(DM, PetscBool, PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexCheckGeometry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckCellShape(DM,PetscBool);

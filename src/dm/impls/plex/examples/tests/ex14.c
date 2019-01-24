@@ -76,9 +76,6 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(dm, PETSC_TRUE, 0);CHKERRQ(ierr);
-  if (!user.uninterpolate) {ierr = DMPlexCheckFaces(dm, PETSC_TRUE, 0);CHKERRQ(ierr);}
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
@@ -88,6 +85,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -dm_view -dm_refine 1 -dm_coarsen
+    args: -dm_view -dm_refine 1 -dm_coarsen -dm_plex_check_symmetry -dm_plex_check_skeleton simplex -dm_plex_check_faces simplex
 
 TEST*/
