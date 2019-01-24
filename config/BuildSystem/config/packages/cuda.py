@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     self.cxx              = 0
     self.complex          = 1
     self.cudaArch         = ''
-    self.CUDAVersion      = None
+    self.CUDAVersion      = 0
     self.CUDAMinVersion   = (7, 5)
     self.hastests         = 0
     self.hastestsdatafiles= 0
