@@ -6940,6 +6940,8 @@ PetscErrorCode TSMonitorSPSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
     PetscDrawAxis axis;
     ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Particles","X","Y");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(axis, -5, 5, -5, 5);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
     ierr = DMGetDimension(dm, &dim);
     if(dim!=2) SETERRQ(PETSC_COMM_SELF, ierr, "Dimensions improper for monitor arguments! Current support: two dimensions.");CHKERRQ(ierr);
@@ -6952,19 +6954,19 @@ PetscErrorCode TSMonitorSPSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
   ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
   Np /= 2*dim;
   ierr = VecGetArrayRead(u,&yy);CHKERRQ(ierr);
-  ierr = PetscMalloc2(2*Np, &x, 2*Np, &y);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Np, &x, Np, &y);CHKERRQ(ierr);
   /* get points from solution vector */
   for (p=0; p<Np; ++p){
     
     x[p] = yy[2*dim*p];
     y[p] = yy[2*dim*p+1]; 
-    PetscPrintf(PETSC_COMM_SELF, "Val: %g\n", x[p]);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "(%.2g, %.2g, %.2g)\n", x[p], y[p], ptime);CHKERRQ(ierr);
+    
   }
-
-  ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
 
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
+    //ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
     ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
     ierr = PetscDrawSPDraw(ctx->sp,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);

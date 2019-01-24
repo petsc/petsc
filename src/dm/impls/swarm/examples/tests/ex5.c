@@ -307,7 +307,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
         initialConditions[p*2*dim+0*dim+0] = p+1;
         initialConditions[p*2*dim+0*dim+1] = 0;
         initialConditions[p*2*dim+1*dim+0] = 0;
-        initialConditions[p*2*dim+1*dim+1] = 1;
+        initialConditions[p*2*dim+1*dim+1] = PetscSqrtReal(1000./(p+1.));
       
   }
 
@@ -343,6 +343,7 @@ static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec V,Vec Posres,void *ctx)
   for (p = 0; p < Np; ++p) {
      for(d = 0; d < dim; ++d){
        /* store residual positons in the format x, y in the function vector */
+       ierr = PetscPrintf(PETSC_COMM_SELF, "posres for particle %d, dim %d: %g\n", p, d, v[p*dim+d]);CHKERRQ(ierr);
        posres[p*dim+d] = v[p*dim+d];
      }
   }
@@ -362,7 +363,8 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
   PetscInt          Np, p, dim, d;
   DM                dm;
   PetscScalar       *vres;
-  PetscErrorCode    ierr; 
+  PetscErrorCode    ierr;
+  //AppCtx            *user =  (AppCtx*) ctx 
 
 
   PetscFunctionBeginUser;
@@ -378,7 +380,11 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
     rsqr = 0;
     for(d = 0; d < dim; ++d) rsqr += PetscSqr(x[p*dim+d]);
     r = PetscSqrtReal(rsqr);
-    for(d=0; d< dim; ++d) vres[p*dim+d] = 1000*(-x[p*dim+d])/rsqr;
+    for(d=0; d< dim; ++d){
+       
+       vres[p*dim+d] = (1000./(p+1.))*(-x[p*dim+d])/rsqr;
+       ierr = PetscPrintf(PETSC_COMM_SELF, "vres for particle %d, dim %d: %g\n", p, d, vres[p*dim+d]);CHKERRQ(ierr);
+       }
     
   }
 
@@ -406,14 +412,14 @@ static PetscErrorCode RHSFunctionParticles(TS ts,PetscReal t,Vec U,Vec R,void *c
 
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  Np /= dim;
+  Np /= 2*dim;
   for( p = 0; p < Np; ++p){
-    for(d=0; d < dim; ++d) rsqr += PetscSqr(u[p*dim+d]);
+    for(d=0; d < dim; ++d) rsqr += PetscSqr(u[p*2*dim+d]);
     
     for(d=0; d < dim; ++d){
         
         r[p*2*dim+d] = u[p*2*dim+d+2];
-        r[p*2*dim+d+2] = (1*1000)*u[p*2*dim+d]/rsqr;
+        r[p*2*dim+d+2] = (-1.*1000./(1.+p))*u[p*2*dim+d]/rsqr;
     
     }
    
@@ -448,16 +454,16 @@ int main(int argc,char **argv)
 {
   TS                ts;            /* nonlinear solver */
   IS                is1,is2;
-  PetscReal         ftime   = 0.1;
+  PetscReal         ftime   = 1.0;
   PetscScalar       *y;
   PetscBool         monitor = PETSC_FALSE;
-  PetscInt          locSize, p, d, dim, Np, *idx1, *idx2;
+  PetscInt          locSize, p, d, dim, Np, *idx1, *idx2, steps;
   Vec               f;              /* swarm vector */
   MPI_Comm          comm;
   DM                dm, sw;
   const PetscReal   *kCheck;
   AppCtx            user;
-
+  TSConvergedReason reason;
   PetscErrorCode    ierr;  
 
   
@@ -507,7 +513,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.0001);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,1000);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   
   if (monitor) {
@@ -521,6 +527,9 @@ int main(int argc,char **argv)
 
   ierr = TSSolve(ts,f);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
+  ierr = TSGetConvergedReason(ts, &reason);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
 
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &f);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
@@ -536,7 +545,7 @@ int main(int argc,char **argv)
    build:
      requires: !single !complex
    test:
-     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 -monitor
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 -monitor -ts_adapt_type none
    test:
      suffix: 2
      args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 2 -monitor
