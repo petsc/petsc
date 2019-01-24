@@ -2289,7 +2289,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   {
     const char *cellTypes[] = {"simplex", "tensor", "unknown", "DMPlexCellType", "DM_PLEX_CELLTYPE_", NULL};
     PetscEnum   ct;
-    PetscBool   flg, flg2;
+    PetscBool   flg = PETSC_FALSE, flg2 = PETSC_FALSE;
 
     ierr = PetscOptionsBool("-dm_plex_check_symmetry", "Check that the adjacency information in the mesh is symmetric", "DMPlexCheckSymmetry", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
     if (flg && flg2) {ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);}
