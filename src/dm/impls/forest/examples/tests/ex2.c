@@ -161,7 +161,6 @@ int main(int argc, char **argv)
   PetscBool      transfer_from_base[2] = {PETSC_TRUE,PETSC_FALSE};
   PetscBool      use_bcs = PETSC_TRUE;
   PetscBool      periodic = PETSC_FALSE;
-  PetscDS        ds;
   bc_func_ctx    bcCtx;
   DMLabel        adaptLabel;
   size_t         len;
@@ -249,15 +248,16 @@ int main(int argc, char **argv)
     ierr = PetscFVSetLimiter(fv,limiter);CHKERRQ(ierr);
     ierr = PetscLimiterDestroy(&limiter);CHKERRQ(ierr);
     ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
-    ierr = DMSetField(base,0,(PetscObject)fv);CHKERRQ(ierr);
+    ierr = DMSetField(base,0,NULL,(PetscObject)fv);CHKERRQ(ierr);
     ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
   } else {
     PetscFE fe;
 
     ierr = PetscFECreateDefault(comm,dim,Nf,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-    ierr = DMSetField(base,0,(PetscObject)fe);CHKERRQ(ierr);
+    ierr = DMSetField(base,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   }
+  ierr = DMCreateDS(base);CHKERRQ(ierr);
 
   if (use_bcs) {
     PetscDS  prob;
@@ -271,8 +271,7 @@ int main(int argc, char **argv)
   /* the pre adaptivity forest */
   ierr = DMCreate(comm,&preForest);CHKERRQ(ierr);
   ierr = DMSetType(preForest,(dim == 2) ? DMP4EST : DMP8EST);CHKERRQ(ierr);
-  ierr = DMGetDS(base,&ds);CHKERRQ(ierr);
-  ierr = DMSetDS(preForest,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(base,preForest);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(preForest,base);CHKERRQ(ierr);
   ierr = DMForestSetMinimumRefinement(preForest,0);CHKERRQ(ierr);
   ierr = DMForestSetInitialRefinement(preForest,1);CHKERRQ(ierr);

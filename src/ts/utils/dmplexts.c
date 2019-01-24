@@ -158,7 +158,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
       PetscObject  obj;
       PetscClassId id;
 
-      ierr = DMGetField(plex, f, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(plex, f, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFV_CLASSID) {
         ierr = DMPlexSNESGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);

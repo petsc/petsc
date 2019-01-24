@@ -459,12 +459,14 @@ static PetscErrorCode initialSolution_jz(PetscInt dim, PetscReal time, const Pet
   return 0;
 }
 
-static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
+static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr, f;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_n,     f1_n);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 1, f0_Omega, f1_Omega);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 2, f0_psi,   f1_psi);CHKERRQ(ierr);
@@ -480,7 +482,6 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
     ierr = PetscDSAddBoundary( prob, DM_BC_ESSENTIAL, "wall", "marker", f, 0, NULL, (void (*)(void)) ctx->initialFuncs[f], 1, &id, ctx);CHKERRQ(ierr);
   }
   ierr = PetscDSSetContext(prob, 0, ctx);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -533,13 +534,32 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user)
+{
+  DM             dmAux, coordDM;
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
+  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
+  if (!feAux) PetscFunctionReturn(0);
+  ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
+  for (f = 0; f < NfAux; ++f) {ierr = DMSetField(dmAux, f, NULL, (PetscObject) feAux[f]);CHKERRQ(ierr);}
+  ierr = DMCreateDS(dmAux);CHKERRQ(ierr);
+  ierr = SetupEquilibriumFields(dm, dmAux, user);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 {
   DM              cdm = dm;
   const PetscInt  dim = ctx->dim;
   PetscQuadrature q;
   PetscFE         fe[5], feAux[3];
-  PetscDS         prob, probAux;
   PetscInt        Nf = 5, NfAux = 3, f;
   PetscBool       cell_simplex = ctx->cell_simplex;
   MPI_Comm        comm;
@@ -572,35 +592,22 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   ierr = PetscFESetQuadrature(feAux[2], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[2], "flux_0");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {ierr = PetscDSSetDiscretization(prob, f, (PetscObject) fe[f]);CHKERRQ(ierr);}
-  ierr = PetscDSCreate(PetscObjectComm((PetscObject) dm), &probAux);CHKERRQ(ierr);
-  for (f = 0; f < NfAux; ++f) {ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);}
-  ierr = SetupProblem(prob, ctx);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {ierr = DMSetField(dm, f, NULL, (PetscObject) fe[f]);CHKERRQ(ierr);}
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, ctx);CHKERRQ(ierr);
   while (cdm) {
-    DM coordDM, dmAux;
-
-    ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(cdm,&coordDM);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
+    ierr = SetupAuxDM(dm, NfAux, feAux, ctx);CHKERRQ(ierr);
     {
       PetscBool hasLabel;
 
       ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
       if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
     }
-
-    ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
-    ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
-    ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = SetupEquilibriumFields(cdm, dmAux, ctx);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
-
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&fe[f]);CHKERRQ(ierr);}
   for (f = 0; f < NfAux; ++f) {ierr = PetscFEDestroy(&feAux[f]);CHKERRQ(ierr);}
-  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -225,12 +225,24 @@ PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *, PetscReal 
 PETSC_EXTERN PetscErrorCode DMSetOutputSequenceNumber(DM, PetscInt, PetscReal);
 PETSC_EXTERN PetscErrorCode DMOutputSequenceLoad(DM, PetscViewer, const char *, PetscInt, PetscReal *);
 
-PETSC_EXTERN PetscErrorCode DMGetDS(DM, PetscDS *);
-PETSC_EXTERN PetscErrorCode DMSetDS(DM, PetscDS);
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
-PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
-PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, PetscObject);
+PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, DMLabel *, PetscObject *);
+PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, DMLabel, PetscObject);
+PETSC_EXTERN PetscErrorCode DMAddField(DM, DMLabel, PetscObject);
+PETSC_EXTERN PetscErrorCode DMClearFields(DM);
+PETSC_EXTERN PetscErrorCode DMCopyFields(DM, DM);
+
+PETSC_EXTERN PetscErrorCode DMGetNumDS(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMGetDS(DM, PetscDS *);
+PETSC_EXTERN PetscErrorCode DMGetCellDS(DM, PetscInt, PetscDS *);
+PETSC_EXTERN PetscErrorCode DMGetRegionDS(DM, DMLabel, PetscDS *);
+PETSC_EXTERN PetscErrorCode DMSetRegionDS(DM, DMLabel, PetscDS);
+PETSC_EXTERN PetscErrorCode DMGetRegionNumDS(DM, PetscInt, DMLabel *, PetscDS *);
+PETSC_EXTERN PetscErrorCode DMCreateDS(DM);
+PETSC_EXTERN PetscErrorCode DMClearDS(DM);
+PETSC_EXTERN PetscErrorCode DMCopyDS(DM, DM);
+PETSC_EXTERN PetscErrorCode DMCopyDisc(DM, DM);
 
 /*MC
   DMInterpolationInfo - Structure for holding information about interpolation on a mesh

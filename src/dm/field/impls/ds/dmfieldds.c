@@ -1052,7 +1052,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
   ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(section,fieldNum,&numComponents);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm,&dsNumFields);CHKERRQ(ierr);
-  if (dsNumFields) {ierr = DMGetField(dm,fieldNum,&disc);CHKERRQ(ierr);}
+  if (dsNumFields) {ierr = DMGetField(dm,fieldNum,NULL,&disc);CHKERRQ(ierr);}
   if (disc) {
     ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
     isContainer = (id == PETSC_CONTAINER_CLASSID) ? PETSC_TRUE : PETSC_FALSE;

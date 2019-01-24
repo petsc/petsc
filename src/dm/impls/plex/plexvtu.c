@@ -244,7 +244,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
             ierr = PetscSectionGetFieldDof(dm->defaultSection,cStart,field,&fbs);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
           } else fbs = bs;      /* Say we have one field with 'bs' components */
-          ierr = DMGetField(dm,field,&f);CHKERRQ(ierr);
+          ierr = DMGetField(dm,field,NULL,&f);CHKERRQ(ierr);
           ierr = PetscObjectGetClassId(f,&fClass);CHKERRQ(ierr);
           if (fClass == PETSCFV_CLASSID) {
             fv = (PetscFV) f;

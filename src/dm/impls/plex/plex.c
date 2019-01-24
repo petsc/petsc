@@ -320,7 +320,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 
     ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
     for (i=0; i<numFields; i++) {
-      ierr = DMGetField(dm, i, &fe);CHKERRQ(ierr);
+      ierr = DMGetField(dm, i, NULL, &fe);CHKERRQ(ierr);
       if (fe->classid == PETSCFE_CLASSID) { fem = PETSC_TRUE; break; }
     }
     if (fem) {
@@ -3729,7 +3729,7 @@ PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field,
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  prob    = dm->prob;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   Nf      = prob->Nf;
   label   = dm->depthLabel;
   *dspace = NULL;
@@ -6307,7 +6307,6 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
 PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 {
   DM             rdm;
-  PetscDS        prob;
   PetscFE        fe;
   PetscScalar   *r;
   PetscMPIInt    rank;
@@ -6322,9 +6321,9 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   ierr = DMGetDimension(rdm, &dim);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) rdm), dim, 1, PETSC_TRUE, "PETSc___rank_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "rank");CHKERRQ(ierr);
-  ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMSetField(rdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(rdm);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rdm, ranks);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *ranks, "partition");CHKERRQ(ierr);
@@ -6360,7 +6359,6 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
 {
   DM             rdm;
-  PetscDS        prob;
   PetscFE        fe;
   PetscScalar   *v;
   PetscInt       dim, cStart, cEnd, c;
@@ -6374,9 +6372,9 @@ PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
   ierr = DMGetDimension(rdm, &dim);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) rdm), dim, 1, PETSC_TRUE, "PETSc___label_value_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "label_value");CHKERRQ(ierr);
-  ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMSetField(rdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(rdm);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rdm, val);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *val, "label_value");CHKERRQ(ierr);
@@ -7184,15 +7182,13 @@ PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetAnchors(dm,&anchorSection,NULL);CHKERRQ(ierr);
   if (anchorSection) {
-    PetscDS  ds;
-    PetscInt nf;
+    PetscInt Nf;
 
     ierr = DMGetSection(dm,&section);CHKERRQ(ierr);
     ierr = DMPlexCreateConstraintSection_Anchors(dm,section,&cSec);CHKERRQ(ierr);
     ierr = DMPlexCreateConstraintMatrix_Anchors(dm,section,cSec,&cMat);CHKERRQ(ierr);
-    ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-    ierr = PetscDSGetNumFields(ds,&nf);CHKERRQ(ierr);
-    if (nf && plex->computeanchormatrix) {ierr = (*plex->computeanchormatrix)(dm,section,cSec,cMat);CHKERRQ(ierr);}
+    ierr = DMGetNumFields(dm,&Nf);CHKERRQ(ierr);
+    if (Nf && plex->computeanchormatrix) {ierr = (*plex->computeanchormatrix)(dm,section,cSec,cMat);CHKERRQ(ierr);}
     ierr = DMSetDefaultConstraints(dm,cSec,cMat);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&cSec);CHKERRQ(ierr);
     ierr = MatDestroy(&cMat);CHKERRQ(ierr);
@@ -7202,7 +7198,6 @@ PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
 
 PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS *is, DM *subdm)
 {
-  PetscDS        prob;
   IS             subis;
   PetscSection   section, subsection;
   PetscErrorCode ierr;
@@ -7219,8 +7214,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
   ierr = ISDestroy(&subis);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*subdm, subsection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = DMSetDS(*subdm, prob);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, *subdm);CHKERRQ(ierr);
   /* Create map from submodel to global model */
   if (is) {
     PetscSection    sectionGlobal, subsectionGlobal;

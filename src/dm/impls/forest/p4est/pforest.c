@@ -281,8 +281,7 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscIn
 #define DMFTopologyCreate_pforest _append_pforest(DMFTopologyCreate)
 static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topologyName, DMFTopology_pforest **topo)
 {
-  DM_Forest      *forest = (DM_Forest*) dm->data;
-  const char     *name   = (const char*) topologyName;
+  const char     *name = (const char*) topologyName;
   const char     *prefix;
   PetscBool      isBrick, isShell, isSphere, isMoebius;
   PetscErrorCode ierr;
@@ -301,7 +300,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     PetscInt  N[3] = {2,2,2}, P[3] = {0,0,0}, nretN = P4EST_DIM, nretP = P4EST_DIM, nretB = 2 * P4EST_DIM, i;
     PetscReal B[6] = {0.0,1.0,0.0,1.0,0.0,1.0};
 
-    if (forest->setfromoptionscalled) {
+    if (dm->setfromoptionscalled) {
       ierr = PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_size",N,&nretN,&flgN);CHKERRQ(ierr);
       ierr = PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_periodicity",P,&nretP,&flgP);CHKERRQ(ierr);
       ierr = PetscOptionsGetRealArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_bounds",B,&nretB,&flgB);CHKERRQ(ierr);
@@ -331,7 +330,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     if (isShell) {
       PetscReal R2 = 1., R1 = .55;
 
-      if (forest->setfromoptionscalled) {
+      if (dm->setfromoptionscalled) {
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_shell_outer_radius",&R2,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_shell_inner_radius",&R1,NULL);CHKERRQ(ierr);
       }
@@ -339,7 +338,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     } else if (isSphere) {
       PetscReal R2 = 1., R1 = 0.191728, R0 = 0.039856;
 
-      if (forest->setfromoptionscalled) {
+      if (dm->setfromoptionscalled) {
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_outer_radius",&R2,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_inner_radius",&R1,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_core_radius",&R0,NULL);CHKERRQ(ierr);
@@ -359,7 +358,6 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   PetscBool      isPlex;
   PetscInt       dim;
   void           *ctx;
-  PetscDS        ds;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -375,8 +373,7 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   ierr = DMForestSetBaseDM(*pforest,dm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*pforest,ctx);CHKERRQ(ierr);
-  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-  ierr = DMSetDS(*pforest,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm,*pforest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1030,7 +1027,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
                                                              (void*)dm)); /* this dm is the user context */
 
     if (initLevel > minLevel) pforest->coarsen_hierarchy = PETSC_TRUE;
-    if (forest->setfromoptionscalled) {
+    if (dm->setfromoptionscalled) {
       PetscBool  flgPattern, flgFractal;
       PetscInt   corner = 0;
       PetscInt   corners[P4EST_CHILDREN], ncorner = P4EST_CHILDREN;
@@ -2205,7 +2202,7 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   ierr  = DMGetDS(dmA,&ds);CHKERRQ(ierr);
   ierr  = DMGetDS(dmB,&dsB);CHKERRQ(ierr);
   newDS = (PetscBool) (ds != dsB);
-  ierr  = DMSetDS(dmB,ds);CHKERRQ(ierr);
+  ierr  = DMCopyDisc(dmA,dmB);CHKERRQ(ierr);
   ierr  = DMGetOutputSequenceNumber(dmA,&num,&val);CHKERRQ(ierr);
   ierr  = DMSetOutputSequenceNumber(dmB,num,val);CHKERRQ(ierr);
   if (newDS) {
@@ -4424,7 +4421,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       pforest->plex = newPlex;
     }
     ierr  = DMDestroy(&refTree);CHKERRQ(ierr);
-    if (forest->setfromoptionscalled) {
+    if (dm->setfromoptionscalled) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex);CHKERRQ(ierr);
       ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) newPlex);CHKERRQ(ierr);
@@ -4768,8 +4765,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
   ierr = DMPlexSetMaxProjectionHeight(plex,mh);CHKERRQ(ierr);
 
   ierr = DMClone(base,&basec);CHKERRQ(ierr);
-  ierr = DMGetDS(dmVecIn,&ds);CHKERRQ(ierr);
-  ierr = DMSetDS(basec,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dmVecIn,basec);CHKERRQ(ierr);
   if (sfRed) {
     ierr = PetscObjectReference((PetscObject)vecIn);CHKERRQ(ierr);
     vecInLocal = vecIn;

@@ -1522,7 +1522,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
     if (!patch->nsubspaces) {
       DM           dm;
-      PetscDS      prob;
       PetscSection s;
       PetscInt     cStart, cEnd, c, Nf, f, numGlobalBcs = 0, *globalBcs, *Nb, totNb = 0, **cellDofs;
 
@@ -1537,14 +1536,13 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         numGlobalBcs += cdof;
       }
       ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-      ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
       ierr = PetscMalloc3(Nf, &Nb, Nf, &cellDofs, numGlobalBcs, &globalBcs);CHKERRQ(ierr);
       for (f = 0; f < Nf; ++f) {
         PetscFE        fe;
         PetscDualSpace sp;
         PetscInt       cdoff = 0;
 
-        ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+        ierr = DMGetField(dm, f, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
         /* ierr = PetscFEGetNumComponents(fe, &Nc[f]);CHKERRQ(ierr); */
         ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDimension(sp, &Nb[f]);CHKERRQ(ierr);
