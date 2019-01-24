@@ -395,6 +395,20 @@ struct _n_TSMonitorLGCtx {
   void           *transformctx;
 };
 
+struct _n_TSMonitorSPCtx{
+  PetscDrawSP    sp;
+  PetscInt       howoften;
+  PetscInt       ksp_its, snes_its;
+  char           **names;
+  char           **displaynames;
+  PetscInt       ndisplayvariables;
+  PetscInt       *displayvariables;
+  PetscReal      *displayvalues;
+  PetscErrorCode (*transform)(void*,Vec,Vec*);
+  PetscErrorCode (*transformdestroy)(void*);
+  void           *transformctx;
+};
+
 struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };

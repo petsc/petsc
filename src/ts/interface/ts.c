@@ -251,6 +251,14 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorSPEig,ctx,(PetscErrorCode (*)(void**))TSMonitorSPEigCtxDestroy);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsName("-ts_monitor_sp","Display particles from the dm swarm","TSMonitorSP",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorSPCtx  ctx;
+    PetscInt        howoften = 1;
+    ierr = PetscOptionsInt("-ts_monitor_sp","Display particles from the dm swarm","TSMonitorSP",howoften,&howoften,NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSPCtxCreate(PETSC_COMM_SELF, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts, TSMonitorSPSolution, ctx, (PetscErrorCode (*)(void**))TSMonitorSPCtxDestroy);CHKERRQ(ierr);
+  }
   opt  = PETSC_FALSE;
   ierr = PetscOptionsName("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",&opt);CHKERRQ(ierr);
   if (opt) {
@@ -3981,6 +3989,75 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   PetscFunctionReturn(0);
 }
 
+/*
+  
+  Creates a TS Monitor SPCtx for use with DM Swarm particle visualizations
+
+*/
+PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorSPCtx *ctx)
+{
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSPCreate(draw,1,&(*ctx)->sp);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  (*ctx)->howoften = howoften;
+  PetscFunctionReturn(0);
+
+}
+
+/* TODO: ACTUALLY ADD THE COORDINATES X, Y 
+PetscErrorCode TSMonitorSPTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,void *monctx)
+{
+
+  TSMonitorSPCtx ctx = (TSMonitorSPCtx) monctx;
+  PetscReal      x, y;
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscFunctionBegin;
+  if (step < 0) PetscFunctionReturn(0);  -1 indicates an interpolated solution 
+  if (!step) {
+    PetscDrawAxis axis;
+    ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Particle Positions","X","Y");CHKERRQ(ierr);
+    ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
+  }
+  ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
+    TODO: Add support for multiple particles properly 
+  
+  ierr = PetscDrawSPAddPoint(ctx->sp,&x,&y);CHKERRQ(ierr);
+  
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
+    ierr = PetscDrawSPDraw(ctx->sp);CHKERRQ(ierr);
+    ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+*/
+/* 
+  Destroys a TSMonitorSPCtx that was created with TSMonitorSPCtxCreate 
+*/
+PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  
+  ierr = PetscDrawSPDestroy(&(*ctx)->sp);CHKERRQ(ierr);
+  ierr = PetscStrArrayDestroy(&(*ctx)->names);CHKERRQ(ierr);
+  ierr = PetscStrArrayDestroy(&(*ctx)->displaynames);CHKERRQ(ierr);
+  ierr = PetscFree((*ctx)->displayvariables);CHKERRQ(ierr);
+  ierr = PetscFree((*ctx)->displayvalues);CHKERRQ(ierr);
+  ierr = PetscFree(*ctx);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+
+}
+
 /*@
    TSGetTime - Gets the time of the most recently completed step.
 
@@ -6470,7 +6547,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     PetscDrawAxis axis;
     PetscInt      dim;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","X");CHKERRQ(ierr);
     if (!ctx->names) {
       PetscBool flg;
       /* user provides names of variables to plot but no names has been set so assume names are integer values */
@@ -6846,6 +6923,59 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
   }
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode TSMonitorSPSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
+{
+  PetscErrorCode    ierr;
+  TSMonitorSPCtx    ctx = (TSMonitorSPCtx)dctx;
+  const PetscScalar *yy;
+  PetscScalar       *y,*x;
+  PetscInt          Np, p, dim=2;
+  DM                dm;
+
+  PetscFunctionBegin;
+  
+  if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
+  if (!step) {
+    PetscDrawAxis axis;
+    ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Particles","X","Y");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(axis, -5, 5, -5, 5);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);
+    if(dim!=2) SETERRQ(PETSC_COMM_SELF, ierr, "Dimensions improper for monitor arguments! Current support: two dimensions.");CHKERRQ(ierr);
+    ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
+    Np /= 2*dim;
+    ierr = PetscDrawSPSetDimension(ctx->sp, Np);CHKERRQ(ierr);
+    ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
+  }
+  
+  ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
+  Np /= 2*dim;
+  ierr = VecGetArrayRead(u,&yy);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Np, &x, Np, &y);CHKERRQ(ierr);
+  /* get points from solution vector */
+  for (p=0; p<Np; ++p){
+    
+    x[p] = yy[2*dim*p];
+    y[p] = yy[2*dim*p+1]; 
+    ierr = PetscPrintf(PETSC_COMM_SELF, "(%.2g, %.2g, %.2g)\n", x[p], y[p], ptime);CHKERRQ(ierr);
+    
+  }
+  ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
+
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
+    //ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
+    ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
+    ierr = PetscDrawSPDraw(ctx->sp,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+
 
 /*@C
    TSMonitorError - Monitors progress of the TS solvers by printing the 2 norm of the error at each timestep
