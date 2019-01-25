@@ -2587,17 +2587,51 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess)
     for(i=0; i<pEnd-pStart; i++) {
       if(toBalance[i]) {
         if(isNonExclusivelyOwned[i]) {
+          PetscInt adjSize = PETSC_DETERMINE;
+          PetscInt *adj = NULL;
           ierr = MatSetValue(A, cumSumVertices[rank], globalNumbersOfLocalOwnedVertices[i], 1, INSERT_VALUES);CHKERRQ(ierr);
           ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[i], cumSumVertices[rank], 1, INSERT_VALUES);CHKERRQ(ierr);
+          ierr = DMPlexGetAdjacency(dm, i+pStart, &adjSize, &adj);CHKERRQ(ierr);
+          /*adjSize = 0;*/
+          for(j=0; j<adjSize; j++) {
+            if(toBalance[adj[j]] && i+pStart != adj[j]) {
+              if(isNonExclusivelyOwned[adj[j]]) {
+                /*ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[i], globalNumbersOfLocalOwnedVertices[adj[j]], 1, INSERT_VALUES);CHKERRQ(ierr);*/
+                /*ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[adj[j]], globalNumbersOfLocalOwnedVertices[i], 1, INSERT_VALUES);CHKERRQ(ierr);*/
+              }
+              else if(isLeaf[adj[j]]) {
+                /*ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[i], leafGlobalNumbers[adj[j]], 1, INSERT_VALUES);CHKERRQ(ierr);*/
+                /*ierr = MatSetValue(A, leafGlobalNumbers[adj[j]], globalNumbersOfLocalOwnedVertices[i], 1, INSERT_VALUES);CHKERRQ(ierr);*/
+              }
+            }
+          }
+          ierr = PetscFree(adj);CHKERRQ(ierr);
         } else if (isLeaf[i]) {
+          PetscInt adjSize = PETSC_DETERMINE;
+          PetscInt *adj = NULL;
           ierr = MatSetValue(A, cumSumVertices[rank], leafGlobalNumbers[i], 1, INSERT_VALUES);CHKERRQ(ierr);
           ierr = MatSetValue(A, leafGlobalNumbers[i], cumSumVertices[rank], 1, INSERT_VALUES);CHKERRQ(ierr);
+          ierr = DMPlexGetAdjacency(dm, i+pStart, &adjSize, &adj);CHKERRQ(ierr);
+          /*adjSize = 0;*/
+          for(j=0; j<adjSize; j++) {
+            if(toBalance[adj[j]] && i+pStart != adj[j]) {
+              if(isNonExclusivelyOwned[adj[j]]) {
+                ierr = MatSetValue(A, leafGlobalNumbers[i], globalNumbersOfLocalOwnedVertices[adj[j]], 1, INSERT_VALUES);CHKERRQ(ierr);
+                ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[adj[j]], leafGlobalNumbers[i], 1, INSERT_VALUES);CHKERRQ(ierr);
+              } else if(isLeaf[adj[j]]) {
+                /*ierr = MatSetValue(A, leafGlobalNumbers[i], leafGlobalNumbers[adj[j]], 1, INSERT_VALUES);CHKERRQ(ierr);*/
+                /*ierr = MatSetValue(A, leafGlobalNumbers[adj[j]], leafGlobalNumbers[i], 1, INSERT_VALUES);CHKERRQ(ierr);*/
+              }
+            }
+          }
+          ierr = PetscFree(adj);CHKERRQ(ierr);
         }
       }
     }
 
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    MatView(A, 	PETSC_VIEWER_STDOUT_WORLD);
     lenadjncy = 0;
     for(i=0; i<1+numNonExclusivelyOwned; i++) {
       PetscInt temp=0;
@@ -2606,7 +2640,10 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess)
       ierr = MatRestoreRow(A, cumSumVertices[rank] + i, &temp, NULL, NULL);CHKERRQ(ierr);
     }
     ierr = PetscFree(adjncy);CHKERRQ(ierr);
+    ierr = PetscFree(xadj);CHKERRQ(ierr);
     ierr = PetscMalloc1(lenadjncy, &adjncy);CHKERRQ(ierr);
+    ierr = PetscMalloc1(lenxadj, &xadj);CHKERRQ(ierr);
+    xadj[0] = 0;
     counter = 0;
     for(i=0; i<1+numNonExclusivelyOwned; i++) {
       PetscInt temp=0, *cols;
@@ -2615,6 +2652,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess)
         adjncy[counter+j] = cols[j];
       }
       counter += temp;
+      xadj[i+1] = counter;
       ierr = MatRestoreRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
     }
   }
@@ -2638,9 +2676,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess)
   ierr = PetscMalloc1(cumSumVertices[rank+1]-cumSumVertices[rank], &part);CHKERRQ(ierr);
 
   if(useInitialGuess) {
-  PetscStackPush("ParMETIS_V3_RefineKway");
-  ierr = ParMETIS_V3_RefineKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
-  PetscStackPop;
+    PetscStackPush("ParMETIS_V3_RefineKway");
+    ierr = ParMETIS_V3_RefineKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+    PetscStackPop;
   } else {
     PetscStackPush("ParMETIS_V3_PartKway");
     ierr = ParMETIS_V3_PartKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
@@ -2648,7 +2686,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess)
   }
 
 
-  /*PTScotch_PartGraph_MPI(6, 2.0, cumSumVertices, xadj, adjncy, vtxwgt, NULL, size, part, comm);*/
+  /*PTScotch_PartGraph_MPI(6, 1.0, cumSumVertices, xadj, adjncy, vtxwgt, NULL, size, part, comm);*/
 
   /*PetscSynchronizedPrintf(comm,"[%d] part: ", rank);*/
   /*for(i=0;i<1 + numNonExclusivelyOwned;i++) {*/
