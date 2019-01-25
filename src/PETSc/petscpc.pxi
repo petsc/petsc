@@ -270,7 +270,9 @@ cdef extern from * nogil:
     int PCPatchSetCellNumbering(PetscPC, PetscSection)
     int PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscInt*, PetscInt*, const_PetscInt**, const_PetscInt*, PetscInt, const_PetscInt*, PetscInt, const_PetscInt*)
     int PCPatchSetComputeOperator(PetscPC, PetscPCPatchComputeOperator, void*)
+    int PCPatchSetComputeOperatorInteriorFacets(PetscPC, PetscPCPatchComputeOperator, void*)
     int PCPatchSetComputeFunction(PetscPC, PetscPCPatchComputeFunction, void*)
+    int PCPatchSetComputeFunctionInteriorFacets(PetscPC, PetscPCPatchComputeFunction, void*)
     int PCPatchSetConstructType(PetscPC, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
 
 # --------------------------------------------------------------------
@@ -332,6 +334,57 @@ cdef int PCPatch_ComputeFunction(
     cdef PC Pc = ref_PC(pc)
     cdef IS Is = ref_IS(cells)
     cdef object context = Pc.get_attr("__patch_compute_function__")
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple
+    (op, args, kargs) = context
+    cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
+    cdef PetscInt[:] pydofsWithAll = <PetscInt[:ndof]>dofmapWithAll
+    op(Pc, toInt(point), Vec, Out, Is, asarray(pydofs), asarray(pydofsWithAll), *args, **kargs)
+    return 0
+
+cdef int PCPatch_ComputeOperatorInteriorFacets(
+    PetscPC pc,
+    PetscInt point,
+    PetscVec vec,
+    PetscMat mat,
+    PetscIS facets,
+    PetscInt ndof,
+    const_PetscInt *dofmap,
+    const_PetscInt *dofmapWithAll,
+    void *ctx) except PETSC_ERR_PYTHON with gil:
+    cdef Vec Vec = ref_Vec(vec)
+    cdef Mat Mat = ref_Mat(mat)
+    cdef PC Pc = ref_PC(pc)
+    cdef IS Is = ref_IS(facets)
+    cdef object context = Pc.get_attr("__patch_compute_operator_interior_facets__")
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple
+    (op, args, kargs) = context
+    cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
+    cdef PetscInt[:] pydofsWithAll
+    if dofmapWithAll != NULL:
+        pydofsWithAll = <PetscInt[:ndof]>dofmapWithAll
+        dofsall = asarray(pydofsWithAll)
+    else:
+        dofsall = None
+    op(Pc, toInt(point), Vec, Mat, Is, asarray(pydofs), dofsall, *args, **kargs)
+    return 0
+
+cdef int PCPatch_ComputeFunctionInteriorFacets(
+    PetscPC pc,
+    PetscInt point,
+    PetscVec vec,
+    PetscVec out,
+    PetscIS facets,
+    PetscInt ndof,
+    const_PetscInt *dofmap,
+    const_PetscInt *dofmapWithAll,
+    void *ctx) except PETSC_ERR_PYTHON with gil:
+    cdef Vec Out = ref_Vec(out)
+    cdef Vec Vec = ref_Vec(vec)
+    cdef PC Pc = ref_PC(pc)
+    cdef IS Is = ref_IS(facets)
+    cdef object context = Pc.get_attr("__patch_compute_function_interior_facets__")
     if context is None and ctx != NULL: context = <object>ctx
     assert context is not None and type(context) is tuple
     (op, args, kargs) = context
