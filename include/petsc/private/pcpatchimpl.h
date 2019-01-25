@@ -66,8 +66,10 @@ typedef struct {
   void                *usercomputefctx;
   /* Interior facet integrals: Jacobian */
   PetscErrorCode     (*usercomputeopintfacet)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
+  void                *usercomputeopintfacetctx;
   /* Residual */
   PetscErrorCode     (*usercomputefintfacet)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
+  void                *usercomputefintfacetctx;
   IS                   cellIS;             /* Temporary IS for each cell patch */
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */

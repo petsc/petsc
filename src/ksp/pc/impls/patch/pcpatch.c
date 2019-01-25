@@ -591,6 +591,42 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, Petsc
 
 /*@C
 
+  PCPatchSetComputeFunctionInteriorFacets - Set the callback used to compute facet integrals for patch residuals
+
+  Input Parameters:
++ pc   - The PC
+. func - The callback
+- ctx  - The user context
+
+  Level: advanced
+
+  Note:
+  The callback has signature:
++  usercomputef(pc, point, x, f, facetIS, n, u, ctx)
++  pc     - The PC
++  point  - The point
++  x      - The input solution (not used in linear problems)
++  f      - The patch residual vector
++  facetIS - An array of the facet numbers
++  n      - The size of g2l
++  g2l    - The global to local dof translation table
++  ctx    - The user context
+  and can assume that the matrix entries have been set to zero before the call.
+
+.seealso: PCPatchSetComputeOperator(), PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo()
+@*/
+PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+
+  PetscFunctionBegin;
+  patch->usercomputefintfacet    = func;
+  patch->usercomputefintfacetctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+
   PCPatchSetComputeOperator - Set the callback used to compute patch matrices
 
   Input Parameters:
@@ -622,6 +658,42 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
   PetscFunctionBegin;
   patch->usercomputeop    = func;
   patch->usercomputeopctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+
+  PCPatchSetComputeOperator - Set the callback used to compute facet integrals for patch matrices
+
+  Input Parameters:
++ pc   - The PC
+. func - The callback
+- ctx  - The user context
+
+  Level: advanced
+
+  Note:
+  The callback has signature:
++  usercomputeopintfacet(pc, point, x, mat, facetIS, n, u, ctx)
++  pc     - The PC
++  point  - The point
++  x      - The input solution (not used in linear problems)
++  mat    - The patch matrix
++  facetIS - An IS of the facet numbers
++  n      - The size of g2l
++  g2l    - The global to local dof translation table
++  ctx    - The user context
+  and can assume that the matrix entries have been set to zero before the call.
+
+.seealso: PCPatchGetComputeOperator(), PCPatchSetComputeFunction(), PCPatchSetDiscretisationInfo()
+@*/
+PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+
+  PetscFunctionBegin;
+  patch->usercomputeopintfacet    = func;
+  patch->usercomputeopintfacetctx = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -1867,50 +1939,50 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
   ierr = patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, dofsArrayWithAll ? dofsArrayWithAll + offset*patch->totalDofsPerCell : NULL, patch->usercomputeopctx);CHKERRQ(ierr);
 
-  ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
-  ierr = PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset);CHKERRQ(ierr);
-  if (numIntFacets > 0) {
-    /* For each interior facet, grab the two cells (in local numbering, and concatenate dof numberings for those cells) */
-    PetscInt *facetDofs = NULL, *facetDofsWithAll = NULL;
-    const PetscInt *intFacetsArray = NULL;
-    PetscInt idx = 0;
-    PetscInt i, c, d;
-    IS       facetIS = NULL;
-    const PetscInt *facetCells = NULL;
-    ierr = ISGetIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
-    ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
-    /* FIXME: Pull this malloc out. */
-    ierr = PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofs);CHKERRQ(ierr);
-    if (dofsArrayWithAll) {
-      ierr = PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofsWithAll);CHKERRQ(ierr);
-    }
-    /*
-     * 0--1
-     * |\-|
-     * |+\|
-     * 2--3
-     * [0, 2, 3, 0, 1, 3]
-     */
-    for (i = 0; i < numIntFacets; i++) {
-      for (c = 0; c < 2; c++) {
-        const PetscInt cell = facetCells[2*(intFacetOffset + i) + c];
-        for (d = 0; d < patch->totalDofsPerCell; d++) {
-          facetDofs[idx] = dofsArray[(offset + cell)*patch->totalDofsPerCell + d];
-          if (dofsArrayWithAll) {
-            facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell)*patch->totalDofsPerCell + d];
+  if (patch->usercomputeopintfacet) {
+    ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset);CHKERRQ(ierr);
+    if (numIntFacets > 0) {
+      /* For each interior facet, grab the two cells (in local numbering, and concatenate dof numberings for those cells) */
+      PetscInt *facetDofs = NULL, *facetDofsWithAll = NULL;
+      const PetscInt *intFacetsArray = NULL;
+      PetscInt idx = 0;
+      PetscInt i, c, d;
+      IS       facetIS = NULL;
+      const PetscInt *facetCells = NULL;
+      ierr = ISGetIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
+      ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
+      /* FIXME: Pull this malloc out. */
+      ierr = PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofs);CHKERRQ(ierr);
+      if (dofsArrayWithAll) {
+        ierr = PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofsWithAll);CHKERRQ(ierr);
+      }
+      /*
+       * 0--1
+       * |\-|
+       * |+\|
+       * 2--3
+       * [0, 2, 3, 0, 1, 3]
+       */
+      for (i = 0; i < numIntFacets; i++) {
+        for (c = 0; c < 2; c++) {
+          const PetscInt cell = facetCells[2*(intFacetOffset + i) + c];
+          for (d = 0; d < patch->totalDofsPerCell; d++) {
+            facetDofs[idx] = dofsArray[(offset + cell)*patch->totalDofsPerCell + d];
+            if (dofsArrayWithAll) {
+              facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell)*patch->totalDofsPerCell + d];
+            }
+            idx++;
           }
-          idx++;
         }
       }
+      ierr = ISCreateGeneral(PETSC_COMM_SELF, numIntFacets, intFacetsArray + intFacetOffset, PETSC_USE_POINTER, &facetIS);CHKERRQ(ierr);
+      ierr = patch->usercomputeopintfacet(pc, point, x, mat, facetIS, 2*numIntFacets*patch->totalDofsPerCell, facetDofs, facetDofsWithAll, patch->usercomputeopctx);CHKERRQ(ierr);
+      ierr = ISDestroy(&facetIS);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
+      ierr = PetscFree(facetDofs);CHKERRQ(ierr);
+      ierr = PetscFree(facetDofsWithAll);CHKERRQ(ierr);
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, numIntFacets, intFacetsArray + intFacetOffset, PETSC_USE_POINTER, &facetIS);CHKERRQ(ierr);
-    /*
-     * ierr = patch->usercomputeopintfacet(pc, point, x, mat, facetIS, 2*numIntFacets*patch->totalDofsPerCell, facetDofs, facetDofsWithAll, patch->usercomputeopctx);CHKERRQ(ierr);
-     */
-    ierr = ISDestroy(&facetIS);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
-    ierr = PetscFree(facetDofs);CHKERRQ(ierr);
-    ierr = PetscFree(facetDofsWithAll);CHKERRQ(ierr);
   }
   PetscStackPop;
   ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
