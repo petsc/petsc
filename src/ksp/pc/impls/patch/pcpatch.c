@@ -977,8 +977,8 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
           }
         }
         if (interior) {
-          intFacetsToPatchCell[2*ifoff + ifn] = support[0];
-          intFacetsToPatchCell[2*ifoff + ifn + 1] = support[1];
+          intFacetsToPatchCell[2*(ifoff + ifn)] = support[0];
+          intFacetsToPatchCell[2*(ifoff + ifn) + 1] = support[1];
           intFacetsArray[ifoff + ifn++] = point;
         } else {
           extFacetsArray[efoff + efn++] = point;
@@ -995,19 +995,20 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
     if (n  != dof)  SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of points in patch %D is %D, but should be %D", v, n, dof);
 
     for (ifn = 0; ifn < ifdof; ifn++) {
-      PetscInt cell0 = intFacetsToPatchCell[2*ifoff + ifn];
-      PetscInt cell1 = intFacetsToPatchCell[2*ifoff + ifn + 1];
+      PetscInt cell0 = intFacetsToPatchCell[2*(ifoff + ifn)];
+      PetscInt cell1 = intFacetsToPatchCell[2*(ifoff + ifn) + 1];
       PetscBool found0 = PETSC_FALSE, found1 = PETSC_FALSE;
       for (n = 0; n < cdof; n++) {
         if (!found0 && cell0 == cellsArray[coff + n]) {
-          intFacetsToPatchCell[2*ifoff + ifn] = cellsArray[coff + n];
+          intFacetsToPatchCell[2*(ifoff + ifn)] = cellsArray[coff + n];
           found0 = PETSC_TRUE;
         }
         if (!found1 && cell1 == cellsArray[coff + n]) {
-          intFacetsToPatchCell[2*ifoff + ifn + 1] = cellsArray[coff + n];
+          intFacetsToPatchCell[2*(ifoff + ifn) + 1] = cellsArray[coff + n];
         }
         if (found0 && found1) break;
       }
+      if (!(found0 && found1)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Didn't manage to find local point numbers for facet support");
     }
   }
   ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
