@@ -1657,28 +1657,6 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPatchZeroFillMatrix_Private(Mat mat, const PetscInt ncell, const PetscInt ndof, const PetscInt *dof)
-{
-  PetscScalar    *values = NULL;
-  PetscInt        rows, c, i;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscCalloc1(ndof*ndof, &values);CHKERRQ(ierr);
-  for (c = 0; c < ncell; ++c) {
-    const PetscInt *idx = &dof[ndof*c];
-    ierr = MatSetValues(mat, ndof, idx, ndof, idx, values, INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatGetLocalSize(mat, &rows, NULL);CHKERRQ(ierr);
-  for (i = 0; i < rows; ++i) {
-    ierr = MatSetValues(mat, 1, &i, 1, &i, values, INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(values);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *mat, PetscBool withArtificial)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
@@ -1731,6 +1709,9 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
      * patch. This is probably OK if the patches are not too big,
      * but uses too much memory. We therefore switch based on rsize. */
     if (rsize < 3000) { /* FIXME: I picked this switch value out of my hat */
+      PetscScalar *zeroes;
+      PetscInt rows;
+
       ierr = PetscCalloc1(rsize, &dnnz);CHKERRQ(ierr);
       ierr = PetscBTCreate(rsize*rsize, &bt);CHKERRQ(ierr);
       for (c = 0; c < ncell; ++c) {
@@ -1746,10 +1727,80 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
           }
         }
       }
+
+      if (patch->usercomputeopintfacet) {
+        const PetscInt *intFacetsArray = NULL;
+        PetscInt i, numIntFacets, intFacetOffset;
+        const PetscInt *facetCells = NULL;
+
+        ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset);CHKERRQ(ierr);
+        ierr = ISGetIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
+        ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
+        for (i = 0; i < numIntFacets; i++) {
+          const PetscInt cell0 = facetCells[2*(intFacetOffset + i) + 0];
+          const PetscInt cell1 = facetCells[2*(intFacetOffset + i) + 1];
+          PetscInt celli, cellj;
+
+          for (celli = 0; celli < patch->totalDofsPerCell; celli++) {
+            const PetscInt row = dofsArray[(offset + cell0)*patch->totalDofsPerCell + celli];
+            for (cellj = 0; cellj < patch->totalDofsPerCell; cellj++) {
+                const PetscInt col = dofsArray[(offset + cell1)*patch->totalDofsPerCell + cellj];
+                const PetscInt key = row*rsize + col;
+                if (col < 0) continue;
+                if (!PetscBTLookupSet(bt, key)) ++dnnz[row];
+            }
+          }
+
+          for (celli = 0; celli < patch->totalDofsPerCell; celli++) {
+            const PetscInt row = dofsArray[(offset + cell1)*patch->totalDofsPerCell + celli];
+            for (cellj = 0; cellj < patch->totalDofsPerCell; cellj++) {
+                const PetscInt col = dofsArray[(offset + cell0)*patch->totalDofsPerCell + cellj];
+                const PetscInt key = row*rsize + col;
+                if (col < 0) continue;
+                if (!PetscBTLookupSet(bt, key)) ++dnnz[row];
+            }
+          }
+        }
+      }
       ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
       ierr = MatXAIJSetPreallocation(*mat, 1, dnnz, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscFree(dnnz);CHKERRQ(ierr);
-      ierr = PCPatchZeroFillMatrix_Private(*mat, ncell, patch->totalDofsPerCell, &dofsArray[offset*patch->totalDofsPerCell]);CHKERRQ(ierr);
+
+      ierr = PetscCalloc1(patch->totalDofsPerCell*patch->totalDofsPerCell, &zeroes);CHKERRQ(ierr);
+      for (c = 0; c < ncell; ++c) {
+        const PetscInt *idx = &dofsArray[(offset + c)*patch->totalDofsPerCell];
+        ierr = MatSetValues(*mat, patch->totalDofsPerCell, idx, patch->totalDofsPerCell, idx, zeroes, INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = MatGetLocalSize(*mat, &rows, NULL);CHKERRQ(ierr);
+      for (i = 0; i < rows; ++i) {
+        ierr = MatSetValues(*mat, 1, &i, 1, &i, zeroes, INSERT_VALUES);CHKERRQ(ierr);
+      }
+
+      if (patch->usercomputeopintfacet) {
+        const PetscInt *intFacetsArray = NULL;
+        PetscInt i, numIntFacets, intFacetOffset;
+        const PetscInt *facetCells = NULL;
+
+        ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset);CHKERRQ(ierr);
+        ierr = ISGetIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
+        ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
+        for (i = 0; i < numIntFacets; i++) {
+          const PetscInt cell0 = facetCells[2*(intFacetOffset + i) + 0];
+          const PetscInt cell1 = facetCells[2*(intFacetOffset + i) + 1];
+          const PetscInt *cell0idx = &dofsArray[(offset + cell0)*patch->totalDofsPerCell];
+          const PetscInt *cell1idx = &dofsArray[(offset + cell1)*patch->totalDofsPerCell];
+          ierr = MatSetValues(*mat, patch->totalDofsPerCell, cell0idx, patch->totalDofsPerCell, cell1idx, zeroes, INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues(*mat, patch->totalDofsPerCell, cell1idx, patch->totalDofsPerCell, cell0idx, zeroes, INSERT_VALUES);CHKERRQ(ierr);
+        }
+      }
+
+      ierr = MatAssemblyBegin(*mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(*mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+      ierr = PetscFree(zeroes);CHKERRQ(ierr);
+
     } else { /* rsize too big, use MATPREALLOCATOR */
       Mat preallocator;
       PetscScalar* vals;
