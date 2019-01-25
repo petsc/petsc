@@ -1744,6 +1744,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
 
           for (celli = 0; celli < patch->totalDofsPerCell; celli++) {
             const PetscInt row = dofsArray[(offset + cell0)*patch->totalDofsPerCell + celli];
+            if (row < 0) continue;
             for (cellj = 0; cellj < patch->totalDofsPerCell; cellj++) {
                 const PetscInt col = dofsArray[(offset + cell1)*patch->totalDofsPerCell + cellj];
                 const PetscInt key = row*rsize + col;
@@ -1754,6 +1755,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
 
           for (celli = 0; celli < patch->totalDofsPerCell; celli++) {
             const PetscInt row = dofsArray[(offset + cell1)*patch->totalDofsPerCell + celli];
+            if (row < 0) continue;
             for (cellj = 0; cellj < patch->totalDofsPerCell; cellj++) {
                 const PetscInt col = dofsArray[(offset + cell0)*patch->totalDofsPerCell + cellj];
                 const PetscInt key = row*rsize + col;
