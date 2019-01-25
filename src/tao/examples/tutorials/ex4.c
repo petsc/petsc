@@ -371,16 +371,17 @@ int main (int argc, char** argv)
   ierr = TaoSetInitialVector(tao, x);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
+  /* solve */
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
+
+  /* examine solution */
+  VecViewFromOptions(x, NULL, "-view_sol");CHKERRQ(ierr);
+
   if (ctx->taylor) {
     PetscReal rate;
 
     ierr = TaylorTest(ctx, tao, x, &rate);CHKERRQ(ierr);
   }
-
-  /* solve */
-  ierr = TaoSolve(tao);CHKERRQ(ierr);
-
-  /* examine solution */
 
   /* cleanup */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -395,5 +396,9 @@ int main (int argc, char** argv)
   test:
     suffix: 0
     args:
+
+  test:
+    suffix: l1_1
+    args: -p 1 -tao_type lmvm -alpha 1. -epsilon 1.e-7 -m 64 -n 64 -view_sol -mat_format 1
 
 TEST*/

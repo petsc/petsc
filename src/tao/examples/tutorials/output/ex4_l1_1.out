@@ -1,0 +1,88 @@
+Vec Object: 1 MPI processes
+  type: seq
+0.0946841
+-5.86722e-08
+-3.06171e-07
+-5.49409e-08
+4.96355e-07
+-9.51348e-08
+-8.52898e-08
+6.70593e-07
+0.129599
+0.046902
+2.03649e-09
+9.70669e-08
+-0.026098
+0.0833272
+-3.42833e-08
+0.13549
+0.0729165
+-2.01214e-08
+-0.0183351
+0.0503463
+0.0221341
+6.1318e-08
+-1.69114e-06
+0.123854
+-2.52116e-07
+-0.00113893
+1.21559e-07
+-2.57994e-07
+-1.31023e-07
+0.0294441
+-0.00792726
+0.0158161
+0.0121257
+1.32334e-07
+5.53294e-07
+-1.37018e-07
+3.7725e-07
+-8.40202e-08
+6.89499e-08
+-2.09582e-07
+0.0678569
+1.54458e-07
+-0.106552
+1.33843e-07
+1.07705e-07
+-2.75987e-07
+0.036401
+-1.39322e-07
+-0.01823
+0.00602496
+-0.084146
+4.51968e-07
+-2.45911e-05
+-0.0004716
+0.0155511
+0.0575604
+1.44542e-06
+0.0226551
+0.0367077
+0.0122464
+-2.45073e-07
+0.0434658
+2.53128e-07
+0.0395396
+J(xhat): 96.854, predicted: 10.6013, diff 86.2528
+J(xhat): 37.3178, predicted: 10.7335, diff 26.5844
+J(xhat): 19.759, predicted: 10.7996, diff 8.95949
+J(xhat): 14.1814, predicted: 10.8326, diff 3.34884
+J(xhat): 12.2152, predicted: 10.8491, diff 1.36606
+J(xhat): 11.436, predicted: 10.8574, diff 0.578569
+J(xhat): 11.1269, predicted: 10.8615, diff 0.265411
+J(xhat): 10.9907, predicted: 10.8636, diff 0.127092
+J(xhat): 10.9255, predicted: 10.8646, diff 0.0609131
+J(xhat): 10.8941, predicted: 10.8651, diff 0.0289155
+Convergence rate step 0: 1.69799
+Convergence rate step 1: 1.56909
+Convergence rate step 2: 1.41976
+Convergence rate step 3: 1.29364
+Convergence rate step 4: 1.23946
+Convergence rate step 5: 1.12426
+Convergence rate step 6: 1.06236
+Convergence rate step 7: 1.06105
+Convergence rate step 8: 1.07491
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-mat_format value: 1
