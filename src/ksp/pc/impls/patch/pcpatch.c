@@ -999,12 +999,12 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
       PetscInt cell1 = intFacetsToPatchCell[2*ifoff + ifn + 1];
       PetscBool found0 = PETSC_FALSE, found1 = PETSC_FALSE;
       for (n = 0; n < cdof; n++) {
-        if (!found0 && cell0 == cellsArray[off + n]) {
-          intFacetsToPatchCell[2*ifoff + ifn] = cellsArray[off + n];
+        if (!found0 && cell0 == cellsArray[coff + n]) {
+          intFacetsToPatchCell[2*ifoff + ifn] = cellsArray[coff + n];
           found0 = PETSC_TRUE;
         }
-        if (!found1 && cell1 == cellsArray[off + n]) {
-          intFacetsToPatchCell[2*ifoff + ifn + 1] = cellsArray[off + n];
+        if (!found1 && cell1 == cellsArray[coff + n]) {
+          intFacetsToPatchCell[2*ifoff + ifn + 1] = cellsArray[coff + n];
         }
         if (found0 && found1) break;
       }
