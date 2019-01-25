@@ -1810,10 +1810,31 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
       ierr = MatSetType(preallocator, MATPREALLOCATOR);CHKERRQ(ierr);
       ierr = MatSetSizes(preallocator, rsize, rsize, rsize, rsize);CHKERRQ(ierr);
       ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+
       for (c = 0; c < ncell; ++c) {
         const PetscInt *idx = dofsArray + (offset + c)*patch->totalDofsPerCell;
         ierr = MatSetValues(preallocator, patch->totalDofsPerCell, idx, patch->totalDofsPerCell, idx, vals, INSERT_VALUES);CHKERRQ(ierr);
       }
+
+      if (patch->usercomputeopintfacet) {
+        const PetscInt *intFacetsArray = NULL;
+        PetscInt i, numIntFacets, intFacetOffset;
+        const PetscInt *facetCells = NULL;
+
+        ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset);CHKERRQ(ierr);
+        ierr = ISGetIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
+        ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
+        for (i = 0; i < numIntFacets; i++) {
+          const PetscInt cell0 = facetCells[2*(intFacetOffset + i) + 0];
+          const PetscInt cell1 = facetCells[2*(intFacetOffset + i) + 1];
+          const PetscInt *cell0idx = &dofsArray[(offset + cell0)*patch->totalDofsPerCell];
+          const PetscInt *cell1idx = &dofsArray[(offset + cell1)*patch->totalDofsPerCell];
+          ierr = MatSetValues(preallocator, patch->totalDofsPerCell, cell0idx, patch->totalDofsPerCell, cell1idx, vals, INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues(preallocator, patch->totalDofsPerCell, cell1idx, patch->totalDofsPerCell, cell0idx, vals, INSERT_VALUES);CHKERRQ(ierr);
+        }
+      }
+
       ierr = PetscFree(vals);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(preallocator, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(preallocator, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
