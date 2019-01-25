@@ -1000,11 +1000,11 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
       PetscBool found0 = PETSC_FALSE, found1 = PETSC_FALSE;
       for (n = 0; n < cdof; n++) {
         if (!found0 && cell0 == cellsArray[coff + n]) {
-          intFacetsToPatchCell[2*(ifoff + ifn)] = cellsArray[coff + n];
+          intFacetsToPatchCell[2*(ifoff + ifn)] = coff + n;
           found0 = PETSC_TRUE;
         }
         if (!found1 && cell1 == cellsArray[coff + n]) {
-          intFacetsToPatchCell[2*(ifoff + ifn) + 1] = cellsArray[coff + n];
+          intFacetsToPatchCell[2*(ifoff + ifn) + 1] = coff + n;
           found1 = PETSC_TRUE;
         }
         if (found0 && found1) break;
