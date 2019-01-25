@@ -118,6 +118,7 @@ typedef const char* VecScatterType;
 #define VECSCATTERMPI1      "mpi1"
 #define VECSCATTERMPI3      "mpi3"     /* use MPI3 on-node shared memory */
 #define VECSCATTERMPI3NODE  "mpi3node" /* use MPI3 on-node shared memory for vector type VECNODE */
+#define VECSCATTERSF        "sf"       /* use StarForest */
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList VecScatterList;

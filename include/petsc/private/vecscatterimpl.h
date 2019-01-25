@@ -309,12 +309,15 @@ struct _p_VecScatter {
   PetscBool      is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */
   Vec            to_v,from_v;          /* used in VecScatterCreateWithData() and VecScatterSetData() */
   IS             to_is,from_is;        /* used in VecScatterCreateWithData() and VecScatterSetData() */
+
+  void           *data;                /* implementation specific data */
 };
 
 PETSC_INTERN PetscErrorCode VecScatterCreate_Seq(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3Node(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterCreate_SF(VecScatter);
 
 PETSC_INTERN PetscErrorCode VecScatterSetUp_vectype_private(VecScatter,PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter));
 
