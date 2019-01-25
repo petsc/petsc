@@ -1005,6 +1005,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
         }
         if (!found1 && cell1 == cellsArray[coff + n]) {
           intFacetsToPatchCell[2*(ifoff + ifn) + 1] = cellsArray[coff + n];
+          found1 = PETSC_TRUE;
         }
         if (found0 && found1) break;
       }
