@@ -802,7 +802,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   DM              dm, plex;
   PetscHSetI      ht, cht;
   PetscSection    cellCounts,  pointCounts, intFacetCounts, extFacetCounts;
-  PetscInt       *cellsArray, *pointsArray, *intFacetsArray, *extFacetsArray;
+  PetscInt       *cellsArray, *pointsArray, *intFacetsArray, *extFacetsArray, *intFacetsToPatchCell;
   PetscInt        numCells, numPoints, numIntFacets, numExtFacets;
   const PetscInt *leaves;
   PetscInt        nleaves, pStart, pEnd, cStart, cEnd, vStart, vEnd, v;
@@ -932,7 +932,9 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   ierr = PetscSectionGetStorageSize(intFacetCounts, &numIntFacets);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(extFacetCounts, &numExtFacets);CHKERRQ(ierr);
   ierr = PetscMalloc1(numIntFacets, &intFacetsArray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numIntFacets*2, &intFacetsToPatchCell);CHKERRQ(ierr);
   ierr = PetscMalloc1(numExtFacets, &extFacetsArray);CHKERRQ(ierr);
+
 
   /* Now that we know how much space we need, run through again and actually remember the cells. */
   for (v = vStart; v < vEnd; v++ ) {
@@ -975,6 +977,8 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
           }
         }
         if (interior) {
+          intFacetsToPatchCell[2*ifoff + ifn] = support[0];
+          intFacetsToPatchCell[2*ifoff + ifn + 1] = support[1];
           intFacetsArray[ifoff + ifn++] = point;
         } else {
           extFacetsArray[efoff + efn++] = point;
@@ -989,6 +993,22 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
     if (efn != efdof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of exterior facets in patch %D is %D, but should be %D", v, efn, efdof);
     if (cn != cdof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of cells in patch %D is %D, but should be %D", v, cn, cdof);
     if (n  != dof)  SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of points in patch %D is %D, but should be %D", v, n, dof);
+
+    for (ifn = 0; ifn < ifdof; ifn++) {
+      PetscInt cell0 = intFacetsToPatchCell[2*ifoff + ifn];
+      PetscInt cell1 = intFacetsToPatchCell[2*ifoff + ifn + 1];
+      PetscBool found0 = PETSC_FALSE, found1 = PETSC_FALSE;
+      for (n = 0; n < cdof; n++) {
+        if (!found0 && cell0 == cellsArray[off + n]) {
+          intFacetsToPatchCell[2*ifoff + ifn] = cellsArray[off + n];
+          found0 = PETSC_TRUE;
+        }
+        if (!found1 && cell1 == cellsArray[off + n]) {
+          intFacetsToPatchCell[2*ifoff + ifn + 1] = cellsArray[off + n];
+        }
+        if (found0 && found1) break;
+      }
+    }
   }
   ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
   ierr = PetscHSetIDestroy(&cht);CHKERRQ(ierr);
@@ -1002,9 +1022,12 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numIntFacets,  intFacetsArray,  PETSC_OWN_POINTER, &patch->intFacets);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) patch->intFacets,  "Patch Interior Facets");CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, 2*numIntFacets, intFacetsToPatchCell, PETSC_OWN_POINTER, &patch->intFacetsToPatchCell);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) patch->intFacetsToPatchCell,  "Patch Interior Facets local support");CHKERRQ(ierr);
   if (patch->viewIntFacets) {
-    ierr = ObjectView((PetscObject) patch->intFacetCounts, patch->viewerIntFacets, patch->formatIntFacets);CHKERRQ(ierr);
-    ierr = ObjectView((PetscObject) patch->intFacets,      patch->viewerIntFacets, patch->formatIntFacets);CHKERRQ(ierr);
+    ierr = ObjectView((PetscObject) patch->intFacetCounts,       patch->viewerIntFacets, patch->formatIntFacets);CHKERRQ(ierr);
+    ierr = ObjectView((PetscObject) patch->intFacets,            patch->viewerIntFacets, patch->formatIntFacets);CHKERRQ(ierr);
+    ierr = ObjectView((PetscObject) patch->intFacetsToPatchCell, patch->viewerIntFacets, patch->formatIntFacets);CHKERRQ(ierr);
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numExtFacets,  extFacetsArray,  PETSC_OWN_POINTER, &patch->extFacets);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) patch->extFacets,  "Patch Exterior Facets");CHKERRQ(ierr);
@@ -1809,7 +1832,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   const PetscInt *dofsArrayWithArtificial = NULL;
   const PetscInt *dofsArrayWithAll = NULL;
   const PetscInt *cellsArray;
-  PetscInt        ncell, offset, pStart, pEnd;
+  PetscInt        ncell, offset, pStart, pEnd, numIntFacets, intFacetOffset;
   PetscBool       isNonlinear;
   PetscErrorCode  ierr;
 
@@ -1841,6 +1864,52 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   /* Cannot reuse the same IS because the geometry info is being cached in it */
   ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
   ierr = patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, dofsArrayWithAll ? dofsArrayWithAll + offset*patch->totalDofsPerCell : NULL, patch->usercomputeopctx);CHKERRQ(ierr);
+
+  ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset);CHKERRQ(ierr);
+  if (numIntFacets > 0) {
+    /* For each interior facet, grab the two cells (in local numbering, and concatenate dof numberings for those cells) */
+    PetscInt *facetDofs = NULL, *facetDofsWithAll = NULL;
+    const PetscInt *intFacetsArray = NULL;
+    PetscInt idx = 0;
+    PetscInt i, c, d;
+    IS       facetIS = NULL;
+    const PetscInt *facetCells = NULL;
+    ierr = ISGetIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
+    ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
+    /* FIXME: Pull this malloc out. */
+    ierr = PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofs);CHKERRQ(ierr);
+    if (dofsArrayWithAll) {
+      ierr = PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofsWithAll);CHKERRQ(ierr);
+    }
+    /*
+     * 0--1
+     * |\-|
+     * |+\|
+     * 2--3
+     * [0, 2, 3, 0, 1, 3]
+     */
+    for (i = 0; i < numIntFacets; i++) {
+      for (c = 0; c < 2; c++) {
+        const PetscInt cell = facetCells[2*(intFacetOffset + i) + c];
+        for (d = 0; d < patch->totalDofsPerCell; d++) {
+          facetDofs[idx] = dofsArray[(offset + cell)*patch->totalDofsPerCell + d];
+          if (dofsArrayWithAll) {
+            facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell)*patch->totalDofsPerCell + d];
+          }
+          idx++;
+        }
+      }
+    }
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, numIntFacets, intFacetsArray + intFacetOffset, PETSC_USE_POINTER, &facetIS);CHKERRQ(ierr);
+    /*
+     * ierr = patch->usercomputeopintfacet(pc, point, x, mat, facetIS, 2*numIntFacets*patch->totalDofsPerCell, facetDofs, facetDofsWithAll, patch->usercomputeopctx);CHKERRQ(ierr);
+     */
+    ierr = ISDestroy(&facetIS);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
+    ierr = PetscFree(facetDofs);CHKERRQ(ierr);
+    ierr = PetscFree(facetDofsWithAll);CHKERRQ(ierr);
+  }
   PetscStackPop;
   ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
   if(withArtificial) {

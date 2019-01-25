@@ -22,6 +22,7 @@ typedef struct {
   IS                   cells;              /* [patch][cell in patch]: Cell number */
   IS                   extFacets;
   IS                   intFacets;
+  IS                   intFacetsToPatchCell; /* Support of interior facet in local patch point numbering: AKA which two cells touch the facet (in patch local numbering of cells) */
   PetscSection         intFacetCounts;
   PetscSection         extFacetCounts;
   PetscSection         cellNumbering;      /* Plex: NULL Firedrake: Numbering of cells in DM */
@@ -63,6 +64,10 @@ typedef struct {
   void                *usercomputeopctx;
   PetscErrorCode     (*usercomputef)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
   void                *usercomputefctx;
+  /* Interior facet integrals: Jacobian */
+  PetscErrorCode     (*usercomputeopintfacet)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
+  /* Residual */
+  PetscErrorCode     (*usercomputefintfacet)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
   IS                   cellIS;             /* Temporary IS for each cell patch */
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */
