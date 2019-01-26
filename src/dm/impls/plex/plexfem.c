@@ -2618,7 +2618,6 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   DM_Plex         *mesh       = (DM_Plex *) dm->data;
   const char      *name       = "Residual";
   DM               dmAux      = NULL;
-  DM               dmGrad     = NULL;
   DMLabel          ghostLabel = NULL;
   PetscDS          prob       = NULL;
   PetscDS          probAux    = NULL;
@@ -2626,11 +2625,9 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   PetscBool        useFVM     = PETSC_FALSE;
   PetscBool        isImplicit = (locX_t || t == PETSC_MIN_REAL) ? PETSC_TRUE : PETSC_FALSE;
   PetscFV          fvm        = NULL;
-  PetscFVCellGeom *cgeomFVM   = NULL;
-  PetscFVFaceGeom *fgeomFVM   = NULL;
   DMField          coordField = NULL;
-  Vec              locA, cellGeometryFVM = NULL, faceGeometryFVM = NULL, grad, locGrad = NULL;
-  PetscScalar     *u = NULL, *u_t, *a, *uL, *uR;
+  Vec              locA;
+  PetscScalar     *u = NULL, *u_t, *a, *uL = NULL, *uR = NULL;
   IS               chunkIS;
   const PetscInt  *cells;
   PetscInt         cStart, cEnd, numCells;
@@ -2706,11 +2703,11 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   faceChunkSize = (fEnd - fStart)/numChunks;
   numChunks     = PetscMin(1,numCells);
   for (chunk = 0; chunk < numChunks; ++chunk) {
-    PetscScalar     *elemVec, *fluxL, *fluxR;
-    PetscReal       *vol;
-    PetscFVFaceGeom *fgeom;
+    PetscScalar     *elemVec, *fluxL = NULL, *fluxR = NULL;
+    PetscReal       *vol = NULL;
+    PetscFVFaceGeom *fgeom = NULL;
     PetscInt         cS = cStart+chunk*cellChunkSize, cE = PetscMin(cS+cellChunkSize, cEnd), numCells = cE - cS, c;
-    PetscInt         fS = fStart+chunk*faceChunkSize, fE = PetscMin(fS+faceChunkSize, fEnd), numFaces = 0, face;
+    PetscInt         numFaces = 0;
 
     /* Extract field coefficients */
     if (useFEM) {
