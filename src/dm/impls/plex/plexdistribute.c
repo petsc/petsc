@@ -1737,8 +1737,9 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (sf) PetscValidPointer(sf,4);
-  PetscValidPointer(dmParallel,5);
+  PetscValidLogicalCollectiveInt(dm, overlap, 2);
+  if (sf) PetscValidPointer(sf,3);
+  PetscValidPointer(dmParallel,4);
 
   if (sf) *sf = NULL;
   *dmParallel = NULL;
