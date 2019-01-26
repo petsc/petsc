@@ -30,6 +30,12 @@ class Configure(config.package.Package):
     import os
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'config.in'),'w')
 
+    # pastix Makefile can pickup these variables from env - so set them manually so that env variables don't get used.
+    g.write('PREFIX      = '+os.path.join(self.packageDir,'install\n'))
+    g.write('INCLUDEDIR  = ${PREFIX}/include\n')
+    g.write('LIBDIR      = ${PREFIX}/lib\n')
+    g.write('BINDIR      = ${PREFIX}/bin\n')
+
     # This one should be the only one needed
     # all other tests for mac should not be useful.
     if self.setCompilers.isDarwin(self.log):
