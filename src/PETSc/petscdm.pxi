@@ -41,7 +41,7 @@ cdef extern from * nogil:
     int DMSetUp(PetscDM)
 
     int DMGetDS(PetscDM,PetscDS*)
-    int DMSetDS(PetscDM,PetscDS)
+    int DMCopyDisc(PetscDM,PetscDM)
 
     int DMGetBlockSize(PetscDM,PetscInt*)
     int DMSetVecType(PetscDM,PetscVecType)
