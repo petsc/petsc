@@ -1721,7 +1721,6 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   const PetscInt *dofsArray;
-  const PetscInt *dofsArrayWithArtificial = NULL;
   const PetscInt *dofsArrayWithAll = NULL;
   const PetscInt *cellsArray;
   PetscInt        ncell, offset, pStart, pEnd;
