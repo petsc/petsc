@@ -496,8 +496,7 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
 
 /*@C
   TSARKIMEXInitializePackage - This function initializes everything in the TSARKIMEX package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_ARKIMEX()
-  when using static libraries.
+  from TSInitializePackage().
 
   Level: developer
 

@@ -182,8 +182,11 @@ $(OBJDIR)/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/sys/mpiuni/
 $(OBJDIR)/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
 $(OBJDIR)/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/vec/f90-mod/petscvecmod.o
 $(OBJDIR)/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/mat/f90-mod/petscmatmod.o
+$(OBJDIR)/dm/f90-mod/petscdmdamod.o   : $(OBJDIR)/dm/f90-mod/petscdmmod.o
 $(OBJDIR)/dm/f90-mod/petscdmplexmod.o : $(OBJDIR)/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/dm/f90-mod/petscdmplexmod.o
+$(OBJDIR)/ksp/f90-mod/petsckspdefmod.o : $(OBJDIR)/dm/f90-mod/petscdmplexmod.o
+$(OBJDIR)/ksp/f90-mod/petscpcmod.o    : $(OBJDIR)/ksp/f90-mod/petsckspdefmod.o
+$(OBJDIR)/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/ksp/f90-mod/petscpcmod.o
 $(OBJDIR)/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/ksp/f90-mod/petsckspmod.o
 $(OBJDIR)/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/snes/f90-mod/petscsnesmod.o
 $(OBJDIR)/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/ts/f90-mod/petsctsmod.o
@@ -194,10 +197,14 @@ $(OBJDIR)/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/sys/f90-mod/pets
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)
 
-.PHONY: clean all 
+.PHONY: clean all print
 
-clean: 
+clean:
 	${RM} -r $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
+
+# make print VAR=the-variable
+print:
+	@echo $($(VAR))
 
 allobj.d := $(srcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include

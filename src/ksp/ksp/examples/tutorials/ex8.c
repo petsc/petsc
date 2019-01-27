@@ -25,7 +25,6 @@ parameters include:\n\
 /*T
    Concepts: KSP^Additive Schwarz Method (ASM) with user-defined subdomains
    Processors: n
-   requires: x   TODO: Need to determine if deprecated
 T*/
 
 

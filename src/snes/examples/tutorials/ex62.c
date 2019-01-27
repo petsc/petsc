@@ -78,6 +78,7 @@ typedef struct {
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscBool     simplex;           /* Use simplices or tensor product cells */
+  PetscInt      cells[3];          /* The initial domain division */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
   /* Problem definition */
@@ -323,7 +324,7 @@ void pressure(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt       bc, run, sol;
+  PetscInt       bc, run, sol, n;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -332,6 +333,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim             = 2;
   options->interpolate     = PETSC_FALSE;
   options->simplex         = PETSC_TRUE;
+  options->cells[0]        = 3;
+  options->cells[1]        = 3;
+  options->cells[2]        = 3;
   options->refinementLimit = 0.0;
   options->testPartition   = PETSC_FALSE;
   options->bcType          = DIRICHLET;
@@ -348,6 +352,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   spatialDim = options->dim;
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex62.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex62.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  if (options->simplex) {
+    options->cells[0] = 4 - options->dim;
+    options->cells[1] = 4 - options->dim;
+    options->cells[2] = 4 - options->dim;
+  }
+  n = 3;
+  ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex62.c", options->cells, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex62.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex62.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
@@ -383,12 +394,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  const PetscInt cells[3]        = {3, 3, 3};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->simplex ? NULL : cells, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->cells, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
@@ -464,12 +474,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
+PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->solType) {
   case SOL_QUADRATIC:
     switch (user->dim) {
@@ -516,7 +528,6 @@ PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? DM_BC_ESSENTIAL : DM_BC_NATURAL, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0]);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 1, user->exactFuncs[1]);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -526,7 +537,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   const PetscInt  dim   = user->dim;
   PetscFE         fe[2];
   PetscQuadrature q;
-  PetscDS         prob;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -540,12 +550,12 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, user);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
@@ -572,7 +582,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt dummy, MatNullSpac
     PetscObject  pressure;
     MatNullSpace nullspacePres;
 
-    ierr = DMGetField(dm, 1, &pressure);CHKERRQ(ierr);
+    ierr = DMGetField(dm, 1, NULL, &pressure);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullspacePres);CHKERRQ(ierr);
     ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nullspacePres);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspacePres);CHKERRQ(ierr);
@@ -1048,6 +1058,17 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+  # GMG solver
+  test:
+    suffix: 2d_tri_p2_p1_gmg_vcycle
+    requires: triangle
+    args: -run_type full -sol_type cubic -bc_type dirichlet -interpolate 1 -cells 2,2 -dm_refine_hierarchy 1 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
+      -snes_convergence_estimate -convest_num_refine 1 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type mg \
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   # Vanka solver
   test:

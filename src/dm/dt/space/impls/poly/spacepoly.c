@@ -411,6 +411,9 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
 + sp     - the function space object
 - tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
 
+  Options Database:
+. -petscspace_poly_tensor <bool> - Whether to use tensor product polynomials in higher dimension
+
   Level: beginner
 
 .seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetDegree(), PetscSpaceSetNumVariables()
@@ -487,9 +490,12 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   if (!poly->subspaces) {ierr = PetscCalloc1(dim, &poly->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!poly->subspaces[height-1]) {
-      PetscSpace sub;
+      PetscSpace  sub;
+      const char *name;
 
       ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) sp), &sub);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) sp,  &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) sub,  name);CHKERRQ(ierr);
       ierr = PetscSpaceSetType(sub, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
       ierr = PetscSpaceSetNumComponents(sub, Nc);CHKERRQ(ierr);
       ierr = PetscSpaceSetDegree(sub, order, PETSC_DETERMINE);CHKERRQ(ierr);

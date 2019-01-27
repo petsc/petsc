@@ -466,8 +466,8 @@ PetscErrorCode  PFFinalizePackage(void)
 
 /*@C
   PFInitializePackage - This function initializes everything in the PF package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PFCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to PFCreate()
+  when using shared or static libraries.
 
   Level: developer
 

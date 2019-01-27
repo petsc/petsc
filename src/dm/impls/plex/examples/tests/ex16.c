@@ -33,23 +33,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBegin;
   ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-  ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
   {
-    DM distributedMesh = NULL;
+    DM pdm = NULL;
 
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
-      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-      ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    if (pdm) {
+      ierr = DMViewFromOptions(pdm, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
+      *dm  = pdm;
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -86,14 +82,10 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = CreateSubmesh(dm, PETSC_TRUE, &subdm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(subdm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(subdm, user.cellSimplex, 0);CHKERRQ(ierr);
-  ierr = DMPlexCheckFaces(subdm, user.cellSimplex, 0);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(subdm);CHKERRQ(ierr);
   ierr = DMDestroy(&subdm);CHKERRQ(ierr);
   ierr = CreateSubmesh(dm, PETSC_FALSE, &subdm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(subdm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(subdm, user.cellSimplex, 0);CHKERRQ(ierr);
-  ierr = DMPlexCheckFaces(subdm, user.cellSimplex, 0);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(subdm);CHKERRQ(ierr);
   ierr = DMDestroy(&subdm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -105,6 +97,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -dm_view ascii::ascii_info_detail
+    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
 
 TEST*/

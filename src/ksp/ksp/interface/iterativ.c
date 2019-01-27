@@ -750,11 +750,11 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   if (PetscIsInfOrNanReal(rnorm)) {
     PCFailedReason pcreason;
     PetscInt       sendbuf,pcreason_max;
-    ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+    ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
     sendbuf = (PetscInt)pcreason;
     ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     if (pcreason_max) {
-      *reason = KSP_DIVERGED_PCSETUP_FAILED;
+      *reason = KSP_DIVERGED_PC_FAILED;
       ierr    = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
       ierr    = PetscInfo(ksp,"Linear solver pcsetup fails, declaring divergence \n");CHKERRQ(ierr);
     } else {
@@ -1248,3 +1248,47 @@ PetscErrorCode  KSPGetApplicationContext(KSP ksp,void *usrP)
   *(void**)usrP = ksp->user;
   PetscFunctionReturn(0);
 }
+
+#include <petsc/private/pcimpl.h>
+
+/*@
+   KSPCheckSolve - Checks if the PCSetUp() or KSPSolve() failed and set the error flag for the outer PC. A KSP_DIVERGED_ITS is
+         not considered a failure in this context
+
+   Collective on KSP
+
+   Input Parameter:
++  ksp - the linear solver (KSP) context.
+.  pc - the preconditioner context
+-  vec - a vector that will be initialized with Inf to indicate lack of convergence
+
+   Notes: this may be called by a subset of the processes in the PC
+
+   Level: developer
+
+   Developer Note: this is used to manage returning from preconditioners whose inner KSP solvers have failed in some way
+
+.keywords: KSP, PC, divergence, convergence
+
+.seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckNorm(), KSPCheckDot()
+@*/
+PetscErrorCode KSPCheckSolve(KSP ksp,PC pc,Vec vec)
+{
+  PetscErrorCode     ierr;
+  PCFailedReason     pcreason;
+  PC                 subpc;
+
+  PetscFunctionBegin;
+  ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
+  ierr = PCGetFailedReason(subpc,&pcreason);CHKERRQ(ierr);
+  if (pcreason || (ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS)) {
+    if (pc->erroriffailure) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]);
+    else {
+      ierr = PetscInfo2(ksp,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s\n",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]);
+      pc->failedreason = PC_SUBPC_ERROR;
+      ierr = VecSetInf(vec);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+ 

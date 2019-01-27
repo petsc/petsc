@@ -176,7 +176,6 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
   if (!isStride) {
     ierr = ISRestoreIndices(pointIS,&points);CHKERRQ(ierr);
   }
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -941,10 +940,10 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
             }
             break;
           default:
-            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not implemented yet\n");
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D not yet supported\n", coneSize);
           }
         default:
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not implemented yet\n");
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not yet supported\n", dim);
         }
       }
     }
@@ -1053,7 +1052,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
   ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(section,fieldNum,&numComponents);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm,&dsNumFields);CHKERRQ(ierr);
-  if (dsNumFields) {ierr = DMGetField(dm,fieldNum,&disc);CHKERRQ(ierr);}
+  if (dsNumFields) {ierr = DMGetField(dm,fieldNum,NULL,&disc);CHKERRQ(ierr);}
   if (disc) {
     ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
     isContainer = (id == PETSC_CONTAINER_CLASSID) ? PETSC_TRUE : PETSC_FALSE;

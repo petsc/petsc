@@ -2,12 +2,9 @@ static char help[] = "testing SeqDense matrices with an LDA (leading dimension o
 /*
  * Example code testing SeqDense matrices with an LDA (leading dimension
  * of the user-allocated arrray) larger than M.
- * This example tests the functionality of MatInsertValues(), MatMult(),
+ * This example tests the functionality of MatSetValues(), MatMult(),
  * and MatMultTranspose().
  */
-/*T
-   requires: x
-T*/
 
 #include <petscmat.h>
 
@@ -19,8 +16,10 @@ int main(int argc,char **argv)
   PetscReal      nrm;
   PetscErrorCode ierr;
   PetscInt       size=8,size1=6,size2=2, i,j;
+  PetscRandom    rnd;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rnd);CHKERRQ(ierr);
 
   /*
    * Create matrix and three vectors: these are all normal
@@ -29,7 +28,8 @@ int main(int argc,char **argv)
   ierr = PetscMalloc1(size*size,&b);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     for (j=0; j<size; j++) {
-      a[i+j*size] = rand(); b[i+j*size] = a[i+j*size];
+      ierr = PetscRandomGetValue(rnd,&a[i+j*size]);CHKERRQ(ierr);
+      b[i+j*size] = a[i+j*size];
     }
   }
   ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
@@ -108,22 +108,23 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test1; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult the usual way:\n");CHKERRQ(ierr);
-  ierr = VecView(Y,0);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult by subblock:\n");CHKERRQ(ierr);
-  ierr = VecView(Z,0);CHKERRQ(ierr);
+  if (nrm > 100.0*PETSC_MACHINE_EPSILON) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test1; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
+  }
 
   /*
    * Next test: change both matrices
    */
-  v    = rand(); i=1; j=size-2;
+  ierr = PetscRandomGetValue(rnd,&v);CHKERRQ(ierr);
+  i    = 1;
+  j    = size-2;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
   j   -= size1;
   ierr = MatSetValues(A12,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v    = rand(); i=j=size1+1;
+  ierr = PetscRandomGetValue(rnd,&v);CHKERRQ(ierr);
+  i    = j = size1+1;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i    =j=1;
+  i     =j = 1;
   ierr = MatSetValues(A22,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -139,7 +140,9 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test2; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
+  if (nrm > 100.0*PETSC_MACHINE_EPSILON) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test2; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
+  }
 
   /*
    * Transpose product
@@ -151,8 +154,9 @@ int main(int argc,char **argv)
   ierr = MatMultTransposeAdd(A12,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test3; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
-
+  if (nrm > 100.0*PETSC_MACHINE_EPSILON) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test3; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
+  }
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscFree(b);CHKERRQ(ierr);
   ierr = PetscFree(x);CHKERRQ(ierr);
@@ -172,7 +176,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&X2);CHKERRQ(ierr);
   ierr = VecDestroy(&Z1);CHKERRQ(ierr);
   ierr = VecDestroy(&Z2);CHKERRQ(ierr);
-
+  ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -181,7 +185,5 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      requires: x
-      TODO: Need to implement test
 
 TEST*/

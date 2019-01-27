@@ -1519,6 +1519,69 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatShift_SeqAIJ(Mat A,PetscScalar v)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  const PetscInt    *diag = (const PetscInt*)a->diag;
+  const PetscInt    *ii = (const PetscInt*) a->i;
+  PetscInt          i,*mdiag = NULL;
+  PetscErrorCode    ierr;
+  PetscInt          cnt = 0; /* how many diagonals are missing */
+
+  PetscFunctionBegin;
+  if (!A->preallocated || !a->nz) {
+    ierr = MatSeqAIJSetPreallocation(A,1,NULL);CHKERRQ(ierr);
+    ierr = MatShift_Basic(A,v);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  if (a->diagonaldense) {
+    cnt = 0;
+  } else {
+    ierr = PetscCalloc1(A->rmap->n,&mdiag);CHKERRQ(ierr);
+    for (i=0; i<A->rmap->n; i++) {
+      if (diag[i] >= ii[i+1]) {
+        cnt++;
+        mdiag[i] = 1;
+      }
+    }
+  }
+  if (!cnt) {
+    ierr = MatShift_Basic(A,v);CHKERRQ(ierr);
+  } else {
+    PetscScalar *olda = a->a;  /* preserve pointers to current matrix nonzeros structure and values */
+    PetscInt    *oldj = a->j, *oldi = a->i;
+    PetscBool   singlemalloc = a->singlemalloc,free_a = a->free_a,free_ij = a->free_ij;
+
+    a->a = NULL;
+    a->j = NULL;
+    a->i = NULL;
+    /* increase the values in imax for each row where a diagonal is being inserted then reallocate the matrix data structures */
+    for (i=0; i<A->rmap->n; i++) {
+      a->imax[i] += mdiag[i];
+    }
+    ierr = MatSeqAIJSetPreallocation_SeqAIJ(A,0,a->imax);CHKERRQ(ierr);
+
+    /* copy old values into new matrix data structure */
+    for (i=0; i<A->rmap->n; i++) {
+      ierr = MatSetValues(A,1,&i,a->imax[i] - mdiag[i],&oldj[oldi[i]],&olda[oldi[i]],ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(A,i,i,v,ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (singlemalloc) {
+      ierr = PetscFree3(olda,oldj,oldi);CHKERRQ(ierr);
+    } else {
+      if (free_a)  {ierr = PetscFree(olda);CHKERRQ(ierr);}
+      if (free_ij) {ierr = PetscFree(oldj);CHKERRQ(ierr);}
+      if (free_ij) {ierr = PetscFree(oldi);CHKERRQ(ierr);}
+    }
+  }
+  ierr = PetscFree(mdiag);CHKERRQ(ierr);
+  a->diagonaldense = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /*
      Checks for missing diagonals
 */
@@ -2629,6 +2692,9 @@ PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n,Mat *mat[])
     }
   }
 
+  /* Destroy Dummy submatrices created for reuse */
+  ierr = MatDestroySubMatrices_Dummy(n,mat);CHKERRQ(ierr);
+
   ierr = PetscFree(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3183,19 +3249,6 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet coded");
   ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatShift_SeqAIJ(Mat Y,PetscScalar a)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)Y->data;
-
-  PetscFunctionBegin;
-  if (!Y->preallocated || !aij->nz) {
-    ierr = MatSeqAIJSetPreallocation(Y,1,NULL);CHKERRQ(ierr);
-  }
-  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3992,11 +4045,6 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat,MatType,MatReuse,Mat*);
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject,void*);
-PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
-#endif
-
 PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -4268,6 +4316,30 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 }
 
 PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
+{
+  PetscBool      isbinary, ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(newMat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
+  if (isbinary) {
+    ierr = MatLoad_SeqAIJ_Binary(newMat,viewer);CHKERRQ(ierr);
+  } else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = MatLoad_AIJ_HDF5(newMat,viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject)newMat),PETSC_ERR_SUP,"HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  } else {
+    SETERRQ2(PetscObjectComm((PetscObject)newMat),PETSC_ERR_SUP,"Viewer type %s not yet supported for reading %s matrices",((PetscObject)viewer)->type_name,((PetscObject)newMat)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatLoad_SeqAIJ_Binary(Mat newMat, PetscViewer viewer)
 {
   Mat_SeqAIJ     *a;
   PetscErrorCode ierr;

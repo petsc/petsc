@@ -9,13 +9,11 @@
 .seealso: PetscDrawSetType(), PetscDraw, PetscViewer, PetscDrawCreate()
 J*/
 typedef const char* PetscDrawType;
-#define PETSC_DRAW_X          "x"
-#define PETSC_DRAW_GLUT       "glut"
-#define PETSC_DRAW_OPENGLES   "opengles"
-#define PETSC_DRAW_NULL       "null"
-#define PETSC_DRAW_WIN32      "win32"
-#define PETSC_DRAW_TIKZ       "tikz"
-#define PETSC_DRAW_IMAGE      "image"
+#define PETSC_DRAW_X     "x"
+#define PETSC_DRAW_NULL  "null"
+#define PETSC_DRAW_WIN32 "win32"
+#define PETSC_DRAW_TIKZ  "tikz"
+#define PETSC_DRAW_IMAGE "image"
 
 /*S
      PetscDraw - Abstract PETSc object for graphics

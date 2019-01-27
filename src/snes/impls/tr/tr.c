@@ -206,6 +206,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
+      snes->xnorm = xnorm;
+      snes->ynorm = ynorm;
       ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
       ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
       ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);

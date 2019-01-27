@@ -255,6 +255,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     ierr = VecSetRandom(workv[1],NULL);CHKERRQ(ierr);
     ierr = MatMult(local_mat,workv[1],workv[0]);CHKERRQ(ierr);
     ierr = KSPSolve(check_ksp,workv[0],workv[0]);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(check_ksp,pc,workv[0]);CHKERRQ(ierr);
     ierr = VecAXPY(workv[0],-1.,workv[1]);CHKERRQ(ierr);
     ierr = VecNorm(workv[0],NORM_INFINITY,&test_err);CHKERRQ(ierr);
     ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min);CHKERRQ(ierr);
@@ -346,6 +347,7 @@ PetscErrorCode PCBDDCNullSpaceCheckCorrection(PC pc, PetscBool isdir)
   ierr = VecSetRandom(work1,NULL);CHKERRQ(ierr);
   ierr = MatMult(local_mat,work1,work2);CHKERRQ(ierr);
   ierr = KSPSolve(check_ksp,work2,work2);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(check_ksp,pc,work2);CHKERRQ(ierr);
   ierr = VecAXPY(work2,-1.,work1);CHKERRQ(ierr);
   ierr = VecNorm(work2,NORM_INFINITY,&test_err);CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min);CHKERRQ(ierr);

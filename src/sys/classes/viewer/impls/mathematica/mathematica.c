@@ -31,8 +31,7 @@ PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
 
 /*@C
   PetscViewerMathematicaInitializePackage - This function initializes everything in the Petsc interface to Mathematica. It is
-  called from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
-  when using static libraries.
+  called from PetscViewerInitializePackage().
 
   Level: developer
 

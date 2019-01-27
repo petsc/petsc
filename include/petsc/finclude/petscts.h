@@ -50,11 +50,12 @@
 #define TSGLLEADAPT_BOTH 'both'
 
 #define TSAdaptType character*(80)
-#define TSADAPTNONE  'none'
-#define TSADAPTBASIC 'basic'
-#define TSADAPTDSP   'dsp'
-#define TSADAPTCFL   'cfl'
-#define TSADAPTGLEE  'glee'
+#define TSADAPTNONE    'none'
+#define TSADAPTBASIC   'basic'
+#define TSADAPTDSP     'dsp'
+#define TSADAPTCFL     'cfl'
+#define TSADAPTGLEE    'glee'
+#define TSADAPTHISTORY 'history'
 
 #define TSRKType character*(80)
 #define TSRK1FE   '1fe'

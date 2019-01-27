@@ -291,14 +291,13 @@ and then fit the result to our model above using linear regression.
 PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 {
   DM            *dm;
-  PetscDS        prob;
   PetscObject    disc;
   MPI_Comm       comm;
   const char    *uname, *dmname;
   void          *ctx;
   Vec            u;
   PetscReal      t = 0.0, *x, *y, slope, intercept;
-  PetscInt      *dof, dim, Nr = ce->Nr, r, f;
+  PetscInt      *dof, dim, Nr = ce->Nr, r, f, oldlevel, oldnlev;
   PetscLogEvent  event;
   PetscErrorCode ierr;
 
@@ -306,8 +305,8 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   ierr = PetscObjectGetComm((PetscObject) ce, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(ce->idm, &dim);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
-  ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMGetRefineLevel(ce->idm, &oldlevel);CHKERRQ(ierr);
   ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*ce->Nf, &dof);CHKERRQ(ierr);
   dm[0]  = ce->idm;
   for (f = 0; f < ce->Nf; ++f) alpha[f] = 0.0;
@@ -323,7 +322,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
     if (r > 0) {
       ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
-      ierr = DMSetDS(dm[r], prob);CHKERRQ(ierr);
+      ierr = DMCopyDisc(ce->idm, dm[r]);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
       for (f = 0; f <= ce->Nf; ++f) {
@@ -335,7 +334,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
     ierr = DMViewFromOptions(dm[r], NULL, "-conv_dm_view");CHKERRQ(ierr);
     /* Create solution */
     ierr = DMCreateGlobalVector(dm[r], &u);CHKERRQ(ierr);
-    ierr = PetscDSGetDiscretization(prob, 0, &disc);CHKERRQ(ierr);
+    ierr = DMGetField(dm[r], 0, NULL, &disc);CHKERRQ(ierr);
     ierr = PetscObjectGetName(disc, &uname);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) u, uname);CHKERRQ(ierr);
     /* Setup solver */
@@ -346,10 +345,20 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
     /* Create initial guess */
     ierr = DMProjectFunction(dm[r], t, ce->initGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     ierr = SNESSolve(ce->snes, NULL, u);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(event, ce, 0, 0, 0);CHKERRQ(ierr);
     ierr = DMComputeL2FieldDiff(dm[r], t, ce->exactSol, NULL, u, &ce->errors[r*ce->Nf]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(event, ce, 0, 0, 0);CHKERRQ(ierr);
     for (f = 0; f < ce->Nf; ++f) {
-      ierr = DMPlexGetHeightStratum(dm[r], 0, NULL, &dof[r*ce->Nf+f]);CHKERRQ(ierr);
+      PetscSection s, fs;
+      PetscInt     lsize;
+
+      /* Could use DMGetOutputDM() to add in Dirichlet dofs */
+      ierr = DMGetSection(dm[r], &s);CHKERRQ(ierr);
+      ierr = PetscSectionGetField(s, f, &fs);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstrainedStorageSize(fs, &lsize);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&lsize, &dof[r*ce->Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) ce->snes));CHKERRQ(ierr);
+      ierr = PetscLogEventSetDof(event, f, dof[r*ce->Nf+f]);CHKERRQ(ierr);
+      ierr = PetscLogEventSetError(event, f, ce->errors[r*ce->Nf+f]);CHKERRQ(ierr);
     }
     /* Monitor */
     if (ce->monitor) {
@@ -364,6 +373,15 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
       }
       if (ce->Nf > 1) {ierr = PetscPrintf(comm, "]");CHKERRQ(ierr);}
       ierr = PetscPrintf(comm, "\n");CHKERRQ(ierr);
+    }
+    if (!r) {
+      /* PCReset() does not wipe out the level structure */
+      KSP ksp;
+      PC  pc;
+
+      ierr = SNESGetKSP(ce->snes, &ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+      ierr = PCMGGetLevels(pc, &oldnlev);CHKERRQ(ierr);
     }
     /* Cleanup */
     ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -387,6 +405,16 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   ierr = PetscFree2(dm, dof);CHKERRQ(ierr);
   /* Restore solver */
   ierr = SNESReset(ce->snes);CHKERRQ(ierr);
+  {
+    /* PCReset() does not wipe out the level structure */
+    KSP ksp;
+    PC  pc;
+
+    ierr = SNESGetKSP(ce->snes, &ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = PCMGSetLevels(pc, oldnlev, NULL);CHKERRQ(ierr);
+    ierr = DMSetRefineLevel(ce->idm, oldlevel);CHKERRQ(ierr); /* The damn DMCoarsen() calls in PCMG can reset this */
+  }
   ierr = SNESSetDM(ce->snes, ce->idm);CHKERRQ(ierr);
   ierr = DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(ce->snes);CHKERRQ(ierr);
@@ -410,23 +438,27 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 
 .seealso: PetscConvEstGetRate()
 @*/
-PetscErrorCode PetscConvEstRateView(PetscConvEst ce, PetscReal alpha[], PetscViewer viewer)
+PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], PetscViewer viewer)
 {
   PetscBool      isAscii;
-  PetscInt       f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isAscii);CHKERRQ(ierr);
   if (isAscii) {
+    DM       dm;
+    PetscInt Nf, f;
+
+    ierr = SNESGetDM(ce->snes, &dm);CHKERRQ(ierr);
+    ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: ");CHKERRQ(ierr);
-    if (ce->Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "[");CHKERRQ(ierr);}
-    for (f = 0; f < ce->Nf; ++f) {
+    if (Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "[");CHKERRQ(ierr);}
+    for (f = 0; f < Nf; ++f) {
       if (f > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
-      ierr = PetscViewerASCIIPrintf(viewer, "%g", (double) alpha[f]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%#.2g", (double) alpha[f]);CHKERRQ(ierr);
     }
-    if (ce->Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);}
+    if (Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
   }

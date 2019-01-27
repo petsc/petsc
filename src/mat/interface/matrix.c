@@ -1087,7 +1087,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 #endif
 
 /*@C
-   MatLoad - Loads a matrix that has been stored in binary format
+   MatLoad - Loads a matrix that has been stored in binary/HDF5 format
    with MatView().  The matrix format is determined from the options database.
    Generates a parallel MPI matrix if the communicator has more than one
    processor.  The default matrix type is AIJ.
@@ -1097,7 +1097,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    Input Parameters:
 +  newmat - the newly loaded matrix, this needs to have been created with MatCreate()
             or some related function before a call to MatLoad()
--  viewer - binary file viewer, created with PetscViewerBinaryOpen()
+-  viewer - binary/HDF5 file viewer
 
    Options Database Keys:
    Used with block matrix formats (MATSEQBAIJ,  ...) to specify
@@ -1127,7 +1127,27 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    relatively small blocks of data rather than reading the entire
    matrix and then subsetting it.
 
-   Notes for advanced users:
+   Viewer's PetscViewerType must be either PETSCVIEWERBINARY or PETSCVIEWERHDF5.
+   Such viewer can be created using PetscViewerBinaryOpen()/PetscViewerHDF5Open(),
+   or the sequence like
+$    PetscViewer v;
+$    PetscViewerCreate(PETSC_COMM_WORLD,&v);
+$    PetscViewerSetType(v,PETSCVIEWERBINARY);
+$    PetscViewerSetFromOptions(v);
+$    PetscViewerFileSetMode(v,FILE_MODE_READ);
+$    PetscViewerFileSetName(v,"datafile");
+   The optional PetscViewerSetFromOptions() call allows to override PetscViewerSetType() using option
+$ -viewer_type {binary,hdf5}
+
+   See the example src/ksp/ksp/examples/tutorials/ex27.c with the first approach,
+   and src/mat/examples/tutorials/ex10.c with the second approach.
+
+   Notes about the PETSc binary format:
+   In case of PETSCVIEWERBINARY, a native PETSc binary format is used. Each of the blocks
+   is read onto rank 0 and then shipped to its destination rank, one after another.
+   Multiple objects, both matrices and vectors, can be stored within the same file.
+   Their PetscObject name is ignored; they are loaded in the order of their storage.
+
    Most users should not need to know the details of the binary storage
    format, since MatLoad() and MatView() completely hide these details.
    But for anyone who's interested, the standard binary matrix storage
@@ -1147,30 +1167,49 @@ linux, Windows and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscBinaryRead()
 and PetscBinaryWrite() to see how this may be done.
 
-.keywords: matrix, load, binary, input
+   Notes about the HDF5 (MATLAB MAT-File Version 7.3) format:
+   In case of PETSCVIEWERHDF5, a parallel HDF5 reader is used.
+   Each processor's chunk is loaded independently by its owning rank.
+   Multiple objects, both matrices and vectors, can be stored within the same file.
+   They are looked up by their PetscObject name.
 
-.seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
+   As the MATLAB MAT-File Version 7.3 format is also a HDF5 flavor, we decided to use
+   by default the same structure and naming of the AIJ arrays and column count
+   (see PetscViewerHDF5SetAIJNames())
+   within the HDF5 file. This means that a MAT file saved with -v7.3 flag, e.g.
+$    save example.mat A b -v7.3
+   can be directly read by this routine (see Reference 1 for details).
+   Note that depending on your MATLAB version, this format might be a default,
+   otherwise you can set it as default in Preferences.
+
+   Unless -nocompression flag is used to save the file in MATLAB,
+   PETSc must be configured with ZLIB package.
+
+   Current HDF5 limitations:
+   This reader currently supports only real MATSEQAIJ and MATMPIAIJ matrices.
+
+   MatView() is not yet implemented.
+
+   References:
+1. MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
+
+.keywords: matrix, load, binary, input, HDF5
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerSetType(), PetscViewerHDF5SetAIJNames(), MatView(), VecLoad()
 
  @*/
 PetscErrorCode MatLoad(Mat newmat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      isbinary,flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newmat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   if (!((PetscObject)newmat)->type_name) {
     ierr = MatSetType(newmat,MATAIJ);CHKERRQ(ierr);
   }
-
-  if (!newmat->ops->load) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type");
-  ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = (*newmat->ops->load)(newmat,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)newmat)->options,((PetscObject)newmat)->prefix,"-matload_symmetric",&flg,NULL);CHKERRQ(ierr);
@@ -1183,6 +1222,11 @@ PetscErrorCode MatLoad(Mat newmat,PetscViewer viewer)
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
+
+  if (!newmat->ops->load) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type");
+  ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = (*newmat->ops->load)(newmat,viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4516,6 +4560,7 @@ PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type,MatFactorType f
 
    Notes:
     You cannot change the nonzero pattern for the parent or child matrix if you use MAT_SHARE_NONZERO_PATTERN.
+    When original mat is a product of matrix operation, e.g., an output of MatMatMult() or MatCreateSubMatrix(), only the simple matrix data structure of mat is duplicated and the internal data structures created for the reuse of previous matrix operations are not duplicated. User should not use MatDuplicate() to create new matrix M if M is intended to be reused as the product of matrix operation.
 
 .seealso: MatCopy(), MatConvert(), MatDuplicateOption
 @*/
@@ -6660,9 +6705,13 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
           MatGetOrdering(), MatFactorInfo
 
+    Note: this uses the definition of level of fill as in Y. Saad, 2003
+
     Developer Note: fortran interface is not autogenerated as the f90
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
+   References:
+     Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
 @*/
 PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFactorInfo *info)
 {
@@ -6722,9 +6771,13 @@ $      expected fill - as ratio of original fill.
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 
+    Note: this uses the definition of level of fill as in Y. Saad, 2003
+
     Developer Note: fortran interface is not autogenerated as the f90
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
+   References:
+     Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
 @*/
 PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo *info)
 {
@@ -11050,5 +11103,38 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
     if (*cong) mat->congruentlayouts = 1;
     else       mat->congruentlayouts = 0;
   } else *cong = mat->congruentlayouts ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatFreeIntermediateDataStructures - Free intermediate data structures created for reuse,
+    e.g., matrx product of MatPtAP.
+
+   Collective on mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
+.  mat - the matrix with intermediate data structures released
+
+   Level: advanced
+
+   Notes:
+
+.keywords: matrix
+
+.seealso: MatPtAP(), MatMatMult()
+@*/
+PetscErrorCode MatFreeIntermediateDataStructures(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (mat->ops->freeintermediatedatastructures) {
+    ierr = (*mat->ops->freeintermediatedatastructures)(mat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

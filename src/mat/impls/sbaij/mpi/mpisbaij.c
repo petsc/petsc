@@ -2527,7 +2527,6 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   ierr = MatCreate(PetscObjectComm((PetscObject)matin),&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,matin->rmap->n,matin->cmap->n,matin->rmap->N,matin->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,((PetscObject)matin)->type_name);CHKERRQ(ierr);
-  ierr = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   ierr = PetscLayoutReference(matin->rmap,&mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutReference(matin->cmap,&mat->cmap);CHKERRQ(ierr);
 
@@ -2542,7 +2541,6 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   a->nbs = oldmat->nbs;
   a->Mbs = oldmat->Mbs;
   a->Nbs = oldmat->Nbs;
-
 
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
@@ -2636,8 +2634,12 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   PetscInt       dcount,kmax,k,nzcount,tmp;
   int            fd;
+  PetscBool      isbinary;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ2(PetscObjectComm((PetscObject)newmat),PETSC_ERR_SUP,"Viewer type %s not yet supported for reading %s matrices",((PetscObject)viewer)->type_name,((PetscObject)newmat)->type_name);
+
   /* force binary viewer to load .info file if it has not yet done so */
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);

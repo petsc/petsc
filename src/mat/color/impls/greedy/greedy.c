@@ -615,6 +615,8 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOp
    vertices are marked, and then the conflicts are gathered back on owning processors.  In both cases
    this is done until each column has received a valid color.
 
+   Supports both distance one and distance two colorings.
+
    References:
 .  1. - Bozdag et al. "A Parallel Distance 2 Graph Coloring Algorithm for Distributed Memory Computers"
    HPCC'05 Proceedings of the First international conference on High Performance Computing and Communications

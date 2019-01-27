@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     self.functions        = ['triangulate']
     self.includes         = ['triangle.h']
     self.liblist          = [['libtriangle.a']]
-    self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     self.precisions       = ['single','double']
     self.hastests         = 1
     return

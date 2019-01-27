@@ -456,16 +456,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  
+
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
+PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
 {
+  PetscDS        prob;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, NULL, f1_u_3d);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 1, f0_p_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu_3d);CHKERRQ(ierr);
@@ -508,21 +510,40 @@ PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
   ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
-  ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
+  ierr = DMGetField(dm, 0, NULL, &deformation);CHKERRQ(ierr);
   ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
   ierr = DMDestroy(&subdm);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user)
+{
+  DM             dmAux, coordDM;
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
+  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
+  if (!feAux) PetscFunctionReturn(0);
+  ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
+  for (f = 0; f < NfAux; ++f) {ierr = DMSetField(dmAux, f, NULL, (PetscObject) feAux[f]);CHKERRQ(ierr);}
+  ierr = DMCreateDS(dmAux);CHKERRQ(ierr);
+  ierr = SetupMaterial(dm, dmAux, user);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM              cdm   = dm, dmAux;
+  DM              cdm   = dm;
   const PetscInt  dim   = user->dim;
   const PetscBool simplex = user->simplex;
   PetscFE         fe[2], feAux[2];
   PetscQuadrature q, fq;
-  PetscDS         prob, probAux;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -550,26 +571,15 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFESetFaceQuadrature(feAux[1], fq);CHKERRQ(ierr);
 
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-  ierr = SetupProblem(prob, dim, user);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
-  ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(probAux, 1, (PetscObject) feAux[1]);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(probAux);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, dim, user);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
-    ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
-    ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) cdm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
-
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
+    ierr = SetupAuxDM(cdm, 2, feAux, user);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
-  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux[0]);CHKERRQ(ierr);
@@ -695,11 +705,6 @@ int main(int argc, char **argv)
     suffix: 2
     requires: ctetgen !single
     args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0 -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
-
-  test:
-    requires: ctetgen !single
-    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
-    output_file: output/ex77_0.out
 
   test:
     requires: ctetgen superlu_dist

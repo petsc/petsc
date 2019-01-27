@@ -7,9 +7,6 @@ static char help[] = "Test MatrixMarket outputing.\n\n";
      petscmat.h    - matrices
      petscis.h     - index sets            petscviewer.h - viewers
 */
-/*T
-   TODO: Need to determine if deprecated
-T*/
 
 #include <petscmat.h>
 

@@ -196,7 +196,7 @@ def _getVarVals(findvar,testDict):
   if not save_vals: raise Exception("Could not find separate_testvar: "+findvar)
   return save_vals
 
-def genTestsSeparateTestvars(intests,indicts):
+def genTestsSeparateTestvars(intests,indicts,final=False):
   """
   Given: testname, sdict with 'separate_testvars
   Return: testnames,sdicts: List of generated tests
@@ -239,6 +239,11 @@ def genTestsSeparateTestvars(intests,indicts):
       testnames+=sep_testnames
       sdicts+=sep_dicts
     else:
+      # These are plain vanilla tests (no subtests, no loops) that 
+      # do not have a suffix.  This makes the targets match up with
+      # the output file (testname_1.out)
+      if final:
+          if '_' not in testname: testname+='_1'
       testnames.append(testname)
       sdicts.append(sdict)
   return testnames,sdicts
@@ -304,7 +309,7 @@ def splitTests(testname,sdict):
   # Order: Parent sep_tv, subtests suffix, subtests sep_tv
   testnames,sdicts=genTestsSeparateTestvars([testname],[sdict])
   testnames,sdicts=genTestsSubtestSuffix(testnames,sdicts)
-  testnames,sdicts=genTestsSeparateTestvars(testnames,sdicts)
+  testnames,sdicts=genTestsSeparateTestvars(testnames,sdicts,final=True)
 
   # Because I am altering the list, I do this in passes.  Inelegant 
 
@@ -371,11 +376,11 @@ def parseTest(testStr,srcfile,verbosity):
         subdict[var]=val
       if var=="suffix":
         if len(val)>0:
-          testname=testname+"_"+val
+          testname+="_"+val
 
   if len(comments): subdict['comments']="\n".join(comments).lstrip("\n")
-  # A test block can create multiple tests.  This does
-  # that logic
+
+  # A test block can create multiple tests.  This does that logic
   testnames,subdicts=splitTests(testname,subdict)
   return testnames,subdicts
 

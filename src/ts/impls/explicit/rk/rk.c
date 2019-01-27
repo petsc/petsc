@@ -285,8 +285,7 @@ PetscErrorCode TSRKRegisterDestroy(void)
 
 /*@C
   TSRKInitializePackage - This function initializes everything in the TSRK package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_RK()
-  when using static libraries.
+  from TSInitializePackage().
 
   Level: developer
 
@@ -992,8 +991,8 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
   TS_RK *rk = (TS_RK*)ts->data;
 
   PetscFunctionBegin;
-  *ns = rk->tableau->s;
-  if (Y) *Y = rk->Y;
+  if (ns) *ns = rk->tableau->s;
+  if (Y)   *Y = rk->Y;
   PetscFunctionReturn(0);
 }
 

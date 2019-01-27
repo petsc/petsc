@@ -45,8 +45,8 @@ int main(int argc,char **argv)
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 
   if (!rank) {
-    printf("----\n");
-    VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"----\n");CHKERRQ(ierr);
+    ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);

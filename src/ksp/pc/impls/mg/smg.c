@@ -21,6 +21,7 @@ PetscErrorCode PCMGACycle_Private(PC pc,PC_MG_Levels **mglevels)
     ierr = VecSet(mglevels[i]->x,0.0);CHKERRQ(ierr);
     if (mglevels[i]->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSolve(mglevels[i]->smoothd,mglevels[i]->b,mglevels[i]->x);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(mglevels[i]->smoothd,pc,mglevels[i]->x);CHKERRQ(ierr);
     if (mglevels[i]->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   for (i=1; i<l; i++) {

@@ -1202,7 +1202,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
       }
     }
   }
-  /* Calculate new sizes, get proccess offset, and calculate point offsets */
+  /* Calculate new sizes, get process offset, and calculate point offsets */
   if (s->perm) {ierr = ISGetIndices(s->perm, &pind);CHKERRQ(ierr);}
   for (p = 0, off = 0; p < pEnd-pStart; ++p) {
     const PetscInt q = pind ? pind[p] : p;
@@ -2238,8 +2238,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   }
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,NULL,NULL,NULL);CHKERRQ(ierr);
-  rpEnd = PetscMin(rpEnd,nroots);CHKERRQ(ierr);
-  rpEnd = PetscMax(rpStart,rpEnd);CHKERRQ(ierr);
+  rpEnd = PetscMin(rpEnd,nroots);
+  rpEnd = PetscMax(rpStart,rpEnd);
   ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
   ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
   ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
@@ -2597,13 +2597,10 @@ PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, Pe
 @*/
 PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection *subs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s,PETSC_SECTION_CLASSID,1);
   PetscValidPointer(subs,3);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
-  ierr = PetscObjectReference((PetscObject) s->field[field]);CHKERRQ(ierr);
   *subs = s->field[field];
   PetscFunctionReturn(0);
 }

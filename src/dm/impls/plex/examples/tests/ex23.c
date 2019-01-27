@@ -79,21 +79,20 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 static PetscErrorCode SetupDiscretization(DM dm, PetscInt dim, PetscBool simplex, AppCtx *user)
 {
   PetscFE        fe;
-  PetscDS        prob;
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, dim, simplex, "velocity_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "velocity");CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pressure_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "pressure");CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 1, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -104,7 +103,7 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, App
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMLabelCreate("sub", &label);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "sub", &label);CHKERRQ(ierr);
   ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
   ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   ierr = DMPlexCreateSubmesh(dm, label, 1, PETSC_TRUE, subdm);CHKERRQ(ierr);

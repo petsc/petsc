@@ -31,6 +31,7 @@ configure_options = [
   '--download-yaml',
   '--download-ml',
   '--download-sundials',
+  '--download-p4est=1',
   ]
 
 if __name__ == '__main__':

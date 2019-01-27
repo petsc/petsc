@@ -29,7 +29,7 @@ typedef struct {
   RunType        runType;           /* Whether to run tests, or solve the full problem */
   PetscBool      jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
   PetscLogEvent  createMeshEvent;
-  PetscBool      showInitial, showSolution, restart, check, quiet, nonzInit;
+  PetscBool      showInitial, showSolution, restart, quiet, nonzInit;
   /* Domain and mesh definition */
   PetscInt       dim;               /* The topological mesh dimension */
   DMBoundaryType periodicity[3];    /* The domain periodicity */
@@ -120,7 +120,7 @@ static PetscErrorCode cross_u_2d(PetscInt dim, PetscReal time, const PetscReal x
   const PetscReal alpha = 50*4;
   const PetscReal xy    = (x[0]-0.5)*(x[1]-0.5);
 
-  *u = PetscSinScalar(alpha*xy) * (alpha*PetscAbsScalar(xy) < 2*PETSC_PI ? 1 : 0.01);
+  *u = PetscSinReal(alpha*xy) * (alpha*PetscAbsReal(xy) < 2*PETSC_PI ? 1 : 0.01);
   return 0;
 }
 
@@ -153,7 +153,7 @@ static void f0_cross_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   const PetscReal alpha = 50*4;
   const PetscReal xy    = (x[0]-0.5)*(x[1]-0.5);
 
-  f0[0] = PetscSinScalar(alpha*xy) * (alpha*PetscAbsScalar(xy) < 2*PETSC_PI ? 1 : 0.01);
+  f0[0] = PetscSinReal(alpha*xy) * (alpha*PetscAbsReal(xy) < 2*PETSC_PI ? 1 : 0.01);
 }
 
 static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -436,7 +436,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showInitial         = PETSC_FALSE;
   options->showSolution        = PETSC_FALSE;
   options->restart             = PETSC_FALSE;
-  options->check               = PETSC_FALSE;
   options->viewHierarchy       = PETSC_FALSE;
   options->simplex             = PETSC_TRUE;
   options->quiet               = PETSC_FALSE;
@@ -446,7 +445,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   run  = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 3, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 4, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
 
   options->runType = (RunType) run;
 
@@ -477,7 +476,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex12.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex12.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-restart", "Read in the mesh and solution from a file", "ex12.c", options->restart, &options->restart, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-check", "Compare with default integration routines", "ex12.c", options->check, &options->check, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_view_hierarchy", "View the coarsened hierarchy", "ex12.c", options->viewHierarchy, &options->viewHierarchy, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex12.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-quiet", "Don't print any vecs", "ex12.c", options->quiet, &options->quiet, NULL);CHKERRQ(ierr);
@@ -623,12 +621,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
+static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->variableCoefficient) {
   case COEFF_NONE:
     if (user->periodicity[0]) {
@@ -699,7 +699,6 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
                             "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL,
                             user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -735,20 +734,37 @@ static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
+{
+  DM             dmAux, coordDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
+  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
+  if (!feAux) PetscFunctionReturn(0);
+  ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
+  ierr = DMSetField(dmAux, 0, NULL, (PetscObject) feAux);CHKERRQ(ierr);
+  ierr = DMCreateDS(dmAux);CHKERRQ(ierr);
+  if (user->fieldBC) {ierr = SetupBC(dm, dmAux, user);CHKERRQ(ierr);}
+  else               {ierr = SetupMaterial(dm, dmAux, user);CHKERRQ(ierr);}
+  ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM             cdm   = dm;
-  const PetscInt dim   = user->dim;
-  PetscFE        feAux = NULL;
-  PetscFE        feCh  = NULL;
-  PetscFE        fe;
-  PetscDS        prob, probAux = NULL, probCh = NULL;
-  PetscBool      simplex = user->simplex;
+  DM             cdm = dm;
+  const PetscInt dim = user->dim;
+  PetscFE        fe, feAux = NULL;
+  PetscBool      simplex   = user->simplex;
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* Create finite element */
+  /* Create finite element for each field and auxiliary field */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "potential");CHKERRQ(ierr);
@@ -758,51 +774,20 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = PetscFECreateDefault(comm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
-    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
   } else if (user->fieldBC) {
     PetscQuadrature q;
 
     ierr = PetscFECreateDefault(comm, dim, 1, simplex, "bc_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
-    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
-  }
-  if (user->check) {
-    ierr = PetscFECreateDefault(comm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);
-    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probCh);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
   }
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, user);CHKERRQ(ierr);
   while (cdm) {
-    DM coordDM;
-
-    ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(cdm,&coordDM);CHKERRQ(ierr);
-    if (feAux) {
-      DM      dmAux;
-
-      ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
-      ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
-      ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-      if (user->fieldBC) {ierr = SetupBC(cdm, dmAux, user);CHKERRQ(ierr);}
-      else               {ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);}
-      ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
-    }
-    if (feCh) {
-      DM      dmCh;
-
-      ierr = DMClone(cdm, &dmCh);CHKERRQ(ierr);
-      ierr = DMSetCoordinateDM(dmCh, coordDM);CHKERRQ(ierr);
-      ierr = DMSetDS(dmCh, probCh);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "dmCh", (PetscObject) dmCh);CHKERRQ(ierr);
-      ierr = DMDestroy(&dmCh);CHKERRQ(ierr);
-    }
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
+    ierr = SetupAuxDM(cdm, feAux, user);CHKERRQ(ierr);
     if (user->bcType == DIRICHLET) {
       PetscBool hasLabel;
 
@@ -813,9 +798,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feCh);CHKERRQ(ierr);
-  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
-  ierr = PetscDSDestroy(&probCh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1162,48 +1144,48 @@ int main(int argc, char **argv)
 /*TEST
   # 2D serial P1 test 0-4
   test:
-    suffix: 0
+    suffix: 2d_p1_0
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 1
+    suffix: 2d_p1_1
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 2
+    suffix: 2d_p1_2
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 3
+    suffix: 2d_p1_neumann_0
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
   test:
-    suffix: 4
+    suffix: 2d_p1_neumann_1
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   # 2D serial P2 test 5-8
   test:
-    suffix: 5
+    suffix: 2d_p2_0
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 6
+    suffix: 2d_p2_1
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: 7
+    suffix: 2d_p2_neumann_0
     requires: triangle
     args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
   test:
-    suffix: 8
+    suffix: 2d_p2_neumann_1
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
@@ -1219,24 +1201,24 @@ int main(int argc, char **argv)
 
   # 3D serial P1 test 9-12
   test:
-    suffix: 9
+    suffix: 3d_p1_0
     requires: ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
-    suffix: 10
+    suffix: 3d_p1_1
     requires: ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
-    suffix: 11
+    suffix: 3d_p1_2
     requires: ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
-    suffix: 12
+    suffix: 3d_p1_neumann_0
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
+    args: -run_type test -dim 3 -bc_type neumann   -interpolate 1 -petscspace_degree 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   # Analytic variable coefficient 13-20
   test:
@@ -1257,7 +1239,7 @@ int main(int argc, char **argv)
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 17
-    requires: hdf5 ctetgen
+    requires: ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
@@ -1395,7 +1377,7 @@ int main(int argc, char **argv)
       suffix: gmg_bddc
       args: -mg_levels_pc_type jacobi
     test:
-      filter: sed -e "s/iterations 1/iterations 4/g"
+      filter: sed -e "s/iterations [0-4]/iterations 4/g"
       suffix: gmg_bddc_lev
       args: -mg_levels_pc_type bddc
 
@@ -1422,85 +1404,85 @@ int main(int argc, char **argv)
 
   # 2D serial P1 test with field bc
   test:
-    suffix: field_bc_p1_0
+    suffix: field_bc_2d_p1_0
     requires: triangle
     args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p1_1
+    suffix: field_bc_2d_p1_1
     requires: triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p1_2
+    suffix: field_bc_2d_p1_neumann_0
     requires: triangle
     args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p1_3
+    suffix: field_bc_2d_p1_neumann_1
     requires: triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   # 3D serial P1 test with field bc
   test:
-    suffix: field_bc_p1_4
+    suffix: field_bc_3d_p1_0
     requires: ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p1_5
+    suffix: field_bc_3d_p1_1
     requires: ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p1_6
+    suffix: field_bc_3d_p1_neumann_0
     requires: ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p1_7
+    suffix: field_bc_3d_p1_neumann_1
     requires: ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   # 2D serial P2 test with field bc
   test:
-    suffix: field_bc_p2_0
+    suffix: field_bc_2d_p2_0
     requires: triangle
     args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p2_1
+    suffix: field_bc_2d_p2_1
     requires: triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p2_2
+    suffix: field_bc_2d_p2_neumann_0
     requires: triangle
     args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
-    suffix: field_bc_p2_3
+    suffix: field_bc_2d_p2_neumann_1
     requires: triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   # 3D serial P2 test with field bc
   test:
-    suffix: field_bc_p2_4
+    suffix: field_bc_3d_p2_0
     requires: ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p2_5
+    suffix: field_bc_3d_p2_1
     requires: ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p2_6
+    suffix: field_bc_3d_p2_neumann_0
     requires: ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
-    suffix: field_bc_p2_7
+    suffix: field_bc_3d_p2_neumann_1
     requires: ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
@@ -1536,7 +1518,7 @@ int main(int argc, char **argv)
   # Full solve simplex: BDDC
   test:
     suffix: tri_bddc_parmetis
-    requires: hdf5 triangle !single parmetis
+    requires: triangle !single parmetis
     nsize: 4
     args: -run_type full -petscpartitioner_type parmetis -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
@@ -1647,7 +1629,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: p4est_test_q2_conformal_parallel_parmetis
-    requires: hdf5 p4est
+    requires: parmetis p4est
     nsize: 4
     args: -run_type test -interpolate 1 -petscspace_degree 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis -cells 2,2
 
@@ -1666,25 +1648,24 @@ int main(int argc, char **argv)
 
   test:
     suffix: p4est_test_q2_nonconformal_parallel_parmetis
-    requires: hdf5 p4est
+    requires: parmetis p4est
     nsize: 4
     args: -run_type test -interpolate 1 -petscspace_degree 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis -cells 2,2
 
   test:
     suffix: p4est_exact_q2_conformal_serial
-    requires: p4est !single
+    requires: p4est !single !complex !__float128
     args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
 
   test:
     suffix: p4est_exact_q2_conformal_parallel
-    TODO: broken
-    requires: p4est !single
-    nsize: 7
+    requires: p4est !single !complex !__float128
+    nsize: 4
     args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
 
   test:
     suffix: p4est_exact_q2_conformal_parallel_parmetis
-    requires: hdf5 p4est !single
+    requires: parmetis p4est !single
     nsize: 4
     args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis  -cells 2,2
 
@@ -1701,7 +1682,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: p4est_exact_q2_nonconformal_parallel_parmetis
-    requires: hdf5 p4est
+    requires: parmetis p4est
     nsize: 4
     args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis -cells 2,2
 
@@ -1733,19 +1714,20 @@ int main(int argc, char **argv)
     args: -run_type full -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
 
   test:
-    suffix: p4est_fas_q2_conformal_serial
-    requires: p4est
-    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type svd -fas_coarse_ksp_type gmres -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type svd -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -dm_refine_hierarchy 3 -cells 2,2
     TODO: broken
+    suffix: p4est_fas_q2_conformal_serial
+    requires: p4est !complex !__float128
+    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type svd -fas_coarse_ksp_type gmres -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type svd -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -dm_refine_hierarchy 3 -cells 2,2
 
   test:
+    TODO: broken
     suffix: p4est_fas_q2_nonconformal_serial
-    requires: p4est broken
+    requires: p4est
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type jacobi -fas_coarse_ksp_type gmres -fas_coarse_ksp_monitor_true_residual -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
 
   test:
     suffix: fas_newton_0_p4est
-    requires: p4est !single
+    requires: p4est !single !__float128
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
 
   # Full solve simplicial AMR
@@ -1783,7 +1765,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: p4est_solve_bddc
-    requires: p4est
+    requires: p4est !complex
     args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -ksp_monitor -snes_linesearch_type bt -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -pc_bddc_detect_disconnected
     nsize: 4
 

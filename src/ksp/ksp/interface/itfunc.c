@@ -221,9 +221,9 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
-  ierr = PCGetSetUpFailedReason(pc,&pcreason);CHKERRQ(ierr);
+  ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
   if (pcreason) {
-    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+    ksp->reason = KSP_DIVERGED_PC_FAILED;
   }
   PetscFunctionReturn(0);
 }
@@ -389,9 +389,9 @@ PetscErrorCode KSPSetUp(KSP ksp)
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
-  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+  ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
   if (pcreason) {
-    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+    ksp->reason = KSP_DIVERGED_PC_FAILED;
   }
 
   ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
@@ -428,10 +428,10 @@ static PetscErrorCode KSPReasonView_Internal(KSP ksp, PetscViewer viewer, PetscV
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
       }
-      if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+      if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
         PCFailedReason reason;
-        ierr = PCGetSetUpFailedReason(ksp->pc,&reason);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"               PCSETUP_FAILED due to %s \n",PCFailedReasons[reason]);CHKERRQ(ierr);
+        ierr = PCGetFailedReason(ksp->pc,&reason);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"               PC_FAILED due to %s \n",PCFailedReasons[reason]);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
@@ -774,7 +774,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     ksp->vec_rhs = btmp;
   }
   ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
-  if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+  if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
     ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
@@ -848,7 +848,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
   ierr = PetscObjectSAWsBlock((PetscObject)ksp);CHKERRQ(ierr);
-  if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
+  if (ksp->errorifnotconverged && ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS) SETERRQ1(comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged, reason %s",KSPConvergedReasons[ksp->reason]);
   PetscFunctionReturn(0);
 }
 

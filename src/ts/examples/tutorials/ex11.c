@@ -1525,7 +1525,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
-  ierr = DMLabelCreate("adapt",&adaptLabel);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF,"adapt",&adaptLabel);CHKERRQ(ierr);
   ierr = VecCreateMPI(PetscObjectComm((PetscObject)plex),cEnd-cStart,PETSC_DETERMINE,&errVec);CHKERRQ(ierr);
   ierr = VecSetUp(errVec);CHKERRQ(ierr);
   ierr = VecGetArray(errVec,&errArray);CHKERRQ(ierr);
@@ -1779,7 +1779,6 @@ int main(int argc, char **argv)
   if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
   ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
 
-  ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&prob);CHKERRQ(ierr);
   ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
@@ -1807,20 +1806,20 @@ int main(int argc, char **argv)
     }
   }
   /* FV is now structured with one field having all physics as components */
+  ierr = DMAddField(dm, NULL, (PetscObject) fvm);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
   ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
   ierr = (*mod->setupbc)(prob,phys);CHKERRQ(ierr);
   ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
-  ierr = DMSetDS(dm,prob);CHKERRQ(ierr);
-  ierr = PetscDSDestroy(&prob);CHKERRQ(ierr);
   {
     char      convType[256];
     PetscBool flg;
 
     ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
       DM dmConv;
 
@@ -2596,7 +2595,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   test:
     suffix: sw_0
     requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy
+    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy
 
   # 2D Advection: p4est
   test:
@@ -2627,8 +2626,8 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
 
   test:
     suffix: adv_2d_quad_p4est_adapt_0
-    requires: p4est
-    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares -ts_final_time 0.01
+    requires: p4est !__float128 #broken for quad precision
+    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares -ts_max_time 0.01
     timeoutfactor: 3
 
   test:
@@ -2642,16 +2641,16 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     requires: triangle
     TODO: how did this ever get in master when there is no support for this
     args: -ufv_vtk_interval 0 -simplex -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+
   test:
     suffix: adv_0
-    TODO: broken
+    requires: exodusii
     args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
 
   test:
     suffix: shock_0
-    TODO: broken
-    requires: p4est !single
-    args: -ufv_vtk_interval 0 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -ufv_use_amr -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -grid_skew_60 -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -petscfv_type leastsquares -petsclimiter_type minmod -petscfv_compute_gradients 0 -ts_final_time 0.5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -ufv_vtk_basename ${wPETSC_DIR}/ex11
+    requires: p4est !single !complex
+    args: -ufv_vtk_interval 0 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -ufv_use_amr -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -grid_skew_60 -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -petscfv_type leastsquares -petsclimiter_type minmod -petscfv_compute_gradients 0 -ts_max_time 0.5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -ufv_vtk_basename ${wPETSC_DIR}/ex11
     timeoutfactor: 3
 
   # Test GLVis visualization of PetscFV fields

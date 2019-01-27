@@ -1,14 +1,58 @@
-PTScotch Graph Partitioner:
+Graph Partitioner: 4 MPI Processes
+  type: ptscotch
+  edge cut: 0
+  balance:  0
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
+Graph Partitioner: 4 MPI Processes
+  type: matpartitioning
+  edge cut: 0
+  balance:  0
 MatPartitioning Graph Partitioner:
   MatPartitioning Object: (p2_) 4 MPI processes
     type: ptscotch
       Strategy=Default behavior
       Load imbalance ratio=0.01
-PTScotch Graph Partitioner:
+Graph Partitioner: 4 MPI Processes
+  type: ptscotch
+  edge cut: 0
+  balance:  0
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
+Graph Partitioner: 4 MPI Processes
+  type: matpartitioning
+  edge cut: 0
+  balance:  0
+MatPartitioning Graph Partitioner:
+  MatPartitioning Object: (p2_) 4 MPI processes
+    type: ptscotch
+      Strategy=Default behavior
+      Load imbalance ratio=0.01
+Graph Partitioner: 4 MPI Processes
+  type: ptscotch
+  edge cut: 0
+  balance:  0
+  using partitioning strategy DEFAULT
+  using load imbalance ratio 0.01
+Graph Partitioner: 4 MPI Processes
+  type: matpartitioning
+  edge cut: 0
+  balance:  0
+MatPartitioning Graph Partitioner:
+  MatPartitioning Object: (dp2_) 4 MPI processes
+    type: ptscotch
+      Strategy=Default behavior
+      Load imbalance ratio=0.01
+Graph Partitioner: 4 MPI Processes
+  type: ptscotch
+  edge cut: 0
+  balance:  0
+  using partitioning strategy DEFAULT
+  using load imbalance ratio 0.01
+Graph Partitioner: 4 MPI Processes
+  type: matpartitioning
+  edge cut: 0
+  balance:  0
 MatPartitioning Graph Partitioner:
   MatPartitioning Object: (dp2_) 4 MPI processes
     type: ptscotch

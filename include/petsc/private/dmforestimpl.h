@@ -12,11 +12,11 @@ typedef struct {
   PetscErrorCode             (*clearadaptivityforest)(DM);
   PetscErrorCode             (*getadaptivitysuccess)(DM,PetscBool*);
   PetscErrorCode             (*transfervec)(DM,Vec,DM,Vec,PetscBool,PetscReal);
+  PetscErrorCode             (*transfervecfrombase)(DM,Vec,Vec);
   PetscErrorCode             (*createcellchart)(DM,PetscInt*,PetscInt*);
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);
   PetscErrorCode             (*destroy)(DM);
   PetscErrorCode             (*ftemplate)(DM,DM);
-  PetscBool                  setfromoptionscalled;
   PetscBool                  computeAdaptSF;
   PetscErrorCode             (*mapcoordinates)(DM,PetscInt,PetscInt,const PetscReal[],PetscReal[],void*);
   void                       *mapcoordinatesctx;

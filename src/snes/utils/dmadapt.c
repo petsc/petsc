@@ -728,7 +728,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       PetscInt           nRefine, nCoarsen;
 
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-      ierr = DMLabelCreate("adapt", &adaptLabel);CHKERRQ(ierr);
+      ierr = DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel);CHKERRQ(ierr);
       ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
       ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
       cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
@@ -900,7 +900,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = DMPlexSetSNESLocalFEM(odm, ctx, ctx, ctx);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(adaptor->snes);CHKERRQ(ierr);
       /* Transfer system */
-      ierr = DMSetDS(odm, prob);CHKERRQ(ierr);
+      ierr = DMCopyDisc(adaptor->idm, odm);CHKERRQ(ierr);
       /* Transfer solution */
       ierr = DMCreateGlobalVector(odm, &ox);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) x, &name);CHKERRQ(ierr);

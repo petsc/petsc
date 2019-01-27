@@ -6,15 +6,13 @@ static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
    Processors: 1
 T*/
 
-
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscsys.h    - base PETSc routines   petscvec.h - vectors
+     petscmat.h    - matrices              petscpc.h  - preconditioners
+     petscis.h     - index sets
+     petscviewer.h - viewers
 
   Note:  The corresponding parallel example is ex23.c
 */
@@ -30,14 +28,12 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its;
   PetscMPIInt    size;
-  PetscScalar    one = 1.0,value[3];
-  PetscBool      nonzeroguess = PETSC_FALSE,changepcside = PETSC_FALSE;
+  PetscScalar    value[3];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-nonzero_guess",&nonzeroguess,NULL);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,33 +83,19 @@ int main(int argc,char **args)
   /*
      Set exact solution; then compute right-hand-side vector.
   */
-  ierr = VecSet(u,one);CHKERRQ(ierr);
+  ierr = VecSet(u,1.0);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /*
-     Create linear solver context
-  */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /*
      Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix.
+     also serves as the matrix that defines the preconditioner.
   */
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-
-  /*
-     Test if you can change the KSP side and type after they have been previously set
-  */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-change_pc_side",&changepcside,NULL);CHKERRQ(ierr);
-  if (changepcside) {
-    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-    ierr = PetscOptionsInsertString(NULL,"-ksp_norm_type unpreconditioned -ksp_pc_side right");CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  }
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -137,18 +119,9 @@ int main(int argc,char **args)
   */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  if (nonzeroguess) {
-    PetscScalar p = .5;
-    ierr = VecSet(x,p);CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-  }
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /*
-     Solve linear system
-  */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /*
@@ -158,11 +131,8 @@ int main(int argc,char **args)
   ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                      Check solution and clean up
+                      Check the solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /*
-     Check the error
-  */
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -185,7 +155,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 
@@ -215,9 +184,5 @@ int main(int argc,char **args)
       requires: cuda
       args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
       output_file: output/ex1_1_aijcusparse.out
-
-   test:
-      suffix: changepcside
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -change_pc_side
 
 TEST*/

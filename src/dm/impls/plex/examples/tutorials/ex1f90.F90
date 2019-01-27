@@ -12,6 +12,7 @@
       PetscSection :: section
       PetscInt :: dim,numFields,numBC
       PetscInt :: i,val
+      DMLabel, pointer :: nolabel(:) => NULL()
       PetscInt, target, dimension(3) ::  numComp
       PetscInt, pointer :: pNumComp(:)
       PetscInt, target, dimension(12) ::  numDof
@@ -73,7 +74,8 @@
       call DMGetStratumIS(dm, 'marker', one, bcPointIS(1),ierr);CHKERRA(ierr)
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
-      call DMPlexCreateSection(dm,dim,numFields,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr)
+      call DMSetNumFields(dm, numFields,ierr);CHKERRA(ierr)
+      call DMPlexCreateSection(dm,nolabel,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr)
       CHKERRA(ierr)
       call ISDestroy(bcCompIS(1), ierr);CHKERRA(ierr)
       call ISDestroy(bcPointIS(1), ierr);CHKERRA(ierr)

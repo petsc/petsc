@@ -500,6 +500,8 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
     This method uses a parallel Luby-style coloring with weights to choose an independent set of processor
    boundary vertices at each stage that may be assigned colors independently.
 
+   Supports both distance one and distance two colorings.
+
    References:
 .  1. - M. Jones and P. Plassmann, "A parallel graph coloring heuristic," SIAM Journal on Scientific Computing, vol. 14, no. 3,
    pp. 654-669, 1993.

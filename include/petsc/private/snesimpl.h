@@ -90,6 +90,8 @@ struct _p_SNES {
   PetscInt    iter;               /* global iteration number */
   PetscInt    linear_its;         /* total number of linear solver iterations */
   PetscReal   norm;               /* residual norm of current iterate */
+  PetscReal   ynorm;              /* update norm of current iterate */
+  PetscReal   xnorm;              /* solution norm of current iterate */
   PetscReal   rtol;               /* relative tolerance */
   PetscReal   divtol;             /* relative divergence tolerance */
   PetscReal   abstol;             /* absolute tolerance */
@@ -284,7 +286,11 @@ PETSC_INTERN const char SNESCitation[];
 #define SNESCheckKSPSolve(snes)\
   {\
     KSPConvergedReason kspreason; \
-    PetscErrorCode ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);\
+    PetscErrorCode ierr;                                                \
+    PetscInt lits;                                                      \
+    ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);        \
+    snes->linear_its += lits;                                           \
+    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);\
     if (kspreason < 0) {\
       if (kspreason == KSP_DIVERGED_NANORINF) {\
         PetscBool domainerror;\

@@ -41,8 +41,31 @@ class Configure(config.package.Package):
         self.addDefine('MKL_SUPPORTS_BAIJ_ZERO_BASED', 1)
         self.log.write('Found MKL spblas supports zero based indexing: result\n')
 
+  def checkHaveUsableSp2m(self):
+    sp2m_test = '#include <mkl_spblas.h>\nsparse_request_t request = SPARSE_STAGE_FULL_MULT_NO_VAL;\n'
+    result = self.checkCompile(sp2m_test)
+    self.log.write('Looking for mkl_sparse_sp2m() that is usable for MatMatMultSymbolic()/Numeric(): result ' + str(int(result)) + '\n')
+    if result:
+      # We append _FEATURE at the end to avoid confusion, because some versions of MKL have mkl_sparse_sp2m(), but not a version
+      # that is usable for implementing MatMatMultSymbolic()/Numeric().
+      self.addDefine('HAVE_MKL_SPARSE_SP2M_FEATURE', 1)
+
+  def checkMklSpblasDeprecated(self):
+    # Some versions of MKL use MKL_DEPRECATED and others just use DEPRECATED, so we must check for both.
+    deprecated_test1='#include <mkl_spblas.h>\nDEPRECATED void foo();\n'
+    deprecated_test2='#include <mkl_spblas.h>\nMKL_DEPRECATED void foo();\n'
+    result1 = self.checkCompile(deprecated_test1)
+    result2 = self.checkCompile(deprecated_test2)
+    result = result1 or result2
+    self.log.write('Checking to see if original MKL SpBLAS is declared deprecated: result ' + str(int(result)) + '\n')
+    if result:
+      self.addDefine('MKL_SPBLAS_DEPRECATED', 1)
+
+
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
     if self.found:
       self.executeTest(self.checksSupportBaijCrossCase)
+      self.executeTest(self.checkHaveUsableSp2m)
+      self.executeTest(self.checkMklSpblasDeprecated)
 

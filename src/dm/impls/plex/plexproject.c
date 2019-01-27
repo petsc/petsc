@@ -101,7 +101,13 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
 
     /* If dm is a submesh, do not get subpoint */
     ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
-    if (!spmap) {ierr = DMPlexGetSubpoint(dmAux, p, &subp);CHKERRQ(ierr);}
+    if (!spmap) {
+      PetscInt h;
+      ierr = DMPlexGetVTKCellHeight(dmAux, &h);CHKERRQ(ierr);
+      ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
+      if (spmap && !h) { ierr = DMLabelGetValue(spmap, p, &subp);CHKERRQ(ierr); }
+      else             { ierr = DMPlexGetSubpoint(dmAux, p, &subp);CHKERRQ(ierr); }
+    }
     ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
@@ -145,7 +151,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
         invJ = &fegeom->invJ[tp*dE*dE];
       }
       EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, invJ, coefficients, coefficients_t, u, u_x, u_t);
-      if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
+      if (probAux) EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);
       (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, v0, numConstants, constants, &pointEval[Nc[f]*q]);
     }
     ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
@@ -228,6 +234,39 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMGetFirstLabelEntry_Private(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt height, PetscInt *lStart, PetscDS *prob)
+{
+  DMLabel        depthLabel;
+  PetscInt       dim, cdepth, ls = -1, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (lStart) *lStart = -1;
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  cdepth = dim - height;
+  for (i = 0; i < numIds; ++i) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        pdepth;
+
+    ierr = DMLabelGetStratumIS(label, ids[i], &pointIS);CHKERRQ(ierr);
+    if (!pointIS) continue; /* No points with that id on this process */
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = DMLabelGetValue(depthLabel, points[0], &pdepth);CHKERRQ(ierr);
+    if (pdepth == cdepth) {
+      ls = points[0];
+      if (prob) {ierr = DMGetCellDS(dm, ls, prob);CHKERRQ(ierr);}
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    if (ls >= 0) break;
+  }
+  if (lStart) *lStart = ls;
+  PetscFunctionReturn(0);
+}
+
 /*
   This function iterates over a manifold, and interpolates the input function/field using the basis provided by the DS in our DM
 
@@ -265,7 +304,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
                                                   InsertMode mode, Vec localX)
 {
   DM              dmAux = NULL;
-  PetscDS         prob, probAux = NULL;
+  PetscDS         prob = NULL, probAux = NULL;
   Vec             localA = NULL;
   PetscSection    section;
   PetscDualSpace *sp, *cellsp;
@@ -285,21 +324,28 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   ierr = DMPlexGetVTKCellHeight(dm, &minHeight);CHKERRQ(ierr);
   /* Auxiliary information can only be used with interpolation of field functions */
   if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
+    if (dmAux && !localA) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing localA vector");
     if (!minHeight && dmAux) {
       DMLabel spmap;
 
       /* If dmAux is a surface, then force the projection to take place over a surface */
       ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
-      if (spmap) {minHeight = 1; auxBd = PETSC_TRUE;}
+      if (spmap) {
+        ierr = DMPlexGetVTKCellHeight(dmAux, &minHeight);CHKERRQ(ierr);
+        auxBd = minHeight ? PETSC_TRUE : PETSC_FALSE;
+      }
     }
   }
+  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
   ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
   maxHeight = PetscMax(maxHeight, minHeight);
-  if (maxHeight < 0 || maxHeight > dim) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %d not in [0, %d)\n", maxHeight, dim);}
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  if (maxHeight < 0 || maxHeight > dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %D not in [0, %D)", maxHeight, dim);
+  ierr = DMGetFirstLabelEntry_Private(dm, label, numIds, ids, 0, NULL, &prob);CHKERRQ(ierr);
+  if (!prob) {ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);}
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
@@ -314,7 +360,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscObject  obj;
     PetscClassId id;
 
-    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -359,8 +405,6 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       ierr = PetscFEGetTabulation(subfem, numPoints, points, &basisTabAux[f], &basisDerTabAux[f], NULL);CHKERRQ(ierr);
     }
   }
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
   /* Note: We make no attempt to optimize for height. Higher height things just overwrite the lower height results. */
   for (h = minHeight; h <= maxHeight; h++) {
     PetscInt     effectiveHeight = h - (auxBd ? 0 : minHeight);
@@ -368,12 +412,12 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscScalar *values;
     PetscBool   *fieldActive;
     PetscInt     maxDegree;
-    PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
+    PetscInt     pStart, pEnd, p, lStart, spDim, totDim, numValues;
     IS           heightIS;
 
-    if (effectiveHeight) {ierr = PetscDSGetHeightSubspace(prob, effectiveHeight, &probEff);CHKERRQ(ierr);}
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumIS(depthLabel,depth - h,&heightIS);CHKERRQ(ierr);
+    ierr = DMGetFirstLabelEntry_Private(dm, label, numIds, ids, h, &lStart, NULL);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(depthLabel, depth - h, &heightIS);CHKERRQ(ierr);
     if (!h) {
       PetscInt cEndInterior;
 
@@ -396,12 +440,13 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim;
     }
-    ierr = DMPlexVecGetClosure(dm, section, localX, pStart, &numValues, NULL);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, section, localX, lStart < 0 ? pStart : lStart, &numValues, NULL);CHKERRQ(ierr);
     if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The section point closure size %d != dual space dimension %d", numValues, totDim);
     if (!totDim) {
       ierr = ISDestroy(&heightIS);CHKERRQ(ierr);
       continue;
     }
+    if (effectiveHeight) {ierr = PetscDSGetHeightSubspace(prob, effectiveHeight, &probEff);CHKERRQ(ierr);}
     /* Loop over points at this height */
     ierr = DMGetWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr);

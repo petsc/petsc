@@ -5,7 +5,6 @@ static char help[] = "Tests for uniform refinement\n\n";
 typedef struct {
   PetscInt  debug;          /* The debugging level */
   PetscInt  dim;            /* The topological mesh dimension */
-  PetscInt  numRefinements; /* The number of refinement steps */
   PetscBool cellHybrid;     /* Use a hybrid mesh */
   PetscBool cellSimplex;    /* Use simplices or hexes */
   PetscBool testPartition;  /* Use a fixed partitioning for testing */
@@ -22,7 +21,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBegin;
   options->debug          = 0;
   options->dim            = 2;
-  options->numRefinements = 0;
   options->cellHybrid     = PETSC_TRUE;
   options->cellSimplex    = PETSC_TRUE;
   options->testPartition  = PETSC_TRUE;
@@ -34,7 +32,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex4.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_refinements", "The number of refinement steps", "ex4.c", options->numRefinements, &options->numRefinements, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_hybrid", "Use a hybrid mesh", "ex4.c", options->cellHybrid, &options->cellHybrid, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex4.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex4.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
@@ -185,10 +182,12 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
-    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
-    ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(idm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, faultLabel, NULL, &hybridLabel, NULL, NULL, &hdm);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
@@ -265,10 +264,12 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
     for(p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
-    ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(idm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, faultLabel, NULL, &hybridLabel, NULL, NULL, &hdm);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
@@ -428,10 +429,12 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
-    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
-    ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(idm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, faultLabel, NULL, &hybridLabel, NULL, NULL, &hdm);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
@@ -553,10 +556,12 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
-    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
-    ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(idm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, faultLabel, NULL, NULL, NULL, NULL, &hdm);CHKERRQ(ierr);
     ierr = DMDestroy(&idm);CHKERRQ(ierr);
@@ -578,10 +583,9 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim            = user->dim;
-  PetscInt       numRefinements = user->numRefinements;
-  PetscBool      cellHybrid     = user->cellHybrid;
-  PetscBool      cellSimplex    = user->cellSimplex;
+  PetscInt       dim         = user->dim;
+  PetscBool      cellHybrid  = user->cellHybrid;
+  PetscBool      cellSimplex = user->cellSimplex;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
@@ -764,32 +768,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexGetPartitioner(*dm,&part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   {
-    DM refinedMesh     = NULL;
-    DM distributedMesh = NULL;
-    PetscInt r;
+    DM pdm = NULL;
 
-    /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    if (pdm) {
+      ierr = DMViewFromOptions(pdm, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-    for (r = 0; r < numRefinements; ++r) {
-      ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
-      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-      ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-      ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-      ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
-      ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
-      if (refinedMesh) {
-        ierr = DMDestroy(dm);CHKERRQ(ierr);
-        *dm  = refinedMesh;
-      }
+      *dm  = pdm;
     }
   }
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   if (user->simplex2tensor) {
     DM rdm = NULL;
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
@@ -808,7 +797,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = udm;
   }
-
   if (user->reinterpolate) {
     DM idm = NULL;
 
@@ -816,12 +804,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
-    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-    ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-    ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "hyb_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -834,9 +821,6 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(dm, user.cellSimplex, 0);CHKERRQ(ierr);
-  if (!user.uninterpolate) {ierr = DMPlexCheckFaces(dm, user.cellSimplex, 0);CHKERRQ(ierr);}
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
@@ -844,179 +828,208 @@ int main(int argc, char **argv)
 
 /*TEST
 
+  # 1D Simplex 29-31
+  testset:
+    args: -dim 1 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 29
+    test:
+      suffix: 30
+      args: -dm_refine 1
+    test:
+      suffix: 31
+      args: -dm_refine 5
+
   # 2D Simplex 0-3
-  test:
-    suffix: 0
-    args: -dim 2 -cell_hybrid 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 1
-    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 2
-    nsize: 2
-    args: -dim 2 -cell_hybrid 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 3
-    nsize: 2
-    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  testset:
+    args: -dim 2 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 0
+      args: -hyb_dm_plex_check_faces unknown
+    test:
+      suffix: 1
+      args: -dm_refine 1 -hyb_dm_plex_check_faces unknown
+    test:
+      suffix: 2
+      nsize: 2
+      args: -hyb_dm_plex_check_faces unknown
+    test:
+      suffix: 3
+      nsize: 2
+      args: -dm_refine 1 -hyb_dm_plex_check_faces unknown
+    test:
+      suffix: 32
+      args: -dm_refine 1 -uninterpolate
+    test:
+      suffix: 33
+      nsize: 2
+      args: -dm_refine 1 -uninterpolate
+    test:
+      suffix: 34
+      nsize: 2
+      args: -dm_refine 3 -uninterpolate
 
   # 2D Hybrid Simplex 4-7
-  test:
-    suffix: 4
-    args: -dim 2 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 5
-    args: -dim 2 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 6
-    nsize: 2
-    args: -dim 2 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 7
-    nsize: 2
-    args: -dim 2 -num_refinements 1 -dm_view ascii::ascii_info_detail
-
-  # 3D Simplex 8-11
-  test:
-    suffix: 8
-    args: -dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 9
-    nsize: 2
-    args: -dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 10
-    args: -dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 11
-    nsize: 2
-    args: -dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  testset:
+    args: -dim 2 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 4
+    test:
+      suffix: 5
+      args: -dm_refine 1
+    test:
+      suffix: 6
+      nsize: 2
+    test:
+      suffix: 7
+      nsize: 2
+      args: -dm_refine 1
+    test:
+      suffix: 24
+      args: -test_num 1 -dm_refine 1
 
   # 2D Quad 12-13
-  test:
-    suffix: 12
-    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 13
-    nsize: 2
-    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-
-  # 3D Hex 14-15
-  test:
-    suffix: 14
-    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 15
-    nsize: 2
-    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-
-  # 3D Hybrid Simplex 16-19
-  test:
-    suffix: 16
-    args: -dim 3 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 17
-    nsize: 2
-    args: -dim 3 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 18
-    args: -dim 3 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 19
-    nsize: 2
-    args: -dim 3 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
-
-  # 3D Hybrid Hex 20-23
-  test:
-    suffix: 20
-    args: -dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 21
-    nsize: 2
-    args: -dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 22
-    args: -dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 23
-    nsize: 2
-    args: -dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
-
-  # 2D Hybrid Simplex 24-24
-  test:
-    suffix: 24
-    args: -dim 2 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
-
-  # 3D Multiple Refinement 25-26
-  test:
-    suffix: 25
-    args: -dim 3 -cell_hybrid 0 -test_num 2 -num_refinements 2 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 26
-    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -test_num 1 -num_refinements 2 -dm_view ascii::ascii_info_detail
+  testset:
+    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 12
+      args: -dm_refine 1
+    test:
+      suffix: 13
+      nsize: 2
+      args: -dm_refine 1
 
   # 2D Hybrid Quad 27-28
-  test:
-    suffix: 27
-    args: -dim 2 -cell_simplex 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 28
-    nsize: 2
-    args: -dim 2 -cell_simplex 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  testset:
+    args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 27
+      args: -dm_refine 1
+    test:
+      suffix: 28
+      nsize: 2
+      args: -dm_refine 1
 
-  # 1D Simplex 29-31
-  test:
-    suffix: 29
-    args: -dim 1 -cell_hybrid 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 30
-    args: -dim 1 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 31
-    args: -dim 1 -cell_hybrid 0 -num_refinements 5 -dm_view ascii::ascii_info_detail
+  # 3D Simplex 8-11
+  testset:
+    args: -dim 3 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 8
+      args: -dm_refine 1
+    test:
+      suffix: 9
+      nsize: 2
+      args: -dm_refine 1
+    test:
+      suffix: 10
+      args: -test_num 1 -dm_refine 1
+    test:
+      suffix: 11
+      nsize: 2
+      args: -test_num 1 -dm_refine 1
+    test:
+      suffix: 25
+      args: -test_num 2 -dm_refine 2
 
-  # 2D Simplex 32-34
-  test:
-    suffix: 32
-    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -uninterpolate -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 33
-    nsize: 2
-    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -uninterpolate -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 34
-    nsize: 2
-    args: -dim 2 -cell_hybrid 0 -num_refinements 3 -uninterpolate -dm_view ascii::ascii_info_detail
+  # 3D Hybrid Simplex 16-19
+  testset:
+    args: -dim 3 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 16
+      args: -dm_refine 1
+    test:
+      suffix: 17
+      nsize: 2
+      args: -dm_refine 1
+    test:
+      suffix: 18
+      args: -test_num 1 -dm_refine 1
+    test:
+      suffix: 19
+      nsize: 2
+      args: -test_num 1 -dm_refine 1
+
+  # 3D Hex 14-15
+  testset:
+    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 14
+      args: -dm_refine 1
+    test:
+      suffix: 15
+      nsize: 2
+     args: -dm_refine 1
+    test:
+      suffix: 26
+      args: -test_num 1 -dm_refine 2
+
+  # 3D Hybrid Hex 20-23
+  testset:
+    args: -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    test:
+      suffix: 20
+      args: -dm_refine 1
+    test:
+      suffix: 21
+      nsize: 2
+      args: -dm_refine 1
+    test:
+      suffix: 22
+      args: -test_num 1 -dm_refine 1
+    test:
+      suffix: 23
+      nsize: 2
+      args: -test_num 1 -dm_refine 1
 
   # Hybrid interpolation
   testset:
     nsize: 2
-    args: -test_partition 0 -petscpartitioner_type simple -dm_view -reinterpolate
+    args: -test_partition 0 -petscpartitioner_type simple -dm_view -reinterpolate \
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
     test:
       suffix: hybint_2d_0
-      args: -dim 2 -num_refinements 2
+      args: -dim 2 -dm_refine 2
     test:
       suffix: hybint_2d_s2t_0
-      args: -dim 2 -num_refinements 2 -simplex2tensor
+      args: -dim 2 -dm_refine 2 -simplex2tensor
     test:
       suffix: hybint_2d_1
-      args: -dim 2 -num_refinements 2 -test_num 1
+      args: -dim 2 -dm_refine 2 -test_num 1
     test:
       suffix: hybint_2d_s2t_1
-      args: -dim 2 -num_refinements 2 -simplex2tensor -test_num 1
+      args: -dim 2 -dm_refine 2 -simplex2tensor -test_num 1
     test:
       suffix: hybint_3d_0
-      args: -dim 3 -num_refinements 1
+      args: -dim 3 -dm_refine 1
     test:
       TODO: fails due to wrong SF
       suffix: hybint_3d_s2t_0
-      args: -dim 3 -num_refinements 1 -simplex2tensor
+      args: -dim 3 -dm_refine 1 -simplex2tensor
     test:
       suffix: hybint_3d_1
-      args: -dim 3 -num_refinements 1 -test_num 1
+      args: -dim 3 -dm_refine 1 -test_num 1
     test:
       TODO: fails due to wrong SF
       suffix: hybint_3d_s2t_1
-      args: -dim 3 -num_refinements 1  -simplex2tensor -test_num 1
+      args: -dim 3 -dm_refine 1  -simplex2tensor -test_num 1
 
 TEST*/

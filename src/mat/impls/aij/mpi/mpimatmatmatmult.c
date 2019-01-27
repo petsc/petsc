@@ -30,16 +30,28 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat R,Mat A,Mat P,Ma
 }
 #endif
 
-PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
+PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_BC(Mat ABC)
 {
-  Mat_MPIAIJ        *a            = (Mat_MPIAIJ*)A->data;
-  Mat_MatMatMatMult *matmatmatmult=a->matmatmatmult;
+  Mat_MPIAIJ        *a = (Mat_MPIAIJ*)ABC->data;
+  Mat_MatMatMatMult *matmatmatmult = a->matmatmatmult;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (!matmatmatmult) PetscFunctionReturn(0);
+
   ierr = MatDestroy(&matmatmatmult->BC);CHKERRQ(ierr);
-  ierr = matmatmatmult->destroy(A);CHKERRQ(ierr);
-  ierr = PetscFree(matmatmatmult);CHKERRQ(ierr);
+  ABC->ops->destroy = matmatmatmult->destroy;
+  ierr = PetscFree(a->matmatmatmult);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = (*A->ops->freeintermediatedatastructures)(A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -65,18 +77,26 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
   Mat               BC;
   Mat_MatMatMatMult *matmatmatmult;
   Mat_MPIAIJ        *d;
-  PetscBool         scalable=PETSC_TRUE;
+  PetscBool         flg;
+  const char        *algTypes[2] = {"scalable","nonscalable"};
+  PetscInt          nalg=2,alg=0; /* set default algorithm */
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-matmatmatmult_scalable","Use a scalable but slower D=A*B*C","",scalable,&scalable,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),((PetscObject)B)->prefix,"MatMatMatMult","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-matmatmatmult_via","Algorithmic approach","MatMatMatMult",algTypes,nalg,algTypes[alg],&alg,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (scalable) {
+
+  switch (alg) {
+  case 0: /* scalable */
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,&BC);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,BC,fill,D);CHKERRQ(ierr);
-  } else {
+    break;
+  case 1:
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(B,C,fill,&BC);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,BC,fill,D);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not supported");
   }
 
   /* create struct Mat_MatMatMatMult and attached it to *D */
@@ -89,6 +109,7 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
 
   (*D)->ops->matmatmultnumeric = MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ;
   (*D)->ops->destroy           = MatDestroy_MPIAIJ_MatMatMatMult;
+  (*D)->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_BC;
   PetscFunctionReturn(0);
 }
 

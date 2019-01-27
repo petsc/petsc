@@ -62,6 +62,8 @@ struct _p_PetscPartitioner {
   PETSCHEADER(struct _PetscPartitionerOps);
   void           *data;             /* Implementation object */
   PetscInt        height;           /* Height of points to partition into non-overlapping subsets */
+  PetscInt        edgeCut;          /* The number of edge cut by the partition */
+  PetscReal       balance;          /* The maximum partition size divided by the minimum size */
 };
 
 typedef struct {
@@ -69,7 +71,9 @@ typedef struct {
 } PetscPartitioner_Chaco;
 
 typedef struct {
-  PetscInt ptype;
+  PetscInt  ptype;
+  PetscReal imbalanceRatio;
+  PetscInt  debugFlag;
 } PetscPartitioner_ParMetis;
 
 typedef struct {
@@ -267,6 +271,7 @@ PETSC_INTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const Pe
 PETSC_INTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_INTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_SetTree(DM, PetscSection, PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM,DM,const char *,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM,DM,PetscSF,PetscInt *,Mat);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorTree(DM,DM,PetscSF,PetscInt *,Mat);

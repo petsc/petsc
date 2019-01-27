@@ -229,9 +229,12 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
    Input Parameter:
 +  ksp - Krylov solver context
 -  normtype - one of
-$   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
+$   KSP_NORM_NONE - skips computing the norm, this should generally only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
-$                 Implicitly sets KSPConvergedSkip as KSP convergence test.
+$                 Implicitly sets KSPConvergedSkip() as KSP convergence test.
+$                 Note that certain algorithms such as KSPGMRES ALWAYS require the norm calculation,
+$                 for these methods the norms are still computed, they are just not used in
+$                 the convergence test. 
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual P^{-1}(b - A x)
 $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.

@@ -26,10 +26,11 @@ PetscErrorCode VecScatterFinalizePackage(void)
 
 /*@C
       VecScatterInitializePackage - This function initializes everything in the VecScatter package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to VecScatterCreateXXXX()
-  when using static libraries.
+  on the first call to VecScatterCreateXXXX().
 
   Level: developer
+
+  Developers Note: this does not seem to get called directly when useing dynamic libraries.
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
