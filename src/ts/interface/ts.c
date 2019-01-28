@@ -251,13 +251,13 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorSPEig,ctx,(PetscErrorCode (*)(void**))TSMonitorSPEigCtxDestroy);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsName("-ts_monitor_sp","Display particles from the dm swarm","TSMonitorSP",&opt);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-ts_monitor_sp_swarm","Display particle phase from the DMSwarm","TSMonitorSPSwarm",&opt);CHKERRQ(ierr);
   if (opt) {
     TSMonitorSPCtx  ctx;
     PetscInt        howoften = 1;
-    ierr = PetscOptionsInt("-ts_monitor_sp","Display particles from the dm swarm","TSMonitorSP",howoften,&howoften,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_sp_swarm","Display particles phase from the DMSwarm","TSMonitorSPSwarm",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorSPCtxCreate(PETSC_COMM_SELF, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx);CHKERRQ(ierr);
-    ierr = TSMonitorSet(ts, TSMonitorSPSolution, ctx, (PetscErrorCode (*)(void**))TSMonitorSPCtxDestroy);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts, TSMonitorSPSwarmSolution, ctx, (PetscErrorCode (*)(void**))TSMonitorSPCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
   ierr = PetscOptionsName("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",&opt);CHKERRQ(ierr);
@@ -4010,34 +4010,6 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char l
 
 }
 
-/* TODO: ACTUALLY ADD THE COORDINATES X, Y 
-PetscErrorCode TSMonitorSPTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,void *monctx)
-{
-
-  TSMonitorSPCtx ctx = (TSMonitorSPCtx) monctx;
-  PetscReal      x, y;
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscFunctionBegin;
-  if (step < 0) PetscFunctionReturn(0);  -1 indicates an interpolated solution 
-  if (!step) {
-    PetscDrawAxis axis;
-    ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Particle Positions","X","Y");CHKERRQ(ierr);
-    ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
-  }
-  ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
-    TODO: Add support for multiple particles properly 
-  
-  ierr = PetscDrawSPAddPoint(ctx->sp,&x,&y);CHKERRQ(ierr);
-  
-  if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
-    ierr = PetscDrawSPDraw(ctx->sp);CHKERRQ(ierr);
-    ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-*/
 /* 
   Destroys a TSMonitorSPCtx that was created with TSMonitorSPCtxCreate 
 */
@@ -4048,10 +4020,6 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
   PetscFunctionBegin;
   
   ierr = PetscDrawSPDestroy(&(*ctx)->sp);CHKERRQ(ierr);
-  ierr = PetscStrArrayDestroy(&(*ctx)->names);CHKERRQ(ierr);
-  ierr = PetscStrArrayDestroy(&(*ctx)->displaynames);CHKERRQ(ierr);
-  ierr = PetscFree((*ctx)->displayvariables);CHKERRQ(ierr);
-  ierr = PetscFree((*ctx)->displayvalues);CHKERRQ(ierr);
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
@@ -6547,7 +6515,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     PetscDrawAxis axis;
     PetscInt      dim;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","X");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
     if (!ctx->names) {
       PetscBool flg;
       /* user provides names of variables to plot but no names has been set so assume names are integer values */
@@ -6924,7 +6892,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorSPSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
+PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
 {
   PetscErrorCode    ierr;
   TSMonitorSPCtx    ctx = (TSMonitorSPCtx)dctx;
@@ -6957,16 +6925,12 @@ PetscErrorCode TSMonitorSPSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
   ierr = PetscMalloc2(Np, &x, Np, &y);CHKERRQ(ierr);
   /* get points from solution vector */
   for (p=0; p<Np; ++p){
-    
     x[p] = yy[2*dim*p];
     y[p] = yy[2*dim*p+1]; 
-    ierr = PetscPrintf(PETSC_COMM_SELF, "(%.2g, %.2g, %.2g)\n", x[p], y[p], ptime);CHKERRQ(ierr);
-    
   }
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
 
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
-    //ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
     ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
     ierr = PetscDrawSPDraw(ctx->sp,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);

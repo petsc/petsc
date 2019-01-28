@@ -397,16 +397,8 @@ struct _n_TSMonitorLGCtx {
 
 struct _n_TSMonitorSPCtx{
   PetscDrawSP    sp;
-  PetscInt       howoften;
+  PetscInt       howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscInt       ksp_its, snes_its;
-  char           **names;
-  char           **displaynames;
-  PetscInt       ndisplayvariables;
-  PetscInt       *displayvariables;
-  PetscReal      *displayvalues;
-  PetscErrorCode (*transform)(void*,Vec,Vec*);
-  PetscErrorCode (*transformdestroy)(void*);
-  void           *transformctx;
 };
 
 struct _n_TSMonitorEnvelopeCtx {
