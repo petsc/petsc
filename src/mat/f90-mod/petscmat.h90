@@ -166,6 +166,25 @@
           PetscInt f (*) ! PetscInt
           integer z
         end subroutine
+
+        subroutine MatSetValue(myMat,i,j,va,mode,ierr)
+          use petscmatdef
+          Mat :: myMat
+          PetscInt :: i,j
+          PetscScalar :: va
+          InsertMode :: mode
+          integer, intent(out) :: ierr
+        end subroutine
+
+        subroutine MatSetValueLocal(myMat,i,j,va,mode,ierr)
+          use petscmatdef
+          Mat :: myMat
+          PetscInt :: i,j
+          PetscScalar :: va
+          InsertMode :: mode
+          integer, intent(out) :: ierr
+        end subroutine
+
         end interface
 
         Interface MatSetValues
@@ -718,6 +737,44 @@
        integer z
        end subroutine
       End Interface
+
+      interface
+      subroutine MatGetOwnershipRange(a,b,c,ierr)
+      use petscmatdef
+       Mat,intent(in) :: a ! Mat
+       PetscInt,intent(out) :: b ! PetscInt
+       PetscInt,intent(out) :: c ! PetscInt
+       PetscErrorCode,intent(out) :: ierr
+       end subroutine
+
+      subroutine MatPartitioningCreate(a,b,ierr)
+      use petscmatdef
+       integer, intent(in) :: a ! MPI_comm
+       MatPartitioning, intent(out) ::  b
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningSetAdjacency(a,b,ierr)
+      use petscmatdef
+       MatPartitioning, intent(in) ::  a
+       Mat, intent(in) ::  b
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningSetFromOptions(a,ierr)
+      use petscmatdef
+       MatPartitioning, intent(in) ::  a
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningApply(a,b,ierr)
+      use petscmatdef
+       MatPartitioning, intent(in) ::  a
+       IS, intent(out) :: b
+       PetscErrorCode :: ierr
+      end subroutine
+     
+      end interface
 
 ! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines
 #undef MAT_INFO_SIZE
