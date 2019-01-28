@@ -90,17 +90,6 @@ typedef struct {
   PetscInt dummy;
 } PetscPartitioner_Gather;
 
-/* Utility struct to store the contents of a Gmsh file in memory */
-typedef struct {
-  PetscInt dim;      /* Entity dimension */
-  PetscInt id;       /* Element number */
-  PetscInt numNodes; /* Size of node array */
-  int nodes[8];      /* Node array */
-  PetscInt numTags;  /* Size of tag array */
-  int tags[4];       /* Tag array */
-  PetscInt cellType; /* Cell type */
-} GmshElement;
-
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
   int          index;    /* Type of section */
