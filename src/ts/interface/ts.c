@@ -6892,6 +6892,25 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
   PetscFunctionReturn(0);
 }
 
+/*@C
+   TSMonitorSPSwarmSolution - Graphically displays phase plots of DMSwarm particles on a scatter plot
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+.  u - current solution
+-  dctx - the TSMonitorSPCtx object that contains all the options for the monitoring, this is created with TSMonitorSPCtxCreate()
+
+   Options Database:
+.   -ts_monitor_sp_solution
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view, swarm
+@*/
 PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
 {
   PetscErrorCode    ierr;
