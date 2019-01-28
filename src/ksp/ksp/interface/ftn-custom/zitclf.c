@@ -43,7 +43,7 @@ PETSC_EXTERN void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,char* prefix PE
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = KSPAppendOptionsPrefix(*ksp,t);
+  *ierr = KSPAppendOptionsPrefix(*ksp,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
 
@@ -52,6 +52,6 @@ PETSC_EXTERN void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,char* prefix PETSC
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = KSPSetOptionsPrefix(*ksp,t);
+  *ierr = KSPSetOptionsPrefix(*ksp,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }

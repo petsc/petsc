@@ -693,7 +693,7 @@ PetscErrorCode  VecGetLocalSize(Vec x,PetscInt *size)
    Note:
    The high argument is one more than the last element stored locally.
 
-   Fortran: NULL_INTEGER should be used instead of NULL
+   Fortran: PETSC_NULL_INTEGER should be used instead of NULL
 
    Level: beginner
 
@@ -1702,7 +1702,7 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optio
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
-  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->options,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = VecStashView(obj,viewer);CHKERRQ(ierr);

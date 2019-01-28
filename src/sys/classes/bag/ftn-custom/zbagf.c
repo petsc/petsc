@@ -19,7 +19,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterenumprivate_(PetscBag *bag,void 
 
   FIXCHAR(name,len1,c1);
   FIXCHAR(help,len2,c2);
-  *ierr = PetscBagRegisterEnum(*bag,addr,list,*def,c1,c2);
+  *ierr = PetscBagRegisterEnum(*bag,addr,list,*def,c1,c2);if (*ierr) return;
   FREECHAR(name,c1);
   FREECHAR(help,c2);
 }

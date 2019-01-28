@@ -15,7 +15,6 @@
 !
 !!/*T
 !   Concepts: KSP^solving a system of linear equations
-!!   requires: !single
 !T*/
 
 

@@ -370,6 +370,9 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscFunctionReturn(0);
 }
 
+/*
+    Performs sweeps of point block nonlinear Gauss-Seidel on all the local grid points 
+*/
 PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 {
   DMDALocalInfo  info;
@@ -508,6 +511,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
         fv          = 0.0;
         fomega      = 0.0;
         ftemp       = 0.0;
+        /*  Run Newton's method on a single grid point */
         for (l = 0; l < max_its && !ptconverged; l++) {
           if (B) {
             bjiu     = b[j][i].u;
@@ -625,9 +629,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
           pxnorm = PetscRealPart(x[j][i].u*x[j][i].u + x[j][i].v*x[j][i].v + x[j][i].omega*x[j][i].omega + x[j][i].temp*x[j][i].temp);
           pxnorm = PetscSqrtReal(pxnorm);
           if (l == 0) pfnorm0 = pfnorm;
-          if (rtol*pfnorm0 >pfnorm ||
-              atol > pfnorm ||
-              pxnorm*stol > pynorm) ptconverged = PETSC_TRUE;
+          if (rtol*pfnorm0 >pfnorm || atol > pfnorm || pxnorm*stol > pynorm) ptconverged = PETSC_TRUE;
         }
       }
     }

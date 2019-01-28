@@ -11,6 +11,6 @@ PETSC_EXTERN void PETSC_STDCALL  dmdasetaotype_(DM *da,char* type PETSC_MIXED_LE
 {
   char *t;
   FIXCHAR(type,len,t);
-  *ierr = DMDASetAOType(*da,t);
+  *ierr = DMDASetAOType(*da,t);if (*ierr) return;
   FREECHAR(type,t);
 }

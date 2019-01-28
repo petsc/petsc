@@ -18,7 +18,7 @@ configure_options = [
   '--download-pastix=1',
   '--download-ptscotch=1',
   '--download-superlu_dist=1',
-
+  '--with-cxx-dialect=C++11',
   ]
 
 if __name__ == '__main__':

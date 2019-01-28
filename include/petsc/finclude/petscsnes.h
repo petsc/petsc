@@ -31,20 +31,20 @@
 !
 !  SNESType
 !
-#define SNESNEWTONLS     'newtonls'
-#define SNESNEWTONTR     'newtontr'
-#define SNESPYTHON       'python'
-#define SNESTEST         'test'
-#define SNESNRICHARDSON  'nrichardson'
-#define SNESKSPONLY      'ksponly'
-#define SNESVINEWTONRSLS 'vinewtonrsls'
-#define SNESVINEWTONSSLS 'vinewtonssls'
-#define SNESNGMRES       'ngmres'
-#define SNESQN           'qn'
-#define SNESSHELL        'shell'
-#define SNESNCG          'ncg'
-#define SNESFAS          'fas'
-#define SNESMS           'ms'
+#define SNESNEWTONLS         'newtonls'
+#define SNESNEWTONTR         'newtontr'
+#define SNESPYTHON           'python'
+#define SNESNRICHARDSON      'nrichardson'
+#define SNESKSPONLY          'ksponly'
+#define SNESKSPTRANSPOSEONLY 'ksptransposeonly'
+#define SNESVINEWTONRSLS     'vinewtonrsls'
+#define SNESVINEWTONSSLS     'vinewtonssls'
+#define SNESNGMRES           'ngmres'
+#define SNESQN               'qn'
+#define SNESSHELL            'shell'
+#define SNESNCG              'ncg'
+#define SNESFAS              'fas'
+#define SNESMS               'ms'
 
 !
 ! SNESLineSearchType

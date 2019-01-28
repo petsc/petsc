@@ -13,7 +13,7 @@ PETSC_EXTERN void PETSC_STDCALL vecsettype_(Vec *x,char* type_name PETSC_MIXED_L
   char *t;
 
   FIXCHAR(type_name,len,t);
-  *ierr = VecSetType(*x,t);
+  *ierr = VecSetType(*x,t);if (*ierr) return;
   FREECHAR(type_name,t);
 }
 

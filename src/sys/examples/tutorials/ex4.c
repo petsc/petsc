@@ -5,9 +5,8 @@ static char help[] = "Introductory example that illustrates running PETSc on a s
    Concepts: process^subset set PETSC_COMM_WORLD
    Processors: 2
 
-   Note that this example is not checking the error codes from the MPI calls before and after PETSc is initialized.
-   This is because the PETSc macro CHKERRQ() will not work in those circumstances. You should also check the 
-   MPI codes in this situation with your own code.
+   Note that this example is not checking the error codes from the MPI calls with CHKERRQ() before PETSc is initialized
+   and after PETSc is finalized. This is because the PETSc macro CHKERRQ() will not work in those circumstances. 
 T*/
  #include <petscsys.h>
 

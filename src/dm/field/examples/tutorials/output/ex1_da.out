@@ -2,10 +2,10 @@ DMField Object: field 1 MPI processes
   type: da
   2 components
   VERTEX continuity
-DM Object: mesh 1 MPI processes
-  type: da
-Processor [0] M 3 N 3 m 1 n 1 w 1 s 1
-X range of indices: 0 3, Y range of indices: 0 3
+  DM Object: mesh 1 MPI processes
+    type: da
+  Processor [0] M 3 N 3 m 1 n 1 w 1 s 1
+  X range of indices: 0 3, Y range of indices: 0 3
   Field corner values:
     0.720032     0.061794     
     0.0100223     0.144639     
@@ -43,20 +43,8 @@ rH:
 10:   1.0402e-01   0.0000e+00   0.0000e+00   2.3725e-02   2.3725e-02
 15:   0.0000e+00
 PetscQuadrature Object: Test quadrature 1 MPI processes
-  type not yet set
-Quadrature on 4 points
-  (-0.57735
-, -0.57735
-) 1.
--0.57735
-, 0.57735
-) 1.
-0.57735
-, -0.57735
-) 1.
-0.57735
-, 0.57735
-) 1.
+  type: GaussTensor
+  Quadrature on 4 points of order 3
 IS Object: FE Test Cells 1 MPI processes
   type: general
 Number of indices in set 2

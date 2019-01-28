@@ -574,6 +574,7 @@ int main(int argc, char **argv)
     args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_q3_trig_vlap
+    requires: !__float128
     args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_p1_trig_elas
@@ -595,6 +596,7 @@ int main(int argc, char **argv)
     args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_q3_trig_elas
+    requires: !__float128
     args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
 
 TEST*/

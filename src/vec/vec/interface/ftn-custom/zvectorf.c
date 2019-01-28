@@ -329,6 +329,6 @@ PETSC_EXTERN void PETSC_STDCALL vecsetoptionsprefix_(Vec *v,char* prefix PETSC_M
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *ierr = VecSetOptionsPrefix(*v,t);
+  *ierr = VecSetOptionsPrefix(*v,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }

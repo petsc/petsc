@@ -16,7 +16,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawaxissetlabels_(PetscDrawAxis *axis,char
   FIXCHAR(top,len1,t1);
   FIXCHAR(xlabel,len2,t2);
   FIXCHAR(ylabel,len3,t3);
-  *ierr = PetscDrawAxisSetLabels(*axis,t1,t2,t3);
+  *ierr = PetscDrawAxisSetLabels(*axis,t1,t2,t3);if (*ierr) return;
   FREECHAR(top,t1);
   FREECHAR(xlabel,t2);
   FREECHAR(ylabel,t3);

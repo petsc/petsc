@@ -1113,7 +1113,7 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const 
   { /* slow search */
     int i, N = options->N;
     for (i=0; i<N; i++) {
-      int result = PetscOptNameCmp(options->names[i],name);CHKERRQ(ierr);
+      int result = PetscOptNameCmp(options->names[i],name);
       if (!result) {
         options->used[i]  = PETSC_TRUE;
         if (value) *value = options->values[i];

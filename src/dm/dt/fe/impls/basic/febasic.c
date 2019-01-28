@@ -11,48 +11,37 @@ PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
+PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
 {
-  PetscSpace        basis;
-  PetscDualSpace    dual;
-  PetscQuadrature   q = NULL;
-  PetscInt          dim, Nc, Nq;
-  PetscViewerFormat format;
+  PetscInt          dim, Nc;
+  PetscSpace        basis = NULL;
+  PetscDualSpace    dual = NULL;
+  PetscQuadrature   quad = NULL;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFEGetSpatialDimension(fe, &dim);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
   ierr = PetscFEGetBasisSpace(fe, &basis);CHKERRQ(ierr);
   ierr = PetscFEGetDualSpace(fe, &dual);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-  if (q) {ierr = PetscQuadratureGetData(q, &dim, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Basic Finite Element:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  dimension:       %d\n", dim);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  components:      %d\n", Nc);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  num quad points: %d\n", Nq);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    if (q) {ierr = PetscQuadratureView(q, viewer);CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscSpaceView(basis, viewer);CHKERRQ(ierr);
-  ierr = PetscDualSpaceView(dual, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(v, "Basic Finite Element in %D dimensions with %D components\n",dim,Nc);CHKERRQ(ierr);
+  if (basis) {ierr = PetscSpaceView(basis, v);CHKERRQ(ierr);}
+  if (dual)  {ierr = PetscDualSpaceView(dual, v);CHKERRQ(ierr);}
+  if (quad)  {ierr = PetscQuadratureView(quad, v);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer viewer)
+PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 {
   PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscFEView_Basic_Ascii(fe, viewer);CHKERRQ(ierr);}
+  ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscFEView_Basic_Ascii(fe, v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdasetfieldname_(DM *da,PetscInt *nf,char* name
 {
   char *t;
   FIXCHAR(name,len,t);
-  *ierr = DMDASetFieldName(*da,*nf,t);
+  *ierr = DMDASetFieldName(*da,*nf,t);if (*ierr) return;
   FREECHAR(name,t);
 }
 
@@ -31,8 +31,8 @@ PETSC_EXTERN void PETSC_STDCALL dmdagetfieldname_(DM *da,PetscInt *nf,char* name
 {
   const char *tname;
 
-  *ierr = DMDAGetFieldName(*da,*nf,&tname);
-  *ierr = PetscStrncpy(name,tname,len);
+  *ierr = DMDAGetFieldName(*da,*nf,&tname);if (*ierr) return;
+  *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 

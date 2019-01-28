@@ -1772,7 +1772,7 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
    vector data structure from the array obtained with VecGetArray().
 
    This routine actually zeros out the a pointer. This is to prevent accidental
-   us of the array after it has been restored. If you pass null for a it will
+   use of the array after it has been restored. If you pass null for a it will
    not zero the array pointer a.
 
    Fortran Note:

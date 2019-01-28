@@ -638,7 +638,7 @@ Arg class, which wraps the usual value.'''
     self.saveFilename = os.path.abspath(self.saveFilename)
     if os.path.exists(self.saveFilename):
       try:
-        dbFile = open(self.saveFilename)
+        dbFile = open(self.saveFilename, 'rb')
         data   = pickle.load(dbFile)
         self.updateTypes(data)
         dbFile.close()

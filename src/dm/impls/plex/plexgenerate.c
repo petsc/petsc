@@ -164,21 +164,21 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
     while (fl) {
       ierr = PetscStrcmp(fl->name,name,&flg);CHKERRQ(ierr);
       if (flg) {
-        (*fl->generate)(boundary,interpolate,mesh);CHKERRQ(ierr);
+        ierr = (*fl->generate)(boundary,interpolate,mesh);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
       fl = fl->next;
     }
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid generator %g not registered",name);CHKERRQ(ierr);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid generator %g not registered",name);
   } else {
     while (fl) {
       if (boundary->dim == fl->dim) {
-        (*fl->generate)(boundary,interpolate,mesh);CHKERRQ(ierr);
+        ierr = (*fl->generate)(boundary,interpolate,mesh);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
       fl = fl->next;
     }
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid generator of dimension %D registered",boundary->dim);CHKERRQ(ierr);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid generator of dimension %D registered",boundary->dim);
   }
   PetscFunctionReturn(0);
 }

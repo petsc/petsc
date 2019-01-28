@@ -465,10 +465,11 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
                 if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
                   PetscScalar *xpoint;
 
-                  ierr = DMPlexPointLocalRead(dm,v,x,&xpoint);CHKERRQ(ierr);
+                  ierr = DMPlexPointLocalRead(dm,closure[v],x,&xpoint);CHKERRQ(ierr);
                   y[cnt + off++] = xpoint[i];
                 }
               }
+              cnt += off;
               ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
             }
           }

@@ -84,7 +84,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceTensorView_Ascii(PetscSpace sp, PetscViewer viewer)
+static PetscErrorCode PetscSpaceTensorView_Ascii(PetscSpace sp, PetscViewer v)
 {
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *) sp->data;
   PetscBool          uniform = PETSC_TRUE;
@@ -95,14 +95,14 @@ static PetscErrorCode PetscSpaceTensorView_Ascii(PetscSpace sp, PetscViewer view
   for (i = 1; i < Ns; i++) {
     if (tens->tensspaces[i] != tens->tensspaces[0]) {uniform = PETSC_FALSE; break;}
   }
-  if (uniform) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor space of %D subspaces (all identical)\n", Ns);CHKERRQ(ierr);
-  } else       {ierr = PetscViewerASCIIPrintf(viewer, "Tensor space of %D subspaces\n", Ns);CHKERRQ(ierr);}
+  if (uniform) {ierr = PetscViewerASCIIPrintf(v, "Tensor space of %D subspaces (all identical)\n", Ns);CHKERRQ(ierr);}
+  else         {ierr = PetscViewerASCIIPrintf(v, "Tensor space of %D subspaces\n", Ns);CHKERRQ(ierr);}
   n = uniform ? 1 : Ns;
-  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   for (i = 0; i < n; i++) {
-    ierr = PetscSpaceView(tens->tensspaces[i], viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+    ierr = PetscSpaceView(tens->tensspaces[i], v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -112,8 +112,6 @@ static PetscErrorCode PetscSpaceView_Tensor(PetscSpace sp, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {ierr = PetscSpaceTensorView_Ascii(sp, viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

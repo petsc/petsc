@@ -4,6 +4,7 @@
 #if !defined(__PETSCPC_H)
 #define __PETSCPC_H
 #include <petscmat.h>
+#include <petscdmtypes.h>
 #include <petscpctypes.h>
 
 PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
@@ -16,6 +17,23 @@ PETSC_EXTERN PetscFunctionList PCList;
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PC_CLASSID;
+
+/* Arrays of names for options in implementation PCs */
+PETSC_EXTERN const char *const *const PCSides;
+PETSC_EXTERN const char *const PCJacobiTypes[];
+PETSC_EXTERN const char *const PCASMTypes[];
+PETSC_EXTERN const char *const PCGASMTypes[];
+PETSC_EXTERN const char *const PCCompositeTypes[];
+PETSC_EXTERN const char *const PCFieldSplitSchurPreTypes[];
+PETSC_EXTERN const char *const PCFieldSplitSchurFactTypes[];
+PETSC_EXTERN const char *const PCPARMSGlobalTypes[];
+PETSC_EXTERN const char *const PCPARMSLocalTypes[];
+PETSC_EXTERN const char *const PCMGTypes[];
+PETSC_EXTERN const char *const PCMGCycleTypes[];
+PETSC_EXTERN const char *const PCMGGalerkinTypes[];
+PETSC_EXTERN const char *const PCExoticTypes[];
+PETSC_EXTERN const char *const PCPatchConstructTypes[];
+PETSC_EXTERN const char *const PCFailedReasons[];
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
@@ -241,6 +259,10 @@ PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetS(PC,Mat *S);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurRestoreS(PC,Mat *S);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetGKBTol(PC,PetscReal);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetGKBNu(PC,PetscReal);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetGKBMaxit(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetGKBDelay(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
@@ -375,5 +397,7 @@ PETSC_EXTERN PetscErrorCode PCLMVMSetMatLMVM(PC, Mat);
 PETSC_EXTERN PetscErrorCode PCLMVMGetMatLMVM(PC, Mat*);
 PETSC_EXTERN PetscErrorCode PCLMVMSetIS(PC, IS);
 PETSC_EXTERN PetscErrorCode PCLMVMClearIS(PC);
+
+PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
 #endif /* __PETSCPC_H */

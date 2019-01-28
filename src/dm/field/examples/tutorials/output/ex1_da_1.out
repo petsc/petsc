@@ -1,10 +1,6 @@
 PetscQuadrature Object: Test quadrature 1 MPI processes
-  type not yet set
-Quadrature on 2 points
-  (-0.57735
-) 1.
-0.57735
-) 1.
+  type: GaussTensor
+  Quadrature on 2 points of order 3
 IS Object: FE Test Cells 1 MPI processes
   type: general
 Number of indices in set 2

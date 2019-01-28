@@ -1023,7 +1023,7 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
     if (UnpackOp) {
       (*UnpackOp)(n,link->bs,rootloc+rootoffset[i],rootdata,(const void *)packstart);
     }
-#if PETSC_HAVE_MPI_REDUCE_LOCAL
+#if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
     else if (n) { /* the op should be defined to operate on the whole datatype, so we ignore link->bs */
       PetscInt j;
 

@@ -125,17 +125,18 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
   PetscReal      interval = user->meshRelDx;
   Vec            coordinates;
   PetscScalar   *coords;
-  PetscReal      hh[3];
+  PetscReal      *hh;
   PetscInt       d, cdim, N, p, bs;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  for (d = 0; d < user->dim; ++d) hh[d] = (user->domain_hi[d] - user->domain_lo[d])/user->faces;
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject) dm), &rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rnd, -interval, interval);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = PetscCalloc1(PetscMax(user->dim,cdim),&hh);CHKERRQ(ierr);
+  for (d = 0; d < user->dim; ++d) hh[d] = (user->domain_hi[d] - user->domain_lo[d])/user->faces;
   ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
   if (bs != cdim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Coordinate vector has wrong block size %D != %D", bs, cdim);
@@ -145,11 +146,12 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
 
     for (d = 0; d < cdim; ++d) {
       ierr = PetscRandomGetValue(rnd, &value);CHKERRQ(ierr);
-      coord[d] = PetscMax(user->domain_lo[d], PetscMin(user->domain_hi[d], coord[d] + value*hh[d]));
+      coord[d] = PetscMax(user->domain_lo[d], PetscMin(user->domain_hi[d], PetscRealPart(coord[d] + value*hh[d])));
     }
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
+  ierr = PetscFree(hh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -311,9 +313,9 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
       const PetscInt   idx = pidx[p];
       const PetscReal *c   = &coords[idx*dim];
 
-      mom[0] += w[idx];
-      mom[1] += w[idx] * c[0];
-      for (d = 0; d < dim; ++d) mom[2] += w[idx] * c[d]*c[d];
+      mom[0] += PetscRealPart(w[idx]);
+      mom[1] += PetscRealPart(w[idx]) * c[0];
+      for (d = 0; d < dim; ++d) mom[2] += PetscRealPart(w[idx]) * c[d]*c[d];
     }
     ierr = PetscFree(pidx);CHKERRQ(ierr);
   }
@@ -355,15 +357,19 @@ static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppC
 {
   PetscDS        prob;
   PetscErrorCode ierr;
+  PetscScalar    mom;
 
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetObjective(prob, 0, &f0_1);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, &moments[0], user);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, &mom, user);CHKERRQ(ierr);
+  moments[0] = PetscRealPart(mom);
   ierr = PetscDSSetObjective(prob, 0, &f0_x);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, &moments[1], user);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, &mom, user);CHKERRQ(ierr);
+  moments[1] = PetscRealPart(mom);
   ierr = PetscDSSetObjective(prob, 0, &f0_r2);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, &moments[2], user);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, &mom, user);CHKERRQ(ierr);
+  moments[2] = PetscRealPart(mom);
   PetscFunctionReturn(0);
 }
 
@@ -410,8 +416,7 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *use
   /* Check moments of field */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
   ierr = computeFEMMoments(dm, fhat, fmoments, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
-                     fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]);CHKERRQ(ierr);
   for (m = 0; m < 3; ++m) {
     if (PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
@@ -473,8 +478,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   /* Check moments */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
   ierr = computeFEMMoments(dm, fhat, fmoments, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
-                     fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]);CHKERRQ(ierr);
   for (m = 0; m < 3; ++m) {
     if (PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
@@ -493,7 +497,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
   PetscInt         debug = mesh->printFEM;
   DM               dmC;
   PetscSection     section;
-  PetscQuadrature  quad;
+  PetscQuadrature  quad = NULL;
   PetscScalar     *interpolant, *gradsum;
   PetscReal       *coords, *detJ, *J, *invJ;
   const PetscReal *quadPoints, *quadWeights;
@@ -577,7 +581,6 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
           }
         }
         fieldOffset += Nb;
-        qc          += Nc;
       }
       ierr = DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
       for (fc = 0; fc < numComponents; ++fc) {
@@ -651,8 +654,7 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   /* Check moments of field */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
   ierr = computeFEMMoments(dm, grad, fmoments, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
-                     fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]);CHKERRQ(ierr);
   for (m = 0; m < 3; ++m) {
     if (PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
@@ -693,62 +695,92 @@ int main (int argc, char * argv[]) {
 
   test:
     suffix: proj_tri_0
-    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle !complex
+    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_2_faces
-    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle !complex
+    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_quad_0
-    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle !complex
+    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_quad_2_faces
-    args: -dim 2 -simplex 0 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle !complex
+    args: -dim 2 -simplex 0 -faces 2 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_5P
-    args: -dim 2 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle !complex
+    args: -dim 2 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_quad_5P
-    args: -dim 2 -simplex 0 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle !complex
+    args: -dim 2 -simplex 0 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_mdx
-    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle !complex
+    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_mdx_5P
-    args: -dim 2 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle !complex
+    args: -dim 2 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d
-    args: -dim 3 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
-  
+    requires: ctetgen !complex
+    args: -dim 3 -faces 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
+
   test:
     suffix: proj_tri_3d_2_faces
-    args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
-  
+    requires: ctetgen !complex
+    args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
+
   test:
     suffix: proj_tri_3d_5P
-    args: -dim 3 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen !complex
+    args: -dim 3 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_mdx
-    args: -dim 3 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen !complex
+    args: -dim 3 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_mdx_5P
-    args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen !complex
+    args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
   
   test:
     suffix: proj_tri_3d_mdx_2_faces
-    args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen !complex
+    args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_mdx_5P_2_faces
-    args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen !complex
+    args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    filter: grep -v marker | grep -v atomic | grep -v usage
 
 TEST*/

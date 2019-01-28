@@ -70,7 +70,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterint_(PetscBag *bag,void *ptr,Pet
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterInt(*bag,ptr,*def,t1,t2);
+  *ierr = PetscBagRegisterInt(*bag,ptr,*def,t1,t2);if (*ierr) return;
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }
@@ -81,7 +81,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterint64_(PetscBag *bag,void *ptr,P
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterInt64(*bag,ptr,*def,t1,t2);
+  *ierr = PetscBagRegisterInt64(*bag,ptr,*def,t1,t2);if (*ierr) return;
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }
@@ -92,7 +92,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterintarray_(PetscBag *bag,void *pt
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterIntArray(*bag,ptr,*msize,t1,t2);
+  *ierr = PetscBagRegisterIntArray(*bag,ptr,*msize,t1,t2);if (*ierr) return;
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }
@@ -103,7 +103,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterscalar_(PetscBag *bag,void *ptr,
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterScalar(*bag,ptr,*def,t1,t2);
+  *ierr = PetscBagRegisterScalar(*bag,ptr,*def,t1,t2);if (*ierr) return;
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }
@@ -114,7 +114,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterreal_(PetscBag *bag,void *ptr,Pe
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterReal(*bag,ptr,*def,t1,t2);
+  *ierr = PetscBagRegisterReal(*bag,ptr,*def,t1,t2);if (*ierr) return;
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }
@@ -125,7 +125,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterrealarray_(PetscBag *bag,void *p
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterRealArray(*bag,ptr,*msize,t1,t2);
+  *ierr = PetscBagRegisterRealArray(*bag,ptr,*msize,t1,t2);if (*ierr) return;
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }
@@ -140,7 +140,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterbool_(PetscBag *bag,void *ptr,Pe
   if (*def) flg = PETSC_TRUE;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterBool(*bag,ptr,flg,t1,t2);
+  *ierr = PetscBagRegisterBool(*bag,ptr,flg,t1,t2);if (*ierr) return;
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }
@@ -153,7 +153,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterboolarray_(PetscBag *bag,void *p
   /* some Fortran compilers use -1 as boolean */
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterBoolArray(*bag,ptr,*msize,t1,t2);
+  *ierr = PetscBagRegisterBoolArray(*bag,ptr,*msize,t1,t2);if (*ierr) return;
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }
@@ -165,7 +165,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterstring_(PetscBag *bag,char* p PE
   FIXCHAR(s1,l1,t1);
   FIXCHAR(cs1,cl1,ct1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterString(*bag,p,pl,ct1,t1,t2);
+  *ierr = PetscBagRegisterString(*bag,p,pl,ct1,t1,t2);if (*ierr) return;
   FREECHAR(cs1,ct1);
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
@@ -182,7 +182,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagsetname_(PetscBag *bag,char* ns PETSC_MI
   char *nt,*ht;
   FIXCHAR(ns,nl,nt);
   FIXCHAR(hs,hl,ht);
-  *ierr = PetscBagSetName(*bag,nt,ht);
+  *ierr = PetscBagSetName(*bag,nt,ht);if (*ierr) return;
   FREECHAR(ns,nt);
   FREECHAR(hs,ht);
 }
@@ -191,6 +191,6 @@ PETSC_EXTERN void PETSC_STDCALL petscbagsetoptionsprefix_(PetscBag *bag,char* pr
 {
   char *t;
   FIXCHAR(pre,len,t);
-  *ierr = PetscBagSetOptionsPrefix(*bag,t);
+  *ierr = PetscBagSetOptionsPrefix(*bag,t);if (*ierr) return;
   FREECHAR(pre,t);
 }

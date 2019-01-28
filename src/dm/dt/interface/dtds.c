@@ -2643,7 +2643,7 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
-. numcomps    - The number of constrained field components
+. numcomps    - The number of constrained field components (0 will constrain all fields)
 . comps       - An array of constrained component numbers
 . bcFunc      - A pointwise function giving boundary values
 . numids      - The number of DMLabel ids for constrained points

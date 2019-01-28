@@ -13,7 +13,7 @@ PETSC_EXTERN void PETSC_STDCALL tstrajectorysetdirname_(TSTrajectory *tj,char di
 {
   char *t;
   FIXCHAR(dirname,len,t);
-  *ierr = TSTrajectorySetDirname(*tj,t);
+  *ierr = TSTrajectorySetDirname(*tj,t);if (*ierr) return;
   FREECHAR(dirname,t);
 }
 

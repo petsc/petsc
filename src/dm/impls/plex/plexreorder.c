@@ -275,5 +275,6 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     }
     ierr = ISRestoreIndices(perm, &pperm);CHKERRQ(ierr);
   }
+  (*pdm)->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

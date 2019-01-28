@@ -156,7 +156,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerFlush(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscOptionsPopGetViewerOff(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewerOff(PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,const char[],const char[],PetscViewer*,PetscViewerFormat*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,PetscOptions,const char[],const char[],PetscViewer*,PetscViewerFormat*,PetscBool*);
 #define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f);
 PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems*,const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
 
@@ -253,7 +253,18 @@ PETSC_EXTERN PetscViewer    PETSC_VIEWER_HDF5_(MPI_Comm);
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_GLVIS_(MPI_Comm);
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE;
 
+/*MC
+  PETSC_VIEWER_STDERR_SELF  - same as PETSC_VIEWER_STDERR_(PETSC_COMM_SELF)
+
+  Level: beginner
+M*/
 #define PETSC_VIEWER_STDERR_SELF  PETSC_VIEWER_STDERR_(PETSC_COMM_SELF)
+
+/*MC
+  PETSC_VIEWER_STDERR_WORLD  - same as PETSC_VIEWER_STDERR_(PETSC_COMM_WORLD)
+
+  Level: beginner
+M*/
 #define PETSC_VIEWER_STDERR_WORLD PETSC_VIEWER_STDERR_(PETSC_COMM_WORLD)
 
 /*MC

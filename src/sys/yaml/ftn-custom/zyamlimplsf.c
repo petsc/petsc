@@ -17,6 +17,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertfileyaml_(MPI_Fint *comm,char*
   char *c1;
 
   FIXCHAR(file,len,c1);
-  *ierr = PetscOptionsInsertFileYAML(MPI_Comm_f2c(*comm),c1,*require);
+  *ierr = PetscOptionsInsertFileYAML(MPI_Comm_f2c(*comm),c1,*require);if (*ierr) return;
   FREECHAR(file,c1);
 }

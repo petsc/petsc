@@ -43,8 +43,6 @@ PetscMPIInt Petsc_ShmComm_keyval   = MPI_KEYVAL_INVALID;
 */
 const char *const PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
 const char *const PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
-const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
-                                      "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","OBJECT","FUNCTION","PetscDataType","PETSC_",0};
 
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
@@ -1038,7 +1036,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_HAVE_HWLOC)
   {
     PetscViewer viewer;
-    ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

@@ -65,7 +65,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogdump_(char* name PETSC_MIXED_LEN(len),Pe
 #if defined(PETSC_USE_LOG)
   char *t1;
   FIXCHAR(name,len,t1);
-  *ierr = PetscLogDump(t1);
+  *ierr = PetscLogDump(t1);if (*ierr) return;
   FREECHAR(name,t1);
 #endif
 }
@@ -74,7 +74,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogeventregister_(char* string PETSC_MIXED_
 #if defined(PETSC_USE_LOG)
   char *t1;
   FIXCHAR(string,len,t1);
-  *ierr = PetscLogEventRegister(t1,*classid,e);
+  *ierr = PetscLogEventRegister(t1,*classid,e);if (*ierr) return;
   FREECHAR(string,t1);
 #endif
 }
@@ -84,7 +84,7 @@ PETSC_EXTERN void PETSC_STDCALL petscclassidregister_(char* string PETSC_MIXED_L
   char *t1;
   FIXCHAR(string,len,t1);
 
-  *ierr = PetscClassIdRegister(t1,e);
+  *ierr = PetscClassIdRegister(t1,e);if (*ierr) return;
   FREECHAR(string,t1);
 #endif
 }
@@ -122,7 +122,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogstageregister_(char* sname PETSC_MIXED_L
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(sname,len,t);
-  *ierr = PetscLogStageRegister(t,stage);
+  *ierr = PetscLogStageRegister(t,stage);if (*ierr) return;
   FREECHAR(sname,t);
 #endif
 }
@@ -149,7 +149,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogstagegetid_(char* sname PETSC_MIXED_LEN(
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(sname,len,t);
-  *ierr = PetscLogStageGetId(t,stage);
+  *ierr = PetscLogStageGetId(t,stage);if (*ierr) return;
   FREECHAR(sname,t);
 #endif
 }

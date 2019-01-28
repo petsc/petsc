@@ -13,6 +13,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexconstructghostcells_(DM *dm, char* name PE
   char *labelname;
 
   FIXCHAR(name, lenN, labelname);
-  *ierr = DMPlexConstructGhostCells(*dm, labelname, numGhostCells, dmGhosted);
+  *ierr = DMPlexConstructGhostCells(*dm, labelname, numGhostCells, dmGhosted);if (*ierr) return;
   FREECHAR(name, labelname);
 }

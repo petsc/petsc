@@ -4,7 +4,6 @@ import os
 import sys
 import re
 import pickle
-import string
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -395,8 +394,6 @@ prepend-path PATH "%s"
     self.complibs = self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
     self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L${PETSC_DIR}/${PETSC_ARCH}/lib', self.petsclib]+self.packagelibs+self.complibs)
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(self.packagelibs+self.complibs)
-    if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
-      string.replace(self.PETSC_EXTERNAL_LIB_BASIC,self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
 
     self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.PETSC_EXTERNAL_LIB_BASIC)
     allincludes = petscincludes + includes
