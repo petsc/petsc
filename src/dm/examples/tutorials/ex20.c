@@ -162,7 +162,7 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
     PetscInt     numBC = 0;
     PetscSection section;
 
-    ierr = DMPlexCreateSection(celldm,dim,1,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section);CHKERRQ(ierr);
+    ierr = DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section);CHKERRQ(ierr);
     ierr = DMSetSection(celldm,section);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   }
@@ -231,7 +231,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
     PetscInt     numBC = 0;
     PetscSection section;
 
-    ierr = DMPlexCreateSection(celldm,dim,1,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section);CHKERRQ(ierr);
+    ierr = DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section);CHKERRQ(ierr);
     ierr = DMSetSection(celldm,section);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   }

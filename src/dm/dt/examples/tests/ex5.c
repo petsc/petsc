@@ -25,6 +25,7 @@ int main(int argc, char **argv)
   ierr = DMShellCreate(comm,&dm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm,dim,Nc,simplex,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  ierr = PetscFESetName(fe, "solution");CHKERRQ(ierr);
   ierr = PetscFEGetBasisSpace(fe,&space);CHKERRQ(ierr);
   ierr = PetscSpaceGetNumComponents(space,&Nc);CHKERRQ(ierr);
   ierr = PetscFEGetDualSpace(fe,&dualspace);CHKERRQ(ierr);

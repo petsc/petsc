@@ -38,8 +38,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 
 /*@C
   DMInitializePackage - This function initializes everything in the DM package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to AOCreate()
-  or DMDACreate() when using static libraries.
+  from PetscDLLibraryRegister_petscdm() when using dynamic libraries, and on the first call to AOCreate()
+  or DMDACreate() when using shared or static libraries.
 
   Level: developer
 
@@ -58,6 +58,7 @@ PetscErrorCode  DMInitializePackage(void)
 
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("DM Label",&DMLABEL_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("GraphPartitioner",&PETSCPARTITIONER_CLASSID);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_HYPRE)
@@ -111,7 +112,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMSwarmRmvPnts",         DM_CLASSID,&DMSWARM_RemovePoints);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmSort",            DM_CLASSID,&DMSWARM_Sort);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmSetSizes",        DM_CLASSID,&DMSWARM_SetSizes);CHKERRQ(ierr);
-  
+
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {

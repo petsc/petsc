@@ -355,7 +355,8 @@ int main(int argc, char **argv)
       for (d = 0; d <= user.dim; ++d) numDof[f*(user.dim+1)+d] = PetscPowInt(user.k[f]-1, d)*user.Nc[f];
       size += PetscPowInt(user.k[f]+1, d)*user.Nc[f];
     }
-    ierr = DMPlexCreateSection(dm, user.dim, user.Nf, user.Nc, numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
+    ierr = DMSetNumFields(dm, user.Nf);CHKERRQ(ierr);
+    ierr = DMPlexCreateSection(dm, NULL, user.Nc, numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
     ierr = SetSymmetries(dm, s, &user);CHKERRQ(ierr);
     ierr = PetscFree(numDof);CHKERRQ(ierr);
   }

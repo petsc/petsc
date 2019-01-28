@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject)dm,"Pre Adaptation Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-pre_adapt_dm_view");CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMLabelCreate("adapt",&adaptLabel);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF,"adapt",&adaptLabel);CHKERRQ(ierr);
   ierr = DMLabelSetDefaultValue(adaptLabel,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   if (cEnd > cStart) {ierr = DMLabelSetValue(adaptLabel,cStart,DM_ADAPT_REFINE);CHKERRQ(ierr);}
   ierr = DMAdaptLabel(dm,adaptLabel,&dmAdapt);CHKERRQ(ierr);

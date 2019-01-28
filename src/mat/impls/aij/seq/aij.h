@@ -59,7 +59,7 @@ typedef struct {
   PetscInt    *api,*apj;       /* symbolic structure of A*P */
   PetscScalar *apa;            /* temporary array for storing one row of A*P */
   PetscErrorCode (*destroy)(Mat);
-} Mat_PtAP;
+} Mat_AP;
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -116,12 +116,13 @@ typedef struct {
   PetscBool   idiagvalid;                     /* current idiag[] and mdiag[] are valid */
   PetscScalar *ibdiag;                        /* inverses of block diagonals */
   PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
+  PetscBool   diagonaldense;                  /* all entries along the diagonal have been set; i.e. no missing diagonal terms */
   PetscScalar fshift,omega;                   /* last used omega and fshift */
 
   ISColoring  coloring;                       /* set with MatADSetColoring() used by MatADSetValues() */
 
   PetscScalar         *matmult_abdense;    /* used by MatMatMult() */
-  Mat_PtAP            *ptap;               /* used by MatPtAP() */
+  Mat_AP              *ap;                 /* used by MatPtAP() */
   Mat_MatMatMatMult   *matmatmatmult;      /* used by MatMatMatMult() */
   Mat_RARt            *rart;               /* used by MatRARt() */
   Mat_MatMatTransMult *abt;                /* used by MatMatTransposeMult() */
@@ -344,8 +345,10 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat);
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 
 PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject,void*);
 PETSC_EXTERN PetscErrorCode MatlabEngineGet_SeqAIJ(PetscObject,void*);
+#endif
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat,MatType,MatReuse,Mat*);
@@ -370,6 +373,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqMat_SeqAIJ(Mat,IS,IS,MatStructure,Mat);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt*);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_Dummy(Mat);
+PETSC_INTERN PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt, Mat*[]);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReuse,Mat*);
 
 /*

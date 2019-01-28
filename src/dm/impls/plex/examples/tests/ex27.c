@@ -49,7 +49,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *options, DM *dm)
 
 static PetscErrorCode TestLocalDofOrder(DM dm, AppCtx *ctx)
 {
-  PetscDS        prob;
   PetscFE        fe[3];
   PetscSection   s;
   PetscInt       dim, Nf, f;
@@ -61,14 +60,14 @@ static PetscErrorCode TestLocalDofOrder(DM dm, AppCtx *ctx)
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1,   ctx->simplex, "field1_", -1, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1,   ctx->simplex, "field2_", -1, &fe[2]);CHKERRQ(ierr);
 
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 2, (PetscObject) fe[2]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 2, NULL, (PetscObject) fe[2]);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject) s, NULL, "-dof_view");CHKERRQ(ierr);
 
-  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&fe[f]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

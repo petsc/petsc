@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ksp/pc/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
-EXAMPLESF       = ex8f.F
+EXAMPLESF       = 
 MANSEC          = KSP
 SUBMANSEC       = PC
 

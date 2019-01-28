@@ -5,7 +5,7 @@ static char help[] = "Creates a matrix, inserts some values, and tests MatCreate
 
 int main(int argc,char **argv)
 {
-  Mat            mat,submat,*submatrices;
+  Mat            mat,submat,submat1,*submatrices;
   PetscInt       m = 10,n = 10,i = 4,tmp,rstart,rend;
   PetscErrorCode ierr;
   IS             irow,icol;
@@ -88,6 +88,10 @@ int main(int argc,char **argv)
   ierr = MatView(submat,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Test MatDuplicate */
+  ierr = MatDuplicate(submat,MAT_COPY_VALUES,&submat1);CHKERRQ(ierr);
+  ierr = MatDestroy(&submat1);CHKERRQ(ierr);
 
   /* Zero the original matrix */
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Original zeroed matrix\n");CHKERRQ(ierr);

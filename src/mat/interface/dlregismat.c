@@ -133,8 +133,8 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 
 /*@C
   MatInitializePackage - This function initializes everything in the Mat package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to MatCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscmat() when using dynamic libraries, and on the first call to MatCreate()
+  when using shared or static libraries.
 
   Level: developer
 

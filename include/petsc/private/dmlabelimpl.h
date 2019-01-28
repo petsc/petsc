@@ -13,9 +13,7 @@
      - We can live with O(log) query, but we need O(1) iteration over strata
 */
 struct _n_DMLabel {
-  PetscInt         refct;
-  PetscObjectState state;
-  char       *name;           /* Label name */
+  PETSCHEADER(int);
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt    defaultValue;   /* Background value when no value explicitly given */
   PetscInt   *stratumValues;  /* Value of each stratum */

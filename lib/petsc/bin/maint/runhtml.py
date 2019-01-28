@@ -23,7 +23,7 @@ if len(sys.argv) < 4:
 
 ######### Packages to list ########
 
-packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","Metis","ML","MOAB","MUMPS","NetCDF","Pardiso","Parmetis","ptscotch","SPAI","STRUMPACK","Suitesparse","SuperLU","SuperLU_dist","cTetgen","triangle","ViennaCL",'p4est'];
+packages=["Chaco","CMake","CUDA","Elemental","Exodusii","HDF5","Hypre","Metis","ML","MOAB","MUMPS","NetCDF","Pardiso","Parmetis","ptscotch","SPAI","STRUMPACK","Suitesparse","SuperLU","SuperLU_dist","cTetgen","triangle","ViennaCL",'p4est'];
 
 
 
@@ -335,7 +335,6 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "(aka 'const int *') doesn't match specified 'MPI' type tag that requires 'int *'",
                           "(aka 'const long *') doesn't match specified 'MPI' type tag that requires 'long long *'",
                           "(aka 'long *') doesn't match specified 'MPI' type tag that requires 'long long *'",
-                          "cusp/complex.h", "cusp/detail/device/generalized_spmv/coo_flat.h",
                           "Warning: Cannot tell what pointer points to, assuming global memory space",
                           "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_'",
                           "cl : Command line warning D9024 : unrecognized source file type",

@@ -36,8 +36,7 @@ PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,Pet
        "scalable": do outer product and two sparse axpy in MatPtAPNumeric() - might slow, does not store structure of A*P.
        "hypre":    use boomerAMGBuildCoarseOperator.
      */
-    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatPtAP","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     switch (alg) {
@@ -56,30 +55,36 @@ PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,Pet
       break;
 #if defined(PETSC_HAVE_HYPRE)
     case 2:
+      ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A,P,fill,C);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
 #endif
     default:
+      ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
     }
   }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJ     *a    = (Mat_SeqAIJ*)A->data;
-  Mat_PtAP       *ptap = a->ptap;
+  Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
+  Mat_AP         *ap = a->ap;
 
   PetscFunctionBegin;
-  ierr = PetscFree(ptap->apa);CHKERRQ(ierr);
-  ierr = PetscFree(ptap->api);CHKERRQ(ierr);
-  ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
-  ierr = (ptap->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscFree(ptap);CHKERRQ(ierr);
+  ierr = PetscFree(ap->apa);CHKERRQ(ierr);
+  ierr = PetscFree(ap->api);CHKERRQ(ierr);
+  ierr = PetscFree(ap->apj);CHKERRQ(ierr);
+  ierr = (ap->destroy)(A);CHKERRQ(ierr);
+  ierr = PetscFree(ap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

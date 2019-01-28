@@ -16,11 +16,11 @@ DMField Object: field 1 MPI processes
     PetscFE Object: MyPetscFE 1 MPI processes
       type: basic
       Basic Finite Element in 2 dimensions with 2 components
-      PetscSpace Object: 1 MPI processes
+      PetscSpace Object: MyPetscFE 1 MPI processes
         type: poly
         Space in 2 variables with 2 components
         Polynomial space of degree 2
-      PetscDualSpace Object: 1 MPI processes
+      PetscDualSpace Object: MyPetscFE 1 MPI processes
         type: lagrange
         Dual space of order 2 with 2 components
         Continuous Lagrange dual space

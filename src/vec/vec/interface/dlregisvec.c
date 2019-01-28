@@ -32,8 +32,8 @@ PetscErrorCode  ISFinalizePackage(void)
 
 /*@C
       ISInitializePackage - This function initializes everything in the IS package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to ISCreateXXXX()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to ISCreateXXXX()
+  when using shared or static libraries.
 
   Level: developer
 
@@ -137,8 +137,8 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
 
 /*@C
   VecInitializePackage - This function initializes everything in the Vec package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to VecCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to VecCreate()
+  when using shared or static libraries.
 
   Level: developer
 

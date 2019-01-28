@@ -23,10 +23,6 @@ static const char help[] = "1D multiphysics prototype with analytic Jacobians to
  * without copying values to extract submatrices.
  */
 
-/*T
-   TODO: Need to determine if deprecated
-T*/
-
 #include <petscsnes.h>
 #include <petscdm.h>
 #include <petscdmda.h>

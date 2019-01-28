@@ -130,7 +130,7 @@ SNES Object: 1 MPI processes
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
-        maximum iterations=2, nonzero initial guess
+        maximum iterations=3, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
@@ -160,7 +160,7 @@ SNES Object: 1 MPI processes
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
-        maximum iterations=2, nonzero initial guess
+        maximum iterations=3, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test

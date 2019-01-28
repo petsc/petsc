@@ -525,11 +525,13 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
 
 PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
+  PetscDS        prob;
   PetscInt       numBd, b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumBoundary(prob, &numBd);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     DMBoundaryConditionType type;
     const char             *labelname;
@@ -546,7 +548,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
     ierr = DMGetBoundary(dm, b, &type, NULL, &labelname, &field, &Nc, &comps, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
     if (insertEssential != (type & DM_BC_ESSENTIAL)) continue;
     ierr = DMGetLabel(dm, labelname, &label);CHKERRQ(ierr);
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       switch (type) {
@@ -661,7 +663,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -697,7 +699,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
       void * const ctx = ctxs ? ctxs[field] : NULL;
       PetscInt     Nb, Nc, q, fc;
 
-      ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
@@ -764,7 +766,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
     PetscFE  fe;
     PetscInt Nc;
 
-    ierr = DMGetField(dm, field, (PetscObject *) &fe);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
     numComponents += Nc;
@@ -790,7 +792,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
       PetscReal       *basisDer;
       PetscInt         Nb, Nc, q, fc;
 
-      ierr = DMGetField(dm, field, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = DMGetField(dm, field, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
       ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
@@ -857,7 +859,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -893,7 +895,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
 
       PetscReal       elemDiff = 0.0;
 
-      ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
@@ -978,7 +980,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -1013,7 +1015,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
       void * const ctx = ctxs ? ctxs[field] : NULL;
       PetscInt     Nb, Nc, q, fc;
 
-      ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
@@ -1093,7 +1095,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -1137,7 +1139,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
         PetscInt     Nb, Nc, q, qc = 0;
 
         ierr = PetscMemzero(grad, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
-        ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+        ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
         ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}

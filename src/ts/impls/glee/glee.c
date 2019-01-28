@@ -391,8 +391,7 @@ PetscErrorCode TSGLEERegisterDestroy(void)
 
 /*@C
   TSGLEEInitializePackage - This function initializes everything in the TSGLEE package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_GLEE()
-  when using static libraries.
+  from TSInitializePackage().
 
   Level: developer
 

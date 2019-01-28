@@ -1074,7 +1074,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs);CHKERRQ(ierr);
   if (reason < 0) {
     ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(dd.gcomm,"Converged reason                           : %D\n",reason);CHKERRQ(ierr);
+    ierr = PetscPrintf(dd.gcomm,"Converged reason                           : %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
   }
   if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
   ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.);CHKERRQ(ierr);
@@ -1174,7 +1174,7 @@ int main(int argc,char **args)
  testset:
    nsize: 8
    suffix: bddc_fetidp_approximate
-   args: -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale -testfetidp 0
+   args: -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_dirichlet_mg_levels_ksp_max_it 3 -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale -testfetidp 0
 
  testset:
    nsize: 4

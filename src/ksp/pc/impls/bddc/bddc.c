@@ -1493,6 +1493,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = VecScatterEnd(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
     ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
     if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior) {
       ierr = VecSet(pcis->vec1_global,0.);CHKERRQ(ierr);
       ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1932,6 +1933,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     */
     if (n_D) {
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+      ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
       if (pcbddc->switch_static) {
         Mat_IS *matis = (Mat_IS*)(pc->mat->data);
@@ -2007,6 +2009,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     }
   }
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec4_D);CHKERRQ(ierr);
 
   if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
     if (pcbddc->switch_static) {
@@ -2092,6 +2095,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     */
     if (n_D) {
       ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+      ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
       if (pcbddc->switch_static) {
         Mat_IS *matis = (Mat_IS*)(pc->mat->data);
@@ -2165,6 +2169,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     }
   }
   ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec4_D);CHKERRQ(ierr);
   if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
     if (pcbddc->switch_static) {
       ierr = VecAXPBYPCZ(pcis->vec2_D,m_one,one,m_one,pcis->vec4_D,pcis->vec1_D);CHKERRQ(ierr);
@@ -2363,6 +2368,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   if (!pcbddc->switch_static) {
     /* compute partially subassembled Schur complement right-hand side */
     ierr = KSPSolve(pcbddc->ksp_D,mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
+    /* Cannot propagate up error in KSPSolve() because there is no access to the PC */
     ierr = MatMult(pcis->A_BI,pcis->vec1_D,pcis->vec1_B);CHKERRQ(ierr);
     ierr = VecAXPY(mat_ctx->temp_solution_B,-1.0,pcis->vec1_B);CHKERRQ(ierr);
     ierr = VecSet(work,0.0);CHKERRQ(ierr);
@@ -2479,6 +2485,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
     ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec1_D);CHKERRQ(ierr);
     ierr = VecAYPX(pcis->vec1_D,-1.0,mat_ctx->temp_solution_D);CHKERRQ(ierr);
     ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr);
+    /* Cannot propagate up error in KSPSolve() because there is no access to the PC */
   }
 
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec1_D,work,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -2845,6 +2852,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
           ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
           ierr = MatMult(F,x,y);CHKERRQ(ierr);
           ierr = KSPSolve(kspC,y,x);CHKERRQ(ierr);
+          ierr = KSPCheckSolve(kspC,pc,x);CHKERRQ(ierr);
           ierr = KSPDestroy(&kspC);CHKERRQ(ierr);
           ierr = MatDestroy(&F);CHKERRQ(ierr);
           ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -3058,8 +3066,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
 /*@C
  PCBDDCInitializePackage - This function initializes everything in the PCBDDC package. It is called
-    from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate_BDDC()
-    when using static libraries.
+    from PCInitializePackage().
 
  Level: developer
 

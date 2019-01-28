@@ -57,9 +57,6 @@
       end module assert_mod
 
       program tpetsc
-!/*T
-!   TODO: Need to determine if deprecated
-!T*/
 
 #include <petsc/finclude/petsc.h>
       use assert_mod

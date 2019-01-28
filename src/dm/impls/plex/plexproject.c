@@ -234,6 +234,39 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMGetFirstLabelEntry_Private(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt height, PetscInt *lStart, PetscDS *prob)
+{
+  DMLabel        depthLabel;
+  PetscInt       dim, cdepth, ls = -1, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (lStart) *lStart = -1;
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  cdepth = dim - height;
+  for (i = 0; i < numIds; ++i) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        pdepth;
+
+    ierr = DMLabelGetStratumIS(label, ids[i], &pointIS);CHKERRQ(ierr);
+    if (!pointIS) continue; /* No points with that id on this process */
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = DMLabelGetValue(depthLabel, points[0], &pdepth);CHKERRQ(ierr);
+    if (pdepth == cdepth) {
+      ls = points[0];
+      if (prob) {ierr = DMGetCellDS(dm, ls, prob);CHKERRQ(ierr);}
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    if (ls >= 0) break;
+  }
+  if (lStart) *lStart = ls;
+  PetscFunctionReturn(0);
+}
+
 /*
   This function iterates over a manifold, and interpolates the input function/field using the basis provided by the DS in our DM
 
@@ -271,7 +304,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
                                                   InsertMode mode, Vec localX)
 {
   DM              dmAux = NULL;
-  PetscDS         prob, probAux = NULL;
+  PetscDS         prob = NULL, probAux = NULL;
   Vec             localA = NULL;
   PetscSection    section;
   PetscDualSpace *sp, *cellsp;
@@ -303,13 +336,16 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       }
     }
   }
+  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
   ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
   maxHeight = PetscMax(maxHeight, minHeight);
   if (maxHeight < 0 || maxHeight > dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %D not in [0, %D)", maxHeight, dim);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = DMGetFirstLabelEntry_Private(dm, label, numIds, ids, 0, NULL, &prob);CHKERRQ(ierr);
+  if (!prob) {ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);}
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
@@ -324,7 +360,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscObject  obj;
     PetscClassId id;
 
-    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -369,8 +405,6 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       ierr = PetscFEGetTabulation(subfem, numPoints, points, &basisTabAux[f], &basisDerTabAux[f], NULL);CHKERRQ(ierr);
     }
   }
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
   /* Note: We make no attempt to optimize for height. Higher height things just overwrite the lower height results. */
   for (h = minHeight; h <= maxHeight; h++) {
     PetscInt     effectiveHeight = h - (auxBd ? 0 : minHeight);
@@ -378,11 +412,12 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscScalar *values;
     PetscBool   *fieldActive;
     PetscInt     maxDegree;
-    PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
+    PetscInt     pStart, pEnd, p, lStart, spDim, totDim, numValues;
     IS           heightIS;
 
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumIS(depthLabel,depth - h,&heightIS);CHKERRQ(ierr);
+    ierr = DMGetFirstLabelEntry_Private(dm, label, numIds, ids, h, &lStart, NULL);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(depthLabel, depth - h, &heightIS);CHKERRQ(ierr);
     if (!h) {
       PetscInt cEndInterior;
 
@@ -405,7 +440,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim;
     }
-    ierr = DMPlexVecGetClosure(dm, section, localX, pStart, &numValues, NULL);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, section, localX, lStart < 0 ? pStart : lStart, &numValues, NULL);CHKERRQ(ierr);
     if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The section point closure size %d != dual space dimension %d", numValues, totDim);
     if (!totDim) {
       ierr = ISDestroy(&heightIS);CHKERRQ(ierr);

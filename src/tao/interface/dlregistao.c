@@ -22,9 +22,9 @@ PetscErrorCode TaoFinalizePackage(void)
 
 /*@C
   TaoInitializePackage - This function sets up PETSc to use the Tao
-  package.  When using static libraries, this function is called from the
-  first entry to TaoCreate(); when using shared libraries, it is called
-  from PetscDLLibraryRegister()
+  package.  When using static or shared libraries, this function is called from the
+  first entry to TaoCreate(); when using shared or static libraries, it is called
+  from PetscDLLibraryRegister_tao()
 
   Level: developer
 

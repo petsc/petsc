@@ -28,8 +28,8 @@ PetscErrorCode  SNESFinalizePackage(void)
 
 /*@C
   SNESInitializePackage - This function initializes everything in the SNES package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to SNESCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petscsnes() when using dynamic libraries, and on the first call to SNESCreate()
+  when using shared or static libraries.
 
   Level: developer
 

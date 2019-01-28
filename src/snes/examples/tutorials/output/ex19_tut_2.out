@@ -1,36 +1,42 @@
 lid velocity = 0.000106281, prandtl # = 1., grashof # = 1.
   0 SNES Function norm 1.036007954337e-02 
-    0 KSP Residual norm 2.333325818462e+00 
-    1 KSP Residual norm 5.044672258212e-01 
-    2 KSP Residual norm 5.290082237664e-02 
-    3 KSP Residual norm 5.026248322512e-03 
-    4 KSP Residual norm 3.606908371711e-04 
-    5 KSP Residual norm 3.763214803832e-05 
-    6 KSP Residual norm 4.042505875367e-06 
-  1 SNES Function norm 1.863141312567e-06 
-    0 KSP Residual norm 3.659331522857e-05 
-    1 KSP Residual norm 4.026273696640e-06 
-    2 KSP Residual norm 8.303156504966e-07 
-    3 KSP Residual norm 4.477580892887e-08 
-    4 KSP Residual norm 8.558913764583e-09 
-    5 KSP Residual norm 2.793414686047e-09 
-    6 KSP Residual norm 9.593450173093e-10 
-    7 KSP Residual norm 1.224671163613e-10 
-  2 SNES Function norm 1.917777199046e-10 
-    0 KSP Residual norm 1.224693412993e-10 
-    1 KSP Residual norm 2.161457962016e-11 
-    2 KSP Residual norm 6.748046302574e-12 
-    3 KSP Residual norm 2.270432199802e-12 
-    4 KSP Residual norm 5.670666186061e-13 
-    5 KSP Residual norm 7.141946330692e-14 
-    6 KSP Residual norm 5.748964404492e-15 
-    7 KSP Residual norm 6.637221905103e-16 
-  3 SNES Function norm 1.031073598661e-14 
+    0 KSP Residual norm 2.388589583549e+00 
+    1 KSP Residual norm 5.715829806981e-01 
+    2 KSP Residual norm 4.623679005936e-02 
+    3 KSP Residual norm 1.143381177646e-02 
+    4 KSP Residual norm 2.015139840224e-03 
+    5 KSP Residual norm 4.356196119798e-04 
+    6 KSP Residual norm 4.240953066710e-05 
+    7 KSP Residual norm 8.848315297175e-06 
+  1 SNES Function norm 9.854304971115e-06 
+    0 KSP Residual norm 3.868049496775e-05 
+    1 KSP Residual norm 7.693574326868e-06 
+    2 KSP Residual norm 1.059429116239e-06 
+    3 KSP Residual norm 4.004524784804e-07 
+    4 KSP Residual norm 1.050186948327e-07 
+    5 KSP Residual norm 5.073180513583e-08 
+    6 KSP Residual norm 2.510513776297e-08 
+    7 KSP Residual norm 1.211886495400e-08 
+    8 KSP Residual norm 1.911963112131e-09 
+    9 KSP Residual norm 3.005260864225e-10 
+  2 SNES Function norm 3.117674497824e-10 
+    0 KSP Residual norm 3.005042584730e-10 
+    1 KSP Residual norm 1.120673922713e-10 
+    2 KSP Residual norm 3.288439453292e-11 
+    3 KSP Residual norm 5.822504321413e-12 
+    4 KSP Residual norm 2.486684466178e-12 
+    5 KSP Residual norm 1.198858055503e-12 
+    6 KSP Residual norm 6.255669709502e-13 
+    7 KSP Residual norm 1.544647758005e-13 
+    8 KSP Residual norm 4.592122224907e-14 
+    9 KSP Residual norm 4.984149547392e-15 
+   10 KSP Residual norm 8.905129652955e-16 
+  3 SNES Function norm 1.045594761851e-14 
 SNES Object: 4 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=20
+  total number of linear solver iterations=26
   total number of function evaluations=4
   norm schedule ALWAYS
   SNESLineSearch Object: 4 MPI processes

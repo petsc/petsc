@@ -12,7 +12,7 @@ PetscErrorCode MatDestroy_SeqAIJ_RARt(Mat A)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a    = (Mat_SeqAIJ*)A->data;
-  Mat_RARt       *rart = a->rart; 
+  Mat_RARt       *rart = a->rart;
 
   PetscFunctionBegin;
   ierr = MatTransposeColoringDestroy(&rart->matcoloring);CHKERRQ(ierr);
@@ -332,8 +332,7 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatRARt","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsEList("-matrart_via","Algorithmic approach","MatRARt",algTypes,3,algTypes[0],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

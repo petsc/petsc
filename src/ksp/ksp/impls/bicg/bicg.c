@@ -55,6 +55,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   } else {
     ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
   }
+  KSPCheckNorm(ksp,dp);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
@@ -67,6 +68,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   i = 0;
   do {
     ierr = VecDot(Zr,Rl,&beta);CHKERRQ(ierr);       /*     beta <- r'z     */
+    KSPCheckDot(ksp,beta);
     if (!i) {
       if (beta == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
@@ -87,6 +89,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
     ierr    = VecConjugate(Pl);CHKERRQ(ierr);
     ierr    = VecConjugate(Zl);CHKERRQ(ierr);
     ierr    = VecDot(Zr,Pl,&dpi);CHKERRQ(ierr);            /*     dpi <- z'p      */
+    KSPCheckDot(ksp,dpi);
     a       = beta/dpi;                           /*     a = beta/p'z    */
     ierr    = VecAXPY(X,a,Pr);CHKERRQ(ierr);    /*     x <- x + ap     */
     ma      = -a;
@@ -103,6 +106,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
     } else {
       ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
     }
+    KSPCheckNorm(ksp,dp);
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its   = i+1;
     ksp->rnorm = dp;

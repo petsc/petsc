@@ -38,6 +38,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 
   /* Test for nothing to do */
   ierr       = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,dp);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->rnorm = dp;
   ksp->its   = 0;
@@ -67,12 +68,14 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
     ksp->its++;
     ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     ierr = VecDot(V,RP,&s);CHKERRQ(ierr);          /* s <- (v,rp)          */
+    KSPCheckDot(ksp,s);
     a    = rhoold / s;                              /* a <- rho / s         */
     ierr = VecWAXPY(Q,-a,V,U);CHKERRQ(ierr);  /* q <- u - a v         */
     ierr = VecWAXPY(T,1.0,U,Q);CHKERRQ(ierr);     /* t <- u + q           */
     ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,T1);CHKERRQ(ierr);
     ierr = VecAXPY(R,-a,AUQ);CHKERRQ(ierr);      /* r <- r - a K (u + q) */
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,dp);
     for (m=0; m<2; m++) {
       if (!m) w = PetscSqrtReal(dp*dpold);
       else w = dp;

@@ -142,9 +142,13 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
     r    = ralloc;
     ierr = VecRestoreSubVector(ts->vec_sol,isplit->is,&subvec);CHKERRQ(ierr);
   }
-  ierr = DMClone(ts->dm, &dmc);CHKERRQ(ierr);
-  ierr = TSSetDM(isplit->ts, dmc);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmc);CHKERRQ(ierr);
+  
+  if(ts->dm){
+    ierr = DMClone(ts->dm, &dmc);CHKERRQ(ierr);
+    ierr = TSSetDM(isplit->ts, dmc);CHKERRQ(ierr);
+    ierr = DMDestroy(&dmc);CHKERRQ(ierr);
+  }
+  
   ierr = TSSetRHSFunction(isplit->ts,r,rhsfunc,ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

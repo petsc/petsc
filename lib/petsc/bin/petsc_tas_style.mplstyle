@@ -1,0 +1,28 @@
+##Figure style starts here
+figure.figsize : 25, 20
+
+##Font Style starts here
+font.weight : bold
+font.size   : 22
+
+##Lines style starts here
+lines.linewidth  : 5
+lines.markersize : 20
+
+##Axes style starts here
+axes.labelsize : 22
+
+##Ticks style starts here
+xtick.minor.visible : True
+xtick.major.size    : 25
+xtick.minor.size    : 15
+
+ytick.minor.visible : True
+ytick.major.size    : 25
+ytick.minor.size    : 15
+
+##Mathtext style starts here
+mathtext.bf : sans:bold
+
+##Legend style starts here
+legend.facecolor : 00FFCC

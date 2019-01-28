@@ -48,6 +48,7 @@ PetscErrorCode PCMGKCycle_Private(PC pc,PC_MG_Levels **mglevels)
   for (i=0; i<l-1; i++) {
     if (mglevels[i]->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSolve(mglevels[i]->smoothd,mglevels[i]->b,mglevels[i]->x);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(mglevels[i]->smoothd,pc,mglevels[i]->x);CHKERRQ(ierr);
     if (mglevels[i]->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
     if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->x,mglevels[i+1]->x);CHKERRQ(ierr);
@@ -55,6 +56,7 @@ PetscErrorCode PCMGKCycle_Private(PC pc,PC_MG_Levels **mglevels)
   }
   if (mglevels[l-1]->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels[l-1]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSolve(mglevels[l-1]->smoothd,mglevels[l-1]->b,mglevels[l-1]->x);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(mglevels[l-1]->smoothd,pc,mglevels[l-1]->x);CHKERRQ(ierr);
   if (mglevels[l-1]->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels[l-1]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

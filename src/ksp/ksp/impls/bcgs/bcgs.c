@@ -55,6 +55,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,dp);
   }
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
@@ -86,6 +87,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr);  /* p <- r - omega * beta* v + beta * p */
     ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
+    KSPCheckDot(ksp,d1);
     if (d1 == 0.0) {
       if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
       else {
@@ -120,6 +122,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
     if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i+2) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+      KSPCheckNorm(ksp,dp);
     }
 
     rhoold   = rho;

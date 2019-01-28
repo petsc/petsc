@@ -167,6 +167,8 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = k;
     snes->norm = fnorm;
+    snes->xnorm = xnorm;
+    snes->ynorm = ynorm;
     ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,snes->iter);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);

@@ -204,8 +204,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       PetscSection       facetSection, facetSectionRendezvous;
       PetscSF            sfProcess, sfFacetMigration;
       const PetscSFNode *remoteVertices;
-      ierr = DMLabelCreate("Facet Rendezvous", &lblFacetRendezvous);CHKERRQ(ierr);
-      ierr = DMLabelCreate("Facet Migration", &lblFacetMigration);CHKERRQ(ierr);
+      ierr = DMLabelCreate(PETSC_COMM_SELF, "Facet Rendezvous", &lblFacetRendezvous);CHKERRQ(ierr);
+      ierr = DMLabelCreate(PETSC_COMM_SELF, "Facet Migration", &lblFacetMigration);CHKERRQ(ierr);
       ierr = PetscSFGetGraph(sfVertices, NULL, NULL, NULL, &remoteVertices);CHKERRQ(ierr);
       for (f = 0; f < numFacetsLocal; f++) {
         for (v = 0; v < numFacetCorners; v++) {
