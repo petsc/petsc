@@ -75,6 +75,7 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,&B,&C,NULL);CHKERRQ(ierr);
   ierr = KSPSolve(lsc->kspL,x,lsc->x1);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(lsc->kspL,pc,lsc->x1);CHKERRQ(ierr);
   ierr = MatMult(B,lsc->x1,lsc->x0);CHKERRQ(ierr);
   if (lsc->scale) {
     ierr = VecPointwiseMult(lsc->x0,lsc->x0,lsc->scale);CHKERRQ(ierr);
@@ -85,6 +86,7 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
   }
   ierr = MatMult(C,lsc->y0,lsc->x1);CHKERRQ(ierr);
   ierr = KSPSolve(lsc->kspL,lsc->x1,y);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(lsc->kspL,pc,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

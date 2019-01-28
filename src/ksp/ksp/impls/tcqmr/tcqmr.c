@@ -21,6 +21,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
 
   ierr = KSPInitialResidual(ksp,x,u,v,r,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);          /*  rnorm0 = ||r|| */
+  KSPCheckNorm(ksp,rnorm0);
 
   ierr = (*ksp->converged)(ksp,0,rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -57,6 +58,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
 
     ierr   = KSP_PCApplyBAorAB(ksp,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(y,v0,&dp11);CHKERRQ(ierr);
+    KSPCheckDot(ksp,dp11);
     ierr   = VecDot(u,v0,&dp2);CHKERRQ(ierr);
     alpha  = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
     deltmp = alpha;
@@ -73,6 +75,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     ierr   = VecAXPY(up1,-alpha,utmp);CHKERRQ(ierr);
     ierr   = VecAXPY(up1,f*beta*beta,um1);CHKERRQ(ierr);
     ierr   = VecNorm(up1,NORM_2,&dp1);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,dp1);
     f      = 1.0 / dp1;
     ierr   = VecScale(up1,f);CHKERRQ(ierr);
     ierr   = VecAYPX(p,-beta,z);CHKERRQ(ierr);   /* p = f*(z-beta*p) */
@@ -85,6 +88,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     ierr   = VecAXPY(vp1,-alpha,v);CHKERRQ(ierr);
     ierr   = VecAXPY(vp1,-beta,vm1);CHKERRQ(ierr);
     ierr   = VecNorm(vp1,NORM_2,&Gamma);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,Gamma);
     ierr   = VecScale(vp1,1.0/Gamma);CHKERRQ(ierr);
     ierr   = VecCopy(v,vm1);CHKERRQ(ierr);
     ierr   = VecCopy(vp1,v);CHKERRQ(ierr);

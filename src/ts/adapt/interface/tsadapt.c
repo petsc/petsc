@@ -101,8 +101,7 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
 
 /*@C
   TSAdaptInitializePackage - This function initializes everything in the TSAdapt package. It is
-  called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
-  TSAdaptCreate() when using static libraries.
+  called from TSInitializePackage().
 
   Level: developer
 

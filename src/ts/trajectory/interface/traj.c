@@ -726,9 +726,14 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
 PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 {
   PetscErrorCode ierr;
+  PetscBool      flg;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
-  if (tj->dirfiletemplate) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_WRONGSTATE,"Cannot set directoryname after TSTrajectory has been setup");
+  ierr = PetscStrcmp(tj->dirname,dirname,&flg);CHKERRQ(ierr);
+  if (!flg && tj->dirfiletemplate) {
+    SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_WRONGSTATE,"Cannot set directoryname after TSTrajectory has been setup");
+  }
   ierr = PetscFree(tj->dirname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(dirname,&tj->dirname);CHKERRQ(ierr);
   PetscFunctionReturn(0);

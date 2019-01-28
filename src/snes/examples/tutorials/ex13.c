@@ -197,12 +197,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupPrimalProblem(PetscDS prob, AppCtx *user)
+static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, 1, &id, user);CHKERRQ(ierr);
@@ -210,32 +212,35 @@ static PetscErrorCode SetupPrimalProblem(PetscDS prob, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupAdjointProblem(PetscDS prob, AppCtx *user)
+static PetscErrorCode SetupAdjointProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_unity_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode SetupErrorProblem(PetscDS prob, AppCtx *user)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
   ierr = PetscDSSetObjective(prob, 0, obj_error_u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(PetscDS, AppCtx *), AppCtx *user)
+static PetscErrorCode SetupErrorProblem(DM dm, AppCtx *user)
+{
+  PetscDS        prob;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *user)
 {
   DM             cdm = dm;
   PetscFE        fe;
-  PetscDS        prob;
   char           prefix[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
@@ -245,15 +250,14 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), user->dim, 1, user->simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = (*setup)(prob, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = (*setup)(dm, user);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm,cdm);CHKERRQ(ierr);
     /* TODO: Check whether the boundary of coarse meshes is marked */
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -473,13 +477,13 @@ int main(int argc, char **argv)
       ierr = DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(dm, uErr, INSERT_VALUES, uErrLoc);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmErrAux, &uErr);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmErr, "dmAux", (PetscObject) dmErrAux);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmErr, "A", (PetscObject) uErrLoc);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmAdj, "dmAux", (PetscObject) dmErrAux);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmAdj, "A", (PetscObject) uErrLoc);CHKERRQ(ierr);
       /*   Compute cellwise error estimate */
       ierr = VecSet(errorEst, 0.0);CHKERRQ(ierr);
-      ierr = DMPlexComputeCellwiseIntegralFEM(dmErr, uAdj, errorEst, &user);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmErr, "dmAux", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmErr, "A", NULL);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellwiseIntegralFEM(dmAdj, uAdj, errorEst, &user);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmAdj, "dmAux", NULL);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmAdj, "A", NULL);CHKERRQ(ierr);
       ierr = DMRestoreLocalVector(dmErrAux, &uErrLoc);CHKERRQ(ierr);
       ierr = DMDestroy(&dmErrAux);CHKERRQ(ierr);
       /*   Plot cellwise error vector */
@@ -518,6 +522,44 @@ int main(int argc, char **argv)
     requires: triangle
     args: -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
+    suffix: 2d_p1_scalable
+    requires: triangle long_runtime
+    args: -potential_petscspace_order 1 -dm_refine 3 -num_refine 3 -snes_convergence_estimate \
+      -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned \
+      -pc_type gamg \
+        -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 \
+        -pc_gamg_coarse_eq_limit 1000 \
+        -pc_gamg_square_graph 1 \
+        -pc_gamg_threshold 0.05 \
+        -pc_gamg_threshold_scale .0 \
+      -mg_levels_ksp_type chebyshev \
+        -mg_levels_ksp_max_it 1 \
+        -mg_levels_esteig_ksp_type cg \
+        -mg_levels_esteig_ksp_max_it 10 \
+        -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
+        -mg_levels_pc_type jacobi \
+      -matptap_via scalable
+  test:
+    suffix: 2d_p1_gmg_vcycle
+    requires: triangle
+    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
+          -ksp_rtol 5e-10 -pc_type mg \
+            -mg_levels_ksp_max_it 1 \
+            -mg_levels_esteig_ksp_type cg \
+            -mg_levels_esteig_ksp_max_it 10 \
+            -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
+            -mg_levels_pc_type jacobi
+  test:
+    suffix: 2d_p1_gmg_fcycle
+    requires: triangle
+    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
+          -ksp_rtol 5e-10 -pc_type mg -pc_mg_type full \
+            -mg_levels_ksp_max_it 2 \
+            -mg_levels_esteig_ksp_type cg \
+            -mg_levels_esteig_ksp_max_it 10 \
+            -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
+            -mg_levels_pc_type jacobi
+  test:
     suffix: 2d_p2_0
     requires: triangle
     args: -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
@@ -537,16 +579,16 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_0
     requires: ctetgen
-    args: -dim 3 -potential_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_0
     requires: ctetgen
-    args: -dim 3 -potential_petscspace_degree 2 -convest_num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 2 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p3_0
     requires: ctetgen
     timeoutfactor: 2
-    args: -dim 3 -potential_petscspace_degree 3 -convest_num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 3 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q1_0
     args: -dim 3 -simplex 0 -potential_petscspace_degree 1 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate

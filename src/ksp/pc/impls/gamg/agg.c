@@ -598,7 +598,7 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 
       ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
       if (Nf) {
-        ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
+        ierr = DMGetField(dm, 0, NULL, &deformation);CHKERRQ(ierr);
         ierr = PetscObjectQuery((PetscObject)deformation,"nearnullspace",(PetscObject*)&mnull);CHKERRQ(ierr);
         if (!mnull) {
           ierr = PetscObjectQuery((PetscObject)deformation,"nullspace",(PetscObject*)&mnull);CHKERRQ(ierr);
@@ -1123,9 +1123,9 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
     ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
 
     ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
     ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
     ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(eksp,PETSC_FALSE);CHKERRQ(ierr);
 
     ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
     ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
@@ -1142,6 +1142,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
     ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
     ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
     ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
+    ierr = KSPCheckSolve(eksp,pc,xx);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
 

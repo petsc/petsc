@@ -499,7 +499,10 @@ class ArgDownload(Arg):
         if os.path.isfile(value):
           value = 'file://'+os.path.abspath(value)
         elif os.path.isdir(value):
-          value = 'dir://'+os.path.abspath(value)
+          if os.path.isdir(os.path.join(value,'.git')):
+            value = 'git://'+os.path.abspath(value)
+          else:
+            value = 'dir://'+os.path.abspath(value)
         else:
           raise ValueError('Invalid download location: '+str(value)+' for key '+str(self.key))
     self.value = value

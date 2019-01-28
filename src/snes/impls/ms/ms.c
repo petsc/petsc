@@ -133,8 +133,7 @@ PetscErrorCode SNESMSRegisterDestroy(void)
 
 /*@C
   SNESMSInitializePackage - This function initializes everything in the SNESMS package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to SNESCreate_MS()
-  when using static libraries.
+  from SNESInitializePackage().
 
   Level: developer
 

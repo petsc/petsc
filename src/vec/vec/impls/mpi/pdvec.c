@@ -878,25 +878,19 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
   ierr   = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_COMPLEX)
-  {
-    PetscInt   one = 1;
-    const char *groupname;
-    char       vecgroup[PETSC_MAX_PATH_LEN];
-
-    ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname ? groupname : "",vecname);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5WriteAttribute(viewer,vecgroup,"complex",PETSC_INT,&one);CHKERRQ(ierr);
-  }
-#endif
   /* Close/release resources */
-  if (group != file_id) {
-    PetscStackCallHDF5(H5Gclose,(group));
-  }
+  PetscStackCallHDF5(H5Gclose,(group));
   PetscStackCallHDF5(H5Pclose,(plist_id));
   PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Sclose,(memspace));
   PetscStackCallHDF5(H5Dclose,(dset_id));
+
+#if defined(PETSC_USE_COMPLEX)
+  {
+    PetscBool   tru = PETSC_TRUE;
+    ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"complex",PETSC_BOOL,&tru);CHKERRQ(ierr);
+  }
+#endif
   ierr   = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

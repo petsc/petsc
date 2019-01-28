@@ -49,8 +49,12 @@
       PetscFortranAddr address
       PetscInt start
 
-      start = lbound(ptr,1)
-      call F90Array1dGetAddrScalar(ptr(start),address)
+      if (associated(ptr) .eqv. .false.) then
+        address = 0
+      else
+        start = lbound(ptr,1)
+        call F90Array1dGetAddrScalar(ptr(start),address)
+      endif
       end subroutine
 
       subroutine F90Array1dAccessReal(ptr,address)
@@ -59,8 +63,12 @@
       PetscFortranAddr address
       PetscInt start
 
-      start = lbound(ptr,1)
-      call F90Array1dGetAddrReal(ptr(start),address)
+      if (associated(ptr) .eqv. .false.) then
+        address = 0
+      else
+        start = lbound(ptr,1)
+        call F90Array1dGetAddrReal(ptr(start),address)
+      endif
       end subroutine
 
       subroutine F90Array1dAccessInt(ptr,address)
@@ -69,8 +77,12 @@
       PetscFortranAddr address
       PetscInt start
 
-      start = lbound(ptr,1)
-      call F90Array1dGetAddrInt(ptr(start),address)
+      if (associated(ptr) .eqv. .false.) then
+        address = 0
+      else
+        start = lbound(ptr,1)
+        call F90Array1dGetAddrInt(ptr(start),address)
+      endif
       end subroutine
 
       subroutine F90Array1dAccessFortranAddr(ptr,address)
@@ -79,8 +91,12 @@
       PetscFortranAddr address
       PetscInt start
 
-      start = lbound(ptr,1)
-      call F90Array1dGetAddrFortranAddr(ptr(start),address)
+      if (associated(ptr) .eqv. .false.) then
+        address = 0
+      else
+        start = lbound(ptr,1)
+        call F90Array1dGetAddrFortranAddr(ptr(start),address)
+      endif
       end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

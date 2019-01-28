@@ -24,8 +24,8 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
 
 /*@C
   PetscRandomInitializePackage - This function initializes everything in the PetscRandom package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscRandomCreate()
-  when using static libraries.
+  from PetscDLLibraryRegister_petsc() when using dynamic libraries, and on the first call to PetscRandomCreate()
+  when using shared or static libraries.
 
   Level: developer
 

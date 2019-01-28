@@ -158,6 +158,82 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscFunctionReturn(0);
 }
 
+
+/*@
+   ISCreateSubIS - Create a sub index set from a global index set selecting some components.
+
+   Collective on IS
+
+   Input Parmeters:
+.  is - the index set
+.  comps - which components we will extract from is
+
+   Output Parameters:
+.  subis - the new sub index set
+
+   Level: intermediate
+
+   Example usage:
+   We have an index set (is) living on 3 processes with the following values:
+   | 4 9 0 | 2 6 7 | 10 11 1|
+   and another index set (comps) used to indicate which components of is  we want to take,
+   | 7 5  | 1 2 | 0 4|
+   The output index set (subis) should look like:
+   | 11 7 | 9 0 | 4 6|
+
+.seealso: VecGetSubVector(), MatCreateSubMatrix()
+@*/
+PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
+{
+  PetscSF         sf;
+  const PetscInt  *is_indices,*comps_indices;
+  PetscInt        *subis_indices,nroots,nleaves,*mine,i,owner,lidx;
+  PetscSFNode     *remote;
+  PetscErrorCode  ierr;
+  MPI_Comm        comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(comps,IS_CLASSID,2);
+  PetscValidPointer(subis,3);
+
+  ierr = PetscObjectGetComm((PetscObject)is, &comm);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(comps,&nleaves);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&nroots);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
+  ierr = ISGetIndices(comps,&comps_indices);CHKERRQ(ierr);
+  /*
+   * Construct a PetscSF in which "is" data serves as roots and "subis" is leaves.
+   * Root data are sent to leaves using PetscSFBcast().
+   * */
+  for (i=0; i<nleaves; i++) {
+    mine[i] = i;
+    /* Connect a remote root with the current leaf. The value on the remote root
+     * will be received by the current local leaf.
+     * */
+    owner = -1;
+    lidx =  -1;
+    ierr = PetscLayoutFindOwnerIndex(is->map,comps_indices[i],&owner, &lidx);CHKERRQ(ierr);
+    remote[i].rank = owner;
+    remote[i].index = lidx;
+  }
+  ierr = ISRestoreIndices(comps,&comps_indices);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);\
+  ierr = PetscSFSetGraph(sf,nroots,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(nleaves,&subis_indices);CHKERRQ(ierr);
+  ierr = ISGetIndices(is, &is_indices);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,is_indices,subis_indices);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,is_indices,subis_indices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&is_indices);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nleaves,subis_indices,PETSC_OWN_POINTER,subis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*@
    ISIdentity - Determines whether index set is the identity mapping.
 

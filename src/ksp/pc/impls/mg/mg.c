@@ -12,17 +12,11 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
   PC_MG_Levels   *mgc,*mglevels = *mglevelsin;
   PetscErrorCode ierr;
   PetscInt       cycles = (mglevels->level == 1) ? 1 : (PetscInt) mglevels->cycles;
-  PC             subpc;
-  PCFailedReason pcreason;
 
   PetscFunctionBegin;
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSolve(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);  /* pre-smooth */
-  ierr = KSPGetPC(mglevels->smoothd,&subpc);CHKERRQ(ierr);
-  ierr = PCGetSetUpFailedReason(subpc,&pcreason);CHKERRQ(ierr);
-  if (pcreason) {
-    pc->failedreason = PC_SUBPC_ERROR;
-  }
+  ierr = KSPCheckSolve(mglevels->smoothd,pc,mglevels->x);CHKERRQ(ierr);
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   if (mglevels->level) {  /* not the coarsest grid */
     if (mglevels->eventresidual) {ierr = PetscLogEventBegin(mglevels->eventresidual,0,0,0,0);CHKERRQ(ierr);}
@@ -58,6 +52,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
     if (mglevels->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSolve(mglevels->smoothu,mglevels->b,mglevels->x);CHKERRQ(ierr);    /* post smooth */
+    ierr = KSPCheckSolve(mglevels->smoothu,pc,mglevels->x);CHKERRQ(ierr);
     if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
@@ -172,29 +167,7 @@ PetscErrorCode PCReset_MG(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*@C
-   PCMGSetLevels - Sets the number of levels to use with MG.
-   Must be called before any other MG routine.
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
-.  levels - the number of levels
--  comms - optional communicators for each level; this is to allow solving the coarser problems
-           on smaller sets of processors.
-
-   Level: intermediate
-
-   Notes:
-     If the number of levels is one then the multigrid uses the -mg_levels prefix
-  for setting the level options rather than the -mg_coarse prefix.
-
-.keywords: MG, set, levels, multigrid
-
-.seealso: PCMGSetType(), PCMGGetLevels()
-@*/
-PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
+PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
@@ -292,6 +265,39 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   }
   mg->levels = mglevels;
   ierr = PCMGSetType(pc,mgtype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PCMGSetLevels - Sets the number of levels to use with MG.
+   Must be called before any other MG routine.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+.  levels - the number of levels
+-  comms - optional communicators for each level; this is to allow solving the coarser problems
+           on smaller sets of processors.
+
+   Level: intermediate
+
+   Notes:
+     If the number of levels is one then the multigrid uses the -mg_levels prefix
+  for setting the level options rather than the -mg_coarse prefix.
+
+.keywords: MG, set, levels, multigrid
+
+.seealso: PCMGSetType(), PCMGGetLevels()
+@*/
+PetscErrorCode PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (comms) PetscValidPointer(comms,3);
+  ierr = PetscTryMethod(pc,"PCMGSetLevels_C",(PC,PetscInt,MPI_Comm*),(pc,levels,comms));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -843,7 +849,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSetUp(mglevels[i]->smoothd);CHKERRQ(ierr);
-    if (mglevels[i]->smoothd->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    if (mglevels[i]->smoothd->reason == KSP_DIVERGED_PC_FAILED) {
       pc->failedreason = PC_SUBPC_ERROR;
     }
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
@@ -867,7 +873,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothu,PETSC_TRUE);CHKERRQ(ierr);
       if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = KSPSetUp(mglevels[i]->smoothu);CHKERRQ(ierr);
-      if (mglevels[i]->smoothu->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+      if (mglevels[i]->smoothu->reason == KSP_DIVERGED_PC_FAILED) {
         pc->failedreason = PC_SUBPC_ERROR;
       }
       if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
@@ -876,7 +882,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSetUp(mglevels[0]->smoothd);CHKERRQ(ierr);
-  if (mglevels[0]->smoothd->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+  if (mglevels[0]->smoothd->reason == KSP_DIVERGED_PC_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;
   }
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
@@ -910,6 +916,15 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
 /* -------------------------------------------------------------------------------------*/
 
+PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels)
+{
+  PC_MG *mg = (PC_MG *) pc->data;
+
+  PetscFunctionBegin;
+  *levels = mg->nlevels;
+  PetscFunctionReturn(0);
+}
+
 /*@
    PCMGGetLevels - Gets the number of levels to use with MG.
 
@@ -927,14 +942,15 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
 .seealso: PCMGSetLevels()
 @*/
-PetscErrorCode  PCMGGetLevels(PC pc,PetscInt *levels)
+PetscErrorCode PCMGGetLevels(PC pc,PetscInt *levels)
 {
-  PC_MG *mg = (PC_MG*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(levels,2);
-  *levels = mg->nlevels;
+  *levels = 0;
+  ierr = PetscTryMethod(pc,"PCMGGetLevels_C",(PC,PetscInt*),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1294,5 +1310,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   pc->ops->view           = PCView_MG;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetGalerkin_C",PCMGSetGalerkin_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGetLevels_C",PCMGGetLevels_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetLevels_C",PCMGSetLevels_MG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -17,7 +17,7 @@ message-passing communication.
 
 PETSc includes an expanding suite of parallel linear solvers, nonlinear
 solvers, and time integrators that may be
-used in application codes written in Fortran, C, C++, and Python (via petsc4py).  PETSc
+used in application codes written in Fortran, C, C++, and Python (via petsc4py; see page \pageref{petsc4py}).  PETSc
 provides many of the mechanisms needed within parallel application
 codes, such as parallel matrix and vector assembly routines. The library is
 organized hierarchically, enabling users to employ the level of
@@ -28,7 +28,7 @@ enormous flexibility for users.
 PETSc is a sophisticated set of software tools; as such, for some
 users it initially has a much steeper learning curve than a simple
 subroutine library. In particular, for individuals without some
-computer science background, experience programming in C, C++ or Fortran and experience using a debugger such as \trl{gdb} or \trl{dbx}, it
+computer science background, experience programming in C, C++, python, or Fortran and experience using a debugger such as \trl{gdb} or \trl{dbx}, it
 may require a significant amount of time to take full advantage of the
 features that enable efficient software use.  However, the power of
 the PETSc design and the algorithms it incorporates may make the efficient
@@ -38,6 +38,9 @@ them'' yourself.
 \item  For many tasks a package such as MATLAB is often the best tool; PETSc is not
 intended for the classes of problems for which effective MATLAB code
 can be written.
+\item There are several packages (listed on \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}),
+built on PETSc, that may satisfy your needs without requiring directly using PETSc. We recommend reviewing these packages
+functionality before using PETSc.
 \item PETSc should {\em not} be used to attempt to provide
 a ``parallel linear solver'' in an otherwise sequential code.
 Certainly all parts of a previously sequential code need not be parallelized but the
@@ -47,14 +50,14 @@ the linear system in parallel.
 \end{itemize}
 
 Since PETSc is under continued development, small changes in usage and
-calling sequences of routines will occur.  PETSc is supported; see the
-web site \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc} for information on
-contacting support.
+calling sequences of routines will occur.  PETSc is supported; see
+\href{http://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html}{http://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html}
+for information on contacting support.
 
 A list of publications and web sites that feature work involving PETSc may be found at
 \href{http://www.mcs.anl.gov/petsc/publications}{http://www.mcs.anl.gov/petsc/publications}.
 
-We welcome any reports of corrections for this document.
+We welcome any reports of corrections for this document at \trl{petsc-maint@mcs.anl.gov}.
 
 \medskip \medskip
 

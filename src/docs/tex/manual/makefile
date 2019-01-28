@@ -65,21 +65,22 @@ manual.pdf: chk_loc chk intro.tex abstract.tex acknowl.tex manual.tex part1.tex 
 	${CP} manual1.aux intro.aux
 	${PDFLATEX} ${PDFLATEXOPTS} intro  ${GONULL}
 	${RM} part1tmp.tex part2tmp.tex acknowltemp.tex tmp ${MANUAL_LISTINGS_INCLUDE}
+	${MV} intro.pdf ${LOC}/docs/
 #	${MAKE} rclean
 
 # Wrap some listings so that they can be processed
 # Some relax the break-only-at-whitespace requirement
-listing_kspex2tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/examples/tutorials/ex2.c
-	-@printf '\\begin{lstlisting}\n' > listing_tmp.tex
-	-@cat ../../../../src/ksp/ksp/examples/tutorials/ex2.c >> listing_tmp.tex
+listing_kspex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/examples/tutorials/ex1.c
+	-@printf '\\begin{lstlisting}[breakatwhitespace=false]\n' > listing_tmp.tex
+	-@cat ../../../../src/ksp/ksp/examples/tutorials/ex1.c | sed "/TEST/,/TEST/d" >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_kspex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/examples/tutorials/ex1.c
-	-@printf '\\begin{lstlisting}[breakatwhitespace=false]\n' > listing_tmp.tex
-	-@cat ../../../../src/ksp/ksp/examples/tutorials/ex1.c >> listing_tmp.tex
+listing_kspex2tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/examples/tutorials/ex2.c
+	-@printf '\\begin{lstlisting}\n' > listing_tmp.tex
+	-@cat ../../../../src/ksp/ksp/examples/tutorials/ex2.c  | sed "/TEST/,/TEST/d" >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@

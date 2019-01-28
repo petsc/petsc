@@ -6,7 +6,7 @@ Input arguments are:\n\
    ./ex94 -f0 <A_binary> -f1 <B_binary> -matmatmult_mat_view ascii::ascii_info -matmatmulttr_mat_view
    mpiexec -n 3 ./ex94 -f0 medium -f1 medium -f2 arco1 -f3 arco1 -matmatmult_mat_view
 */
- 
+
 #include <petscmat.h>
 
 /*
@@ -183,6 +183,7 @@ int main(int argc,char **args)
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     ierr = MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
 
     /* Compare P^T*B and R*B */
     ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);

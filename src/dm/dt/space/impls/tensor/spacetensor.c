@@ -496,10 +496,13 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Tensor(PetscSpace sp, PetscInt
   if (!tens->heightsubspaces) {ierr = PetscCalloc1(dim, &tens->heightsubspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!tens->heightsubspaces[height-1]) {
-      PetscSpace sub;
+      PetscSpace  sub;
+      const char *name;
 
       ierr = PetscSpaceTensorGetSubspace(sp, 0, &bsp);CHKERRQ(ierr);
       ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) sp), &sub);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) sp,  &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) sub,  name);CHKERRQ(ierr);
       ierr = PetscSpaceSetType(sub, PETSCSPACETENSOR);CHKERRQ(ierr);
       ierr = PetscSpaceSetNumComponents(sub, Nc);CHKERRQ(ierr);
       ierr = PetscSpaceSetDegree(sub, order, PETSC_DETERMINE);CHKERRQ(ierr);

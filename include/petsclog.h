@@ -128,6 +128,8 @@ typedef struct {
   PetscLogDouble flops, flops2, flopsTmp; /* The flops and flops^2 used in this event */
   PetscLogDouble time, time2, timeTmp;    /* The time and time^2 taken for this event */
   PetscLogDouble syncTime;                /* The synchronization barrier time */
+  PetscLogDouble dof[8];        /* The number of degrees of freedom associated with this event */
+  PetscLogDouble errors[8];     /* The errors (user-defined) associated with this event */
   PetscLogDouble numMessages;   /* The number of messages in this event */
   PetscLogDouble messageLength; /* The total message lengths in this event */
   PetscLogDouble numReductions; /* The number of reductions in this event */
@@ -174,7 +176,6 @@ struct _n_PetscStageLog {
 
 PETSC_EXTERN PetscErrorCode PetscLogObjectParent(PetscObject,PetscObject);
 PETSC_EXTERN PetscErrorCode PetscLogObjectMemory(PetscObject,PetscLogDouble);
-
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
 PETSC_EXTERN PetscStageLog petsc_stageLog;
@@ -266,6 +267,8 @@ PETSC_EXTERN PetscErrorCode PetscLogEventActivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventDeactivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventGetId(const char[],PetscLogEvent*);
 PETSC_EXTERN PetscErrorCode PetscLogEventGetPerfInfo(int,PetscLogEvent,PetscEventPerfInfo*);
+PETSC_EXTERN PetscErrorCode PetscLogEventSetDof(PetscLogEvent, PetscInt, PetscLogDouble);
+PETSC_EXTERN PetscErrorCode PetscLogEventSetError(PetscLogEvent, PetscInt, PetscLogDouble);
 
 /* Global counters */
 PETSC_EXTERN PetscLogDouble petsc_irecv_ct;
@@ -447,6 +450,8 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define PetscLogEventSetActiveAll(a,b)     0
 #define PetscLogEventGetId(a,b)            (*(b)=0,0)
 #define PetscLogEventGetPerfInfo(a,b,c)    0
+#define PetscLogEventSetDof(a,b,c)         0
+#define PetscLogEventSetError(a,b,c)       0
 
 #define PetscLogPLB                        0
 #define PetscLogPLE                        0

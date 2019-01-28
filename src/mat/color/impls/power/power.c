@@ -42,6 +42,8 @@ static PetscErrorCode MatColoringApply_Power(MatColoring mc,ISColoring *iscolori
    Notes:
    This is merely a trivial test algorithm.
 
+   Supports any distance coloring.
+
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType()
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Power(MatColoring mc)

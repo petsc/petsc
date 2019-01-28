@@ -425,6 +425,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     ierr = SNESSetIterationNumber(snes, i+1);CHKERRQ(ierr);
     snes->norm = fnorm;
+    snes->xnorm = xnorm;
+    snes->ynorm = ynorm;
 
     ierr = SNESLogConvergenceHistory(snes,snes->norm,snes->iter);CHKERRQ(ierr);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);

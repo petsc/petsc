@@ -1192,9 +1192,26 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
     ierr = MPIU_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     for (event = 0; event < numEvents; event++) {
       eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"syncTime\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g}\n",
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"syncTime\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g",
                                                 stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
                                                 eventInfo->count,eventInfo->time,eventInfo->syncTime,eventInfo->numMessages,eventInfo->messageLength,eventInfo->numReductions,eventInfo->flops);CHKERRQ(ierr);
+      if (eventInfo->dof[0] >= 0.) {
+        PetscInt d, e;
+
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, ", \"dof\" : [");CHKERRQ(ierr);
+        for (d = 0; d < 8; ++d) {
+          if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ", ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo->dof[d]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "]");CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, ", \"error\" : [");CHKERRQ(ierr);
+        for (e = 0; e < 8; ++e) {
+          if (e > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ", ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo->errors[e]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "]");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"}\n");CHKERRQ(ierr);
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

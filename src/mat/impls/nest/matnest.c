@@ -726,6 +726,24 @@ static PetscErrorCode MatCopy_Nest(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatAXPY_Nest(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  Mat_Nest       *bY = (Mat_Nest*)Y->data,*bX = (Mat_Nest*)X->data;
+  PetscInt       i,j,nr = bY->nr,nc = bY->nc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (nr != bX->nr || nc != bX->nc) SETERRQ4(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_INCOMP,"Cannot AXPY a MatNest of block size (%D,%D) with a MatNest of block size (%D,%D)",bX->nr,bX->nc,nr,nc);
+  for (i=0; i<nr; i++) {
+    for (j=0; j<nc; j++) {
+      if (bY->m[i][j] && bX->m[i][j]) {
+        ierr = MatAXPY(bY->m[i][j],a,bX->m[i][j],str);CHKERRQ(ierr);
+      } else if (bX->m[i][j]) SETERRQ2(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDuplicate_Nest(Mat A,MatDuplicateOption op,Mat *B)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
@@ -1821,6 +1839,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->assemblyend           = MatAssemblyEnd_Nest;
   A->ops->zeroentries           = MatZeroEntries_Nest;
   A->ops->copy                  = MatCopy_Nest;
+  A->ops->axpy                  = MatAXPY_Nest;
   A->ops->duplicate             = MatDuplicate_Nest;
   A->ops->createsubmatrix       = MatCreateSubMatrix_Nest;
   A->ops->destroy               = MatDestroy_Nest;

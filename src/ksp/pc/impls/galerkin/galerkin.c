@@ -25,6 +25,7 @@ static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
     ierr = MatRestrict(jac->P,x,jac->b);CHKERRQ(ierr);
   }
   ierr = KSPSolve(jac->ksp,jac->b,jac->x);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(jac->ksp,pc,jac->x);CHKERRQ(ierr);
   if (jac->P) {
     ierr = MatInterpolate(jac->P,jac->x,y);CHKERRQ(ierr);
   } else {

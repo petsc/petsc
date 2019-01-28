@@ -47,6 +47,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,dp);
   if (ksp->normtype == KSP_NORM_NATURAL) dp *= dp;
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
@@ -88,6 +89,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   do {
 
     ierr = VecDot(V,RP,&s);CHKERRQ(ierr);           /* s <- (v,rp)          */
+    KSPCheckDot(ksp,s);
     a    = rhoold / s;                               /* a <- rho / s         */
     ierr = VecWAXPY(Q,-a,V,U);CHKERRQ(ierr);      /* q <- u - a v         */
     ierr = VecWAXPY(T,1.0,U,Q);CHKERRQ(ierr);      /* t <- u + q           */
@@ -95,10 +97,12 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,U);CHKERRQ(ierr);
     ierr = VecAXPY(R,-a,AUQ);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
+    KSPCheckDot(ksp,rho);
     if (ksp->normtype == KSP_NORM_NATURAL) {
       dp = PetscAbsScalar(rho);
     } else {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+      KSPCheckNorm(ksp,dp);
     }
 
     ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);

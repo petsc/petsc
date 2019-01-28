@@ -3,8 +3,3 @@
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] MatAssemblyBegin_MPIAIJ(): Stash has 0 entries, uses 0 mallocs.
-[1] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0

@@ -46,6 +46,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   /* Prime the iterative solver */
   ierr           = KSPInitialResidual(ksp, VX, VTM, VB, VVR[0], ksp->vec_rhs);CHKERRQ(ierr);
   ierr           = VecNorm(VVR[0], NORM_2, &zeta0);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,zeta0);
   rnmax_computed = zeta0;
   rnmax_true     = zeta0;
 
@@ -93,6 +94,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     for (j=0; j<bcgsl->ell; j++) {
       /* rho1 <- r_j' * r_tilde */
       ierr = VecDot(VVR[j], VRT, &rho1);CHKERRQ(ierr);
+      KSPCheckDot(ksp,rho1);
       if (rho1 == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
         PetscFunctionReturn(0);
@@ -107,6 +109,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       ierr = KSP_PCApplyBAorAB(ksp, VVU[j], VVU[j+1], VTM);CHKERRQ(ierr);
 
       ierr = VecDot(VVU[j+1], VRT, &sigma);CHKERRQ(ierr);
+      KSPCheckDot(ksp,sigma);
       if (sigma == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
         PetscFunctionReturn(0);
@@ -125,6 +128,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       ierr = KSP_PCApplyBAorAB(ksp, VVR[j], VVR[j+1], VTM);CHKERRQ(ierr);
 
       ierr = VecNorm(VVR[0], NORM_2, &nrm0);CHKERRQ(ierr);
+      KSPCheckNorm(ksp,nrm0);
       if (bcgsl->delta>0.0) {
         if (rnmax_computed<nrm0) rnmax_computed = nrm0;
         if (rnmax_true<nrm0) rnmax_true = nrm0;
@@ -279,6 +283,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     ierr = VecMAXPY(VVR[0], bcgsl->ell,AY0c+1, VVR+1);CHKERRQ(ierr);
     for (i=1; i<=bcgsl->ell; i++) AY0c[i] *= -1.0;
     ierr = VecNorm(VVR[0], NORM_2, &zeta);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,zeta);
 
     /* Accurate Update */
     if (bcgsl->delta>0.0) {

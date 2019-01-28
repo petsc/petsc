@@ -31,8 +31,7 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
 
 /*@C
   MatMFFDInitializePackage - This function initializes everything in the MatMFFD package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to MatCreate_MFFD()
-  when using static libraries.
+  from MatInitializePackage().
 
   Level: developer
 

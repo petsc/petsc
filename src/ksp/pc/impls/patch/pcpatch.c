@@ -1522,7 +1522,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
     if (!patch->nsubspaces) {
       DM           dm;
-      PetscDS      prob;
       PetscSection s;
       PetscInt     cStart, cEnd, c, Nf, f, numGlobalBcs = 0, *globalBcs, *Nb, totNb = 0, **cellDofs;
 
@@ -1537,14 +1536,13 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         numGlobalBcs += cdof;
       }
       ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-      ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
       ierr = PetscMalloc3(Nf, &Nb, Nf, &cellDofs, numGlobalBcs, &globalBcs);CHKERRQ(ierr);
       for (f = 0; f < Nf; ++f) {
         PetscFE        fe;
         PetscDualSpace sp;
         PetscInt       cdoff = 0;
 
-        ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+        ierr = DMGetField(dm, f, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
         /* ierr = PetscFEGetNumComponents(fe, &Nc[f]);CHKERRQ(ierr); */
         ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDimension(sp, &Nb[f]);CHKERRQ(ierr);
@@ -1655,6 +1653,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       PC subpc;
 
       ierr = KSPCreate(PETSC_COMM_SELF, &patch->ksp[i]);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(patch->ksp[i],pc->erroriffailure);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(patch->ksp[i], prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(patch->ksp[i], "sub_");CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject) patch->ksp[i], (PetscObject) pc, 1);CHKERRQ(ierr);
@@ -1819,6 +1818,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
         ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);
       }
       ierr = KSPSolve(patch->ksp[i], patch->patchX[i], patch->patchY[i]);CHKERRQ(ierr);
+      ierr = KSPCheckSolve(patch->ksp[i],pc,patch->patchY[i]);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
 
       if (!patch->save_operators) {
@@ -2071,7 +2071,7 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
     }
     ierr = KSPSetUp(patch->ksp[i]);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(patch->ksp[i], &reason);CHKERRQ(ierr);
-    if (reason == KSP_DIVERGED_PCSETUP_FAILED) pc->failedreason = PC_SUBPC_ERROR;
+    if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
 }

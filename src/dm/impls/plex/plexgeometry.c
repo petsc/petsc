@@ -491,7 +491,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-  ierr = DMLabelCreate("cells", &lbox->cellsSparse);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "cells", &lbox->cellsSparse);CHKERRQ(ierr);
   ierr = DMLabelCreateIndex(lbox->cellsSparse, cStart, cEnd);CHKERRQ(ierr);
   /* Compute boxes which overlap each cell: http://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
@@ -1717,9 +1717,10 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
   if (dm->coordinateDM) {
     PetscClassId id;
     PetscInt     numFields;
-    PetscDS      prob = dm->coordinateDM->prob;
+    PetscDS      prob;
     PetscObject  disc;
 
+    ierr = DMGetDS(dm->coordinateDM, &prob);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(prob, &numFields);CHKERRQ(ierr);
     if (numFields) {
       ierr = PetscDSGetDiscretization(prob,0,&disc);CHKERRQ(ierr);
@@ -2919,7 +2920,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
       PetscClassId id;
       PetscObject  disc;
 
-      ierr = DMGetField(coordDM,0,&disc);CHKERRQ(ierr);
+      ierr = DMGetField(coordDM,0,NULL,&disc);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
         fe = (PetscFE) disc;
@@ -3001,7 +3002,7 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
       PetscClassId id;
       PetscObject  disc;
 
-      ierr = DMGetField(coordDM,0,&disc);CHKERRQ(ierr);
+      ierr = DMGetField(coordDM,0,NULL,&disc);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
         fe = (PetscFE) disc;

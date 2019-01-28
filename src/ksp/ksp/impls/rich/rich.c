@@ -83,6 +83,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
         ierr       = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
+        KSPCheckNorm(ksp,rnorm);
         ierr       = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
         ksp->rnorm = rnorm;
         ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
@@ -90,6 +91,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         if (ksp->reason) break;
       } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
         ierr       = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
+        KSPCheckNorm(ksp,rnorm);
         ierr       = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
         ksp->rnorm = rnorm;
         ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
@@ -110,6 +112,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
         ierr       = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
+        KSPCheckNorm(ksp,rnorm);
         ierr       = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
         ksp->rnorm = rnorm;
         ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
@@ -121,6 +124,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
       if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
         ierr       = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
+        KSPCheckNorm(ksp,rnorm);
         ierr       = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
         ksp->rnorm = rnorm;
         ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
@@ -145,6 +149,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);   /*   z <- B r          */
         ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
+      KSPCheckNorm(ksp,rnorm);
       ksp->rnorm = rnorm;
       ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);

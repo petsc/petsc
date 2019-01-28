@@ -16,7 +16,7 @@ PetscErrorCode MatView_MPIAIJ_PtAP(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
-  Mat_PtAPMPI       *ptap=a->ptap;
+  Mat_APMPI         *ptap=a->ap;
   PetscBool         iascii;
   PetscViewerFormat format;
 
@@ -36,69 +36,68 @@ PetscErrorCode MatView_MPIAIJ_PtAP(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
+PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat A)
 {
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *a=(Mat_MPIAIJ*)A->data;
-  Mat_PtAPMPI    *ptap=a->ptap;
+  PetscErrorCode      ierr;
+  Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data;
+  Mat_APMPI           *ptap=a->ap;
+  Mat_Merge_SeqsToMPI *merge;
 
   PetscFunctionBegin;
-  if (ptap) {
-    Mat_Merge_SeqsToMPI *merge=ptap->merge;
-    ierr = PetscFree2(ptap->startsj_s,ptap->startsj_r);CHKERRQ(ierr);
-    ierr = PetscFree(ptap->bufa);CHKERRQ(ierr);
-    ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
-    ierr = MatDestroy(&ptap->P_oth);CHKERRQ(ierr);
-    ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
-    ierr = MatDestroy(&ptap->Rd);CHKERRQ(ierr); 
-    ierr = MatDestroy(&ptap->Ro);CHKERRQ(ierr); 
-    if (ptap->AP_loc) { /* used by alg_rap */
-      Mat_SeqAIJ *ap = (Mat_SeqAIJ*)(ptap->AP_loc)->data;
-      ierr = PetscFree(ap->i);CHKERRQ(ierr);
-      ierr = PetscFree2(ap->j,ap->a);CHKERRQ(ierr);
-      ierr = MatDestroy(&ptap->AP_loc);CHKERRQ(ierr);
-    } else { /* used by alg_ptap */
-      ierr = PetscFree(ptap->api);CHKERRQ(ierr);
-      ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
-    }
-    ierr = MatDestroy(&ptap->C_loc);CHKERRQ(ierr);
-    ierr = MatDestroy(&ptap->C_oth);CHKERRQ(ierr);
-    if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
+  if (!ptap) PetscFunctionReturn(0);
 
-    if (merge) { /* used by alg_ptap */
-      ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
-      ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
-      ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
-      ierr = PetscFree(merge->bi);CHKERRQ(ierr);
-      ierr = PetscFree(merge->bj);CHKERRQ(ierr);
-      ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
-      ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
-      ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
-      ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-      ierr = PetscFree(merge->coi);CHKERRQ(ierr);
-      ierr = PetscFree(merge->coj);CHKERRQ(ierr);
-      ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-      ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
-      ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
-    }
-
-    ierr = ptap->destroy(A);CHKERRQ(ierr);
-    ierr = PetscFree(ptap);CHKERRQ(ierr);
+  ierr = PetscFree2(ptap->startsj_s,ptap->startsj_r);CHKERRQ(ierr);
+  ierr = PetscFree(ptap->bufa);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->P_oth);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
+  ierr = MatDestroy(&ptap->Rd);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->Ro);CHKERRQ(ierr);
+  if (ptap->AP_loc) { /* used by alg_rap */
+    Mat_SeqAIJ *ap = (Mat_SeqAIJ*)(ptap->AP_loc)->data;
+    ierr = PetscFree(ap->i);CHKERRQ(ierr);
+    ierr = PetscFree2(ap->j,ap->a);CHKERRQ(ierr);
+    ierr = MatDestroy(&ptap->AP_loc);CHKERRQ(ierr);
+  } else { /* used by alg_ptap */
+    ierr = PetscFree(ptap->api);CHKERRQ(ierr);
+    ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&ptap->C_loc);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->C_oth);CHKERRQ(ierr);
+  if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
+
+  ierr = MatDestroy(&ptap->Pt);CHKERRQ(ierr);
+
+  merge=ptap->merge;
+  if (merge) { /* used by alg_ptap */
+    ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
+    ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
+    ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
+    ierr = PetscFree(merge->bi);CHKERRQ(ierr);
+    ierr = PetscFree(merge->bj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->coi);CHKERRQ(ierr);
+    ierr = PetscFree(merge->coj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
+    ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
+  }
+
+  A->ops->destroy = ptap->destroy;
+  ierr = PetscFree(a->ap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
+PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_MPIAIJ     *a     = (Mat_MPIAIJ*)A->data;
-  Mat_PtAPMPI    *ptap  = a->ptap;
 
   PetscFunctionBegin;
-  ierr = (*ptap->duplicate)(A,op,M);CHKERRQ(ierr);
-  (*M)->ops->destroy   = ptap->destroy;
-  (*M)->ops->duplicate = ptap->duplicate;
-  (*M)->ops->view      = ptap->view;
+  ierr = (*A->ops->freeintermediatedatastructures)(A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -124,8 +123,7 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
 
   if (scall == MAT_INITIAL_MATRIX) {
     /* pick an algorithm */
-    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatPtAP","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[alg],&alg,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -148,7 +146,7 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
 
     switch (alg) {
     case 1:
-      /* do R=P^T locally, then C=R*A*P */
+      /* do R=P^T locally, then C=R*A*P -- nonscalable */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
@@ -156,8 +154,9 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
 #if defined(PETSC_HAVE_HYPRE)
     case 2:
       /* Use boomerAMGBuildCoarseOperator */
+      ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A,P,fill,C);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
+      ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
 #endif
     default:
@@ -167,7 +166,17 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
     }
+
+    if (alg == 0 || alg == 1) {
+      Mat_MPIAIJ *c  = (Mat_MPIAIJ*)(*C)->data;
+      Mat_APMPI  *ap = c->ap;
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
+      ap->freestruct = PETSC_FALSE;
+      ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",ap->freestruct,&ap->freestruct, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
   }
+
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
@@ -180,7 +189,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ        *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ        *ap,*p_loc,*p_oth,*c_seq;
-  Mat_PtAPMPI       *ptap = c->ptap;
+  Mat_APMPI         *ptap = c->ap;
   Mat               AP_loc,C_loc,C_oth;
   PetscInt          i,rstart,rend,cm,ncols,row,*api,*apj,am = A->rmap->n,apnz;
   PetscScalar       *apa;
@@ -188,6 +197,12 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   const PetscScalar *vals;
 
   PetscFunctionBegin;
+  if (!ptap) {
+    MPI_Comm comm;
+    ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
+    SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
+  }
+
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
 
   /* 1) get R = Pd^T,Ro = Po^T */
@@ -277,13 +292,18 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ptap->reuse = MAT_REUSE_MATRIX;
+
+  /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
+  if (ptap->freestruct) {
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
-  Mat_PtAPMPI         *ptap;
+  Mat_APMPI           *ptap;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c;
   MPI_Comm            comm;
   PetscMPIInt         size,rank;
@@ -321,7 +341,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,mtype);CHKERRQ(ierr);
 
-  /* create struct Mat_PtAPMPI and attached it to C later */
+  /* create struct Mat_APMPI and attached it to C later */
   ierr        = PetscNew(&ptap);CHKERRQ(ierr);
   ptap->reuse = MAT_INITIAL_MATRIX;
   ptap->algType = 0;
@@ -605,7 +625,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   /* attach the supporting struct to Cmpi for reuse */
   c = (Mat_MPIAIJ*)Cmpi->data;
-  c->ptap         = ptap;
+  c->ap           = ptap;
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
   ptap->view      = Cmpi->ops->view;
@@ -614,8 +634,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP;
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
   *C                     = Cmpi;
   PetscFunctionReturn(0);
 }
@@ -623,7 +643,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
-  Mat_PtAPMPI         *ptap;
+  Mat_APMPI           *ptap;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c;
   MPI_Comm            comm;
   PetscMPIInt         size,rank;
@@ -665,7 +685,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* Do dense axpy in MatPtAPNumeric_MPIAIJ_MPIAIJ() */
   Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ;
 
-  /* create struct Mat_PtAPMPI and attached it to C later */
+  /* create struct Mat_APMPI and attached it to C later */
   ierr        = PetscNew(&ptap);CHKERRQ(ierr);
   ptap->reuse = MAT_INITIAL_MATRIX;
   ptap->algType = 1;
@@ -893,7 +913,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* (5) compute the local portion of Cmpi      */
   /* ------------------------------------------ */
   /* set initial free space to be Crmax, sufficient for holding nozeros in each row of Cmpi */
-  ierr          = PetscFreeSpaceGet(Crmax,&free_space);CHKERRQ(ierr); 
+  ierr          = PetscFreeSpaceGet(Crmax,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   ierr = PetscMalloc3(nrecv,&buf_ri_k,nrecv,&nextrow,nrecv,&nextci);CHKERRQ(ierr);
@@ -905,7 +925,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
 
   ierr = MatPreallocateInitialize(comm,pn,pn,dnz,onz);CHKERRQ(ierr);
-  ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr); 
+  ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr);
   for (i=0; i<pn; i++) {
     /* add C_loc into Cmpi */
     nzi  = c_loc->i[i+1] - c_loc->i[i];
@@ -948,7 +968,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* attach the supporting struct to Cmpi for reuse */
   c = (Mat_MPIAIJ*)Cmpi->data;
-  c->ptap         = ptap;
+  c->ap           = ptap;
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
   ptap->view      = Cmpi->ops->view;
@@ -957,12 +977,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP;
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
+  Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
   *C                     = Cmpi;
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
@@ -970,7 +989,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ        *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ        *ap,*p_loc,*p_oth=NULL,*c_seq;
-  Mat_PtAPMPI       *ptap = c->ptap;
+  Mat_APMPI         *ptap = c->ap;
   Mat               AP_loc,C_loc,C_oth;
   PetscInt          i,rstart,rend,cm,ncols,row;
   PetscInt          *api,*apj,am = A->rmap->n,j,col,apnz;
@@ -979,6 +998,12 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   const PetscScalar *vals;
 
   PetscFunctionBegin;
+  if (!ptap) {
+    MPI_Comm comm;
+    ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
+    SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
+  }
+
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
   /* 1) get R = Pd^T,Ro = Po^T */
   if (ptap->reuse == MAT_REUSE_MATRIX) {
@@ -1072,5 +1097,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ptap->reuse = MAT_REUSE_MATRIX;
+
+  /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
+  if (ptap->freestruct) {
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

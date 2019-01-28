@@ -92,6 +92,5 @@ int main(int argc,char **argv)
 
    test:
       nsize: 3
-      TODO: Need to develop comparison test
 
 TEST*/

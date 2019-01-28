@@ -131,7 +131,6 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   MatType                    mtype;
   PetscInt                   dim, overlap, ref, factor;
   DMForestAdaptivityStrategy strat;
-  PetscDS                    ds;
   void                       *ctx;
   PetscErrorCode             (*map)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], void*);
   void                       *mapCtx;
@@ -164,8 +163,7 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
     ierr = (forest->ftemplate)(dm, *tdm);CHKERRQ(ierr);
   }
   ierr = DMForestSetAdaptivityForest(*tdm,dm);CHKERRQ(ierr);
-  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-  ierr = DMSetDS(*tdm,ds);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm,*tdm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*tdm,&ctx);CHKERRQ(ierr);
   {
@@ -1282,9 +1280,9 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, DMLabel adaptLabel)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  adaptLabel->refct++;
   if (forest->adaptLabel) {ierr = DMLabelDestroy(&forest->adaptLabel);CHKERRQ(ierr);}
   forest->adaptLabel = adaptLabel;
+  ierr = PetscObjectReference((PetscObject) adaptLabel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1447,7 +1445,6 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
 
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptionsObject,DM dm)
 {
-  DM_Forest                  *forest = (DM_Forest*) dm->data;
   PetscBool                  flg, flg1, flg2, flg3, flg4;
   DMForestTopology           oldTopo;
   char                       stringBuffer[256];
@@ -1460,7 +1457,6 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  forest->setfromoptionscalled = PETSC_TRUE;
   ierr                         = DMForestGetTopology(dm, &oldTopo);CHKERRQ(ierr);
   ierr                         = PetscOptionsHead(PetscOptionsObject,"DMForest Options");CHKERRQ(ierr);
   ierr                         = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,256,&flg1);CHKERRQ(ierr);
@@ -1597,11 +1593,10 @@ PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
   ierr = DMForestTemplate(dm,comm,dmRefined);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"refine",&refine);CHKERRQ(ierr);
   if (!refine) {
-    ierr = DMLabelCreate("refine",&refine);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, "refine",&refine);CHKERRQ(ierr);
     ierr = DMLabelSetDefaultValue(refine,DM_ADAPT_REFINE);CHKERRQ(ierr);
-  }
-  else {
-    refine->refct++;
+  } else {
+    ierr = PetscObjectReference((PetscObject) refine);CHKERRQ(ierr);
   }
   ierr = DMForestSetAdaptivityLabel(*dmRefined,refine);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&refine);CHKERRQ(ierr);
@@ -1632,10 +1627,10 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   ierr = DMForestSetAdaptivityPurpose(*dmCoarsened,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
   if (!coarsen) {
-    ierr = DMLabelCreate("coarsen",&coarsen);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, "coarsen",&coarsen);CHKERRQ(ierr);
     ierr = DMLabelSetDefaultValue(coarsen,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   } else {
-    coarsen->refct++;
+    ierr = PetscObjectReference((PetscObject) coarsen);CHKERRQ(ierr);
   }
   ierr = DMForestSetAdaptivityLabel(*dmCoarsened,coarsen);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&coarsen);CHKERRQ(ierr);
@@ -1706,7 +1701,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   dm->data                     = forest;
   forest->refct                = 1;
   forest->data                 = NULL;
-  forest->setfromoptionscalled = PETSC_FALSE;
   forest->topology             = NULL;
   forest->adapt                = NULL;
   forest->base                 = NULL;

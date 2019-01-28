@@ -90,6 +90,8 @@ struct _p_SNES {
   PetscInt    iter;               /* global iteration number */
   PetscInt    linear_its;         /* total number of linear solver iterations */
   PetscReal   norm;               /* residual norm of current iterate */
+  PetscReal   ynorm;              /* update norm of current iterate */
+  PetscReal   xnorm;              /* solution norm of current iterate */
   PetscReal   rtol;               /* relative tolerance */
   PetscReal   divtol;             /* relative divergence tolerance */
   PetscReal   abstol;             /* absolute tolerance */

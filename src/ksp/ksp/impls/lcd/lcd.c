@@ -63,6 +63,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
 
   ierr = KSP_PCApply(ksp,Z,R);CHKERRQ(ierr);                   /*     r <- M^-1z         */
   ierr = VecNorm(R,NORM_2,&rnorm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,rnorm);
   ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ksp->rnorm = rnorm;
@@ -82,10 +83,12 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
       ksp->its++;
       ierr = VecDot(lcd->P[it],R,&num);CHKERRQ(ierr);
       ierr = VecDot(lcd->P[it],lcd->Q[it], &den);CHKERRQ(ierr);
+      KSPCheckDot(ksp,den);
       alfa = num/den;
       ierr = VecAXPY(X,alfa,lcd->P[it]);CHKERRQ(ierr);
       ierr = VecAXPY(R,-alfa,lcd->Q[it]);CHKERRQ(ierr);
       ierr = VecNorm(R,NORM_2,&rnorm);CHKERRQ(ierr);
+      KSPCheckNorm(ksp,rnorm);
 
       ksp->rnorm = rnorm;
       ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
@@ -100,6 +103,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
 
       for (j = 0; j <= it; j++) {
         ierr = VecDot(lcd->P[j],lcd->Q[it+1],&num);CHKERRQ(ierr);
+        KSPCheckDot(ksp,num);
         ierr = VecDot(lcd->P[j],lcd->Q[j],&den);CHKERRQ(ierr);
         beta = -num/den;
         ierr = VecAXPY(lcd->P[it+1],beta,lcd->P[j]);CHKERRQ(ierr);

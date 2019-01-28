@@ -62,6 +62,43 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
 }
 
 /*@
+   TSAdaptHistoryGetStep - Gets time and time step for a given step number in the history
+
+   Logically Collective on TSAdapt
+
+   Input Parameters:
++  adapt    - the TSAdapt context
+-  step     - the step number
+
+   Output Parameters:
++  t  - the time corresponding to the requested step (can be NULL)
+-  dt - the time step to be taken at the requested step (can be NULL)
+
+   Notes: The time history is internally copied, and the user can free the hist array. The user still needs to specify the termination of the solve via TSSetMaxSteps().
+
+   Level: advanced
+
+.keywords: TSAdapt
+.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetTrajectory(), TSADAPTHISTORY
+@*/
+PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t, PetscReal *dt)
+{
+  TSAdapt_History *thadapt;
+  PetscBool       flg;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(adapt,step,2);
+  ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Not for type %s",((PetscObject)adapt)->type_name);
+  thadapt = (TSAdapt_History*)adapt->data;
+  ierr = TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step,dt);CHKERRQ(ierr);
+  ierr = TSHistoryGetTime(thadapt->hist,thadapt->bw,step,t);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSAdaptHistorySetHistory - Sets a time history in the adaptor
 
    Logically Collective on TSAdapt
@@ -77,7 +114,7 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
    Level: advanced
 
 .keywords: TSAdapt
-.seealso: TSGetAdapt(), TSAdaptSetType(), TSADAPTHISTORY
+.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetTrajectory(), TSADAPTHISTORY
 @*/
 PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal hist[], PetscBool backward)
 {
@@ -99,6 +136,39 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
   thadapt->bw = backward;
   PetscFunctionReturn(0);
 }
+
+/*@
+   TSAdaptHistorySetTrajectory - Sets a time history in the adaptor from a given TSTrajectory
+
+   Logically Collective on TSAdapt
+
+   Input Parameters:
++  adapt    - the TSAdapt context
+.  tj       - the TSTrajectory context
+-  backward - if the time history has to be followed backward
+
+   Notes: The time history is internally copied, and the user can destroy the TSTrajectory if not needed. The user still needs to specify the termination of the solve via TSSetMaxSteps().
+
+   Level: advanced
+
+.keywords: TSAdapt
+.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetHistory(), TSADAPTHISTORY
+@*/
+PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, PetscBool backward)
+{
+  PetscBool       flg;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,2);
+  PetscValidLogicalCollectiveBool(adapt,backward,3);
+  ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+  ierr = TSAdaptHistorySetTSHistory(adapt,tj->tsh,backward);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /*MC
    TSADAPTHISTORY - Time stepping controller that follows a given time history, used for Tangent Linear Model simulations

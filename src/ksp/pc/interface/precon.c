@@ -841,7 +841,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 }
 
 /*@
-   PCGetSetUpFailedReason - Gets the reason a PCSetUp() failed or 0 if it did not fail
+   PCGetFailedReason - Gets the reason a PCSetUp() failed or 0 if it did not fail
 
    Logically Collective on PC
 
@@ -857,7 +857,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
-PetscErrorCode PCGetSetUpFailedReason(PC pc,PCFailedReason *reason)
+PetscErrorCode PCGetFailedReason(PC pc,PCFailedReason *reason)
 {
   PetscFunctionBegin;
   if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;

@@ -168,8 +168,10 @@ int main(int argc, char **argv)
   if (!dmdist1 && !dmdist2) return ierr;
 
   /* compare the two distributed DMs */
-  ierr = DMPlexEqual(dmdist1, dmdist2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "Distributed DMs are not equal %s with size %d.\n",user.partitioning,size);
+  if (!user.interpolate) {
+    ierr = DMPlexEqual(dmdist1, dmdist2, &flg);CHKERRQ(ierr);
+    if (!flg) PetscPrintf(comm, "Distributed DMs are not equal %s with size %d.\n",user.partitioning,size);
+  }
 
   /* if repartitioning is disabled, then quit */
   if (user.repartitioning[0] == '\0') return ierr;
@@ -218,8 +220,10 @@ int main(int argc, char **argv)
   ierr = DMPlexDistribute(dmdist2, 0, NULL, &dm2);CHKERRQ(ierr);
 
   /* compare the two distributed DMs */
-  ierr = DMPlexEqual(dm1, dm2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.repartitioning,size);
+  if (!user.interpolate) {
+    ierr = DMPlexEqual(dm1, dm2, &flg);CHKERRQ(ierr);
+    if (!flg) PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.repartitioning,size);
+  }
 
   /* cleanup */
   ierr = PetscSectionDestroy(&s1);CHKERRQ(ierr);
@@ -241,7 +245,7 @@ int main(int argc, char **argv)
     suffix: 0
     nsize: {{1 2 3 4 8}}
     requires: chaco parmetis ptscotch exodusii
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -interpolate
     args: -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}}
     args: -petscpartititoner_ptscotch_vertex_weight 0 -mat_partitioning_ptscotch_proc_weight 0
   test:
@@ -249,7 +253,7 @@ int main(int argc, char **argv)
     suffix: 1
     nsize: {{1 2 3 4 8}}
     requires: parmetis ptscotch med
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate
     args: -repartition 0 -partitioning {{parmetis ptscotch}}
     args: -petscpartititoner_ptscotch_vertex_weight 0 -mat_partitioning_ptscotch_proc_weight 0
   test:
@@ -258,7 +262,7 @@ int main(int argc, char **argv)
     suffix: 3
     nsize: 4
     requires: ptscotch ctetgen
-    args: -faces 2,3,2 -partitioning ptscotch -repartitioning ptscotch 
+    args: -faces 2,3,2 -partitioning ptscotch -repartitioning ptscotch -interpolate
     args: -p1_petscpartitioner_view -p2_petscpartitioner_view -dp1_petscpartitioner_view -dp2_petscpartitioner_view
     args: -petscpartititoner_ptscotch_vertex_weight 0 -mat_partitioning_ptscotch_proc_weight 0
   test:
@@ -266,7 +270,7 @@ int main(int argc, char **argv)
     suffix: 4
     nsize: {{1 2 3 4 8}}
     requires: chaco parmetis ptscotch ctetgen
-    args: -faces {{2,3,4  5,4,3  7,11,5}} -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}}
+    args: -faces {{2,3,4  5,4,3  7,11,5}} -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}} -interpolate
     args: -petscpartititoner_ptscotch_vertex_weight 0 -mat_partitioning_ptscotch_proc_weight 0
 
 TEST*/
