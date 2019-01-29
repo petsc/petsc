@@ -14,7 +14,7 @@
 
   PetscErrorCode ierr
   PetscMPIInt    rank
-  PetscInt    ::   i,N,ng,rstart,rend,M
+  PetscInt    ::   i,ng,rstart,rend,M
   PetscInt, pointer, dimension(:) :: gindices
   PetscScalar, parameter :: one = 1.0
   Vec   ::         x

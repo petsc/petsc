@@ -19,7 +19,6 @@ program main
   PetscInt, parameter   ::   numPoints=1000000
   PetscScalar  ::  dummy
   PetscScalar, parameter  :: h=1.0/numPoints
-  PetscReal :: rs
   PetscScalar, pointer, dimension(:)  :: xarray
   PetscScalar :: myResult = 0
   Vec            x,xend
@@ -76,7 +75,7 @@ program main
   call VecGetArrayF90(x,xarray,ierr);CHKERRA(ierr)
   k = 1
   do i=rstart,rend-1
-    xarray(k) = i*h
+    xarray(k) = real(i)*h
     xarray(k) = func(xarray(k))
     k = k+1
   end do
