@@ -19,7 +19,7 @@
       use petscvec
       implicit none
 
-      PetscMPIInt rank,size
+      PetscMPIInt rank,mySize
       PetscInt nlocal,nghost,ifrom(2)
       PetscErrorCode ierr
       PetscInt i,rstart,rend,ione
@@ -32,14 +32,14 @@
       nghost = 2
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
+      if (ierr /= 0) then
         print*,'PetscInitialize failed'
         stop
       endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr)
 
-      if (size .ne. 2) then; SETERRA(PETSC_COMM_WORLD,1,'Requires 2 processors'); endif
+      if (mySize /= 2) then; SETERRA(PETSC_COMM_WORLD,1,'Requires 2 processors'); endif
 
 !
 !     Construct a two dimensional graph connecting nlocal degrees of
@@ -100,7 +100,7 @@
 
        ione = 1
        do 10, i=rstart,rend-1
-         value = i
+         value = real(i)
          call VecSetValues(gx,ione,i,value,INSERT_VALUES,ierr)
  10    continue
 
