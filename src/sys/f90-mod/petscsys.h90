@@ -22,28 +22,12 @@
           character(*) :: str
           PetscErrorCode :: ierr
         end Subroutine PetscObjectCompose
-       subroutine PetscObjectComposeFunction(obj,str,obj2,ierr)
+       subroutine PetscObjectQuery(obj,str,obj2,ierr)
           use petscsysdef
           type(*) :: obj,obj2
           character(*) :: str
           PetscErrorCode :: ierr
-       end Subroutine PetscObjectComposeFunction
-       subroutine PetscObjectQuery(obj,str,obj2,ierr)
-          use petscsysdef
-          use iso_c_binding
-          type(*) :: obj
-          type(c_funptr) :: obj2
-          character(*) :: str
-          PetscErrorCode :: ierr
         end Subroutine PetscObjectQuery
-       subroutine PetscObjectQueryFunction(obj,str,obj2,ierr)
-          use petscsysdef
-          use iso_c_binding
-          type(*) :: obj
-          type(c_funptr) :: obj2
-          character(*) :: str
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectQueryFunction
       end Interface
 #endif
 
