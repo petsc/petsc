@@ -184,7 +184,7 @@ program main
       CHKERRA(ierr)
       do i=0,ldim-1
         iglobal = i + low
-        v = i + 100*myRank
+        v = real(i + 100*myRank)
         call VecSetValues(u,1,iglobal,v,INSERT_VALUES,ierr)
         CHKERRA(ierr)
       enddo

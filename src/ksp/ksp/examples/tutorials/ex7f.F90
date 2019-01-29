@@ -26,7 +26,7 @@ program main
       PC              :: myPc           ! PC context 
       PC              :: subpc        ! PC context for subdomain 
       PetscReal       :: norm         ! norm of solution error 
-      PetscReal,parameter :: tol = 1.e-7
+      PetscReal,parameter :: tol = 1.e-6
       PetscErrorCode  :: ierr
       PetscInt        :: i,j,Ii,JJ,n
       PetscInt, parameter :: m = 4
@@ -37,8 +37,8 @@ program main
         myNone = -1.0, &
         one    = 1.0
       PetscBool       :: isbjacobi,flg
-      KSP,allocatable ::     subksp(:)     ! array of local KSP contexts on this processor 
-      PetscInt,allocatable :: blks(:)
+      KSP,allocatable,dimension(:) ::   subksp     ! array of local KSP contexts on this processor 
+      PetscInt,allocatable,dimension(:) :: blks
       character(len=80)    :: outputString
    
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -73,38 +73,31 @@ program main
           v =-1.0; i = Ii/n; j = Ii - i*n
           if (i>0) then
             JJ = Ii - n
-            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr)
-            CHKERRA(ierr)
+            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
           endif
           
           if (i<m-1) then
             JJ = Ii + n
-            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr)
-            CHKERRA(ierr)
+            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
           endif
       
           if (j>0) then
             JJ = Ii - 1
-            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr)
-            CHKERRA(ierr)
+            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
           endif
       
           if (j<n-1) then
             JJ = Ii + 1
-            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr)
-            CHKERRA(ierr)
+            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
           endif
           
           v=4.0
-          call MatSetValues(A,1,Ii,1,Ii,v,ADD_VALUES,ierr)
-          CHKERRA(ierr)
+          call MatSetValues(A,1,Ii,1,Ii,v,ADD_VALUES,ierr);CHKERRA(ierr)
           
         enddo
      
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-      CHKERRA(ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
-      CHKERRA(ierr)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
 
       ! Create parallel vectors
 
@@ -200,10 +193,6 @@ program main
 
         call PCBJacobiGetSubKSP(myPc,nlocal,first,PETSC_NULL_KSP,ierr)
 
-        
-
-
-  
         call PCBJacobiGetSubKSP(myPc,nlocal,first,PETSC_NULL_KSP,ierr)
         allocate(subksp(nlocal))
         call PCBJacobiGetSubKSP(myPc,nlocal,first,subksp,ierr)
@@ -211,26 +200,26 @@ program main
 
         ! Loop over the local blocks, setting various KSP options for each block
         
-        do i=1,nlocal
+        do i=0,nlocal-1
           
-          call KSPGetPC(subksp(i),subpc,ierr)
+          call KSPGetPC(subksp(i+1),subpc,ierr)
           
-          if (PETSC_FALSE) then
+          if (myRank>0) then
             
-            if (mod(i,2)==0) then 
+            if (mod(i,2)==1) then 
               call PCSetType(subpc,PCILU,ierr); CHKERRA(ierr)
               
             else
               call PCSetType(subpc,PCNONE,ierr); CHKERRA(ierr)
-              call KSPSetType(subksp(i),KSPBCGS,ierr); CHKERRA(ierr)
-              call KSPSetTolerances(subksp(i),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
+              call KSPSetType(subksp(i+1),KSPBCGS,ierr); CHKERRA(ierr)
+              call KSPSetTolerances(subksp(i+1),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
               CHKERRA(ierr)
             endif
             
           else 
             call PCSetType(subpc,PCJACOBI,ierr); CHKERRA(ierr)
-            call KSPSetType(subksp(i),KSPBCGS,ierr); CHKERRA(ierr)
-            call KSPSetTolerances(subksp(i),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
+            call KSPSetType(subksp(i+1),KSPGMRES,ierr); CHKERRA(ierr)
+            call KSPSetTolerances(subksp(i+1),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
             CHKERRA(ierr)
           endif
           
