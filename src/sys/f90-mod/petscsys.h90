@@ -192,6 +192,16 @@
         integer, intent(in) :: event
         integer, intent(out) :: ierr
       end subroutine PetscLogEventEnd
+
+      subroutine PetscLogStagePop(ierr)
+        integer, intent(out) :: ierr
+      end subroutine PetscLogStagePop
+
+      subroutine PetscLogStagePush(s,ierr)
+       use petscsysdef
+       PetscLogStage, intent(in) :: s
+       integer, intent(out) :: ierr
+      end subroutine PetscLogStagePush
       end Interface
 
 #if defined(PETSC_USE_LOG)
