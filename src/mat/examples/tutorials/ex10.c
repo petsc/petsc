@@ -41,7 +41,7 @@ int main(int argc,char **args)
   ierr = PetscViewerCreate(PETSC_COMM_WORLD,&fd);CHKERRQ(ierr);
   ierr = PetscViewerSetType(fd,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerSetFromOptions(fd);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(NULL,NULL,"-viewer_format",PetscViewerFormats,(PetscEnum*)&format,&flg);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-viewer_format",PetscViewerFormats,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscViewerPushFormat(fd,format);CHKERRQ(ierr);}
   ierr = PetscViewerFileSetMode(fd,FILE_MODE_READ);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(fd,file);CHKERRQ(ierr);
