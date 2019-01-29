@@ -44,16 +44,7 @@
           character(*) :: str
           PetscErrorCode :: ierr
         end Subroutine PetscObjectQueryFunction
-        Subroutine PetscBinaryWrite(fd,p,n,ty,istemp,ierr)
-          use petscsysdef
-          integer :: fd
-          type(*) :: p
-          integer :: n
-          PetscDataType :: ty
-          PetscBool :: istemp
-          PetscErrorCode :: ierr
-        End Subroutine
-        end Interface
+      end Interface
 #endif
 
       Interface 
