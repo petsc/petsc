@@ -135,7 +135,7 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsView(o,v,ierr)
-          use petscdef
+          use petscsysdef
           PetscOptions, intent(in) :: o
           PetscViewer,  intent(in) :: v
           PetscErrorCode, intent(out) :: ierr
