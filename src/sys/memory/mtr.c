@@ -344,6 +344,11 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
     *result = NULL;
     PetscFunctionReturn(0);
   }
+  /* Realloc with NULL = malloc */
+  if (!*result) {
+    ierr = PetscTrMallocDefault(len,lineno,function,filename,result);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   if (TRdebugLevel) {ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);}
 
