@@ -7,10 +7,8 @@ program main
       
       implicit none
       PetscErrorCode     :: ierr
-      character(len=256) :: version
       PetscInt           :: major,minor,subminor
       character(len=256) :: outputString
-      integer            :: myLength
       
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 
