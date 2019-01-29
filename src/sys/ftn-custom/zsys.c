@@ -2,16 +2,18 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define chkmemfortran_             CHKMEMFORTRAN
-#define petscoffsetfortran_        PETSCOFFSETFORTRAN
-#define petscobjectstateincrease_  PETSCOBJECTSTATEINCREASE
+#define chkmemfortran_              CHKMEMFORTRAN
+#define petscoffsetfortran_         PETSCOFFSETFORTRAN
+#define petscobjectstateincrease_   PETSCOBJECTSTATEINCREASE
 #define petscobjectcomposefunction_ PETSCOBJECTCOMPOSEFUNCTION
+#define petscobjectqueryfunction_   PETSCOBJECTQUERYFUNCTION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscoffsetfortran_        petscoffsetfortran
-#define chkmemfortran_             chkmemfortran
-#define flush__                    flush_
-#define petscobjectstateincrease_  petscobjectstateincrease
+#define petscoffsetfortran_         petscoffsetfortran
+#define chkmemfortran_              chkmemfortran
+#define flush__                     flush_
+#define petscobjectstateincrease_   petscobjectstateincrease
 #define petscobjectcomposefunction_ petscobjectcomposefunction
+#define petscobjectqueryfunction_   petscobjectqueryfunction
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
@@ -66,5 +68,13 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectcomposefunction_(PetscObject *obj, ch
 
   FIXCHARNOMALLOC(name,len,c1);
   *ierr = PetscObjectComposeFunction(*obj,name,**fptr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscobjectqueryfunction_(PetscObject *obj, char* name PETSC_MIXED_LEN(len), void (**fptr)(void), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *c1;
+
+  FIXCHARNOMALLOC(name,len,c1);
+  *ierr = PetscObjectQueryFunction(*obj,name,fptr);
 }
 
