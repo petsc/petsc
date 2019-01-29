@@ -281,7 +281,7 @@
          PetscErrorCode ierr
        end subroutine
 
-       subroutine VecLoad(a,b,z)
+       subroutine VecLoad(a,b,ierr)
          use petscvecdef
          Vec a
          PetscViewer b
