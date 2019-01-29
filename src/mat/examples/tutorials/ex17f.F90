@@ -15,7 +15,7 @@ implicit none
   PetscInt   ::     rstart,rend
   PetscInt,pointer,dimension(:) ::   emptyranks,bigranks,cols
   PetscScalar,pointer,dimension(:) :: vals
-  PetscInt, parameter :: &
+  PetscInt :: &
     nbigranks   = 10, &
     nemptyranks = 10
   PetscMPIInt   ::  rank,sizef
