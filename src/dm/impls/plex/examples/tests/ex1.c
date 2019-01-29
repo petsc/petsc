@@ -568,6 +568,24 @@ int main(int argc, char **argv)
     nsize : 4
     args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -simplex2tensor -dm_plex_check_symmetry -dm_plex_check_faces unknown -dm_plex_check_skeleton unknown -dm_view -interpolate -test_shape -petscpartitioner_type simple
 
+  # Gmsh2/Gmsh4 ascii/binary reader tests
+  test:
+    suffix: gmsh_3d_ascii_v2
+    output_file: output/ex1_gmsh_3d.out
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh2 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+  test:
+    suffix: gmsh_3d_ascii_v4
+    output_file: output/ex1_gmsh_3d.out
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh4 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+  test:
+    suffix: gmsh_3d_binary_v2
+    output_file: output/ex1_gmsh_3d.out
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh2 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+  test:
+    suffix: gmsh_3d_binary_v4
+    output_file: output/ex1_gmsh_3d.out
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh4 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+
   # Fluent mesh reader tests
   test:
     suffix: fluent_0
