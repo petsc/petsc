@@ -1,7 +1,7 @@
 
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
-PETSC_INTERN PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat;
   Vec            in,out;
