@@ -286,14 +286,12 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 /* Create particle RHS Functions */
 static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec V,Vec Xres,void *ctx)
 {
-  DM                dm;
   const PetscScalar *v;
   PetscScalar       *xres;
   PetscInt          Np, p;
   PetscErrorCode    ierr;
+
   PetscFunctionBeginUser;
-  
-  
   ierr = VecGetArray(Xres,&xres);CHKERRQ(ierr);
   ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
   ierr = VecGetLocalSize(Xres, &Np);CHKERRQ(ierr);
@@ -310,13 +308,11 @@ static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec V,Vec Xres,void *ctx)
 
 static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
 {
-  DM                dm;
   AppCtx*           user = (AppCtx*)ctx;
   const PetscScalar *x;
   PetscInt          Np, p;
   PetscScalar       *vres;
   PetscErrorCode    ierr; 
-
 
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
@@ -363,7 +359,6 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
   PetscErrorCode    ierr;
   const PetscScalar *u;
   PetscReal         dt;
-  PetscScalar       energy,menergy;
   PetscInt          p, Np;
   AppCtx*           user = (AppCtx*)ctx;
 
@@ -378,7 +373,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Energy: %g\n",(double) (u[p*2+1]*u[p*2+1]+user->omega*user->omega*u[p*2]*u[p*2])/2.);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Modified energy: %g\n", (double) (u[p*2+1]*u[p*2+1]+user->omega*user->omega*u[p*2]*u[p*2]-user->omega*user->omega*dt*u[p*2]*u[p*2+1])/2.);CHKERRQ(ierr);
     }
-    
+
     ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -388,7 +383,7 @@ int main(int argc,char **argv)
 {
   TS              ts;            /* nonlinear solver */
   IS              is1,is2;
-  PetscReal       ftime   = 0.1, KE, PE, Etotal;
+  PetscReal       ftime   = 0.1;
   PetscInt        locsize, p, Np;
   Vec             f;              /* swarm vector */
   MPI_Comm        comm;
@@ -448,7 +443,7 @@ int main(int argc,char **argv)
 
     ierr = PetscPrintf(comm,"The particle solution for (xp, vp) at time %.6lf is [%g %g]\n",(double)ftime,fkin[p*2],fkin[p*2+1]);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"The exact solution for (xp, vp) at time %.6lf is [%g %g]\n",(double)ftime,(double) (p+0.2)*PetscCosReal(user.omega*ftime),(double) -(p+0.2)*user.omega*PetscSinReal(user.omega*ftime));CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Exact System Energy: %g\n", (double) .5*64*64*(p+0.2)*(p+0.2));
+    ierr = PetscPrintf(comm,"Exact Particle Energy: %g\n", (double) .5*64*64*(p+0.2)*(p+0.2));
   
   }
   ierr = VecRestoreArrayRead(f,&fkin);CHKERRQ(ierr);
@@ -465,7 +460,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-     requires: !single !complex
+     requires: triangle !single !complex
    test:
      args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 -monitor
    test:
