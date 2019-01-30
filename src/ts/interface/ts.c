@@ -6967,8 +6967,6 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 /*@C
    TSMonitorSPSwarmSolution - Graphically displays phase plots of DMSwarm particles on a scatter plot
 
-   Collective on TS
-
    Input Parameters:
 +  ts - the TS context
 .  step - current time-step

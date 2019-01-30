@@ -269,7 +269,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
     }
   }
   
-  /* Set initial conditions for multiple particles in an orbiting system */
+  /* Set initial conditions for multiple particles in an orbiting system  in format xp, yp, vxp, vyp */
   for (p = 0; p < Np*Ncell; ++p) {
     initialConditions[p*2*dim+0*dim+0] = p+1;
     initialConditions[p*2*dim+0*dim+1] = 0;
@@ -383,7 +383,7 @@ int main(int argc,char **argv)
 {
   TSConvergedReason reason;
   const PetscScalar *endVals;
-  PetscReal         ftime   = 10., vx, vy;
+  PetscReal         ftime   = 1., vx, vy;
   PetscInt          locSize, p, d, dim, Np, steps, *idx1, *idx2;
   Vec               f;             
   TS                ts;            
@@ -440,7 +440,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.0001);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,100000);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -474,12 +474,12 @@ int main(int argc,char **argv)
      requires: triangle !single !complex
    test:
      suffix: bsi1
-     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 -ts_monitor_sp_swarm
    test:
      suffix: bsi2
-     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 2
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 2 -ts_monitor_sp_swarm
    test:
      suffix: euler 
-     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_type euler
+     args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_type euler -ts_monitor_sp_swarm
 
 TEST*/
