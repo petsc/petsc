@@ -183,6 +183,13 @@
        integer, intent(out) :: ierr
       end subroutine PetscLogEventRegister
 
+      subroutine PetscLogStageRegister(name,stage,ierr)
+       use petscsysdef
+       character(len=*), intent(in) :: name
+       PetscLogStage, intent(out) :: stage
+       integer, intent(out) :: ierr
+      end subroutine PetscLogStageRegister
+
       subroutine PetscLogEventBegin(event,ierr)
         integer, intent(in) :: event
         integer, intent(out) :: ierr
