@@ -1,0 +1,450 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 4
+  1-cells: 5
+  2-cells: 2
+Labels:
+  Face Sets: 1 strata with value/size (1 (4))
+  marker: 1 strata with value/size (1 (8))
+  depth: 3 strata with value/size (0 (4), 1 (5), 2 (2))
+  DMSWARM_PIC: Using method CellDM->LocatePoints
+  DMSWARM_PIC: Using method CellDM->GetNeigbors
+DM Object: Particles 1 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 2 
+  buffer             = 0 
+  allocated          = 2 
+  nfields registered = 6 
+    [  0]     DMSwarm_pid : Mem. usage       = 1.60e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  1]    DMSwarm_rank : Mem. usage       = 8.00e-06 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  2] DMSwarmPIC_coor : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 2 
+                            atomic size      = 16 [full block, bs=2]
+                            atomic size/item = 8 
+    [  3]  DMSwarm_cellid : Mem. usage       = 8.00e-06 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  4]             w_q : Mem. usage       = 1.60e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  5]      kinematics : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 2 
+                            atomic size      = 16 [full block, bs=2]
+                            atomic size/item = 8 
+  Total mem. usage                           = 1.12e-04 (MB) (collective)
+Energy: 81.92
+Modified energy: 81.92
+Energy: 2949.12
+Modified energy: 2949.12
+Energy: 81.9167
+Modified energy: 81.92
+Energy: 2949.
+Modified energy: 2949.12
+Energy: 81.9134
+Modified energy: 81.92
+Energy: 2948.88
+Modified energy: 2949.12
+Energy: 81.9102
+Modified energy: 81.92
+Energy: 2948.77
+Modified energy: 2949.12
+Energy: 81.9072
+Modified energy: 81.92
+Energy: 2948.66
+Modified energy: 2949.12
+Energy: 81.9043
+Modified energy: 81.92
+Energy: 2948.56
+Modified energy: 2949.12
+Energy: 81.9018
+Modified energy: 81.92
+Energy: 2948.46
+Modified energy: 2949.12
+Energy: 81.8995
+Modified energy: 81.92
+Energy: 2948.38
+Modified energy: 2949.12
+Energy: 81.8976
+Modified energy: 81.92
+Energy: 2948.31
+Modified energy: 2949.12
+Energy: 81.8961
+Modified energy: 81.92
+Energy: 2948.26
+Modified energy: 2949.12
+Energy: 81.8949
+Modified energy: 81.92
+Energy: 2948.22
+Modified energy: 2949.12
+Energy: 81.8941
+Modified energy: 81.92
+Energy: 2948.19
+Modified energy: 2949.12
+Energy: 81.8938
+Modified energy: 81.92
+Energy: 2948.18
+Modified energy: 2949.12
+Energy: 81.8939
+Modified energy: 81.92
+Energy: 2948.18
+Modified energy: 2949.12
+Energy: 81.8944
+Modified energy: 81.92
+Energy: 2948.2
+Modified energy: 2949.12
+Energy: 81.8954
+Modified energy: 81.92
+Energy: 2948.23
+Modified energy: 2949.12
+Energy: 81.8967
+Modified energy: 81.92
+Energy: 2948.28
+Modified energy: 2949.12
+Energy: 81.8985
+Modified energy: 81.92
+Energy: 2948.34
+Modified energy: 2949.12
+Energy: 81.9005
+Modified energy: 81.92
+Energy: 2948.42
+Modified energy: 2949.12
+Energy: 81.9029
+Modified energy: 81.92
+Energy: 2948.51
+Modified energy: 2949.12
+Energy: 81.9056
+Modified energy: 81.92
+Energy: 2948.6
+Modified energy: 2949.12
+Energy: 81.9085
+Modified energy: 81.92
+Energy: 2948.71
+Modified energy: 2949.12
+Energy: 81.9116
+Modified energy: 81.92
+Energy: 2948.82
+Modified energy: 2949.12
+Energy: 81.9149
+Modified energy: 81.92
+Energy: 2948.94
+Modified energy: 2949.12
+Energy: 81.9182
+Modified energy: 81.92
+Energy: 2949.05
+Modified energy: 2949.12
+Energy: 81.9215
+Modified energy: 81.92
+Energy: 2949.18
+Modified energy: 2949.12
+Energy: 81.9249
+Modified energy: 81.92
+Energy: 2949.3
+Modified energy: 2949.12
+Energy: 81.9281
+Modified energy: 81.92
+Energy: 2949.41
+Modified energy: 2949.12
+Energy: 81.9312
+Modified energy: 81.92
+Energy: 2949.52
+Modified energy: 2949.12
+Energy: 81.9342
+Modified energy: 81.92
+Energy: 2949.63
+Modified energy: 2949.12
+Energy: 81.9369
+Modified energy: 81.92
+Energy: 2949.73
+Modified energy: 2949.12
+Energy: 81.9393
+Modified energy: 81.92
+Energy: 2949.81
+Modified energy: 2949.12
+Energy: 81.9414
+Modified energy: 81.92
+Energy: 2949.89
+Modified energy: 2949.12
+Energy: 81.9432
+Modified energy: 81.92
+Energy: 2949.95
+Modified energy: 2949.12
+Energy: 81.9445
+Modified energy: 81.92
+Energy: 2950.
+Modified energy: 2949.12
+Energy: 81.9455
+Modified energy: 81.92
+Energy: 2950.04
+Modified energy: 2949.12
+Energy: 81.9461
+Modified energy: 81.92
+Energy: 2950.06
+Modified energy: 2949.12
+Energy: 81.9462
+Modified energy: 81.92
+Energy: 2950.06
+Modified energy: 2949.12
+Energy: 81.9459
+Modified energy: 81.92
+Energy: 2950.05
+Modified energy: 2949.12
+Energy: 81.9452
+Modified energy: 81.92
+Energy: 2950.03
+Modified energy: 2949.12
+Energy: 81.9441
+Modified energy: 81.92
+Energy: 2949.99
+Modified energy: 2949.12
+Energy: 81.9425
+Modified energy: 81.92
+Energy: 2949.93
+Modified energy: 2949.12
+Energy: 81.9407
+Modified energy: 81.92
+Energy: 2949.86
+Modified energy: 2949.12
+Energy: 81.9384
+Modified energy: 81.92
+Energy: 2949.78
+Modified energy: 2949.12
+Energy: 81.9359
+Modified energy: 81.92
+Energy: 2949.69
+Modified energy: 2949.12
+Energy: 81.9331
+Modified energy: 81.92
+Energy: 2949.59
+Modified energy: 2949.12
+Energy: 81.9301
+Modified energy: 81.92
+Energy: 2949.48
+Modified energy: 2949.12
+Energy: 81.9269
+Modified energy: 81.92
+Energy: 2949.37
+Modified energy: 2949.12
+Energy: 81.9236
+Modified energy: 81.92
+Energy: 2949.25
+Modified energy: 2949.12
+Energy: 81.9203
+Modified energy: 81.92
+Energy: 2949.13
+Modified energy: 2949.12
+Energy: 81.9169
+Modified energy: 81.92
+Energy: 2949.01
+Modified energy: 2949.12
+Energy: 81.9136
+Modified energy: 81.92
+Energy: 2948.89
+Modified energy: 2949.12
+Energy: 81.9105
+Modified energy: 81.92
+Energy: 2948.78
+Modified energy: 2949.12
+Energy: 81.9074
+Modified energy: 81.92
+Energy: 2948.67
+Modified energy: 2949.12
+Energy: 81.9046
+Modified energy: 81.92
+Energy: 2948.56
+Modified energy: 2949.12
+Energy: 81.902
+Modified energy: 81.92
+Energy: 2948.47
+Modified energy: 2949.12
+Energy: 81.8997
+Modified energy: 81.92
+Energy: 2948.39
+Modified energy: 2949.12
+Energy: 81.8978
+Modified energy: 81.92
+Energy: 2948.32
+Modified energy: 2949.12
+Energy: 81.8962
+Modified energy: 81.92
+Energy: 2948.26
+Modified energy: 2949.12
+Energy: 81.895
+Modified energy: 81.92
+Energy: 2948.22
+Modified energy: 2949.12
+Energy: 81.8942
+Modified energy: 81.92
+Energy: 2948.19
+Modified energy: 2949.12
+Energy: 81.8938
+Modified energy: 81.92
+Energy: 2948.18
+Modified energy: 2949.12
+Energy: 81.8939
+Modified energy: 81.92
+Energy: 2948.18
+Modified energy: 2949.12
+Energy: 81.8944
+Modified energy: 81.92
+Energy: 2948.2
+Modified energy: 2949.12
+Energy: 81.8953
+Modified energy: 81.92
+Energy: 2948.23
+Modified energy: 2949.12
+Energy: 81.8966
+Modified energy: 81.92
+Energy: 2948.28
+Modified energy: 2949.12
+Energy: 81.8983
+Modified energy: 81.92
+Energy: 2948.34
+Modified energy: 2949.12
+Energy: 81.9003
+Modified energy: 81.92
+Energy: 2948.41
+Modified energy: 2949.12
+Energy: 81.9027
+Modified energy: 81.92
+Energy: 2948.5
+Modified energy: 2949.12
+Energy: 81.9054
+Modified energy: 81.92
+Energy: 2948.59
+Modified energy: 2949.12
+Energy: 81.9083
+Modified energy: 81.92
+Energy: 2948.7
+Modified energy: 2949.12
+Energy: 81.9114
+Modified energy: 81.92
+Energy: 2948.81
+Modified energy: 2949.12
+Energy: 81.9146
+Modified energy: 81.92
+Energy: 2948.92
+Modified energy: 2949.12
+Energy: 81.9179
+Modified energy: 81.92
+Energy: 2949.04
+Modified energy: 2949.12
+Energy: 81.9213
+Modified energy: 81.92
+Energy: 2949.17
+Modified energy: 2949.12
+Energy: 81.9246
+Modified energy: 81.92
+Energy: 2949.29
+Modified energy: 2949.12
+Energy: 81.9278
+Modified energy: 81.92
+Energy: 2949.4
+Modified energy: 2949.12
+Energy: 81.931
+Modified energy: 81.92
+Energy: 2949.52
+Modified energy: 2949.12
+Energy: 81.9339
+Modified energy: 81.92
+Energy: 2949.62
+Modified energy: 2949.12
+Energy: 81.9366
+Modified energy: 81.92
+Energy: 2949.72
+Modified energy: 2949.12
+Energy: 81.9391
+Modified energy: 81.92
+Energy: 2949.81
+Modified energy: 2949.12
+Energy: 81.9412
+Modified energy: 81.92
+Energy: 2949.88
+Modified energy: 2949.12
+Energy: 81.943
+Modified energy: 81.92
+Energy: 2949.95
+Modified energy: 2949.12
+Energy: 81.9444
+Modified energy: 81.92
+Energy: 2950.
+Modified energy: 2949.12
+Energy: 81.9455
+Modified energy: 81.92
+Energy: 2950.04
+Modified energy: 2949.12
+Energy: 81.946
+Modified energy: 81.92
+Energy: 2950.06
+Modified energy: 2949.12
+Energy: 81.9462
+Modified energy: 81.92
+Energy: 2950.06
+Modified energy: 2949.12
+Energy: 81.946
+Modified energy: 81.92
+Energy: 2950.05
+Modified energy: 2949.12
+Energy: 81.9453
+Modified energy: 81.92
+Energy: 2950.03
+Modified energy: 2949.12
+Energy: 81.9442
+Modified energy: 81.92
+Energy: 2949.99
+Modified energy: 2949.12
+Energy: 81.9427
+Modified energy: 81.92
+Energy: 2949.94
+Modified energy: 2949.12
+Energy: 81.9408
+Modified energy: 81.92
+Energy: 2949.87
+Modified energy: 2949.12
+Energy: 81.9386
+Modified energy: 81.92
+Energy: 2949.79
+Modified energy: 2949.12
+Energy: 81.9361
+Modified energy: 81.92
+Energy: 2949.7
+Modified energy: 2949.12
+Energy: 81.9334
+Modified energy: 81.92
+Energy: 2949.6
+Modified energy: 2949.12
+Energy: 81.9304
+Modified energy: 81.92
+Energy: 2949.49
+Modified energy: 2949.12
+Energy: 81.9272
+Modified energy: 81.92
+Energy: 2949.38
+Modified energy: 2949.12
+Energy: 81.9239
+Modified energy: 81.92
+Energy: 2949.26
+Modified energy: 2949.12
+Energy: 81.9206
+Modified energy: 81.92
+Energy: 2949.14
+Modified energy: 2949.12
+Energy: 81.9172
+Modified energy: 81.92
+Energy: 2949.02
+Modified energy: 2949.12
+Energy: 81.9139
+Modified energy: 81.92
+Energy: 2948.9
+Modified energy: 2949.12
+The particle solution for (xp, vp) at time 0.100000 is [0.19863 -1.49183]
+The exact solution for (xp, vp) at time 0.100000 is [0.198637 -1.49183]
+Exact Particle Energy: 81.92
+The particle solution for (xp, vp) at time 0.100000 is [1.19178 -8.95099]
+The exact solution for (xp, vp) at time 0.100000 is [1.19182 -8.95098]
+Exact Particle Energy: 2949.12
