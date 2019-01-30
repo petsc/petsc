@@ -471,7 +471,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-     requires: !single !complex
+     requires: triangle !single !complex
    test:
      suffix: bsi1
      args: -dim 2 -faces 1 -particlesPerCell 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order 2 -ts_basicsymplectic_type 1 
