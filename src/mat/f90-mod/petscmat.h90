@@ -146,6 +146,14 @@
           integer z
         end subroutine
 
+        subroutine MatSeqBAIJSetPreallocation(a,b,c,d,z)
+          use petscmatdef
+          Mat a
+          PetscInt b,c
+          PetscInt d(*)
+          integer z
+        end subroutine
+
         subroutine MatMPIAIJSetPreallocation(a,b,c,d,e,z)
           use petscmatdef
           Mat a
@@ -751,6 +759,12 @@
       use petscmatdef
        integer, intent(in) :: a ! MPI_comm
        MatPartitioning, intent(out) ::  b
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningDestroy(a,ierr)
+      use petscmatdef
+       MatPartitioning, intent(in) ::  a
        PetscErrorCode,intent(out) :: ierr
       end subroutine
 
