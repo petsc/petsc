@@ -45,7 +45,8 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.
 
-   Developer Note: Since this is an error handler it cannot call CHKERRQ(); thus we just return if an error is detected.
+   Developer Note:
+   Since this is an error handler it cannot call CHKERRQ(); thus we just return if an error is detected.
 
    Concepts: emacs^going to on error
    Concepts: error handler^going to line in emacs
