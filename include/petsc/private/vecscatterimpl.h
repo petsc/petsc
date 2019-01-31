@@ -295,7 +295,7 @@ struct _VecScatterOps {
   PetscErrorCode (*setup)(VecScatter);
   PetscErrorCode (*view)(VecScatter,PetscViewer);
   PetscErrorCode (*viewfromoptions)(VecScatter,const char prefix[],const char name[]);
-  PetscErrorCode (*remap)(VecScatter,PetscInt *,PetscInt*);
+  PetscErrorCode (*remap)(VecScatter,const PetscInt *,const PetscInt*);
   PetscErrorCode (*getmerged)(VecScatter,PetscBool *);
 };
 
