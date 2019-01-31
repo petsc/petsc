@@ -24,6 +24,7 @@ typedef struct {
   char          *mataij_jname;
   char          *mataij_aname;
   char          *mataij_cname;
+  PetscBool     mataij_names_set;
 } PetscViewer_HDF5;
 
 struct _n_HDF5ReadCtx {
@@ -335,6 +336,7 @@ PetscErrorCode  PetscViewerHDF5SetAIJNames_HDF5(PetscViewer viewer, const char i
   ierr = PetscStrallocpy(jname,&hdf5->mataij_jname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(aname,&hdf5->mataij_aname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(cname,&hdf5->mataij_cname);CHKERRQ(ierr);
+  hdf5->mataij_names_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -353,7 +355,8 @@ PetscErrorCode  PetscViewerHDF5SetAIJNames_HDF5(PetscViewer viewer, const char i
   Level: advanced
 
   Notes:
-  Current defaults are (iname, jname, aname, cname) = ("jc", "ir", "data", "MATLAB_sparse") so that MAT files can be readily loaded. 
+  Current defaults are (iname, jname, aname, cname) = ("i", "j", "a", "ncols").
+  For PetscViewerFormat PETSC_VIEWER_HDF5_MAT they are ("jc", "ir", "data", "MATLAB_sparse") so that MAT files can be loaded.
 
 .seealso: MatLoad(), PetscViewerCreate(), PetscViewerSetType(), PETSCVIEWERHDF5, PetscViewerHDF5GetAIJNames()
 @*/
@@ -400,7 +403,8 @@ PetscErrorCode  PetscViewerHDF5GetAIJNames_HDF5(PetscViewer viewer, const char *
   Level: advanced
 
   Notes:
-  Current defaults are (iname, jname, aname, cname) = ("jc", "ir", "data", "MATLAB_sparse") so that MAT files can be readily loaded. 
+  Current defaults are (iname, jname, aname, cname) = ("i", "j", "a", "ncols").
+  For PetscViewerFormat PETSC_VIEWER_HDF5_MAT they are ("jc", "ir", "data", "MATLAB_sparse") so that MAT files can be loaded.
 
 .seealso: MatLoad(), PetscViewerCreate(), PetscViewerSetType(), PETSCVIEWERHDF5, PetscViewerHDF5SetAIJNames()
 @*/
@@ -415,6 +419,22 @@ PetscErrorCode  PetscViewerHDF5GetAIJNames(PetscViewer viewer, const char *iname
   PetscValidPointer(aname,4);
   PetscValidPointer(cname,5);
   ierr = PetscUseMethod(viewer,"PetscViewerHDF5GetAIJNames_C",(PetscViewer,const char*[],const char*[],const char*[],const char*[]),(viewer,iname,jname,aname,cname));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerSetUp_HDF5(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  if (!hdf5->mataij_names_set) {
+    if (viewer->format == PETSC_VIEWER_HDF5_MAT) {
+      ierr = PetscViewerHDF5SetAIJNames_HDF5(viewer,"jc","ir","data","MATLAB_sparse");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerHDF5SetAIJNames_HDF5(viewer,"i","j","a","ncols");CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -441,17 +461,18 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   v->data                = (void*) hdf5;
   v->ops->destroy        = PetscViewerDestroy_HDF5;
   v->ops->setfromoptions = PetscViewerSetFromOptions_HDF5;
+  v->ops->setup          = PetscViewerSetUp_HDF5;
   v->ops->flush          = 0;
   hdf5->btype            = (PetscFileMode) -1;
   hdf5->filename         = 0;
   hdf5->timestep         = -1;
   hdf5->groups           = NULL;
 
-  /* ir and jc are deliberately swapped as MATLAB uses column-major format */
-  ierr = PetscStrallocpy("jc",  &hdf5->mataij_iname);CHKERRQ(ierr);
-  ierr = PetscStrallocpy("ir",  &hdf5->mataij_jname);CHKERRQ(ierr);
-  ierr = PetscStrallocpy("data",&hdf5->mataij_aname);CHKERRQ(ierr);
-  ierr = PetscStrallocpy("MATLAB_sparse", &hdf5->mataij_cname);CHKERRQ(ierr);
+  hdf5->mataij_iname     = NULL;
+  hdf5->mataij_jname     = NULL;
+  hdf5->mataij_aname     = NULL;
+  hdf5->mataij_cname     = NULL;
+  hdf5->mataij_names_set = PETSC_FALSE;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_HDF5);CHKERRQ(ierr);
