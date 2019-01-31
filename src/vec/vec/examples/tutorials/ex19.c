@@ -117,7 +117,7 @@ int main(int argc,char **argv)
 /*TEST
 
      build:
-       requires: hdf5 !complex
+       requires: hdf5
 
      test:
        nsize: 1
