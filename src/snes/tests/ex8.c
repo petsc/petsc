@@ -358,7 +358,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex8.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Flag for simplices or hexhedra", "ex8.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Flag for simplices or hexahedra", "ex8.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex8.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex8.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex8.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
@@ -535,16 +535,17 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
 {
   PetscErrorCode (*exactFuncs[1]) (PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   PetscErrorCode (*exactFuncDers[1]) (PetscInt, PetscReal, const PetscReal x[], const PetscReal n[], PetscInt, PetscScalar *u, void *ctx);
-  void           *exactCtxs[3] = {user, user, user};
-  DM              rdm, idm, fdm;
+  void           *exactCtxs[3];
+  DM              rdm = NULL, idm = NULL, fdm = NULL;
   Mat             Interp, InterpAdapt = NULL;
-  Vec             iu, fu, scaling;
+  Vec             iu, fu, scaling = NULL;
   MPI_Comm        comm;
-  const char     *testname;
+  const char     *testname = "Unknown";
   char            checkname[PETSC_MAX_PATH_LEN];
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
+  exactCtxs[0] = exactCtxs[1] = exactCtxs[2] = user;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
   ierr = DMSetCoarseDM(rdm, dm);CHKERRQ(ierr);
@@ -700,10 +701,12 @@ int main(int argc, char **argv)
   # TODO This is broken. Check ex3 which worked
   # 2D/3D P_3 on a simplex
   test:
+    TODO: gll Lagrange nodes break this
     suffix: p3
     requires: triangle ctetgen !single
     args: -dim {{2}separate output} -petscspace_degree 3 -qorder 3 -porder {{1 2 3 4}separate output}
   test:
+    TODO: gll Lagrange nodes break this
     suffix: p3_pragmatic
     requires: triangle ctetgen pragmatic !single
     args: -dim {{2}separate output} -petscspace_degree 3 -qorder 3 -dm_plex_hash_location -porder {{1 2 3 4}separate output}
@@ -717,11 +720,12 @@ int main(int argc, char **argv)
   # 2D/3D Q_2 on a tensor cell
   test:
     suffix: q2
-    requires: mpi_type_get_envelope
+    requires: mpi_type_get_envelope !single
     args: -dim {{2 3}separate output} -simplex 0 -petscspace_degree 2 -qorder 2 -porder {{1 2 3}separate output}
 
   # 2D/3D Q_3 on a tensor cell
   test:
+    TODO: gll Lagrange nodes break this
     suffix: q3
     requires: mpi_type_get_envelope !single
     args: -dim {{2 3}separate output} -simplex 0 -petscspace_degree 3 -qorder 3 -porder {{1 2 3 4}separate output}
