@@ -269,6 +269,7 @@ PETSC_EXTERN PetscLogEvent DM_CreateRestriction;
 PETSC_EXTERN PetscLogEvent DM_CreateInjection;
 PETSC_EXTERN PetscLogEvent DM_CreateMatrix;
 PETSC_EXTERN PetscLogEvent DM_Load;
+PETSC_EXTERN PetscLogEvent DM_AdaptInterpolator;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);

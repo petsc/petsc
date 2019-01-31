@@ -41,13 +41,17 @@ typedef struct {
     This data structure is shared by all the levels.
 */
 typedef struct {
-  PCMGType         am;                        /* Multiplicative, additive or full */
-  PetscInt         cyclesperpcapply;          /* Number of cycles to use in each PCApply(), multiplicative only*/
-  PCMGGalerkinType galerkin;                  /* use Galerkin process to compute coarser matrices */
-  PetscBool        usedmfornumberoflevels;    /* sets the number of levels by getting this information out of the DM */
-  PetscBool        adaptInterpolation;        /* flag to adapt the interpolator based upon the coarseSpace */
-  PetscBool        usePoly;                   /* flag to use polynomials for the coarse space, rather than harmonics */
-  PetscInt         Nc;                        /* The number of vectors in coarseSpace */
+  PCMGType            am;                     /* Multiplicative, additive or full */
+  PetscInt            cyclesperpcapply;       /* Number of cycles to use in each PCApply(), multiplicative only*/
+  PetscInt            maxlevels;              /* total number of levels allocated */
+  PCMGGalerkinType    galerkin;               /* use Galerkin process to compute coarser matrices */
+  PetscBool           usedmfornumberoflevels; /* sets the number of levels by getting this information out of the DM */
+
+  PetscBool           adaptInterpolation;     /* flag to adapt the interpolator based upon the coarseSpace */
+  PCMGCoarseSpaceType coarseSpaceType;        /* Type of coarse space: polynomials, harmonics, eigenvectors, ... */
+  PetscInt            Nc;                     /* The number of vectors in coarseSpace */
+  PetscInt            eigenvalue;             /* Key for storing the eigenvalue as a scalar in the eigenvector Vec */
+  PetscBool           mespMonitor;            /* flag to monitor the multilevel eigensolver */
 
   PetscInt     nlevels;
   PC_MG_Levels **levels;

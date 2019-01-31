@@ -31,6 +31,7 @@ PETSC_EXTERN const char *const PCPARMSLocalTypes[];
 PETSC_EXTERN const char *const PCMGTypes[];
 PETSC_EXTERN const char *const PCMGCycleTypes[];
 PETSC_EXTERN const char *const PCMGGalerkinTypes[];
+PETSC_EXTERN const char *const PCMGCoarseSpaceTypes[];
 PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN const char *const PCPatchConstructTypes[];
 PETSC_EXTERN const char *const PCDeflationTypes[];

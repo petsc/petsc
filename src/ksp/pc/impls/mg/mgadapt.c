@@ -1,6 +1,74 @@
 #include <petsc/private/pcmgimpl.h>       /*I "petscksp.h" I*/
 #include <petscdm.h>
 
+static PetscErrorCode xfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt k = *((PetscInt *) ctx), c;
+
+  for (c = 0; c < Nc; ++c) u[c] = PetscPowRealInt(coords[0], k);
+  return 0;
+}
+static PetscErrorCode yfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt k = *((PetscInt *) ctx), c;
+
+  for (c = 0; c < Nc; ++c) u[c] = PetscPowRealInt(coords[1], k);
+  return 0;
+}
+static PetscErrorCode zfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt k = *((PetscInt *) ctx), c;
+
+  for (c = 0; c < Nc; ++c) u[c] = PetscPowRealInt(coords[2], k);
+  return 0;
+}
+static PetscErrorCode xsin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt k = *((PetscInt *) ctx), c;
+
+  for (c = 0; c < Nc; ++c) u[c] = PetscSinReal(PETSC_PI*(k+1)*coords[0]);
+  return 0;
+}
+static PetscErrorCode ysin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt k = *((PetscInt *) ctx), c;
+
+  for (c = 0; c < Nc; ++c) u[c] = PetscSinReal(PETSC_PI*(k+1)*coords[1]);
+  return 0;
+}
+static PetscErrorCode zsin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt k = *((PetscInt *) ctx), c;
+
+  for (c = 0; c < Nc; ++c) u[c] = PetscSinReal(PETSC_PI*(k+1)*coords[2]);
+  return 0;
+}
+
+PetscErrorCode DMSetBasisFunction_Internal(PetscInt Nf, PetscBool usePoly, PetscInt dir, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *))
+{
+  PetscInt f;
+
+  PetscFunctionBeginUser;
+  for (f = 0; f < Nf; ++f) {
+    if (usePoly) {
+      switch (dir) {
+      case 0: funcs[f] = xfunc;break;
+      case 1: funcs[f] = yfunc;break;
+      case 2: funcs[f] = zfunc;break;
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No function for direction %D", dir);
+      }
+    } else {
+      switch (dir) {
+      case 0: funcs[f] = xsin;break;
+      case 1: funcs[f] = ysin;break;
+      case 2: funcs[f] = zsin;break;
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No function for direction %D", dir);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCMGCreateCoarseSpaceDefault_Private(PC pc, PetscInt level, PCMGCoarseSpaceType cstype, DM dm, KSP ksp, PetscInt Nc, const Vec initialGuess[], Vec **coarseSpace)
 {
   PetscBool         poly = cstype == PCMG_POLYNOMIAL ? PETSC_TRUE : PETSC_FALSE;

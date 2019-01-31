@@ -824,4 +824,8 @@ PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec,
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                      PetscReal, const PetscReal [], PetscInt, const PetscScalar[], PetscScalar []), InsertMode, Vec);
+
+
+PETSC_EXTERN PetscErrorCode DMAdaptInterpolator(DM, DM, Mat, KSP, PetscInt, Vec[], Vec[], Mat *, void *);
+PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, PetscInt, Vec[], Vec[], PetscReal);
 #endif

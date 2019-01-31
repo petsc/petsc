@@ -597,7 +597,6 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include <petsc/private/dmimpl.h>
 #include <petsc/private/kspimpl.h>
 
 /*
@@ -789,8 +788,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
-  /* Create key for storing eigenvalues inside eigenvectors */
-  if (mg->adaptInterpolation && mg->coarseSpaceType == PCMG_EIGENVECTOR && mg->eigenvalue < 0) {ierr = PetscObjectComposedDataRegister(&mg->eigenvalue);CHKERRQ(ierr);}
 
   /* Adapt interpolation matrices */
   if (mg->adaptInterpolation) {
@@ -912,31 +909,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
     pc->failedreason = PC_SUBPC_ERROR;
   }
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
-
-  /* Adapt interpolation matrices */
-  if (mg->adaptInterpolation) {
-    Mat InterpAdapt;
-
-    /* Create coarse modes */
-    if (!mglevels[0]->coarseSpace) {
-      DM dm;
-      mg->Nc = mg->Nc ? mg->Nc : 6;
-      for (i = 0; i < n; ++i) {
-        ierr = KSPGetDM(mglevels[i]->smoothu, &dm);CHKERRQ(ierr);
-        ierr = PCMGCreateCoarseSpace_Private(pc, dm, mglevels[i]->smoothu, mg->Nc, &mglevels[i]->coarseSpace);CHKERRQ(ierr);
-      }
-    }
-    /* Adapt interpolators */
-    for (i = 1; i < n; ++i) {
-      DM dm, cdm;
-
-      ierr = KSPGetDM(mglevels[i-1]->smoothu, &cdm);CHKERRQ(ierr);
-      ierr = KSPGetDM(mglevels[i]->smoothu, &dm);CHKERRQ(ierr);
-      ierr = DMAdaptInterpolator(cdm, dm, mglevels[i]->interpolate, mglevels[i]->smoothu, mg->Nc, mglevels[i]->coarseSpace, mglevels[i-1]->coarseSpace, &InterpAdapt, pc);CHKERRQ(ierr);
-      ierr = PCMGSetInterpolation(pc, i, InterpAdapt);CHKERRQ(ierr);
-      ierr = MatDestroy(&InterpAdapt);CHKERRQ(ierr);
-    }
-  }
 
   /*
      Dump the interpolation/restriction matrices plus the
