@@ -6975,7 +6975,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 -  dctx - the TSMonitorSPCtx object that contains all the options for the monitoring, this is created with TSMonitorSPCtxCreate()
 
    Options Database:
-.   -ts_monitor_sp_solution
+.   -ts_monitor_sp_swarm
 
    Level: intermediate
 
@@ -7018,12 +7018,14 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
     y[p] = yy[2*dim*p+1]; 
   }
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
-
+  
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
     ierr = PetscDrawSPDraw(ctx->sp,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);
   }
+
+  ierr = PetscFree2(x, y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
