@@ -292,6 +292,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
 
   if (snes->jacobian) {         /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
     ierr = SNESComputeJacobian(snes,snes->vec_sol,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    SNESCheckJacobianDomainerror(snes);
   }
   if (ms->norms) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */

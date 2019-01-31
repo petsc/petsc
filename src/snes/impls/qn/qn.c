@@ -358,6 +358,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    SNESCheckJacobianDomainerror(snes);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   }
 
@@ -479,6 +480,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       }
       if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
         ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+        SNESCheckJacobianDomainerror(snes);
       }
     }
     /* general purpose update */

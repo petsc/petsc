@@ -55,6 +55,7 @@ typedef struct {
   PetscMPIInt rank;    /* rank of processor */
   PetscMPIInt size;    /* size of communicator */
   PetscReal   h;       /* mesh spacing */
+  PetscBool   sjerr;   /* if or not to test jacobian domain error */
 } ApplicationCtx;
 
 /*
@@ -95,11 +96,14 @@ int main(int argc,char **argv)
   PetscReal      abstol,rtol,stol,norm;
   PetscBool      flg;
 
+
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRQ(ierr);
   ierr  = PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL);CHKERRQ(ierr);
   ctx.h = 1.0/(N-1);
+  ctx.sjerr = PETSC_FALSE;
+  ierr  = PetscOptionsGetBool(NULL,NULL,"-test_jacobian_domain_error",&ctx.sjerr,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -288,6 +292,11 @@ int main(int argc,char **argv)
   ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  if (ctx.sjerr) {
+    SNESType       snestype;
+    ierr = SNESGetType(snes,&snestype);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"SNES Type %s\n",snestype);CHKERRQ(ierr);
+  }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -429,6 +438,10 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
   DM             da = user->da;
 
   PetscFunctionBeginUser;
+  if (user->sjerr) {
+    ierr = SNESSetJacobianDomainError(snes);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   /*
      Get pointer to vector data
   */
@@ -703,5 +716,41 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
       requires: double !complex !single
       nsize: 2
       args: -nox -snes_test_jacobian  -snes_test_jacobian_view
+
+   test:
+      suffix: 6
+      requires: double !complex !single
+      nsize: 4
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_check_jacobian_domain_error 1
+
+   test:
+      suffix: 7
+      requires: double !complex !single
+      nsize: 4
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type newtontr -snes_check_jacobian_domain_error 1
+
+   test:
+      suffix: 8
+      requires: double !complex !single
+      nsize: 4
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type vinewtonrsls -snes_check_jacobian_domain_error 1
+
+   test:
+      suffix: 9
+      requires: double !complex !single
+      nsize: 4
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type vinewtonssls -snes_check_jacobian_domain_error 1
+
+   test:
+      suffix: 10
+      requires: double !complex !single
+      nsize: 4
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type qn -snes_qn_scale_type jacobian -snes_check_jacobian_domain_error 1
+
+   test:
+      suffix: 11
+      requires: double !complex !single
+      nsize: 4
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type ms -snes_check_jacobian_domain_error 1
 
 TEST*/

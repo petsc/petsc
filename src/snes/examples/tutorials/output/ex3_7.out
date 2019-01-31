@@ -1,0 +1,6 @@
+atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
+iter = 0,SNES Function norm 5.41468
+Nonlinear solve did not converge due to DIVERGED_JACOBIAN_DOMAIN iterations 0
+Number of SNES iterations = 0
+Norm of error 0.938801 Iterations 0
+SNES Type newtontr
