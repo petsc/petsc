@@ -104,6 +104,45 @@ static PetscErrorCode VecScatterView_SF(VecScatter vscat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/* VecScatterRemap provides a light way to slightly modify a VecScatter. Suppose the input vscat scatters
+   x[i] to y[j], tomap gives a plan to change vscat to scatter x[tomap[i]] to y[j].
+ */
+static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,const PetscInt *frommap)
+{
+  VecScatter_SF  *data = (VecScatter_SF *)vscat->data;
+  PetscSF        sfs[2],sf;
+  PetscInt       i,j;
+  PetscBool      ident;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  sfs[0] = data->sf;
+  sfs[1] = data->lsf;
+
+  if (tomap) {
+    /* check if it is an identity map. If it is, do nothing */
+    ident = PETSC_TRUE;
+    for (i=0; i<data->sf->nleaves; i++) {if (i != tomap[i]) {ident = PETSC_FALSE; break; } }
+    if (ident) PetscFunctionReturn(0);
+
+    for (j=0; j<2; j++) {
+      sf   = sfs[j];
+      ierr = PetscSFSetUp(sf);CHKERRQ(ierr); /* to bulid sf->rmine if SetUp is not yet called */
+      if (!sf->mine) { /* the old SF uses contiguous ilocal. After the remapping, it may not be true */
+        ierr = PetscMalloc1(sf->nleaves,&sf->mine);CHKERRQ(ierr);
+        ierr = PetscMemcpy(sf->mine,tomap,sizeof(PetscInt)*sf->nleaves);CHKERRQ(ierr);
+        sf->mine_alloc = sf->mine;
+      } else {
+        for (i=0; i<sf->nleaves; i++)             sf->mine[i]   = tomap[sf->mine[i]];
+      }
+      for (i=0; i<sf->roffset[sf->nranks]; i++)   sf->rmine[i]  = tomap[sf->rmine[i]];
+    }
+  }
+
+  if (frommap) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
 {
   VecScatter_SF  *data;
@@ -270,6 +309,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
   vscat->data         = (void*)data;
   vscat->ops->begin   = VecScatterBegin_SF;
   vscat->ops->end     = VecScatterEnd_SF;
+  vscat->ops->remap   = VecScatterRemap_SF;
   vscat->ops->copy    = VecScatterCopy_SF;
   vscat->ops->destroy = VecScatterDestroy_SF;
   vscat->ops->view    = VecScatterView_SF;

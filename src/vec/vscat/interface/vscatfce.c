@@ -311,54 +311,57 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt fromma
   if (tomap)   PetscValidIntPointer(tomap,2);
   if (frommap) PetscValidIntPointer(frommap,3);
 
-  to     = (VecScatter_MPI_General*)scat->todata;
-  from   = (VecScatter_MPI_General*)scat->fromdata;
-  ssto   = (VecScatter_Seq_Stride*)scat->todata;
-  sgto   = (VecScatter_Seq_General*)scat->todata;
-  sgfrom = (VecScatter_Seq_General*)scat->fromdata;
+  if (scat->ops->remap) {
+    ierr = (*scat->ops->remap)(scat,tomap,frommap);CHKERRQ(ierr);
+  } else {
+    to     = (VecScatter_MPI_General*)scat->todata;
+    from   = (VecScatter_MPI_General*)scat->fromdata;
+    ssto   = (VecScatter_Seq_Stride*)scat->todata;
+    sgto   = (VecScatter_Seq_General*)scat->todata;
+    sgfrom = (VecScatter_Seq_General*)scat->fromdata;
 
-  /* remap indices from where we take/read data */
-  if (tomap) {
-    if (to->format == VEC_SCATTER_MPI_TOALL) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not for to all scatter");
-    } else if (to->format == VEC_SCATTER_MPI_GENERAL) {
-      /* handle off processor parts */
-      for (i=0; i<to->starts[to->n]; i++) to->indices[i] = tomap[to->indices[i]];
+    /* remap indices from where we take/read data */
+    if (tomap) {
+      if (to->format == VEC_SCATTER_MPI_TOALL) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not for to all scatter");
+      } else if (to->format == VEC_SCATTER_MPI_GENERAL) {
+        /* handle off processor parts */
+        for (i=0; i<to->starts[to->n]; i++) to->indices[i] = tomap[to->indices[i]];
 
-      /* handle local part */
-      for (i=0; i<to->local.n; i++) to->local.vslots[i] = tomap[to->local.vslots[i]];
+        /* handle local part */
+        for (i=0; i<to->local.n; i++) to->local.vslots[i] = tomap[to->local.vslots[i]];
 
-      /* the memcpy optimizations in vecscatter was based on index patterns it has.
-         They need to be recalculated when indices are changed (remapped).
-       */
-      ierr = VecScatterMemcpyPlanDestroy_PtoP(to,from);CHKERRQ(ierr);
-      ierr = VecScatterMemcpyPlanCreate_PtoP(to,from);CHKERRQ(ierr);
-    } else if (sgfrom->format == VEC_SCATTER_SEQ_GENERAL) {
-      /* remap indices*/
-      for (i=0; i<sgfrom->n; i++) sgfrom->vslots[i] = tomap[sgfrom->vslots[i]];
-      /* update optimizations, which happen when it is a Stride1toSG, SGtoStride1 or SGToSG vecscatter */
-      if (ssto->format == VEC_SCATTER_SEQ_STRIDE && ssto->step == 1) {
-        PetscInt tmp[2];
-        tmp[0] = 0; tmp[1] = sgfrom->n;
-        ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
-        ierr = VecScatterMemcpyPlanCreate_Index(1,tmp,sgfrom->vslots,1/*bs*/,&sgfrom->memcpy_plan);CHKERRQ(ierr);
-      } else if (sgto->format == VEC_SCATTER_SEQ_GENERAL) {
-        ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);;
-        ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
-        ierr = VecScatterMemcpyPlanCreate_SGToSG(1/*bs*/,sgto,sgfrom);CHKERRQ(ierr);
-      }
-    } else if (sgfrom->format == VEC_SCATTER_SEQ_STRIDE) {
-      VecScatter_Seq_Stride *ssto = (VecScatter_Seq_Stride*)sgfrom;
-
-      /* if the remapping is the identity and stride is identity then skip remap */
-      if (ssto->step == 1 && ssto->first == 0) {
-        for (i=0; i<ssto->n; i++) {
-          if (tomap[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+        /* the memcpy optimizations in vecscatter was based on index patterns it has.
+           They need to be recalculated when indices are changed (remapped).
+         */
+        ierr = VecScatterMemcpyPlanDestroy_PtoP(to,from);CHKERRQ(ierr);
+        ierr = VecScatterMemcpyPlanCreate_PtoP(to,from);CHKERRQ(ierr);
+      } else if (sgfrom->format == VEC_SCATTER_SEQ_GENERAL) {
+        /* remap indices*/
+        for (i=0; i<sgfrom->n; i++) sgfrom->vslots[i] = tomap[sgfrom->vslots[i]];
+        /* update optimizations, which happen when it is a Stride1toSG, SGtoStride1 or SGToSG vecscatter */
+        if (ssto->format == VEC_SCATTER_SEQ_STRIDE && ssto->step == 1) {
+          PetscInt tmp[2];
+          tmp[0] = 0; tmp[1] = sgfrom->n;
+          ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
+          ierr = VecScatterMemcpyPlanCreate_Index(1,tmp,sgfrom->vslots,1/*bs*/,&sgfrom->memcpy_plan);CHKERRQ(ierr);
+        } else if (sgto->format == VEC_SCATTER_SEQ_GENERAL) {
+          ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);;
+          ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
+          ierr = VecScatterMemcpyPlanCreate_SGToSG(1/*bs*/,sgto,sgfrom);CHKERRQ(ierr);
         }
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
-  }
+      } else if (sgfrom->format == VEC_SCATTER_SEQ_STRIDE) {
+        VecScatter_Seq_Stride *ssto = (VecScatter_Seq_Stride*)sgfrom;
 
+        /* if the remapping is the identity and stride is identity then skip remap */
+        if (ssto->step == 1 && ssto->first == 0) {
+          for (i=0; i<ssto->n; i++) {
+            if (tomap[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+          }
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+    }
+  }
   if (frommap) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
 
   /*
