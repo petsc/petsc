@@ -91,6 +91,10 @@
 #define matgetlocalsize01_               MATGETLOCALSIZE01
 #define matsetnullspace_                 MATSETNULLSPACE
 #define matgetownershiprange_            MATGETOWNERSHIPRANGE
+#define matgetownershiprange00_          MATGETOWNERSHIPRANGE00
+#define matgetownershiprange10_          MATGETOWNERSHIPRANGE10
+#define matgetownershiprange01_          MATGETOWNERSHIPRANGE01
+#define matgetownershiprange10_          MATGETOWNERSHIPRANGE11
 #define matgetownershipis_               MATGETOWNERSHIPIS
 #define matgetownershiprangecolumn_      MATGETOWNERSHIPRANGECOLUMN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -180,6 +184,10 @@
 #define matgetlocalsize01_               matgetlocalsize01
 #define matsetnullspace_                 matsetnullspace
 #define matgetownershiprange_            matgetownershiprange
+#define matgetownershiprange00_          matgetownershiprange00
+#define matgetownershiprange10_          matgetownershiprange10
+#define matgetownershiprange01_          matgetownershiprange01
+#define matgetownershiprange11_          matgetownershiprange11
 #define matgetownershipis_               matgetownershipis
 #define matgetownershiprangecolumn_      matgetownershiprangecolumn
 #endif
