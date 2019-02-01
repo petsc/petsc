@@ -239,14 +239,11 @@ static const char *PetscErrorStrings[] = {
   /*86 */ "Unknown type. Check for miss-spelling or missing package: http://www.mcs.anl.gov/petsc/documentation/installation.html#external",
   /*87 */ "MPI library at runtime is not compatible with MPI used at compile time",
   /*88 */ "Error in system call",
-  /*89 */ "Object Type not set: http://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset"
+  /*89 */ "Object Type not set: http://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset",
   /*90 */ "  ",
   /*   */ "  ",
-  /*   */ "  ",
-  /*93 */ "See http://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
-  /*   */ "You cannot overwrite this option since that will conflict with other previously set options",
-  /*   */ "  ",
-  /*96 */ "  ",
+  /*92 */ "See http://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
+  /*93 */ "You cannot overwrite this option since that will conflict with other previously set options",
 };
 
 /*@C
