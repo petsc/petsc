@@ -199,6 +199,34 @@ PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange_(Mat *mat,PetscInt *m,Pets
   *ierr = MatGetOwnershipRange(*mat,m,n);
 }
 
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange00_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange10_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange01_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange11_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
 PETSC_EXTERN void PETSC_STDCALL  matgetownershipis_(Mat *mat,IS *m,IS *n, int *ierr )
 {
   CHKFORTRANNULLOBJECT(m);

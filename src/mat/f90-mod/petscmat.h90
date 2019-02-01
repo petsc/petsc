@@ -752,30 +752,39 @@
        Mat,intent(in) :: a ! Mat
        PetscInt :: b,c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
-       end subroutine
+      end subroutine
       subroutine MatGetOwnershipRange10(a,b,c,ierr)
        use petscmatdef
        Mat,intent(in) :: a ! Mat
        PetscInt,dimension(:) :: b ! PetscInt
        PetscInt              :: c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
-       end subroutine
+      end subroutine
       subroutine MatGetOwnershipRange01(a,b,c,ierr)
        use petscmatdef
        Mat,intent(in) :: a ! Mat
        PetscInt              :: b ! PetscInt
        PetscInt,dimension(:) :: c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
-       end subroutine
+      end subroutine
       subroutine MatGetOwnershipRange11(a,b,c,ierr)
        use petscmatdef
        Mat,intent(in) :: a ! Mat
        PetscInt,dimension(:) :: b,c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
-       end subroutine
+      end subroutine
       end interface
 
       interface
+      subroutine MatGetFactor(m,t,ft,f,ierr)
+      use petscmatdef
+       Mat, intent(in) ::  m
+       character(*), intent(in) :: t
+       MatFactorType,intent(in) :: ft
+       Mat, intent(out) ::  f
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
       subroutine MatPartitioningCreate(a,b,ierr)
       use petscmatdef
        integer, intent(in) :: a ! MPI_comm
