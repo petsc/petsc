@@ -941,7 +941,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char datas
   if (datatype == PETSC_STRING) {
     size_t len;
     PetscStackCallHDF5Return(atype,H5Aget_type,(attribute));
-    PetscStackCallHDF5Return(len,H5Tget_size,(atype));
+    PetscStackCall("H5Tget_size",len = H5Tget_size(atype));
     PetscStackCallHDF5(H5Tclose,(atype));
     ierr = PetscMalloc((len+1) * sizeof(char *), &value);CHKERRQ(ierr);
   }
@@ -1009,7 +1009,8 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   const char     rootGroupName[] = "/";
   hid_t          h5;
   PetscBool      exists=PETSC_FALSE;
-  PetscInt       i,n;
+  PetscInt       i;
+  int            n;
   char           **hierarchy;
   char           buf[PETSC_MAX_PATH_LEN]="";
   PetscErrorCode ierr;
