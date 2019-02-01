@@ -1127,6 +1127,18 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF sf,PetscInt *niranks,const PetscMPIInt **iranks,const PetscInt **ioffset,const PetscInt **irootloc)
+{
+  PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
+
+  PetscFunctionBegin;
+  if (niranks)  *niranks  = bas->niranks;
+  if (iranks)   *iranks   = bas->iranks;
+  if (ioffset)  *ioffset  = bas->ioffset;
+  if (irootloc) *irootloc = bas->irootloc;
+  PetscFunctionReturn(0);
+}
+
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
 {
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
@@ -1146,6 +1158,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
   sf->ops->ReduceEnd       = PetscSFReduceEnd_Basic;
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Basic;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Basic;
+  sf->ops->GetLeafRanks    = PetscSFGetLeafRanks_Basic;
 
   ierr = PetscNewLog(sf,&bas);CHKERRQ(ierr);
   sf->data = (void*)bas;
