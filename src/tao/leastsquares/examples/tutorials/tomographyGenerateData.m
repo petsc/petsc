@@ -15,24 +15,7 @@ NTau = ceil(sqrt(sum(WSz.^2))); NTau = NTau + rem(NTau-Ny,2); % number of discre
 SSz = [NTheta, NTau];
 L = XTM_Tensor_XH(WSz, NTheta, NTau);
 S = reshape(L*WGT(:), NTheta, NTau);
-%%
-  A = [0.81  0.91  0.28  0.96  0.96
-       0.91  0.63  0.55  0.16  0.49
-       0.13  0.10  0.96  0.97  0.80];
-  xGT = [0;0;1;0;0];
-  b = [0.28; 0.55; 0.96];
-  D = [-1 1 0 0 0;
-       0 -1 1 0 0;
-       0 0 -1 1 0;
-       0 0 0 -1 1];
-PetscBinaryWrite('cs1SparseMatrixA', A, 'precision', 'float64'); % do NOT need to convert A to sparse, always write as sparse matrix
-[A2, b2, xGT2] = PetscBinaryRead('cs1Data_A_b_xGT');
-% PetscBinaryWrite('cs1VecB', b, 'precision', 'float64');   
-% PetscBinaryWrite('cs1VecXGT', xGT, 'precision', 'float64');
-% PetscBinaryWrite('cs1Data_A_b_xGT', A, b, xGT, 'precision', 'float64');
-% A2 = PetscBinaryRead('cs1SparseMatrixA');
-% b2 = PetscBinaryRead('cs1VecB');
-% xGT2 = PetscBinaryRead('cs1VecXGT');
+
 %% Save data in petsc binary format, b = A*x
 % save to one file
 PetscBinaryWrite('tomographyData_A_b_xGT', L, S(:), WGT(:), 'precision', 'float64');
@@ -45,28 +28,52 @@ difference(xGT2, WGT(:));
 % PetscBinaryWrite('tomographyVecXGT', WGT(:), 'precision', 'float64');
 % PetscBinaryWrite('tomographyVecB', S(:), 'precision', 'float64');
 
-%% Below we shows the matlab reconstruction using 
+%% Compare Groundtruth vs BRGN reconstruction vs (optional TwIST result)
+% Ground truth and model
+[A, b, xGT] = PetscBinaryRead('tomographyData_A_b_xGT');
+Nx = sqrt(numel(xGT)); Ny = Nx; WSz = [Ny, Nx];
+WGT = reshape(xGT, WSz);
+% petsc reconstruction
+xRecBRGN = PetscBinaryRead('tomographyResult_x');    
+WRecBRGN = reshape(xRecBRGN, WSz);
+% Prepare for figure
+WAll = {WGT, WRecBRGN};
+titleAll = {'Ground Truth', sprintf('Reconstruction-Tao-brgn-nonnegative,psnr=%.2fdB', psnr(WRecBRGN, WGT))};
+  
+% May add the Matlab reconstruction using TwIST to comparison
 isDemoMatLabReconstruction = 1; % 1/0
 if isDemoMatLabReconstruction  
-    %% Show W and S
-    figNo = 10;
-    figure(figNo+1); imagesc(WGT); axis image; title('Object Ground Truth');
-    figure(figNo+2); imagesc(S); axis image; title('Sinogram');
-    tilefigs;
-    %% Reconstruction with solver from XH, with L1/TV regularizer.
+    % Reconstruction with solver from XH, with L1/TV regularizer.
     % Need 100/500/1000+ iteration to get good/very good/excellent result with small regularizer.
     % choose small maxSVDofA to make sure initial step size is not too small. 1.8e-6 and 1e-6 could make big difference for n=2 case
     regType = 'L1'; % 'TV' or 'L1' % TV is better and cleaner for phantom example        
-    regWt = 1e-8*max(WGT(:)); % 1e-6 to 1e-8 both good for phantom, use 1e-8 for brain, especically WGT is scaled to maximum of 1 not 40
-    maxIterA = 500; % 100 is not enough
-    maxSVDofA = 1e-6; %svds(L, 1)*1e-4; % multiply by 1e-4 to make sure it is small enough so that first step in TwIST is long enough
-    paraTwist = {'xSz', WSz, 'regFun', regType, 'regWt', regWt, 'isNonNegative', 1, 'maxIterA', maxIterA, 'xGT', WGT, 'maxSVDofA', maxSVDofA};
-    WRec = solveTwist(S, L, paraTwist{:});    
-    figure(figNo+3); W = WRec;  imagesc(W); axis image; title(sprintf('Rec twist, PSNR=%.2fdB, %s, regWt=%.1e, maxIter=%d', difference(W, WGT), regType, regWt, maxIterA));
-    tilefigs;    
-    % comparison of tao-brgn with matlab-twist
-    xRec2 = PetscBinaryRead('tomographyResult_x');
-    WRec2 = reshape(xRec2, Ny, Nx);
-    figure, multAxes(@imagesc, {WGT, WRec2, WRec}); multAxes(@axis, 'image'); linkAxesXYZLimColorView; multAxes(@colorbar);
-    multAxes(@title, {'Ground Truth', sprintf('Reconstruction-Tao-brgn-nonnegative,psnr=%.2fdB', psnr(WRec2, WGT)), sprintf('Reconstruction-Matlab-Twist, psnr=%.2fdB', psnr(WRec, WGT))});
+    regWt = 1e-8*max(WGT(:)); % 1e-6 to 1e-8 both good for phantom, %1e-8*max(WGT(:)) use 1e-8 for brain, especically WGT is scaled to maximum of 1 not 40
+    maxIterA = 500; % 100 is not enough? 500 is
+    maxSVDofA = 1e-6; %svds(A, 1)*1e-4; % multiply by 1e-4 to make sure it is small enough so that first step in TwIST is long enough
+    paraTwist = {'xSz', WSz, 'regFun', regType, 'regWt', regWt, 'isNonNegative', 1, 'maxIterA', maxIterA, 'xGT', xGT, 'maxSVDofA', maxSVDofA, 'tolA', 1e-8};
+    xRecTwist = solveTwist(b, A, paraTwist{:});
+    WRecTwist = reshape(xRecTwist, WSz);
+    WAll = [WAll, {WRecTwist}];
+    titleAll = [titleAll, {sprintf('Reconstruction-Matlab-Twist, psnr=%.2fdB', psnr(WRecTwist, WGT))}];
+end
+%
+% show results
+figure(99); clf; multAxes(@imagesc, WAll); multAxes(@axis, 'image'); linkAxesXYZLimColorView; multAxes(@colorbar);
+multAxes(@title, titleAll);
+
+    
+%% test PetscBinaryWrite() and PetscBinaryRead()
+testPetscBinaryWriteAndRead = 0;
+if testPetscBinaryWriteAndRead
+    A = [0.81  0.91  0.28  0.96  0.96
+        0.91  0.63  0.55  0.16  0.49
+        0.13  0.10  0.96  0.97  0.80];
+    xGT = [0;0;1;0;0];
+    b = [0.28; 0.55; 0.96];
+    D = [-1 1 0 0 0;
+        0 -1 1 0 0;
+        0 0 -1 1 0;
+        0 0 0 -1 1];
+    PetscBinaryWrite('cs1SparseMatrixA', A, 'precision', 'float64'); % do NOT need to convert A to sparse, always write as sparse matrix
+    [A2, b2, xGT2] = PetscBinaryRead('cs1Data_A_b_xGT');
 end

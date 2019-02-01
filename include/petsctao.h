@@ -267,7 +267,9 @@ PETSC_EXTERN PetscErrorCode TaoMonitorDrawCtxCreate(MPI_Comm,const char[],const 
 PETSC_EXTERN PetscErrorCode TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx*);
 
 PETSC_EXTERN PetscErrorCode TaoBRGNGetSubsolver(Tao,Tao *);
-PETSC_EXTERN PetscErrorCode TaoBRGNSetL1RegularizerWeight(Tao,PetscReal);
+PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao,PetscErrorCode (*)(Tao,Vec,PetscReal*,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao,Mat,PetscErrorCode (*)(Tao,Vec,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerWeight(Tao,PetscReal);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao,PetscReal);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao,Mat);
 #endif
