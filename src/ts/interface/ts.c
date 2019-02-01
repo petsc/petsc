@@ -6986,7 +6986,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
   PetscErrorCode    ierr;
   TSMonitorSPCtx    ctx = (TSMonitorSPCtx)dctx;
   const PetscScalar *yy;
-  PetscScalar       *y,*x;
+  PetscReal       *y,*x;
   PetscInt          Np, p, dim=2;
   DM                dm;
 
@@ -7014,8 +7014,8 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
   ierr = PetscMalloc2(Np, &x, Np, &y);CHKERRQ(ierr);
   /* get points from solution vector */
   for (p=0; p<Np; ++p){
-    x[p] = yy[2*dim*p];
-    y[p] = yy[2*dim*p+1]; 
+    x[p] = PetscRealPart(yy[2*dim*p]);
+    y[p] = PetscRealPart(yy[2*dim*p+1]); 
   }
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
   
