@@ -604,7 +604,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscStrncmp(line, "$EndElements", 12, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
 
-    for (i = 0; i < 4; +i++) {
+    for (i = 0; i < 4; ++i) {
       ierr = PetscFree(entities[i]);CHKERRQ(ierr);
     }
 
