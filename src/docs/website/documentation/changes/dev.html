@@ -154,6 +154,8 @@
       </ul>
       <h4>DMPlex:</h4>
       <ul>
+        <li>Reorganized PetscDS handling completely in order to support multiple subdomains. DMSetDS() was removed in
+          favor of DMSetField()+DMCreateDS().</li>
         <li>Added additional PetscSF* return argument to DMPlexGetGatherDM() (made public) and DMPlexGetRedundantDM().</li>
       </ul>
       <h4>PetscViewer:</h4>
