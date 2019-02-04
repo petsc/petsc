@@ -143,6 +143,92 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecScatterGetRemoteCount_SF(const VecScatter vscat,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
+{
+  VecScatter_SF     *data = (VecScatter_SF *)vscat->data;
+  PetscSF           sf = data->sf;
+  PetscInt          nranks,remote_start;
+  PetscMPIInt       myrank;
+  const PetscInt    *offset;
+  const PetscMPIInt *ranks;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&myrank);CHKERRQ(ierr);
+
+  if (send) { ierr = PetscSFGetRanks(sf,&nranks,&ranks,&offset,NULL,NULL);CHKERRQ(ierr); }
+  else { ierr = PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,NULL);CHKERRQ(ierr); }
+
+  if (nranks) {
+    remote_start = (myrank == ranks[0])? 1 : 0;
+    if (num_procs)   *num_procs   = nranks - remote_start;
+    if (num_entries) *num_entries = offset[nranks] - offset[remote_start];
+  } else {
+    if (num_procs)   *num_procs   = 0;
+    if (num_entries) *num_entries = 0;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecScatterGetRemote_SF(const VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  VecScatter_SF     *data = (VecScatter_SF *)vscat->data;
+  PetscSF           sf = data->sf;
+  PetscInt          nranks,remote_start;
+  PetscMPIInt       myrank;
+  const PetscInt    *offset,*location;
+  const PetscMPIInt *ranks;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&myrank);CHKERRQ(ierr);
+
+  if (send) { ierr = PetscSFGetRanks(sf,&nranks,&ranks,&offset,&location,NULL);CHKERRQ(ierr); }
+  else { ierr = PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,&location);CHKERRQ(ierr); }
+
+  if (nranks) {
+    remote_start = (myrank == ranks[0])? 1 : 0;
+    if (n)       *n       = nranks - remote_start;
+    if (starts)  *starts  = &offset[remote_start];
+    if (indices) *indices = location; /* not &location[offset[remote_start]]. Starts[0] may point to the middle of indices[] */
+    if (procs)   *procs   = &ranks[remote_start];
+  } else {
+    if (n)       *n       = 0;
+    if (starts)  *starts  = NULL;
+    if (indices) *indices = NULL;
+    if (procs)   *procs   = NULL;
+  }
+
+  if (bs) *bs = 1;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecScatterGetRemoteOrdered_SF(const VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterGetRemote_SF(vscat,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecScatterRestoreRemote_SF(const VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  PetscFunctionBegin;
+  if (starts)   *starts  = NULL;
+  if (indices)  *indices = NULL;
+  if (procs)    *procs   = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecScatterRestoreRemoteOrdered_SF(const VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = VecScatterRestoreRemote_SF(vscat,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
 {
   VecScatter_SF  *data;
@@ -306,19 +392,24 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
   ierr = PetscSFSetUp(data->sf);CHKERRQ(ierr);
   ierr = PetscSFSetUp(data->lsf);CHKERRQ(ierr);
 
-  vscat->data         = (void*)data;
-  vscat->ops->begin   = VecScatterBegin_SF;
-  vscat->ops->end     = VecScatterEnd_SF;
-  vscat->ops->remap   = VecScatterRemap_SF;
-  vscat->ops->copy    = VecScatterCopy_SF;
-  vscat->ops->destroy = VecScatterDestroy_SF;
-  vscat->ops->view    = VecScatterView_SF;
+  vscat->data                      = (void*)data;
+  vscat->ops->begin                = VecScatterBegin_SF;
+  vscat->ops->end                  = VecScatterEnd_SF;
+  vscat->ops->remap                = VecScatterRemap_SF;
+  vscat->ops->copy                 = VecScatterCopy_SF;
+  vscat->ops->destroy              = VecScatterDestroy_SF;
+  vscat->ops->view                 = VecScatterView_SF;
+  vscat->ops->getremotecount       = VecScatterGetRemoteCount_SF;
+  vscat->ops->getremote            = VecScatterGetRemote_SF;
+  vscat->ops->getremoteordered     = VecScatterGetRemoteOrdered_SF;
+  vscat->ops->restoreremote        = VecScatterRestoreRemote_SF;
+  vscat->ops->restoreremoteordered = VecScatterRestoreRemoteOrdered_SF;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecScatterCreate_SF(VecScatter ctx)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ctx->ops->setup = VecScatterSetUp_SF;

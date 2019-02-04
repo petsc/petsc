@@ -373,6 +373,191 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt fromma
   PetscFunctionReturn(0);
 }
 
+/* Given a parallel VecScatter context, return number of procs and vector entries involved in remote (i.e., off-process) communication
+
+  Input Parameters:
++ ctx   - the context (must be a parallel vecscatter)
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ num_procs   - number of remote processors
+- num_entries - number of vector entries to send or recv
+
+
+  .seealso: VecScatterGetRemote_Private(), VecScatterGetRemoteOrdered_Private()
+
+  Notes:
+  Sometimes PETSc internally needs to use the matrix-vector-multiply vecscatter context for other purposes. The client code
+  usually only uses MPI_Send/Recv. This group of subroutines provides info needed for such uses.
+ */
+PetscErrorCode VecScatterGetRemoteCount_Private(const VecScatter ctx,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
+{
+  VecScatter_MPI_General *vs;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  if (ctx->ops->getremotecount) {
+    ierr = (*ctx->ops->getremotecount)(ctx,send,num_procs,num_entries);CHKERRQ(ierr);
+  } else {
+    vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
+    if (vs->format != VEC_SCATTER_MPI_GENERAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ctx must be a VecScatter_MPI_General");
+    if (num_procs)   *num_procs   = vs->n;
+    if (num_entries) *num_entries = vs->starts[vs->n];
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Given a parallel VecScatter context, return a plan that represents the remote communication.
+   Any output parameter can be NULL.
+
+  Input Parameters:
++ ctx   - the context
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ n        - number of remote processors
+. starts   - starting point in indices for each proc. ATTENTION: starts[0] is not necessarily zero.
+             Therefore, expressions like starts[i+1]-starts[i] and indices[starts[i]+j] work as
+             expected for a CSR structure but buf[starts[i]+j] may be out of range if buf was allocated
+             with length starts[n]-starts[0]. One should use buf[starts[i]-starts[0]+j] instead.
+. indices  - indices of entries to send/recv
+. procs    - ranks of remote processors
+- bs       - block size
+
+  .seealso: VecScatterRestoreRemote_Private(), VecScatterGetRemoteOrdered_Private()
+ */
+PetscErrorCode VecScatterGetRemote_Private(const VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  VecScatter_MPI_General *vs;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  if (ctx->ops->getremote) {
+    ierr = (*ctx->ops->getremote)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  } else {
+    vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
+    if (vs->format != VEC_SCATTER_MPI_GENERAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ctx must be a VecScatter_MPI_General");
+    if (n)       *n       = vs->n;
+    if (indices) *indices = vs->indices;
+    if (starts)  *starts  = vs->starts;
+    if (procs)   *procs   = vs->procs;
+    if (bs)      *bs      = vs->bs;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+/* Given a parallel VecScatter context, return a plan that represents the remote communication. Ranks of remote
+   processors returned in procs must be sorted in ascending order. Any output parameter can be NULL.
+
+  Input Parameters:
++ ctx   - the context
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ n        - number of remote processors
+. starts   - starting point in indices for each proc. ATTENTION: starts[0] is not necessarily zero.
+             Therefore, expressions like starts[i+1]-starts[i] and indices[starts[i]+j] work as
+             expected for a CSR structure but buf[starts[i]+j] may be out of range if buf was allocated
+             with length starts[n]-starts[0]. One should use buf[starts[i]-starts[0]+j] instead.
+. indices  - indices of entries to send/recv
+. procs    - ranks of remote processors
+- bs       - block size
+
+  .seealso: VecScatterRestoreRemoteOrdered_Private(), VecScatterGetRemote_Private()
+
+  Notes:
+  Output parameters like starts, indices must also be adapted according to the sorted ranks.
+ */
+PetscErrorCode VecScatterGetRemoteOrdered_Private(const VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  VecScatter_MPI_General *vs;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  if (ctx->ops->getremoteordered) {
+    ierr = (*ctx->ops->getremoteordered)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  } else {
+    vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
+    if (vs->format != VEC_SCATTER_MPI_GENERAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ctx must be a VecScatter_MPI_General");
+    if (n)       *n       = vs->n;
+    if (indices) *indices = vs->indices;
+    if (starts)  *starts  = vs->starts;
+    if (procs)   *procs   = vs->procs;
+    if (bs)      *bs      = vs->bs;
+  }
+#if defined(PETSC_USE_DEBUG)
+  if (n && procs) {
+    PetscInt i;
+    /* from back to front to also handle cases *n=0 */
+    for (i=*n-1; i>0; i--) { if ((*procs)[i-1] > (*procs)[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"procs[] are not ordered"); }
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+/* Given a parallel VecScatter context, restore the plan returned by VecScatterGetRemote_Private. This gives a chance for
+   an implementation to free memory allocated in the VecScatterGetRemote_Private call.
+
+  Input Parameters:
++ ctx   - the context
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ n        - number of remote processors
+. starts   - starting point in indices for each proc
+. indices  - indices of entries to send/recv
+. procs    - ranks of remote processors
+- bs       - block size
+
+  .seealso: VecScatterGetRemote_Private()
+ */
+PetscErrorCode VecScatterRestoreRemote_Private(const VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  VecScatter_MPI_General *vs;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  if (ctx->ops->restoreremote) {
+    ierr = (*ctx->ops->restoreremote)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  } else {
+    vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
+    if (vs->format != VEC_SCATTER_MPI_GENERAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ctx must be a VecScatter_MPI_General");
+    if (starts)  *starts  = NULL;
+    if (indices) *indices = NULL;
+    if (procs)   *procs   = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Given a parallel VecScatter context, restore the plan returned by VecScatterGetRemoteOrdered_Private. This gives a chance for
+   an implementation to free memory allocated in the VecScatterGetRemoteOrdered_Private call.
+
+  Input Parameters:
++ ctx   - the context
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ n        - number of remote processors
+. starts   - starting point in indices for each proc
+. indices  - indices of entries to send/recv
+. procs    - ranks of remote processors
+- bs       - block size
+
+  .seealso: VecScatterGetRemoteOrdered_Private()
+ */
+PetscErrorCode VecScatterRestoreRemoteOrdered_Private(const VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (ctx->ops->restoreremoteordered) {
+    ierr = (*ctx->ops->restoreremoteordered)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  } else {
+    ierr = VecScatterRestoreRemote_Private(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
  VecScatterGetTypes_Private - Returns the scatter types.
 
