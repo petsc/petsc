@@ -290,7 +290,7 @@ static char *Petscgetline(FILE * f)
     buf   = (char*)realloc((void*)buf,size); /* realloc(NULL,n) is the same as malloc(n) */
     /* Actually do the read. Note that fgets puts a terminal '\0' on the
     end of the string, so we make sure we overwrite this */
-    if (!fgets(buf+len,size,f)) buf[len]=0;
+    if (!fgets(buf+len,1024,f)) buf[len]=0;
     PetscStrlen(buf,&len);
     last = len - 1;
   } while (!feof(f) && buf[last] != '\n' && buf[last] != '\r');
