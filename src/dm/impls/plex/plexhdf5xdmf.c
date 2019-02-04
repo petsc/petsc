@@ -9,7 +9,6 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   Vec             coordinates;
   IS              cells;
   PetscInt        dim, spatialDim, N, numCells, numVertices, numCorners, bs;
-  //hid_t           fileId;
   PetscMPIInt     rank;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
