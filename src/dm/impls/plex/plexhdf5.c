@@ -67,6 +67,49 @@ PetscErrorCode DMSequenceLoad_HDF5_Internal(DM dm, const char *seqname, PetscInt
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCreateCutVertexLabel_Private(DM dm, DMLabel cutLabel, DMLabel *cutVertexLabel)
+{
+  IS              cutcells = NULL;
+  const PetscInt *cutc;
+  PetscInt        cellHeight, vStart, vEnd, cStart, cEnd, c;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (!cutLabel) PetscFunctionReturn(0);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  /* Label vertices that should be duplicated */
+  ierr = DMLabelCreate(PETSC_COMM_SELF, "Cut Vertices", cutVertexLabel);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumIS(cutLabel, 2, &cutcells);CHKERRQ(ierr);
+  if (cutcells) {
+    PetscInt n;
+
+    ierr = ISGetIndices(cutcells, &cutc);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(cutcells, &n);CHKERRQ(ierr);
+    for (c = 0; c < n; ++c) {
+      if ((cutc[c] >= cStart) && (cutc[c] < cEnd)) {
+        PetscInt *closure = NULL;
+        PetscInt  closureSize, cl, value;
+
+        ierr = DMPlexGetTransitiveClosure(dm, cutc[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        for (cl = 0; cl < closureSize*2; cl += 2) {
+          if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) {
+            ierr = DMLabelGetValue(cutLabel, closure[cl], &value);CHKERRQ(ierr);
+            if (value == 1) {
+              ierr = DMLabelSetValue(*cutVertexLabel, closure[cl], 1);CHKERRQ(ierr);
+            }
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm, cutc[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      }
+    }
+    ierr = ISRestoreIndices(cutcells, &cutc);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&cutcells);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM                      dm;
@@ -102,7 +145,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   if (format == PETSC_VIEWER_HDF5_VIZ) {
     /* Output visualization representation */
     PetscInt numFields, f;
-    DMLabel  cutLabel;
+    DMLabel  cutLabel, cutVertexLabel = NULL;
 
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
@@ -123,6 +166,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
         PetscScalar       *suba;
         PetscInt           Nc, gstart, subSize = 0, extSize = 0, subOff = 0, newOff = 0, p;
 
+        ierr = DMPlexCreateCutVertexLabel_Private(dm, cutLabel, &cutVertexLabel);CHKERRQ(ierr);
         ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
         for (p = pStart; p < pEnd; ++p) {
           PetscInt gdof, fdof = 0, val;
@@ -130,7 +174,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
           ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
           if (gdof > 0) {ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);}
           subSize += fdof;
-          ierr = DMLabelGetValue(cutLabel, p, &val);CHKERRQ(ierr);
+          ierr = DMLabelGetValue(cutVertexLabel, p, &val);CHKERRQ(ierr);
           if (val == 1) extSize += fdof;
         }
         ierr = VecCreate(PetscObjectComm((PetscObject) gv), &subv);CHKERRQ(ierr);
@@ -155,7 +199,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
             }
             ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
             for (fc = 0; fc < fdof; ++fc, ++subOff) suba[subOff] = ga[goff+poff+fc - gstart];
-            ierr = DMLabelGetValue(cutLabel, p, &val);CHKERRQ(ierr);
+            ierr = DMLabelGetValue(cutVertexLabel, p, &val);CHKERRQ(ierr);
             if (val == 1) {
               for (fc = 0; fc < fdof; ++fc, ++newOff) suba[subSize+newOff] = ga[goff+poff+fc - gstart];
             }
@@ -163,6 +207,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
         }
         ierr = VecRestoreArrayRead(gv, &ga);CHKERRQ(ierr);
         ierr = VecRestoreArray(subv, &suba);CHKERRQ(ierr);
+        ierr = DMLabelDestroy(&cutVertexLabel);CHKERRQ(ierr);
       } else {
         ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       }
@@ -177,11 +222,8 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       } else {
         ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject) subv, "vector_field_type", PETSC_STRING, "scalar");CHKERRQ(ierr);
       }
-      if (cutLabel) {
-        ierr = VecDestroy(&subv);CHKERRQ(ierr);
-      } else {
-        ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
-      }
+      if (cutLabel) {ierr = VecDestroy(&subv);CHKERRQ(ierr);}
+      else          {ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);}
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
     }
   }
@@ -334,13 +376,13 @@ static PetscErrorCode DMPlexWriteTopology_HDF5_Static(DM dm, IS globalPointNumbe
 
 static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, PetscViewer viewer)
 {
-  DMLabel         cutLabel;
+  DM              cdm;
+  PetscSF         sfPoint;
+  DMLabel         cutLabel, cutVertexLabel = NULL;
   PetscSection    cSection;
-  IS              cellIS, globalVertexNumbers;
-  const PetscInt *gvertex;
+  IS              cellIS, globalVertexNumbers, cutvertices = NULL;
+  const PetscInt *gvertex, *cutverts = NULL;
   PetscInt       *vertices;
-  IS              cutvertices;
-  const PetscInt *cutverts;
   PetscInt        dim, depth, vStart, vEnd, vExtra = 0, v, cellHeight, cStart, cMax, cEnd, cell, conesSize = 0, numCornersLocal = 0, numCorners;
   hid_t           fileId, groupId;
   PetscErrorCode  ierr;
@@ -349,7 +391,8 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, PetscViewe
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(cdm, &cSection);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -376,24 +419,36 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, PetscViewe
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
 
   ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
-  if (cutLabel) {
-    ierr = DMLabelGetStratumIS(cutLabel, 1, &cutvertices);CHKERRQ(ierr);
+  ierr = DMPlexCreateCutVertexLabel_Private(dm, cutLabel, &cutVertexLabel);CHKERRQ(ierr);
+  if (cutVertexLabel) {ierr = DMLabelGetStratumIS(cutVertexLabel, 1, &cutvertices);CHKERRQ(ierr);}
+  if (cutvertices) {
     ierr = ISGetIndices(cutvertices, &cutverts);CHKERRQ(ierr);
     ierr = ISGetLocalSize(cutvertices, &vExtra);CHKERRQ(ierr);
   }
-  ierr = DMPlexGetVertexNumbering(dm, &globalVertexNumbers);CHKERRQ(ierr);
+
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  if (cutLabel) {
+    const PetscInt    *ilocal;
+    const PetscSFNode *iremote;
+    PetscInt           nroots, nleaves;
+
+    ierr = PetscSFGetGraph(sfPoint, &nroots, &nleaves, &ilocal, &iremote);CHKERRQ(ierr);
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject) sfPoint), &sfPoint);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sfPoint, nroots+vExtra, nleaves, ilocal, PETSC_USE_POINTER, iremote, PETSC_USE_POINTER);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject) sfPoint);CHKERRQ(ierr);
+  }
+  ierr = DMPlexCreateNumbering_Internal(dm, vStart, vEnd+vExtra, 0, NULL, sfPoint, &globalVertexNumbers);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfPoint);CHKERRQ(ierr);
   ierr = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
   ierr = PetscMalloc1(conesSize, &vertices);CHKERRQ(ierr);
   for (cell = cStart, v = 0; cell < cEnd; ++cell) {
     PetscInt *closure = NULL;
-    PetscInt  closureSize, Nc = 0, p;
-    PetscBool replace = PETSC_FALSE;
+    PetscInt  closureSize, Nc = 0, p, value = -1;
+    PetscBool replace;
 
-    if (cutLabel) {
-      PetscInt value;
-      ierr = DMLabelGetValue(cutLabel, cell, &value);CHKERRQ(ierr);
-      if (value == 2) replace = PETSC_TRUE;
-    }
+    if (cutLabel) {ierr = DMLabelGetValue(cutLabel, cell, &value);CHKERRQ(ierr);}
+    replace = (value == 2) ? PETSC_TRUE : PETSC_FALSE;
     ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (p = 0; p < closureSize*2; p += 2) {
       if ((closure[p] >= vStart) && (closure[p] < vEnd)) {
@@ -402,20 +457,21 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, PetscViewe
     }
     ierr = DMPlexInvertCell_Internal(dim, Nc, closure);CHKERRQ(ierr);
     for (p = 0; p < Nc; ++p) {
-      const PetscInt gv = gvertex[closure[p] - vStart];
-      vertices[v++] = gv < 0 ? -(gv+1) : gv;
+      PetscInt nv, gv = gvertex[closure[p] - vStart];
+
       if (replace) {
-        PetscInt newv;
-        ierr = PetscFindInt(closure[p], vExtra, cutverts, &newv);CHKERRQ(ierr);
-        if (newv >= 0) vertices[v-1] = vEnd - vStart + newv;
+        ierr = PetscFindInt(closure[p], vExtra, cutverts, &nv);CHKERRQ(ierr);
+        if (nv >= 0) gv = gvertex[vEnd - vStart + nv];
       }
+      vertices[v++] = gv < 0 ? -(gv+1) : gv;
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   }
-  if (cutLabel) {
-    ierr = ISRestoreIndices(cutvertices, &cutverts);CHKERRQ(ierr);
-    ierr = ISDestroy(&cutvertices);CHKERRQ(ierr);
-  }
+  ierr = ISRestoreIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
+  ierr = ISDestroy(&globalVertexNumbers);CHKERRQ(ierr);
+  if (cutvertices) {ierr = ISRestoreIndices(cutvertices, &cutverts);CHKERRQ(ierr);}
+  ierr = ISDestroy(&cutvertices);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&cutVertexLabel);CHKERRQ(ierr);
   if (v != conesSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cell vertices %d != %d", v, conesSize);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, vertices, PETSC_OWN_POINTER, &cellIS);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(cellIS->map, numCorners);CHKERRQ(ierr);
@@ -463,14 +519,15 @@ static PetscErrorCode DMPlexWriteCoordinates_HDF5_Static(DM dm, PetscViewer view
 
 static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscViewer viewer)
 {
-  Vec              coordinates, newcoords;
-  PetscSection     cSection;
+  DM               cdm;
+  Vec              coordinatesLocal, newcoords;
+  PetscSection     cSection, cGlobalSection;
   PetscScalar     *coords, *ncoords;
-  DMLabel          cutLabel;
+  DMLabel          cutLabel, cutVertexLabel = NULL;
   const PetscReal *L;
   const DMBoundaryType *bd;
   PetscReal        lengthScale;
-  PetscInt         vStart, vEnd, vExtra = 0, v, bs, coordSize, dof, off, d;
+  PetscInt         vStart, vEnd, v, bs, N, coordSize, dof, off, d;
   PetscBool        localized, embedded;
   hid_t            fileId, groupId;
   PetscErrorCode   ierr;
@@ -478,48 +535,43 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   PetscFunctionBegin;
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(coordinates, &coordSize);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinatesLocal);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinatesLocal, &bs);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
   if (localized == PETSC_FALSE) PetscFunctionReturn(0);
-  ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
-  if (cutLabel) {
-    IS              vertices;
-    const PetscInt *verts;
-    PetscInt        n;
-
-    ierr = DMLabelGetStratumIS(cutLabel, 1, &vertices);CHKERRQ(ierr);
-    ierr = ISGetIndices(vertices, &verts);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(vertices, &n);CHKERRQ(ierr);
-    for (v = 0; v < n; ++v) {
-      if ((verts[v] >= vStart) && (verts[v] < vEnd)) ++vExtra;
-    }
-    ierr = ISRestoreIndices(vertices, &verts);CHKERRQ(ierr);
-    ierr = ISDestroy(&vertices);CHKERRQ(ierr);
-  }
   ierr = DMGetPeriodicity(dm, NULL, NULL, &L, &bd);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject) coordinates), &newcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(cdm, &cSection);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(cdm, &cGlobalSection);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
+  N    = 0;
+
+  ierr = DMPlexCreateCutVertexLabel_Private(dm, cutLabel, &cutVertexLabel);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &newcoords);CHKERRQ(ierr);
   ierr = PetscSectionGetDof(cSection, vStart, &dof);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "DOF: %D\n", dof);CHKERRQ(ierr);
   embedded  = (PetscBool) (L && dof == 2 && !cutLabel);
-  coordSize = 0;
-  coordSize += dof*vExtra;
+  if (cutVertexLabel) {
+    ierr = DMLabelGetStratumSize(cutVertexLabel, 1, &v);CHKERRQ(ierr);
+    N   += dof*v;
+  }
   for (v = vStart; v < vEnd; ++v) {
-    ierr = PetscSectionGetDof(cSection, v, &dof);CHKERRQ(ierr);
-    if (embedded) coordSize += dof+1;
-    else          coordSize += dof;
+    ierr = PetscSectionGetDof(cGlobalSection, v, &dof);CHKERRQ(ierr);
+    if (dof < 0) continue;
+    if (embedded) N += dof+1;
+    else          N += dof;
   }
   if (embedded) {ierr = VecSetBlockSize(newcoords, bs+1);CHKERRQ(ierr);}
   else          {ierr = VecSetBlockSize(newcoords, bs);CHKERRQ(ierr);}
-  ierr = VecSetSizes(newcoords, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetSizes(newcoords, N, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(newcoords, VECSTANDARD);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecGetArray(newcoords,   &ncoords);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinatesLocal, &coords);CHKERRQ(ierr);
+  ierr = VecGetArray(newcoords,        &ncoords);CHKERRQ(ierr);
   coordSize = 0;
   for (v = vStart; v < vEnd; ++v) {
-    ierr = PetscSectionGetDof(cSection, v, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(cGlobalSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
+    if (dof < 0) continue;
     if (embedded) {
       if ((bd[0] == DM_BOUNDARY_PERIODIC) && (bd[1] == DM_BOUNDARY_PERIODIC)) {
         PetscReal theta, phi, r, R;
@@ -560,33 +612,31 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
         ncoords[coordSize++] =  PetscSinReal(phi) * (R + r * PetscCosReal(phi/2.0));
       } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot handle periodicity in this domain");
     } else {
-      if (cutLabel) {
-        ierr = DMLocalizeCoordinate(dm, &coords[off], PETSC_TRUE, &ncoords[coordSize]);CHKERRQ(ierr);
-        coordSize += dof;
-      } else {
-        for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
-      }
+      for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
     }
   }
-  if (cutLabel) {
+  if (cutVertexLabel) {
     IS              vertices;
     const PetscInt *verts;
     PetscInt        n;
 
-    ierr = DMLabelGetStratumIS(cutLabel, 1, &vertices);CHKERRQ(ierr);
-    ierr = ISGetIndices(vertices, &verts);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(vertices, &n);CHKERRQ(ierr);
-    for (v = 0; v < n; ++v) {
-      if ((verts[v] < vStart) || (verts[v] >= vEnd)) continue;
-      ierr = PetscSectionGetDof(cSection, verts[v], &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(cSection, verts[v], &off);CHKERRQ(ierr);
-      for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d] + ((bd[d] == DM_BOUNDARY_PERIODIC) ? L[d] : 0.0);
+    ierr = DMLabelGetStratumIS(cutVertexLabel, 1, &vertices);CHKERRQ(ierr);
+    if (vertices) {
+      ierr = ISGetIndices(vertices, &verts);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(vertices, &n);CHKERRQ(ierr);
+      for (v = 0; v < n; ++v) {
+        ierr = PetscSectionGetDof(cSection, verts[v], &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(cSection, verts[v], &off);CHKERRQ(ierr);
+        for (d = 0; d < dof; ++d) ncoords[coordSize++] = coords[off+d] + ((bd[d] == DM_BOUNDARY_PERIODIC) ? L[d] : 0.0);
+      }
+      ierr = ISRestoreIndices(vertices, &verts);CHKERRQ(ierr);
+      ierr = ISDestroy(&vertices);CHKERRQ(ierr);
     }
-    ierr = ISRestoreIndices(vertices, &verts);CHKERRQ(ierr);
-    ierr = ISDestroy(&vertices);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecRestoreArray(newcoords,   &ncoords);CHKERRQ(ierr);
+  if (coordSize != N) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatched sizes: %D != %D", coordSize, N);
+  ierr = DMLabelDestroy(&cutVertexLabel);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coordinatesLocal, &coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(newcoords,        &ncoords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newcoords, "vertices");CHKERRQ(ierr);
   ierr = VecScale(newcoords, lengthScale);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/viz");CHKERRQ(ierr);
