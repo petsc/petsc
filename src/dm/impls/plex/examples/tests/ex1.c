@@ -583,6 +583,7 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh2 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
   test:
     suffix: gmsh_3d_binary_v4
+    requires: long64
     output_file: output/ex1_gmsh_3d.out
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh4 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
 
