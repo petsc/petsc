@@ -6131,7 +6131,7 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 }
 
 /* We can easily have a form that takes an IS instead */
-static PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt pEnd, PetscInt shift, PetscInt *globalSize, PetscSF sf, IS *numbering)
+PetscErrorCode DMPlexCreateNumbering_Internal(DM dm, PetscInt pStart, PetscInt pEnd, PetscInt shift, PetscInt *globalSize, PetscSF sf, IS *numbering)
 {
   PetscSection   section, globalSection;
   PetscInt      *numbers, p;
@@ -6173,7 +6173,7 @@ PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0 && !includeHybrid) cEnd = PetscMin(cEnd, cMax);
-  ierr = DMPlexCreateNumbering_Private(dm, cStart, cEnd, 0, NULL, dm->sf, globalCellNumbers);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Internal(dm, cStart, cEnd, 0, NULL, dm->sf, globalCellNumbers);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6212,7 +6212,7 @@ PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybr
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, NULL, NULL, NULL, &vMax);CHKERRQ(ierr);
   if (vMax >= 0 && !includeHybrid) vEnd = PetscMin(vEnd, vMax);
-  ierr = DMPlexCreateNumbering_Private(dm, vStart, vEnd, 0, NULL, dm->sf, globalVertexNumbers);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Internal(dm, vStart, vEnd, 0, NULL, dm->sf, globalVertexNumbers);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6282,7 +6282,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
     PetscInt pStart, pEnd, gsize;
 
     ierr = DMPlexGetDepthStratum(dm, gdepths[d], &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMPlexCreateNumbering_Private(dm, pStart, pEnd, shift, &gsize, dm->sf, &nums[d]);CHKERRQ(ierr);
+    ierr = DMPlexCreateNumbering_Internal(dm, pStart, pEnd, shift, &gsize, dm->sf, &nums[d]);CHKERRQ(ierr);
     shift += gsize;
   }
   ierr = ISConcatenate(PetscObjectComm((PetscObject) dm), depth+1, nums, globalPointNumbers);CHKERRQ(ierr);
