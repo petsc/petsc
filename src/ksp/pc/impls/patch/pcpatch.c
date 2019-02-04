@@ -705,14 +705,18 @@ PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*f
 static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI cht)
 {
   DM             dm;
+  PC_PATCH      *patch = (PC_PATCH *) pc->data;
   PetscHashIter  hi;
   PetscInt       point;
   PetscInt      *star = NULL, *closure = NULL;
   PetscInt       ignoredim, iStart = 0, iEnd = -1, starSize, closureSize, si, ci;
+  PetscInt      *fStar = NULL, *fClosure = NULL;
+  PetscInt       fBegin, fEnd, fsi, fci, fStarSize, fClosureSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 1, &fBegin, &fEnd);CHKERRQ(ierr);
   ierr = PCPatchGetIgnoreDim(pc, &ignoredim);CHKERRQ(ierr);
   if (ignoredim >= 0) {ierr = DMPlexGetDepthStratum(dm, ignoredim, &iStart, &iEnd);CHKERRQ(ierr);}
   ierr = PetscHSetIClear(cht);CHKERRQ(ierr);
@@ -733,6 +737,22 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI 
         const PetscInt seenpoint = closure[ci];
         if (ignoredim >= 0 && seenpoint >= iStart && seenpoint < iEnd) continue;
         ierr = PetscHSetIAdd(cht, seenpoint);CHKERRQ(ierr);
+        /* Facet integrals couple dofs across facets, so in that case for each of
+         * the facets we need to add all dofs on the other side of the facet to
+         * the seen dofs. */
+        if(patch->usercomputeopintfacet){
+          if(fBegin <= seenpoint && seenpoint < fEnd){
+            ierr = DMPlexGetTransitiveClosure(dm, seenpoint, PETSC_FALSE, &fStarSize, &fStar);CHKERRQ(ierr);
+            for (fsi = 0; fsi < fStarSize*2; fsi += 2) {
+              ierr = DMPlexGetTransitiveClosure(dm, fStar[fsi], PETSC_TRUE, &fClosureSize, &fClosure);CHKERRQ(ierr);
+              for (fci = 0; fci < fClosureSize*2; fci += 2) {
+                ierr = PetscHSetIAdd(cht, fClosure[fci]);CHKERRQ(ierr);
+              }
+              ierr = DMPlexRestoreTransitiveClosure(dm, fStar[fsi], PETSC_TRUE, NULL, &fClosure);CHKERRQ(ierr);
+            }
+            ierr = DMPlexRestoreTransitiveClosure(dm, seenpoint, PETSC_FALSE, NULL, &fStar);CHKERRQ(ierr);
+          }
+        }
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, ownedpoint, PETSC_TRUE, NULL, &closure);CHKERRQ(ierr);
     }
