@@ -5,7 +5,7 @@
 #define BRGN_l1dict             2
 #define BRGNRegTypes            3
 
-static const char *BRGN_Table[64] = {"user", "l2prox", "l1dict"};
+static const char *BRGN_Table[64] = {"user","l2prox","l1dict"};
 
 static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
 {
@@ -196,8 +196,8 @@ static PetscErrorCode TaoSetFromOptions_BRGN(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"least-squares problems with regularizer: ||f(x)||^2 + lambda*g(x), g(x) = ||xk-xkm1||^2 or ||Dx||_1 or user defined function.");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_brgn_lambda","regularizer weight","",gn->lambda,&gn->lambda,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_brgn_epsilon","L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon)","",gn->epsilon,&gn->epsilon,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_brgn_lambda","regularizer weight (default 1e-4)","",gn->lambda,&gn->lambda,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_brgn_epsilon","L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)","",gn->epsilon,&gn->epsilon,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_brgn_reg_type","regularization type", "",BRGN_Table,BRGNRegTypes,BRGN_Table[gn->reg_type],&gn->reg_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoSetFromOptions(gn->subsolver);CHKERRQ(ierr);
@@ -222,7 +222,6 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   PetscErrorCode        ierr;
   PetscBool             is_bnls,is_bntr,is_bntl;
   PetscInt              i,n,N,K; /* dict has size K*N*/
-  /*PetscScalar           v; */ /* XH: hack to set value of matrix */ 
 
   PetscFunctionBegin;
   if (!tao->ls_res) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualRoutine() must be called before setup!");
@@ -230,13 +229,13 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   ierr = PetscObjectTypeCompare((PetscObject)gn->subsolver,TAOBNTR,&is_bntr);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)gn->subsolver,TAOBNTL,&is_bntl);CHKERRQ(ierr);
   if ((is_bnls || is_bntr || is_bntl) && !tao->ls_jac) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualJacobianRoutine() must be called before setup!");
-  if (!tao->gradient){
+  if (!tao->gradient) {
     ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);
   }
-  if (!gn->x_work){
+  if (!gn->x_work) {
     ierr = VecDuplicate(tao->solution,&gn->x_work);CHKERRQ(ierr);
   }
-  if (!gn->r_work){
+  if (!gn->r_work) {
     ierr = VecDuplicate(tao->ls_res,&gn->r_work);CHKERRQ(ierr);
   }
   if (!gn->x_old) {
@@ -244,31 +243,34 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     ierr = VecSet(gn->x_old,0.0);CHKERRQ(ierr);
   }
   
-  /*ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);*/
-  /* TODO: Safeguard against NULL matrix */
-  /*if (!gn->D)*/
-  ierr = MatGetSize(gn->D,&K,&N);CHKERRQ(ierr); /* Shell matrices still must have sizes defined */
-   /* K = N for identity matrix, K=N-1 or N for gradient matrix */
-  if (!gn->y){    
-    ierr = VecCreate(PETSC_COMM_SELF,&gn->y);CHKERRQ(ierr);
-    ierr = VecSetSizes(gn->y,PETSC_DECIDE,K);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(gn->y);CHKERRQ(ierr);
-    ierr = VecSet(gn->y,0.0);CHKERRQ(ierr);
-
-  }
-  if (!gn->y_work){
-    ierr = VecDuplicate(gn->y,&gn->y_work);CHKERRQ(ierr);
-  }
-  if (!gn->diag){
-    ierr = VecDuplicate(gn->y,&gn->diag);CHKERRQ(ierr);
-    ierr = VecSet(gn->diag,0.0);CHKERRQ(ierr);
-  }
-
-  /* XH: debug: check matrix */
+  /*ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);*/  
+  if (BRGN_l1dict == gn->reg_type) {
+    if (gn->D) {
+      /* XH: debug: check matrix */
 #if 0
-  ierr = PetscPrintf(PETSC_COMM_SELF,"-------- Check D matrix: -------- \n"); CHKERRQ(ierr);
-  ierr = MatView(gn->D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif  
+      ierr = PetscPrintf(PETSC_COMM_SELF,"-------- Check D matrix: -------- \n"); CHKERRQ(ierr);
+      ierr = MatView(gn->D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
+      ierr = MatGetSize(gn->D,&K,&N);CHKERRQ(ierr); /* Shell matrices still must have sizes defined. K = N for identity matrix, K=N-1 or N for gradient matrix */
+    } else {
+      ierr = VecGetSize(tao->solution,&K);CHKERRQ(ierr); /* If user does not setup dict matrix, use identiy matrix, K=N */
+    }
+    if (!gn->y) {    
+      ierr = VecCreate(PETSC_COMM_SELF,&gn->y);CHKERRQ(ierr);
+      ierr = VecSetSizes(gn->y,PETSC_DECIDE,K);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(gn->y);CHKERRQ(ierr);
+      ierr = VecSet(gn->y,0.0);CHKERRQ(ierr);
+
+    }
+    if (!gn->y_work) {
+      ierr = VecDuplicate(gn->y,&gn->y_work);CHKERRQ(ierr);
+    }
+    if (!gn->diag) {
+      ierr = VecDuplicate(gn->y,&gn->diag);CHKERRQ(ierr);
+      ierr = VecSet(gn->diag,0.0);CHKERRQ(ierr);
+    }
+  }
+
 
   if (!tao->setupcalled) {
     /* Hessian setup */
@@ -459,7 +461,7 @@ PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao,Mat dict)
 
 /*@C
 @*/
-PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao,PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void*),void *ctx)
+PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao,PetscErrorCode (*func)(Tao,Vec,PetscReal *,Vec,void*),void *ctx)
 {
   TAO_BRGN       *gn = (TAO_BRGN *)tao->data;
 
@@ -476,7 +478,7 @@ PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao,PetscErr
 
 /*@C
 @*/
-PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao,Mat Hreg,PetscErrorCode (*func)(Tao, Vec, Mat, void*),void *ctx)
+PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao,Mat Hreg,PetscErrorCode (*func)(Tao,Vec,Mat,void*),void *ctx)
 {
   TAO_BRGN       *gn = (TAO_BRGN *)tao->data;
   PetscErrorCode ierr;

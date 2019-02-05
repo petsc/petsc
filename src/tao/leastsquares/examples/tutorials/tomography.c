@@ -100,10 +100,15 @@ int main(int argc,char **argv)
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
   /* Sets the upper and lower bounds of x */
   ierr = TaoSetVariableBounds(tao,user.xlb,user.xub);CHKERRQ(ierr);
+  
   /* Bind user.D to tao->data->D */
   ierr = TaoBRGNSetDictionaryMatrix(tao,user.D);CHKERRQ(ierr);
+  /* User set the regulazation objective, gradient, and hessian. Set it the same as using l2prox choice, for testing purpose.  */
+  ierr = TaoBRGNSetRegularizerObjectiveAndGradientRoutine(tao,PetscErrorCode (*func)(Tao,Vec,PetscReal *,Vec,void*),user.reg_obj_ctx);CHKERRQ(ierr);
+  ierr = TaoBRGNSetRegularizerHessianRoutine(tao,Hreg,PetscErrorCode (*func)(Tao,Vec,Mat,void*),user.reg_hess_ctx);CHKERRQ(ierr);
 
-  /* Set the function and Jacobian routines. */
+
+  /* Set the function and Jacobian routines for least squares. */
   ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)&user);CHKERRQ(ierr);
 
@@ -190,7 +195,7 @@ PetscErrorCode EvaluateJacobian(Tao tao,Vec X,Mat J,Mat Jpre,void *ptr)
   if (user->A) {
     /* PetscValidHeaderSpecific(user->A,MAT_CLASSID,2); */ /* Todo: XH do not understand what is this valiidation for and it cause compile error, so commented out. originally copied from TaoBRGNSetL1RegularizerWeight*/
     /*PetscCheckSameComm(J,1,user->A,2);*/
-    /* TODO: how to just bind J to user->A instead of copy the content to it? Do we really need to pass Mat *J instead of Mat J?
+    /* TODO: how to just bind J to user->A instead of copy the content to it? Do we need to pass Mat *J instead of Mat J?
     ierr = PetscObjectReference((PetscObject)user->A);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     J = user->A;  
@@ -200,6 +205,40 @@ PetscErrorCode EvaluateJacobian(Tao tao,Vec X,Mat J,Mat Jpre,void *ptr)
   PetscLogFlops(0);  /* 0 for linear least square, >0 for nonlinear least square */
   PetscFunctionReturn(0);
 }
+
+
+/* ------------------------------------------------------------ */
+PetscErrorCode EvaluateHessian(Mat H,Vec in,Vec out)
+
+/* ------------------------------------------------------------ 
+PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao,Mat Hreg,PetscErrorCode (*func)(Tao, Vec, Mat, void*),void *ctx)
+{
+  TAO_BRGN       *gn = (TAO_BRGN *)tao->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  if (Hreg) {
+    PetscValidHeaderSpecific(Hreg,MAT_CLASSID,2);
+    PetscCheckSameComm(tao,1,Hreg,2);
+  } else {
+    SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONG,"NULL Hessian detected! User must provide valid Hessian for the regularizer.");
+  }
+  if (ctx) {
+    gn->reg_hess_ctx = ctx;
+  }
+  if (func) {
+    gn->regularizerhessian = func;
+  }
+  if (Hreg) {
+    ierr = PetscObjectReference((PetscObject)Hreg);CHKERRQ(ierr);
+    ierr = MatDestroy(&gn->Hreg);CHKERRQ(ierr);
+    gn->Hreg = Hreg;
+  }
+  PetscFunctionReturn(0);
+}
+*/
+
 
 /* ------------------------------------------------------------ */
 PetscErrorCode FormStartingPoint(Vec X,AppCtx *user) 
@@ -251,7 +290,6 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   ierr = MatGetSize(user->A,&user->M,&user->N);CHKERRQ(ierr);
 
   /* Specify D */
-  /* Todo: let user specify dictChoice from input */ 
   switch (dictChoice) {
     case 0: /* 0:identity */ 
       user->K = user->N;
@@ -286,8 +324,8 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   ierr = MatAssemblyBegin(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-   /* Verify the norms for A, D, b, xGT, only used in the debug?*/
-/* #if 0 */
+   /* Verify the norms for A, D, b, xGT, only used in the debug*/
+#if 0
   ierr = MatNorm(user->A,NORM_FROBENIUS,&v);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "A has size %dx%d and Frobenius-norm: %6.4e.\n", user->M, user->N, (double)v);CHKERRQ(ierr);
 
@@ -302,7 +340,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   ierr = VecNorm(user->xGT,NORM_2,&v);CHKERRQ(ierr);
   ierr = VecGetSize(user->xGT,&user->N);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "xGT has size %d and 2-norm: %6.4e.\n", user->N, (double)v);CHKERRQ(ierr);
-/* #endif */
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -311,11 +349,20 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 /*TEST
 
    build:
-      requires: !complex  XH: template from chwirut1.c, why it requires complex?
+      requires: !complex  XH: used template from chwirut1.c
 
    test:
-      args: -tao_monitor -tao_max_it 1000 -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-8
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-8
       requires: !single
+
+   test:
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-4 -tao_gatol 1.e-8
+      requires: !single
+
+   test:
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type user -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
+      requires: !single
+
       
 
 TEST*/

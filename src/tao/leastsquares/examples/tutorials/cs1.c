@@ -284,42 +284,17 @@ PetscErrorCode InitializeUserData(AppCtx *user)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-5
+      args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-8
       requires: !single
       
    test:
       suffix: 2
-      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_gatol 1.e-5
+      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
+      requires: !single
+
+    test:
+      suffix: 2
+      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-8
       requires: !single
 
 TEST*/
-
-
-/* XH: hack code for test, can be removed: set gn->D as identity/gradient  matrix here for test , how to set D matrix from user data?*/    
-  /*
-  if (!gn->D){
-    ierr = MatCreate(PETSC_COMM_SELF,&gn->D);CHKERRQ(ierr);
-    ierr = MatSetSizes(gn->D,PETSC_DECIDE,PETSC_DECIDE,K,N);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(gn->D);CHKERRQ(ierr);
-    ierr = MatSetUp(gn->D);CHKERRQ(ierr);
-
-    for (i=0; i<K; i++) {           
-        v = 1.0;
-        n = i+1; 
-        ierr = MatSetValues(gn->D,1,&i,1,&n,&v,INSERT_VALUES);CHKERRQ(ierr);
-        v = -1.0;        
-        ierr = MatSetValues(gn->D,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(gn->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(gn->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-  */
-      /* identity matrix */
-    /*
-    for (i=0; i<K; i++) {
-        v = 1.0        
-        ierr = MatSetValues(gn->D,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    */
-    /* gradient matrix */
-    /* [-1, 1, 0,...; 0, -1, 1, 0, ...] */
