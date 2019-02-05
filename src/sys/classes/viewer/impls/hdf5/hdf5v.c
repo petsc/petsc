@@ -123,7 +123,6 @@ static PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFile
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   hdf5->btype = type;
   PetscFunctionReturn(0);
 }
