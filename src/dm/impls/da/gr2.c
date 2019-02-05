@@ -774,7 +774,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   DM             da;
   PetscErrorCode ierr;
-  hsize_t        dim,rdim;
+  int            dim,rdim;
   hsize_t        dims[6]={0},count[6]={0},offset[6]={0};
   PetscInt       dimension,timestep,dofInd;
   PetscScalar    *x;
