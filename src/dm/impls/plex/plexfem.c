@@ -2622,16 +2622,14 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   PetscDS          prob       = NULL;
   PetscDS          probAux    = NULL;
   PetscBool        useFEM     = PETSC_FALSE;
-  PetscBool        useFVM     = PETSC_FALSE;
   PetscBool        isImplicit = (locX_t || t == PETSC_MIN_REAL) ? PETSC_TRUE : PETSC_FALSE;
-  PetscFV          fvm        = NULL;
   DMField          coordField = NULL;
   Vec              locA;
   PetscScalar     *u = NULL, *u_t, *a, *uL = NULL, *uR = NULL;
   IS               chunkIS;
   const PetscInt  *cells;
   PetscInt         cStart, cEnd, numCells;
-  PetscInt         Nf, f, totDim, totDimAux, numChunks, cellChunkSize, faceChunkSize, chunk, fStart, fEnd;
+  PetscInt         Nf, f, totDim, totDimAux, numChunks, cellChunkSize, chunk, fStart, fEnd;
   PetscInt         maxDegree = PETSC_MAX_INT;
   PetscQuadrature  affineQuad = NULL, *quads = NULL;
   PetscFEGeom     *affineGeom = NULL, **geoms = NULL;
@@ -2662,7 +2660,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {useFEM = PETSC_TRUE;}
-    if (id == PETSCFV_CLASSID) {useFVM = PETSC_TRUE; fvm = (PetscFV) obj;}
+    if (id == PETSCFV_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Use of FVM with PCPATCH not yet implemented");
   }
   if (useFEM) {
     ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
@@ -2700,7 +2698,6 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   numCells      = cEnd - cStart;
   numChunks     = 1;
   cellChunkSize = numCells/numChunks;
-  faceChunkSize = (fEnd - fStart)/numChunks;
   numChunks     = PetscMin(1,numCells);
   for (chunk = 0; chunk < numChunks; ++chunk) {
     PetscScalar     *elemVec, *fluxL = NULL, *fluxR = NULL;
