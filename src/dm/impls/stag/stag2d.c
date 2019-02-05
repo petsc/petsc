@@ -16,7 +16,7 @@
 . dof2 - number of degrees of freedom per element/2-cell
 . stencilType - ghost/halo region type: DMSTAG_STENCIL_BOX or DMSTAG_STENCIL_NONE
 . stencilWidth - width, in elements, of halo/ghost region
-- lx,ly - array sof local x,y element counts, of length equal to the m,n, summing to M,N
+- lx,ly - arrays of local x,y element counts, of length equal to m,n, summing to M,N
 
   Output Parameter:
 . dm - the new DMStag object
@@ -32,7 +32,7 @@
 - -stag_boundary_type_y <none,ghosted,periodic> - DMBoundaryType value
 
   Notes:
-  You must call DMSetUp() after this call before using the DM.
+  You must call DMSetUp() after this call, before using the DM.
   If you wish to use the options database (see the keys above) to change values in the DMStag, you must call
   DMSetFromOptions() after this function but before DMSetUp().
 
