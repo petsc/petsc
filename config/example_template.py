@@ -11,10 +11,10 @@ testname='@TESTNAME@'
 label='@LABEL@'
 runfiles='@LOCALRUNFILES@'
 wPETSC_DIR='@WPETSC_DIR@'
-petsc_dir='@PETSC_DIR@'
-petsc_arch='@PETSC_ARCH@'
+@PKG_NAME@_dir='@PKG_DIR@'
+@PKG_NAME@_arch='@PKG_ARCH@'
 # Must be consistent with gmakefile.test
-testlogfile=@TESTROOT@/examples_${petsc_arch}.log
+testlogfile=@TESTROOT@/examples_${@PKG_NAME@_arch}.log
 config_dir='@CONFIG_DIR@'
 petsc_bindir='@PETSC_BINDIR@'
 @DATAFILESPATH_LINE@
