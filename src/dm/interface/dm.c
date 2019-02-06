@@ -884,6 +884,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscViewerCheckWritable(v);CHKERRQ(ierr);
   if (!v) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)dm),&v);CHKERRQ(ierr);
   }
@@ -3583,6 +3584,7 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newdm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscViewerCheckReadable(viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
   if (isbinary) {
