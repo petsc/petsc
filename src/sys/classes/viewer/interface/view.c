@@ -514,3 +514,24 @@ PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode  PetscViewerCheckReadable(PetscViewer viewer)
+{
+  PetscBool flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerReadable(viewer, &flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer doesn't support reading, or is not in reading mode (FILE_MODE_READ, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE)");
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode  PetscViewerCheckWritable(PetscViewer viewer)
+{
+  PetscBool flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerWritable(viewer, &flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer doesn't support writing, or is in FILE_MODE_READ mode");
+  PetscFunctionReturn(0);
+}
