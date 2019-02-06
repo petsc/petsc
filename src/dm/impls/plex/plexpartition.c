@@ -2379,11 +2379,11 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
 #if defined(PETSC_HAVE_PARMETIS)
   PetscSF sf;
   PetscInt ierr, i, j;
-  PetscInt vBegin, vEnd, nroots, nleafs, pStart, pEnd, sumDegrees, cBegin, cEnd;
+  PetscInt vBegin, vEnd, nroots, nleafs, pStart, pEnd, sumDegrees;
   const PetscInt *degree, *ilocal;
   const PetscSFNode *iremote; /* Do I need to free these? */
   PetscBool *toBalance, *isLeaf, *isExclusivelyOwned, *isNonExclusivelyOwned;
-  PetscInt numExclusivelyOwned, numNonExclusivelyOwned, numLocalVertices;
+  PetscInt numExclusivelyOwned, numNonExclusivelyOwned;
   PetscMPIInt rank, size;
   PetscInt *numLocalVerticesAllProcesses, *cumSumVertices, *cumSumDegrees, *globalNumbersOfLocalOwnedVertices, *locationsOfLeafs, *rankOnLeafs, *remoteLocalPointOfLeafs, *points, *leafGlobalNumbers;
   PetscInt offset, counter;
@@ -2393,7 +2393,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
 
   PetscInt *adjwgt=NULL;
   PetscInt *part, *options;
-  PetscInt nparts, wgtflag, numflag, ncon, ncommonnodes, edgecut;
+  PetscInt nparts, wgtflag, numflag, ncon, edgecut;
   real_t *ubvec;
   PetscInt *firstVertices, *renumbering;
   PetscInt failed, failedGlobal;
@@ -2401,6 +2401,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
   PetscInt leafCounter;
   PetscInt *leafsNew;
   PetscSFNode *leafLocationsNew;
+  Mat A;
 
   ierr = PetscLogEventBegin(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
 
@@ -2408,6 +2409,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if(size==1) PetscFunctionReturn(0);
 
   /* Figure out all points in the plex that we are interested in balancing.  In
    * this case we are just interested in vertices. Should generalize that at
@@ -2415,31 +2417,38 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
   ierr = DMPlexGetDepthStratum(dm, 0, &vBegin, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart, &toBalance);CHKERRQ(ierr);
+
   for(i=0; i<pEnd-pStart; i++) {
     toBalance[i] = (i-pStart>=vBegin && i-pStart<vEnd);
   }
 
+
+  /* There are three types of points:
+   * exclusivelyOwned: points that are owned by this process and only seen by this process
+   * nonExclusivelyOwned: points that are owned by this process but seen by at least another process
+   * leaf: a point that is seen by this process but owned by a different process
+   */
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeBegin(sf, &degree);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeEnd(sf, &degree);CHKERRQ(ierr);
-  sumDegrees = 0;
-  for(i=0; i<pEnd-pStart; i++) {
-    sumDegrees += degree[i];
-  }
-
-
   ierr = PetscSFGetGraph(sf, &nroots, &nleafs, &ilocal, &iremote); CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart, &isLeaf);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart, &isNonExclusivelyOwned);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart, &isExclusivelyOwned);CHKERRQ(ierr);
   for(i=0; i<pEnd-pStart; i++) {
-    isLeaf[i] = PETSC_FALSE;
     isNonExclusivelyOwned[i] = PETSC_FALSE;
     isExclusivelyOwned[i] = PETSC_FALSE;
+    isLeaf[i] = PETSC_FALSE;
   }
+
+
+  /* start by marking all the leafs */
   for(i=0; i<nleafs; i++) {
     isLeaf[ilocal[i]-pStart] = PETSC_TRUE;
   }
+
+  /* for an owned point, we can figure out whether another processor sees it or
+   * not by calculating its degree */
+  ierr = PetscSFComputeDegreeBegin(sf, &degree);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeEnd(sf, &degree);CHKERRQ(ierr);
 
   numExclusivelyOwned=0;
   numNonExclusivelyOwned=0;
@@ -2458,8 +2467,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
   }
 
 
-  /* We build a graph with one vertex per core representing the exclusively owned points
-   * and then one vertex per nonExclusively owned point. */
+  /* We are going to build a graph with one vertex per core representing the
+   * exclusively owned points and then one vertex per nonExclusively owned
+   * point. */
   ierr = PetscMalloc1(size, &numLocalVerticesAllProcesses);CHKERRQ(ierr);
   numLocalVerticesAllProcesses[rank] = 1 + numNonExclusivelyOwned;
   /* For numbering purposes we need to figure out how many vertices are on each core. */
@@ -2470,6 +2480,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
   for(i=1; i<=size; i++) {
     cumSumVertices[i] = cumSumVertices[i-1] + numLocalVerticesAllProcesses[i-1];
   }
+  ierr = PetscFree(numLocalVerticesAllProcesses);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart+1, &cumSumDegrees);CHKERRQ(ierr);
   cumSumDegrees[0] = 0;
   for(i=1; i<=pEnd-pStart; i++) {
@@ -2488,7 +2499,12 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
     }
   }
 
-  /* get the location of my leafs */
+  /* get the location of my leafs (we have sumDegrees many leafs pointing at our roots) */
+  sumDegrees = 0;
+  for(i=0; i<pEnd-pStart; i++) {
+    sumDegrees += degree[i];
+  }
+
   ierr = PetscMalloc1(sumDegrees, &locationsOfLeafs);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart, &rankOnLeafs);CHKERRQ(ierr);
   for(i=0; i<pEnd-pStart; i++) {
@@ -2496,6 +2512,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
   }
   ierr = PetscSFGatherBegin(sf, MPIU_INT, rankOnLeafs, locationsOfLeafs);CHKERRQ(ierr);
   ierr = PetscSFGatherEnd(sf, MPIU_INT, rankOnLeafs, locationsOfLeafs);CHKERRQ(ierr);
+  ierr = PetscFree(rankOnLeafs);CHKERRQ(ierr);
 
   /* get the remote local points of my leaves */
   ierr = PetscMalloc1(sumDegrees, &remoteLocalPointOfLeafs);CHKERRQ(ierr);
@@ -2505,6 +2522,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
   }
   ierr = PetscSFGatherBegin(sf, MPIU_INT, points, remoteLocalPointOfLeafs);CHKERRQ(ierr);
   ierr = PetscSFGatherEnd(sf, MPIU_INT, points, remoteLocalPointOfLeafs);CHKERRQ(ierr);
+  ierr = PetscFree(points);CHKERRQ(ierr);
 
   /* send the global numbers of vertices I own to the leafs so that they know to connect to it */
   ierr = PetscMalloc1(pEnd-pStart, &leafGlobalNumbers);CHKERRQ(ierr);
@@ -2529,7 +2547,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
 
 
 
-  Mat A;
   ierr = MatCreate(comm, &A);CHKERRQ(ierr);
   ierr = MatSetType(A, MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatSetSizes(A, 1+numNonExclusivelyOwned, 1+numNonExclusivelyOwned, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
@@ -2579,6 +2596,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
       }
     }
   }
+  ierr = PetscFree(leafGlobalNumbers);CHKERRQ(ierr);
+  ierr = PetscFree(globalNumbersOfLocalOwnedVertices);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2588,7 +2607,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
 
   numflag = 0;
   ncon = 2;
-  ncommonnodes = 2;
   real_t *tpwgts;
   ierr = PetscMalloc1(ncon * nparts, &tpwgts);CHKERRQ(ierr);
 
@@ -2801,6 +2819,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
     ierr = PetscFree(distribution);CHKERRQ(ierr);
   }
 
+  ierr = PetscFree(cumSumVertices);CHKERRQ(ierr);
   ierr = PetscFree(firstVertices);CHKERRQ(ierr);
   ierr = PetscFree(renumbering);CHKERRQ(ierr);
   ierr = PetscFree(xadj);CHKERRQ(ierr);
@@ -2816,30 +2835,39 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
     newOwners[i] = -1;
     newNumbers[i] = -1;
   }
-  counter = 1;
-  for(i=0; i<pEnd-pStart; i++) {
-    if(toBalance[i]) {
-      if(isNonExclusivelyOwned[i]) {
-        PetscInt oldNumber, newNumber, oldOwner, newOwner;
-        oldNumber = i;
-        oldOwner = rank;
-        newOwner = part[counter];
-        if(oldOwner == newOwner) {
-          newNumber = oldNumber;
-        } else {
-          for(j=0; j<degree[i]; j++) {
-            if(locationsOfLeafs[cumSumDegrees[oldNumber]+j] == newOwner) {
-              newNumber = remoteLocalPointOfLeafs[cumSumDegrees[oldNumber]+j];
-              break;
+  {
+    PetscInt oldNumber, newNumber, oldOwner, newOwner;
+    counter = 1;
+    for(i=0; i<pEnd-pStart; i++) {
+      if(toBalance[i]) {
+        if(isNonExclusivelyOwned[i]) {
+          oldNumber = i;
+          newNumber = -1;
+          oldOwner = rank;
+          newOwner = part[counter];
+          if(oldOwner == newOwner) {
+            newNumber = oldNumber;
+          } else {
+            for(j=0; j<degree[i]; j++) {
+              if(locationsOfLeafs[cumSumDegrees[oldNumber]+j] == newOwner) {
+                newNumber = remoteLocalPointOfLeafs[cumSumDegrees[oldNumber]+j];
+                break;
+              }
             }
           }
+          if(newNumber == -1) {
+            SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Couldn't find the new owner of vertex.");
+          }
+          newOwners[oldNumber] = newOwner;
+          newNumbers[oldNumber] = newNumber;
+          counter++;
         }
-        newOwners[oldNumber] = newOwner;
-        newNumbers[oldNumber] = newNumber;
-        counter++;
       }
     }
   }
+  ierr = PetscFree(cumSumDegrees);CHKERRQ(ierr);
+  ierr = PetscFree(locationsOfLeafs);CHKERRQ(ierr);
+  ierr = PetscFree(remoteLocalPointOfLeafs);CHKERRQ(ierr);
 
   PetscSFBcastBegin(sf, MPIU_INT, newOwners, newOwners);
   PetscSFBcastEnd(sf, MPIU_INT, newOwners, newOwners);
@@ -2893,13 +2921,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
 
   ierr = PetscFree(toBalance);CHKERRQ(ierr);
   ierr = PetscFree(isLeaf);CHKERRQ(ierr);
-  ierr = PetscFree(numLocalVerticesAllProcesses);CHKERRQ(ierr);
-  ierr = PetscFree(cumSumVertices);CHKERRQ(ierr);
-  ierr = PetscFree(locationsOfLeafs);CHKERRQ(ierr);
-  ierr = PetscFree(rankOnLeafs);CHKERRQ(ierr);
-  ierr = PetscFree(remoteLocalPointOfLeafs);CHKERRQ(ierr);
-  ierr = PetscFree(points);CHKERRQ(ierr);
-  ierr = PetscFree(leafGlobalNumbers);CHKERRQ(ierr);
+  ierr = PetscFree(isNonExclusivelyOwned);CHKERRQ(ierr);
+  ierr = PetscFree(isExclusivelyOwned);CHKERRQ(ierr);
   ierr = PetscFree(newOwners);CHKERRQ(ierr);
   ierr = PetscFree(newNumbers);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
