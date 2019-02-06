@@ -29,6 +29,7 @@ PetscErrorCode  PCFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PCList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PCMGCoarseList);CHKERRQ(ierr);
   PCPackageInitialized = PETSC_FALSE;
   PCRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);

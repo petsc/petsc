@@ -592,24 +592,21 @@ PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
 }
 
 /*@
-   PCMGSetRhs - Sets the vector space to be used to store the right-hand side
-   on a particular level.
+  PCMGSetRhs - Sets the vector to be used to store the right-hand side on a particular level.
 
    Logically Collective on PC
 
-   Input Parameters:
-+  pc - the multigrid context
-.  l  - the level (0 is coarsest) this is to be used for
--  c  - the space
+  Input Parameters:
++ pc - the multigrid context
+. l  - the level (0 is coarsest) this is to be used for
+- c  - the Vec
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    If this is not provided PETSc will automatically generate one.
+  Notes:
+  If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. PCDestroy() will properly free it.
 
-          You do not need to keep a reference to this vector if you do
-          not need it PCDestroy() will properly free it.
-
+.keywords: MG, multigrid, set, right-hand-side, rhs, level
 .seealso: PCMGSetX(), PCMGSetR()
 @*/
 PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
@@ -630,24 +627,21 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
 }
 
 /*@
-   PCMGSetX - Sets the vector space to be used to store the solution on a
-   particular level.
+  PCMGSetX - Sets the vector to be used to store the solution on a particular level.
 
-   Logically Collective on PC
+  Logically Collective on PC
 
-   Input Parameters:
-+  pc - the multigrid context
-.  l - the level (0 is coarsest) this is to be used for (do not supply the finest level)
--  c - the space
+  Input Parameters:
++ pc - the multigrid context
+. l - the level (0 is coarsest) this is to be used for (do not supply the finest level)
+- c - the Vec
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    If this is not provided PETSc will automatically generate one.
+  Notes:
+  If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. PCDestroy() will properly free it.
 
-          You do not need to keep a reference to this vector if you do
-          not need it PCDestroy() will properly free it.
-
+.keywords: MG, multigrid, set, solution, level
 .seealso: PCMGSetRhs(), PCMGSetR()
 @*/
 PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
@@ -668,24 +662,22 @@ PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
 }
 
 /*@
-   PCMGSetR - Sets the vector space to be used to store the residual on a
-   particular level.
+  PCMGSetR - Sets the vector to be used to store the residual on a particular level.
 
-   Logically Collective on PC
+  Logically Collective on PC
 
-   Input Parameters:
-+  pc - the multigrid context
-.  l - the level (0 is coarsest) this is to be used for
--  c - the space
+  Input Parameters:
++ pc - the multigrid context
+. l - the level (0 is coarsest) this is to be used for
+- c - the Vec
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    If this is not provided PETSc will automatically generate one.
+  Notes:
+  If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. PCDestroy() will properly free it.
 
-          You do not need to keep a reference to this vector if you do
-          not need it PCDestroy() will properly free it.
-
+.keywords: MG, multigrid, set, residual, level
+.seealso: PCMGSetRhs(), PCMGSetX()
 @*/
 PetscErrorCode  PCMGSetR(PC pc,PetscInt l,Vec c)
 {

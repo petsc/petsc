@@ -17,6 +17,10 @@ typedef struct {
   Vec      b;                                  /* Right hand side */
   Vec      x;                                  /* Solution */
   Vec      r;                                  /* Residual */
+  Vec     *coarseSpace;                        /* A vector space which should be accurately captured by the next coarser mesh,
+                                                  and thus accurately interpolated. This array should have the same size on each
+                                                  level, and the vectors should correspond to the same function discretized in
+                                                  the sequence of spaces. */
 
   PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
 
@@ -41,6 +45,9 @@ typedef struct {
   PetscInt         cyclesperpcapply;          /* Number of cycles to use in each PCApply(), multiplicative only*/
   PCMGGalerkinType galerkin;                  /* use Galerkin process to compute coarser matrices */
   PetscBool        usedmfornumberoflevels;    /* sets the number of levels by getting this information out of the DM */
+  PetscBool        adaptInterpolation;        /* flag to adapt the interpolator based upon the coarseSpace */
+  PetscBool        usePoly;                   /* flag to use polynomials for the coarse space, rather than harmonics */
+  PetscInt         Nc;                        /* The number of vectors in coarseSpace */
 
   PetscInt     nlevels;
   PC_MG_Levels **levels;
@@ -65,5 +72,10 @@ PETSC_DEPRECATED_FUNCTION("Use PCMGResidualDefault() (since version 3.5)") PETSC
   return PCMGResidualDefault(A,b,x,r);
 }
 
-#endif
+PETSC_INTERN PetscErrorCode DMSetBasisFunction_Internal(PetscInt, PetscBool, PetscInt, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *));
+PETSC_INTERN PetscErrorCode PCMGComputeCoarseSpace_Internal(PC, PetscInt, PCMGCoarseSpaceType, PetscInt, const Vec[], Vec *[]);
+PETSC_INTERN PetscErrorCode PCMGAdaptInterpolator_Internal(PC, PetscInt, KSP, KSP, PetscInt, Vec[], Vec[]);
+PETSC_INTERN PetscErrorCode PCMGRecomputeLevelOperators_Internal(PC, PetscInt);
 
+
+#endif

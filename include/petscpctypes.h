@@ -320,6 +320,15 @@ typedef enum {
 } PCBDDCInterfaceExtType;
 
 /*E
+  PCMGCoarseSpaceType - Function space for coarse space for adaptive interpolation
+
+  Level: beginner
+
+.seealso: PCMGSetAdaptCoarseSpaceType(), PCMG
+E*/
+typedef enum { PCMG_POLYNOMIAL, PCMG_HARMONIC, PCMG_EIGENVECTOR, PCMG_GENERALIZED_EIGENVECTOR } PCMGCoarseSpaceType;
+
+/*E
     PCPatchConstructType - The algorithm used to construct patches for the preconditioner
 
    Level: beginner

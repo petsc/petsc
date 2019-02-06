@@ -157,6 +157,14 @@ PETSC_EXTERN PetscErrorCode PCMGGetSmootherUp(PC,PetscInt,KSP*);
 PETSC_EXTERN PetscErrorCode PCMGGetCoarseSolve(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCGalerkinGetKSP(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCDeflationGetCoarseKSP(PC,KSP*);
+/*
+  PCMGCoarseList contains the list of coarse space constructor currently registered
+  These are added with PCMGRegisterCoarseSpaceConstructor()
+*/
+PETSC_EXTERN PetscFunctionList PCMGCoarseList;
+PETSC_EXTERN PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char[], PetscErrorCode (*)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **));
+PETSC_EXTERN PetscErrorCode PCMGGetCoarseSpaceConstructor(const char[], PetscErrorCode (**)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **));
+
 
 PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP,Vec,Vec,Vec*);
@@ -609,7 +617,7 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_PC_FAILED - It was not possible to build or use the requested preconditioner. This is usually due to a 
+     KSP_DIVERGED_PC_FAILED - It was not possible to build or use the requested preconditioner. This is usually due to a
      zero pivot in a factorization. It can also result from a failure in a subpreconditioner inside a nested preconditioner
      such as PCFIELDSPLIT.
 
