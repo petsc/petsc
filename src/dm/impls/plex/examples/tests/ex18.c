@@ -4,6 +4,20 @@ static char help[] = "Tests for parallel mesh loading\n\n";
 
 /* List of test meshes
 
+Network
+-------
+Test 0 (2 ranks):
+mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1
+
+   cell 0   cell 1   cell 2
+0 ------- 1 ------ 2 ------- 3
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3
+  cell(edge) distribution:
+    rank 0: 0 1
+    rank 1: 2
+
 Triangle
 --------
 Test 0 (2 ranks):
@@ -199,6 +213,51 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   ierr = PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CreateSimplex_1D(MPI_Comm comm, PetscBool interpolate, AppCtx *user, DM *dm)
+{
+  PetscInt       testNum = user->testNum;
+  PetscMPIInt    rank, size;
+  PetscErrorCode ierr;
+  PetscInt       spacedim=2,numCorners=2;
+  PetscInt       cells[6],numCells,numVertices;
+  PetscReal      coords[4];
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (size > 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for <=2 processes",testNum);
+  printf("CreateSimplex_1D...\n");
+
+  if (size == 1) {
+    numCells  = 3; numVertices = 4;
+    cells[0] = 0; cells[1] = 1;
+    cells[2] = 1; cells[3] = 2;
+    cells[4] = 2; cells[5] = 3;
+    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, coords, dm);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  switch (rank) {
+  case 0:
+  {
+    numCells  = 2; numVertices = 2;
+    cells[0] = 0; cells[1] = 1;
+    cells[2] = 1; cells[3] = 2;
+  }
+  break;
+  case 1:
+  {
+    numCells  = 1; numVertices = 2;
+    cells[0] = 2; cells[1] = 3;
+  }
+  break;
+  default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+  }
+
+  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, coords, NULL, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -495,6 +554,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->faces, NULL, NULL, NULL, interpSerial, dm);CHKERRQ(ierr);
   } else {
     switch (dim) {
+    case 1:
+      ierr = CreateSimplex_1D(comm, interpSerial, user, dm);CHKERRQ(ierr);
+      break;
     case 2:
       if (cellSimplex) {
         ierr = CreateSimplex_2D(comm, interpSerial, user, dm);CHKERRQ(ierr);
