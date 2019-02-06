@@ -422,7 +422,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.00001);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,100);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   
   if (user.monitor) {

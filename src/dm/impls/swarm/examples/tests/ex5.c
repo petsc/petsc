@@ -383,7 +383,7 @@ int main(int argc,char **argv)
 {
   TSConvergedReason reason;
   const PetscScalar *endVals;
-  PetscReal         ftime   = 1., vx, vy;
+  PetscReal         ftime   = .1, vx, vy;
   PetscInt          locSize, p, d, dim, Np, steps, *idx1, *idx2;
   Vec               f;             
   TS                ts;            
@@ -440,7 +440,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.0001);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,10);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
