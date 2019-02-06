@@ -161,9 +161,9 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
   /*
        this is the Hack part where we monkey directly with the hypre datastructures
   */
-  ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap->n + 1)*sizeof(PetscInt));
-  ierr = PetscMemcpy(hdiag->j,pdiag->j,pdiag->nz*sizeof(PetscInt));
-  ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
+  ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(hdiag->j,pdiag->j,pdiag->nz*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));CHKERRQ(ierr);
 
   aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
@@ -620,8 +620,7 @@ static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA
    for boomerAMGBuildCoarseOperator to work */
 static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMatrix *hA,hypre_ParCSRMatrix *hP, hypre_ParCSRMatrix **hRAP)
 {
-  PetscErrorCode ierr;
-  HYPRE_Int      P_owns_col_starts,R_owns_row_starts;
+  HYPRE_Int P_owns_col_starts,R_owns_row_starts;
 
   PetscFunctionBegin;
   P_owns_col_starts = hypre_ParCSRMatrixOwnsColStarts(hP);
@@ -1334,9 +1333,8 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
 
 static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr)
 {
-  Mat_HYPRE*            hA = (Mat_HYPRE*)A->data;
-  HYPRE_Int             type;
-  PetscErrorCode        ierr;
+  Mat_HYPRE *hA = (Mat_HYPRE*)A->data;
+  HYPRE_Int type;
 
   PetscFunctionBegin;
   if (!hA->ij) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"HYPRE_IJMatrix not present");
@@ -1599,18 +1597,16 @@ PetscErrorCode MatRestoreRow_HYPRE(Mat A,PetscInt row,PetscInt *nz,PetscInt **id
 
 PetscErrorCode MatGetValues_HYPRE(Mat A,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
-  HYPRE_IJMatrix     *hIJ = (HYPRE_IJMatrix*)A->data;
-  PetscErrorCode      ierr;
-  PetscInt            i;
+  HYPRE_IJMatrix *hIJ = (HYPRE_IJMatrix*)A->data;
+  PetscInt        i;
+
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0);
-
   /* Ignore negative row indices
    * And negative column indices should be automatically ignored in hypre
    * */
   for (i=0; i<m; i++)
     if (idxm[i] >= 0) PetscStackCallStandard(HYPRE_IJMatrixGetValues,(*hIJ,1,(HYPRE_Int*)&n,(HYPRE_Int*)&idxm[i],(HYPRE_Int*)idxn,&v[i*n]));
-
   PetscFunctionReturn(0);
 }
 

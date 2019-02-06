@@ -27,7 +27,6 @@ M*/
 
 PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
-  PetscErrorCode    ierr;
   PetscInt          i,j,stencil,index[3],row,entries[7];
   const PetscScalar *values = y;
   Mat_HYPREStruct   *ex     = (Mat_HYPREStruct*) mat->data;
@@ -91,7 +90,6 @@ PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pets
 
 PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 {
-  PetscErrorCode  ierr;
   PetscInt        indices[7] = {0,1,2,3,4,5,6};
   Mat_HYPREStruct *ex        = (Mat_HYPREStruct*) mat->data;
 
@@ -245,7 +243,6 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
 PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscStackCallStandard(HYPRE_StructMatrixAssemble,(ex->hmat));
@@ -759,7 +756,6 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
 PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat,MatAssemblyType mode)
 {
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscStackCallStandard(HYPRE_SStructMatrixAssemble,(ex->ss_mat));
