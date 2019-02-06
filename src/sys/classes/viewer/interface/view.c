@@ -473,3 +473,44 @@ PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pe
   }
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode  PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscFileMode mode;
+  PetscErrorCode (*f)(PetscViewer,PetscFileMode*) = NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidIntPointer(flg,2);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer, "PetscViewerFileGetMode_C", &f);CHKERRQ(ierr);
+  *flg = PETSC_FALSE;
+  if (!f) PetscFunctionReturn(0);
+  ierr = (*f)(viewer, &mode);CHKERRQ(ierr);
+  switch (mode) {
+    case FILE_MODE_READ:
+    case FILE_MODE_UPDATE:
+    case FILE_MODE_APPEND_UPDATE:
+      *flg = PETSC_TRUE;
+    default: break;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscFileMode mode;
+  PetscErrorCode (*f)(PetscViewer,PetscFileMode*) = NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidIntPointer(flg,2);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer, "PetscViewerFileGetMode_C", &f);CHKERRQ(ierr);
+  *flg = PETSC_TRUE;
+  if (!f) PetscFunctionReturn(0);
+  ierr = (*f)(viewer, &mode);CHKERRQ(ierr);
+  if (mode == FILE_MODE_READ) *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+

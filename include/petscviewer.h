@@ -102,6 +102,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer,const char[]
 PETSC_EXTERN PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer,const char*[]);
 
+PETSC_EXTERN PetscErrorCode PetscViewerReadable(PetscViewer,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscViewerWritable(PetscViewer,PetscBool*);
+
 /*E
     PetscViewerFormat - Way a viewer presents the object
 
