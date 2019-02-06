@@ -1230,7 +1230,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
    Collective
 
    Input Parameters:
-+  vparcsr  - the pointer to the hypre_ParCSRMatrix
++  parcsr   - the pointer to the hypre_ParCSRMatrix
 .  mtype    - matrix type to be created. Currently MATAIJ, MATIS and MATHYPRE are supported.
 -  copymode - PETSc copying options
 
@@ -1241,18 +1241,16 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
 
 .seealso: MatHYPRE, PetscCopyMode
 */
-PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, MatType mtype, PetscCopyMode copymode, Mat* A)
+PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatType mtype, PetscCopyMode copymode, Mat* A)
 {
   Mat                   T;
   Mat_HYPRE             *hA;
-  hypre_ParCSRMatrix    *parcsr;
   MPI_Comm              comm;
   PetscInt              rstart,rend,cstart,cend,M,N;
   PetscBool             isseqaij,ismpiaij,isaij,ishyp,isis;
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  parcsr = (hypre_ParCSRMatrix *)vparcsr;
   comm   = hypre_ParCSRMatrixComm(parcsr);
   ierr   = PetscStrcmp(mtype,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   ierr   = PetscStrcmp(mtype,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
@@ -1261,8 +1259,6 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
   ierr   = PetscStrcmp(mtype,MATIS,&isis);CHKERRQ(ierr);
   isaij  = (PetscBool)(isseqaij || ismpiaij || isaij);
   if (!isaij && !ishyp && !isis) SETERRQ6(comm,PETSC_ERR_SUP,"Unsupported MatType %s! Supported types are %s, %s, %s, %s, and %s",mtype,MATAIJ,MATSEQAIJ,MATMPIAIJ,MATIS,MATHYPRE);
-  if (ishyp && copymode == PETSC_COPY_VALUES) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported copymode PETSC_COPY_VALUES");
-
   /* access ParCSRMatrix */
   rstart = hypre_ParCSRMatrixFirstRowIndex(parcsr);
   rend   = hypre_ParCSRMatrixLastRowIndex(parcsr);
@@ -1283,9 +1279,25 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
 
   /* create HYPRE_IJMatrix */
   PetscStackCallStandard(HYPRE_IJMatrixCreate,(hA->comm,rstart,rend-1,cstart,cend-1,&hA->ij));
+  PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(hA->ij,HYPRE_PARCSR));
+
+  /* create new ParCSR object if needed */
+  if (ishyp && copymode == PETSC_COPY_VALUES) {
+    hypre_ParCSRMatrix *new_parcsr;
+    hypre_CSRMatrix    *hdiag,*hoffd,*ndiag,*noffd;
+
+    new_parcsr = hypre_ParCSRMatrixCompleteClone(parcsr);
+    hdiag      = hypre_ParCSRMatrixDiag(parcsr);
+    hoffd      = hypre_ParCSRMatrixOffd(parcsr);
+    ndiag      = hypre_ParCSRMatrixDiag(new_parcsr);
+    noffd      = hypre_ParCSRMatrixOffd(new_parcsr);
+    ierr       = PetscMemcpy(hypre_CSRMatrixData(ndiag),hypre_CSRMatrixData(hdiag),hypre_CSRMatrixNumNonzeros(hdiag)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr       = PetscMemcpy(hypre_CSRMatrixData(noffd),hypre_CSRMatrixData(hoffd),hypre_CSRMatrixNumNonzeros(hoffd)*sizeof(PetscScalar));CHKERRQ(ierr);
+    parcsr     = new_parcsr;
+    copymode   = PETSC_OWN_POINTER;
+  }
 
   /* set ParCSR object */
-  PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(hA->ij,HYPRE_PARCSR));
   hypre_IJMatrixObject(hA->ij) = parcsr;
   T->preallocated = PETSC_TRUE;
 
@@ -1519,7 +1531,6 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA,PetscInt N
   PetscScalar     *a;
 
   PetscFunctionBegin;
-
   if (!hA) PetscFunctionReturn(0);
 
   i = (PetscInt*) hypre_CSRMatrixI(hA);
@@ -1534,7 +1545,6 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA,PetscInt N
       if (j[jj] == irow) a[jj] = diag;
       else a[jj] = 0.0;
    }
-
    PetscFunctionReturn(0);
 }
 
@@ -1598,8 +1608,8 @@ static PetscErrorCode MatRestoreRow_HYPRE(Mat A,PetscInt row,PetscInt *nz,PetscI
 
 static PetscErrorCode MatGetValues_HYPRE(Mat A,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
-  HYPRE_IJMatrix *hIJ = (HYPRE_IJMatrix*)A->data;
-  PetscInt        i;
+  Mat_HYPRE *hA = (Mat_HYPRE*)A->data;
+  PetscInt  i;
 
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0);
@@ -1607,7 +1617,7 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A,PetscInt m,const PetscInt idxm[],
    * And negative column indices should be automatically ignored in hypre
    * */
   for (i=0; i<m; i++)
-    if (idxm[i] >= 0) PetscStackCallStandard(HYPRE_IJMatrixGetValues,(*hIJ,1,(HYPRE_Int*)&n,(HYPRE_Int*)&idxm[i],(HYPRE_Int*)idxn,&v[i*n]));
+    if (idxm[i] >= 0) PetscStackCallStandard(HYPRE_IJMatrixGetValues,(hA->ij,1,(HYPRE_Int*)&n,(HYPRE_Int*)&idxm[i],(HYPRE_Int*)idxn,&v[i*n]));
   PetscFunctionReturn(0);
 }
 
@@ -1626,6 +1636,62 @@ static PetscErrorCode MatSetOption_HYPRE(Mat A,MatOption op,PetscBool flg)
   default:
     break;
   }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
+{
+  hypre_ParCSRMatrix *parcsr;
+  PetscErrorCode     ierr;
+  Mat                B;
+  PetscViewerFormat  format;
+  PetscErrorCode     (*mview)(Mat,PetscViewer) = NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(view,&format);CHKERRQ(ierr);
+  if (format != PETSC_VIEWER_NATIVE) {
+    ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
+    ierr = MatCreateFromParCSR(parcsr,MATAIJ,PETSC_USE_POINTER,&B);CHKERRQ(ierr);
+    ierr = MatGetOperation(B,MATOP_VIEW,(void(**)(void))&mview);CHKERRQ(ierr);
+    if (!mview) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing view operation");CHKERRQ(ierr);
+    ierr = (*mview)(B,view);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  } else {
+    Mat_HYPRE  *hA = (Mat_HYPRE*)A->data;
+    PetscMPIInt size;
+    PetscBool   isascii;
+    const char *filename;
+
+    /* HYPRE uses only text files */
+    ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+    if (!isascii) SETERRQ1(PetscObjectComm((PetscObject)view),PETSC_ERR_SUP,"PetscViewerType %s: native HYPRE format needs PETSCVIEWERASCII",((PetscObject)view)->type_name);
+    ierr = PetscViewerFileGetName(view,&filename);CHKERRQ(ierr);
+    PetscStackCallStandard(HYPRE_IJMatrixPrint,(hA->ij,filename));
+    ierr = MPI_Comm_size(hA->comm,&size);CHKERRQ(ierr);
+    if (size > 1) {
+      ierr = PetscViewerASCIIPrintf(view,"Matrix files: %s.%05d ... %s.%05d\n",filename,0,filename,size-1);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(view,"Matrix file: %s.%05d\n",filename,0);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDuplicate_HYPRE(Mat A,MatDuplicateOption op, Mat *B)
+{
+  hypre_ParCSRMatrix *parcsr;
+  PetscErrorCode     ierr;
+  PetscCopyMode      cpmode;
+
+  PetscFunctionBegin;
+  ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
+  if (op == MAT_DO_NOT_COPY_VALUES || op == MAT_SHARE_NONZERO_PATTERN) {
+    parcsr = hypre_ParCSRMatrixCompleteClone(parcsr);
+    cpmode = PETSC_OWN_POINTER;
+  } else {
+    cpmode = PETSC_COPY_VALUES;
+  }
+  ierr = MatCreateFromParCSR(parcsr,MATHYPRE,cpmode,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1659,12 +1725,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->multtranspose   = MatMultTranspose_HYPRE;
   B->ops->setup           = MatSetUp_HYPRE;
   B->ops->destroy         = MatDestroy_HYPRE;
-
-  /* build cache for off array entries formed */
-  ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)B),1,&B->stash);CHKERRQ(ierr);
   B->ops->assemblyend     = MatAssemblyEnd_HYPRE;
   B->ops->assemblybegin   = MatAssemblyBegin_HYPRE;
-
   B->ops->ptap            = MatPtAP_HYPRE_HYPRE;
   B->ops->matmult         = MatMatMult_HYPRE_HYPRE;
   B->ops->setvalues       = MatSetValues_HYPRE;
@@ -1677,6 +1739,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->restorerow      = MatRestoreRow_HYPRE;
   B->ops->getvalues       = MatGetValues_HYPRE;
   B->ops->setoption       = MatSetOption_HYPRE;
+  B->ops->duplicate       = MatDuplicate_HYPRE;
+  B->ops->view            = MatView_HYPRE;
+
+  /* build cache for off array entries formed */
+  ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)B),1,&B->stash);CHKERRQ(ierr);
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&hB->comm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRE);CHKERRQ(ierr);
