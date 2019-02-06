@@ -4537,6 +4537,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr          = VecDestroy(&snes->vec_rhs);CHKERRQ(ierr);
     snes->vec_rhs = b;
 
+    if (snes->vec_rhs && (snes->vec_func == snes->vec_rhs)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Right hand side vector cannot be function vector");
     if (snes->vec_func == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
     if (snes->vec_rhs  == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be right hand side vector");
     if (!snes->vec_sol_update /* && snes->vec_sol */) {

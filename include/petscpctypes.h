@@ -305,7 +305,7 @@ typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 
 .seealso: PCPatchSetConstructType(), PCEXOTIC
 E*/
-typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
+typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
 
 /*E
     PCFailedReason - indicates type of PC failure

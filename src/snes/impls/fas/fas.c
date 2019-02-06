@@ -763,7 +763,8 @@ static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
     /* downsweep */
     if (next) {
       if (fas->level != 1) next->max_its += 1;
-      if (fas->full_downsweep||isFine) {ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);}
+      if (fas->full_downsweep) {ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);}
+      fas->full_downsweep = PETSC_TRUE;
       ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
       ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
       if (fas->level != 1) next->max_its -= 1;
