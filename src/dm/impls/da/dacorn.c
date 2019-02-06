@@ -76,7 +76,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 /*@C
    DMDAGetFieldNames - Gets the name of each component in the vector associated with the DMDA
 
-   Collective on TS
+   Not Collective
 
    Input Parameter:
 .  dm - the DMDA object
@@ -104,7 +104,7 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 /*@C
    DMDASetFieldNames - Sets the name of each component in the vector associated with the DMDA
 
-   Collective on TS
+   Not Collective
 
    Input Parameters:
 +  dm - the DMDA object
