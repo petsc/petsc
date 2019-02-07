@@ -42,7 +42,7 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
    DMDASetFieldName - Sets the names of individual field components in multicomponent
    vectors associated with a DMDA.
 
-   Not Collective
+   Logically collective on const char name[]
 
    Input Parameters:
 +  da - the distributed array
@@ -104,7 +104,7 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 /*@C
    DMDASetFieldNames - Sets the name of each component in the vector associated with the DMDA
 
-   Not Collective
+   Logically collective on const char * const *names
 
    Input Parameters:
 +  dm - the DMDA object
@@ -177,7 +177,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 /*@C
    DMDASetCoordinateName - Sets the name of the coordinate directions associated with a DMDA, for example "x" or "y"
 
-   Not Collective
+   Logically collective on const char name[]
 
    Input Parameters:
 +  dm - the DM
