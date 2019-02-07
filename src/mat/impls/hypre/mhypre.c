@@ -1741,6 +1741,37 @@ static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
+{
+  hypre_ParCSRMatrix *parcsr;
+  hypre_CSRMatrix    *dmat;
+  PetscScalar        *a,*data = NULL;
+  PetscInt           i,*diag = NULL;
+  PetscBool          cong;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
+  if (!cong) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for square matrices with same local distributions of rows and columns");
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscBool miss;
+    ierr = MatMissingDiagonal(A,&miss,NULL);CHKERRQ(ierr);
+    if (miss && A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented when diagonal entries are missing");
+  }
+#endif
+  ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
+  dmat = hypre_ParCSRMatrixDiag(parcsr);
+  if (dmat) {
+    ierr = VecGetArray(d,&a);CHKERRQ(ierr);
+    diag = (PetscInt*)(hypre_CSRMatrixI(dmat));
+    data = (PetscScalar*)(hypre_CSRMatrixData(dmat));
+    for (i=0;i<A->rmap->n;i++) a[i] = data[diag[i]];
+    ierr = VecRestoreArray(d,&a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATHYPRE - MATHYPRE = "hypre" - A matrix type to be used for sequential and parallel sparse matrices
           based on the hypre IJ interface.
@@ -1788,6 +1819,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->duplicate       = MatDuplicate_HYPRE;
   B->ops->copy            = MatCopy_HYPRE;
   B->ops->view            = MatView_HYPRE;
+  B->ops->getdiagonal     = MatGetDiagonal_HYPRE;
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)B),1,&B->stash);CHKERRQ(ierr);
