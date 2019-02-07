@@ -1797,6 +1797,72 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
   PetscFunctionReturn(0);
 }
 
+#include <petscblaslapack.h>
+
+static PetscErrorCode MatAXPY_HYPRE(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (str == SAME_NONZERO_PATTERN) {
+    hypre_ParCSRMatrix *x,*y;
+    hypre_CSRMatrix    *xloc,*yloc;
+    PetscInt           xnnz,ynnz;
+    PetscScalar        *xarr,*yarr;
+    PetscBLASInt       one=1,bnz;
+
+    ierr = MatHYPREGetParCSR(Y,&y);CHKERRQ(ierr);
+    ierr = MatHYPREGetParCSR(X,&x);CHKERRQ(ierr);
+
+    /* diagonal block */
+    xloc = hypre_ParCSRMatrixDiag(x);
+    yloc = hypre_ParCSRMatrixDiag(y);
+    xnnz = 0;
+    ynnz = 0;
+    xarr = NULL;
+    yarr = NULL;
+    if (xloc) {
+      xarr = (PetscScalar*)(hypre_CSRMatrixData(xloc));
+      xnnz = hypre_CSRMatrixNumNonzeros(xloc);
+    }
+    if (yloc) {
+      yarr = (PetscScalar*)(hypre_CSRMatrixData(yloc));
+      ynnz = hypre_CSRMatrixNumNonzeros(yloc);
+    }
+    if (xnnz != ynnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Different number of nonzeros in diagonal block %D != %D",xnnz,ynnz);
+    ierr = PetscBLASIntCast(xnnz,&bnz);CHKERRQ(ierr);
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&a,xarr,&one,yarr,&one));
+
+    /* off-diagonal block */
+    xloc = hypre_ParCSRMatrixOffd(x);
+    yloc = hypre_ParCSRMatrixOffd(y);
+    xnnz = 0;
+    ynnz = 0;
+    xarr = NULL;
+    yarr = NULL;
+    if (xloc) {
+      xarr = (PetscScalar*)(hypre_CSRMatrixData(xloc));
+      xnnz = hypre_CSRMatrixNumNonzeros(xloc);
+    }
+    if (yloc) {
+      yarr = (PetscScalar*)(hypre_CSRMatrixData(yloc));
+      ynnz = hypre_CSRMatrixNumNonzeros(yloc);
+    }
+    if (xnnz != ynnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Different number of nonzeros in off-diagonal block %D != %D",xnnz,ynnz);
+    ierr = PetscBLASIntCast(xnnz,&bnz);CHKERRQ(ierr);
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&a,xarr,&one,yarr,&one));
+  } else if (str == SUBSET_NONZERO_PATTERN) {
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+  } else {
+    Mat B;
+
+    ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
+    ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATHYPRE - MATHYPRE = "hypre" - A matrix type to be used for sequential and parallel sparse matrices
           based on the hypre IJ interface.
@@ -1847,6 +1913,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->copy             = MatCopy_HYPRE;
   B->ops->view             = MatView_HYPRE;
   B->ops->getdiagonal      = MatGetDiagonal_HYPRE;
+  B->ops->axpy             = MatAXPY_HYPRE;
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)B),1,&B->stash);CHKERRQ(ierr);
