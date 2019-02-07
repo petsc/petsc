@@ -1291,9 +1291,15 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
   if (rend < rstart) rend = rstart;
   if (cend < cstart) cend = cstart;
 
+  /* PETSc convention */
+  rend++;
+  cend++;
+  rend = PetscMin(rend,M);
+  cend = PetscMin(cend,N);
+
   /* create PETSc matrix with MatHYPRE */
   ierr = MatCreate(comm,&T);CHKERRQ(ierr);
-  ierr = MatSetSizes(T,rend-rstart+1,cend-cstart+1,M,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(T,rend-rstart,cend-cstart,M,N);CHKERRQ(ierr);
   ierr = MatSetType(T,MATHYPRE);CHKERRQ(ierr);
   hA   = (Mat_HYPRE*)(T->data);
 
