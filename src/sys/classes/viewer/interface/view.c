@@ -476,9 +476,9 @@ PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pe
 
 PetscErrorCode  PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
 {
-  PetscErrorCode ierr;
-  PetscFileMode mode;
-  PetscErrorCode (*f)(PetscViewer,PetscFileMode*) = NULL;
+  PetscErrorCode    ierr;
+  PetscFileMode     mode;
+  PetscErrorCode    (*f)(PetscViewer,PetscFileMode*) = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -499,9 +499,9 @@ PetscErrorCode  PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
 
 PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
 {
-  PetscErrorCode ierr;
-  PetscFileMode mode;
-  PetscErrorCode (*f)(PetscViewer,PetscFileMode*) = NULL;
+  PetscErrorCode    ierr;
+  PetscFileMode     mode;
+  PetscErrorCode    (*f)(PetscViewer,PetscFileMode*) = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -516,8 +516,8 @@ PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
 
 PetscErrorCode  PetscViewerCheckReadable(PetscViewer viewer)
 {
-  PetscBool flg;
-  PetscErrorCode ierr;
+  PetscBool         flg;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerReadable(viewer, &flg);CHKERRQ(ierr);
@@ -527,8 +527,8 @@ PetscErrorCode  PetscViewerCheckReadable(PetscViewer viewer)
 
 PetscErrorCode  PetscViewerCheckWritable(PetscViewer viewer)
 {
-  PetscBool flg;
-  PetscErrorCode ierr;
+  PetscBool         flg;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerWritable(viewer, &flg);CHKERRQ(ierr);
