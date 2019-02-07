@@ -1323,8 +1323,7 @@ __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients,
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
 . cgeom        - The cell geometry for each cell in the chunk
@@ -1358,8 +1357,7 @@ PetscErrorCode PetscFEIntegrate(PetscDS prob, PetscInt field, PetscInt Ne, Petsc
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . obj_func     - The function to be integrated
 . Ne           - The number of elements in the chunk
@@ -1398,8 +1396,7 @@ PetscErrorCode PetscFEIntegrateBd(PetscDS prob, PetscInt field,
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
 . cgeom        - The cell geometry for each cell in the chunk
@@ -1443,8 +1440,7 @@ PetscErrorCode PetscFEIntegrateResidual(PetscDS prob, PetscInt field, PetscInt N
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
 . fgeom        - The face geometry for each cell in the chunk
@@ -1480,8 +1476,7 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS prob, PetscInt field, PetscInt
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . jtype        - The type of matrix pointwise functions that should be used
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated
