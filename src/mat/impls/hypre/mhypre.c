@@ -1721,6 +1721,24 @@ static PetscErrorCode MatDuplicate_HYPRE(Mat A,MatDuplicateOption op, Mat *B)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
+{
+  hypre_ParCSRMatrix *acsr,*bcsr;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  if (str == SAME_NONZERO_PATTERN && A->ops->copy == B->ops->copy) {
+    ierr = MatHYPREGetParCSR_HYPRE(A,&acsr);CHKERRQ(ierr);
+    ierr = MatHYPREGetParCSR_HYPRE(B,&bcsr);CHKERRQ(ierr);
+    PetscStackCallStandard(hypre_ParCSRMatrixCopy,(acsr,bcsr,1));
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  } else {
+    ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATHYPRE - MATHYPRE = "hypre" - A matrix type to be used for sequential and parallel sparse matrices
           based on the hypre IJ interface.
@@ -1766,6 +1784,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->getvalues       = MatGetValues_HYPRE;
   B->ops->setoption       = MatSetOption_HYPRE;
   B->ops->duplicate       = MatDuplicate_HYPRE;
+  B->ops->copy            = MatCopy_HYPRE;
   B->ops->view            = MatView_HYPRE;
 
   /* build cache for off array entries formed */
