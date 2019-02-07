@@ -7,10 +7,12 @@ static char help[] = "Tests for parallel mesh loading\n\n";
 Network
 -------
 Test 0 (2 ranks):
-mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1
+mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1 -dm_view ascii::ascii_info_detail
+mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1 -orig_dm_view -dist_dm_view -dist_dm_view -petscpartitioner_type parmetis
 
-   cell 0   cell 1   cell 2
-0 ------- 1 ------ 2 ------- 3
+  cell 0   cell 1   cell 2
+0 ------ 1 ------ 2 ------ 3 -- -- v -- -- (nCells-1)
+
   vertex distribution:
     rank 0: 0 1
     rank 1: 2 3
@@ -158,6 +160,7 @@ typedef struct {
   PetscInt   ornt[2];                      /* Orientation of interface on rank 0 and rank 1 */
   PetscInt   faces[3];                     /* Number of faces per dimension for generator */
   char       filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
+  PetscSF    vertexSF;
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -182,6 +185,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->faces[1]     = 2;
   options->faces[2]     = 2;
   options->filename[0]  = '\0';
+  options->vertexSF     = NULL;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex18.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -257,7 +261,7 @@ static PetscErrorCode CreateSimplex_1D(MPI_Comm comm, PetscBool interpolate, App
   default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
   }
 
-  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, coords, NULL, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, coords, &user->vertexSF, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -589,7 +593,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
 
     /* Redistribute mesh over processes using that partitioner */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&user->vertexSF);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, (PetscSF *)&user->vertexSF, &pdm);CHKERRQ(ierr);
     if (pdm) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = pdm;
@@ -634,6 +639,9 @@ int main(int argc, char **argv)
   }
   ierr = DMPlexCheckConesConformOnInterfaces(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  //if (&user.vertexSF) {
+  ierr = PetscSFDestroy(&user.vertexSF);CHKERRQ(ierr);
+    //}
   ierr = PetscFinalize();
   return ierr;
 }
