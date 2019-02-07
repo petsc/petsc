@@ -104,6 +104,7 @@ cdef extern from * nogil:
     ctypedef enum PetscPCPatchConstructType "PCPatchConstructType":
         PC_PATCH_STAR
         PC_PATCH_VANKA
+        PC_PATCH_PARDECOMP
         PC_PATCH_USER
         PC_PATCH_PYTHON
 
@@ -245,9 +246,20 @@ cdef extern from * nogil:
     # --- Patch ---
     ctypedef int (*PetscPCPatchComputeOperator)(PetscPC,
                                                 PetscInt,
+                                                PetscVec,
                                                 PetscMat,
                                                 PetscIS,
                                                 PetscInt,
+                                                const_PetscInt*,
+                                                const_PetscInt*,
+                                                void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscPCPatchComputeFunction)(PetscPC,
+                                                PetscInt,
+                                                PetscVec,
+                                                PetscVec,
+                                                PetscIS,
+                                                PetscInt,
+                                                const_PetscInt*,
                                                 const_PetscInt*,
                                                 void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscPCPatchConstructOperator)(PetscPC,
@@ -258,6 +270,7 @@ cdef extern from * nogil:
     int PCPatchSetCellNumbering(PetscPC, PetscSection)
     int PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscInt*, PetscInt*, const_PetscInt**, const_PetscInt*, PetscInt, const_PetscInt*, PetscInt, const_PetscInt*)
     int PCPatchSetComputeOperator(PetscPC, PetscPCPatchComputeOperator, void*)
+    int PCPatchSetComputeFunction(PetscPC, PetscPCPatchComputeFunction, void*)
     int PCPatchSetConstructType(PetscPC, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
 
 # --------------------------------------------------------------------
@@ -279,11 +292,14 @@ cdef inline PC ref_PC(PetscPC pc):
 cdef int PCPatch_ComputeOperator(
     PetscPC pc,
     PetscInt point,
+    PetscVec vec,
     PetscMat mat,
     PetscIS cells,
     PetscInt ndof,
     const_PetscInt *dofmap,
+    const_PetscInt *dofmapWithAll,
     void *ctx) except PETSC_ERR_PYTHON with gil:
+    cdef Vec Vec = ref_Vec(vec)
     cdef Mat Mat = ref_Mat(mat)
     cdef PC Pc = ref_PC(pc)
     cdef IS Is = ref_IS(cells)
@@ -292,9 +308,37 @@ cdef int PCPatch_ComputeOperator(
     assert context is not None and type(context) is tuple
     (op, args, kargs) = context
     cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
-    op(Pc, toInt(point), Mat, Is, asarray(pydofs), *args, **kargs)
+    cdef PetscInt[:] pydofsWithAll
+    if dofmapWithAll != NULL:
+        pydofsWithAll = <PetscInt[:ndof]>dofmapWithAll
+        dofsall = asarray(pydofsWithAll)
+    else:
+        dofsall = None
+    op(Pc, toInt(point), Vec, Mat, Is, asarray(pydofs), dofsall, *args, **kargs)
     return 0
 
+cdef int PCPatch_ComputeFunction(
+    PetscPC pc,
+    PetscInt point,
+    PetscVec vec,
+    PetscVec out,
+    PetscIS cells,
+    PetscInt ndof,
+    const_PetscInt *dofmap,
+    const_PetscInt *dofmapWithAll,
+    void *ctx) except PETSC_ERR_PYTHON with gil:
+    cdef Vec Out = ref_Vec(out)
+    cdef Vec Vec = ref_Vec(vec)
+    cdef PC Pc = ref_PC(pc)
+    cdef IS Is = ref_IS(cells)
+    cdef object context = Pc.get_attr("__patch_compute_function__")
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple
+    (op, args, kargs) = context
+    cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
+    cdef PetscInt[:] pydofsWithAll = <PetscInt[:ndof]>dofmapWithAll
+    op(Pc, toInt(point), Vec, Out, Is, asarray(pydofs), asarray(pydofsWithAll), *args, **kargs)
+    return 0
 
 cdef int PCPatch_UserConstructOperator(
     PetscPC pc,

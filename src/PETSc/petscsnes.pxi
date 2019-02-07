@@ -19,6 +19,7 @@ cdef extern from * nogil:
     PetscSNESType SNESANDERSON
     PetscSNESType SNESASPIN
     PetscSNESType SNESCOMPOSITE
+    PetscSNESType SNESPATCH
 
     ctypedef enum PetscSNESNormSchedule "SNESNormSchedule":
       SNES_NORM_DEFAULT
@@ -129,7 +130,7 @@ cdef extern from * nogil:
 
     int SNESSetInitialGuess"SNESSetComputeInitialGuess"(PetscSNES,PetscSNESInitialGuessFunction,void*)
     int SNESSetFunction(PetscSNES,PetscVec,PetscSNESFunctionFunction,void*)
-    int SNESGetFunction(PetscSNES,PetscVec*,PetscSNESFunctionFunction*,void**)
+    int SNESGetFunction(PetscSNES,PetscVec*,void*,void**)
     int SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)
     int SNESSetJacobian(PetscSNES,PetscMat,PetscMat,PetscSNESJacobianFunction,void*)
     int SNESGetJacobian(PetscSNES,PetscMat*,PetscMat*,PetscSNESJacobianFunction*,void**)
@@ -204,6 +205,12 @@ cdef extern from * nogil:
     int SNESCompositeGetNumber(PetscSNES,PetscInt*)
     int SNESNASMGetSNES(PetscSNES,PetscInt,PetscSNES*)
     int SNESNASMGetNumber(PetscSNES,PetscInt*)
+
+    int SNESPatchSetCellNumbering(PetscSNES, PetscSection)
+    int SNESPatchSetDiscretisationInfo(PetscSNES, PetscInt, PetscDM*, PetscInt*, PetscInt*, const_PetscInt**, const_PetscInt*, PetscInt, const_PetscInt*, PetscInt, const_PetscInt*)
+    int SNESPatchSetComputeOperator(PetscSNES, PetscPCPatchComputeOperator, void*)
+    int SNESPatchSetComputeFunction(PetscSNES, PetscPCPatchComputeFunction, void*)
+    int SNESPatchSetConstructType(PetscSNES, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
 
 cdef extern from "custom.h" nogil:
     int SNESSetUseMFFD(PetscSNES,PetscBool)

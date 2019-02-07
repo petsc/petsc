@@ -19,6 +19,7 @@ class SNESType(object):
     ANDERSON     = S_(SNESANDERSON)
     ASPIN        = S_(SNESASPIN)
     COMPOSITE    = S_(SNESCOMPOSITE)
+    PATCH        = S_(SNESPATCH)
 
 class SNESNormSchedule(object):
     # native
@@ -271,10 +272,23 @@ cdef class SNES(Object):
 
     def getFunction(self):
         cdef Vec f = Vec()
-        CHKERR( SNESGetFunction(self.snes, &f.vec, NULL, NULL) )
+        cdef void* ctx
+        cdef int (*fun)(PetscSNES,PetscVec,PetscVec,void*)
+        CHKERR( SNESGetFunction(self.snes, &f.vec, <void*>&fun, &ctx) )
         PetscINCREF(f.obj)
         cdef object function = self.get_attr('__function__')
-        return (f, function)
+        cdef object context
+
+        if function is not None:
+            return (f, function)
+
+        if ctx != NULL and <void*>SNES_Function == <void*>fun:
+            context = <object>ctx
+            if context is not None:
+                assert type(context) is tuple
+                return (f, context)
+
+        return (f, None)
 
     def setUpdate(self, update, args=None, kargs=None):
         if update is not None:
@@ -387,15 +401,19 @@ cdef class SNES(Object):
         return normsched
 
     def setConvergenceTest(self, converged, args=None, kargs=None):
-        if converged is not None:
+        if converged == "skip":
+            self.set_attr('__converged__', None)
+            CHKERR( SNESSetConvergenceTest(self.snes, SNESConvergedSkip, NULL, NULL) )
+        elif converged is None or converged == "default":
+            self.set_attr('__converged__', None)
+            CHKERR( SNESSetConvergenceTest(self.snes, SNESConvergedDefault, NULL, NULL) )
+        else:
+            assert callable(converged)
             if args  is None: args  = ()
             if kargs is None: kargs = {}
             context = (converged, args, kargs)
             self.set_attr('__converged__', context)
             CHKERR( SNESSetConvergenceTest(self.snes, SNES_Converged, <void*>context, NULL) )
-        else:
-            CHKERR( SNESSetConvergenceTest(self.snes, SNESConvergedDefault, NULL, NULL) )
-            self.set_attr('__converged__', None)
 
     def getConvergenceTest(self):
         return self.get_attr('__converged__')
@@ -732,6 +750,78 @@ cdef class SNES(Object):
         cdef PetscInt cn = 0
         CHKERR( SNESNASMGetNumber(self.snes, &cn) )
         return toInt(cn)
+
+    # --- Patch ---
+
+    def setPatchCellNumbering(self, Section sec not None):
+        CHKERR( SNESPatchSetCellNumbering(self.snes, sec.sec) )
+
+    def setPatchDiscretisationInfo(self, dms, bs,
+                                   cellNodeMaps,
+                                   subspaceOffsets,
+                                   ghostBcNodes,
+                                   globalBcNodes):
+        cdef PetscInt numSubSpaces = 0
+        cdef PetscInt numGhostBcs = 0, numGlobalBcs = 0
+        cdef PetscInt *nodesPerCell = NULL
+        cdef const_PetscInt **ccellNodeMaps = NULL
+        cdef PetscDM *cdms = NULL
+        cdef PetscInt *cbs = NULL
+        cdef PetscInt *csubspaceOffsets = NULL
+        cdef PetscInt *cghostBcNodes = NULL
+        cdef PetscInt *cglobalBcNodes = NULL
+        cdef PetscInt i = 0
+
+        bs = iarray_i(bs, &numSubSpaces, &cbs)
+        ghostBcNodes = iarray_i(ghostBcNodes, &numGhostBcs, &cghostBcNodes)
+        globalBcNodes = iarray_i(globalBcNodes, &numGlobalBcs, &cglobalBcNodes)
+        subspaceOffsets = iarray_i(subspaceOffsets, NULL, &csubspaceOffsets)
+
+        CHKERR( PetscMalloc(<size_t>numSubSpaces*sizeof(PetscInt), &nodesPerCell) )
+        CHKERR( PetscMalloc(<size_t>numSubSpaces*sizeof(PetscDM), &cdms) )
+        CHKERR( PetscMalloc(<size_t>numSubSpaces*sizeof(PetscInt*), &ccellNodeMaps) )
+        for i in range(numSubSpaces):
+            cdms[i] = (<DM?>dms[i]).dm
+            _, nodes = asarray(cellNodeMaps[i]).shape
+            cellNodeMaps[i] = iarray_i(cellNodeMaps[i], NULL, <PetscInt**>&(ccellNodeMaps[i]))
+            nodesPerCell[i] = asInt(nodes)
+
+        # TODO: refactor on the PETSc side to take ISes?
+        CHKERR( SNESPatchSetDiscretisationInfo(self.snes, numSubSpaces,
+                                               cdms, cbs, nodesPerCell,
+                                               ccellNodeMaps, csubspaceOffsets,
+                                               numGhostBcs, cghostBcNodes,
+                                               numGlobalBcs, cglobalBcNodes) )
+        CHKERR( PetscFree(nodesPerCell) )
+        CHKERR( PetscFree(cdms) )
+        CHKERR( PetscFree(ccellNodeMaps) )
+
+    def setPatchComputeOperator(self, operator, args=None, kargs=None):
+        if args is  None: args  = ()
+        if kargs is None: kargs = {}
+        context = (operator, args, kargs)
+        self.set_attr("__patch_compute_operator__", context)
+        CHKERR( SNESPatchSetComputeOperator(self.snes, PCPatch_ComputeOperator, <void*>context) )
+
+    def setPatchComputeFunction(self, function, args=None, kargs=None):
+        if args is  None: args  = ()
+        if kargs is None: kargs = {}
+        context = (function, args, kargs)
+        self.set_attr("__patch_compute_function__", context)
+        CHKERR( SNESPatchSetComputeFunction(self.snes, PCPatch_ComputeFunction, <void*>context) )
+
+    def setPatchConstructType(self, typ, operator=None, args=None, kargs=None):
+        if args is  None: args  = ()
+        if kargs is None: kargs = {}
+
+        if typ in {PC.PatchConstructType.PYTHON, PC.PatchConstructType.USER} and operator is None:
+            raise ValueError("Must provide operator for USER or PYTHON type")
+        if operator is not None:
+            context = (operator, args, kargs)
+        else:
+            context = None
+        self.set_attr("__patch_construction_operator__", context)
+        CHKERR( SNESPatchSetConstructType(self.snes, typ, PCPatch_UserConstructOperator, <void*>context) )
 
     # --- application context ---
 

@@ -107,6 +107,7 @@ class PCFieldSplitSchurFactType(object):
 class PCPatchConstructType(object):
     STAR                     = PC_PATCH_STAR
     VANKA                    = PC_PATCH_VANKA
+    PARDECOMP                = PC_PATCH_PARDECOMP
     USER                     = PC_PATCH_USER
     PYTHON                   = PC_PATCH_PYTHON
 
@@ -676,8 +677,8 @@ cdef class PC(Object):
                                    subspaceOffsets,
                                    ghostBcNodes,
                                    globalBcNodes):
-        cdef PetscInt numSubSpaces
-        cdef PetscInt numGhostBcs, numGlobalBcs
+        cdef PetscInt numSubSpaces = 0
+        cdef PetscInt numGhostBcs = 0, numGlobalBcs = 0
         cdef PetscInt *nodesPerCell = NULL
         cdef const_PetscInt **ccellNodeMaps = NULL
         cdef PetscDM *cdms = NULL
@@ -685,7 +686,7 @@ cdef class PC(Object):
         cdef PetscInt *csubspaceOffsets = NULL
         cdef PetscInt *cghostBcNodes = NULL
         cdef PetscInt *cglobalBcNodes = NULL
-        cdef PetscInt i
+        cdef PetscInt i = 0
 
         bs = iarray_i(bs, &numSubSpaces, &cbs)
         ghostBcNodes = iarray_i(ghostBcNodes, &numGhostBcs, &cghostBcNodes)
@@ -717,6 +718,13 @@ cdef class PC(Object):
         context = (operator, args, kargs)
         self.set_attr("__patch_compute_operator__", context)
         CHKERR( PCPatchSetComputeOperator(self.pc, PCPatch_ComputeOperator, <void*>context) )
+
+    def setPatchComputeFunction(self, function, args=None, kargs=None):
+        if args is  None: args  = ()
+        if kargs is None: kargs = {}
+        context = (function, args, kargs)
+        self.set_attr("__patch_compute_function__", context)
+        CHKERR( PCPatchSetComputeFunction(self.pc, PCPatch_ComputeFunction, <void*>context) )
 
     def setPatchConstructType(self, typ, operator=None, args=None, kargs=None):
         if args is  None: args  = ()
