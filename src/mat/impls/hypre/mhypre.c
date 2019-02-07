@@ -1010,6 +1010,21 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
   }
 
   PetscStackCallStandard(HYPRE_IJMatrixAssemble,(hA->ij));
+  /* The assembly routine destroys the aux_matrix, we recreate it here by calling HYPRE_IJMatrixInitalize */
+  {
+    hypre_AuxParCSRMatrix *aux_matrix;
+
+    /* call destroy just to make sure we do not leak anything */
+    aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(hA->ij);
+    PetscStackCallStandard(hypre_AuxParCSRMatrixDestroy,(aux_matrix));
+    hypre_IJMatrixTranslator(hA->ij) = NULL;
+
+    /* Initialize with assembled flag -> it only recreates the aux_par_matrix */
+    PetscStackCallStandard(HYPRE_IJMatrixInitialize,(hA->ij));
+    aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(hA->ij);
+    hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 1; /* see comment in MatHYPRESetPreallocation_HYPRE */
+    PetscStackCallStandard(hypre_AuxParCSRMatrixInitialize,(aux_matrix));
+  }
   if (hA->x) PetscFunctionReturn(0);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
@@ -1098,7 +1113,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
         PetscInt j;
         for (j=0;j<nzc;j++) sscr[j] = vals[cscr[1][j]];
         /* nonlocal values */
-        if (rows[i] < rst || rows[i] >= ren) { ierr = MatStashValuesRow_Private(&A->stash,rows[i],nzc,cscr[0],sscr, PETSC_FALSE);CHKERRQ(ierr); }
+        if (rows[i] < rst || rows[i] >= ren) { ierr = MatStashValuesRow_Private(&A->stash,rows[i],nzc,cscr[0],sscr,PETSC_FALSE);CHKERRQ(ierr); }
         /* local values */
         else PetscStackCallStandard(HYPRE_IJMatrixSetValues,(hA->ij,1,(HYPRE_Int*)&nzc,(HYPRE_Int*)(rows+i),(HYPRE_Int*)cscr[0],sscr));
       }
@@ -1170,6 +1185,8 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     PetscStackCallStandard(HYPRE_IJMatrixSetRowSizes,(hA->ij,hdnnz));
   }
 
+  /* reset assembled flag and call the initialize method */
+  hypre_IJMatrixAssembleFlag(hA->ij) = 0;
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(hA->ij));
   if (!dnnz) {
     ierr = PetscFree(hdnnz);CHKERRQ(ierr);
@@ -1177,7 +1194,10 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
   if (!onnz && honnz) {
     ierr = PetscFree(honnz);CHKERRQ(ierr);
   }
+
+  /* Match AIJ logic */
   A->preallocated = PETSC_TRUE;
+  A->assembled    = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1211,7 +1231,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatMPIAIJSetPreallocation, MATHYPRE
+.seealso: MatCreate(), MatMPIAIJSetPreallocation(), MATHYPRE
 @*/
 PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
 {
