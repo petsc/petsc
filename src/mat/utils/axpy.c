@@ -126,12 +126,16 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc1(n+1,&val);CHKERRQ(ierr);
+    PetscInt vs = 100;
+    /* realloc if needed, as this function may be used in parallel */
+    ierr = PetscMalloc1(vs,&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      for (j=0; j<ncols; j++) {
-        val[j] = a*vals[j];
+      if (vs < ncols) {
+        vs   = PetscMin(2*ncols,n);
+        ierr = PetscRealloc(vs*sizeof(*val),&val);CHKERRQ(ierr);
       }
+      for (j=0; j<ncols; j++) val[j] = a*vals[j];
       ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
@@ -164,16 +168,20 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc1(n+1,&val);CHKERRQ(ierr);
+    PetscInt vs = 100;
+    /* realloc if needed, as this function may be used in parallel */
+    ierr = PetscMalloc1(vs,&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
       ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
 
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      for (j=0; j<ncols; j++) {
-        val[j] = a*vals[j];
+      if (vs < ncols) {
+        vs   = PetscMin(2*ncols,n);
+        ierr = PetscRealloc(vs*sizeof(*val),&val);CHKERRQ(ierr);
       }
+      for (j=0; j<ncols; j++) val[j] = a*vals[j];
       ierr = MatSetValues(B,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
