@@ -324,12 +324,12 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
 
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
 {
+  Mat            M = NULL;
   Mat_HYPRE      *hB;
   MPI_Comm       comm = PetscObjectComm((PetscObject)A);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INPLACE_MATRIX) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported MAT_INPLACE_MATRIX");
   if (reuse == MAT_REUSE_MATRIX) {
     /* always destroy the old matrix and create a new memory;
        hope this does not churn the memory too much. The problem
@@ -339,13 +339,17 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
     hB = (Mat_HYPRE*)((*B)->data);
     PetscStackCallStandard(HYPRE_IJMatrixDestroy,(hB->ij));
   } else {
-    ierr = MatCreate(comm,B);CHKERRQ(ierr);
-    ierr = MatSetType(*B,MATHYPRE);CHKERRQ(ierr);
-    ierr = MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-    hB   = (Mat_HYPRE*)((*B)->data);
+    ierr = MatCreate(comm,&M);CHKERRQ(ierr);
+    ierr = MatSetType(M,MATHYPRE);CHKERRQ(ierr);
+    ierr = MatSetSizes(M,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    hB   = (Mat_HYPRE*)(M->data);
+    if (reuse == MAT_INITIAL_MATRIX) *B = M;
   }
   ierr = MatHYPRE_CreateFromMat(A,hB);CHKERRQ(ierr);
   ierr = MatHYPRE_IJMatrixCopy(A,hB->ij);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&M);CHKERRQ(ierr);
+  }
   (*B)->preallocated = PETSC_TRUE;
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -974,7 +978,6 @@ static PetscErrorCode MatSetUp_HYPRE(Mat A)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
@@ -1066,7 +1069,6 @@ static PetscErrorCode MatRestoreArray_HYPRE(Mat A, void **array)
   hA->available = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], PetscInt nc, const PetscInt cols[], const PetscScalar v[], InsertMode ins)
 {
