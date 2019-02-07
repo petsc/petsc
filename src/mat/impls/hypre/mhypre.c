@@ -19,7 +19,7 @@ static PetscErrorCode MatHYPRE_CreateFromMat(Mat,Mat_HYPRE*);
 static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat,Mat,HYPRE_IJMatrix);
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat,HYPRE_IJMatrix);
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat,HYPRE_IJMatrix);
-static PetscErrorCode MatHYPRE_MultKernel_Private(Mat,Vec,Vec,PetscBool);
+static PetscErrorCode MatHYPRE_MultKernel_Private(Mat,PetscScalar,Vec,PetscScalar,Vec,PetscBool);
 static PetscErrorCode hypre_array_destroy(void*);
 PetscErrorCode MatSetValues_HYPRE(Mat, PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode ins);
 
@@ -895,7 +895,7 @@ static PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatHYPRE_MultKernel_Private(A,x,y,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatHYPRE_MultKernel_Private(A,1.0,x,0.0,y,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -904,11 +904,36 @@ static PetscErrorCode MatMult_HYPRE(Mat A, Vec x, Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatHYPRE_MultKernel_Private(A,x,y,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatHYPRE_MultKernel_Private(A,1.0,x,0.0,y,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, Vec x, Vec y, PetscBool trans)
+static PetscErrorCode MatMultAdd_HYPRE(Mat A, Vec x, Vec y, Vec z)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (y != z) {
+    ierr = VecCopy(y,z);CHKERRQ(ierr);
+  }
+  ierr = MatHYPRE_MultKernel_Private(A,1.0,x,1.0,z,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMultTransposeAdd_HYPRE(Mat A, Vec x, Vec y, Vec z)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (y != z) {
+    ierr = VecCopy(y,z);CHKERRQ(ierr);
+  }
+  ierr = MatHYPRE_MultKernel_Private(A,1.0,x,1.0,z,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* y = a * A * x + b * y or y = a * A^t * x + b * y depending on trans */
+static PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, PetscScalar a, Vec x, PetscScalar b, Vec y, PetscBool trans)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
   hypre_ParCSRMatrix *parcsr;
@@ -925,13 +950,13 @@ static PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, Vec x, Vec y, PetscBool
   if (trans) {
     VecHYPRE_ParVectorReplacePointer(hA->x,ay,say);
     VecHYPRE_ParVectorReplacePointer(hA->b,ax,sax);
-    hypre_ParCSRMatrixMatvecT(1.,parcsr,hy,0.,hx);
+    hypre_ParCSRMatrixMatvecT(a,parcsr,hy,b,hx);
     VecHYPRE_ParVectorReplacePointer(hA->x,say,ay);
     VecHYPRE_ParVectorReplacePointer(hA->b,sax,ax);
   } else {
     VecHYPRE_ParVectorReplacePointer(hA->x,ax,sax);
     VecHYPRE_ParVectorReplacePointer(hA->b,ay,say);
-    hypre_ParCSRMatrixMatvec(1.,parcsr,hx,0.,hy);
+    hypre_ParCSRMatrixMatvec(a,parcsr,hx,b,hy);
     VecHYPRE_ParVectorReplacePointer(hA->x,sax,ax);
     VecHYPRE_ParVectorReplacePointer(hA->b,say,ay);
   }
@@ -1798,28 +1823,30 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->assembled  = PETSC_FALSE;
 
   ierr = PetscMemzero(B->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->mult            = MatMult_HYPRE;
-  B->ops->multtranspose   = MatMultTranspose_HYPRE;
-  B->ops->setup           = MatSetUp_HYPRE;
-  B->ops->destroy         = MatDestroy_HYPRE;
-  B->ops->assemblyend     = MatAssemblyEnd_HYPRE;
-  B->ops->assemblybegin   = MatAssemblyBegin_HYPRE;
-  B->ops->ptap            = MatPtAP_HYPRE_HYPRE;
-  B->ops->matmult         = MatMatMult_HYPRE_HYPRE;
-  B->ops->setvalues       = MatSetValues_HYPRE;
-  B->ops->missingdiagonal = MatMissingDiagonal_HYPRE;
-  B->ops->scale           = MatScale_HYPRE;
-  B->ops->zerorowscolumns = MatZeroRowsColumns_HYPRE;
-  B->ops->zeroentries     = MatZeroEntries_HYPRE;
-  B->ops->zerorows        = MatZeroRows_HYPRE;
-  B->ops->getrow          = MatGetRow_HYPRE;
-  B->ops->restorerow      = MatRestoreRow_HYPRE;
-  B->ops->getvalues       = MatGetValues_HYPRE;
-  B->ops->setoption       = MatSetOption_HYPRE;
-  B->ops->duplicate       = MatDuplicate_HYPRE;
-  B->ops->copy            = MatCopy_HYPRE;
-  B->ops->view            = MatView_HYPRE;
-  B->ops->getdiagonal     = MatGetDiagonal_HYPRE;
+  B->ops->mult             = MatMult_HYPRE;
+  B->ops->multtranspose    = MatMultTranspose_HYPRE;
+  B->ops->multadd          = MatMultAdd_HYPRE;
+  B->ops->multtransposeadd = MatMultTransposeAdd_HYPRE;
+  B->ops->setup            = MatSetUp_HYPRE;
+  B->ops->destroy          = MatDestroy_HYPRE;
+  B->ops->assemblyend      = MatAssemblyEnd_HYPRE;
+  B->ops->assemblybegin    = MatAssemblyBegin_HYPRE;
+  B->ops->ptap             = MatPtAP_HYPRE_HYPRE;
+  B->ops->matmult          = MatMatMult_HYPRE_HYPRE;
+  B->ops->setvalues        = MatSetValues_HYPRE;
+  B->ops->missingdiagonal  = MatMissingDiagonal_HYPRE;
+  B->ops->scale            = MatScale_HYPRE;
+  B->ops->zerorowscolumns  = MatZeroRowsColumns_HYPRE;
+  B->ops->zeroentries      = MatZeroEntries_HYPRE;
+  B->ops->zerorows         = MatZeroRows_HYPRE;
+  B->ops->getrow           = MatGetRow_HYPRE;
+  B->ops->restorerow       = MatRestoreRow_HYPRE;
+  B->ops->getvalues        = MatGetValues_HYPRE;
+  B->ops->setoption        = MatSetOption_HYPRE;
+  B->ops->duplicate        = MatDuplicate_HYPRE;
+  B->ops->copy             = MatCopy_HYPRE;
+  B->ops->view             = MatView_HYPRE;
+  B->ops->getdiagonal      = MatGetDiagonal_HYPRE;
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)B),1,&B->stash);CHKERRQ(ierr);
