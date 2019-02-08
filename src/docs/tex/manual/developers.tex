@@ -418,11 +418,17 @@ Each function, typedef, class, macro, enum, and so on in the public API should i
 All entries below should be separated by blank lines. Except where noted, add a newline after the section headings.
 \begin{enumerate}
   \item The item's name, followed by a dash and brief (one-sentence) description.
-  \item If documenting a function, a description of the function's ``collectivity'' (whether all ranks in an MPI communicator need to participate).
+  \item If documenting a function, a description of the function's ``collectivity''
+    (whether all ranks in an MPI communicator need to participate). Unless otherwise noted,
+    it's assumed that this collectivity is with respect to the MPI communicator associated with the first argument.
     \begin{itemize}
     \item \trl{Not Collective} if the function need not be called on all MPI ranks
-    \item \trl{Collective [on XXX]} if the function is a collective operation (with respect to the data of class \lstinline{XXX})
-    \item \trl{Logically Collective [on XXX]} if the function is collective but does not require any actual synchronization (say, setting class parameters uniformly).
+    \item \trl{Collective [on XXX]} if the function is a collective operation
+      (with respect to the MPI communicator associated with argument \lstinline{XXX})
+    \item \trl{Logically Collective [on XXX][; YYY must contain common value]} if
+      the function is collective but does not require any actual synchronization
+      (e.g. setting class parameters uniformly). Any argument YYY which must have the
+        same value on all ranks of the MPI communicator should be noted here.
     \end{itemize}
   \item If documenting a function with input parameters, a list of input parameter descriptions in an \trl{Input Parameters: } section.
   \item If documenting a function with output parameters, a list of output parameter descriptions in an \trl{Output Parameters: } section.
