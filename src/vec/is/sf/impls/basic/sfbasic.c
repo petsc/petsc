@@ -558,6 +558,12 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   }
   ierr = PetscCommBuildTwoSided(comm,1,MPIU_INT,sf->nranks-sf->ndranks,sf->ranks+sf->ndranks,rlengths+sf->ndranks,&niranks,&iranks,(void**)&ilengths);CHKERRQ(ierr);
 
+  /* Sort iranks. See use of VecScatterGetRemoteOrdered_Private() in MatGetBrowsOfAoCols_MPIAIJ() on why.
+     We could sort ranks there at the price of allocating extra working arrays. Presumably, niranks is
+     small and the sorting is cheap.
+   */
+  ierr = PetscSortMPIIntWithIntArray(niranks,iranks,ilengths);CHKERRQ(ierr);
+
   /* Partition into distinguished and non-distinguished incoming ranks */
   bas->ndiranks = sf->ndranks;
   bas->niranks = bas->ndiranks + niranks;
