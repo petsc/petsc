@@ -204,6 +204,7 @@ int main(int argc,char **args)
   ierr = MatNorm(CD,NORM_INFINITY,&err);CHKERRQ(ierr);
   if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
   ierr = MatDestroy(&CD);CHKERRQ(ierr);
   ierr = MatDestroy(&pAB);CHKERRQ(ierr);
 
