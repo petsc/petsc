@@ -3255,6 +3255,8 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
 PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   const char    *extGmsh    = ".msh";
+  const char    *extGmsh2   = ".msh2";
+  const char    *extGmsh4   = ".msh4";
   const char    *extCGNS    = ".cgns";
   const char    *extExodus  = ".exo";
   const char    *extGenesis = ".gen";
@@ -3264,7 +3266,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extPLY     = ".ply";
   const char    *extCV      = ".dat";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isCV;
+  PetscBool      isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isCV;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -3275,6 +3277,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Filename must be a valid path");
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh,    4, &isGmsh);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extGmsh2,   5, &isGmsh2);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extGmsh4,   5, &isGmsh4);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,    5, &isCGNS);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus,  4, &isExodus);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGenesis, 4, &isGenesis);CHKERRQ(ierr);
@@ -3283,7 +3287,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extMed,     4, &isMed);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extPLY,     4, &isPLY);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extCV,      4, &isCV);CHKERRQ(ierr);
-  if (isGmsh) {
+  if (isGmsh || isGmsh2 || isGmsh4) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
     ierr = DMPlexCreateCGNSFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);

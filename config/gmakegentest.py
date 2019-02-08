@@ -113,7 +113,7 @@ class generateExamples(Petsc):
 
     # For help in setting the requirements
     self.precision_types="single double __float128 int32".split()
-    self.integer_types="int32 int64".split()
+    self.integer_types="int32 int64 long32 long64".split()
     self.languages="fortran cuda cxx cpp".split()    # Always requires C so do not list
 
     # Things that are not test
@@ -733,6 +733,17 @@ class generateExamples(Petsc):
               continue  # Success
             elif not isNull:
               testDict['SKIP'].append("int64 required")
+              continue
+          if requirement.startswith("long"):
+            reqsize = int(requirement[4:])//8
+            longsize = int(self.conf['PETSC_SIZEOF_LONG'].strip())
+            if longsize==reqsize:
+              if isNull:
+                testDict['SKIP'].append("not %s required" % requirement)
+                continue
+              continue  # Success
+            elif not isNull:
+              testDict['SKIP'].append("%s required" % requirement)
               continue
         # Datafilespath
         if requirement=="datafilespath" and not isNull:
