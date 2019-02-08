@@ -79,6 +79,7 @@ typedef struct {
   PCCompositeType      local_composition_type; /* locally additive or multiplicative? */
   /* Patch solves */
   Vec                  cellMats;           /* Cell element tensors */
+  PetscInt            *precomputedTensorLocations; /* Locations of the precomputed tensors for each cell. */
   Mat                 *mat;                /* System matrix for each patch */
   Mat                 *matWithArtificial;   /* System matrix including dofs with artificial bcs for each patch */
   MatType              sub_mat_type;       /* Matrix type for patch systems */
