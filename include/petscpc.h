@@ -382,6 +382,8 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
 
 PETSC_EXTERN PetscErrorCode PCPatchSetSaveOperators(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCPatchGetSaveOperators(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCPatchSetPrecomputeElementTensors(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCPatchGetPrecomputeElementTensors(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCPatchSetPartitionOfUnity(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCPatchGetPartitionOfUnity(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCPatchSetMultiplicative(PC, PetscBool);

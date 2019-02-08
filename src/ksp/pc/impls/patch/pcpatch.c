@@ -341,6 +341,24 @@ PetscErrorCode PCPatchGetSaveOperators(PC pc, PetscBool *flg)
 }
 
 /* TODO: Docs */
+PetscErrorCode PCPatchSetPrecomputeElementTensors(PC pc, PetscBool flg)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+  PetscFunctionBegin;
+  patch->precomputeElementTensors = flg;
+  PetscFunctionReturn(0);
+}
+
+/* TODO: Docs */
+PetscErrorCode PCPatchGetPrecomputeElementTensors(PC pc, PetscBool *flg)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+  PetscFunctionBegin;
+  *flg = patch->precomputeElementTensors;
+  PetscFunctionReturn(0);
+}
+
+/* TODO: Docs */
 PetscErrorCode PCPatchSetPartitionOfUnity(PC pc, PetscBool flg)
 {
   PC_PATCH *patch = (PC_PATCH *) pc->data;
@@ -1884,6 +1902,7 @@ static PetscErrorCode PCPatchComputeFunction_DMPlex_Private(PC pc, PetscInt patc
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (patch->precomputeElementTensors) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Precomputing element tensors not implemented with DMPlex compute operator");
   ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
   /* Set offset into patch */
@@ -1997,7 +2016,6 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   const PetscInt *dofsArray;
-  const PetscInt *dofsArrayWithArtificial = NULL;
   const PetscInt *dofsArrayWithAll = NULL;
   const PetscInt *cellsArray;
   PetscInt        ncell, offset, pStart, pEnd, numIntFacets, intFacetOffset;
@@ -2028,11 +2046,27 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  PetscStackPush("PCPatch user callback");
-  /* Cannot reuse the same IS because the geometry info is being cached in it */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
-  ierr = patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, dofsArrayWithAll ? dofsArrayWithAll + offset*patch->totalDofsPerCell : NULL, patch->usercomputeopctx);CHKERRQ(ierr);
+  if (patch->precomputeElementTensors) {
+    PetscInt           i;
+    PetscInt           ndof = patch->totalDofsPerCell;
+    const PetscScalar *elementTensors;
 
+    ierr = VecGetArrayRead(patch->cellMats, &elementTensors);CHKERRQ(ierr);
+    for (i = 0; i < ncell; i++) {
+      const PetscInt     cell = cellsArray[i + offset];
+      const PetscInt    *idx  = dofsArray + (offset + i)*ndof;
+      const PetscScalar *v    = elementTensors + cell*ndof*ndof;
+      ierr = MatSetValues(mat, ndof, idx, ndof, idx, v, ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArrayRead(patch->cellMats, &elementTensors);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  } else {
+    PetscStackPush("PCPatch user callback");
+    /* Cannot reuse the same IS because the geometry info is being cached in it */
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
+    ierr = patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, dofsArrayWithAll ? dofsArrayWithAll + offset*patch->totalDofsPerCell : NULL, patch->usercomputeopctx);CHKERRQ(ierr);
+  }
   if (patch->usercomputeopintfacet) {
     ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset);CHKERRQ(ierr);
@@ -2101,6 +2135,110 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     ierr = ObjectView((PetscObject) mat, patch->viewerMatrix, patch->formatMatrix);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSetValues_PCPatch_Private(Mat mat, PetscInt m, const PetscInt idxm[],
+                                                   PetscInt n, const PetscInt idxn[], const PetscScalar *v, InsertMode addv)
+{
+  Vec data;
+  PetscScalar *array;
+  PetscInt bs, nz, i, j;
+  PetscErrorCode ierr;
+
+  ierr = MatShellGetContext(mat, &data);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(data, &bs);CHKERRQ(ierr);
+  ierr = VecGetSize(data, &nz);CHKERRQ(ierr);
+  ierr = VecGetArray(data, &array);CHKERRQ(ierr);
+  if (m != n) SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONG, "Only for square insertion");
+  for (i = 0; i < m; i++) {
+    const PetscInt row = idxm[i];
+    if (idxm[i] != idxn[i]) SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONG, "Row and column indices must match!");
+    for (j = 0; j < n; j++) {
+      const PetscScalar v_ = v[i*bs + j];
+      /* Indexing is special to the data structure we have! */
+      if (addv == INSERT_VALUES) {
+        array[row*bs + j] = v_;
+      } else {
+        array[row*bs + j] += v_;
+      }
+    }
+  }
+  ierr = VecRestoreArray(data, &array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
+{
+  PC_PATCH       *patch = (PC_PATCH *)pc->data;
+  const PetscInt *cellsArray;
+  PetscScalar    *elementArray;
+  PetscInt        ncell, offset;
+  const PetscInt *dofMapArray;
+  PetscInt        i, j;
+  IS              dofMap;
+  IS              cellIS;
+  const PetscInt  ndof  = patch->totalDofsPerCell;
+  PetscErrorCode  ierr;
+  Mat             vecMat;
+
+  ierr = PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
+
+  if (!patch->allCells) {
+    PetscHSetI      cells;
+    PetscHashIter   hi;
+    PetscInt pStart, pEnd;
+    PetscInt *allCells = NULL;
+    ierr = PetscHSetICreate(&cells);CHKERRQ(ierr);
+    ierr = ISGetIndices(patch->cells, &cellsArray);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(patch->cellCounts, &pStart, &pEnd);CHKERRQ(ierr);
+    for (i = pStart; i < pEnd; i++) {
+      ierr = PetscSectionGetDof(patch->cellCounts, i, &ncell);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(patch->cellCounts, i, &offset);CHKERRQ(ierr);
+      if (ncell <= 0) continue;
+      for (j = 0; j < ncell; j++) {
+        PetscHSetIAdd(cells, cellsArray[offset + j]);CHKERRQ(ierr);
+      }
+    }
+    ierr = ISRestoreIndices(patch->cells, &cellsArray);CHKERRQ(ierr);
+    ierr = PetscHSetIGetSize(cells, &ncell);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ncell, &allCells);CHKERRQ(ierr);
+    i = 0;
+    PetscHashIterBegin(cells, hi);
+    while (!PetscHashIterAtEnd(cells, hi)) {
+      PetscHashIterGetKey(cells, hi, allCells[i++]);
+      PetscHashIterNext(cells, hi);
+    }
+    ierr = PetscHSetIDestroy(&cells);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, allCells, PETSC_OWN_POINTER, &patch->allCells);CHKERRQ(ierr);
+  }
+
+  if (!patch->cellMats) {
+    ierr = VecCreateSeq(PETSC_COMM_SELF, ncell*ndof*ndof, &patch->cellMats);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(patch->cellMats, ndof);CHKERRQ(ierr);
+  }
+  ierr = VecSet(patch->cellMats, 0);CHKERRQ(ierr);
+
+  ierr = MatCreateShell(PETSC_COMM_SELF, ncell*ndof, ncell*ndof, ncell*ndof, ncell*ndof,
+                        (void*)patch->cellMats, &vecMat);
+  ierr = MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void(*)(void))&MatSetValues_PCPatch_Private);CHKERRQ(ierr);
+  ierr = ISGetSize(patch->allCells, &ncell);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF, ndof*ncell, 0, 1, &dofMap);CHKERRQ(ierr);
+  ierr = ISGetIndices(dofMap, &dofMapArray);CHKERRQ(ierr);
+  ierr = ISGetIndices(patch->allCells, &cellsArray);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray, PETSC_USE_POINTER, &cellIS);CHKERRQ(ierr);
+  PetscStackPush("PCPatch user callback");
+  /* TODO: Fix for DMPlex compute op, this bypasses a lot of the machinery and just assembles every element tensor. */
+  ierr = patch->usercomputeop(pc, -1, NULL, vecMat, cellIS, ndof*ncell, dofMapArray, NULL, patch->usercomputeopctx);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  ierr = MatDestroy(&vecMat);CHKERRQ(ierr);
+  ierr = VecView(patch->cellMats, 0);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(patch->allCells, &cellsArray);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(dofMap, &dofMapArray);CHKERRQ(ierr);
+  ierr = ISDestroy(&dofMap);CHKERRQ(ierr);
+  ierr = PetscFree(dofMap);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -2636,7 +2774,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* TODO: Get rid of all these ifs */
+
   ierr = PetscSFDestroy(&patch->defaultSF);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&patch->cellCounts);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&patch->pointCounts);CHKERRQ(ierr);
@@ -2658,7 +2796,8 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   ierr = ISDestroy(&patch->gtolWithAll);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->dofsWithAll);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->offsWithAll);CHKERRQ(ierr);
-
+  ierr = VecDestroy(&patch->cellMats);CHKERRQ(ierr);
+  ierr = ISDestroy(&patch->allCells);CHKERRQ(ierr);
 
   if (patch->dofSection) for (i = 0; i < patch->nsubspaces; i++) {ierr = PetscSectionDestroy(&patch->dofSection[i]);CHKERRQ(ierr);}
   ierr = PetscFree(patch->dofSection);CHKERRQ(ierr);
@@ -2772,6 +2911,8 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_save_operators", patch->classname);
   ierr = PetscOptionsBool(option,  "Store all patch operators for lifetime of object?", "PCPatchSetSaveOperators", patch->save_operators, &patch->save_operators, &flg);CHKERRQ(ierr);
 
+  ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_precompute_element_tensors", patch->classname);
+  ierr = PetscOptionsBool(option,  "Compute each element tensor only once?", "PCPatchSetPrecomputeElementTensors", patch->precomputeElementTensors, &patch->precomputeElementTensors, &flg);CHKERRQ(ierr);
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_partition_of_unity", patch->classname);
   ierr = PetscOptionsBool(option, "Weight contributions by dof multiplicity?", "PCPatchSetPartitionOfUnity", patch->partition_of_unity, &patch->partition_of_unity, &flg);CHKERRQ(ierr);
 
@@ -2890,6 +3031,8 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   else                           {ierr = PetscViewerASCIIPrintf(viewer, "Not weighting by partition of unity\n");CHKERRQ(ierr);}
   if (patch->symmetrise_sweep) {ierr = PetscViewerASCIIPrintf(viewer, "Symmetrising sweep (start->end, then end->start)\n");CHKERRQ(ierr);}
   else                         {ierr = PetscViewerASCIIPrintf(viewer, "Not symmetrising sweep\n");CHKERRQ(ierr);}
+  if (!patch->precomputeElementTensors) {ierr = PetscViewerASCIIPrintf(viewer, "Not precomputing element tensors (overlapping cells rebuilt in every patch assembly)\n");CHKERRQ(ierr);}
+  else                            {ierr = PetscViewerASCIIPrintf(viewer, "Precomputing element tensors (each cell assembled only once)\n");CHKERRQ(ierr);}
   if (!patch->save_operators) {ierr = PetscViewerASCIIPrintf(viewer, "Not saving patch operators (rebuilt every PCApply)\n");CHKERRQ(ierr);}
   else                        {ierr = PetscViewerASCIIPrintf(viewer, "Saving patch operators (rebuilt every PCSetUp)\n");CHKERRQ(ierr);}
   if (patch->patchconstructop == PCPatchConstruct_Star)       {ierr = PetscViewerASCIIPrintf(viewer, "Patch construction operator: star\n");CHKERRQ(ierr);}
@@ -2955,6 +3098,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->combined           = PETSC_FALSE;
   patch->save_operators     = PETSC_TRUE;
   patch->local_composition_type = PC_COMPOSITE_ADDITIVE;
+  patch->precomputeElementTensors = PETSC_FALSE;
   patch->partition_of_unity = PETSC_FALSE;
   patch->codim              = -1;
   patch->dim                = -1;

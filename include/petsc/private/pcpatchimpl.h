@@ -72,10 +72,13 @@ typedef struct {
   void                *usercomputefintfacetctx;
   IS                   cellIS;             /* Temporary IS for each cell patch */
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
+  PetscBool            precomputeElementTensors; /* Precompute all element tensors (each cell is assembled exactly once)? */
+  IS                   allCells;                 /* Unique cells in union of all patches */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */
   PetscBool            multiplicative;     /* Gauss-Seidel instead of Jacobi?  */
   PCCompositeType      local_composition_type; /* locally additive or multiplicative? */
   /* Patch solves */
+  Vec                  cellMats;           /* Cell element tensors */
   Mat                 *mat;                /* System matrix for each patch */
   Mat                 *matWithArtificial;   /* System matrix including dofs with artificial bcs for each patch */
   MatType              sub_mat_type;       /* Matrix type for patch systems */
