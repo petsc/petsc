@@ -65,10 +65,10 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
 {
   PetscErrorCode ierr;
+  PetscErrorCode (*preall)(Mat,Mat,Mat*) = NULL;
 
   PetscFunctionBegin;
   /* look for any available faster alternative to the general preallocator */
-  PetscErrorCode (*preall)(Mat,Mat,Mat*) = NULL;
   ierr = PetscObjectQueryFunction((PetscObject)Y,"MatAXPYGetPreallocation_C",&preall);CHKERRQ(ierr);
   if (preall) {
     ierr = (*preall)(Y,X,B);CHKERRQ(ierr);
