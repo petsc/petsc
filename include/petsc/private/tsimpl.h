@@ -430,6 +430,12 @@ struct _n_TSMonitorLGCtx {
   void           *transformctx;
 };
 
+struct _n_TSMonitorSPCtx{
+  PetscDrawSP    sp;
+  PetscInt       howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscInt       ksp_its, snes_its;
+};
+
 struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
