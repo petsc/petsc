@@ -348,7 +348,7 @@ class generateExamples(Petsc):
 
     # Others
     subst['subargs']=''  # Default.  For variables override
-    subst['srcdir']=os.path.join(os.path.dirname(self.srcdir), 'src', rpath)
+    subst['srcdir']=os.path.join(self.srcdir, rpath)
     subst['label_suffix']=''
     subst['comments']="\n#".join(subst['comments'].split("\n"))
     if subst['comments']: subst['comments']="#"+subst['comments']
