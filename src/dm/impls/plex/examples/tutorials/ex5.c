@@ -50,7 +50,7 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], Petsc
   ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = DMCreate(PETSC_COMM_WORLD, &dmnew);CHKERRQ(ierr);
   ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
-  ierr = DMLoad(dmnew, v);
+  ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
 
   ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);

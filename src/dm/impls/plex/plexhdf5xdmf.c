@@ -9,7 +9,6 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   Vec             coordinates;
   IS              cells;
   PetscInt        dim, spatialDim, N, numCells, numVertices, numCorners, bs;
-  //hid_t           fileId;
   PetscMPIInt     rank;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
@@ -121,7 +120,8 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   }
 
   /* Read Labels */
-  ierr = DMPlexLoadLabels_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+  /* TODO: this probably does not work as elements get permuted */
+  /* ierr = DMPlexLoadLabels_HDF5_Internal(dm, viewer);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 #endif
