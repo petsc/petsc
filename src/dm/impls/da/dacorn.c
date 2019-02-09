@@ -177,7 +177,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 /*@C
    DMDASetCoordinateName - Sets the name of the coordinate directions associated with a DMDA, for example "x" or "y"
 
-   Logically collective on const char name[]
+   Logically collective on DM
 
    Input Parameters:
 +  dm - the DM
@@ -186,6 +186,8 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 
   Notes:
     It must be called after having called DMSetUp().
+
+    The argument "name" must contain a common value on all MPI ranks
 
   Level: intermediate
 
@@ -223,6 +225,8 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 
   Notes:
     It must be called after having called DMSetUp().
+    
+    The argument "names" will contain a common value on all MPI ranks for a given value of nf
 
   Level: intermediate
 
@@ -355,7 +359,7 @@ PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
 /*@
    DMDAGetBoundingBox - Returns the global bounding box for the DMDA.
 
-   Collective on DMDA
+   Collective on DM
 
    Input Parameter:
 .  dm - the DM
@@ -402,7 +406,7 @@ PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 /*@
    DMDACreateCompatibleDMDA - Creates a DMDA with the same layout but with fewer or more fields
 
-   Collective on DMDA
+   Collective on DM
 
    Input Parameters:
 +  da - the distributed array
