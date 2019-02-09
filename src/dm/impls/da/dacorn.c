@@ -42,7 +42,7 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
    DMDASetFieldName - Sets the names of individual field components in multicomponent
    vectors associated with a DMDA.
 
-   Logically collective on const char name[]
+   Logically collective on DM, the argument name must contain a common value on all MPI ranks
 
    Input Parameters:
 +  da - the distributed array
@@ -76,7 +76,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 /*@C
    DMDAGetFieldNames - Gets the name of each component in the vector associated with the DMDA
 
-   Not Collective
+   Not Collective, the argument names will contain a common value on all MPI ranks
 
    Input Parameter:
 .  dm - the DMDA object
@@ -104,7 +104,7 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 /*@C
    DMDASetFieldNames - Sets the name of each component in the vector associated with the DMDA
 
-   Logically collective on const char * const *names
+   Logically collective on DM, the argument names must contain a common value on all MPI ranks
 
    Input Parameters:
 +  dm - the DMDA object
@@ -142,7 +142,7 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
    DMDAGetFieldName - Gets the names of individual field components in multicomponent
    vectors associated with a DMDA.
 
-   Not Collective
+   Not collective, the argument name will contain a common value on all MPI ranks (for a given value of nf)
 
    Input Parameter:
 +  da - the distributed array
