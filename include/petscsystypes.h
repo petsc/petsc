@@ -304,6 +304,8 @@ M*/
   Notes:
   Contains double precision numbers that are not used in the numerical computations, but rather in logging, timing etc.
 
+  Level: developer
+
 M*/
 typedef double PetscLogDouble;
 
