@@ -17,6 +17,7 @@ struct SH {
 static struct SH *sh       = 0;
 static PetscBool SignalSet = PETSC_FALSE;
 
+static void PetscSignalSegvCheckPointer();
 /*
     PetscSignalHandler_Private - This is the signal handler called by the system. This calls
              any signal handler set by PETSc or the application code.
@@ -65,6 +66,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   const char     *SIGNAME[64];
 
   PetscFunctionBegin;
+  if (sig == SIGSEGV) PetscSignalSegvCheckPointer();
   SIGNAME[0]       = "Unknown signal";
 #if !defined(PETSC_MISSING_SIGABRT)
   SIGNAME[SIGABRT] = "Abort";
@@ -392,20 +394,18 @@ PetscErrorCode  PetscPopSignalHandler(void)
 }
 
 
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
+#if defined(PETSC_HAVE_SETJMP_H)
 #include <setjmp.h>
 PETSC_VISIBILITY_INTERNAL jmp_buf PetscSegvJumpBuf;
-/*
-    This routine is called if a segmentation violation, i.e. inaccessible memory access
-    is triggered when PETSc is testing for a buggy pointer with PetscCheckPointer()
+PETSC_VISIBILITY_INTERNAL PetscBool PetscSegvJumpBuf_set;
 
-    It simply unrolls the UNIX signal and returns to the location where setjump(PetscSeqvJumpBuf) is declared.
+/* To be called from a signal handler.
+   If the signal was received while executing PetscCheckPointer, longjmp back there.
 */
-PETSC_INTERN void PetscSegv_sigaction(int signal, siginfo_t *si, void *arg)
-{
-  longjmp(PetscSegvJumpBuf,1);
-  return;
+static void PetscSignalSegvCheckPointer() {
+  if (PetscSegvJumpBuf_set) longjmp(PetscSegvJumpBuf,1);
 }
+
 #endif
 
 
