@@ -39,8 +39,23 @@ PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
 
 #if defined(PETSC_HAVE_SETJMP_H)
 #include <setjmp.h>
-PETSC_INTERN jmp_buf PetscSegvJumpBuf;
-PETSC_INTERN PetscBool PetscSegvJumpBuf_set;
+static jmp_buf PetscSegvJumpBuf;
+static PetscBool PetscSegvJumpBuf_set;
+
+/*@C
+   PetscSignalSegvCheckPointer - To be called from a signal handler for SIGSEGV.  If the signal was received while
+   executing PetscCheckPointer(), this function longjmps back there, otherwise returns with no effect.  This function is
+   called automatically by PetscSignalHandlerDefault().
+
+   Not Collective
+
+   Level: developer
+
+.seealso: PetscPushSignalHandler()
+@*/
+void PetscSignalSegvCheckPointer() {
+  if (PetscSegvJumpBuf_set) longjmp(PetscSegvJumpBuf,1);
+}
 
 /*@C
      PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
@@ -115,6 +130,10 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
   return PETSC_TRUE;
 }
 #else
+void PetscSignalSegvCheckPointer() {
+  return;
+}
+
 PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED PetscDataType dtype)
 {
   if (!ptr) return PETSC_FALSE;

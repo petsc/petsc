@@ -17,7 +17,6 @@ struct SH {
 static struct SH *sh       = 0;
 static PetscBool SignalSet = PETSC_FALSE;
 
-static void PetscSignalSegvCheckPointer();
 /*
     PetscSignalHandler_Private - This is the signal handler called by the system. This calls
              any signal handler set by PETSc or the application code.
@@ -392,20 +391,3 @@ PetscErrorCode  PetscPopSignalHandler(void)
   }
   PetscFunctionReturn(0);
 }
-
-
-#if defined(PETSC_HAVE_SETJMP_H)
-#include <setjmp.h>
-PETSC_VISIBILITY_INTERNAL jmp_buf PetscSegvJumpBuf;
-PETSC_VISIBILITY_INTERNAL PetscBool PetscSegvJumpBuf_set;
-
-/* To be called from a signal handler.
-   If the signal was received while executing PetscCheckPointer, longjmp back there.
-*/
-static void PetscSignalSegvCheckPointer() {
-  if (PetscSegvJumpBuf_set) longjmp(PetscSegvJumpBuf,1);
-}
-
-#endif
-
-
