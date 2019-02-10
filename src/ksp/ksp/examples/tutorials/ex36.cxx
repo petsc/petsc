@@ -110,7 +110,7 @@ int main(int argc, char **argv)
   Vec            b, x;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
 
   ierr = InitializeOptions(&user);CHKERRQ(ierr);
 

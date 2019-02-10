@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   int c2 = 255;
   int c1 = (c0+c2)/2;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Draw Example",PETSC_DECIDE,PETSC_DECIDE,101,101,&draw);CHKERRQ(ierr);
   /*ierr = PetscDrawSetPause(draw,2.0);CHKERRQ(ierr);*/

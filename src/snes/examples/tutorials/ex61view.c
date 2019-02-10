@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   PetscInt       i,n=10000;
   PetscInt       seed;
 
-  ierr = PetscInitialize(&argc,&argv, (char*)0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv, (char*)0, help);if (ierr) return ierr;
   ierr = PetscOptionsSetValue(NULL,"-viewer_binary_skip_info","true");CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) {

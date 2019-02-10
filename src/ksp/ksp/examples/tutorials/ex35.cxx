@@ -126,7 +126,7 @@ int main(int argc, char **argv)
   PetscInt        k;
   Vec             b, x, errv;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
 
   ierr = InitializeOptions(&user);CHKERRQ(ierr);
 

@@ -22,7 +22,7 @@ int main(int argc, char * argv[]) {
   InsertMode     addv;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,&flg);CHKERRQ(ierr);
   if (!flg) m = 100;
 

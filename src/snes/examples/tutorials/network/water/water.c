@@ -28,7 +28,7 @@ int main(int argc,char ** argv)
   PetscInt         ngvtx=PETSC_DETERMINE,ngedge=PETSC_DETERMINE;
   SNESConvergedReason reason;
 
-  ierr = PetscInitialize(&argc,&argv,"wateroptions",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,"wateroptions",help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&crank);CHKERRQ(ierr);
 
   /* Create an empty network object */

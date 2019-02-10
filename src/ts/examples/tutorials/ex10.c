@@ -1040,7 +1040,7 @@ int main(int argc, char *argv[])
   PetscInt       steps;
   PetscReal      ftime;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
   ierr = DMSetMatType(rd->da,MATAIJ);CHKERRQ(ierr);

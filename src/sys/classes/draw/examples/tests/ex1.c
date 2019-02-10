@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   int            x = 0,y = 0,width = 300,height = 300;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,2.0);CHKERRQ(ierr);

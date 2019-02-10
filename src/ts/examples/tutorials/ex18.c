@@ -1085,7 +1085,7 @@ int main(int argc, char **argv)
 
   ctxs[0] = &t;
   ctxs[1] = &t;
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   user.functionalRegistry = NULL;
   globalUser = &user;

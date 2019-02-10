@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   AppCtx         user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
   MPI_Comm_size(MPI_COMM_WORLD,&user.size);
   MPI_Comm_rank(MPI_COMM_WORLD,&user.rank);
   ierr = InitializeData(&user);CHKERRQ(ierr);

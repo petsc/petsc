@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscInt       ts_max_steps  = 0, snes_max_it = 0;
   PetscReal      ts_max_time = 0.;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL,0,"-ts_view",&ts_view,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,0,"-ts_max_time",&ts_max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,0,"-ts_max_steps",&ts_max_steps,NULL);CHKERRQ(ierr);

@@ -25,7 +25,7 @@ int main(int argc, char *args[])
 
   user.exitHandler = 0;
 
-  ierr = PetscInitialize(&argc, &args, (char*) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
   ierr = PetscPushSignalHandler(handleSignal, &user);CHKERRQ(ierr);
   while (!user.exitHandler) {
     if (user.signum > 0) {
