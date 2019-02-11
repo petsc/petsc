@@ -884,10 +884,10 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscViewerCheckWritable(v);CHKERRQ(ierr);
   if (!v) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)dm),&v);CHKERRQ(ierr);
   }
+  ierr = PetscViewerCheckWritable(v);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
