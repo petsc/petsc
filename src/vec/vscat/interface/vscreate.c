@@ -346,6 +346,8 @@ PetscErrorCode VecScatterCreateWithData(Vec xin,IS ix,Vec yin,IS iy,VecScatter *
       Output Parameter:
 .       newctx - the vector scatter object
 
+      Level: intermediate
+
 .seealso: VecScatterCreateWithData(), VecScatterSetFromOptions(), VecScatterBegin(), VecScatterEnd()
 
 @*/
