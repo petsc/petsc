@@ -32,6 +32,7 @@ struct _n_PetscSFBasicPack {
   void (*FetchAndBXOR)(PetscInt,PetscInt,const PetscInt*,void*,void*);
 
   MPI_Datatype     unit;
+  PetscBool        isbuiltin;   /* Is unit an MPI builtin datatype? */
   size_t           unitbytes;   /* Number of bytes in a unit */
   PetscInt         bs;          /* Number of basic units in a unit */
   const void       *key;        /* Array used as key for operation */
@@ -612,6 +613,7 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
   PetscErrorCode ierr;
   PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt;
   PetscInt       nPetscIntContig,nPetscRealContig;
+  PetscMPIInt    ni,na,nd,combiner;
 #if defined(PETSC_HAVE_COMPLEX)
   PetscBool isPetscComplex;
   PetscInt nPetscComplexContig;
@@ -629,6 +631,8 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
 #endif
   ierr = MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt);CHKERRQ(ierr);
+  ierr = MPI_Type_get_envelope(unit,&ni,&na,&nd,&combiner);CHKERRQ(ierr);
+  link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE;
   link->bs = 1;
   if (isInt) {PackInit_int(link); PackInit_Logical_int(link); PackInit_Bitwise_int(link);}
   else if (isPetscInt) {PackInit_PetscInt(link); PackInit_Logical_PetscInt(link); PackInit_Bitwise_PetscInt(link);}
@@ -684,7 +688,8 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
     default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for arbitrary block sizes");
     }
   }
-  ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);
+  if (link->isbuiltin) link->unit = unit; /* builtin datatypes are common. Make it fast */
+  else {ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -880,7 +885,7 @@ static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   for (link=bas->avail; link; link=next) {
     PetscInt i;
     next = link->next;
-    ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);
+    if (!link->isbuiltin) {ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);}
     for (i=0; i<bas->niranks; i++) {ierr = PetscFree(link->root[i]);CHKERRQ(ierr);}
     for (i=sf->ndranks; i<sf->nranks; i++) {ierr = PetscFree(link->leaf[i]);CHKERRQ(ierr);} /* Free only non-distinguished leaf buffers */
     ierr = PetscFree2(link->root,link->leaf);CHKERRQ(ierr);

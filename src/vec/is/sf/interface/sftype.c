@@ -69,6 +69,10 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *ma
   PetscBool      freeatype, freebtype;
 
   PetscFunctionBegin;
+  if (a == b) { /* this is common when using MPI builtin datatypes */
+    *match = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }
   ierr   = MPIPetsc_Type_unwrap(a,&atype,&freeatype);CHKERRQ(ierr);
   ierr   = MPIPetsc_Type_unwrap(b,&btype,&freebtype);CHKERRQ(ierr);
   *match = PETSC_FALSE;
