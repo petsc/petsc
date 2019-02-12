@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   PetscDraw      draw;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,zoomfunction,NULL);CHKERRQ(ierr);

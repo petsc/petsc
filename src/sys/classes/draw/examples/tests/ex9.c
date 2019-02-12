@@ -19,7 +19,7 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label"; toplabel = "Top Label"; ylabel = "Y-axis Label";
 
-  ierr  = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr  = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr  = PetscOptionsGetInt(NULL,NULL,"-width",&w,NULL);CHKERRQ(ierr);
   ierr  = PetscOptionsGetInt(NULL,NULL,"-height",&h,NULL);CHKERRQ(ierr);
   ierr  = PetscOptionsGetInt(NULL,NULL,"-n",&nn,NULL);CHKERRQ(ierr);

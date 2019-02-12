@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
   PetscInt       opts[6] = {0};
   PetscBool      hascl   = PETSC_FALSE,hasstr = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = PetscOptionsSetValue(NULL,"-zero","0");CHKERRQ(ierr);
   ierr = PetscOptionsPrefixPush(NULL,"a_");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue(NULL,"-one","1");CHKERRQ(ierr);

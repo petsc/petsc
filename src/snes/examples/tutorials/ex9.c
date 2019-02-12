@@ -79,7 +79,7 @@ int main(int argc,char **argv) {
   DMDALocalInfo       info;
   PetscReal           error1,errorinf;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help); CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
                       DMDA_STENCIL_STAR,5,5, /* 5x5 coarse grid; override with -da_grid_x,_y */

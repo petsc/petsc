@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   AppCtx         user;                    /* user-defined work context */
 
   /* Initialize PETSc, TAO */
-  ierr = PetscInitialize(&argc, &argv, (char *)0, help );CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char *)0, help );if (ierr) return ierr;
 
   /* Specify default dimension of the problem */
   user.mx = 4; user.my = 4;

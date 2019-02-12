@@ -24,7 +24,7 @@ int main(int argc,char **argv)
 
   toplabel = "Top Label"; xlabel = "X-axis Label"; ylabel = "Y-axis Label"; legend = "Legend";
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-x",&x,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-y",&y,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-width",&width,NULL);CHKERRQ(ierr);

@@ -46,7 +46,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   /* initialize and get options */
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "DMLabel ex1 Options", "DMLabel");CHKERRQ(ierr);
   ierr = PetscOptionsString("-i", "filename to read", "ex1.c", filename, filename, sizeof(filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", interpolate, &interpolate, NULL);CHKERRQ(ierr);

@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   int            x = 0,y = 0,width = 256,height = 256,i;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

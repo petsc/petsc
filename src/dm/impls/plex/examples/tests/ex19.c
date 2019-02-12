@@ -258,7 +258,7 @@ int main (int argc, char * argv[]) {
   size_t         len;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
 

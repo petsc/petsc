@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   DM                dm;
   const char        *fields[2] = {"U","V"};
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
 
   /* Initialize the user context struct */
   ierr = Initialize_AppContext(&user);CHKERRQ(ierr);

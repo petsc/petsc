@@ -18,7 +18,7 @@ int main(int argc, char **args)
   PetscMPIInt     rank;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &args, (char*) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);

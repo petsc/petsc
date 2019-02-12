@@ -243,7 +243,7 @@ int main(int argc, char **argv)
   PetscViewer         selfviewer;
   PetscErrorCode      ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &ctx, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);

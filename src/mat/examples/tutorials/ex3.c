@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   PetscMPIInt            rank, size;
   PetscErrorCode         ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);

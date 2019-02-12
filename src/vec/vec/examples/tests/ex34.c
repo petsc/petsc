@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   comm = MPI_COMM_SELF;
 
   ierr = VecCreate(comm,&V);CHKERRQ(ierr);

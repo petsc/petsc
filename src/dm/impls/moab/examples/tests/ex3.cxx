@@ -87,9 +87,7 @@ int main(int argc, char **argv)
   PetscBool      createR;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-
-  /* Initialize input */
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   createR = PETSC_FALSE;
 
