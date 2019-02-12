@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/vec/vscat/examples/
-EXAMPLESC       = ex1.c ex4.c ex5.c
+EXAMPLESC       = ex1.c ex4.c ex5.c ex6.c
 EXAMPLESF       =
 MANSEC          = Vec
 
