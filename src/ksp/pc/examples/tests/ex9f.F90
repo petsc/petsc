@@ -13,6 +13,7 @@
       PetscReal        norm;
       PetscErrorCode   ierr
       PetscInt i,n,col(3),its,i1,i2,i3
+      PetscInt ione,izero
       PetscBool  flg
       PetscMPIInt size
       PetscScalar      none,one,value(3)
@@ -113,11 +114,11 @@
 
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCFIELDSPLIT,ierr)
-      call ISCreateStride(PETSC_COMM_SELF,n,0,1,isin,ierr)
+      izero = 0
+      ione  = 1
+      call ISCreateStride(PETSC_COMM_SELF,n,izero,ione,isin,ierr)
       call PCFieldSplitSetIS(pc,"splitname",isin,ierr)
       call PCFieldSplitGetIS(pc,"splitname",isout,ierr)
-      call ISView(isin,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      call ISView(isout,PETSC_VIEWER_STDOUT_WORLD,ierr)
       if (isin .ne. isout) then ; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCFieldSplitGetIS() failed"); endif
 
 !  Set runtime options, e.g.,
