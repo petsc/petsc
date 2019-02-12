@@ -567,7 +567,7 @@ manexamples:
           for i in ${EXAMPLESC} ${EXAMPLESF} foo ; do \
             if [ "$$i" != "foo" ] ; then \
               a=`cat $$i | ${MAPNAMES} -map ${LOC}/docs/manualpages/manualpages.cit \
-                   -printmatch-link -o /dev/null| cut -f 2 | cut -d '#' -f 1 |sed -e s~^../~~  | sort | uniq` ;  \
+                   -printmatch-link -o /dev/null| cut -f 2 | cut -d '#' -f 1 |sed -e s~^../~~ | grep \\.html$$ | sort | uniq` ;  \
               for j in $$a ; do \
                 b=`ls ${LOC}/docs/manualpages/$${j} | grep -v /all/ | cut -f9` ; \
                 l=`grep "^<A HREF=\"\.\./\.\./\.\..*/tutorials/" $${b} | wc -l`; \
