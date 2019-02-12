@@ -1,0 +1,74 @@
+  0 TAO,  Function value: 14.6462,  Residual: 14.2702 
+  0 TAO,  Function value: 12.8756,  Residual: 6.06589 
+  1 TAO,  Function value: 12.1621,  Residual: 7.53962 
+  2 TAO,  Function value: 11.906,  Residual: 6.65487 
+  3 TAO,  Function value: 11.469,  Residual: 6.21701 
+  4 TAO,  Function value: 11.1487,  Residual: 4.61939 
+  5 TAO,  Function value: 11.0817,  Residual: 4.16909 
+  6 TAO,  Function value: 11.0084,  Residual: 3.82775 
+  7 TAO,  Function value: 10.9724,  Residual: 3.41212 
+  8 TAO,  Function value: 10.9359,  Residual: 3.02478 
+  9 TAO,  Function value: 10.9181,  Residual: 2.81783 
+ 10 TAO,  Function value: 10.898,  Residual: 2.59648 
+ 11 TAO,  Function value: 10.8891,  Residual: 2.33739 
+ 12 TAO,  Function value: 10.8742,  Residual: 2.02932 
+ 13 TAO,  Function value: 10.8699,  Residual: 1.89478 
+ 14 TAO,  Function value: 10.861,  Residual: 1.67873 
+ 15 TAO,  Function value: 10.857,  Residual: 1.51551 
+ 16 TAO,  Function value: 10.8512,  Residual: 1.32723 
+ 17 TAO,  Function value: 10.8476,  Residual: 1.17477 
+ 18 TAO,  Function value: 10.844,  Residual: 1.05626 
+ 19 TAO,  Function value: 10.8413,  Residual: 0.956156 
+ 20 TAO,  Function value: 10.8388,  Residual: 0.887846 
+ 21 TAO,  Function value: 10.8369,  Residual: 0.854868 
+ 22 TAO,  Function value: 10.835,  Residual: 0.839462 
+ 23 TAO,  Function value: 10.8337,  Residual: 0.848192 
+ 24 TAO,  Function value: 10.8319,  Residual: 0.811306 
+ 25 TAO,  Function value: 10.8307,  Residual: 0.804465 
+ 26 TAO,  Function value: 10.8289,  Residual: 0.752248 
+ 27 TAO,  Function value: 10.8279,  Residual: 0.755604 
+ 28 TAO,  Function value: 10.8262,  Residual: 0.709373 
+ 29 TAO,  Function value: 10.8253,  Residual: 0.719446 
+ 30 TAO,  Function value: 10.8237,  Residual: 0.677722 
+ 31 TAO,  Function value: 10.8229,  Residual: 0.690182 
+ 32 TAO,  Function value: 10.8213,  Residual: 0.651173 
+ 33 TAO,  Function value: 10.8206,  Residual: 0.664929 
+ 34 TAO,  Function value: 10.8191,  Residual: 0.627738 
+ 35 TAO,  Function value: 10.8184,  Residual: 0.641263 
+ 36 TAO,  Function value: 10.8169,  Residual: 0.606299 
+ 37 TAO,  Function value: 10.8164,  Residual: 0.618299 
+ 38 TAO,  Function value: 10.8149,  Residual: 0.586509 
+ 39 TAO,  Function value: 10.8144,  Residual: 0.597436 
+ 40 TAO,  Function value: 10.8129,  Residual: 0.568454 
+ 41 TAO,  Function value: 10.8125,  Residual: 0.578539 
+ 42 TAO,  Function value: 10.811,  Residual: 0.548485 
+ 43 TAO,  Function value: 10.8106,  Residual: 0.560324 
+ 44 TAO,  Function value: 10.8092,  Residual: 0.52928 
+ 45 TAO,  Function value: 10.8089,  Residual: 0.543095 
+ 46 TAO,  Function value: 10.8074,  Residual: 0.512192 
+ 47 TAO,  Function value: 10.8072,  Residual: 0.526238 
+ 48 TAO,  Function value: 10.8058,  Residual: 0.496739 
+ 49 TAO,  Function value: 10.8056,  Residual: 0.511091 
+ 50 TAO,  Function value: 10.8042,  Residual: 0.482671 
+J(xhat): 112.152, predicted: 10.1847, diff 101.967
+J(xhat): 41.5412, predicted: 10.4944, diff 31.0468
+J(xhat): 21.1877, predicted: 10.6493, diff 10.5384
+J(xhat): 14.7489, predicted: 10.7267, diff 4.02222
+J(xhat): 12.464, predicted: 10.7654, diff 1.6986
+J(xhat): 11.5552, predicted: 10.7848, diff 0.770421
+J(xhat): 11.1592, predicted: 10.7945, diff 0.364735
+J(xhat): 10.9758, predicted: 10.7993, diff 0.176494
+J(xhat): 10.8878, predicted: 10.8017, diff 0.0860238
+J(xhat): 10.8446, predicted: 10.8029, diff 0.0417012
+Convergence rate step 0: 1.71559
+Convergence rate step 1: 1.55878
+Convergence rate step 2: 1.3896
+Convergence rate step 3: 1.24364
+Convergence rate step 4: 1.14063
+Convergence rate step 5: 1.0788
+Convergence rate step 6: 1.04723
+Convergence rate step 7: 1.03681
+Convergence rate step 8: 1.04465
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-tao_nm_ksp_monitor (no value)

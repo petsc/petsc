@@ -1,0 +1,29 @@
+ADMM 0: ||x - z|| = 1.81923
+ADMM 1: ||x - z|| = 1.33753
+ADMM 2: ||x - z|| = 1.11121
+ADMM 3: ||x - z|| = 0.963057
+ADMM 4: ||x - z|| = 0.851287
+ADMM 5: ||x - z|| = 0.760807
+ADMM 6: ||x - z|| = 0.684795
+ADMM 7: ||x - z|| = 2.11693
+ADMM 8: ||x - z|| = 0.623436
+ADMM 9: ||x - z|| = 0.336827
+J(xhat): 113.76, predicted: 9.65256, diff 104.108
+J(xhat): 42.4187, predicted: 10.6235, diff 31.7952
+J(xhat): 21.7111, predicted: 11.1089, diff 10.6022
+J(xhat): 15.0954, predicted: 11.3516, diff 3.74371
+J(xhat): 12.7979, predicted: 11.473, diff 1.32494
+J(xhat): 11.9779, predicted: 11.5337, diff 0.444184
+J(xhat): 11.7056, predicted: 11.564, diff 0.14153
+J(xhat): 11.6226, predicted: 11.5792, diff 0.0434338
+J(xhat): 11.5966, predicted: 11.5868, diff 0.00981896
+J(xhat): 11.5937, predicted: 11.5906, diff 0.00312464
+Convergence rate step 0: 1.7112
+Convergence rate step 1: 1.58444
+Convergence rate step 2: 1.50183
+Convergence rate step 3: 1.49854
+Convergence rate step 4: 1.5767
+Convergence rate step 5: 1.65005
+Convergence rate step 6: 1.70422
+Convergence rate step 7: 2.14518
+Convergence rate step 8: 1.65188
