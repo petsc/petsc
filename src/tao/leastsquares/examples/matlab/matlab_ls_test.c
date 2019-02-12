@@ -104,31 +104,55 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscErrorCode ierr;
   PetscScalar    tmp;
-  int            i;
+  PetscInt       prob_id = 0;
+  PetscBool      flg, testall = PETSC_FALSE;
+  int            i, i0, imax;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_all",&testall,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-prob_id",&prob_id,&flg);CHKERRQ(ierr);
+  if (!testall) {
+    if (!flg) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Problem number must be specified with -prob_id");
+    } else if ((prob_id < 1) || (prob_id > 53)) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Problem number must be between 1 and 53!");
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Running problem %d\n",prob_id);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Running all problems\n");CHKERRQ(ierr);
+  }
+
   ierr = PetscMatlabEngineCreate(PETSC_COMM_SELF,NULL,&user.mengine);CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(user.mengine,"TestingInitialize");CHKERRQ(ierr);
 
-  for (i = 1; i <= 53; ++i) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",i);
-    ierr = PetscMatlabEngineEvaluate(user.mengine,"np = %d; ProblemInitialize",i);CHKERRQ(ierr);
-    ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"n");CHKERRQ(ierr);
-    user.n = (int)tmp;
-    ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"m");CHKERRQ(ierr);
-    user.m = (int)tmp;
-    ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"nfmax");CHKERRQ(ierr);
-    user.nfmax = (int)tmp;
-    ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"npmax");CHKERRQ(ierr);
-    user.npmax = (int)tmp;
-    ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"delta");CHKERRQ(ierr);
-    user.delta = (double)tmp;
-
-    /* Ignore return code for now -- do not stop testing on inf or nan errors */
-    ierr = TaoPounders(&user);CHKERRQ(ierr);
-
-    ierr = PetscMatlabEngineEvaluate(user.mengine,"ProblemFinalize");CHKERRQ(ierr);
+  if (testall) {
+    i0 = 1;
+    imax = 53;
+  } else {
+    i0 = (int)prob_id;
+    imax = (int)prob_id;
   }
+
+  for (i = i0; i <= imax; ++i) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",i);
+      ierr = PetscMatlabEngineEvaluate(user.mengine,"np = %d; ProblemInitialize",i);CHKERRQ(ierr);
+      ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"n");CHKERRQ(ierr);
+      user.n = (int)tmp;
+      ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"m");CHKERRQ(ierr);
+      user.m = (int)tmp;
+      ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"nfmax");CHKERRQ(ierr);
+      user.nfmax = (int)tmp;
+      ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"npmax");CHKERRQ(ierr);
+      user.npmax = (int)tmp;
+      ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"delta");CHKERRQ(ierr);
+      user.delta = (double)tmp;
+
+      /* Ignore return code for now -- do not stop testing on inf or nan errors */
+      ierr = TaoPounders(&user);CHKERRQ(ierr);
+
+      ierr = PetscMatlabEngineEvaluate(user.mengine,"ProblemFinalize");CHKERRQ(ierr);
+    }
 
   ierr = PetscMatlabEngineEvaluate(user.mengine,"TestingFinalize");CHKERRQ(ierr);
   ierr = PetscMatlabEngineDestroy(&user.mengine);CHKERRQ(ierr);
@@ -136,3 +160,13 @@ int main(int argc, char **argv)
   return ierr;
 }
 
+/*TEST
+
+   build:
+      requires: matlab
+
+   test:
+      localrunfiles: more_wild_probs TestingInitialize.m TestingFinalize.m ProblemInitialize.m ProblemFinalize.m
+      args: -tao_smonitor -prob_id 5
+
+TEST*/
