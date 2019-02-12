@@ -5,13 +5,13 @@ static char help[] = "Test Hypre matrix APIs\n";
 
 int main(int argc,char **args)
 {
-  Mat                A, B, C;
-  PetscReal          err;
-  PetscInt           i,j,M = 20;
-  PetscErrorCode     ierr;
-  PetscMPIInt        NP;
-  MPI_Comm           comm;
-  PetscInt           *rows;
+  Mat            A, B, C;
+  PetscReal      err;
+  PetscInt       i,j,M = 20;
+  PetscErrorCode ierr;
+  PetscMPIInt    NP;
+  MPI_Comm       comm;
+  PetscInt       *rows;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
@@ -35,9 +35,9 @@ int main(int argc,char **args)
   for (i=0; i<M; i++) {
     PetscInt    cols[] = {0,1,2,3,4,5};
     PetscScalar vals[6] = {0};
+    PetscScalar value[] = {100};
     for (j=0; j<6; j++)
       vals[j] = ((PetscReal)j)/NP;
-    PetscScalar value[] = {100};
 
     ierr = MatSetValues(B,1,&i,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(B,1,&i,1,&i,value,ADD_VALUES);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ int main(int argc,char **args)
   ierr = PetscFree(rows);CHKERRQ(ierr);
 
   /* Test MatZeroEntries */
-  ierr = MatZeroEntries(B);
+  ierr = MatZeroEntries(B);CHKERRQ(ierr);
   ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
   if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatZeroEntries %g",err);
@@ -82,10 +82,10 @@ int main(int argc,char **args)
   for (i=0; i<M; i++) {
     PetscInt    cols[] = {0,1,2,3,4,5};
     PetscScalar vals[6] = {0};
+    PetscScalar value[] = {100};
+
     for (j=0; j<6; j++)
       vals[j] = ((PetscReal)j)/NP;
-
-    PetscScalar value[] = {100};
 
     ierr = MatSetValues(B,1,&i,6,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(B,1,&i,1,&i,value,INSERT_VALUES);CHKERRQ(ierr);
@@ -100,9 +100,13 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   {
-    const PetscInt *idxA,*idxB;
+    const PetscInt    *idxA,*idxB;
     const PetscScalar *vA, *vB;
-    PetscInt rstart, rend, nzA, nzB, j;
+    PetscInt          rstart, rend, nzA, nzB, j;
+    PetscInt          cols[] = {0,1,2,3,4,-5};
+    PetscInt          *rows;
+    PetscScalar       *valuesA, *valuesB;
+
     err = 0.0;
     ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
@@ -118,9 +122,6 @@ int main(int argc,char **args)
     }
     if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatGetRow %g",err);
 
-    PetscInt    cols[] = {0,1,2,3,4,-5};
-    PetscInt    *rows;
-    PetscScalar *valuesA, *valuesB;
     ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
     ierr = PetscCalloc3((rend-rstart)*6,&valuesA,(rend-rstart)*6,&valuesB,rend-rstart,&rows);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++)
@@ -161,6 +162,10 @@ int main(int argc,char **args)
 
    test:
       suffix: 1
-      requires: hypre
+
+   test:
+      output_file: output/ex225_1.out
+      nsize: 2
+      suffix: 2
 
 TEST*/

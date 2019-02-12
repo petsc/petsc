@@ -2172,7 +2172,7 @@ PetscErrorCode MatSetUp_MPIAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =  MatMPIAIJSetPreallocation(A,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2786,7 +2786,7 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
   B->preallocated  = PETSC_TRUE;
   B->was_assembled = PETSC_FALSE;
-  B->assembled     = PETSC_FALSE;;
+  B->assembled     = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

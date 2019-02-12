@@ -29,7 +29,6 @@ PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse r
     PetscInt m,n,lm,ln;
     ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
     ierr = MatGetLocalSize(mat,&lm,&ln);CHKERRQ(ierr);
-    if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&M);CHKERRQ(ierr);
     ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
     ierr = MatSetBlockSizesFromMats(M,mat,mat);CHKERRQ(ierr);

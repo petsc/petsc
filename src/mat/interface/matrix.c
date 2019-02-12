@@ -4160,6 +4160,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
     PetscInt       i;
     /*
        Order of precedence:
+       0) See if newtype is a superclass of the current matrix.
        1) See if a specialized converter is known to the current matrix.
        2) See if a specialized converter is known to the desired matrix class.
        3) See if a good general converter is registered for the desired class
@@ -4168,6 +4169,24 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
        5) Use a really basic converter.
     */
 
+    /* 0) See if newtype is a superclass of the current matrix.
+          i.e mat is mpiaij and newtype is aij */
+    for (i=0; i<2; i++) {
+      ierr = PetscStrncpy(convname,prefix[i],sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,newtype,sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrcmp(convname,((PetscObject)mat)->type_name,&flg);CHKERRQ(ierr);
+      if (flg) {
+        if (reuse == MAT_INPLACE_MATRIX) {
+          PetscFunctionReturn(0);
+        } else if (reuse == MAT_INITIAL_MATRIX && mat->ops->duplicate) {
+          ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
+          PetscFunctionReturn(0);
+        } else if (reuse == MAT_REUSE_MATRIX && mat->ops->copy) {
+          ierr = MatCopy(mat,*M,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+          PetscFunctionReturn(0);
+        }
+      }
+    }
     /* 1) See if a specialized converter is known to the current matrix and the desired class */
     for (i=0; i<3; i++) {
       ierr = PetscStrncpy(convname,"MatConvert_",sizeof(convname));CHKERRQ(ierr);

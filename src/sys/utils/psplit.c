@@ -50,7 +50,7 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
     PetscSplitOwnership - Given a global (or local) length determines a local
         (or global) length via a simple formula
 
-   Collective on MPI_Comm (if N is PETSC_DECIDE)
+   Collective on MPI_Comm (if n or N is PETSC_DECIDE)
 
    Input Parameters:
 +    comm - MPI communicator that shares the object being divided
@@ -62,8 +62,9 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
    Notes:
      n and N cannot be both PETSC_DECIDE
 
-     If one processor calls this with N of PETSC_DECIDE then all processors
-     must, otherwise the program will hang.
+     If one processor calls this with n or N of PETSC_DECIDE then all processors
+     must. Otherwise, an error is thrown in debug mode while the program will hang
+     in optimized (i.e. configured --with-debugging=0) mode.
 
 .seealso: PetscSplitOwnershipBlock()
 
@@ -75,6 +76,17 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
 
   PetscFunctionBegin;
   if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee http://www.mcs.anl.gov/petsc/documentation/faq.html#split");
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscMPIInt l[2],g[2];
+    l[0] = (*n == PETSC_DECIDE) ? 1 : 0;
+    l[1] = (*N == PETSC_DECIDE) ? 1 : 0;
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(l,g,2,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    if (g[0] && g[0] != size) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for local size");
+    if (g[1] && g[1] != size) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for global size");
+  }
+#endif
 
   if (*N == PETSC_DECIDE) {
     ierr = MPIU_Allreduce(n,N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
