@@ -7,6 +7,9 @@ static char help[] = "Tests for parallel mesh loading\n\n";
 Network
 -------
 Test 0 (2 ranks):
+
+network=0:
+---------
   cell 0   cell 1   cell 2          nCells-1       (edge)
 0 ------ 1 ------ 2 ------ 3 -- -- v --  -- nCells (vertex)
 
@@ -16,6 +19,22 @@ Test 0 (2 ranks):
   cell(edge) distribution:
     rank 0: 0 1
     rank 1: 2 ... nCells-1
+
+network=1:
+---------
+               v2
+                ^
+                |
+               cell 2
+                |
+ v0 --cell 0--> v3--cell 1--> v1
+
+  vertex distribution:
+    rank 0: 0 1 3
+    rank 1: 2
+  cell(edge) distribution:
+    rank 0: 0 1
+    rank 1: 2
 
   example:
     mpiexec -n 2 ./ex18 -distribute 1 -dim 1 -orig_dm_view -dist_dm_view -dist_dm_view -petscpartitioner_type parmetis -ncells 50
@@ -248,6 +267,10 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
     PetscFunctionReturn(0);
   }
 
+  PetscInt network = 0;
+  ierr = PetscOptionsGetInt(NULL, NULL, "-network_case", &network, NULL);CHKERRQ(ierr);
+  if (network == 0) {
+
   switch (rank) {
   case 0:
   {
@@ -271,6 +294,30 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
   }
 
+  } else { /* network > 0 */
+    /* --------------------- */
+    if (!rank) printf("network %d\n",network);
+    switch (rank) {
+    case 0:
+    {
+      numCells    = 2;
+      numVertices = 3;
+      ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
+      cells[0] = 0; cells[1] = 3;
+      cells[2] = 3; cells[3] = 1;
+    }
+    break;
+    case 1:
+    {
+      numCells    = 1;
+      numVertices = 1;
+      ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
+      cells[0] = 3; cells[1] = 2;
+    }
+    break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    }
+  }
   ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, coords, NULL, dm);CHKERRQ(ierr);
   ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
