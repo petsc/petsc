@@ -1333,11 +1333,11 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipelcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr);CHKERRQ(ierr);
     iscg = (PetscBool)(iscg || isgroppcg || ispipecg || ispipelcg || ispipecgrr);
-    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || !iscg) {
+    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || !iscg || pc->mat != pc->pmat) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
-  if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static) {
+  if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || pc->mat != pc->pmat) {
     ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
   }
 
