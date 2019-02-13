@@ -532,14 +532,14 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           ierr = pc_gamg->ops->optprolongator(pc, Aarr[level], &Prol11);CHKERRQ(ierr);
         }
 
+        if (pc_gamg->use_aggs_in_asm) {
+          PetscInt bs;
+          ierr = MatGetBlockSizes(Prol11, &bs, NULL);CHKERRQ(ierr);
+          ierr = PetscCDGetASMBlocks(agg_lists, bs, Gmat, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
+        }
+
         Parr[level1] = Prol11;
       } else Parr[level1] = NULL; /* failed to coarsen */
-
-      if (pc_gamg->use_aggs_in_asm) {
-        PetscInt bs;
-        ierr = MatGetBlockSizes(Prol11, &bs, NULL);CHKERRQ(ierr);
-        ierr = PetscCDGetASMBlocks(agg_lists, bs, Gmat, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
-      }
 
       ierr = MatDestroy(&Gmat);CHKERRQ(ierr);
       ierr = PetscCDDestroy(agg_lists);CHKERRQ(ierr);
