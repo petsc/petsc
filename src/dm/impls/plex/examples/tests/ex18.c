@@ -18,7 +18,7 @@ Test 0 (2 ranks):
     rank 1: 2 ... nCells-1
 
   example:
-    mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1 -orig_dm_view -dist_dm_view -dist_dm_view -petscpartitioner_type parmetis -ncells 50
+    mpiexec -n 2 ./ex18 -distribute 1 -dim 1 -orig_dm_view -dist_dm_view -dist_dm_view -petscpartitioner_type parmetis -ncells 50
 
 Triangle
 --------
