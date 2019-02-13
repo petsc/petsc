@@ -158,7 +158,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
         len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
-        xv   = x+xplan->copy_starts[i];
+        xv   = x+xplan->copy_starts[j];
         for (k=0; k<len; k++) y[k] += xv[k];
         y   += len;
       }
@@ -172,7 +172,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
         len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
-        xv   = x+xplan->copy_starts[i];
+        xv   = x+xplan->copy_starts[j];
         for (k=0; k<len; k++) y[k] = PetscMax(y[k],xv[k]);
         y   += len;
       }
