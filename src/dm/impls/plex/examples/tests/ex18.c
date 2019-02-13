@@ -243,7 +243,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
   PetscInt       spacedim=2,numCorners=2,i;
-  PetscInt       *cells,numCells,numVertices;
+  PetscInt       *cells,numCells,numVertices,network;
   PetscReal      *coords;
 
   PetscFunctionBegin;
@@ -267,36 +267,33 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
     PetscFunctionReturn(0);
   }
 
-  PetscInt network = 0;
+  network = 0;
   ierr = PetscOptionsGetInt(NULL, NULL, "-network_case", &network, NULL);CHKERRQ(ierr);
   if (network == 0) {
-
-  switch (rank) {
-  case 0:
-  {
-    numCells    = 2;
-    numVertices = numCells;
-    ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
-    cells[0] = 0; cells[1] = 1;
-    cells[2] = 1; cells[3] = 2;
-  }
-  break;
-  case 1:
-  {
-    numCells    -= 2;
-    numVertices = numCells + 1;
-    ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
-    for (i=0; i<numCells; i++) {
-      cells[2*i] = 2+i; cells[2*i+1] = 2 + i + 1;
+    switch (rank) {
+    case 0:
+    {
+      numCells    = 2;
+      numVertices = numCells;
+      ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
+      cells[0] = 0; cells[1] = 1;
+      cells[2] = 1; cells[3] = 2;
     }
-  }
-  break;
-  default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
-  }
-
-  } else { /* network > 0 */
-    /* --------------------- */
-    if (!rank) printf("network %d\n",network);
+    break;
+    case 1:
+    {
+      numCells    -= 2;
+      numVertices = numCells + 1;
+      ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
+      for (i=0; i<numCells; i++) {
+        cells[2*i] = 2+i; cells[2*i+1] = 2 + i + 1;
+      }
+    }
+    break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    }
+  } else { /* network_case = 1 */
+    /* ----------------------- */
     switch (rank) {
     case 0:
     {
