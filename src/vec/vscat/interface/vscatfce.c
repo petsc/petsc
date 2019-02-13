@@ -559,25 +559,6 @@ PetscErrorCode VecScatterRestoreRemoteOrdered_Private(const VecScatter ctx,Petsc
 }
 
 /*
- VecScatterGetTypes_Private - Returns the scatter types.
-
- scatter - The scatter.
- from    - Upon exit this contains the type of the from scatter.
- to      - Upon exit this contains the type of the to scatter.
-*/
-PetscErrorCode VecScatterGetTypes_Private(VecScatter scatter,VecScatterFormat *from,VecScatterFormat *to)
-{
-  VecScatter_Common* fromdata = (VecScatter_Common*)scatter->fromdata;
-  VecScatter_Common* todata   = (VecScatter_Common*)scatter->todata;
-
-  PetscFunctionBegin;
-  *from = fromdata->format;
-  *to = todata->format;
-  PetscFunctionReturn(0);
-}
-
-
-/*
   VecScatterIsSequential_Private - Returns true if the scatter is sequential.
 
   scatter - The scatter.
