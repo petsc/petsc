@@ -3,6 +3,7 @@
 #include <petsc/private/vecimpl.h>
 #include <petscviewerhdf5.h>
 
+#if defined(PETSC_HAVE_HDF5)
 static PetscErrorCode SplitPath_Private(char path[], char name[])
 {
   char *tmp;
@@ -23,7 +24,6 @@ static PetscErrorCode SplitPath_Private(char path[], char name[])
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_HDF5)
 PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 {
   Vec             coordinates;
