@@ -274,7 +274,7 @@ cdef class SNES(Object):
         cdef Vec f = Vec()
         cdef void* ctx
         cdef int (*fun)(PetscSNES,PetscVec,PetscVec,void*)
-        CHKERR( SNESGetFunction(self.snes, &f.vec, <void*>&fun, &ctx) )
+        CHKERR( SNESGetFunction(self.snes, &f.vec, &fun, &ctx) )
         PetscINCREF(f.obj)
         cdef object function = self.get_attr('__function__')
         cdef object context
