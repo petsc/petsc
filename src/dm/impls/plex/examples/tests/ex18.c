@@ -7,9 +7,6 @@ static char help[] = "Tests for parallel mesh loading\n\n";
 Network
 -------
 Test 0 (2 ranks):
-mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1 -dm_view ascii::ascii_info_detail
-mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1 -orig_dm_view -dist_dm_view -dist_dm_view -petscpartitioner_type parmetis
-
   cell 0   cell 1   cell 2          nCells-1       (edge)
 0 ------ 1 ------ 2 ------ 3 -- -- v --  -- nCells (vertex)
 
@@ -19,6 +16,9 @@ mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1 -orig_dm_view -dist
   cell(edge) distribution:
     rank 0: 0 1
     rank 1: 2 ... nCells-1
+
+  example:
+    mpiexec -n 2 ./ex18 -distribute 1 -interpolate serial -dim 1 -orig_dm_view -dist_dm_view -dist_dm_view -petscpartitioner_type parmetis -ncells 50
 
 Triangle
 --------
@@ -674,7 +674,7 @@ int main(int argc, char **argv)
       args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
     test:
       suffix: 1_1d_dist1
-      args: -dim 1 -distribute 1 -interpolate {{serial}separate output}
+      args: -dim 1 -distribute 1
 
   test:
     suffix: 2
