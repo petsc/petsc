@@ -3,9 +3,6 @@
     Todo: maybe provide code template to generate 1D/2D/3D gradient, DCT tranform matrix for D etc.
 */
 /*
-    XH: refactored example chwirut1 so that user contest contains not arrays but matrix and vectors
-*/
-/*
    Include "petsctao.h" so that we can use TAO solvers.  Note that this
    file automatically includes libraries such as:
      petsc.h       - base PETSc routines   petscvec.h - vectors
@@ -19,16 +16,14 @@
 #include <petsctao.h>
 
 /*
-Description:   Compressive sensing test example 1.
-               0.5*||Ax-b||^2 + lambda*||D*x||_1                
-               Xiang Huang: Nov 19, 2018
-
+Description:   BRGN tomography reconstruction example .
+               0.5*||Ax-b||^2 + lambda*g(x)               
 Reference:     None
                
 */
 
-static char help[] = "Finds the least-squares solution to the underconstraint linear model Ax = b, with L1-norm regularizer. \n\
-            A is a M*N real flat matrix (M<N), x is sparse. \n\
+static char help[] = "Finds the least-squares solution to the underconstraint linear model Ax = b, with regularizer. \n\
+            A is a M*N real flat matrix (M<N), x is sparse. A good regularizer is L1 regularizer. \n\
             We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||D*x||_1, where lambda (by default 1e-4) is a user specified weight.\n\
             D is the K*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x.\n";
 /*T
@@ -50,27 +45,29 @@ T*/
 
 /* User-defined application context */
 typedef struct {
-  /* Working space. linear least square:  f(x) = A*x - b */
+  /* Working space. linear least square:  res(x) = A*x - b */
   /*PetscReal A[M][N]; */    /* array of coefficients */
-  PetscInt  M,N,K;      /* Problem dimension: A is M*N Matrix, D is K*N Matrix */
-  Mat       A,D;      /* Coefficients, Dictionary Transform of size M*N and K*N respectively. For linear least square, Jacobian Matrix J = A. For nonlinear least square, it is different from A */  
-  Vec       b,xGT,xlb,xub; /* observation b, ground truth xGT, the lower bound and upper bound of x */
+  PetscInt  M,N,K;            /* Problem dimension: A is M*N Matrix, D is K*N Matrix */
+  Mat       A,D;              /* Coefficients, Dictionary Transform of size M*N and K*N respectively. For linear least square, Jacobian Matrix J = A. For nonlinear least square, it is different from A */  
+  Vec       b,xGT,xlb,xub; /* observation b, ground truth xGT, the lower bound and upper bound of x*/
 } AppCtx;
 
 /* User provided Routines */
 PetscErrorCode InitializeUserData(AppCtx *);
 PetscErrorCode FormStartingPoint(Vec,AppCtx *);
-PetscErrorCode EvaluateFunction(Tao,Vec,Vec,void *);
+PetscErrorCode EvaluateResidual(Tao,Vec,Vec,void *);
 PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,Mat,void *);
-
+PetscErrorCode EvaluateRegularizerObjectiveAndGradient(Tao,Vec,PetscReal *,Vec,void*);
+PetscErrorCode EvaluateRegularizerHessian(Tao,Vec,Mat,void*);
+PetscErrorCode EvaluateRegularizerHessianProd(Mat,Vec,Vec);
 
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;               /* used to check for functions returning nonzeros */
-  Vec            x,f;               /* solution, function f(x) = A*x-b */
-  Mat            J;               /* Jacobian matrix */
-  Tao            tao;                /* Tao solver context */  
+  Vec            x,res;              /* solution, function res(x) = A*x-b */  
+  Mat            Hreg;               /* regularizer Hessian matrix for user specified regularizer*/
+  Tao            tao;                /* Tao solver context */    
   PetscReal      hist[100],resid[100],v1,v2;
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
@@ -88,10 +85,7 @@ int main(int argc,char **argv)
 
   /* Allocate solution vector x,  and function vectors Ax-b, */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.N,&x);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,user.M,&f);CHKERRQ(ierr);
-
-  /* Allocate Jacobian matrix. */
-  ierr = MatConvert(user.A,MATSAME,MAT_INITIAL_MATRIX,&J);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,user.M,&res);CHKERRQ(ierr);
 
   /* Set initial guess */
   ierr = FormStartingPoint(x,&user);CHKERRQ(ierr);
@@ -103,14 +97,21 @@ int main(int argc,char **argv)
   
   /* Bind user.D to tao->data->D */
   ierr = TaoBRGNSetDictionaryMatrix(tao,user.D);CHKERRQ(ierr);
-  /* User set the regulazation objective, gradient, and hessian. Set it the same as using l2prox choice, for testing purpose.  */
-  ierr = TaoBRGNSetRegularizerObjectiveAndGradientRoutine(tao,PetscErrorCode (*func)(Tao,Vec,PetscReal *,Vec,void*),user.reg_obj_ctx);CHKERRQ(ierr);
-  ierr = TaoBRGNSetRegularizerHessianRoutine(tao,Hreg,PetscErrorCode (*func)(Tao,Vec,Mat,void*),user.reg_hess_ctx);CHKERRQ(ierr);
 
+  /* Set the residual function and Jacobian routines for least squares. */
+  ierr = TaoSetResidualRoutine(tao,res,EvaluateResidual,(void*)&user);CHKERRQ(ierr);
+  /* Jacobian matrix fixed as user.A for Linear least sqaure problem. */
+  ierr = TaoSetJacobianResidualRoutine(tao,user.A,user.A,EvaluateJacobian,(void*)&user);CHKERRQ(ierr);
 
-  /* Set the function and Jacobian routines for least squares. */
-  ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)&user);CHKERRQ(ierr);
+  /* User set the regularizer objective, gradient, and hessian. Set it the same as using l2prox choice, for testing purpose.  */  
+  ierr = TaoBRGNSetRegularizerObjectiveAndGradientRoutine(tao,EvaluateRegularizerObjectiveAndGradient,(void*)&user);CHKERRQ(ierr);
+  /* User defined regularizer Hessian setup, here is identiy shell matrix */
+  ierr = MatCreate(PETSC_COMM_SELF,&Hreg);CHKERRQ(ierr);
+  ierr = MatSetSizes(Hreg,PETSC_DECIDE,PETSC_DECIDE,user.N,user.N);CHKERRQ(ierr);
+  ierr = MatSetType(Hreg,MATSHELL);CHKERRQ(ierr);
+  ierr = MatSetUp(Hreg);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(Hreg,MATOP_MULT,(void (*)(void))EvaluateRegularizerHessianProd);CHKERRQ(ierr);    
+  ierr = TaoBRGNSetRegularizerHessianRoutine(tao,Hreg,EvaluateRegularizerHessian,(void*)&user);CHKERRQ(ierr);  
 
   /* Check for any TAO command line arguments */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -120,12 +121,11 @@ int main(int argc,char **argv)
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-
   /* XH: Debug: Do we really need to assembly the vector? should be called after completing all calls to VecSetValues()
      Assemble vector, using the 2-step process: VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition by placing code between these two statements.
   */
-  /* Is it neccssary to use TaoGetSolutionVector(tao, &x); */
+  /* Is it necessary to use TaoGetSolutionVector(tao, &x); */
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
@@ -140,12 +140,11 @@ int main(int argc,char **argv)
   ierr = VecNorm(user.xGT,NORM_2,&v2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "relative reconstruction error: ||x-xGT||/||xGT|| = %6.4e.\n", (double)(v1/v2));CHKERRQ(ierr);
 
-  /* XH: Debug: View the result, function and Jacobian.  */      
 #if 0
-  PetscPrintf(PETSC_COMM_SELF,"-------- result x, residual f=A*x-b, Jacobian=A, and D Matrix. -------- \n");  
+  /* XH: Debug: View the result, function and Jacobian.  */ 
+  PetscPrintf(PETSC_COMM_SELF,"-------- result x, residual res=A*x-b, Jacobian=A, and D Matrix. -------- \n");  
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(res,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
   ierr = MatView(user.A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatView(user.D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 #endif
@@ -155,23 +154,22 @@ int main(int argc,char **argv)
 
    /* Free PETSc data structures */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  /* Free user data structures: maybe not necessary for user.A and uuser.D since they are binded to J and tao->data->D, but just destroy to make sure? */  
+  ierr = VecDestroy(&res);CHKERRQ(ierr);  
+  /* Free user data structures */  
   ierr = MatDestroy(&user.A);CHKERRQ(ierr);
   ierr = MatDestroy(&user.D);CHKERRQ(ierr);
   ierr = VecDestroy(&user.b);CHKERRQ(ierr);
   ierr = VecDestroy(&user.xGT);CHKERRQ(ierr);
   ierr = VecDestroy(&user.xlb);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.xub);CHKERRQ(ierr);
-
+  ierr = VecDestroy(&user.xub);CHKERRQ(ierr);  
   ierr = PetscFinalize();
   return ierr;
 }
 
 
 /*--------------------------------------------------------------------*/
-PetscErrorCode EvaluateFunction(Tao tao,Vec X,Vec F,void *ptr)
+/* Evaluate residual function A(x)-b in least square problem ||A(x)-b||^2 */
+PetscErrorCode EvaluateResidual(Tao tao,Vec X,Vec F,void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscErrorCode ierr;
@@ -185,72 +183,49 @@ PetscErrorCode EvaluateFunction(Tao tao,Vec X,Vec F,void *ptr)
 }
 
 /*------------------------------------------------------------*/
-/* J[m][n] = df[m]/dx[n] = A[m][n] for linear least square */
 PetscErrorCode EvaluateJacobian(Tao tao,Vec X,Mat J,Mat Jpre,void *ptr)
 {
-  AppCtx         *user = (AppCtx *)ptr;
+  /* Jacobian is not changing here, so use a empty dummy function here.  J[m][n] = df[m]/dx[n] = A[m][n] for linear least square */
+  PetscFunctionBegin;  
+  PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------ */
+PetscErrorCode EvaluateRegularizerObjectiveAndGradient(Tao tao,Vec X,PetscReal *f_reg,Vec G_reg,void *ptr)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;  
-  if (user->A) {
-    /* PetscValidHeaderSpecific(user->A,MAT_CLASSID,2); */ /* Todo: XH do not understand what is this valiidation for and it cause compile error, so commented out. originally copied from TaoBRGNSetL1RegularizerWeight*/
-    /*PetscCheckSameComm(J,1,user->A,2);*/
-    /* TODO: how to just bind J to user->A instead of copy the content to it? Do we need to pass Mat *J instead of Mat J?
-    ierr = PetscObjectReference((PetscObject)user->A);CHKERRQ(ierr);
-    ierr = MatDestroy(&J);CHKERRQ(ierr);
-    J = user->A;  
-    */
-    ierr = MatCopy(user->A,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  }  
-  PetscLogFlops(0);  /* 0 for linear least square, >0 for nonlinear least square */
+  /* compute regularizer objective = 0.5*x'*x */
+  ierr = VecDot(X,X,f_reg);CHKERRQ(ierr);    
+  *f_reg *= 0.5;
+  /* compute regularizer gradient = x */  
+  ierr = VecCopy(X,G_reg);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode EvaluateRegularizerHessianProd(Mat Hreg,Vec in,Vec out)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = VecCopy(in,out);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------ */
-PetscErrorCode EvaluateHessian(Mat H,Vec in,Vec out)
-
-/* ------------------------------------------------------------ 
-PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao,Mat Hreg,PetscErrorCode (*func)(Tao, Vec, Mat, void*),void *ctx)
-{
-  TAO_BRGN       *gn = (TAO_BRGN *)tao->data;
-  PetscErrorCode ierr;
-
+PetscErrorCode EvaluateRegularizerHessian(Tao tao,Vec X,Mat Hreg,void *ptr)
+{  
+  /* Hessian for regularizer objective = 0.5*x'*x is identity matrix, and is not changing*/
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (Hreg) {
-    PetscValidHeaderSpecific(Hreg,MAT_CLASSID,2);
-    PetscCheckSameComm(tao,1,Hreg,2);
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONG,"NULL Hessian detected! User must provide valid Hessian for the regularizer.");
-  }
-  if (ctx) {
-    gn->reg_hess_ctx = ctx;
-  }
-  if (func) {
-    gn->regularizerhessian = func;
-  }
-  if (Hreg) {
-    ierr = PetscObjectReference((PetscObject)Hreg);CHKERRQ(ierr);
-    ierr = MatDestroy(&gn->Hreg);CHKERRQ(ierr);
-    gn->Hreg = Hreg;
-  }
   PetscFunctionReturn(0);
 }
-*/
-
 
 /* ------------------------------------------------------------ */
 PetscErrorCode FormStartingPoint(Vec X,AppCtx *user) 
 {
-  PetscReal      *x;
   PetscErrorCode ierr;
-  PetscInt       n;
-
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  for (n=0; n<user->N; n++) x[0] = 0.0;  /* XH: i.e. VecSet(x, 0); */
-  VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecSet(X,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -289,7 +264,15 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   /* Specify the size */
   ierr = MatGetSize(user->A,&user->M,&user->N);CHKERRQ(ierr);
 
-  /* Specify D */
+  /* shortcut, when D is identity matrix, we may just specify it as NULL, and brgn will treat D*x as x without actually computing D*x.
+  if (dictChoice == 0) {
+    user->D = NULL;
+    PetscFunctionReturn(0);
+  }
+  */
+
+  /* Speficy D */
+  /* (1) Specify D Size */
   switch (dictChoice) {
     case 0: /* 0:identity */ 
       user->K = user->N;
@@ -304,6 +287,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   ierr = MatSetFromOptions(user->D);CHKERRQ(ierr);
   ierr = MatSetUp(user->D);CHKERRQ(ierr);
 
+  /* (2) Specify D Content */
   switch (dictChoice) {
     case 0: /* 0:identity */ 
       for (k=0; k<user->K; k++) {
@@ -323,9 +307,10 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   }
   ierr = MatAssemblyBegin(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-   /* Verify the norms for A, D, b, xGT, only used in the debug*/
+  
+   
 #if 0
+  /* Verify the norms for A, D, b, xGT, only used in debug*/
   ierr = MatNorm(user->A,NORM_FROBENIUS,&v);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "A has size %dx%d and Frobenius-norm: %6.4e.\n", user->M, user->N, (double)v);CHKERRQ(ierr);
 
@@ -355,14 +340,13 @@ PetscErrorCode InitializeUserData(AppCtx *user)
       args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-8
       requires: !single
 
-   test:
-      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-4 -tao_gatol 1.e-8
+   test:      
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
       requires: !single
 
    test:
       args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type user -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
-      requires: !single
-
-      
-
+      test with 2-norm regularizer of ||x||^2
+      requires: !single      
+            
 TEST*/

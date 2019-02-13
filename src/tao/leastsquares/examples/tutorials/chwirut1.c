@@ -435,10 +435,5 @@ PetscErrorCode InitializeData(AppCtx *user)
       suffix: 2
       args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-4 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-5
       requires: !single
-
-   test:
-      suffix: 2
-      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_reg_type user -tao_gatol 1.e-5
-      requires: !single  
-
+      
 TEST*/

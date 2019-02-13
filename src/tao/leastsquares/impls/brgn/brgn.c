@@ -69,8 +69,8 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
     ierr = VecAXPY(G,gn->lambda,gn->x_work);CHKERRQ(ierr);
     break;
   case BRGN_l2prox:
-    /* compute f = f + lambda*0.5*(xk - xkm1)^T(xk - xkm1) */
-    ierr = VecAXPBYPCZ(gn->x_work,1.0,-1.0,0.0,X,gn->x_old);CHKERRQ(ierr); /*TODO: no need to use VecAXPBYPCZ for x - xkm1 */
+    /* compute f = f + lambda*0.5*(xk - xkm1)'*(xk - xkm1) */
+    ierr = VecAXPBYPCZ(gn->x_work,1.0,-1.0,0.0,X,gn->x_old);CHKERRQ(ierr); 
     ierr = VecDot(gn->x_work,gn->x_work,&f_reg);CHKERRQ(ierr);
     *fcn += gn->lambda*0.5*f_reg;
     /* compute G = G + lambda*(xk - xkm1) */
@@ -246,8 +246,8 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   /*ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);*/  
   if (BRGN_l1dict == gn->reg_type) {
     if (gn->D) {
-      /* XH: debug: check matrix */
 #if 0
+      /* XH: debug: check matrix */
       ierr = PetscPrintf(PETSC_COMM_SELF,"-------- Check D matrix: -------- \n"); CHKERRQ(ierr);
       ierr = MatView(gn->D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 #endif
@@ -439,7 +439,7 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao,PetscReal epsilon)
 
    Input Parameters:
 +  tao  - the Tao context
-.  dict - the user specified dictionary matrix
+.  dict - the user specified dictionary matrix.  We allow to set a null dictionary, which means identity matrix by default
 
     Level: developer
 @*/
@@ -455,7 +455,7 @@ PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao,Mat dict)
     ierr = PetscObjectReference((PetscObject)dict);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&gn->D);CHKERRQ(ierr);
-  gn->D = dict;  /* We allow to set a null dictionary, which means we just use default identity matrix? */
+  gn->D = dict;
   PetscFunctionReturn(0);
 }
 
