@@ -354,49 +354,49 @@ PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscRe
 }
 
 /*MC
-     TAOBNCG -   Bound-constrained Nonlinear Conjugate Gradient method.
+  TAOBNCG - Bound-constrained Nonlinear Conjugate Gradient method.
 
-   Options Database Keys:
-+      -tao_bncg_recycle - enable recycling the latest calculated gradient vector in subsequent TaoSolve() calls (currently disabled)
-.      -tao_bncg_eta <r> - restart tolerance
-.      -tao_bncg_type <taocg_type> - cg formula
-.      -tao_bncg_as_type <none,bertsekas> - active set estimation method
-.      -tao_bncg_as_tol <r> - tolerance used in Bertsekas active-set estimation
-.      -tao_bncg_as_step <r> - trial step length used in Bertsekas active-set estimation
-.      -tao_bncg_eps <r> - cutoff used for determining whether or not we restart based on steplength each iteration, as well as determining whether or not we continue using the last stepdirection. Defaults to machine precision.
-.      -tao_bncg_theta <r> - convex combination parameter for the Broyden method
-.      -tao_bncg_hz_eta <r> - cutoff tolerance for the beta term in the HZ, DK methods
-.      -tao_bncg_dk_eta <r> - cutoff tolerance for the beta term in the HZ, DK methods
-.      -tao_bncg_xi <r> - Multiplicative constant of the gamma term in the KD method
-.      -tao_bncg_hz_theta <r> - Multiplicative constant of the theta term for the HZ method
-.      -tao_bncg_bfgs_scale <r> - Scaling parameter of the bfgs contribution to the scalar Broyden method
-.      -tao_bncg_dfp_scale <r> - Scaling parameter of the dfp contribution to the scalar Broyden method
-.      -tao_bncg_diag_scaling <b> - Whether or not to use diagonal initialization/preconditioning for the CG methods. Default True.
-.      -tao_bncg_dynamic_restart <b> - use dynamic restart strategy in the HZ, DK, KD methods
-.      -tao_bncg_unscaled_restart <b> - whether or not to scale the gradient when doing gradient descent restarts
-.      -tao_bncg_zeta <r> - Scaling parameter in the KD method
-.      -tao_bncg_delta_min <r> - Minimum bound for rescaling during restarted gradient descent steps
-.      -tao_bncg_delta_max <r> - Maximum bound for rescaling during restarted gradient descent steps
-.      -tao_bncg_min_quad <i> - Number of quadratic-like steps in a row necessary to do a dynamic restart
-.      -tao_bncg_min_restart_num <i> - This number, x, makes sure there is a gradient descent step every x*n iterations, where n is the dimension of the problem
-.      -tao_bncg_spaced_restart <b> - whether or not to do gradient descent steps every x*n iterations
-.      -tao_bncg_no_scaling <b> - If true, eliminates all scaling, including defaults.
-.      -tao_bncg_neg_xi <b> - Whether or not to use negative xi in the KD method under certain conditions
+  Options Database Keys:
+    + -tao_bncg_recycle - enable recycling the latest calculated gradient vector in subsequent TaoSolve() calls (currently disabled)
+    . -tao_bncg_eta <r> - restart tolerance
+    . -tao_bncg_type <taocg_type> - cg formula
+    . -tao_bncg_as_type <none,bertsekas> - active set estimation method
+    . -tao_bncg_as_tol <r> - tolerance used in Bertsekas active-set estimation
+    . -tao_bncg_as_step <r> - trial step length used in Bertsekas active-set estimation
+    . -tao_bncg_eps <r> - cutoff used for determining whether or not we restart based on steplength each iteration, as well as determining whether or not we continue using the last stepdirection. Defaults to machine precision.
+    . -tao_bncg_theta <r> - convex combination parameter for the Broyden method
+    . -tao_bncg_hz_eta <r> - cutoff tolerance for the beta term in the HZ, DK methods
+    . -tao_bncg_dk_eta <r> - cutoff tolerance for the beta term in the HZ, DK methods
+    . -tao_bncg_xi <r> - Multiplicative constant of the gamma term in the KD method
+    . -tao_bncg_hz_theta <r> - Multiplicative constant of the theta term for the HZ method
+    . -tao_bncg_bfgs_scale <r> - Scaling parameter of the bfgs contribution to the scalar Broyden method
+    . -tao_bncg_dfp_scale <r> - Scaling parameter of the dfp contribution to the scalar Broyden method
+    . -tao_bncg_diag_scaling <b> - Whether or not to use diagonal initialization/preconditioning for the CG methods. Default True.
+    . -tao_bncg_dynamic_restart <b> - use dynamic restart strategy in the HZ, DK, KD methods
+    . -tao_bncg_unscaled_restart <b> - whether or not to scale the gradient when doing gradient descent restarts
+    . -tao_bncg_zeta <r> - Scaling parameter in the KD method
+    . -tao_bncg_delta_min <r> - Minimum bound for rescaling during restarted gradient descent steps
+    . -tao_bncg_delta_max <r> - Maximum bound for rescaling during restarted gradient descent steps
+    . -tao_bncg_min_quad <i> - Number of quadratic-like steps in a row necessary to do a dynamic restart
+    . -tao_bncg_min_restart_num <i> - This number, x, makes sure there is a gradient descent step every x*n iterations, where n is the dimension of the problem
+    . -tao_bncg_spaced_restart <b> - whether or not to do gradient descent steps every x*n iterations
+    . -tao_bncg_no_scaling <b> - If true, eliminates all scaling, including defaults.
+    - -tao_bncg_neg_xi <b> - Whether or not to use negative xi in the KD method under certain conditions
 
   Notes:
-     CG formulas are:
-         "gd" - Gradient Descent
-         "fr" - Fletcher-Reeves
-         "pr" - Polak-Ribiere-Polyak
-         "prp" - Polak-Ribiere-Plus
-         "hs" - Hestenes-Steifel
-         "dy" - Dai-Yuan
-         "ssml_bfgs" - Self-Scaling Memoryless BFGS
-         "ssml_dfp"  - Self-Scaling Memoryless DFP
-         "ssml_brdn" - Self-Scaling Memoryless Broyden
-         "hz" - Hager-Zhang (CG_DESCENT 5.3)
-         "dk" - Dai-Kou (2013)
-         "kd" - Kou-Dai (2015)
+    CG formulas are:
+    + "gd" - Gradient Descent
+    . "fr" - Fletcher-Reeves
+    . "pr" - Polak-Ribiere-Polyak
+    . "prp" - Polak-Ribiere-Plus
+    . "hs" - Hestenes-Steifel
+    . "dy" - Dai-Yuan
+    . "ssml_bfgs" - Self-Scaling Memoryless BFGS
+    . "ssml_dfp"  - Self-Scaling Memoryless DFP
+    . "ssml_brdn" - Self-Scaling Memoryless Broyden
+    . "hz" - Hager-Zhang (CG_DESCENT 5.3)
+    . "dk" - Dai-Kou (2013)
+    - "kd" - Kou-Dai (2015)
   Level: beginner
 M*/
 
