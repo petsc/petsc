@@ -169,7 +169,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   }
   ierr = PCBDDCOrthonormalizeVecs(basis_size,nullvecs);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_FALSE,basis_size,nullvecs,&NullSpace);CHKERRQ(ierr);
-  ierr = MatSetNearNullSpace(local_mat,NullSpace);CHKERRQ(ierr);
+  ierr = MatSetNearNullSpace(local_pmat,NullSpace);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&NullSpace);CHKERRQ(ierr);
   for (k=0;k<basis_size;k++) {
     ierr = VecDestroy(&nullvecs[k]);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   ierr = KSPGetPC(local_ksp,&shell_ctx->local_pc);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)shell_ctx->local_pc);CHKERRQ(ierr);
   ierr = PCCreate(PETSC_COMM_SELF,&newpc);CHKERRQ(ierr);
-  ierr = PCSetOperators(newpc,local_mat,local_mat);CHKERRQ(ierr);
+  ierr = PCSetOperators(newpc,local_mat,local_pmat);CHKERRQ(ierr);
   ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
   ierr = PCShellSetContext(newpc,shell_ctx);CHKERRQ(ierr);
   if (isdir) {
@@ -245,7 +245,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
     ierr = KSPAppendOptionsPrefix(check_ksp,"approxscale_");CHKERRQ(ierr);
     ierr = KSPSetErrorIfNotConverged(check_ksp,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = KSPSetOperators(check_ksp,local_mat,local_mat);CHKERRQ(ierr);
+    ierr = KSPSetOperators(check_ksp,local_mat,local_pmat);CHKERRQ(ierr);
     ierr = KSPSetTolerances(check_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(check_ksp,PETSC_TRUE);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(shell_ctx->work_full_1,2,&workv);CHKERRQ(ierr);
@@ -312,6 +312,7 @@ PetscErrorCode PCBDDCNullSpaceCheckCorrection(PC pc, PetscBool isdir)
   ierr = MatMult(shell_ctx->basis_mat,shell_ctx->work_small_1,work1);CHKERRQ(ierr);
   ierr = VecCopy(work1,work2);CHKERRQ(ierr);
   ierr = MatMult(local_mat,work1,work3);CHKERRQ(ierr);
+  ierr = VecScale(work3,1.0/shell_ctx->scale);CHKERRQ(ierr);
   ierr = PCApply(check_pc,work3,work1);CHKERRQ(ierr);
   ierr = VecAXPY(work1,-1.,work2);CHKERRQ(ierr);
   ierr = VecNorm(work1,NORM_INFINITY,&test_err);CHKERRQ(ierr);
