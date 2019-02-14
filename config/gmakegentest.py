@@ -370,13 +370,7 @@ class generateExamples(Petsc):
     subst['pkg_name']=self.pkg_name
     subst['pkg_dir']=self.pkg_dir
     subst['pkg_arch']=self.petsc_arch
-
-    if self.inInstallDir:
-      # Case 2
-      subst['CONFIG_DIR']=os.path.join(os.path.dirname(self.srcdir),'config')
-    else:
-      # Case 1
-      subst['CONFIG_DIR']=os.path.join(self.petsc_dir,'config')
+    subst['CONFIG_DIR']=thisscriptdir
     subst['PETSC_BINDIR']=os.path.join(self.petsc_dir,'lib','petsc','bin')
     subst['diff']=self.conf['DIFF']
     subst['rm']=self.conf['RM']
