@@ -7243,6 +7243,13 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
 
     /* Partition */
     ierr = MatPartitioningCreate(subcomm,&partitioner);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PTSCOTCH)
+    ierr = MatPartitioningSetType(partitioner,MATPARTITIONINGPTSCOTCH);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_PARMETIS)
+    ierr = MatPartitioningSetType(partitioner,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
+#else
+    ierr = MatPartitioningSetType(partitioner,MATPARTITIONINGAVERAGE);CHKERRQ(ierr);
+#endif
     ierr = MatPartitioningSetAdjacency(partitioner,subdomain_adj);CHKERRQ(ierr);
     if (v_wgt) {
       ierr = MatPartitioningSetVertexWeights(partitioner,v_wgt);CHKERRQ(ierr);
@@ -7943,6 +7950,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   multilevel_allowed   = PETSC_FALSE;
   multilevel_requested = PETSC_FALSE;
   coarse_eqs_per_proc  = PetscMin(PetscMax(pcbddc->coarse_size,1),pcbddc->coarse_eqs_per_proc);
+  if (coarse_eqs_per_proc < 0) coarse_eqs_per_proc = pcbddc->coarse_size;
   if (pcbddc->current_level < pcbddc->max_levels) multilevel_requested = PETSC_TRUE;
   if (pcbddc->coarse_size <= pcbddc->coarse_eqs_limit) multilevel_requested = PETSC_FALSE;
   if (multilevel_requested) {
