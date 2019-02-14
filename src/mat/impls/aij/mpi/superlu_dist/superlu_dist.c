@@ -315,6 +315,9 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
 
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"deprecate");
+    //------------------------------- rm! --------------------
+    
     if (size > 1) { /* convert mpi A to seq mat A */
       ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
       ierr = MatCreateSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
@@ -356,6 +359,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 #else
     PetscStackCall("SuperLU_DIST:dCreate_CompCol_Matrix_dist",dCreate_CompCol_Matrix_dist(&lu->A_sup, M, N, aa->nz, lu->val, lu->col, lu->row, SLU_NC, SLU_D, SLU_GE));
 #endif
+    //------------------------------- rm! --------------------
   } else { /* distributed mat input */
     Mat_MPIAIJ *mat = (Mat_MPIAIJ*)A->data;
     aa=(Mat_SeqAIJ*)(mat->A)->data;
@@ -705,7 +709,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   lu->MatInputMode = DISTRIBUTED;
 
   ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,NULL);CHKERRQ(ierr);
-  if (lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
+  //if (lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
   ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && !flg) options.Equil = NO;
