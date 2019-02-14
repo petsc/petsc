@@ -1459,7 +1459,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   ISLocalToGlobalMapping map;
   PetscScalar            *vals;
   const PetscScalar      *array;
-  PetscInt               i,maxneighs,maxsize;
+  PetscInt               i,maxneighs,maxsize,*gidxs;
   PetscInt               n_neigh,*neigh,*n_shared,**shared;
   PetscMPIInt            rank;
   PetscErrorCode         ierr;
@@ -1474,7 +1474,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   }
   maxsize = 0;
   for (i=0;i<n_neigh;i++) maxsize = PetscMax(n_shared[i],maxsize);
-  ierr = PetscMalloc1(maxsize,&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxsize,&gidxs,maxsize,&vals);CHKERRQ(ierr);
   /* create vectors to hold quadrature weights */
   ierr = MatCreateVecs(A,&quad_vec,NULL);CHKERRQ(ierr);
   if (!transpose) {
@@ -1487,7 +1487,6 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   ierr = PCBDDCNullSpaceCreate(PetscObjectComm((PetscObject)A),PETSC_FALSE,maxneighs,quad_vecs,nnsp);CHKERRQ(ierr);
   for (i=0;i<maxneighs;i++) {
     ierr = VecLockPop(quad_vecs[i]);CHKERRQ(ierr);
-    ierr = VecSetLocalToGlobalMapping(quad_vecs[i],map);CHKERRQ(ierr);
   }
 
   /* compute local quad vec */
@@ -1530,7 +1529,8 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
     for (j=0;j<nn;j++) vals[j] = array[idxs[j]];
     ierr = PetscFindInt(rank,graph->count[idxs[0]],graph->neighbours_set[idxs[0]],&idx);CHKERRQ(ierr);
     idx  = -(idx+1);
-    ierr = VecSetValuesLocal(quad_vecs[idx],nn,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApply(map,nn,idxs,gidxs);CHKERRQ(ierr);
+    ierr = VecSetValues(quad_vecs[idx],nn,gidxs,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = ISLocalToGlobalMappingRestoreInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vins,&array);CHKERRQ(ierr);
@@ -1538,7 +1538,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
     ierr = VecDestroy(&vins);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = PetscFree(vals);CHKERRQ(ierr);
+  ierr = PetscFree2(gidxs,vals);CHKERRQ(ierr);
 
   /* assemble near null space */
   for (i=0;i<maxneighs;i++) {
