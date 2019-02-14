@@ -71,6 +71,18 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
+/*MC
+  TAOBQNLS - Bounded Quasi-Newton Line Search method for nonlinear minimization with bound 
+             constraints. This method approximates the action of the inverse-Hessian with a 
+             limited memory quasi-Newton formula. The quasi-Newton matrix and its options are 
+             accessible via the prefix `-tao_bqnls_`
+
+  Options Database Keys:
+  + -tao_bqnls_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
+  - -tao_bqnls_as_type - active-set estimation method ("none", "bertsekas")
+
+  Level: beginner
+M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
 {
   TAO_BNK        *bnk;

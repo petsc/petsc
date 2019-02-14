@@ -718,8 +718,7 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
 
 /* ---------------------------------------------------------- */
 /*MC
-  TAONTR - Newton's method with trust region and linesearch
-  for unconstrained minimization.
+  TAONTL - Newton's method with trust region globalization and line search fallback.
   At each iteration, the Newton trust region method solves the system for d
   and performs a line search in the d direction:
 
@@ -757,7 +756,6 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
 
   Level: beginner
 M*/
-
 PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
 {
   TAO_NTL        *tl;
