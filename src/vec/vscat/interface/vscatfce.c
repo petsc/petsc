@@ -558,26 +558,6 @@ PetscErrorCode VecScatterRestoreRemoteOrdered_Private(const VecScatter ctx,Petsc
   PetscFunctionReturn(0);
 }
 
-/*
-  VecScatterIsSequential_Private - Returns true if the scatter is sequential.
-
-  scatter - The scatter.
-  flag    - Upon exit flag is true if the scatter is of type VecScatter_Seq_General
-            or VecScatter_Seq_Stride; otherwise flag is false.
-*/
-PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBool *flag)
-{
-  VecScatterFormat scatterType = scatter->format;
-
-  PetscFunctionBegin;
-  if (scatterType == VEC_SCATTER_SEQ_GENERAL || scatterType == VEC_SCATTER_SEQ_STRIDE) {
-    *flag = PETSC_TRUE;
-  } else {
-    *flag = PETSC_FALSE;
-  }
-  PetscFunctionReturn(0);
-}
-
 #if defined(PETSC_HAVE_CUDA)
 
 /*@C

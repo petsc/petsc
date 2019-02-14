@@ -289,8 +289,6 @@ PETSC_INTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(const VecScatter,
 PETSC_INTERN PetscErrorCode VecScatterRestoreRemote_Private(const VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
 PETSC_INTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(const VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
 
-PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common*,PetscBool*);
-
 typedef struct _VecScatterOps *VecScatterOps;
 struct _VecScatterOps {
   PetscErrorCode (*begin)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
