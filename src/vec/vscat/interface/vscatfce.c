@@ -604,58 +604,47 @@ PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBo
 @*/
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter inctx,Vec x)
 {
-  PetscFunctionBegin;
-  VecScatter_MPI_General *to,*from;
-  PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstartsSends,*sstartsRecvs,nrecvs,nsends,bs;
-  PetscBool              isSeq1,isSeq2;
+  PetscErrorCode ierr;
+  PetscInt       i,nrecvs,nsends,sbs,rbs,ns,nr;
+  const PetscInt *sstarts,*rstarts,*sindices,*rindices;
 
   PetscFunctionBegin;
-  ierr = VecScatterIsSequential_Private((VecScatter_Common*)inctx->fromdata,&isSeq1);CHKERRQ(ierr);
-  ierr = VecScatterIsSequential_Private((VecScatter_Common*)inctx->todata,&isSeq2);CHKERRQ(ierr);
-  if (isSeq1 || isSeq2) {
-    PetscFunctionReturn(0);
-  }
+  ierr = VecScatterGetRemote_Private(inctx,PETSC_TRUE/*send*/, &nsends,&sstarts,&sindices,NULL/*procs*/,&sbs);CHKERRQ(ierr);
+  ierr = VecScatterGetRemote_Private(inctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,&rindices,NULL/*procs*/,&rbs);CHKERRQ(ierr);
+  ns   = nsends ? sstarts[nsends]-sstarts[0] : 0; /* s/rstarts[0] is not necessarily zero */
+  nr   = nrecvs ? rstarts[nrecvs]-rstarts[0] : 0;
 
-  to           = (VecScatter_MPI_General*)inctx->todata;
-  from         = (VecScatter_MPI_General*)inctx->fromdata;
-  bs           = to->bs;
-  nrecvs       = from->n;
-  nsends       = to->n;
-  indices      = to->indices;
-  sstartsSends = to->starts;
-  sstartsRecvs = from->starts;
   if (x->valid_GPU_array != PETSC_OFFLOAD_UNALLOCATED && (nsends>0 || nrecvs>0)) {
     if (!inctx->spptr) {
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
-      PetscInt ns = sstartsSends[nsends],nr = sstartsRecvs[nrecvs];
       /* Here we create indices for both the senders and receivers. */
       ierr = PetscMalloc1(ns,&tindicesSends);CHKERRQ(ierr);
       ierr = PetscMalloc1(nr,&tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMemcpy(tindicesSends,indices,ns*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemcpy(tindicesRecvs,from->indices,nr*sizeof(PetscInt));CHKERRQ(ierr);
+      /* s/rindices and s/rstarts could be NULL when ns or nr is zero */
+      if (ns) {ierr = PetscMemcpy(tindicesSends,&sindices[sstarts[0]],ns*sizeof(PetscInt));CHKERRQ(ierr);}
+      if (nr) {ierr = PetscMemcpy(tindicesRecvs,&rindices[rstarts[0]],nr*sizeof(PetscInt));CHKERRQ(ierr);}
 
       ierr = PetscSortRemoveDupsInt(&ns,tindicesSends);CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&nr,tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMalloc1(bs*ns,&sindicesSends);CHKERRQ(ierr);
-      ierr = PetscMalloc1(from->bs*nr,&sindicesRecvs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(sbs*ns,&sindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc1(rbs*nr,&sindicesRecvs);CHKERRQ(ierr);
 
       /* sender indices */
       for (i=0; i<ns; i++) {
-        for (k=0; k<bs; k++) sindicesSends[i*bs+k] = tindicesSends[i]+k;
+        for (k=0; k<sbs; k++) sindicesSends[i*sbs+k] = tindicesSends[i]+k;
       }
       ierr = PetscFree(tindicesSends);CHKERRQ(ierr);
 
       /* receiver indices */
       for (i=0; i<nr; i++) {
-        for (k=0; k<from->bs; k++) sindicesRecvs[i*from->bs+k] = tindicesRecvs[i]+k;
+        for (k=0; k<rbs; k++) sindicesRecvs[i*rbs+k] = tindicesRecvs[i]+k;
       }
       ierr = PetscFree(tindicesRecvs);CHKERRQ(ierr);
 
       /* create GPU indices, work vectors, ... */
-      ierr = VecScatterCUDAIndicesCreate_PtoP(ns*bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUDAIndices*)&inctx->spptr);CHKERRQ(ierr);
+      ierr = VecScatterCUDAIndicesCreate_PtoP(ns*sbs,sindicesSends,nr*rbs,sindicesRecvs,(PetscCUDAIndices*)&inctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindicesSends);CHKERRQ(ierr);
       ierr = PetscFree(sindicesRecvs);CHKERRQ(ierr);
     }

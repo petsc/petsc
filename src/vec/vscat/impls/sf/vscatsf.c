@@ -16,7 +16,23 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(x,&data->xdata);CHKERRQ(ierr);
+  {
+#if defined(PETSC_HAVE_CUDA)
+    PetscBool is_cudatype = PETSC_FALSE;
+    ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+    if (is_cudatype) {
+      VecCUDAAllocateCheckHost(x);
+      if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+        if (x->spptr && vscat->spptr) {ierr = VecCUDACopyFromGPUSome_Public(x,(PetscCUDAIndices)vscat->spptr,mode);CHKERRQ(ierr);}
+        else {ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);}
+      }
+      data->xdata = *((PetscScalar**)x->data);
+    } else
+#endif
+    {
+      ierr = VecGetArrayRead(x,&data->xdata);CHKERRQ(ierr);
+    }
+  }
   ierr = VecGetArray(y,&ydata);CHKERRQ(ierr);
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
