@@ -89,7 +89,7 @@ static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
   PetscErrorCode   ierr;
@@ -118,17 +118,25 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode type)
+static PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode type)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   hdf5->btype = type;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscBool flg)
+static PetscErrorCode  PetscViewerFileGetMode_HDF5(PetscViewer viewer, PetscFileMode *type)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  *type = hdf5->btype;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscBool flg)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
 
@@ -201,7 +209,7 @@ PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer viewer,PetscBool *fl
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool flg)
+static PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool flg)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
 
@@ -276,7 +284,7 @@ PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer viewer,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
+static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
@@ -322,7 +330,7 @@ static PetscErrorCode PetscViewerFileGetName_HDF5(PetscViewer viewer,const char 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerHDF5SetAIJNames_HDF5(PetscViewer viewer, const char iname[], const char jname[], const char aname[], const char cname[])
+static PetscErrorCode  PetscViewerHDF5SetAIJNames_HDF5(PetscViewer viewer, const char iname[], const char jname[], const char aname[], const char cname[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
   PetscErrorCode ierr;
@@ -374,7 +382,7 @@ PetscErrorCode  PetscViewerHDF5SetAIJNames(PetscViewer viewer, const char iname[
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerHDF5GetAIJNames_HDF5(PetscViewer viewer, const char *iname[], const char *jname[], const char *aname[], const char *cname[])
+static PetscErrorCode  PetscViewerHDF5GetAIJNames_HDF5(PetscViewer viewer, const char *iname[], const char *jname[], const char *aname[], const char *cname[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
 
@@ -477,6 +485,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetBaseDimension2_C",PetscViewerHDF5SetBaseDimension2_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetSPOutput_C",PetscViewerHDF5SetSPOutput_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetAIJNames_C",PetscViewerHDF5SetAIJNames_HDF5);CHKERRQ(ierr);
