@@ -133,6 +133,7 @@ int main(int argc,char **argv)
 
    build:
       requires:  !complex !define(PETSC_USE_64BIT_INDICES)
+      depends: ex72mmio.c
 
    test:
       suffix: 1
