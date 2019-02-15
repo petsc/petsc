@@ -37,7 +37,6 @@ PetscErrorCode PCBDDCScalingExtension(PC,Vec,Vec);
 
 /* nullspace correction */
 PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC,PetscBool,PetscBool);
-PetscErrorCode PCBDDCNullSpaceCheckCorrection(PC,PetscBool);
 
 /* utils */
 PetscErrorCode PCBDDCComputeLocalMatrix(PC,Mat);
