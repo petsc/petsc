@@ -16,3 +16,24 @@
        end subroutine
       end Interface
 
+      Interface
+      subroutine PCFieldSplitSetIS(a,b,c,z)
+      use petscpcdef
+       PC a
+       character(*)  b
+       IS c
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine PCFieldSplitGetIS(a,b,c,z)
+      use petscpcdef
+       PC a
+       character(*)  b
+       IS c
+       integer z
+       end subroutine
+      end Interface
+
+
