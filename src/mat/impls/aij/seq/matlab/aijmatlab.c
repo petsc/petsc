@@ -94,6 +94,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 
   for (k=0; k<mat->rmap->n; k++) aij->ilen[k] = aij->imax[k] = aij->i[k+1] - aij->i[k];
 
+  mat->nonzerostate++; /* since the nonzero structure can change anytime force the Inode information to always be rebuilt */
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
