@@ -3,33 +3,40 @@
 #include <petsc/private/taoimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define taobrgngetsubsolver_             TAOBRGNGETSUBSOLVER
-#define taobrgnsetl1regularizerweight_   TAOBRGNSETL1REGULARIZERWEIGHT
-#define taobrgnsetl1smoothepsilon_       TAOBRGNSETL1SMOOTHEPSILON
-#define taobrgnsetdictionarymatrix_      TAOBRGNSETDICTIONARYMATRIX
+#define taobrgnsetregularizerobjectiveandgradientroutine_ TAOBRGNSETREGULARIZEROBJECTIVEANDGRADIENTROUTINE
+#define taobrgnsetregularizerhessianroutine_              TAOBRGNSETREGULARIZERHESSIANROUTINE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define taobrgngetsubsolver_             taobrgngetsubsolver
-#define taobrgnsetl1regularizerweight_   taobrgnsetl1regularizerweight
-#define taobrgnsetl1smoothepsilon_       taobrgnsetl1smoothepsilon
-#define taobrgnsetdictionarymatrix_      taobrgnsetdictionarymatrix
+#define taobrgnsetregularizerobjectiveandgradientroutine_ taobrgnsetregularizerobjectiveandgradientroutine
+#define taobrgnsetregularizerhessianroutine_              taobrgnsetregularizerhessianroutine
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL taobrgngetsubsolver_(Tao *tao, Tao *subsolver, PetscErrorCode *ierr)
+static struct {
+  PetscFortranCallbackId objgrad;
+  PetscFortranCallbackId hess;
+} _cb;
+
+static PetscErrorCode ourtaobrgnregobjgradroutine(Tao tao, Vec x, PetscReal *f, Vec g, void* ctx)
 {
-    if(!*ierr) *ierr = TaoBRGNGetSubsolver(*tao, subsolver);
+    PetscObjectUseFortranCallback(tao,_cb.objgrad,(Tao*,Vec*,PetscReal*,Vec*,void*,PetscErrorCode*),(&tao,&x,f,&g,_ctx,&ierr));
 }
 
-PETSC_EXTERN void PETSC_STDCALL taobrgnsetl1regularizerweight_(Tao *tao, PetscReal *lambda, PetscErrorCode *ierr)
+static PetscErrorCode ourtaobrgnreghessroutine(Tao tao, Vec x, Mat H, void *ctx)
 {
-    if(!*ierr) *ierr = TaoBRGNSetL1RegularizerWeight(*tao, *lambda);
+    PetscObjectUseFortranCallback(tao,_cb.hess,(Tao*,Vec*,Mat*,void*,PetscErrorCode*),(&tao,&x,&H,_ctx,&ierr));
 }
 
-PETSC_EXTERN void PETSC_STDCALL taobrgnsetl1smoothepsilon_(Tao *tao, PetscReal *epsilon, PetscErrorCode *ierr)
+EXTERN_C_BEGIN
+
+PETSC_EXTERN void PETSC_STDCALL taobrgnsetregularizerobjectiveandgradientroutine_(Tao *tao, void (PETSC_STDCALL *func)(Tao*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
-    if(!*ierr) *ierr = TaoBRGNSetL1SmoothEpsilon(*tao, *epsilon);
+    CHKFORTRANNULLFUNCTION(func);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.objgrad,(PetscVoidFunction)func,ctx);
+    if(!*ierr) *ierr = TaoBRGNSetRegularizerObjectiveAndGradientRoutine(*tao,ourtaobrgnregobjgradroutine,ctx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL taobrgnsetdictionarymatrix(Tao *tao, Mat *dict, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL taobrgnsetregularizerhessianroutine_(Tao *tao, Mat *H, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
-    if(!*ierr) *ierr = TaoBRGNSetDictionaryMatrix(*tao, *dict);
+    CHKFORTRANNULLFUNCTION(func);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.hess,(PetscVoidFunction)func,ctx);
+    if(!*ierr) *ierr = TaoBRGNSetRegularizerHessianRoutine(*tao,*H, ourtaobrgnreghessroutine,ctx);
 }

@@ -1,4 +1,4 @@
-#include <../src/tao/leastsquares/impls/brgn/brgn.h>
+#include <../src/tao/leastsquares/impls/brgn/brgn.h> /*I "petsctao.h" I*/
 
 #define BRGN_user               0
 #define BRGN_l2prox             1
@@ -321,6 +321,7 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
   }
   ierr = MatDestroy(&gn->H);CHKERRQ(ierr);
   ierr = MatDestroy(&gn->D);CHKERRQ(ierr);
+  ierr = MatDestroy(&gn->Hreg);CHKERRQ(ierr);
   ierr = TaoDestroy(&gn->subsolver);CHKERRQ(ierr);
   gn->parent = NULL;
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
@@ -330,15 +331,15 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
 /*MC
   TAOBRGN - Bounded Regularized Gauss-Newton method for solving nonlinear least-squares 
             problems with bound constraints. This algorithm is a thin wrapper around TAOBNTL 
-            that constructs the Guass-Newton problem with the user-provided least-squares 
-            residual and Jacobian. The problem is regularized with an L2-norm proximal point 
-            term.
+            that constructs the Gauss-Newton problem with the user-provided least-squares 
+            residual and Jacobian. The algorithm offers both an L2-norm proximal point ("l2prox") 
+            regularizer, and a L1-norm dictionary regularizer ("l1dict"). The user can also provide 
+            own regularization function.
 
   Options Database Keys:
-  + -tao_bqnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
-  . -tao_bqnk_init_type - trust radius initialization method ("constant", "direction", "interpolation")
-  . -tao_bqnk_update_type - trust radius update method ("step", "direction", "interpolation")
-  - -tao_bqnk_as_type - active-set estimation method ("none", "bertsekas")
+  + -tao_brgn_lambda - regularizer weight (default 1e-4)
+  . -tao_brgn_epsilon - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
+  - -tao_brgn_reg_type - regularization type ("user", "l2prox", "l1dict")
 
   Level: beginner
 M*/
@@ -370,12 +371,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   TaoBRGNGetSubsolver - Get the pointer to the subsolver inside BRGN
 
   Collective on Tao
 
-  Level: developer
+  Level: advanced
   
   Input Parameters:
 +  tao - the Tao solver context
@@ -390,16 +391,16 @@ PetscErrorCode TaoBRGNGetSubsolver(Tao tao,Tao *subsolver)
   PetscFunctionReturn(0);
 }
 
-/*@C
-  TaoBRGNSetL1RegularizerWeight - Set the L1-norm regularizer weight for the Gauss-Newton least-squares algorithm
+/*@
+  TaoBRGNSetRegularizerWeight - Set the regularizer weight for the Gauss-Newton least-squares algorithm
 
   Collective on Tao
-
-  Level: developer
   
   Input Parameters:
 +  tao - the Tao solver context
 -  lambda - L1-norm regularizer weight
+
+  Level: beginner
 @*/
 PetscErrorCode TaoBRGNSetRegularizerWeight(Tao tao,PetscReal lambda)
 {
@@ -412,16 +413,16 @@ PetscErrorCode TaoBRGNSetRegularizerWeight(Tao tao,PetscReal lambda)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   TaoBRGNSetL1SmoothEpsilon - Set the L1-norm smooth approximation parameter for L1-regularized least-squares algorithm
 
   Collective on Tao
-
-  Level: developer
   
   Input Parameters:
 +  tao - the Tao solver context
 -  epsilon - L1-norm smooth approximation parameter
+
+  Level: advanced
 @*/
 PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao,PetscReal epsilon)
 {
@@ -434,14 +435,14 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao,PetscReal epsilon)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    TaoBRGNSetDictionaryMatrix - bind the dictionary matrix from user application context to gn->D, for compressed sensing (with least-squares problem)
 
    Input Parameters:
 +  tao  - the Tao context
 .  dict - the user specified dictionary matrix.  We allow to set a null dictionary, which means identity matrix by default
 
-    Level: developer
+    Level: advanced
 @*/
 PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao,Mat dict)  
 {
@@ -460,6 +461,15 @@ PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao,Mat dict)
 }
 
 /*@C
+   TaoBRGNSetRegularizerObjectiveAndGradientRoutine - Sets the user-defined regularizer call-back 
+   function into the algorithm.
+
+   Input Parameters:
+   + tao - the Tao context
+   . func - function pointer for the regularizer value and gradient evaluation
+   - ctx - user context for the regularizer
+
+   Level: advanced
 @*/
 PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao,PetscErrorCode (*func)(Tao,Vec,PetscReal *,Vec,void*),void *ctx)
 {
@@ -477,6 +487,16 @@ PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao,PetscErr
 }
 
 /*@C
+   TaoBRGNSetRegularizerHessianRoutine - Sets the user-defined regularizer call-back 
+   function into the algorithm.
+
+   Input Parameters:
+   + tao - the Tao context
+   . Hreg - user-created matrix for the Hessian of the regularization term
+   . func - function pointer for the regularizer Hessian evaluation
+   - ctx - user context for the regularizer Hessian
+
+   Level: advanced
 @*/
 PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao,Mat Hreg,PetscErrorCode (*func)(Tao,Vec,Mat,void*),void *ctx)
 {

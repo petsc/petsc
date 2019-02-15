@@ -281,20 +281,20 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 /*TEST
 
    build:
-      requires: !complex
+      requires: !complex !single
 
    test:
+      localrunfiles: cs1Data_A_b_xGT
       args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-8
-      requires: !single
       
    test:
       suffix: 2
+      localrunfiles: cs1Data_A_b_xGT
       args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
-      requires: !single
 
-    test:
-      suffix: 2
+   test:
+      suffix: 3
+      localrunfiles: cs1Data_A_b_xGT
       args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-8
-      requires: !single
 
 TEST*/

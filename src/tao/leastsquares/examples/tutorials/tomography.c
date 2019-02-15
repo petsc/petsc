@@ -155,6 +155,7 @@ int main(int argc,char **argv)
    /* Free PETSc data structures */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&res);CHKERRQ(ierr);  
+  ierr = MatDestroy(&Hreg);CHKERRQ(ierr);
   /* Free user data structures */  
   ierr = MatDestroy(&user.A);CHKERRQ(ierr);
   ierr = MatDestroy(&user.D);CHKERRQ(ierr);
@@ -330,23 +331,23 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:
-      requires: !complex  XH: used template from chwirut1.c
+      requires: !complex !single
 
    test:
-      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-8
-      requires: !single
+      localrunfiles: tomographyData_A_b_xGT
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-7
 
-   test:      
-      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
-      requires: !single
+   test:     
+      suffix: 2 
+      localrunfiles: tomographyData_A_b_xGT
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-7
 
    test:
-      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type user -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
-      test with 2-norm regularizer of ||x||^2
-      requires: !single      
+      suffix: 3
+      localrunfiles: tomographyData_A_b_xGT
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type user -tao_brgn_lambda 1e-8 -tao_gatol 1.e-7
             
 TEST*/
