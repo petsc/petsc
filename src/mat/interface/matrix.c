@@ -1063,7 +1063,6 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   if (iascii) {
-    if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
