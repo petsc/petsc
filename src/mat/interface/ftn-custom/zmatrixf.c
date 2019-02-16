@@ -94,7 +94,7 @@
 #define matgetownershiprange00_          MATGETOWNERSHIPRANGE00
 #define matgetownershiprange10_          MATGETOWNERSHIPRANGE10
 #define matgetownershiprange01_          MATGETOWNERSHIPRANGE01
-#define matgetownershiprange10_          MATGETOWNERSHIPRANGE11
+#define matgetownershiprange11_          MATGETOWNERSHIPRANGE11
 #define matgetownershipis_               MATGETOWNERSHIPIS
 #define matgetownershiprangecolumn_      MATGETOWNERSHIPRANGECOLUMN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
