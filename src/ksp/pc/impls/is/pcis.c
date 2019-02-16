@@ -124,8 +124,12 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Preconditioner type of Neumann Neumman requires matrix of type MATIS");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Requires preconditioning matrix of type MATIS");
   matis = (Mat_IS*)pc->pmat->data;
+  if (pc->useAmat) {
+    ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Requires linear system matrix of type MATIS");
+  }
 
   /* first time creation, get info on substructuring */
   if (!pc->setupcalled) {
@@ -219,6 +223,9 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
         [ A_BI | A_BB ]
   */
   if (computematrices) {
+    PetscBool amat = (PetscBool)(pc->mat != pc->pmat && pc->useAmat);
+    PetscInt  bs,ibs;
+
     reuse = MAT_INITIAL_MATRIX;
     if (pcis->reusesubmatrices && pc->setupcalled) {
       if (pc->flag == SAME_NONZERO_PATTERN) {
@@ -229,12 +236,25 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
     }
     if (reuse == MAT_INITIAL_MATRIX) {
       ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+      ierr = MatDestroy(&pcis->pA_II);CHKERRQ(ierr);
       ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
       ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
       ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
     }
 
-    ierr = MatCreateSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(pcis->mapping,&ibs);CHKERRQ(ierr);
+    ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->pA_II);CHKERRQ(ierr);
+    if (amat) {
+      Mat_IS *amatis = (Mat_IS*)pc->mat->data;
+      ierr = MatCreateSubMatrix(amatis->A,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject)pcis->pA_II);CHKERRQ(ierr);
+      ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+      pcis->A_II = pcis->pA_II;
+    }
+    ierr = MatSetBlockSize(pcis->A_II,bs == ibs ? bs : 1);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(pcis->pA_II,bs == ibs ? bs : 1);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,reuse,&pcis->A_BB);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
     if (!issbaij) {
@@ -248,6 +268,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
       ierr = MatCreateSubMatrix(newmat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
       ierr = MatDestroy(&newmat);CHKERRQ(ierr);
     }
+    ierr = MatSetBlockSize(pcis->A_BB,bs == ibs ? bs : 1);CHKERRQ(ierr);
   }
 
   /* Creating scaling vector D */
@@ -375,6 +396,7 @@ PetscErrorCode  PCISDestroy(PC pc)
   ierr = ISDestroy(&pcis->is_B_global);CHKERRQ(ierr);
   ierr = ISDestroy(&pcis->is_I_global);CHKERRQ(ierr);
   ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcis->pA_II);CHKERRQ(ierr);
   ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
   ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
   ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
