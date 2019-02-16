@@ -494,17 +494,16 @@ PetscErrorCode PCReset_ML(PC pc)
 
   PetscFunctionBegin;
   if (dim) {
-    ML_Aggregate_Viz_Stats * grid_info = (ML_Aggregate_Viz_Stats*) pc_ml->ml_object->Grid[0].Grid;
-
     for (level=0; level<=fine_level; level++) {
       ierr = VecDestroy(&pc_ml->gridctx[level].coords);CHKERRQ(ierr);
     }
-
-    grid_info->x = 0; /* do this so ML doesn't try to free coordinates */
-    grid_info->y = 0;
-    grid_info->z = 0;
-
-    PetscStackCall("ML_Operator_Getrow",ML_Aggregate_VizAndStats_Clean(pc_ml->ml_object));
+    if (pc_ml->ml_object && pc_ml->ml_object->Grid) {
+      ML_Aggregate_Viz_Stats * grid_info = (ML_Aggregate_Viz_Stats*) pc_ml->ml_object->Grid[0].Grid;
+      grid_info->x = 0; /* do this so ML doesn't try to free coordinates */
+      grid_info->y = 0;
+      grid_info->z = 0;
+      PetscStackCall("ML_Operator_Getrow",ML_Aggregate_VizAndStats_Clean(pc_ml->ml_object));
+    }
   }
   PetscStackCall("ML_Aggregate_Destroy",ML_Aggregate_Destroy(&pc_ml->agg_object));
   PetscStackCall("ML_Aggregate_Destroy",ML_Destroy(&pc_ml->ml_object));
@@ -1035,7 +1034,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
   partindx   = 0;
 
   ierr = PetscOptionsInt("-pc_ml_PrintLevel","Print level","ML_Set_PrintLevel",PrintLevel,&PrintLevel,NULL);CHKERRQ(ierr);
-  PetscStackCall("ML_Set_PrintLeve",ML_Set_PrintLevel(PrintLevel));
+  PetscStackCall("ML_Set_PrintLevel",ML_Set_PrintLevel(PrintLevel));
   ierr = PetscOptionsInt("-pc_ml_maxNlevels","Maximum number of levels","None",pc_ml->MaxNlevels,&pc_ml->MaxNlevels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_ml_maxCoarseSize","Maximum coarsest mesh size","ML_Aggregate_Set_MaxCoarseSize",pc_ml->MaxCoarseSize,&pc_ml->MaxCoarseSize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-pc_ml_CoarsenScheme","Aggregate Coarsen Scheme","ML_Aggregate_Set_CoarsenScheme_*",scheme,4,scheme[0],&indx,NULL);CHKERRQ(ierr);
