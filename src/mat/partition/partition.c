@@ -599,18 +599,15 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
   if (match) PetscFunctionReturn(0);
 
   if (part->ops->destroy) {
-    ierr =  (*part->ops->destroy)(part);CHKERRQ(ierr);
-
+    ierr = (*part->ops->destroy)(part);CHKERRQ(ierr);
     part->ops->destroy = NULL;
-    part->data         = 0;
-    part->setupcalled  = 0;
   }
+  part->setupcalled = 0;
+  part->data        = 0;
+  ierr = PetscMemzero(part->ops,sizeof(struct _MatPartitioningOps));CHKERRQ(ierr);
 
   ierr = PetscFunctionListFind(MatPartitioningList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
-
-  part->ops->destroy = (PetscErrorCode (*)(MatPartitioning)) 0;
-  part->ops->view    = (PetscErrorCode (*)(MatPartitioning,PetscViewer)) 0;
 
   ierr = (*r)(part);CHKERRQ(ierr);
 
