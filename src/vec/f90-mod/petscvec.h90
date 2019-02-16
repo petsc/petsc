@@ -8,11 +8,7 @@
           type(*) :: larray(:)
           PetscErrorCode :: ierr
         end Subroutine PetscSFBcastBegin
-      end Interface
-#endif
 
-#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
-      Interface
       subroutine PetscSFBcastEnd(sf,unit,rarray,larray,ierr)
           use petscisdef
           PetscSF :: sf
@@ -32,7 +28,7 @@
           PetscInt, pointer :: ilocal(:)
           type(PetscSFNode), pointer :: iremote(:)
           PetscErrorCode :: ierr
-        end Subroutine PetscSFGetGraph
+      end Subroutine PetscSFGetGraph
       end Interface
 
       Interface VecGetOwnershipRange
@@ -262,32 +258,34 @@
           PetscInt m
           PetscErrorCode ierr
         End Subroutine
-      End Interface
-
-      Interface
-      subroutine VecSetType(a,b,z)
-      use petscvecdef
-       Vec a
-       character(*) b
-       integer z
+      
+        subroutine VecSetType(a,b,ierr)
+         use petscvecdef
+         Vec a
+         character(*) b
+         PetscErrorCode ierr
        end subroutine
-      end Interface
 
-      Interface
-      subroutine VecView(a,b,z)
-      use petscvecdef
-       Vec a
-       PetscViewer b
-       integer z
+       subroutine VecView(a,b,ierr)
+         use petscvecdef
+         Vec a
+         PetscViewer b
+         PetscErrorCode ierr
        end subroutine
-      end Interface
+      
+       subroutine VecScatterRemap(a,b,c,ierr)
+         use petscvecdef
+         VecScatter a ! VecScatter
+         PetscInt b (*) ! PetscInt
+         PetscInt c (*) ! PetscInt
+         PetscErrorCode ierr
+       end subroutine
 
-      Interface
-      subroutine VecScatterRemap(a,b,c,z)
-      use petscvecdef
-       VecScatter a ! VecScatter
-       PetscInt b (*) ! PetscInt
-       PetscInt c (*) ! PetscInt
-       integer z
+       subroutine VecLoad(a,b,ierr)
+         use petscvecdef
+         Vec a
+         PetscViewer b
+         PetscErrorCode ierr
        end subroutine
+      
       end Interface

@@ -9,13 +9,11 @@
 !  in Fortran and called from a C routine, passing down PETSc objects.
 !
 
-       PetscScalar      two
+       PetscScalar, parameter ::  two = 2.0
        Vec              vec
        MPI_Comm         comm
        PetscErrorCode ierr
        PetscMPIInt rank
-
-       two  = 2.0
 
 !
 !     The Objects vec,comm created in a C routine are now
