@@ -263,7 +263,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
       cells[2*i] = i; cells[2*i+1] = i + 1;
     }
 
-    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, (const int*)cells, spacedim, coords, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, (const int*)cells, spacedim, (const double*)coords, dm);CHKERRQ(ierr);
     ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
