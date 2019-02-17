@@ -94,7 +94,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->pde       = PDE_POISSON;
   options->elemMat   = NULL;
-  options->dim       = 2;
+  options->dim       = 1;
   options->cells[0]  = 8;
   options->cells[1]  = 6;
   options->cells[2]  = 4;
@@ -250,6 +250,7 @@ int main(int argc,char **args)
   ierr = DMDARestoreElements(da,&nel,&nen,&e_loc);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Boundary conditions */
   if (user.dirbc) { /* fix one side of DMDA */
@@ -421,23 +422,20 @@ int main(int argc,char **args)
    suffix: bddc_elast_deluxe_layers
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_deluxe_scaling -pc_bddc_schur_layers 1
  test:
-   requires: ml
    nsize: 8
-   filter: grep -v "variant HERMITIAN" | grep -v "using I-node" | sed -e "s/nonzeros=57[0-9]/nonzeros=576/g"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_dir_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type ml -ksp_monitor_short -ksp_converged_reason -pc_bddc_dirichlet_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type gamg -ksp_converged_reason -pc_bddc_dirichlet_approximate
  test:
-   requires: ml
    nsize: 8
-   filter: grep -v "variant HERMITIAN"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_neu_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_neumann_pc_type ml -ksp_monitor_short -ksp_converged_reason -pc_bddc_neumann_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_neumann_pc_type gamg -ksp_converged_reason -pc_bddc_neumann_approximate
  test:
-   requires: ml
    nsize: 8
-   filter: grep -v "variant HERMITIAN" | grep -v "using I-node" | sed -e "s/nonzeros=57[0-9]/nonzeros=576/g"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_both_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type ml -pc_bddc_neumann_pc_type ml -ksp_monitor_short -ksp_converged_reason -pc_bddc_neumann_approximate -pc_bddc_dirichlet_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type gamg -pc_bddc_neumann_pc_type gamg -ksp_converged_reason -pc_bddc_neumann_approximate -pc_bddc_dirichlet_approximate
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
