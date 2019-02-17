@@ -32,6 +32,7 @@ PetscErrorCode PCISSetUseStiffnessScaling(PC pc, PetscBool use)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,use,2);
   ierr = PetscTryMethod(pc,"PCISSetUseStiffnessScaling_C",(PC,PetscBool),(pc,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -45,6 +46,18 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
   ierr    = PetscObjectReference((PetscObject)scaling_factors);CHKERRQ(ierr);
   ierr    = VecDestroy(&pcis->D);CHKERRQ(ierr);
   pcis->D = scaling_factors;
+  if (pc->setupcalled) {
+    PetscInt sn;
+
+    ierr = VecGetSize(pcis->D,&sn);CHKERRQ(ierr);
+    if (sn == pcis->n) {
+      ierr = VecScatterBegin(pcis->N_to_B,pcis->D,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->N_to_B,pcis->D,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
+      ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+      ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
+    } else if (sn != pcis->n_B) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn); 
+  }
   PetscFunctionReturn(0);
 }
 
@@ -70,6 +83,7 @@ PetscErrorCode PCISSetSubdomainDiagonalScaling(PC pc, Vec scaling_factors)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(scaling_factors,VEC_CLASSID,2);
   ierr = PetscTryMethod(pc,"PCISSetSubdomainDiagonalScaling_C",(PC,Vec),(pc,scaling_factors));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -80,6 +94,11 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
 
   PetscFunctionBegin;
   pcis->scaling_factor = scal;
+  if (pcis->D) {
+    PetscErrorCode ierr;
+
+    ierr = VecSet(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -214,6 +233,19 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
     ierr = ISLocalToGlobalMappingCreateIS(pcis->is_B_local,&pcis->BtoNmap);CHKERRQ(ierr);
   }
 
+  {
+    PetscInt sn;
+
+    ierr = VecGetSize(pcis->D,&sn);CHKERRQ(ierr);
+    if (sn == pcis->n) {
+      ierr = VecScatterBegin(pcis->N_to_B,pcis->D,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->N_to_B,pcis->D,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
+      ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+      ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
+    } else if (sn != pcis->n_B) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn); 
+  }
+
   /*
     Extracting the blocks A_II, A_BI, A_IB and A_BB from A. If the numbering
     is such that interior nodes come first than the interface ones, we have
@@ -296,7 +328,6 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
   ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_global,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_global,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
-
   /* See historical note 01, at the bottom of this file. */
 
   /* Creating the KSP contexts for the local Dirichlet and Neumann problems */
