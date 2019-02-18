@@ -22,8 +22,8 @@ Reference:     None
                
 */
 
-static char help[] = "Finds the least-squares solution to the underconstraint linear model Ax = b, with regularizer. \n\
-            A is a M*N real flat matrix (M<N), x is sparse. A good regularizer is L1 regularizer. \n\
+static char help[] = "Finds the least-squares solution to the under constraint linear model Ax = b, with regularizer. \n\
+            A is a M*N real matrix (M<N), x is sparse. A good regularizer is an L1 regularizer. \n\
             We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||D*x||_1, where lambda (by default 1e-4) is a user specified weight.\n\
             D is the K*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x.\n";
 /*T
@@ -40,16 +40,12 @@ static char help[] = "Finds the least-squares solution to the underconstraint li
    Processors: 1
 T*/
 
-
-
-
 /* User-defined application context */
 typedef struct {
-  /* Working space. linear least square:  res(x) = A*x - b */
-  /*PetscReal A[M][N]; */    /* array of coefficients */
+  /* Working space. linear least square:  res(x) = A*x - b */  
   PetscInt  M,N,K;            /* Problem dimension: A is M*N Matrix, D is K*N Matrix */
   Mat       A,D;              /* Coefficients, Dictionary Transform of size M*N and K*N respectively. For linear least square, Jacobian Matrix J = A. For nonlinear least square, it is different from A */  
-  Vec       b,xGT,xlb,xub; /* observation b, ground truth xGT, the lower bound and upper bound of x*/
+  Vec       b,xGT,xlb,xub;    /* observation b, ground truth xGT, the lower bound and upper bound of x*/
 } AppCtx;
 
 /* User provided Routines */
@@ -74,7 +70,7 @@ int main(int argc,char **argv)
   PetscViewer    fd;   /* used to save result to file */
   char           resultFile[] = "tomographyResult_x";  /* Debug: change from "tomographyResult_x" to "cs1Result_x" */  
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
@@ -121,14 +117,6 @@ int main(int argc,char **argv)
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  /* XH: Debug: Do we really need to assembly the vector? should be called after completing all calls to VecSetValues()
-     Assemble vector, using the 2-step process: VecAssemblyBegin(), VecAssemblyEnd()
-     Computations can be done while messages are in transition by placing code between these two statements.
-  */
-  /* Is it necessary to use TaoGetSolutionVector(tao, &x); */
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-
   /* Save x (reconstruction of object) vector to a binary file, which maybe read from Matlab and convert to a 2D image for comparison. */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,resultFile,FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
   ierr = VecView(x,fd);CHKERRQ(ierr);
@@ -139,15 +127,6 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_2,&v1);CHKERRQ(ierr);
   ierr = VecNorm(user.xGT,NORM_2,&v2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "relative reconstruction error: ||x-xGT||/||xGT|| = %6.4e.\n", (double)(v1/v2));CHKERRQ(ierr);
-
-#if 0
-  /* XH: Debug: View the result, function and Jacobian.  */ 
-  PetscPrintf(PETSC_COMM_SELF,"-------- result x, residual res=A*x-b, Jacobian=A, and D Matrix. -------- \n");  
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(res,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
-  ierr = MatView(user.A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatView(user.D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -308,26 +287,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   }
   ierr = MatAssemblyBegin(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
-   
-#if 0
-  /* Verify the norms for A, D, b, xGT, only used in debug*/
-  ierr = MatNorm(user->A,NORM_FROBENIUS,&v);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "A has size %dx%d and Frobenius-norm: %6.4e.\n", user->M, user->N, (double)v);CHKERRQ(ierr);
-
-  ierr = MatNorm(user->D,NORM_FROBENIUS,&v);CHKERRQ(ierr);
-  ierr = MatGetSize(user->D,&k,&n);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "D has size %dx%d and Frobenius-norm: %6.4e.\n", k, n, (double)v);CHKERRQ(ierr);
-
-  ierr = VecNorm(user->b,NORM_2,&v);CHKERRQ(ierr);
-  ierr = VecGetSize(user->b,&user->M);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "b has size %d and 2-norm: %6.4e.\n", user->M, (double)v);CHKERRQ(ierr);
-
-  ierr = VecNorm(user->xGT,NORM_2,&v);CHKERRQ(ierr);
-  ierr = VecGetSize(user->xGT,&user->N);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "xGT has size %d and 2-norm: %6.4e.\n", user->N, (double)v);CHKERRQ(ierr);
-#endif
-
+    
   PetscFunctionReturn(0);
 }
 
@@ -338,16 +298,16 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 
    test:
       localrunfiles: tomographyData_A_b_xGT
-      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-7
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_regularization_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-7
 
    test:     
       suffix: 2 
       localrunfiles: tomographyData_A_b_xGT
-      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-7
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_regularization_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-7
 
    test:
       suffix: 3
       localrunfiles: tomographyData_A_b_xGT
-      args: -tao_monitor -tao_max_it 1000 -tao_brgn_reg_type user -tao_brgn_lambda 1e-8 -tao_gatol 1.e-7
+      args: -tao_monitor -tao_max_it 1000 -tao_brgn_regularization_type user -tao_brgn_lambda 1e-8 -tao_gatol 1.e-7
             
 TEST*/

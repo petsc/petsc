@@ -53,7 +53,7 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
   PetscReal             f_reg;
   
   PetscFunctionBegin;
-    /* compute objective *fcn*/
+  /* compute objective *fcn*/
   /* compute first term 0.5*||ls_res||_2^2 */
   ierr = TaoComputeResidual(tao,X,tao->ls_res);CHKERRQ(ierr);
   ierr = VecDot(tao->ls_res,tao->ls_res,fcn);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ static PetscErrorCode TaoSetFromOptions_BRGN(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject,"least-squares problems with regularizer: ||f(x)||^2 + lambda*g(x), g(x) = ||xk-xkm1||^2 or ||Dx||_1 or user defined function.");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_lambda","regularizer weight (default 1e-4)","",gn->lambda,&gn->lambda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_epsilon","L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)","",gn->epsilon,&gn->epsilon,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_brgn_reg_type","regularization type", "",BRGN_Table,BRGNRegTypes,BRGN_Table[gn->reg_type],&gn->reg_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_brgn_regularization_type","regularization type", "",BRGN_Table,BRGNRegTypes,BRGN_Table[gn->reg_type],&gn->reg_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoSetFromOptions(gn->subsolver);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -242,15 +242,9 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     ierr = VecDuplicate(tao->solution,&gn->x_old);CHKERRQ(ierr);
     ierr = VecSet(gn->x_old,0.0);CHKERRQ(ierr);
   }
-  
-  /*ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);*/  
+    
   if (BRGN_l1dict == gn->reg_type) {
     if (gn->D) {
-#if 0
-      /* XH: debug: check matrix */
-      ierr = PetscPrintf(PETSC_COMM_SELF,"-------- Check D matrix: -------- \n"); CHKERRQ(ierr);
-      ierr = MatView(gn->D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
       ierr = MatGetSize(gn->D,&K,&N);CHKERRQ(ierr); /* Shell matrices still must have sizes defined. K = N for identity matrix, K=N-1 or N for gradient matrix */
     } else {
       ierr = VecGetSize(tao->solution,&K);CHKERRQ(ierr); /* If user does not setup dict matrix, use identiy matrix, K=N */
@@ -333,13 +327,14 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
             problems with bound constraints. This algorithm is a thin wrapper around TAOBNTL 
             that constructs the Gauss-Newton problem with the user-provided least-squares 
             residual and Jacobian. The algorithm offers both an L2-norm proximal point ("l2prox") 
-            regularizer, and a L1-norm dictionary regularizer ("l1dict"). The user can also provide 
-            own regularization function.
+            regularizer, and a L1-norm dictionary regularizer ("l1dict"), where we approximate the 
+            L1-norm ||x||_1 by sum_i(sqrt(x_i^2+epsilon^2)-epsilon) with a small positive number epsilon.
+            The user can also provide own regularization function.
 
   Options Database Keys:
-  + -tao_brgn_lambda - regularizer weight (default 1e-4)
-  . -tao_brgn_epsilon - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
-  - -tao_brgn_reg_type - regularization type ("user", "l2prox", "l1dict")
+  + -tao_brgn_lambda              - regularizer weight (default 1e-4)
+  . -tao_brgn_epsilon             - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
+  - -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l1dict")
 
   Level: beginner
 M*/
@@ -508,9 +503,7 @@ PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao,Mat Hreg,PetscErrorCo
   if (Hreg) {
     PetscValidHeaderSpecific(Hreg,MAT_CLASSID,2);
     PetscCheckSameComm(tao,1,Hreg,2);
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONG,"NULL Hessian detected! User must provide valid Hessian for the regularizer.");
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONG,"NULL Hessian detected! User must provide valid Hessian for the regularizer.");
   if (ctx) {
     gn->reg_hess_ctx = ctx;
   }

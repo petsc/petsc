@@ -21,8 +21,8 @@ Reference:     None
                
 */
 
-static char help[] = "Finds the least-squares solution to the underconstraint linear model Ax = b, with L1-norm regularizer. \n\
-            A is a M*N real flat matrix (M<N), x is sparse. \n\
+static char help[] = "Finds the least-squares solution to the under constraint linear model Ax = b, with L1-norm regularizer. \n\
+            A is a M*N real matrix (M<N), x is sparse. \n\
             We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||D*x||_1, where lambda (by default 1e-4) is a user specified weight.\n\
             D is the K*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x.\n";
 /*T
@@ -78,7 +78,7 @@ int main(int argc,char **argv)
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
 
   /* Allocate solution and vector function vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
@@ -122,20 +122,12 @@ int main(int argc,char **argv)
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-
-  /* XH: Debug: Do we really need to assembly the vector? should be called after completing all calls to VecSetValues()
-     Assemble vector, using the 2-step process: VecAssemblyBegin(), VecAssemblyEnd()
-     Computations can be done while messages are in transition by placing code between these two statements.
-  */
-  /* Is it neccssary to use TaoGetSolutionVector(tao, &x); */
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
   /* XH: Debug: View the result, function and Jacobian.  */    
-  PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n");  
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n");CHKERRQ(ierr);  
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = VecView(f,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = MatView(J,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = MatView(D,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -163,7 +155,6 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-
   
   /* Even for linear least square, we do not direct use matrix operation f = A*x - b now, just for future modification and compatability for nonlinear least square */
   for (m=0;m<M;m++) {
@@ -225,14 +216,9 @@ PetscErrorCode FormDictionaryMatrix(Mat D,AppCtx *user)
 /* ------------------------------------------------------------ */
 PetscErrorCode FormStartingPoint(Vec X)
 {
-  PetscReal      *x;
   PetscErrorCode ierr;
-  PetscInt       n;
-
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  for (n=0; n<N; n++) x[0] = 0.0;  /* XH: i.e. VecSet(x, 0); */
-  VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecSet(X,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -258,8 +244,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   ++m; n=0; user->A[m][n++] = 0.91; user->A[m][n++] = 0.63; user->A[m][n++] = 0.55; user->A[m][n++] = 0.16; user->A[m][n++] = 0.49;
   ++m; n=0; user->A[m][n++] = 0.13; user->A[m][n++] = 0.10; user->A[m][n++] = 0.96; user->A[m][n++] = 0.97; user->A[m][n++] = 0.80;
   
-  /* initialize to 0 */
-  /* C99 can use: char ZEROARRAY[1024] = {0}; Can we do the same thing here?*/
+  /* initialize to 0 */  
   for (k=0; k<K; k++) {
     for (n=0; n<N; n++) {
       user->D[k][n] = 0.0;
@@ -273,7 +258,6 @@ PetscErrorCode InitializeUserData(AppCtx *user)
       user->D[k][k+1] = 1.0; 
   }
   
-
   PetscFunctionReturn(0);
 }
 
@@ -290,11 +274,11 @@ PetscErrorCode InitializeUserData(AppCtx *user)
    test:
       suffix: 2
       localrunfiles: cs1Data_A_b_xGT
-      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_reg_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
+      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type l2prox -tao_brgn_lambda 1e-8 -tao_gatol 1.e-8
 
    test:
       suffix: 3
       localrunfiles: cs1Data_A_b_xGT
-      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_reg_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-8
+      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type l1dict -tao_brgn_lambda 1e-8 -tao_brgn_epsilon 1e-6 -tao_gatol 1.e-8
 
 TEST*/
