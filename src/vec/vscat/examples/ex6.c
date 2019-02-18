@@ -47,23 +47,26 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd  (vscat1,x,y1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vscat2,x,y2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  /* View on rank 0 of PETSC_COMM_WORLD */
+  /* View on rank 0 of x's comm, which is PETSC_COMM_WORLD */
   if (!rank) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOn rank 0 of PETSC_COMM_WORLD, x  = ");CHKERRQ(ierr);
+    /* Print the part of x on rank 0, which is 0 1 2 3 4 */
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, x  = ");CHKERRQ(ierr);
     ierr = VecGetArrayRead(x,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_WORLD," %.0f",dat[i]);CHKERRQ(ierr);}
+    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0f",PetscRealPart(dat[i]));CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(x,&dat);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOn rank 0 of PETSC_COMM_WORLD, y1 = ");CHKERRQ(ierr);
+    /* Print the part of y1 on rank 0, which is 0 1 2 3 4 */
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, y1 = ");CHKERRQ(ierr);
     ierr = VecGetArrayRead(y1,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_WORLD," %.0f",dat[i]);CHKERRQ(ierr);}
+    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0f",PetscRealPart(dat[i]));CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(y1,&dat);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOn rank 0 of PETSC_COMM_WORLD, y2 = ");CHKERRQ(ierr);
+    /* Print the part of y2 on rank 0, which is 5 6 7 8 9 since y2 swapped the processes of PETSC_COMM_WORLD */
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, y2 = ");CHKERRQ(ierr);
     ierr = VecGetArrayRead(y2,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_WORLD," %.0f",dat[i]);CHKERRQ(ierr);}
+    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0f",PetscRealPart(dat[i]));CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(y2,&dat);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
   }
 
   ierr = ISDestroy(&ix);CHKERRQ(ierr);
