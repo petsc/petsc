@@ -358,15 +358,19 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         PetscReal a = 0.0;
 
         for (d=0;d<cdim;d++) a += (wdist[point1*cdim+d]-wdist[point2*cdim+d])*(wdist[point1*cdim+d]-wdist[point2*cdim+d]);
+        a = PetscSqrtReal(a);
         mdist = -1.0;
         for (j=0,point3=0;j<n_shared[ns];j++) {
-          PetscReal area,b = 0.0, c = 0.0;
+          PetscReal area,b = 0.0, c = 0.0,s;
 
           for (d=0;d<cdim;d++) {
             b += (wdist[point1*cdim+d]-wdist[j*cdim+d])*(wdist[point1*cdim+d]-wdist[j*cdim+d]);
             c += (wdist[point2*cdim+d]-wdist[j*cdim+d])*(wdist[point2*cdim+d]-wdist[j*cdim+d]);
           }
-          area = (a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c); /* Heron's formula without divisions by 2 */
+          b = PetscSqrtReal(b);
+          c = PetscSqrtReal(c);
+          s = 0.5*(a+b+c);
+          area = s*(s-a)*(s-b)*(s-c); /* Heron's formula, area squared */
           if (area > mdist) { mdist = area; point3 = j; }
         }
       }
