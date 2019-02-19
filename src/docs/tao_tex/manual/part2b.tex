@@ -1224,15 +1224,16 @@ for $\beta(x)$:
         where $y = Dx$ and $\epsilon$ is the smooth approximation parameter.
 \end{itemize}
 The regularizer weight can be controlled with either {\tt TaoBRGNSetRegularizerWeight()} or 
-{\tt -tao\_brgn\_lambda} command line option, while the smooth approximation parameter can be set 
-with either {\tt TaoBRGNSetL1SmoothEpsilon()} or {\tt -tao\_brgn\_epsilon}. For the L1-norm term, 
+{\tt -tao\_brgn\_regularizer\_weight} command line option, while the smooth approximation parameter can be set 
+with either {\tt TaoBRGNSetL1SmoothEpsilon()} or {\tt -tao\_brgn\_l1\_smooth\_epsilon}. For the L1-norm term, 
 the user can supply a dictionary matrix with {\tt TaoBRGNSetDictionaryMatrix()}. If no dictionary 
 is provided, the dictionary is assumed to be an identity matrix and the regularizer reduces to a 
 sparse solution term.
 
-The regularization selection can be made using the command line option \texttt{-tao\_brgn\_reg\_type <l2prox, l1dict, user>}
-where the ``user'' option allows the user to define a custom $\mathcal{C}2$-continuous regularization 
-term. This custom term can be defined by using the iterface functions:
+The regularization selection can be made using the command line option \texttt{-tao\_brgn\_regularization\_type} 
+{\tt <l2prox, l1dict, user>} where the ``user'' option allows the user to define a custom 
+$\mathcal{C}2$-continuous regularization term. This custom term can be defined by using the 
+interface functions:
 \begin{itemize} 
   \item {\tt TaoBRGNSetRegularizerObjectiveAndGradientRoutine()} - Provide user-call back for 
         evaluating the function value and gradient evaluaton for the regularization term.

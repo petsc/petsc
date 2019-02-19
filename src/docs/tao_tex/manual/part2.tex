@@ -653,7 +653,7 @@ and set with the
    TaoSetResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Vec,void*), 
                          void *);
 \end{verbatim}
-routine. If required by the algorith, the Jacobian of the residual, $J = \partial r(x) / \partial x$, 
+routine. If required by the algorithm, the Jacobian of the residual, $J = \partial r(x) / \partial x$, 
 should be computed with a function of the form 
 \begin{verbatim}
    PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,void*);
