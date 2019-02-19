@@ -1,11 +1,11 @@
 #include <../src/tao/leastsquares/impls/brgn/brgn.h> /*I "petsctao.h" I*/
 
-#define BRGN_user               0
-#define BRGN_l2prox             1
-#define BRGN_l1dict             2
-#define BRGNRegTypes            3
+#define BRGN_REGULARIZATION_USER    0
+#define BRGN_REGULARIZATION_L2PROX  1
+#define BRGN_REGULARIZATION_L1DICT  2
+#define BRGN_REGULARIZATION_TYPES   3
 
-static const char *BRGN_Table[64] = {"user","l2prox","l1dict"};
+static const char *BRGN_REGULARIZATION_TABLE[64] = {"user","l2prox","l1dict"};
 
 static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
 {
@@ -17,14 +17,14 @@ static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
   ierr = MatMult(gn->subsolver->ls_jac,in,gn->r_work);CHKERRQ(ierr);
   ierr = MatMultTranspose(gn->subsolver->ls_jac,gn->r_work,out);CHKERRQ(ierr);
   switch (gn->reg_type) {
-  case BRGN_user:
+  case BRGN_REGULARIZATION_USER:
     ierr = MatMult(gn->Hreg,in,gn->x_work);CHKERRQ(ierr);
     ierr = VecAXPY(out,gn->lambda,gn->x_work);CHKERRQ(ierr);
     break;
-  case BRGN_l2prox:
+  case BRGN_REGULARIZATION_L2PROX:
     ierr = VecAXPY(out,gn->lambda,in);CHKERRQ(ierr);
     break;
-  case BRGN_l1dict:
+  case BRGN_REGULARIZATION_L1DICT:
     /* out = out + lambda*D'*(diag.*(D*in)) */
     if (gn->D) {
       ierr = MatMult(gn->D,in,gn->y);CHKERRQ(ierr);/* y = D*in */
@@ -40,7 +40,6 @@ static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
     ierr = VecAXPY(out,gn->lambda,gn->x_work);CHKERRQ(ierr);
     break;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -63,12 +62,12 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
   ierr = MatMultTranspose(tao->ls_jac,tao->ls_res,G);CHKERRQ(ierr);
   /* add the regularization contribution */
   switch (gn->reg_type) {
-  case BRGN_user:
+  case BRGN_REGULARIZATION_USER:
     ierr = (*gn->regularizerobjandgrad)(tao,X,&f_reg,gn->x_work,gn->reg_obj_ctx);CHKERRQ(ierr);
     *fcn += gn->lambda*f_reg;
     ierr = VecAXPY(G,gn->lambda,gn->x_work);CHKERRQ(ierr);
     break;
-  case BRGN_l2prox:
+  case BRGN_REGULARIZATION_L2PROX:
     /* compute f = f + lambda*0.5*(xk - xkm1)'*(xk - xkm1) */
     ierr = VecAXPBYPCZ(gn->x_work,1.0,-1.0,0.0,X,gn->x_old);CHKERRQ(ierr); 
     ierr = VecDot(gn->x_work,gn->x_work,&f_reg);CHKERRQ(ierr);
@@ -76,7 +75,7 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
     /* compute G = G + lambda*(xk - xkm1) */
     ierr = VecAXPBYPCZ(G,gn->lambda,-gn->lambda,1.0,X,gn->x_old);CHKERRQ(ierr);
     break;
-  case BRGN_l1dict:
+  case BRGN_REGULARIZATION_L1DICT:
     /* compute f = f + lambda*sum(sqrt(y.^2+epsilon^2) - epsilon), where y = D*x*/
     if (gn->D) {
       ierr = MatMult(gn->D,X,gn->y);CHKERRQ(ierr);/* y = D*x */
@@ -111,12 +110,12 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
   ierr = TaoComputeResidualJacobian(tao,X,tao->ls_jac,tao->ls_jac_pre);CHKERRQ(ierr);
 
   switch (gn->reg_type) {
-  case BRGN_user:
+  case BRGN_REGULARIZATION_USER:
     ierr = (*gn->regularizerhessian)(tao,X,gn->Hreg,gn->reg_hess_ctx);CHKERRQ(ierr);
     break;
-  case BRGN_l2prox:
+  case BRGN_REGULARIZATION_L2PROX:
     break;
-  case BRGN_l1dict:
+  case BRGN_REGULARIZATION_L1DICT:
     /* calculate and store diagonal matrix as a vector: diag = epsilon^2 ./ sqrt(x.^2+epsilon^2).^3* --> diag = epsilon^2 ./ sqrt(y.^2+epsilon^2).^3,where y = D*x */  
     if (gn->D) {
       ierr = MatMult(gn->D,X,gn->y);CHKERRQ(ierr);/* y = D*x */
@@ -132,7 +131,6 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
     ierr = VecScale(gn->diag,gn->epsilon*gn->epsilon);CHKERRQ(ierr);
     break;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -198,7 +196,7 @@ static PetscErrorCode TaoSetFromOptions_BRGN(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject,"least-squares problems with regularizer: ||f(x)||^2 + lambda*g(x), g(x) = ||xk-xkm1||^2 or ||Dx||_1 or user defined function.");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_lambda","regularizer weight (default 1e-4)","",gn->lambda,&gn->lambda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_epsilon","L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)","",gn->epsilon,&gn->epsilon,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_brgn_regularization_type","regularization type", "",BRGN_Table,BRGNRegTypes,BRGN_Table[gn->reg_type],&gn->reg_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_brgn_regularization_type","regularization type", "",BRGN_REGULARIZATION_TABLE,BRGN_REGULARIZATION_TYPES,BRGN_REGULARIZATION_TABLE[gn->reg_type],&gn->reg_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoSetFromOptions(gn->subsolver);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -243,7 +241,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     ierr = VecSet(gn->x_old,0.0);CHKERRQ(ierr);
   }
     
-  if (BRGN_l1dict == gn->reg_type) {
+  if (BRGN_REGULARIZATION_L1DICT == gn->reg_type) {
     if (gn->D) {
       ierr = MatGetSize(gn->D,&K,&N);CHKERRQ(ierr); /* Shell matrices still must have sizes defined. K = N for identity matrix, K=N-1 or N for gradient matrix */
     } else {
@@ -264,7 +262,6 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
       ierr = VecSet(gn->diag,0.0);CHKERRQ(ierr);
     }
   }
-
 
   if (!tao->setupcalled) {
     /* Hessian setup */

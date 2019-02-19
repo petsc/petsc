@@ -20,8 +20,6 @@ Reference:     Chwirut, D., NIST (197?).
                Ultrasonic Reference Block Study.
 */
 
-
-
 static char help[]="Finds the nonlinear least-squares solution to the model \n\
             y = exp[-b1*x]/(b2+b3*x)  +  e \n";
 
@@ -38,8 +36,6 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Routines: TaoView(); TaoDestroy();
    Processors: 1
 T*/
-
-
 
 #define NOBSERVATIONS 214
 #define NPARAMETERS 3
@@ -59,7 +55,6 @@ PetscErrorCode InitializeData(AppCtx *user);
 PetscErrorCode FormStartingPoint(Vec);
 PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
 PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
-
 
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
@@ -103,14 +98,8 @@ int main(int argc,char **argv)
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  /*
-     Assemble vector, using the 2-step process: VecAssemblyBegin(), VecAssemblyEnd()
-     Computations can be done while messages are in transition by placing code between these two statements.
-  */
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
   /* View the vector; then destroy it.  */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -415,7 +404,6 @@ PetscErrorCode InitializeData(AppCtx *user)
   y[i] =    28.9500;  t[i++] =   1.7500;
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

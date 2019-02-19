@@ -12,7 +12,6 @@
 
 */
 
-
 #include <petsctao.h>
 
 /*
@@ -145,7 +144,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*--------------------------------------------------------------------*/
 /* Evaluate residual function A(x)-b in least square problem ||A(x)-b||^2 */

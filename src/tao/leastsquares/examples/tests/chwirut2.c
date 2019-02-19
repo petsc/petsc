@@ -21,8 +21,6 @@ Reference:     Chwirut, D., NIST (197?).
                Ultrasonic Reference Block Study.
 */
 
-
-
 static char help[]="Finds the nonlinear least-squares solution to the model \n\
             y = exp[-b1*x]/(b2+b3*x)  +  e \n";
 
@@ -58,7 +56,6 @@ PetscErrorCode InitializeData(AppCtx *user);
 PetscErrorCode FormStartingPoint(Vec);
 PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
 PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
-
 
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)

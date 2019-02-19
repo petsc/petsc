@@ -9,7 +9,6 @@
 
 */
 
-
 #include <petsctao.h>
 
 /*
@@ -39,8 +38,6 @@ static char help[] = "Finds the least-squares solution to the under constraint l
    Processors: 1
 T*/
 
-
-
 #define M 3
 #define N 5
 #define K 4
@@ -64,7 +61,6 @@ PetscErrorCode FormStartingPoint(Vec);
 PetscErrorCode FormDictionaryMatrix(Mat,AppCtx *);
 PetscErrorCode EvaluateFunction(Tao,Vec,Vec,void *);
 PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,Mat,void *);
-
 
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
@@ -142,7 +138,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
 /*--------------------------------------------------------------------*/
 PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
@@ -212,7 +207,6 @@ PetscErrorCode FormDictionaryMatrix(Mat D,AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------ */
 PetscErrorCode FormStartingPoint(Vec X)
 {
@@ -260,7 +254,6 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 
