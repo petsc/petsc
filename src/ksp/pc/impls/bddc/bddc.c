@@ -1640,6 +1640,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
     }
   }
+  if (pcbddc->corner_selected) pcbddc->use_vertices = PETSC_TRUE;
 
   /* change basis if requested by the user */
   if (pcbddc->user_ChangeOfBasisMatrix) {
@@ -2291,6 +2292,9 @@ static PetscErrorCode PCSetCoordinates_BDDC(PC pc, PetscInt dim, PetscInt nloc, 
   mat_graph->cnloc = nloc;
   mat_graph->cdim  = dim;
   mat_graph->cloc  = PETSC_FALSE;
+  /* flg setup */
+  pcbddc->recompute_topography = PETSC_TRUE;
+  pcbddc->corner_selected = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
