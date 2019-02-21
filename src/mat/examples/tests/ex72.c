@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   /*  (ANSI C X3.159-1989, Sec. 4.9.6.2, p. 136 lines 13-15)            */
 
   for (i=0; i<nz; i++){
-    fscanf(file, "%d %d %lg\n", &ia[i], &ja[i], &val[i]);
+    if (fscanf(file, "%d %d %lg\n", &ia[i], &ja[i], &val[i]) != 3) SETERRQ(PETSC_COMM_SELF,1,"Badly formatted input file\n");
     ia[i]--; ja[i]--;     /* adjust from 1-based to 0-based */
     if (ia[i] != ja[i]) { /* already counted the diagonals above */
       if (symmetric) rownz[ja[i]]++; /* transpose. For symmetric matrices, MM uses lower triangular, PETSc uses upper triangular */
@@ -132,19 +132,17 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-      requires:  !complex !define(PETSC_USE_64BIT_INDICES)
+      requires:  !complex double !define(PETSC_USE_64BIT_INDICES)
       depends: ex72mmio.c
 
    test:
       suffix: 1
       args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -fout petscmat.aij
       output_file: output/ex72_1.out
-      requires: double
 
    test:
       suffix: 2
       args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/LFAT5.mtx -fout petscmat.sbaij
       output_file: output/ex72_2.out
-      requires: double
 
 TEST*/
