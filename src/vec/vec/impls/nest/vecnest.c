@@ -695,6 +695,15 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X,PetscScalar **x)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecRestoreArrayRead_Nest(Vec X,const PetscScalar **x)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(*x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
 {
   PetscFunctionBegin;
@@ -725,6 +734,7 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
   ops->getsize                 = VecGetSize_Nest;
   ops->getlocalsize            = VecGetLocalSize_Nest;
   ops->restorearray            = VecRestoreArray_Nest;
+  ops->restorearrayread        = VecRestoreArrayRead_Nest;
   ops->max                     = VecMax_Nest;
   ops->min                     = VecMin_Nest;
   ops->setrandom               = 0;
