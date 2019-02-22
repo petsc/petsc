@@ -12,7 +12,6 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   VecScatter_SF  *data=(VecScatter_SF*)vscat->data;
   PetscSF        sf;
   MPI_Op         mop=MPI_OP_NULL;
-  PetscScalar    *ydata;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -33,7 +32,6 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
       ierr = VecGetArrayRead(x,&data->xdata);CHKERRQ(ierr);
     }
   }
-  ierr = VecGetArray(y,&ydata);CHKERRQ(ierr);
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
   sf = (mode & SCATTER_LOCAL) ? data->lsf : data->sf;
@@ -44,11 +42,10 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   else SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"Unsupported InsertMode %D in VecScatterBegin/End",addv);
 
   if (mode & SCATTER_REVERSE) { /* reverse scatter sends root to leaf. Note that x and y are swapped in input */
-    ierr = PetscSFBcastAndOpBegin(sf,MPIU_SCALAR,data->xdata,ydata,mop);CHKERRQ(ierr);
+    ierr = PetscSFBcastAndOpBegin(sf,MPIU_SCALAR,data->xdata,NULL/*not needed*/,mop);CHKERRQ(ierr);
   } else { /* forward scatter sends leaf to root, i.e., x to y */
-    ierr = PetscSFReduceBegin(sf,MPIU_SCALAR,data->xdata,ydata,mop);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_SCALAR,data->xdata,NULL/*not needed*/,mop);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(y,&ydata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
