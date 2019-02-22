@@ -544,6 +544,154 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   PetscFunctionReturn(0);
 }
 
+static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp, PetscReal *Ln)
+/*
+  Compute the polynomial q(x) = L_{N+1}(x) - L_{n-1}(x) and its derivative in
+  addition to L_N(x) as these are needed for computing the GLL points via Newton's method.
+  Reference: "Implementing Spectral Methods for Partial Differential Equations: Algorithms
+  for Scientists and Engineers" by David A. Kopriva.
+*/
+{
+  PetscInt k;
+
+  PetscReal Lnp;
+  PetscReal Lnp1, Lnp1p;
+  PetscReal Lnm1, Lnm1p;
+  PetscReal Lnm2, Lnm2p;
+
+  Lnm1  = 1.0;
+  *Ln   = x;
+  Lnm1p = 0.0;
+  Lnp   = 1.0;
+
+  for (k=2; k<=n; ++k) {
+    Lnm2  = Lnm1;
+    Lnm1  = *Ln;
+    Lnm2p = Lnm1p;
+    Lnm1p = Lnp;
+    *Ln   = (2.*((PetscReal)k)-1.)/(1.0*((PetscReal)k))*x*Lnm1 - (((PetscReal)k)-1.)/((PetscReal)k)*Lnm2;
+    Lnp   = Lnm2p + (2.0*((PetscReal)k)-1.)*Lnm1;
+  }
+  k     = n+1;
+  Lnp1  = (2.*((PetscReal)k)-1.)/(((PetscReal)k))*x*(*Ln) - (((PetscReal)k)-1.)/((PetscReal)k)*Lnm1;
+  Lnp1p = Lnm1p + (2.0*((PetscReal)k)-1.)*(*Ln);
+  *q    = Lnp1 - Lnm1;
+  *qp   = Lnp1p - Lnm1p;
+}
+
+/*@C
+   PetscDTGaussLobattoLegendreQuadrature - creates a set of the locations and weights of the Gauss-Lobatto-Legendre
+                      nodes of a given size on the domain [-1,1]
+
+   Not Collective
+
+   Input Parameter:
++  n - number of grid nodes
+-  type - PETSCGLL_VIA_LINEARALGEBRA or PETSCGLL_VIA_NEWTON
+
+   Output Arguments:
++  x - quadrature points
+-  w - quadrature weights
+
+   Notes:
+    For n > 30  the Newton approach computes duplicate (incorrect) values for some nodes because the initial guess is apparently not
+          close enough to the desired solution
+
+   These are useful for implementing spectral methods based on Gauss-Lobatto-Legendre (GLL) nodes
+
+   See  http://epubs.siam.org/doi/abs/10.1137/110855442  http://epubs.siam.org/doi/abs/10.1137/120889873 for better ways to compute GLL nodes
+
+   Level: intermediate
+
+.seealso: PetscDTGaussQuadrature()
+
+@*/
+PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGLLCreateType type,PetscReal *x,PetscReal *w)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (npoints < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
+
+  if (type == PETSCGLL_VIA_LINEARALGEBRA) {
+    PetscReal      *M,si;
+    PetscBLASInt   bn,lierr;
+    PetscReal      x0,z0,z1,z2;
+    PetscInt       i,p = npoints - 1,nn;
+
+    x[0]   =-1.0;
+    x[npoints-1] = 1.0;
+    if (npoints-2 > 0){
+      ierr = PetscMalloc1(npoints-1,&M);CHKERRQ(ierr);
+      for (i=0; i<npoints-2; i++) {
+        si  = ((PetscReal)i)+1.0;
+        M[i]=0.5*PetscSqrtReal(si*(si+2.0)/((si+0.5)*(si+1.5)));
+      }
+      ierr = PetscBLASIntCast(npoints-2,&bn);CHKERRQ(ierr);
+      ierr = PetscMemzero(&x[1],bn*sizeof(x[1]));CHKERRQ(ierr);
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+      x0=0;
+      PetscStackCallBLAS("LAPACKsteqr",LAPACKREALsteqr_("N",&bn,&x[1],M,&x0,&bn,M,&lierr));
+      if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
+      ierr = PetscFree(M);CHKERRQ(ierr);
+    }
+    if ((npoints-1)%2==0) {
+      x[(npoints-1)/2]   = 0.0; /* hard wire to exactly 0.0 since linear algebra produces nonzero */
+    }
+
+    w[0] = w[p] = 2.0/(((PetscReal)(p))*(((PetscReal)p)+1.0));
+    z2 = -1.;                      /* Dummy value to avoid -Wmaybe-initialized */
+    for (i=1; i<p; i++) {
+      x0  = x[i];
+      z0 = 1.0;
+      z1 = x0;
+      for (nn=1; nn<p; nn++) {
+        z2 = x0*z1*(2.0*((PetscReal)nn)+1.0)/(((PetscReal)nn)+1.0)-z0*(((PetscReal)nn)/(((PetscReal)nn)+1.0));
+        z0 = z1;
+        z1 = z2;
+      }
+      w[i]=2.0/(((PetscReal)p)*(((PetscReal)p)+1.0)*z2*z2);
+    }
+  } else {
+    PetscInt  j,m;
+    PetscReal z1,z,q,qp,Ln;
+    PetscReal *pt;
+    ierr = PetscMalloc1(npoints,&pt);CHKERRQ(ierr);
+
+    if (npoints > 30) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PETSCGLL_VIA_NEWTON produces incorrect answers for n > 30");
+    x[0]     = -1.0;
+    x[npoints-1]   = 1.0;
+    w[0]   = w[npoints-1] = 2./(((PetscReal)npoints)*(((PetscReal)npoints)-1.0));;
+    m  = (npoints-1)/2; /* The roots are symmetric, so we only find half of them. */
+    for (j=1; j<=m; j++) { /* Loop over the desired roots. */
+      z = -1.0*PetscCosReal((PETSC_PI*((PetscReal)j)+0.25)/(((PetscReal)npoints)-1.0))-(3.0/(8.0*(((PetscReal)npoints)-1.0)*PETSC_PI))*(1.0/(((PetscReal)j)+0.25));
+      /* Starting with the above approximation to the ith root, we enter */
+      /* the main loop of refinement by Newton's method.                 */
+      do {
+        qAndLEvaluation(npoints-1,z,&q,&qp,&Ln);
+        z1 = z;
+        z  = z1-q/qp; /* Newton's method. */
+      } while (PetscAbs(z-z1) > 10.*PETSC_MACHINE_EPSILON);
+      qAndLEvaluation(npoints-1,z,&q,&qp,&Ln);
+
+      x[j]       = z;
+      x[npoints-1-j]   = -z;      /* and put in its symmetric counterpart.   */
+      w[j]     = 2.0/(((PetscReal)npoints)*(((PetscReal)npoints)-1.)*Ln*Ln);  /* Compute the weight */
+      w[npoints-1-j] = w[j];                 /* and its symmetric counterpart. */
+      pt[j]=qp;
+    }
+
+    if ((npoints-1)%2==0) {
+      qAndLEvaluation(npoints-1,0.0,&q,&qp,&Ln);
+      x[(npoints-1)/2]   = 0.0;
+      w[(npoints-1)/2] = 2.0/(((PetscReal)npoints)*(((PetscReal)npoints)-1.)*Ln*Ln);
+    }
+    ierr = PetscFree(pt);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDTGaussTensorQuadrature - creates a tensor-product Gauss quadrature
 
