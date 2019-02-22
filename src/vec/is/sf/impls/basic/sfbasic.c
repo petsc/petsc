@@ -1021,7 +1021,7 @@ PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void 
   PetscFunctionBegin;
   ierr = PetscSFBasicGetRootInfo(sf,&nrootranks,&ndrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,&ndleafranks,&leafranks,&leafoffset,&leafloc);CHKERRQ(ierr);
-  ierr = PetscSFBasicGetPack(sf,unit,rootdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFBasicGetPack(sf,unit,leafdata,&link);CHKERRQ(ierr);
 
   ierr = PetscSFBasicPackGetReqs(sf,link,&rootreqs,&leafreqs);CHKERRQ(ierr);
   /* Eagerly post root receives for non-distinguished ranks */
@@ -1050,7 +1050,7 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
   const PetscInt   *rootoffset,*rootloc;
 
   PetscFunctionBegin;
-  ierr = PetscSFBasicGetPackInUse(sf,unit,rootdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
+  ierr = PetscSFBasicGetPackInUse(sf,unit,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   /* This implementation could be changed to unpack as receives arrive, at the cost of non-determinism */
   ierr = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
   ierr = PetscSFBasicGetRootInfo(sf,&nrootranks,NULL,NULL,&rootoffset,&rootloc);CHKERRQ(ierr);
@@ -1107,7 +1107,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   MPI_Request       *rootreqs,*leafreqs;
 
   PetscFunctionBegin;
-  ierr = PetscSFBasicGetPackInUse(sf,unit,rootdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
+  ierr = PetscSFBasicGetPackInUse(sf,unit,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   /* This implementation could be changed to unpack as receives arrive, at the cost of non-determinism */
   ierr      = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
   ierr      = PetscSFBasicGetRootInfo(sf,&nrootranks,&ndrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
