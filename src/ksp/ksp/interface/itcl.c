@@ -431,15 +431,17 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one ","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
     ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view",                        &ksp->viewer,         &ksp->format,         &ksp->view);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_converged_reason",            &ksp->viewerReason,   &ksp->formatReason,   &ksp->viewReason);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_mat",                    &ksp->viewerMat,      &ksp->formatMat,      &ksp->viewMat);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_pmat",                   &ksp->viewerPMat,     &ksp->formatPMat,     &ksp->viewPMat);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_rhs",                    &ksp->viewerRhs,      &ksp->formatRhs,      &ksp->viewRhs);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_solution",               &ksp->viewerSol,      &ksp->formatSol,      &ksp->viewSol);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_mat_explicit",           &ksp->viewerMatExp,   &ksp->formatMatExp,   &ksp->viewMatExp);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_final_residual",         &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",                                 &ksp->viewer,        &ksp->format,        &ksp->view);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_reason",                     &ksp->viewerReason,  &ksp->formatReason,  &ksp->viewReason);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",                             &ksp->viewerMat,     &ksp->formatMat,     &ksp->viewMat);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",                            &ksp->viewerPMat,    &ksp->formatPMat,    &ksp->viewPMat);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_rhs",                             &ksp->viewerRhs,     &ksp->formatRhs,     &ksp->viewRhs);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_solution",                        &ksp->viewerSol,     &ksp->formatSol,     &ksp->viewSol);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat_explicit",                    &ksp->viewerMatExp,  &ksp->formatMatExp,  &ksp->viewMatExp);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_final_residual",                  &ksp->viewerFinalRes,&ksp->formatFinalRes,&ksp->viewFinalRes);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_preconditioned_operator_explicit",&ksp->viewerPOpExp,  &ksp->formatPOpExp,  &ksp->viewPOpExp);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_diagonal_scale",                  &ksp->viewerDScale,  &ksp->formatDScale,  &ksp->viewDScale);CHKERRQ(ierr);
+
     goto skipoptions;
   }
 
@@ -597,19 +599,20 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   /* TODO Do these show up in help? */
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view",                        &ksp->viewer,         &ksp->format,         &ksp->view);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_pre",                    &ksp->viewerPre,      &ksp->formatPre,      &ksp->viewPre);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_converged_reason",            &ksp->viewerReason,   &ksp->formatReason,   &ksp->viewReason);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_mat",                    &ksp->viewerMat,      &ksp->formatMat,      &ksp->viewMat);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_pmat",                   &ksp->viewerPMat,     &ksp->formatPMat,     &ksp->viewPMat);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_rhs",                    &ksp->viewerRhs,      &ksp->formatRhs,      &ksp->viewRhs);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_solution",               &ksp->viewerSol,      &ksp->formatSol,      &ksp->viewSol);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_mat_explicit",           &ksp->viewerMatExp,   &ksp->formatMatExp,   &ksp->viewMatExp);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_eigenvalues",            &ksp->viewerEV,       &ksp->formatEV,       &ksp->viewEV);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_singularvalues",         &ksp->viewerSV,       &ksp->formatSV,       &ksp->viewSV);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_eigenvalues_explicit",   &ksp->viewerEVExp,    &ksp->formatEVExp,    &ksp->viewEVExp);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_final_residual",         &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",                                 &ksp->viewer,        &ksp->format,        &ksp->view);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pre",                             &ksp->viewerPre,     &ksp->formatPre,     &ksp->viewPre);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_reason",                     &ksp->viewerReason,  &ksp->formatReason,  &ksp->viewReason);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",                             &ksp->viewerMat,     &ksp->formatMat,     &ksp->viewMat);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",                            &ksp->viewerPMat,    &ksp->formatPMat,    &ksp->viewPMat);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_rhs",                             &ksp->viewerRhs,     &ksp->formatRhs,     &ksp->viewRhs);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_solution",                        &ksp->viewerSol,     &ksp->formatSol,     &ksp->viewSol);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat_explicit",                    &ksp->viewerMatExp,  &ksp->formatMatExp,  &ksp->viewMatExp);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_eigenvalues",                     &ksp->viewerEV,      &ksp->formatEV,      &ksp->viewEV);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_singularvalues",                  &ksp->viewerSV,      &ksp->formatSV,      &ksp->viewSV);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_eigenvalues_explicit",            &ksp->viewerEVExp,   &ksp->formatEVExp,   &ksp->viewEVExp);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_final_residual",                  &ksp->viewerFinalRes,&ksp->formatFinalRes,&ksp->viewFinalRes);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_preconditioned_operator_explicit",&ksp->viewerPOpExp,  &ksp->formatPOpExp,  &ksp->viewPOpExp);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_diagonal_scale",                  &ksp->viewerDScale,  &ksp->formatDScale,  &ksp->viewDScale);CHKERRQ(ierr);
 
   /* Deprecated options */
   if (!ksp->viewEV)       {ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_compute_eigenvalues",              &ksp->viewerEV,       &ksp->formatEV,       &ksp->viewEV);CHKERRQ(ierr);}

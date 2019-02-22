@@ -822,11 +822,12 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   if (ksp->viewEVExp)    {ierr = KSPViewEigenvalues_Internal(ksp, PETSC_TRUE,  ksp->viewerEVExp, ksp->formatEVExp);CHKERRQ(ierr);}
   if (ksp->viewSV)       {ierr = KSPViewSingularvalues_Internal(ksp, ksp->viewerSV, ksp->formatSV);CHKERRQ(ierr);}
   if (ksp->viewFinalRes) {ierr = KSPViewFinalResidual_Internal(ksp, ksp->viewerFinalRes, ksp->formatFinalRes);CHKERRQ(ierr);}
-  if (ksp->viewMat)      {ierr = ObjectView((PetscObject) mat,          ksp->viewerMat,  ksp->formatMat);CHKERRQ(ierr);}
-  if (ksp->viewPMat)     {ierr = ObjectView((PetscObject) pmat,         ksp->viewerPMat, ksp->formatPMat);CHKERRQ(ierr);}
-  if (ksp->viewRhs)      {ierr = ObjectView((PetscObject) ksp->vec_rhs, ksp->viewerRhs,  ksp->formatRhs);CHKERRQ(ierr);}
-  if (ksp->viewSol)      {ierr = ObjectView((PetscObject) ksp->vec_sol, ksp->viewerSol,  ksp->formatSol);CHKERRQ(ierr);}
-  if (ksp->view)         {ierr = ObjectView((PetscObject) ksp,          ksp->viewer,     ksp->format);CHKERRQ(ierr);}
+  if (ksp->viewMat)      {ierr = ObjectView((PetscObject) mat,           ksp->viewerMat,    ksp->formatMat);CHKERRQ(ierr);}
+  if (ksp->viewPMat)     {ierr = ObjectView((PetscObject) pmat,          ksp->viewerPMat,   ksp->formatPMat);CHKERRQ(ierr);}
+  if (ksp->viewRhs)      {ierr = ObjectView((PetscObject) ksp->vec_rhs,  ksp->viewerRhs,    ksp->formatRhs);CHKERRQ(ierr);}
+  if (ksp->viewSol)      {ierr = ObjectView((PetscObject) ksp->vec_sol,  ksp->viewerSol,    ksp->formatSol);CHKERRQ(ierr);}
+  if (ksp->view)         {ierr = ObjectView((PetscObject) ksp,           ksp->viewer,       ksp->format);CHKERRQ(ierr);}
+  if (ksp->viewDScale)   {ierr = ObjectView((PetscObject) ksp->diagonal, ksp->viewerDScale, ksp->formatDScale);CHKERRQ(ierr);}
   if (ksp->viewMatExp)   {
     Mat A, B;
 
