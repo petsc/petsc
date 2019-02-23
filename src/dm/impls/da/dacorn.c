@@ -42,7 +42,7 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
    DMDASetFieldName - Sets the names of individual field components in multicomponent
    vectors associated with a DMDA.
 
-   Not Collective
+   Logically collective; name must contain a common value
 
    Input Parameters:
 +  da - the distributed array
@@ -76,7 +76,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 /*@C
    DMDAGetFieldNames - Gets the name of each component in the vector associated with the DMDA
 
-   Collective on TS
+   Not collective; names will contain a common value
 
    Input Parameter:
 .  dm - the DMDA object
@@ -104,7 +104,7 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 /*@C
    DMDASetFieldNames - Sets the name of each component in the vector associated with the DMDA
 
-   Collective on TS
+   Logically collective; names must contain a common value
 
    Input Parameters:
 +  dm - the DMDA object
@@ -142,7 +142,7 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
    DMDAGetFieldName - Gets the names of individual field components in multicomponent
    vectors associated with a DMDA.
 
-   Not Collective
+   Not collective; name will contain a common value
 
    Input Parameter:
 +  da - the distributed array
@@ -177,7 +177,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 /*@C
    DMDASetCoordinateName - Sets the name of the coordinate directions associated with a DMDA, for example "x" or "y"
 
-   Not Collective
+   Logically collective; name must contain a common value
 
    Input Parameters:
 +  dm - the DM
@@ -186,6 +186,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 
   Notes:
     It must be called after having called DMSetUp().
+
 
   Level: intermediate
 
@@ -212,7 +213,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 /*@C
    DMDAGetCoordinateName - Gets the name of a coodinate direction associated with a DMDA.
 
-   Not Collective
+   Not collective; name will contain a common value
 
    Input Parameter:
 +  dm - the DM
@@ -223,6 +224,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 
   Notes:
     It must be called after having called DMSetUp().
+    
 
   Level: intermediate
 
@@ -249,7 +251,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
    DMDAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner and size of the local region, excluding ghost points.
 
-   Not Collective
+   Not collective
 
    Input Parameter:
 .  da - the distributed array
@@ -296,7 +298,7 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
 /*@
    DMDAGetLocalBoundingBox - Returns the local bounding box for the DMDA.
 
-   Not Collective
+   Not collective
 
    Input Parameter:
 .  dm - the DM
@@ -355,7 +357,7 @@ PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
 /*@
    DMDAGetBoundingBox - Returns the global bounding box for the DMDA.
 
-   Collective on DMDA
+   Collective
 
    Input Parameter:
 .  dm - the DM
@@ -402,7 +404,7 @@ PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 /*@
    DMDACreateCompatibleDMDA - Creates a DMDA with the same layout but with fewer or more fields
 
-   Collective on DMDA
+   Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -473,7 +475,7 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 /*@C
    DMDAGetCoordinateArray - Gets an array containing the coordinates of the DMDA
 
-   Not Collective
+   Not collective
 
    Input Parameter:
 .  dm - the DM
@@ -506,7 +508,7 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 /*@C
    DMDARestoreCoordinateArray - Sets an array containing the coordinates of the DMDA
 
-   Not Collective
+   Not collective
 
    Input Parameter:
 +  dm - the DM
