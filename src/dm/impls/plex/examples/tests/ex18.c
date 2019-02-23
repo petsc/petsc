@@ -4,6 +4,41 @@ static char help[] = "Tests for parallel mesh loading\n\n";
 
 /* List of test meshes
 
+Network
+-------
+Test 0 (2 ranks):
+
+network=0:
+---------
+  cell 0   cell 1   cell 2          nCells-1       (edge)
+0 ------ 1 ------ 2 ------ 3 -- -- v --  -- nCells (vertex)
+
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3 ... nCells
+  cell(edge) distribution:
+    rank 0: 0 1
+    rank 1: 2 ... nCells-1
+
+network=1:
+---------
+               v2
+                ^
+                |
+               cell 2
+                |
+ v0 --cell 0--> v3--cell 1--> v1
+
+  vertex distribution:
+    rank 0: 0 1 3
+    rank 1: 2
+  cell(edge) distribution:
+    rank 0: 0 1
+    rank 1: 2
+
+  example:
+    mpiexec -n 2 ./ex18 -distribute 1 -dim 1 -orig_dm_view -dist_dm_view -dist_dm_view -petscpartitioner_type parmetis -ncells 50
+
 Triangle
 --------
 Test 0 (2 ranks):
@@ -199,6 +234,90 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   ierr = PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx *user, DM *dm)
+{
+  PetscInt       testNum = user->testNum;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscInt       spacedim=2,numCorners=2,i;
+  PetscInt       numCells,numVertices,network;
+  int            *cells;
+  PetscReal      *coords;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (size > 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for <=2 processes",testNum);
+
+  numCells = 3;
+  ierr = PetscOptionsGetInt(NULL, NULL, "-ncells", &numCells, NULL);CHKERRQ(ierr);
+  if (numCells < 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
+
+  if (size == 1) {
+    numVertices = numCells + 1;
+    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&coords);CHKERRQ(ierr);
+    for (i=0; i<numCells; i++) {
+      cells[2*i] = i; cells[2*i+1] = i + 1;
+    }
+
+    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, (const int*)cells, spacedim, (const double*)coords, dm);CHKERRQ(ierr);
+    ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  network = 0;
+  ierr = PetscOptionsGetInt(NULL, NULL, "-network_case", &network, NULL);CHKERRQ(ierr);
+  if (network == 0) {
+    switch (rank) {
+    case 0:
+    {
+      numCells    = 2;
+      numVertices = numCells;
+      ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
+      cells[0] = 0; cells[1] = 1;
+      cells[2] = 1; cells[3] = 2;
+    }
+    break;
+    case 1:
+    {
+      numCells    -= 2;
+      numVertices = numCells + 1;
+      ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
+      for (i=0; i<numCells; i++) {
+        cells[2*i] = 2+i; cells[2*i+1] = 2 + i + 1;
+      }
+    }
+    break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    }
+  } else { /* network_case = 1 */
+    /* ----------------------- */
+    switch (rank) {
+    case 0:
+    {
+      numCells    = 2;
+      numVertices = 3;
+      ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
+      cells[0] = 0; cells[1] = 3;
+      cells[2] = 3; cells[3] = 1;
+    }
+    break;
+    case 1:
+    {
+      numCells    = 1;
+      numVertices = 1;
+      ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
+      cells[0] = 3; cells[1] = 2;
+    }
+    break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    }
+  }
+  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, (const int*)cells, spacedim, coords, NULL, dm);CHKERRQ(ierr);
+  ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -495,6 +614,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->faces, NULL, NULL, NULL, interpSerial, dm);CHKERRQ(ierr);
   } else {
     switch (dim) {
+    case 1:
+      ierr = CreateMesh_1D(comm, interpSerial, user, dm);CHKERRQ(ierr);
+      break;
     case 2:
       if (cellSimplex) {
         ierr = CreateSimplex_2D(comm, interpSerial, user, dm);CHKERRQ(ierr);
@@ -595,6 +717,9 @@ int main(int argc, char **argv)
       # Add back in 'none' and 'parallel'
       suffix: 1_quad_dist1
       args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
+    test:
+      suffix: 1_1d_dist1
+      args: -dim 1 -distribute 1
 
   test:
     suffix: 2
