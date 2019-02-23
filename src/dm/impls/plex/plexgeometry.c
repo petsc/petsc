@@ -2895,6 +2895,8 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 . refCoords  - (numPoints x dimension) array of reference coordinates (see DMGetDimension())
 
   Level: intermediate
+
+.seealso: DMPlexReferenceToCoordinates()
 @*/
 PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[])
 {
@@ -2977,6 +2979,8 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 . realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())
 
    Level: intermediate
+   
+.seealso: DMPlexCoordinatesToReference()
 @*/
 PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal refCoords[], PetscReal realCoords[])
 {
