@@ -9,11 +9,9 @@
 #define islocaltoglobalmappingrestoreblockindicesf90_  ISLOCALTOGLOBALMAPPINGRESTOREBLOCKINDICESF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define islocaltoglobalmappinggetindicesf90_           islocaltoglobalmappinggetindicesf90
-#define islocaltoglobalmappingrestoreindicesf90        islocaltoglobalmappingrestoreindicesf90
-#define islocaltoglobalmappinggetindicesf90_           islocaltoglobalmappinggetindicesf90
-#define islocaltoglobalmappingrestorebindicesf90       islocaltoglobalmappingrestoreindicesf90
+#define islocaltoglobalmappingrestoreindicesf90_       islocaltoglobalmappingrestoreindicesf90
 #define islocaltoglobalmappinggetblockindicesf90_      islocaltoglobalmappinggetblockindicesf90
-#define islocaltoglobalmappingrestoreblockindicesf90   islocaltoglobalmappingrestoreblockindicesf90
+#define islocaltoglobalmappingrestoreblockindicesf90_  islocaltoglobalmappingrestoreblockindicesf90
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *indices,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
