@@ -62,8 +62,8 @@ PETSC_INTERN PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqCUDA_Private(Vec vin);
 PETSC_INTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
-PETSC_INTERN PetscErrorCode VecCUDACopyToGPUSome(Vec v, PetscCUDAIndices ci);
-PETSC_INTERN PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci);
+PETSC_INTERN PetscErrorCode VecCUDACopyToGPUSome(Vec,PetscCUDAIndices,ScatterMode);
+PETSC_INTERN PetscErrorCode VecCUDACopyFromGPUSome(Vec,PetscCUDAIndices,ScatterMode);
 
 PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesCreate_PtoP(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUDAIndices*);
 PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesCreate_StoS(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscCUDAIndices*);

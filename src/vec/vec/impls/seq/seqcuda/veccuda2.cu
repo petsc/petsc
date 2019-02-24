@@ -69,7 +69,7 @@ PetscErrorCode VecCUDACopyToGPU(Vec v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecCUDACopyToGPUSome(Vec v, PetscCUDAIndices ci)
+PetscErrorCode VecCUDACopyToGPUSome(Vec v, PetscCUDAIndices ci,ScatterMode mode)
 {
   PetscScalar    *varray;
   PetscErrorCode ierr;
@@ -77,21 +77,29 @@ PetscErrorCode VecCUDACopyToGPUSome(Vec v, PetscCUDAIndices ci)
   PetscScalar    *cpuPtr, *gpuPtr;
   Vec_Seq        *s;
   VecScatterCUDAIndices_PtoP ptop_scatter = (VecScatterCUDAIndices_PtoP)ci->scatter;
+  PetscInt       lowestIndex,n;
 
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_OFFLOAD_CPU) {
     s = (Vec_Seq*)v->data;
+    if (mode & SCATTER_REVERSE) {
+      lowestIndex = ptop_scatter->sendLowestIndex;
+      n           = ptop_scatter->ns;
+    } else {
+      lowestIndex = ptop_scatter->recvLowestIndex;
+      n           = ptop_scatter->nr;
+    }
 
     ierr   = PetscLogEventBegin(VEC_CUDACopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
     varray = ((Vec_CUDA*)v->spptr)->GPUarray;
-    gpuPtr = varray + ptop_scatter->recvLowestIndex;
-    cpuPtr = s->array + ptop_scatter->recvLowestIndex;
+    gpuPtr = varray + lowestIndex;
+    cpuPtr = s->array + lowestIndex;
 
     /* Note : this code copies the smallest contiguous chunk of data
        containing ALL of the indices */
-    err = cudaMemcpy(gpuPtr,cpuPtr,ptop_scatter->nr*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(err);
+    err = cudaMemcpy(gpuPtr,cpuPtr,n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(err);
 
     // Set the buffer states
     v->valid_GPU_array = PETSC_OFFLOAD_BOTH;
@@ -130,7 +138,7 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
    We could add another few flag-types to keep track of this, or treat things like VecGetArray VecRestoreArray
    where you have to always call in pairs
 */
-PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci)
+PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci,ScatterMode mode)
 {
   const PetscScalar *varray, *gpuPtr;
   PetscErrorCode    ierr;
@@ -138,21 +146,29 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci)
   PetscScalar       *cpuPtr;
   Vec_Seq           *s;
   VecScatterCUDAIndices_PtoP ptop_scatter = (VecScatterCUDAIndices_PtoP)ci->scatter;
+  PetscInt          lowestIndex,n;
 
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_OFFLOAD_GPU) {
     ierr   = PetscLogEventBegin(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
+    if (mode & SCATTER_REVERSE) {
+      lowestIndex = ptop_scatter->recvLowestIndex;
+      n           = ptop_scatter->nr;
+    } else {
+      lowestIndex = ptop_scatter->sendLowestIndex;
+      n           = ptop_scatter->ns;
+    }
 
     varray=((Vec_CUDA*)v->spptr)->GPUarray;
     s = (Vec_Seq*)v->data;
-    gpuPtr = varray + ptop_scatter->sendLowestIndex;
-    cpuPtr = s->array + ptop_scatter->sendLowestIndex;
+    gpuPtr = varray + lowestIndex;
+    cpuPtr = s->array + lowestIndex;
 
     /* Note : this code copies the smallest contiguous chunk of data
        containing ALL of the indices */
-    err = cudaMemcpy(cpuPtr,gpuPtr,ptop_scatter->ns*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
+    err = cudaMemcpy(cpuPtr,gpuPtr,n*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
 
     ierr = VecCUDARestoreArrayRead(v,&varray);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
