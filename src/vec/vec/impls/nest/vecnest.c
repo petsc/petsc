@@ -695,94 +695,79 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X,PetscScalar **x)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecRestoreArrayRead_Nest(Vec X,const PetscScalar **x)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(*x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
 {
   PetscFunctionBegin;
-  /* 0 */
   ops->duplicate               = VecDuplicate_Nest;
   ops->duplicatevecs           = VecDuplicateVecs_Default;
   ops->destroyvecs             = VecDestroyVecs_Default;
   ops->dot                     = VecDot_Nest;
   ops->mdot                    = VecMDot_Nest;
-
-  /* 5 */
   ops->norm                    = VecNorm_Nest;
   ops->tdot                    = VecTDot_Nest;
   ops->mtdot                   = VecMTDot_Nest;
   ops->scale                   = VecScale_Nest;
   ops->copy                    = VecCopy_Nest;
-
-  /* 10 */
   ops->set                     = VecSet_Nest;
   ops->swap                    = VecSwap_Nest;
   ops->axpy                    = VecAXPY_Nest;
   ops->axpby                   = VecAXPBY_Nest;
   ops->maxpy                   = VecMAXPY_Nest;
-
-  /* 15 */
   ops->aypx                    = VecAYPX_Nest;
   ops->waxpy                   = VecWAXPY_Nest;
   ops->axpbypcz                = 0;
   ops->pointwisemult           = VecPointwiseMult_Nest;
   ops->pointwisedivide         = VecPointwiseDivide_Nest;
-  /* 20 */
   ops->setvalues               = 0;
   ops->assemblybegin           = VecAssemblyBegin_Nest;
   ops->assemblyend             = VecAssemblyEnd_Nest;
   ops->getarray                = VecGetArray_Nest;
   ops->getsize                 = VecGetSize_Nest;
-
-  /* 25 */
   ops->getlocalsize            = VecGetLocalSize_Nest;
   ops->restorearray            = VecRestoreArray_Nest;
+  ops->restorearrayread        = VecRestoreArrayRead_Nest;
   ops->max                     = VecMax_Nest;
   ops->min                     = VecMin_Nest;
   ops->setrandom               = 0;
-
-  /* 30 */
   ops->setoption               = 0;
   ops->setvaluesblocked        = 0;
   ops->destroy                 = VecDestroy_Nest;
   ops->view                    = VecView_Nest;
   ops->placearray              = 0;
-
-  /* 35 */
   ops->replacearray            = 0;
   ops->dot_local               = VecDot_Nest;
   ops->tdot_local              = VecTDot_Nest;
   ops->norm_local              = VecNorm_Nest;
   ops->mdot_local              = VecMDot_Nest;
-
-  /* 40 */
   ops->mtdot_local             = VecMTDot_Nest;
   ops->load                    = 0;
   ops->reciprocal              = VecReciprocal_Nest;
   ops->conjugate               = VecConjugate_Nest;
   ops->setlocaltoglobalmapping = 0;
-
-  /* 45 */
   ops->setvalueslocal          = 0;
   ops->resetarray              = 0;
   ops->setfromoptions          = 0;
   ops->maxpointwisedivide      = VecMaxPointwiseDivide_Nest;
   ops->load                    = 0;
-
-  /* 50 */
   ops->pointwisemax            = 0;
   ops->pointwisemaxabs         = 0;
   ops->pointwisemin            = 0;
   ops->getvalues               = 0;
   ops->sqrt                    = 0;
-
-  /* 55 */
   ops->abs                     = 0;
   ops->exp                     = 0;
   ops->shift                   = 0;
   ops->create                  = 0;
   ops->stridegather            = 0;
-
-  /* 60 */
   ops->stridescatter           = 0;
   ops->dotnorm2                = VecDotNorm2_Nest;
   ops->getsubvector            = VecGetSubVector_Nest;
