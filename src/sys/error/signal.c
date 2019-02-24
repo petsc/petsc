@@ -65,6 +65,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   const char     *SIGNAME[64];
 
   PetscFunctionBegin;
+  if (sig == SIGSEGV) PetscSignalSegvCheckPointer();
   SIGNAME[0]       = "Unknown signal";
 #if !defined(PETSC_MISSING_SIGABRT)
   SIGNAME[SIGABRT] = "Abort";
@@ -390,22 +391,3 @@ PetscErrorCode  PetscPopSignalHandler(void)
   }
   PetscFunctionReturn(0);
 }
-
-
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
-#include <setjmp.h>
-PETSC_VISIBILITY_INTERNAL jmp_buf PetscSegvJumpBuf;
-/*
-    This routine is called if a segmentation violation, i.e. inaccessible memory access
-    is triggered when PETSc is testing for a buggy pointer with PetscCheckPointer()
-
-    It simply unrolls the UNIX signal and returns to the location where setjump(PetscSeqvJumpBuf) is declared.
-*/
-PETSC_INTERN void PetscSegv_sigaction(int signal, siginfo_t *si, void *arg)
-{
-  longjmp(PetscSegvJumpBuf,1);
-  return;
-}
-#endif
-
-

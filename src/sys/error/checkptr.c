@@ -36,11 +36,26 @@ PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
 }
 
 /* ---------------------------------------------------------------------------------------*/
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
-#include <signal.h>
+
+#if defined(PETSC_HAVE_SETJMP_H)
 #include <setjmp.h>
-PETSC_INTERN jmp_buf PetscSegvJumpBuf;
-PETSC_INTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
+static jmp_buf PetscSegvJumpBuf;
+static PetscBool PetscSegvJumpBuf_set;
+
+/*@C
+   PetscSignalSegvCheckPointer - To be called from a signal handler for SIGSEGV.  If the signal was received while
+   executing PetscCheckPointer(), this function longjmps back there, otherwise returns with no effect.  This function is
+   called automatically by PetscSignalHandlerDefault().
+
+   Not Collective
+
+   Level: developer
+
+.seealso: PetscPushSignalHandler()
+@*/
+void PetscSignalSegvCheckPointer() {
+  if (PetscSegvJumpBuf_set) longjmp(PetscSegvJumpBuf,1);
+}
 
 /*@C
      PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
@@ -57,7 +72,6 @@ PETSC_INTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
 @*/
 PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 {
-  struct sigaction sa,oldsa;
 
   if (PETSC_RUNNING_ON_VALGRIND) return PETSC_TRUE;
   if (!ptr) return PETSC_FALSE;
@@ -66,14 +80,11 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
   /* Skip the verbose check if we are inside a hot function. */
   if (petscstack && petscstack->hotdepth > 0 && petsc_checkpointer_intensity < 2) return PETSC_TRUE;
 
-  sigemptyset(&sa.sa_mask);
-  sa.sa_sigaction = PetscSegv_sigaction;
-  sa.sa_flags   = SA_SIGINFO;
-  sigaction(SIGSEGV, &sa, &oldsa);
+  PetscSegvJumpBuf_set = PETSC_TRUE;
 
   if (setjmp(PetscSegvJumpBuf)) {
     /* A segv was triggered in the code below hence we return with an error code */
-    sigaction(SIGSEGV, &oldsa, NULL);/* reset old signal hanlder */
+    PetscSegvJumpBuf_set = PETSC_FALSE;
     return PETSC_FALSE;
   } else {
     switch (dtype) {
@@ -115,10 +126,14 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
     default:;
     }
   }
-  sigaction(SIGSEGV, &oldsa, NULL); /* reset old signal hanlder */
+  PetscSegvJumpBuf_set = PETSC_FALSE;
   return PETSC_TRUE;
 }
 #else
+void PetscSignalSegvCheckPointer() {
+  return;
+}
+
 PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED PetscDataType dtype)
 {
   if (!ptr) return PETSC_FALSE;
