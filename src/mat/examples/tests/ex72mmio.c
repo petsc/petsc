@@ -186,7 +186,7 @@ int mm_read_banner(FILE *f, MM_typecode *matcode)
 
 int mm_write_mtx_crd_size(FILE *f, int M, int N, int nz)
 {
-    if (fprintf(f, "%d %d %d\n", M, N, nz) != 3)
+    if (fprintf(f, "%d %d %d\n", M, N, nz) < 0)
         return MM_COULD_NOT_WRITE_FILE;
     else
         return 0;
