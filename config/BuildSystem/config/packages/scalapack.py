@@ -3,8 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['http://www.netlib.org/scalapack/scalapack-2.0.2.tgz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack-2.0.2.tgz']
+    self.gitcommit         = 'v2.0.2-p1'
+    self.download         = ['git://https://bitbucket.org/petsc/pkg-scalapack','https://bitbucket.org/petsc/pkg-scalapack/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames = ['petsc-pkg-scalapack','scalapack']
     self.includes         = []
     self.liblist          = [['libscalapack.a']]
     self.functions        = ['pssytrd']
