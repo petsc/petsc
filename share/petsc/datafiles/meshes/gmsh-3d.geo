@@ -67,17 +67,17 @@ Line Loop(4) = {-2, 10,  4, -12};
 Line Loop(5) = { 1,  6, -2,  -5};
 Line Loop(6) = { 3,  8, -4,  -7};
 
-Plane Surface(1) = {1};
-Plane Surface(2) = {2};
-Plane Surface(3) = {3};
-Plane Surface(4) = {4};
-Plane Surface(5) = {5};
-Plane Surface(6) = {6};
+Plane Surface(10) = {1};
+Plane Surface(20) = {2};
+Plane Surface(30) = {3};
+Plane Surface(40) = {4};
+Plane Surface(50) = {5};
+Plane Surface(60) = {6};
 
-Surface Loop(1) = {1, 2, 3, 4, 5, 6};
-Volume(1) = {1};
+Surface Loop(1) = {10, 20, 30, 40, 50, 60};
+Volume(100) = {1};
 
 Characteristic Length {1:8} = 0.25;
-Periodic Surface {2} = {1} Translate {1, 0, 0};
-Physical Surface("boundary", 1) = {3:6};
-Physical Volume("domain", 1) = {1};
+Periodic Surface {20} = {10} Translate {1, 0, 0};
+Physical Surface("boundary", 1) = {30, 40, 50, 60};
+Physical Volume("domain", 1) = {100};
