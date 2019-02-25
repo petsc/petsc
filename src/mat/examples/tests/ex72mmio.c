@@ -14,6 +14,8 @@
 
 #include "ex72mmio.h"
 
+static char mm_buffer[MM_MAX_LINE_LENGTH];
+
 int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_,
                 double **val_, int **I_, int **J_)
 {
@@ -393,7 +395,6 @@ int mm_write_banner(FILE *f, MM_typecode matcode)
     int ret_code;
 
     ret_code = fprintf(f, "%s %s\n", MatrixMarketBanner, str);
-    free(str);
     if (ret_code < 0 )
         return MM_COULD_NOT_WRITE_FILE;
     else
@@ -446,7 +447,6 @@ int mm_write_mtx_crd(char fname[], int M, int N, int nz, int ia[], int ja[],
 
 char  *mm_typecode_to_str(MM_typecode matcode)
 {
-    char buffer[MM_MAX_LINE_LENGTH];
     const char *types[4];
 
     /* check for MTX type */
@@ -495,7 +495,7 @@ char  *mm_typecode_to_str(MM_typecode matcode)
     else
         return NULL;
 
-    sprintf(buffer,"%s %s %s %s", types[0], types[1], types[2], types[3]);
-    return strdup(buffer);
-
+    mm_buffer[0]=0;
+    sprintf(mm_buffer,"%s %s %s %s", types[0], types[1], types[2], types[3]);
+    return mm_buffer;
 }
