@@ -1,0 +1,207 @@
+  0 SNES Function norm 13709.3 
+    0 KSP Residual norm 2.367348480225e+01 
+    1 KSP Residual norm 1.082302856445e+01 
+    2 KSP Residual norm 1.482285594940e+01 
+    3 KSP Residual norm 1.432977199554e+00 
+    4 KSP Residual norm 3.375379145145e-01 
+    5 KSP Residual norm 1.227105930448e-01 
+    6 KSP Residual norm 6.073911208659e-03 
+    7 KSP Residual norm 3.284112084657e-03 
+    8 KSP Residual norm 5.078469985165e-04 
+  1 SNES Function norm 4063.1 
+    0 KSP Residual norm 4.447169780731e+00 
+    1 KSP Residual norm 1.816306233406e+00 
+    2 KSP Residual norm 3.085955381393e-01 
+    3 KSP Residual norm 1.262296289206e-01 
+    4 KSP Residual norm 3.830022364855e-02 
+    5 KSP Residual norm 8.254324086010e-03 
+    6 KSP Residual norm 6.272638565861e-04 
+    7 KSP Residual norm 1.145633286797e-04 
+    8 KSP Residual norm 9.498246981821e-06 
+  2 SNES Function norm 1209.17 
+    0 KSP Residual norm 4.254377841949e+00 
+    1 KSP Residual norm 7.082120776176e-01 
+    2 KSP Residual norm 8.313012123108e-02 
+    3 KSP Residual norm 2.538713254035e-02 
+    4 KSP Residual norm 2.901831874624e-03 
+    5 KSP Residual norm 3.278063959442e-04 
+    6 KSP Residual norm 3.044763252547e-05 
+  3 SNES Function norm 358.668 
+    0 KSP Residual norm 2.696893692017e+00 
+    1 KSP Residual norm 6.020541191101e-01 
+    2 KSP Residual norm 7.315007597208e-02 
+    3 KSP Residual norm 6.195753812790e-03 
+    4 KSP Residual norm 2.266069408506e-03 
+    5 KSP Residual norm 2.399640798103e-04 
+    6 KSP Residual norm 3.813421062659e-05 
+    7 KSP Residual norm 3.088747916991e-06 
+  4 SNES Function norm 106.535 
+    0 KSP Residual norm 1.219507575035e+00 
+    1 KSP Residual norm 2.757715582848e-01 
+    2 KSP Residual norm 1.312828436494e-02 
+    3 KSP Residual norm 2.687958534807e-03 
+    4 KSP Residual norm 4.802570911124e-04 
+    5 KSP Residual norm 3.354695945745e-05 
+    6 KSP Residual norm 2.471532980053e-06 
+  5 SNES Function norm 31.6952 
+    0 KSP Residual norm 5.552107691765e-01 
+    1 KSP Residual norm 6.309471279383e-02 
+    2 KSP Residual norm 8.033529855311e-03 
+    3 KSP Residual norm 6.815509987064e-04 
+    4 KSP Residual norm 1.062193332473e-04 
+    5 KSP Residual norm 1.440552114218e-05 
+    6 KSP Residual norm 3.460366713171e-07 
+  6 SNES Function norm 9.3955 
+    0 KSP Residual norm 3.043232560158e-01 
+    1 KSP Residual norm 1.464145258069e-02 
+    2 KSP Residual norm 6.250557024032e-03 
+    3 KSP Residual norm 4.588569572661e-04 
+    4 KSP Residual norm 8.539923146600e-05 
+    5 KSP Residual norm 2.513832441764e-06 
+    6 KSP Residual norm 3.852335908050e-07 
+  7 SNES Function norm 2.75665 
+    0 KSP Residual norm 1.125318184495e-01 
+    1 KSP Residual norm 1.152079086751e-02 
+    2 KSP Residual norm 2.865518676117e-03 
+    3 KSP Residual norm 1.750349038048e-04 
+    4 KSP Residual norm 2.291143391631e-05 
+    5 KSP Residual norm 2.078336365230e-06 
+    6 KSP Residual norm 1.376367890771e-07 
+  8 SNES Function norm 0.762621 
+    0 KSP Residual norm 3.821944072843e-02 
+    1 KSP Residual norm 3.465084824711e-03 
+    2 KSP Residual norm 7.389512611553e-04 
+    3 KSP Residual norm 5.259949830361e-05 
+    4 KSP Residual norm 5.736650109611e-06 
+    5 KSP Residual norm 7.756974582662e-07 
+    6 KSP Residual norm 2.993350989300e-08 
+  9 SNES Function norm 0.200838 
+    0 KSP Residual norm 1.095711905509e-02 
+    1 KSP Residual norm 5.100466660224e-04 
+    2 KSP Residual norm 5.160098953638e-05 
+    3 KSP Residual norm 1.015568795992e-05 
+    4 KSP Residual norm 7.325918431889e-07 
+    5 KSP Residual norm 1.412544605728e-07 
+    6 KSP Residual norm 3.963896322290e-09 
+ 10 SNES Function norm 0.0395705 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 10
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=20, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-25, solution=1e-05
+  total number of linear solver iterations=65
+  total number of function evaluations=11
+  norm schedule ALWAYS
+  SNESLineSearch Object: 4 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 4 MPI processes
+    type: cg
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 4 MPI processes
+    type: bddc
+      Use verbose output: 0
+      Use user-defined CSR: 0
+      Use local mat graph: 1
+      Connectivity graph topological dimension: 2
+      Use vertices: 1 (vertex size 1)
+      Use edges: 1
+      Use faces: 0
+      Use true near null space: 0
+      Use QR for single constraints on cc: 0
+      Use change of basis on local edge nodes: 0
+      Use change of basis on local face nodes: 0
+      User defined change of basis matrix: 0
+      Has change of basis matrix: 0
+      Eliminate dirichlet boundary dofs: 0
+      Switch on static condensation ops around the interface preconditioner: 0
+      Use exact dirichlet trick: 1
+      Interface extension: DIRICHLET
+      Multilevel max levels: 0
+      Multilevel coarsening ratio: 8
+      Use estimated eigs for coarse problem: 0
+      Use deluxe scaling: 0
+      Use deluxe zerorows: 0
+      Use deluxe singlemat: 0
+      Rebuild interface graph for Schur principal minors: 0
+      Number of dofs' layers for the computation of principal minors: -1
+      Use user CSR graph to compute successive layers: 0
+      Adaptive constraint selection threshold (active 0, userdefined 0): 0.
+      Min constraints / connected component: 0
+      Max constraints / connected component: 0
+      Invert exact Schur complement for adaptive selection: 0
+      Symmetric computation of primal basis functions: 1
+      Num. Procs. to map coarse adjacency list: 0
+      Coarse eqs per proc (significant at the coarsest level): 1
+      Detect disconnected: 0
+      Benign subspace trick: 0 (change explicit 0)
+      Benign subspace trick is active: 0
+      Algebraic computation of no-net-flux 0
+      ********************************** STATISTICS AT LEVEL 0 **********************************
+      Global dofs sizes: all 1477 interface 88 coarse 6
+      Coarsening ratios: all/coarse 246 interface/coarse 14
+      Active processes : 4
+      Total subdomains : 4
+      Dofs type        :	MIN	MAX	MEAN
+      Interior  dofs   :	343	357	347
+      Interface dofs   :	35	54	44
+      Primal    dofs   :	3	4	3
+      Local     dofs   :	378	411	391
+      Local     subs   :	1	1
+      ********************************** COARSE PROBLEM DETAILS *********************************
+    KSP Object: (pc_bddc_coarse_) 4 MPI processes
+      type: preonly
+      maximum iterations=1, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (pc_bddc_coarse_) 4 MPI processes
+      type: redundant
+        First (color=0) of 4 PCs follows
+      linear system matrix = precond matrix:
+      Mat Object: 4 MPI processes
+        type: mpiaij
+        rows=6, cols=6
+        total: nonzeros=32, allocated nonzeros=35
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 1 nodes, limit used is 5
+            KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+              type: lu
+                out-of-place factorization
+                tolerance for zero pivot 1.19209e-05
+                matrix ordering: nd
+                factor fill ratio given 5., needed 1.0625
+                  Factored matrix follows:
+                    Mat Object:     1 MPI processes
+                      type: seqaij
+                      rows=6, cols=6
+                      package used to perform factorization: petsc
+                      total: nonzeros=34, allocated nonzeros=34
+                      total number of mallocs used during MatSetValues calls =0
+                        using I-node routines: found 3 nodes, limit used is 5
+              linear system matrix = precond matrix:
+              Mat Object:     1 MPI processes
+                type: seqaij
+                rows=6, cols=6
+                total: nonzeros=32, allocated nonzeros=32
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object: 4 MPI processes
+      type: is
+      rows=1477, cols=1477
+      total: nonzeros=22795, allocated nonzeros=24441
+      total number of mallocs used during MatSetValues calls =0
