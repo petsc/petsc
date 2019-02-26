@@ -44,17 +44,27 @@ static const char citation[] =
  xtmp(comm) -> y(comm)
 */
 
-PetscBool isActiveRank(PetscSubcomm scomm)
+PetscBool PetscSubComm_isActiveRank(PetscSubcomm scomm)
 {
   if (scomm->color == 0) { return PETSC_TRUE; }
   else { return PETSC_FALSE; }
+}
+
+PetscBool isActiveRank(PC_Telescope sred)
+{
+  if (sred->psubcomm) {
+    return(PetscSubComm_isActiveRank(sred->psubcomm));
+  } else {
+    if (sred->subcomm != MPI_COMM_NULL) { return PETSC_TRUE; }
+    else { return PETSC_FALSE; }
+  }
 }
 
 DM private_PCTelescopeGetSubDM(PC_Telescope sred)
 {
   DM subdm = NULL;
 
-  if (!isActiveRank(sred->psubcomm)) { subdm = NULL; }
+  if (!isActiveRank(sred)) { subdm = NULL; }
   else {
     switch (sred->sr_type) {
     case TELESCOPE_DEFAULT: subdm = NULL;
@@ -90,7 +100,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
 
   xred = NULL;
   m    = 0;
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     ierr = VecCreate(subcomm,&xred);CHKERRQ(ierr);
     ierr = VecSetSizes(xred,PETSC_DECIDE,M);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xred,bs);CHKERRQ(ierr);
@@ -99,7 +109,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   }
 
   yred = NULL;
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     ierr = VecDuplicate(xred,&yred);CHKERRQ(ierr);
   }
 
@@ -108,7 +118,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   ierr = VecSetBlockSize(xtmp,bs);CHKERRQ(ierr);
   ierr = VecSetType(xtmp,((PetscObject)x)->type_name);CHKERRQ(ierr);
 
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     ierr = VecGetOwnershipRange(xred,&st,&ed);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,(ed-st),st,1,&isin);CHKERRQ(ierr);
   } else {
@@ -149,7 +159,7 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
   Blocal = *_Blocal;
   ierr = PetscFree(_Blocal);CHKERRQ(ierr);
   Bred = NULL;
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     PetscInt mm;
 
     if (reuse != MAT_INITIAL_MATRIX) { Bred = *A; }
@@ -176,7 +186,7 @@ static PetscErrorCode PCTelescopeSubNullSpaceCreate_Telescope(PC pc,PC_Telescope
   subcomm = PetscSubcommChild(sred->psubcomm);
   ierr = MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs);CHKERRQ(ierr);
 
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     if (n) {
       ierr = VecDuplicateVecs(sred->xred,n,&sub_vecs);CHKERRQ(ierr);
     }
@@ -206,7 +216,7 @@ static PetscErrorCode PCTelescopeSubNullSpaceCreate_Telescope(PC pc,PC_Telescope
     }
   }
 
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     /* create new (near) nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace);CHKERRQ(ierr);
     ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
@@ -231,7 +241,7 @@ static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope s
     if (nullspace) {
       ierr = PetscInfo(pc,"PCTelescope: generating nullspace (default)\n");CHKERRQ(ierr);
       ierr = PCTelescopeSubNullSpaceCreate_Telescope(pc,sred,nullspace,&sub_nullspace);CHKERRQ(ierr);
-      if (isActiveRank(sred->psubcomm)) {
+      if (isActiveRank(sred)) {
         ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&sub_nullspace);CHKERRQ(ierr);
       }
@@ -245,7 +255,7 @@ static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope s
     if (nearnullspace) {
       ierr = PetscInfo(pc,"PCTelescope: generating near nullspace (default)\n");CHKERRQ(ierr);
       ierr = PCTelescopeSubNullSpaceCreate_Telescope(pc,sred,nearnullspace,&sub_nearnullspace);CHKERRQ(ierr);
-      if (isActiveRank(sred->psubcomm)) {
+      if (isActiveRank(sred)) {
         ierr = MatSetNearNullSpace(sub_mat,sub_nearnullspace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&sub_nearnullspace);CHKERRQ(ierr);
       }
@@ -292,7 +302,7 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
           SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"General subcomm type not supported by PCTelescope");
       }
       ierr = PetscViewerGetSubViewer(viewer,subcomm,&subviewer);CHKERRQ(ierr);
-      if (isActiveRank(sred->psubcomm)) {
+      if (isActiveRank(sred)) {
         ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
 
         if (dm && sred->ignore_dm) {
@@ -340,15 +350,16 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       ierr = PetscSubcommSetNumber(sred->psubcomm,sred->redfactor);CHKERRQ(ierr);
       ierr = PetscSubcommSetType(sred->psubcomm,sred->subcommtype);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
+      sred->subcomm = PetscSubcommChild(sred->psubcomm);
     }
   }
-  subcomm = PetscSubcommChild(sred->psubcomm);
+  subcomm = sred->subcomm;
 
   /* internal KSP */
   if (!pc->setupcalled) {
     const char *prefix;
 
-    if (isActiveRank(sred->psubcomm)) {
+    if (isActiveRank(sred)) {
       ierr = KSPCreate(subcomm,&sred->ksp);CHKERRQ(ierr);
       ierr = KSPSetErrorIfNotConverged(sred->ksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)sred->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
@@ -433,7 +444,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
   }
 
   /* common - no construction */
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     ierr = KSPSetOperators(sred->ksp,sred->Bred,sred->Bred);CHKERRQ(ierr);
     if (pc->setfromoptionscalled && !pc->setupcalled){
       ierr = KSPSetFromOptions(sred->ksp);CHKERRQ(ierr);
@@ -477,7 +488,7 @@ static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
   }
   ierr = VecRestoreArrayRead(xtmp,&x_array);CHKERRQ(ierr);
   /* solve */
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     ierr = KSPSolve(sred->ksp,xred,yred);CHKERRQ(ierr);
     ierr = KSPCheckSolve(sred->ksp,pc,yred);CHKERRQ(ierr);
   }
@@ -536,14 +547,14 @@ static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscR
     ierr = VecRestoreArrayRead(xtmp,&x_array);CHKERRQ(ierr);
   }
 
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     ierr = KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value);CHKERRQ(ierr);
     if (!zeroguess) ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   ierr = PCApply_Telescope(pc,x,y);CHKERRQ(ierr);
 
-  if (isActiveRank(sred->psubcomm)) {
+  if (isActiveRank(sred)) {
     ierr = KSPSetInitialGuessNonzero(sred->ksp,default_init_guess_value);CHKERRQ(ierr);
   }
 
@@ -1026,7 +1037,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,&sred);CHKERRQ(ierr);
+  sred->psubcomm       = NULL;
   sred->subcommtype    = PETSC_SUBCOMM_INTERLACED;
+  sred->subcomm        = MPI_COMM_NULL;
   sred->redfactor      = 1;
   sred->ignore_dm      = PETSC_FALSE;
   sred->ignore_kspcomputeoperators = PETSC_FALSE;

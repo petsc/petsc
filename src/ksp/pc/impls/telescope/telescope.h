@@ -9,6 +9,7 @@ typedef struct _PC_Telescope *PC_Telescope;
 struct _PC_Telescope {
   PetscSubcomm      psubcomm;
   PetscSubcommType  subcommtype;
+  MPI_Comm          subcomm;
   PetscInt          redfactor; /* factor to reduce comm size by */
   KSP               ksp;
   IS                isin;
@@ -24,7 +25,7 @@ struct _PC_Telescope {
   PetscErrorCode    (*pctelescope_reset_type)(PC);
 };
 
- PetscBool isActiveRank(PetscSubcomm);
+ PetscBool isActiveRank(PC_Telescope);
  DM private_PCTelescopeGetSubDM(PC_Telescope);
 
 /* DMDA */
