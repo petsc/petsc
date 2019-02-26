@@ -25,8 +25,6 @@ static PetscErrorCode ourtaobrgnreghessroutine(Tao tao, Vec x, Mat H, void *ctx)
     PetscObjectUseFortranCallback(tao,_cb.hess,(Tao*,Vec*,Mat*,void*,PetscErrorCode*),(&tao,&x,&H,_ctx,&ierr));
 }
 
-EXTERN_C_BEGIN
-
 PETSC_EXTERN void PETSC_STDCALL taobrgnsetregularizerobjectiveandgradientroutine_(Tao *tao, void (PETSC_STDCALL *func)(Tao*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLFUNCTION(func);
