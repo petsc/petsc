@@ -3,7 +3,7 @@
 #define __PETSCPC_TELESCOPE_H
 
 /* Telescope */
-typedef enum { TELESCOPE_DEFAULT = 0, TELESCOPE_DMDA, TELESCOPE_DMPLEX } PCTelescopeType;
+typedef enum { TELESCOPE_DEFAULT = 0, TELESCOPE_DMDA, TELESCOPE_DMPLEX, TELESCOPE_COARSEDM } PCTelescopeType;
 
 typedef struct _PC_Telescope *PC_Telescope;
 struct _PC_Telescope {
@@ -16,7 +16,7 @@ struct _PC_Telescope {
   VecScatter        scatter;
   Vec               xred,yred,xtmp;
   Mat               Bred;
-  PetscBool         ignore_dm,ignore_kspcomputeoperators;
+  PetscBool         ignore_dm,ignore_kspcomputeoperators,use_coarse_dm;
   PCTelescopeType   sr_type;
   void              *dm_ctx;
   PetscErrorCode    (*pctelescope_setup_type)(PC,PC_Telescope);
@@ -48,8 +48,13 @@ typedef struct {
  PetscErrorCode PCTelescopeMatCreate_dmda(PC,PC_Telescope,MatReuse,Mat*);
  PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC,PC_Telescope,Mat);
  PetscErrorCode PCApply_Telescope_dmda(PC,Vec,Vec);
-PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason);
+PetscErrorCode PCApplyRichardson_Telescope_dmda(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
 PetscErrorCode PCReset_Telescope_dmda(PC);
+PetscErrorCode PCTelescopeSetUp_CoarseDM(PC,PC_Telescope);
+PetscErrorCode PCApply_Telescope_CoarseDM(PC,Vec,Vec);
+PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC,PC_Telescope,Mat);
+PetscErrorCode PCReset_Telescope_CoarseDM(PC);
+PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
 PetscErrorCode DMView_DA_Short(DM,PetscViewer);
 
 #endif
