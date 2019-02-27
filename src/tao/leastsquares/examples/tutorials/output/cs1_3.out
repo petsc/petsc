@@ -1,33 +1,20 @@
-iter =   0, Function value 0.65125, Residual: 2.50483 
-iter =   1, Function value 0.000605059, Residual: 0.0211242 
-iter =   2, Function value 2.20601e-08, Residual: < 1.0e-6 
-iter =   3, Function value 2.187e-08, Residual: < 1.0e-6 
-iter =   4, Function value 2.161e-08, Residual: < 1.0e-6 
-iter =   5, Function value 2.07275e-08, Residual: 1.51015e-05 
-iter =   6, Function value 2.04419e-08, Residual: 1.97371e-05 
-iter =   7, Function value 2.03981e-08, Residual: 1.94545e-05 
-iter =   8, Function value 2.00023e-08, Residual: 1.34735e-06 
-iter =   9, Function value 2.00021e-08, Residual: 1.33524e-06 
-iter =  10, Function value 2.00002e-08, Residual: 1.02172e-06 
-iter =  11, Function value 2.00001e-08, Residual: 1.004e-06 
-iter =  12, Function value 2.00001e-08, Residual: < 1.0e-6 
-iter =  13, Function value 2e-08, Residual: < 1.0e-6 
-iter =  14, Function value 2e-08, Residual: < 1.0e-6 
-iter =  15, Function value 2e-08, Residual: < 1.0e-6 
-iter =  16, Function value 2e-08, Residual: < 1.0e-6 
+  Iteration information for tao_brgn_subsolver_ solve.
+  0 TAO,  Function value: 0.65125,  Residual: 2.50483 
+  1 TAO,  Function value: 0.000605059,  Residual: 0.0211242 
+  2 TAO,  Function value: 2.20601e-08,  Residual: 1.68522e-08 
 -------- result x, residual f=A*x-b, and Jacobian=A. -------- 
 Vec Object: 1 MPI processes
   type: seq
--5.79566e-08
--1.57439e-09
-1.
--7.81918e-08
-1.80982e-07
+0.0152716
+0.0467955
+1.03336
+0.0875982
+-0.154571
 Vec Object: 1 MPI processes
   type: seq
-2.76779e-08
--2.19996e-08
--1.63163e-08
+2.46763e-08
+-1.61043e-08
+-2.09501e-08
 Mat Object: 1 MPI processes
   type: seqdense
 8.1000000000000005e-01 9.1000000000000003e-01 2.8000000000000003e-01 9.5999999999999996e-01 9.5999999999999996e-01 

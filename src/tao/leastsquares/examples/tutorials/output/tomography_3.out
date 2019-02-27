@@ -5,5 +5,4 @@
   3 TAO,  Function value: 1.5374e-06,  Residual: 9.12911e-06 
   4 TAO,  Function value: 7.98756e-07,  Residual: 2.21835e-06 
   5 TAO,  Function value: 7.28176e-07,  Residual: 2.33103e-07 
-  6 TAO,  Function value: 7.26809e-07,  Residual: 3.59407e-08 
-relative reconstruction error: ||x-xGT||/||xGT|| = 1.5511e-01.
+relative reconstruction error: ||x-xGT||/||xGT|| = 1.5583e-01.
