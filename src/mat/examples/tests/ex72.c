@@ -1,104 +1,148 @@
+static char help[] = "Read a real (non-complex) sparse matrix from a Matrix Market (v. 2.0) file\n\
+and write it to a file in petsc sparse binary format. If the matrix is symmetric, the binary file is in \n\
+PETSc MATSBAIJ format, otherwise it is in MATAIJ format \n\
+Usage:  ./ex72 -fin <infile> -fout <outfile> \n\
+(See http://math.nist.gov/MatrixMarket for details.)\n\\n";
 
+/*
+*   NOTES:
+*
+*   1) Matrix Market files are always 1-based, i.e. the index of the first
+*      element of a matrix is (1,1), not (0,0) as in C.  ADJUST THESE
+*      OFFSETS ACCORDINGLY offsets accordingly when reading and writing
+*      to files.
+*
+*   2) ANSI C requires one to use the "l" format modifier when reading
+*      double precision floating point numbers in scanf() and
+*      its variants.  For example, use "%lf", "%lg", or "%le"
+*      when reading doubles, otherwise errors will occur.
+*/
 #include <petscmat.h>
+#include "ex72mmio.h"
 
-static char help[] = "Read in a Symmetric matrix in MatrixMarket format (only the lower triangle). \n\
-  Assemble it to a PETSc sparse SBAIJ (upper triangle) matrix. \n\
-  Write it in a AIJ matrix (entire matrix) to a file. \n\
-  Input parameters are:            \n\
-    -fin <filename> : input file   \n\
-    -fout <filename> : output file \n\n";
-
-int main(int argc,char **args)
+int main(int argc,char **argv)
 {
-  Mat            A;
-  char           filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
-  PetscInt       i,m,n,nnz;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscScalar    *val,zero=0.0;
-  FILE           *file;
-  PetscViewer    view;
-  int            *row,*col,*rownz;
-  PetscBool      flg;
-  char           line[PETSC_MAX_PATH_LEN];
+  PetscInt    ret_code;
+  MM_typecode matcode;
+  FILE        *file;
+  PetscInt    M, N;
+  PetscInt    *ia, *ja;
+  Mat         A;
+  char        filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN];
+  PetscInt    i,j,nz,ierr,size,*rownz;
+  PetscScalar *val,zero=0.0;
+  PetscViewer view;
+  PetscBool   sametype,flag,symmetric=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Uniprocessor Example only\n");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
 
-  /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate input file with -fin option");
+  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_COMM_SELF,1,"Please use -fin <filename> to specify the input file name!");
+  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_COMM_SELF,1,"Please use -fout <filename> to specify the output file name!");
+
+  /* Read in matrix */
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
-  /* process header with comments */
-  do {
-    char *str = fgets(buf,PETSC_MAX_PATH_LEN-1,file);
-    if (!str) SETERRQ(PETSC_COMM_SELF,1,"Incorrect format in file");
-  }while (buf[0] == '%');
+  if (mm_read_banner(file, &matcode) != 0)
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not process Matrix Market banner.");
 
-  /* The first non-comment line has the matrix dimensions */
-  sscanf(buf,"%d %d %d\n",&m,&n,&nnz);
-  ierr = PetscPrintf (PETSC_COMM_SELF,"m = %d, n = %d, nnz = %d\n",m,n,nnz);CHKERRQ(ierr);
-
-  /* reseve memory for matrices */
-  ierr = PetscMalloc4(nnz,&row,nnz,&col,nnz,&val,m,&rownz);CHKERRQ(ierr);
-  for (i=0; i<m; i++) rownz[i] = 1; /* add 0.0 to diagonal entries */
-
-  for (i=0; i<nnz; i++) {
-    char *s = fgets(line,sizeof(line),file);
-    if (!s) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"i=%d, reached EOF\n",i);
-    ierr = sscanf(line,"%d %d %le\n",&row[i],&col[i],(double*)&val[i]);
-    if (ierr==2){val[i]=1.0;}
-    else if (ierr != 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"i=%d, invalid line\n",i);
-    row[i]--; col[i]--;    /* adjust from 1-based to 0-based */
-    rownz[col[i]]++;
+  /*  This is how one can screen matrix types if their application */
+  /*  only supports a subset of the Matrix Market data types.      */
+  if (!mm_is_matrix(matcode) || !mm_is_sparse(matcode) || !mm_is_real(matcode) ){
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input must be a real sparse matrix. Market Market type: [%s]\n", mm_typecode_to_str(matcode));
   }
-  fclose(file);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Read file completes.\n");CHKERRQ(ierr);
 
-  /* Creat and asseble SBAIJ matrix */
+  if (mm_is_symmetric(matcode)) symmetric = PETSC_TRUE;
+
+  /* Find out size of sparse matrix .... */
+  if ((ret_code = mm_read_mtx_crd_size(file, &M, &N, &nz)) !=0)
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Size of sparse matrix is wrong.");
+
+  ierr = mm_write_banner(stdout, matcode);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"M: %d, N: %d, nnz: %d\n",M,N,nz);CHKERRQ(ierr);
+
+  /* Reseve memory for matrices */
+  ierr = PetscMalloc4(nz,&ia,nz,&ja,nz,&val,M,&rownz);CHKERRQ(ierr);
+  for (i=0; i<M; i++) rownz[i] = 1; /* Since we will add 0.0 to diagonal entries */
+
+  /* NOTE: when reading in doubles, ANSI C requires the use of the "l"  */
+  /*   specifier as in "%lg", "%lf", "%le", otherwise errors will occur */
+  /*  (ANSI C X3.159-1989, Sec. 4.9.6.2, p. 136 lines 13-15)            */
+
+  for (i=0; i<nz; i++){
+    if (fscanf(file, "%d %d %lg\n", &ia[i], &ja[i], &val[i]) != 3) SETERRQ(PETSC_COMM_SELF,1,"Badly formatted input file\n");
+    ia[i]--; ja[i]--;     /* adjust from 1-based to 0-based */
+    if (ia[i] != ja[i]) { /* already counted the diagonals above */
+      if (symmetric) rownz[ja[i]]++; /* transpose. For symmetric matrices, MM uses lower triangular, PETSc uses upper triangular */
+      else rownz[ia[i]]++;
+    }
+  }
+  ierr = PetscFClose(PETSC_COMM_SELF,file);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRQ(ierr);
+
+  /* Create, preallocate, and then assemble the matrix */
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(A,1,0,rownz);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
 
-  /* Add zero to diagonals, in case the matrix missing diagonals */
-  for (i=0; i<m; i++){
-    ierr = MatSetValues(A,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+  if (symmetric){
+    ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+    ierr = MatSetUp(A);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(A,1,0,rownz);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&sametype);CHKERRQ(ierr);
+    if (!sametype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
+
+    /* Add zero to diagonals, in case the matrix missing diagonals */
+    for (j=0; j<M; j++) {ierr = MatSetValues(A,1,&j,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);}
+
+    /* MatrixMarket matrix stores symm matrix in lower triangular part. Take its transpose */
+    for (j=0; j<nz; j++) {ierr = MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);}
+  } else {
+    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+    ierr = MatSetUp(A);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(A,0,rownz);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&sametype);CHKERRQ(ierr);
+    if (!sametype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
+
+    /* Add zero to diagonals, in case the matrix missing diagonals */
+    for (j=0; j<M; j++)  {ierr = MatSetValues(A,1,&j,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);}
+    for (j=0; j<nz; j++) {ierr = MatSetValues(A,1,&ia[j],1,&ja[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);}
   }
-  for (i=0; i<nnz; i++) {
-    ierr = MatSetValues(A,1,&col[i],1,&row[i],&val[i],INSERT_VALUES);CHKERRQ(ierr);
-  }
+
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Assemble SBAIJ matrix completes.\n");CHKERRQ(ierr);
 
-  /* Write the entire matrix in AIJ format to a file */
-  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Write the entire matrix in AIJ format to file %s\n",fileout);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-    ierr = MatView(A,view);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  }
+  /* Write out matrix */
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Writing matrix to binary file %s using PETSc %s format ...\n",fileout,symmetric?"SBAIJ":"AIJ");CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
+  ierr = MatView(A,view);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Writing matrix completes.\n");CHKERRQ(ierr);
 
-  ierr = PetscFree4(row,col,val,rownz);CHKERRQ(ierr);
+  ierr = PetscFree4(ia,ja,val,rownz);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  return 0;
 }
-
-
 
 /*TEST
 
    build:
-      requires:  !complex !define(PETSC_USE_64BIT_INDICES)
+      requires:  !complex double !define(PETSC_USE_64BIT_INDICES)
+      depends: ex72mmio.c
 
    test:
-      args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -fout outputfile
-      requires: double
+      suffix: 1
+      args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -fout petscmat.aij
+      output_file: output/ex72_1.out
+
+   test:
+      suffix: 2
+      args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/LFAT5.mtx -fout petscmat.sbaij
+      output_file: output/ex72_2.out
 
 TEST*/
