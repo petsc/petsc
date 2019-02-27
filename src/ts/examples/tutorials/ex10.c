@@ -903,7 +903,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 {
   PetscErrorCode ierr;
   RD             rd;
-  PetscReal      meter,kilogram,second,Kelvin,Joule,Watt;
+  PetscReal      meter=0,kilogram=0,second=0,Kelvin=0,Joule=0,Watt=0;
 
   PetscFunctionBeginUser;
   *inrd = 0;
