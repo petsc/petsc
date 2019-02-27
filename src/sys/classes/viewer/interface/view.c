@@ -474,6 +474,26 @@ PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pe
   PetscFunctionReturn(0);
 }
 
+/*@
+   PetscViewerReadable - Return a flag whether the viewer can be read from
+
+   Not Collective
+
+   Input Parameters:
+.  viewer - the PetscViewer context
+
+   Output Parameters:
+.  flg - PETSC_TRUE if the viewer is readable, PETSC_FALSE otherwise
+
+   Notes:
+   PETSC_TRUE means that viewer's PetscViewerType supports reading (this holds e.g. for PETSCVIEWERBINARY)
+   and viewer is in a mode allowing reading, i.e. PetscViewerFileGetMode()
+   returns one of FILE_MODE_READ, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE.
+
+   Level: intermediate
+
+.seealso: PetscViewerWritable(), PetscViewerCheckReadable(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetType()
+@*/
 PetscErrorCode  PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
 {
   PetscErrorCode    ierr;
@@ -497,6 +517,25 @@ PetscErrorCode  PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
+/*@
+   PetscViewerWritable - Return a flag whether the viewer can be written to
+
+   Not Collective
+
+   Input Parameters:
+.  viewer - the PetscViewer context
+
+   Output Parameters:
+.  flg - PETSC_TRUE if the viewer is writable, PETSC_FALSE otherwise
+
+   Notes:
+   PETSC_TRUE means viewer is in a mode allowing writing, i.e. PetscViewerFileGetMode()
+   returns one of FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE.
+
+   Level: intermediate
+
+.seealso: PetscViewerReadable(), PetscViewerCheckWritable(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetType()
+@*/
 PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
 {
   PetscErrorCode    ierr;
@@ -514,6 +553,18 @@ PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
+/*@
+   PetscViewerCheckReadable - Check whether the viewer can be read from
+
+   Collective
+
+   Input Parameters:
+.  viewer - the PetscViewer context
+
+   Level: intermediate
+
+.seealso: PetscViewerReadable(), PetscViewerCheckWritable(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetType()
+@*/
 PetscErrorCode  PetscViewerCheckReadable(PetscViewer viewer)
 {
   PetscBool         flg;
@@ -526,6 +577,18 @@ PetscErrorCode  PetscViewerCheckReadable(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@
+   PetscViewerCheckWritable - Check whether the viewer can be written to
+
+   Collective
+
+   Input Parameters:
+.  viewer - the PetscViewer context
+
+   Level: intermediate
+
+.seealso: PetscViewerWritable(), PetscViewerCheckReadable(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetType()
+@*/
 PetscErrorCode  PetscViewerCheckWritable(PetscViewer viewer)
 {
   PetscBool         flg;
