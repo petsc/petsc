@@ -17,6 +17,5 @@ lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
     2 KSP Residual norm 5.857436313761e-09 
     3 KSP Residual norm 2.875711613282e-10 
     4 KSP Residual norm 6.342382348479e-12 
-    3 SNES Function norm 7.922621136913e-08 
+  3 SNES Function norm 7.922621136913e-08 
 Number of SNES iterations = 3
-
