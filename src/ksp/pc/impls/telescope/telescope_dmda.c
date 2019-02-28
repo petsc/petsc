@@ -894,12 +894,12 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
 
   {
     MatNullSpace nearnullspace,sub_nearnullspace;
-    ierr = MatGetNullSpace(B,&nearnullspace);CHKERRQ(ierr);
+    ierr = MatGetNearNullSpace(B,&nearnullspace);CHKERRQ(ierr);
     if (nearnullspace) {
       ierr = PetscInfo(pc,"PCTelescope: generating near nullspace (DMDA)\n");CHKERRQ(ierr);
       ierr = PCTelescopeSubNullSpaceCreate_dmda_Telescope(pc,sred,nearnullspace,&sub_nearnullspace);CHKERRQ(ierr);
       if (isActiveRank(sred)) {
-        ierr = MatSetNullSpace(sub_mat,sub_nearnullspace);CHKERRQ(ierr);
+        ierr = MatSetNearNullSpace(sub_mat,sub_nearnullspace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&sub_nearnullspace);CHKERRQ(ierr);
       }
     }
