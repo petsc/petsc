@@ -133,6 +133,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,
   PetscInt pi,pj,n;
 
   PetscFunctionBegin;
+  *rank_re = -1;
   pi = pj = -1;
   if (_pi) {
     for (n=0; n<Mp; n++) {
@@ -142,7 +143,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,
       }
     }
     if (pi == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pi cannot be determined : range %D, val %D",Mp,i);
-    *_pi = pi;
+    *_pi = (PetscMPIInt)pi;
   }
 
   if (_pj) {
@@ -153,10 +154,10 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,
       }
     }
     if (pj == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pj cannot be determined : range %D, val %D",Np,j);
-    *_pj = pj;
+    *_pj = (PetscMPIInt)pj;
   }
 
-  *rank_re = pi + pj * Mp;
+  *rank_re = (PetscMPIInt)(pi + pj * Mp);
   PetscFunctionReturn(0);
 }
 
@@ -165,12 +166,13 @@ static PetscErrorCode _DMDADetermineGlobalS0_2d(PetscMPIInt rank_re,PetscInt Mp_
                                       PetscInt range_i_re[],PetscInt range_j_re[],PetscInt *s0)
 {
   PetscInt i,j,start_IJ = 0;
-  PetscInt rank_ij;
+  PetscMPIInt rank_ij;
 
   PetscFunctionBegin;
+  *s0 = -1;
   for (j=0; j<Np_re; j++) {
     for (i=0; i<Mp_re; i++) {
-      rank_ij = i + j*Mp_re;
+      rank_ij = (PetscMPIInt)(i + j*Mp_re);
       if (rank_ij < rank_re) {
         start_IJ += range_i_re[i]*range_j_re[j];
       }
@@ -184,10 +186,10 @@ static PetscErrorCode _DMDADetermineGlobalS0_2d(PetscMPIInt rank_re,PetscInt Mp_
 static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
 {
   PetscErrorCode ierr;
-  PetscInt        k,sum,Mp_re,Np_re;
+  PetscInt        k,sum,Mp_re = 0,Np_re = 0;
   PetscInt        nx,ny,sr,er,Mr,ndof;
   PetscInt        i,j,location,startI[2],endI[2],lenI[2];
-  const PetscInt  *_range_i_re,*_range_j_re;
+  const PetscInt  *_range_i_re = NULL,*_range_j_re = NULL;
   PetscInt        *range_i_re,*range_j_re;
   PetscInt        *start_i_re,*start_j_re;
   MPI_Comm        comm;
@@ -256,10 +258,10 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
 
   for (j=startI[1]; j<endI[1]; j++) {
     for (i=startI[0]; i<endI[0]; i++) {
-      PetscMPIInt rank_ijk_re,rank_reI[3];
+      PetscMPIInt rank_ijk_re,rank_reI[] = {0,0};
       PetscInt    s0_re;
       PetscInt    ii,jj,local_ijk_re,mapped_ijk;
-      PetscInt    lenI_re[3];
+      PetscInt    lenI_re[] = {0,0};
 
       location = (i - startI[0]) + (j - startI[1])*lenI[0];
       ierr = _DMDADetermineRankFromGlobalIJ_2d(i,j,Mp_re,Np_re,
@@ -447,7 +449,7 @@ PetscErrorCode DMCreateInterpolation_ShellDA(DM dm1,DM dm2,Mat *mat,Vec *vec)
 PetscErrorCode DMShellDASetUp_TelescopeDMScatter(DM dmf_shell,DM dmc_shell)
 {
   PetscErrorCode ierr;
-  Mat            P;
+  Mat            P = NULL;
   DM             dmf = NULL,dmc = NULL;
 
   PetscFunctionBegin;
