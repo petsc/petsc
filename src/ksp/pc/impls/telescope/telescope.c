@@ -1277,31 +1277,67 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-   PCTELESCOPE - Runs a KSP solver on a sub-group of processors. MPI processes not in the sub-communicator are idle during the solve.
+   PCTELESCOPE - Runs a KSP solver on a sub-communicator. MPI ranks not in the sub-communicator are idle during the solve.
 
    Options Database:
-+  -pc_telescope_reduction_factor <r> - factor to use communicator size by. e.g. with 64 MPI processes and r=4, the new sub-communicator will have 64/4 = 16 ranks.
--  -pc_telescope_ignore_dm  - flag to indicate whether an attached DM should be ignored
--  -pc_telescope_subcomm_type <interlaced,contiguous> - how to define the reduced communicator. see PetscSubcomm for more.
++  -pc_telescope_reduction_factor <r> - factor to reduce the communicator size by. e.g. with 64 MPI ranks and r=4, the new sub-communicator will have 64/4 = 16 ranks.
+.  -pc_telescope_ignore_dm  - flag to indicate whether an attached DM should be ignored.
+.  -pc_telescope_subcomm_type <interlaced,contiguous> - defines the selection of MPI ranks on the sub-communicator. see PetscSubcomm for more information.
+.  -pc_telescope_ignore_kspcomputeoperators - flag to indicate whether KSPSetComputeOperators should be used on the sub-KSP.
+-  -pc_telescope_use_coarse_dm - flag to indicate whether the coarse DM should be used to define the sub-communicator.
 
    Level: advanced
 
    Notes:
+   Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
+   creates a child sub-communicator (c') containing fewer MPI ranks than the original parent preconditioner (PC).
    The preconditioner is deemed telescopic as it only calls KSPSolve() on a single
    sub-communicator, in contrast with PCREDUNDANT which calls KSPSolve() on N sub-communicators.
-   This means there will be MPI processes which will be idle during the application of this preconditioner.
+   This means there will be MPI ranks which will be idle during the application of this preconditioner.
+   Additionally, in comparison with PCREDUNDANT, PCTELESCOPE can utilize an attached DM.
 
-   The default KSP is PREONLY. If a DM is attached to the PC, it is re-partitioned on the sub-communicator.
+   The default type of the sub KSP (the KSP defined on c') is PREONLY.
+
+   There are three setup mechanisms for PCTelescope. Features support by each type are described below.
+   In the following, we will refer to the operators B and B', these are the Bmat provided to the KSP on the
+   communicators c and c' respectively.
+
+   [1] Default setup
+   The sub-communicator c' is created via PetscSubcommCreate().
+   Explicitly defined nullspace and near nullspace vectors will be propogated from B to B'.
+   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to MatNullSpaceSetFunction()).
+   No support is provided for KSPSetComputeOperators().
+   Currently there is no support for the flag -pc_use_amat.
+
+   [2] DM aware setup
+   If a DM is attached to the PC, it is re-partitioned on the sub-communicator c'.
+   c' is created via PetscSubcommCreate().
    Both the Bmat operator and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned DM.
    Currently only support for re-partitioning a DMDA is provided.
-   Any nullspace attached to the original Bmat operator is extracted, re-partitioned and set on the repartitioned Bmat operator.
-   KSPSetComputeOperators() is not propagated to the sub KSP.
-   Currently there is no support for the flag -pc_use_amat
+   Any explicitly defined nullspace or near nullspace vectors attached to the original Bmat operator (B) are extracted, re-partitioned and set on the re-partitioned Bmat operator (B').
+   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to MatNullSpaceSetFunction()).
+   Support is provided for KSPSetComputeOperators(). The user provided function and context is propagated to the sub KSP.
+   This is fragile since the user must ensure that their user context is valid for use on c'.
+   Currently there is no support for the flag -pc_use_amat.
 
-   Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
-   creates a child sub-communicator (c') containing fewer MPI processes than the original parent preconditioner (PC).
+   [3] Coarse DM setup
+   If a DM (dmfine) is attached to the PC, dmfine is queried for a "coarse" DM (call this dmcoarse) via DMGetCoarseDM().
+   PCTELESCOPE will interpret the coarse DM as being defined on a sub-communicator of c.
+   The communicator associated with dmcoarse will define the c' to be used within PCTELESCOPE.
+   PCTELESCOPE will check that c' is in fact a sub-communicator of c. If it is not, an error will be reported.
+   The intention of this setup type is that PCTELESCOPE will use an existing (e.g. user defined) communicator hierarchy, say as would be
+   available with using multi-grid on unstructured meshes.
+   This setup will not use the command line options -pc_telescope_reduction_factor or -pc_telescope_subcomm_type.
+   Any explicitly defined nullspace or near nullspace vectors attached to the original Bmat operator (B) are extracted, scattered into the correct ordering consistent with dmcoarse and set on B'.
+   Currently there is no support define nullspaces via a user supplied method (e.g. as passed to MatNullSpaceSetFunction()).
+   There is no general method to permute field orderings, hence only KSPSetComputeOperators() is supported.
+   The user must use PetscObjectComposeFunction() with dmfine to define the method to scatter fields from dmfine to dmcoarse.
+   Propogation of the user context for KSPSetComputeOperators() on the sub KSP is attempted by querying the DM contexts associated with dmfine and dmcoarse. Alternatively, the user may use PetscObjectComposeFunction() with dmcoarse to define a method which will return the appropriate user context for KSPSetComputeOperators().
+   Currently there is no support for the flag -pc_use_amat.
+   This setup can be invoked by the option -pc_telescope_use_coarse_dm or by calling PCTelescopeSetUseCoarseDM(pc,PETSC_TRUE);
+   Further information about the user-provided methods required by this setup type are described here PCTelescopeSetUseCoarseDM().
 
-  Developer Notes:
+   Developer Notes:
    During PCSetup, the B operator is scattered onto c'.
    Within PCApply, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
    Then, KSPSolve() is executed on the c' communicator.
@@ -1313,12 +1349,13 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    In the case where B has a (near) nullspace attached, the (near) nullspace vectors are extracted from B and mapped into
    a new (near) nullspace, defined on the sub-communicator, which is attached to B' (the B operator which was scattered to c')
 
-   The telescoping preconditioner is aware of an attached DM. In the event that the DM is of type DMDA (2D or 3D - 
-   1D support for 1D DMDAs is not provided), a new DMDA is created on c' (e.g. it is re-partitioned), and this new DM 
-   is attached the sub KSPSolve(). The design of telescope is such that it should be possible to extend support 
+   The telescoping preconditioner can re-partition an attached DM if it is a DMDA (2D or 3D -
+   support for 1D DMDAs is not provided). If a DMDA is found, a topolgically equivalent DMDA is created on c'
+   and this new DM is attached the sub KSP. The design of telescope is such that it should be possible to extend support
    for re-partitioning other to DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
+   Alternatively, user-provided re-partitioned DMs can be used via -pc_telescope_use_coarse_dm.
 
-   By default, B' is defined by simply fusing rows from different MPI processes
+   With the default setup mode, B' is defined by fusing rows (in order) associated with MPI ranks common to c and c'.
 
    When a DMDA is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permutation of B
    into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatCreateSubMatrices(), (iii) fusing the
@@ -1326,16 +1363,17 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 
    Limitations/improvements include the following.
    VecPlaceArray() could be used within PCApply() to improve efficiency and reduce memory usage.
+   A unified mechanism to query for user contexts as required by KSPSetComputeOperators() and MatNullSpaceSetFunction().
 
    The symmetric permutation used when a DMDA is encountered is performed via explicitly assmbleming a permutation matrix P,
    and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). We opted to use P^T.A.P as it appears
    VecPermute() does not supported for the use case required here. By computing P, one can permute both the operator and RHS in a 
    consistent manner.
 
-   Mapping of vectors is performed in the following way.
-   Suppose the parent comm size was 4, and we set a reduction factor of 2; this would give a comm size on c' of 2.
+   Mapping of vectors (default setup mode) is performed in the following way.
+   Suppose the parent communicator size was 4, and we set a reduction factor of 2; this would give a comm size on c' of 2.
    Using the interlaced creation routine, the ranks in c with color = 0 will be rank 0 and 2.
-   We perform the scatter to the sub-comm in the following way.
+   We perform the scatter to the sub-communicator in the following way.
    [1] Given a vector x defined on comm c
 
    rank(c) : _________ 0 ______  ________ 1 _______  ________ 2 _____________ ___________ 3 __________
