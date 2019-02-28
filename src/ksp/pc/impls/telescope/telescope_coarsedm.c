@@ -196,7 +196,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
       if (isActiveRank(sred)) {
         /* sub ksp inherits dmksp_func and context provided by user */
         ierr = KSPSetComputeOperators(sred->ksp,dmfine_kspfunc,dmcoarse_kspctx);CHKERRQ(ierr);
-        //ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)ctx->dmrepart);CHKERRQ(ierr);
+        /*ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)ctx->dmrepart);CHKERRQ(ierr);*/
         ierr = KSPSetDMActive(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }

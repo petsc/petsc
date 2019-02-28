@@ -28,20 +28,18 @@ static const char citation[] =
 "}\n";
 
 /*
- PCTelescopeSetUp_default()
- PCTelescopeMatCreate_default()
+ default setup mode
 
- default
-
- // scatter in
+ [1a] scatter to (FORWARD)
  x(comm) -> xtmp(comm)
-
+ [1b] local copy (to) ranks with color = 0
  xred(subcomm) <- xtmp
- yred(subcomm)
+ 
+ [2] solve on sub KSP to obtain yred(subcomm)
 
+ [3a] local copy (from) ranks with color = 0
  yred(subcomm) --> xtmp
-
- // scatter out
+ [2b] scatter from (REVERSE)
  xtmp(comm) -> y(comm)
 */
 
