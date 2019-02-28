@@ -1374,25 +1374,40 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    Suppose the parent communicator size was 4, and we set a reduction factor of 2; this would give a comm size on c' of 2.
    Using the interlaced creation routine, the ranks in c with color = 0 will be rank 0 and 2.
    We perform the scatter to the sub-communicator in the following way.
-   [1] Given a vector x defined on comm c
+   [1] Given a vector x defined on communicator c
 
-   rank(c) : _________ 0 ______  ________ 1 _______  ________ 2 _____________ ___________ 3 __________
-         x : [0, 1, 2, 3, 4, 5] [6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17] [18, 19, 20, 21, 22, 23]
+.vb
+   rank(c)  local values of x
+   ------- ----------------------------------------
+        0   [  0.0,  1.0,  2.0,  3.0,  4.0,  5.0 ]
+        1   [  6.0,  7.0,  8.0,  9.0, 10.0, 11.0 ]
+        2   [ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0 ]
+        3   [ 18.0, 19.0, 20.0, 21.0, 22.0, 23.0 ]
+.ve
 
-   scatter to xtmp defined also on comm c so that we have the following values
+   scatter into xtmp defined also on comm c, so that we have the following values
 
-   rank(c) : ___________________ 0 ________________  _1_  ______________________ 2 _______________________  __3_
-      xtmp : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [  ] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] [  ]
+.vb
+   rank(c)  local values of xtmp
+   ------- ----------------------------------------------------------------------------
+        0   [  0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0 ]
+        1   [ ]
+        2   [ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0 ]
+        3   [ ]
+.ve
 
    The entries on rank 1 and 3 (ranks which do not have a color = 0 in c') have no values
 
 
-   [2] Copy the value from rank 0, 2 (indices with respect to comm c) into the vector xred which is defined on communicator c'.
+   [2] Copy the values from ranks 0, 2 (indices with respect to comm c) into the vector xred which is defined on communicator c'.
    Ranks 0 and 2 are the only ranks in the subcomm which have a color = 0.
 
-    rank(c') : ___________________ 0 _______________  ______________________ 1 _____________________
-      xred : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
-
+.vb
+   rank(c')  local values of xred
+   -------- ----------------------------------------------------------------------------
+         0   [  0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0 ]
+         1   [ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0 ]
+.ve
 
   Contributed by Dave May
 
