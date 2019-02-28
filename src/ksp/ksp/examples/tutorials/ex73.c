@@ -85,6 +85,7 @@ PetscErrorCode CommCoarsen(MPI_Comm comm,PetscInt number,PetscSubcomm *p)
 PetscErrorCode CommHierarchyCreate(MPI_Comm comm,PetscInt n,PetscInt number[],PetscSubcomm pscommlist[])
 {
   PetscInt       k;
+  PetscBool      view_hierarchy = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -102,7 +103,8 @@ PetscErrorCode CommHierarchyCreate(MPI_Comm comm,PetscInt n,PetscInt number[],Pe
     }
   }
 
-  {
+  ierr = PetscOptionsGetBool(NULL,NULL,"-view_hierarchy",&view_hierarchy,NULL);CHKERRQ(ierr);
+  if (view_hierarchy) {
     PetscMPIInt size;
 
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -359,14 +361,16 @@ PetscErrorCode DMCreateMatrix_ShellDA(DM dm,Mat *A)
   MPI_Comm       comm;
   PetscMPIInt    size;
   UserContext    *ctx = NULL;
+  PetscInt       M,N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA\n",(PetscInt)size);
   ierr = DMCreateMatrix(da,A);CHKERRQ(ierr);
+  ierr = MatGetSize(*A,&M,&N);CHKERRQ(ierr);
+  PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA (%D x %D)\n",(PetscInt)size,M,N);
 
   ierr = DMGetApplicationContext(dm,(void*)&ctx);CHKERRQ(ierr);
   if (ctx->bcType == NEUMANN) {
@@ -663,8 +667,6 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f,DM *dm_c,UserContext *ctx)
 
   ierr = DMSetCoarseDM(dm_shell,dmc_shell);CHKERRQ(ierr);
   ierr = DMShellDASetUp_TelescopeDMScatter(dm_shell,dmc_shell);CHKERRQ(ierr);
-
-  PetscPrintf(PETSC_COMM_SELF,"[rank %d] dmshell[fine]%p dmshell[coarse]%p\n",(int)rank,dm_shell,dmc_shell);
 
   *dm_f = dm_shell;
   *dm_c = dmc_shell;
@@ -1156,26 +1158,26 @@ PetscErrorCode ComputeMatrix_ShellDA(KSP ksp,Mat J,Mat jac,void *ctx)
   test:
     suffix: basic_dirichlet
     nsize: 4
-    args: -tid 0 -ksp_monitor -pc_type telescope -telescope_ksp_max_it 100000 -telescope_pc_type lu -telescope_ksp_type fgmres -telescope_ksp_monitor -ksp_type gcr
+    args: -tid 0 -ksp_monitor_short -pc_type telescope -telescope_ksp_max_it 100000 -telescope_pc_type lu -telescope_ksp_type fgmres -telescope_ksp_monitor_short -ksp_type gcr
 
   test:
     suffix: basic_neumann
     nsize: 4
-    args: -tid 0 -ksp_monitor -pc_type telescope -telescope_ksp_max_it 100000 -telescope_pc_type jacobi -telescope_ksp_type fgmres -telescope_ksp_monitor -ksp_type gcr -bc_type neumann
+    args: -tid 0 -ksp_monitor_short -pc_type telescope -telescope_ksp_max_it 100000 -telescope_pc_type jacobi -telescope_ksp_type fgmres -telescope_ksp_monitor_short -ksp_type gcr -bc_type neumann
 
   test:
     suffix: mg_2lv_2mg
     nsize: 6
-    args: -tid 2 -ksp_monitor -ksp_type gcr -pc_type mg -pc_mg_levels 3 -level_nrefs 3 -ndecomps 2 -mg_coarse_pc_type telescope -mg_coarse_pc_telescope_use_coarse_dm -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_levels 3 -level_comm_red_factor 6 -mg_coarse_telescope_mg_coarse_pc_type lu
+    args: -tid 2 -ksp_monitor_short -ksp_type gcr -pc_type mg -pc_mg_levels 3 -level_nrefs 3 -ndecomps 2 -mg_coarse_pc_type telescope -mg_coarse_pc_telescope_use_coarse_dm -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_levels 3 -level_comm_red_factor 6 -mg_coarse_telescope_mg_coarse_pc_type lu
 
   test:
     suffix: mg_3lv_2mg
     nsize: 4
-    args: -tid 2 -ksp_monitor -ksp_type gcr -pc_type mg -pc_mg_levels 3 -level_nrefs 3 -ndecomps 3 -mg_coarse_pc_type telescope -mg_coarse_pc_telescope_use_coarse_dm -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_levels 3 -mg_coarse_telescope_mg_coarse_pc_type telescope -mg_coarse_telescope_mg_coarse_pc_telescope_use_coarse_dm -mg_coarse_telescope_mg_coarse_telescope_pc_type lu -m 5
+    args: -tid 2 -ksp_monitor_short -ksp_type gcr -pc_type mg -pc_mg_levels 3 -level_nrefs 3 -ndecomps 3 -mg_coarse_pc_type telescope -mg_coarse_pc_telescope_use_coarse_dm -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_levels 3 -mg_coarse_telescope_mg_coarse_pc_type telescope -mg_coarse_telescope_mg_coarse_pc_telescope_use_coarse_dm -mg_coarse_telescope_mg_coarse_telescope_pc_type lu -m 5
 
   test:
     suffix: mg_3lv_2mg_customcommsize
     nsize: 12
-    args: -tid 2 -ksp_monitor -ksp_type gcr -pc_type mg -pc_mg_levels 3 -level_nrefs 3 -ndecomps 3 -mg_coarse_pc_type telescope -mg_coarse_pc_telescope_use_coarse_dm  -m 5 -level_comm_red_factor 2,6 -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_levels 3 -mg_coarse_telescope_mg_coarse_pc_type telescope -mg_coarse_telescope_mg_coarse_pc_telescope_use_coarse_dm -mg_coarse_telescope_mg_coarse_telescope_pc_type lu
+    args: -tid 2 -ksp_monitor_short -ksp_type gcr -pc_type mg -pc_mg_levels 3 -level_nrefs 3 -ndecomps 3 -mg_coarse_pc_type telescope -mg_coarse_pc_telescope_use_coarse_dm  -m 5 -level_comm_red_factor 2,6 -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_levels 3 -mg_coarse_telescope_mg_coarse_pc_type telescope -mg_coarse_telescope_mg_coarse_pc_telescope_use_coarse_dm -mg_coarse_telescope_mg_coarse_telescope_pc_type lu
 
  TEST*/

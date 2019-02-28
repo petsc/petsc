@@ -1,0 +1,9 @@
+[size 4] DMCreateMatrix_ShellDA (289 x 289)
+[size 4] DMCreateMatrix_ShellDA (289 x 289)
+  0 KSP Residual norm 0.0143385 
+User supplied state scatter (fine [size 4]-> coarse [size 1])
+[size 1] DMCreateMatrix_ShellDA (289 x 289)
+    Residual norms for telescope_ solve.
+    0 KSP Residual norm 0.0143385 
+    1 KSP Residual norm < 1.e-11
+  1 KSP Residual norm < 1.e-11
