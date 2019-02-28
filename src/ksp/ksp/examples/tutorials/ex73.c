@@ -766,7 +766,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
       }
       dalist[d*levelrefs + k] = dmref;
     }
-    ierr = MPI_Allreduce(MPI_IN_PLACE,&nx,1,MPIU_INT,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE,&nx,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
 
   /* create the hierarchy of DMShell's */
@@ -831,6 +831,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
   }
   if (_dl) {
     *_dl = dmlist;
+    ierr = PetscFree(dalist);CHKERRQ(ierr);
   } else {
     for (k=0; k<ndecomps*levelrefs; k++) {
       ierr = DMDestroy(&dmlist[k]);CHKERRQ(ierr);
