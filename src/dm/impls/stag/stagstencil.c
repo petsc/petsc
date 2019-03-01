@@ -248,7 +248,7 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagS
 }
 
 /*@C
-  DMStagVecSetValuesStencil - set Vec values using global grid indexing
+  DMStagVecSetValuesStencil - Set Vec values using global grid indexing
 
   Not Collective
 
@@ -263,7 +263,8 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagS
   Notes:
   The vector is expected to be a global vector compatible with the DM (usually obtained by DMGetGlobalVector() or DMCreateGlobalVector()).
 
-  This approach is not as efficient as setting values directly with DMStagVecGetArrayDOF(), which is recommended for matrix free operators. For assembling systems, where overhead may be less important than convenience, this routine could be helpful in assemblying a righthand side and a matrix (using DMStagMatSetValuesStencil()).
+  This approach is not as efficient as setting values directly with DMStagVecGetArrayDOF(), which is recommended for matrix-free operators. 
+  For assembling systems, where overhead may be less important than convenience, this routine could be helpful in assembling a righthand side and a matrix (using DMStagMatSetValuesStencil()).
 
   Level: advanced
 
