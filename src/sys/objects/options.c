@@ -1161,9 +1161,11 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const 
   PetscFunctionReturn(0);
 }
 
+/* Check whether any option begins with pre+name */
 PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions options,const char pre[], const char name[],const char *value[],PetscBool *set)
 {
   char           buf[MAXOPTNAME];
+  int            numCnt = 0, locs[16],loce[16];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1192,18 +1194,48 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
   }
 #endif
 
+  /* determine the location and number of all _%d_ in the key */
+  {
+    int i,j;
+    for (i=0; name[i]; i++) {
+      if (name[i] == '_') {
+        for (j=i+1; name[j]; j++) {
+          if (name[j] >= '0' && name[j] <= '9') continue;
+          if (name[j] == '_' && j > i+1) { /* found a number */
+            locs[numCnt]   = i+1;
+            loce[numCnt++] = j+1;
+          }
+          i = j-1;
+          break;
+        }
+      }
+    }
+  }
+
   { /* slow search */
-    int       i;
+    int       c, i;
     size_t    len;
     PetscBool match;
-    ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-    for (i=0; i<options->N; i++) {
-      ierr = PetscStrncmp(options->names[i],name,len,&match);CHKERRQ(ierr);
-      if (match) {
-        options->used[i]  = PETSC_TRUE;
-        if (value) *value = options->values[i];
-        if (set)   *set   = PETSC_TRUE;
-        PetscFunctionReturn(0);
+
+    for (c = -1; c < numCnt; ++c) {
+      char opt[MAXOPTNAME+1] = "", tmp[MAXOPTNAME];
+
+      if (c < 0) {
+        ierr = PetscStrcpy(opt,name);CHKERRQ(ierr);
+      } else {
+        ierr = PetscStrncpy(tmp,name,PetscMin((size_t)(locs[c]+1),sizeof(tmp)));CHKERRQ(ierr);
+        ierr = PetscStrlcat(opt,tmp,sizeof(opt));CHKERRQ(ierr);
+        ierr = PetscStrlcat(opt,name+loce[c],sizeof(opt));CHKERRQ(ierr);
+      }
+      ierr = PetscStrlen(opt,&len);CHKERRQ(ierr);
+      for (i=0; i<options->N; i++) {
+        ierr = PetscStrncmp(options->names[i],opt,len,&match);CHKERRQ(ierr);
+        if (match) {
+          options->used[i]  = PETSC_TRUE;
+          if (value) *value = options->values[i];
+          if (set)   *set   = PETSC_TRUE;
+          PetscFunctionReturn(0);
+        }
       }
     }
   }
