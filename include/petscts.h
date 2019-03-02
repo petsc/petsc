@@ -598,6 +598,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPSwarmSolution(TS,PetscInt,PetscReal,Vec,void*);
 
 PETSC_EXTERN PetscErrorCode TSSetEventHandler(TS,PetscInt,PetscInt[],PetscBool[],PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar[],void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void*);
+PETSC_EXTERN PetscErrorCode TSSetPostEventIntervalStep(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSSetEventTolerances(TS,PetscReal,PetscReal[]);
 /*J
    TSSSPType - string with the name of TSSSP scheme.
