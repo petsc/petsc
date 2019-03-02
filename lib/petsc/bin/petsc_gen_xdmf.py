@@ -233,7 +233,7 @@ class Xdmf:
 
   def write(self, hdfFilename, topologyPath, numCells, numCorners, cellDim, geometryPath, numVertices, spaceDim, time, vfields, cfields, numParticles):
     useTime = not (len(time) < 2 and time[0] == -1)
-    with file(self.filename, 'w') as fp:
+    with open(self.filename, 'w') as fp:
       self.writeHeader(fp, hdfFilename)
       # Field information
       self.writeCells(fp, topologyPath, numCells, numCorners)
