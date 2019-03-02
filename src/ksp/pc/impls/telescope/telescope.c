@@ -583,7 +583,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
   }
 
   /* setup */
-  if (sred->pctelescope_setup_type) {
+  if (!pc->setupcalled && sred->pctelescope_setup_type) {
     ierr = sred->pctelescope_setup_type(pc,sred);CHKERRQ(ierr);
   }
   /* update */
@@ -1044,7 +1044,7 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc,PetscBool *v)
 .  pc - the preconditioner context
 
  Output Parameter:
-.  v - Use PETSC_TRUE to ignore any DM
+.  v - Use PETSC_FALSE to ignore any coarse DM
 
  Notes:
  When you have specified to use a coarse DM, the communicator used to create the sub-KSP within PCTelescope
