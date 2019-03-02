@@ -11,6 +11,7 @@ and matrices.
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscBool ISRegisterAllCalled;
+PETSC_EXTERN PetscBool ISLocalToGlobalMappingRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
 
 struct _ISOps {
