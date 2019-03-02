@@ -25,8 +25,9 @@ PetscErrorCode  ISFinalizePackage(void)
   ierr = PetscFunctionListDestroy(&ISList);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&ISLocalToGlobalMappingList);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&PetscSectionSymList);CHKERRQ(ierr);
-  ISPackageInitialized = PETSC_FALSE;
-  ISRegisterAllCalled  = PETSC_FALSE;
+  ISPackageInitialized                    = PETSC_FALSE;
+  ISRegisterAllCalled                     = PETSC_FALSE;
+  ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
