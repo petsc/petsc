@@ -76,7 +76,7 @@ class Xdmf:
       <Time TimeType="List">
         <DataItem Format="XML" NumberType="Float" Dimensions="%d">
           ''' % (len(time)))
-    fp.write(' '.join(map(str, map(float, time))))
+    fp.write(' '.join([str(float(t)) for t in time]))
     fp.write('''
         </DataItem>
       </Time>
