@@ -440,6 +440,17 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_mat_explicit",           &ksp->viewerMatExp,   &ksp->formatMatExp,   &ksp->viewMatExp);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_final_residual",         &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp);CHKERRQ(ierr);
+
+    ierr = KSPGetDiagonalScale(ksp,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flag,&flag,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPSetDiagonalScale(ksp,flag);CHKERRQ(ierr);
+    }
+    ierr = KSPGetDiagonalScaleFix(ksp,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_diagonal_scale_fix","Fix diagonally scaled matrix after solve","KSPSetDiagonalScaleFix",flag,&flag,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPSetDiagonalScaleFix(ksp,flag);CHKERRQ(ierr);
+    }
     goto skipoptions;
   }
 
