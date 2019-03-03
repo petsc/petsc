@@ -932,7 +932,7 @@ PetscErrorCode MatSetUp(Mat A)
          format (which is in many cases the same as the default)
 .    PETSC_VIEWER_ASCII_INFO - prints basic information about the matrix
          size and structure (not the matrix entries)
-.    PETSC_VIEWER_ASCII_INFO_DETAIL - prints more detailed information about
+-    PETSC_VIEWER_ASCII_INFO_DETAIL - prints more detailed information about
          the matrix structure
 
    Options Database Keys:
@@ -951,17 +951,17 @@ PetscErrorCode MatSetUp(Mat A)
    Level: beginner
 
    Notes:
-    see the manual page for MatLoad() for the exact format of the binary file when the binary
+    See the manual page for MatLoad() for the exact format of the binary file when the binary
       viewer is used.
 
       See share/petsc/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
       viewer is used.
 
-      One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure.
-      And then use the following mouse functions:
-          left mouse: zoom in
-          middle mouse: zoom out
-          right mouse: continue with the simulation
+      One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure,
+      and then use the following mouse functions.
++ left mouse: zoom in
+. middle mouse: zoom out
+- right mouse: continue with the simulation
 
    Concepts: matrices^viewing
    Concepts: matrices^plotting
