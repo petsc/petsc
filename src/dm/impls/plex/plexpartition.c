@@ -587,6 +587,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   if (part->ops->setfromoptions) {
     ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, &part->formatGraph, &part->viewGraph);CHKERRQ(ierr);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -638,6 +639,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
   if (--((PetscObject)(*part))->refct > 0) {*part = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*part))->refct = 0;
 
+  ierr = PetscViewerDestroy(&(*part)->viewerGraph);CHKERRQ(ierr);
   if ((*part)->ops->destroy) {ierr = (*(*part)->ops->destroy)(*part);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -693,6 +695,9 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 + partSection     - The PetscSection giving the division of points by partition
 - partition       - The list of points by partition
 
+  Options Database:
+. -petscpartitioner_view_graph - View the graph we are partitioning
+
   Note: Instead of cells, points at a given height can be partitioned by calling PetscPartitionerSetPointHeight()
 
   Level: developer
@@ -730,6 +735,29 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
     IS       globalNumbering;
 
     ierr = DMPlexCreatePartitionerGraph(dm, 0, &numVertices, &start, &adjacency, &globalNumbering);CHKERRQ(ierr);
+    if (part->viewGraph) {
+      PetscViewer viewer = part->viewerGraph;
+      PetscBool   isascii;
+      PetscInt    v, i;
+      PetscMPIInt rank;
+
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) viewer), &rank);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+      if (isascii) {
+        ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]Nv: %D\n", rank, numVertices);CHKERRQ(ierr);
+        for (v = 0; v < numVertices; ++v) {
+          const PetscInt s = start[v];
+          const PetscInt e = start[v+1];
+
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]  ", rank);CHKERRQ(ierr);
+          for (i = s; i < e; ++i) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%D ", adjacency[i]);CHKERRQ(ierr);}
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D-%D)\n", s, e);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+      }
+    }
     if (!part->ops->partition) SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_WRONGSTATE, "PetscPartitioner has no type");
     ierr = (*part->ops->partition)(part, dm, size, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
     ierr = PetscFree(start);CHKERRQ(ierr);

@@ -64,6 +64,9 @@ struct _p_PetscPartitioner {
   PetscInt        height;           /* Height of points to partition into non-overlapping subsets */
   PetscInt        edgeCut;          /* The number of edge cut by the partition */
   PetscReal       balance;          /* The maximum partition size divided by the minimum size */
+  PetscViewer       viewerGraph;
+  PetscViewerFormat formatGraph;
+  PetscBool         viewGraph;
 };
 
 typedef struct {
