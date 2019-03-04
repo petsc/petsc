@@ -53,9 +53,8 @@ PetscErrorCode UserContextCreate(MPI_Comm comm,UserContext **ctx)
   PetscInt       bc;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  ierr = PetscMalloc1(1,&user);CHKERRQ(ierr);
-  ierr = PetscMemzero(user,sizeof(UserContext));CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = PetscCalloc1(1,&user);CHKERRQ(ierr);
   user->comm = comm;
   ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMqq");CHKERRQ(ierr);
   user->rho = 1.0;
@@ -74,7 +73,7 @@ PetscErrorCode CommCoarsen(MPI_Comm comm,PetscInt number,PetscSubcomm *p)
 {
   PetscSubcomm   psubcomm;
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
   ierr = PetscSubcommSetNumber(psubcomm,number);CHKERRQ(ierr);
   ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
@@ -88,7 +87,7 @@ PetscErrorCode CommHierarchyCreate(MPI_Comm comm,PetscInt n,PetscInt number[],Pe
   PetscBool      view_hierarchy = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (k=0; k<n; k++) {
     pscommlist[k] = NULL;
   }
@@ -108,14 +107,14 @@ PetscErrorCode CommHierarchyCreate(MPI_Comm comm,PetscInt n,PetscInt number[],Pe
     PetscMPIInt size;
 
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    PetscPrintf(comm,"level[%D] size %d\n",n,(int)size);
+    ierr = PetscPrintf(comm,"level[%D] size %d\n",n,(int)size);CHKERRQ(ierr);
     for (k=n-1; k>=0; k--) {
       if (pscommlist[k]) {
         MPI_Comm comm_k = PetscSubcommChild(pscommlist[k]);
 
         if (pscommlist[k]->color == 0) {
           ierr = MPI_Comm_size(comm_k,&size);CHKERRQ(ierr);
-          PetscPrintf(comm_k,"level[%D] size %d\n",k,(int)size);
+          ierr = PetscPrintf(comm_k,"level[%D] size %d\n",k,(int)size);CHKERRQ(ierr);
         }
       }
     }
@@ -124,15 +123,14 @@ PetscErrorCode CommHierarchyCreate(MPI_Comm comm,PetscInt n,PetscInt number[],Pe
 }
 
 /* taken from src/ksp/pc/impls/telescope/telescope_dmda.c */
-static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,
-                                               PetscInt Mp,PetscInt Np,
-                                               PetscInt start_i[],PetscInt start_j[],
-                                               PetscInt span_i[],PetscInt span_j[],
-                                               PetscMPIInt *_pi,PetscMPIInt *_pj,PetscMPIInt *rank_re)
+static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,PetscInt Mp,PetscInt Np,
+                                                        PetscInt start_i[],PetscInt start_j[],
+                                                        PetscInt span_i[],PetscInt span_j[],
+                                                        PetscMPIInt *_pi,PetscMPIInt *_pj,PetscMPIInt *rank_re)
 {
   PetscInt pi,pj,n;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *rank_re = -1;
   pi = pj = -1;
   if (_pi) {
@@ -163,12 +161,12 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,
 
 /* taken from src/ksp/pc/impls/telescope/telescope_dmda.c */
 static PetscErrorCode _DMDADetermineGlobalS0_2d(PetscMPIInt rank_re,PetscInt Mp_re,PetscInt Np_re,
-                                      PetscInt range_i_re[],PetscInt range_j_re[],PetscInt *s0)
+                                                PetscInt range_i_re[],PetscInt range_j_re[],PetscInt *s0)
 {
-  PetscInt i,j,start_IJ = 0;
+  PetscInt    i,j,start_IJ = 0;
   PetscMPIInt rank_ij;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *s0 = -1;
   for (j=0; j<Np_re; j++) {
     for (i=0; i<Mp_re; i++) {
@@ -186,17 +184,17 @@ static PetscErrorCode _DMDADetermineGlobalS0_2d(PetscMPIInt rank_re,PetscInt Mp_
 static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
 {
   PetscErrorCode ierr;
-  PetscInt        k,sum,Mp_re = 0,Np_re = 0;
-  PetscInt        nx,ny,sr,er,Mr,ndof;
-  PetscInt        i,j,location,startI[2],endI[2],lenI[2];
-  const PetscInt  *_range_i_re = NULL,*_range_j_re = NULL;
-  PetscInt        *range_i_re,*range_j_re;
-  PetscInt        *start_i_re,*start_j_re;
-  MPI_Comm        comm;
-  Vec             V;
-  Mat             Pscalar;
+  PetscInt       k,sum,Mp_re = 0,Np_re = 0;
+  PetscInt       nx,ny,sr,er,Mr,ndof;
+  PetscInt       i,j,location,startI[2],endI[2],lenI[2];
+  const PetscInt *_range_i_re = NULL,*_range_j_re = NULL;
+  PetscInt       *range_i_re,*range_j_re;
+  PetscInt       *start_i_re,*start_j_re;
+  MPI_Comm       comm;
+  Vec            V;
+  Mat            Pscalar;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscInfo(dmf,"setting up the permutation matrix (DMDA-2D)\n");CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dmf,&comm);CHKERRQ(ierr);
 
@@ -288,7 +286,6 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
 
   *mat = Pscalar;
 
-  /* tidy up */
   ierr = PetscFree(range_i_re);CHKERRQ(ierr);
   ierr = PetscFree(range_j_re);CHKERRQ(ierr);
   ierr = PetscFree(start_i_re);CHKERRQ(ierr);
@@ -307,7 +304,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_scatters(DM dmf,DM dmc)
   MPI_Comm       comm;
   VecType        vectype;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject)dmf,&comm);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmf,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
@@ -366,27 +363,27 @@ PetscErrorCode DMCreateMatrix_ShellDA(DM dm,Mat *A)
   PetscInt       M,N;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,A);CHKERRQ(ierr);
   ierr = MatGetSize(*A,&M,&N);CHKERRQ(ierr);
-  PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA (%D x %D)\n",(PetscInt)size,M,N);
+  ierr = PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA (%D x %D)\n",(PetscInt)size,M,N);CHKERRQ(ierr);
 
   ierr = DMGetApplicationContext(dm,(void*)&ctx);CHKERRQ(ierr);
   if (ctx->bcType == NEUMANN) {
     MatNullSpace nullspace = NULL;
-    PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA: using neumann bcs\n",(PetscInt)size);
+    ierr = PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA: using neumann bcs\n",(PetscInt)size);CHKERRQ(ierr);
 
     ierr = MatGetNullSpace(*A,&nullspace);CHKERRQ(ierr);
     if (!nullspace) {
-      PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA: operator does not have nullspace - attaching\n",(PetscInt)size);
+      ierr = PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA: operator does not have nullspace - attaching\n",(PetscInt)size);CHKERRQ(ierr);
       ierr = MatNullSpaceCreate(comm,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
       ierr = MatSetNullSpace(*A,nullspace);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
     } else {
-      PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA: operator already has a nullspace\n",(PetscInt)size);
+      ierr = PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA: operator already has a nullspace\n",(PetscInt)size);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -396,7 +393,7 @@ PetscErrorCode DMCreateGlobalVector_ShellDA(DM dm,Vec *x)
 {
   DM             da;
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,x);CHKERRQ(ierr);
   ierr = VecSetDM(*x,dm);CHKERRQ(ierr);
@@ -407,7 +404,7 @@ PetscErrorCode DMCreateLocalVector_ShellDA(DM dm,Vec *x)
 {
   DM             da;
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,x);CHKERRQ(ierr);
   ierr = VecSetDM(*x,dm);CHKERRQ(ierr);
@@ -417,13 +414,13 @@ PetscErrorCode DMCreateLocalVector_ShellDA(DM dm,Vec *x)
 PetscErrorCode DMCoarsen_ShellDA(DM dm,MPI_Comm comm,DM *dmc)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *dmc = NULL;
   ierr = DMGetCoarseDM(dm,dmc);CHKERRQ(ierr);
   if (!*dmc) {
     DM da,dac;
 
-    PetscPrintf(PETSC_COMM_SELF,"<<< DMCoarsen_ShellDA :: should never enter here >>>\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"<<< DMCoarsen_ShellDA :: should never enter here >>>\n");CHKERRQ(ierr);
     SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"The hierarchy should already be built");
     ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
     ierr = DMCoarsen(da,comm,&dac);CHKERRQ(ierr);
@@ -439,7 +436,7 @@ PetscErrorCode DMCreateInterpolation_ShellDA(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   DM             da1,da2;
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMShellGetContext(dm1,(void**)&da1);CHKERRQ(ierr);
   ierr = DMShellGetContext(dm2,(void**)&da2);CHKERRQ(ierr);
   ierr = DMCreateInterpolation(da1,da2,mat,vec);CHKERRQ(ierr);
@@ -452,12 +449,11 @@ PetscErrorCode DMShellDASetUp_TelescopeDMScatter(DM dmf_shell,DM dmc_shell)
   Mat            P = NULL;
   DM             dmf = NULL,dmc = NULL;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMShellGetContext(dmf_shell,(void**)&dmf);CHKERRQ(ierr);
   if (dmc_shell) {
     ierr = DMShellGetContext(dmc_shell,(void**)&dmc);CHKERRQ(ierr);
   }
-
   ierr = DMDACreatePermutation_2d(dmc,dmf,&P);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)dmf,"P",(PetscObject)P);CHKERRQ(ierr);
   ierr = PCTelescopeSetUp_dmda_scatters(dmf,dmc);CHKERRQ(ierr);
@@ -475,7 +471,7 @@ PetscErrorCode DMShellDAFieldScatter_Forward(DM dmf,Vec x,DM dmc,Vec xc)
   const PetscScalar *x_array;
   PetscInt          i,st,ed;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscObjectQuery((PetscObject)dmf,"P",(PetscObject*)&P);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dmf,"xp",(PetscObject*)&xp);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dmf,"scatter",(PetscObject*)&scatter);CHKERRQ(ierr);
@@ -516,7 +512,7 @@ PetscErrorCode DMShellDAFieldScatter_Reverse(DM dmf,Vec y,DM dmc,Vec yc)
   PetscScalar    *array;
   PetscInt       i,st,ed;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscObjectQuery((PetscObject)dmf,"P",(PetscObject*)&P);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dmf,"xp",(PetscObject*)&xp);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dmf,"scatter",(PetscObject*)&scatter);CHKERRQ(ierr);
@@ -550,7 +546,7 @@ PetscErrorCode DMFieldScatter_ShellDA(DM dmf_shell,Vec x,ScatterMode mode,DM dmc
   PetscErrorCode ierr;
   DM             dmf = NULL,dmc = NULL;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMShellGetContext(dmf_shell,(void**)&dmf);CHKERRQ(ierr);
   if (dmc_shell) {
     ierr = DMShellGetContext(dmc_shell,(void**)&dmc);CHKERRQ(ierr);
@@ -567,13 +563,13 @@ PetscErrorCode DMStateScatter_ShellDA(DM dmf_shell,ScatterMode mode,DM dmc_shell
 {
   PetscMPIInt    size_f = 0,size_c = 0;
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dmf_shell),&size_f);CHKERRQ(ierr);
   if (dmc_shell) {
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dmc_shell),&size_c);CHKERRQ(ierr);
   }
   if (mode == SCATTER_FORWARD) {
-    PetscPrintf(PetscObjectComm((PetscObject)dmf_shell),"User supplied state scatter (fine [size %d]-> coarse [size %d])\n",(int)size_f,(int)size_c);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dmf_shell),"User supplied state scatter (fine [size %d]-> coarse [size %d])\n",(int)size_f,(int)size_c);CHKERRQ(ierr);
   } else if (mode == SCATTER_REVERSE) {
   } else SETERRQ(PetscObjectComm((PetscObject)dmf_shell),PETSC_ERR_SUP,"Only mode = SCATTER_FORWARD, SCATTER_REVERSE supported");
   PetscFunctionReturn(0);
@@ -582,7 +578,7 @@ PetscErrorCode DMStateScatter_ShellDA(DM dmf_shell,ScatterMode mode,DM dmc_shell
 PetscErrorCode DMShellCreate_ShellDA(DM da,DM *dms)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (da) {
     ierr = DMShellCreate(PetscObjectComm((PetscObject)da),dms);CHKERRQ(ierr);
     ierr = DMShellSetContext(*dms,(void*)da);CHKERRQ(ierr);
@@ -602,7 +598,7 @@ PetscErrorCode DMDestroyShellDMDA(DM *_dm)
   PetscErrorCode ierr;
   DM             dm,da = NULL;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!_dm) PetscFunctionReturn(0);
   dm = *_dm;
   if (!dm) PetscFunctionReturn(0);
@@ -638,14 +634,13 @@ PetscErrorCode DMDestroyShellDMDA(DM *_dm)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode HierarchyCreate_Basic(DM *dm_f,DM *dm_c,UserContext *ctx)
 {
   PetscErrorCode ierr;
   DM             dm,dmc,dm_shell,dmc_shell;
   PetscMPIInt    rank;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,17,17,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
@@ -657,7 +652,7 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f,DM *dm_c,UserContext *ctx)
 
   dmc = NULL;
   dmc_shell = NULL;
-  if (rank == 0) {
+  if (!rank) {
     ierr = DMDACreate2d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,17,17,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&dmc);CHKERRQ(ierr);
     ierr = DMSetFromOptions(dmc);CHKERRQ(ierr);
     ierr = DMSetUp(dmc);CHKERRQ(ierr);
@@ -677,15 +672,15 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f,DM *dm_c,UserContext *ctx)
 
 PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM **_dl)
 {
-  PetscInt d,k,ndecomps,ncoarsen,found,nx;
-  PetscInt levelrefs,*number;
-  PetscSubcomm *pscommlist;
-  MPI_Comm *commlist;
-  DM *dalist,*dmlist;
-  PetscBool set;
+  PetscInt       d,k,ndecomps,ncoarsen,found,nx;
+  PetscInt       levelrefs,*number;
+  PetscSubcomm   *pscommlist;
+  MPI_Comm       *commlist;
+  DM             *dalist,*dmlist;
+  PetscBool      set;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ndecomps = 1;
   ierr = PetscOptionsGetInt(NULL,NULL,"-ndecomps",&ndecomps,NULL);CHKERRQ(ierr);
   ncoarsen = ndecomps - 1;
@@ -740,7 +735,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
   nx = 17;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&nx,NULL);CHKERRQ(ierr);
   for (d=0; d<ndecomps; d++) {
-    DM dmroot = NULL;
+    DM   dmroot = NULL;
     char name[PETSC_MAX_PATH_LEN];
 
     if (commlist[d] != MPI_COMM_NULL) {
@@ -850,7 +845,7 @@ PetscErrorCode test_hierarchy(void)
   MPI_Comm       *comms;
   DM             *dms;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = HierarchyCreate(&nd,&nref,&comms,&dms);CHKERRQ(ierr);
 
   /* destroy user context */
@@ -900,7 +895,7 @@ PetscErrorCode test_basic(void)
   PC             pc;
   UserContext    *user = NULL;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = UserContextCreate(PETSC_COMM_WORLD,&user);CHKERRQ(ierr);
   ierr = HierarchyCreate_Basic(&dmF,&dmC,user);CHKERRQ(ierr);
   ierr = DMShellGetContext(dmF,(void**)&dmdaF);CHKERRQ(ierr);
@@ -944,7 +939,7 @@ PetscErrorCode test_mg(void)
   MPI_Comm       *comms = NULL;
   UserContext    *user = NULL;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = HierarchyCreate(&nd,&nref,&comms,&dms);CHKERRQ(ierr);
   dmF = dms[nd*nref-1];
 
