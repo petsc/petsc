@@ -13,9 +13,10 @@
 
   Level: intermediate
 
-  Developer Notes: Since the dimension may not yet have been set the code cannot error check for non-positive Y and Z number of grid points
+  Developer Notes:
+  Since the dimension may not yet have been set the code cannot error check for non-positive Y and Z number of grid points
 
-.seealso: DMDAGetSize(), PetscSplitOwnership()
+.seealso: PetscSplitOwnership()
 @*/
 PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 {
@@ -50,7 +51,7 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 
   Level: intermediate
 
-.seealso: DMDASetSizes(), DMDAGetSize(), PetscSplitOwnership()
+.seealso: DMDASetSizes(), PetscSplitOwnership()
 @*/
 PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 {
