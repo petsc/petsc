@@ -342,7 +342,7 @@ static PetscErrorCode DMPlexCreateGmsh_ReadEntities_v4(PetscViewer viewer, Petsc
 {
   long           index, num, count[4];
   int            dim, eid, numTags, *ibuf, t;
-  GmshEntity     *entity;
+  GmshEntity     *entity = NULL;
   GmshWorkBuffer work;
   PetscErrorCode ierr;
 
@@ -454,7 +454,7 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElements_v4(PetscViewer viewer, Petsc
   long           c, block, numEntityBlocks, numTotalElements, elem, numElements;
   int            p, info[3], *ibuf = NULL;
   int            eid, dim, numTags, *tags, cellType, numNodes;
-  GmshEntity     *entity;
+  GmshEntity     *entity = NULL;
   GmshElement    *elements;
   GmshWorkBuffer work;
   PetscErrorCode ierr;
