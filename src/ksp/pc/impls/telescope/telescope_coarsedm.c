@@ -102,8 +102,6 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
 
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
-
-  ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   ierr = DMGetCoarseDM(dm,&dm_coarse);CHKERRQ(ierr);
   ctx->dm_fine   = dm;
   ctx->dm_coarse = dm_coarse;
