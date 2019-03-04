@@ -60,7 +60,7 @@ PetscErrorCode PCTelescopeSetUp_scatters_CoarseDM(PC pc,PC_Telescope sred,PC_Tel
   m = 0;
   xred = NULL;
   yred = NULL;
-  if (isActiveRank(sred)) {
+  if (PCTelescope_isActiveRank(sred)) {
     ierr = DMCreateGlobalVector(ctx->dm_coarse,&xred);CHKERRQ(ierr);
     ierr = VecDuplicate(xred,&yred);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(xred,&st,&ed);CHKERRQ(ierr);
@@ -81,7 +81,6 @@ PetscErrorCode PCTelescopeSetUp_scatters_CoarseDM(PC pc,PC_Telescope sred,PC_Tel
   sred->isin    = isin;
   sred->scatter = scatter;
   sred->xtmp    = xtmp;
-
   ctx->xp       = xp;
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -90,10 +89,10 @@ PetscErrorCode PCTelescopeSetUp_scatters_CoarseDM(PC pc,PC_Telescope sred,PC_Tel
 PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
 {
   PC_Telescope_CoarseDMCtx *ctx;
-  DM                 dm,dm_coarse = NULL;
-  MPI_Comm           comm;
-  PetscBool          has_perm,has_kspcomputeoperators,using_kspcomputeoperators;
-  PetscErrorCode     ierr;
+  DM                       dm,dm_coarse = NULL;
+  MPI_Comm                 comm;
+  PetscBool                has_perm,has_kspcomputeoperators,using_kspcomputeoperators;
+  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: setup (CoarseDM)\n");CHKERRQ(ierr);
@@ -110,7 +109,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
   ctx->dm_coarse = dm_coarse;
 
   /* attach coarse dm to ksp on sub communicator */
-  if (isActiveRank(sred)) {
+  if (PCTelescope_isActiveRank(sred)) {
     ierr = KSPSetDM(sred->ksp,ctx->dm_coarse);CHKERRQ(ierr);
     if (sred->ignore_kspcomputeoperators) {
       ierr = KSPSetDMActive(sred->ksp,PETSC_FALSE);CHKERRQ(ierr);
@@ -124,7 +123,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
 
   /* if no permutation is provided, we must rely on KSPSetComputeOperators */
   {
-    PetscErrorCode (*dmfine_kspfunc)(KSP,Mat,Mat,void*);
+    PetscErrorCode (*dmfine_kspfunc)(KSP,Mat,Mat,void*) = NULL;
     void           *dmfine_kspctx = NULL,*dmcoarse_kspctx = NULL;
     void           *dmfine_appctx = NULL,*dmcoarse_appctx = NULL;
     void           *dmfine_shellctx = NULL,*dmcoarse_shellctx = NULL;
@@ -139,7 +138,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
     if (dmfine_kspfunc && !sred->ignore_kspcomputeoperators) {
 
       ierr = PetscInfo(pc,"PCTelescope: KSPSetComputeOperators fetched from parent DM\n");CHKERRQ(ierr);
-      if (isActiveRank(sred)) {
+      if (PCTelescope_isActiveRank(sred)) {
         ierr = DMGetApplicationContext(ctx->dm_coarse,&dmcoarse_appctx);CHKERRQ(ierr);
         ierr = DMShellGetContext(ctx->dm_coarse,&dmcoarse_shellctx);CHKERRQ(ierr);
       }
@@ -151,7 +150,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
       } else {
 
         ierr = PetscInfo(pc,"PCTelescope: KSPSetComputeOperators detected non-NULL context from parent DM \n");CHKERRQ(ierr);
-        if (isActiveRank(sred)) {
+        if (PCTelescope_isActiveRank(sred)) {
 
           if (dmfine_kspctx == dmfine_appctx) {
             dmcoarse_kspctx = dmcoarse_appctx;
@@ -193,7 +192,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
     if (dmfine_kspfunc && !sred->ignore_kspcomputeoperators) {
       using_kspcomputeoperators = PETSC_TRUE;
 
-      if (isActiveRank(sred)) {
+      if (PCTelescope_isActiveRank(sred)) {
         /* sub ksp inherits dmksp_func and context provided by user */
         ierr = KSPSetComputeOperators(sred->ksp,dmfine_kspfunc,dmcoarse_kspctx);CHKERRQ(ierr);
         /*ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)ctx->dmrepart);CHKERRQ(ierr);*/
@@ -229,23 +228,21 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
   }
 
   /*ierr = PCTelescopeSetUp_permutation_CoarseDM(pc,sred,ctx);CHKERRQ(ierr);*/
-
   ierr = PCTelescopeSetUp_scatters_CoarseDM(pc,sred,ctx);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCApply_Telescope_CoarseDM(PC pc,Vec x,Vec y)
 {
-  PC_Telescope      sred = (PC_Telescope)pc->data;
-  PetscErrorCode    ierr;
-  Vec               xred,yred;
+  PC_Telescope             sred = (PC_Telescope)pc->data;
+  PetscErrorCode           ierr;
+  Vec                      xred,yred;
   PC_Telescope_CoarseDMCtx *ctx;
 
   PetscFunctionBegin;
   ctx = (PC_Telescope_CoarseDMCtx*)sred->dm_ctx;
-  xred    = sred->xred;
-  yred    = sred->yred;
+  xred = sred->xred;
+  yred = sred->yred;
 
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
@@ -256,23 +253,22 @@ PetscErrorCode PCApply_Telescope_CoarseDM(PC pc,Vec x,Vec y)
   ierr = ctx->fp_dm_field_scatter(ctx->dm_fine,x,SCATTER_FORWARD,ctx->dm_coarse,xred);CHKERRQ(ierr);
 
   /* solve */
-  if (isActiveRank(sred)) {
+  if (PCTelescope_isActiveRank(sred)) {
     ierr = KSPSolve(sred->ksp,xred,yred);CHKERRQ(ierr);
   }
 
   ierr = ctx->fp_dm_field_scatter(ctx->dm_fine,y,SCATTER_REVERSE,ctx->dm_coarse,yred);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCTelescopeSubNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,MatNullSpace nullspace,MatNullSpace *sub_nullspace)
 {
-  PetscErrorCode   ierr;
-  PetscBool        has_const;
-  PetscInt         k,n = 0;
-  const Vec        *vecs;
-  Vec              *sub_vecs = NULL;
-  MPI_Comm         subcomm;
+  PetscErrorCode           ierr;
+  PetscBool                has_const;
+  PetscInt                 k,n = 0;
+  const Vec                *vecs;
+  Vec                      *sub_vecs = NULL;
+  MPI_Comm                 subcomm;
   PC_Telescope_CoarseDMCtx *ctx;
 
   PetscFunctionBegin;
@@ -280,7 +276,7 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,Ma
   subcomm = sred->subcomm;
   ierr = MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs);CHKERRQ(ierr);
 
-  if (isActiveRank(sred)) {
+  if (PCTelescope_isActiveRank(sred)) {
     /* create new vectors */
     if (n) {
       ierr = VecDuplicateVecs(sred->xred,n,&sub_vecs);CHKERRQ(ierr);
@@ -292,25 +288,23 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,Ma
     ierr = ctx->fp_dm_field_scatter(ctx->dm_fine,vecs[k],SCATTER_FORWARD,ctx->dm_coarse,sub_vecs[k]);CHKERRQ(ierr);
   }
 
-  if (isActiveRank(sred)) {
+  if (PCTelescope_isActiveRank(sred)) {
     /* create new (near) nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace);CHKERRQ(ierr);
     ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,Mat sub_mat)
 {
-  PetscErrorCode   ierr;
-  Mat              B;
+  PetscErrorCode           ierr;
+  Mat                      B;
   PC_Telescope_CoarseDMCtx *ctx;
 
   PetscFunctionBegin;
   ctx = (PC_Telescope_CoarseDMCtx*)sred->dm_ctx;
   ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
-
   {
     MatNullSpace nullspace,sub_nullspace;
     ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
@@ -319,30 +313,27 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,Ma
       ierr = PCTelescopeSubNullSpaceCreate_CoarseDM(pc,sred,nullspace,&sub_nullspace);CHKERRQ(ierr);
 
       /* attach any user nullspace removal methods and contexts */
-      if (isActiveRank(sred)) {
+      if (PCTelescope_isActiveRank(sred)) {
         void *context = NULL;
         if (nullspace->remove && !nullspace->rmctx){
           ierr = MatNullSpaceSetFunction(sub_nullspace,nullspace->remove,context);CHKERRQ(ierr);
         } else if (nullspace->remove && nullspace->rmctx) {
-          char dmcoarse_method[PETSC_MAX_PATH_LEN];
+          char           dmcoarse_method[PETSC_MAX_PATH_LEN];
           PetscErrorCode (*fp_get_coarsedm_context)(DM,void**) = NULL;
 
           ierr = PetscSNPrintf(dmcoarse_method,sizeof(dmcoarse_method),"PCTelescopeGetCoarseDMNullSpaceUserContext");CHKERRQ(ierr);
           ierr = PetscObjectQueryFunction((PetscObject)ctx->dm_coarse,dmcoarse_method,&fp_get_coarsedm_context);CHKERRQ(ierr);
-
           if (!context) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Propagation of user null-space removal method with non-NULL context requires the coarse DM be composed with a function named \"%s\"",dmcoarse_method);
-
           ierr = MatNullSpaceSetFunction(sub_nullspace,nullspace->remove,context);CHKERRQ(ierr);
         }
       }
 
-      if (isActiveRank(sred)) {
+      if (PCTelescope_isActiveRank(sred)) {
         ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&sub_nullspace);CHKERRQ(ierr);
       }
     }
   }
-
   {
     MatNullSpace nearnullspace,sub_nearnullspace;
     ierr = MatGetNearNullSpace(B,&nearnullspace);CHKERRQ(ierr);
@@ -351,24 +342,22 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,Ma
       ierr = PCTelescopeSubNullSpaceCreate_CoarseDM(pc,sred,nearnullspace,&sub_nearnullspace);CHKERRQ(ierr);
 
       /* attach any user nullspace removal methods and contexts */
-      if (isActiveRank(sred)) {
+      if (PCTelescope_isActiveRank(sred)) {
         void *context = NULL;
         if (nearnullspace->remove && !nearnullspace->rmctx){
           ierr = MatNullSpaceSetFunction(sub_nearnullspace,nearnullspace->remove,context);CHKERRQ(ierr);
         } else if (nearnullspace->remove && nearnullspace->rmctx) {
-          char dmcoarse_method[PETSC_MAX_PATH_LEN];
+          char           dmcoarse_method[PETSC_MAX_PATH_LEN];
           PetscErrorCode (*fp_get_coarsedm_context)(DM,void**) = NULL;
 
           ierr = PetscSNPrintf(dmcoarse_method,sizeof(dmcoarse_method),"PCTelescopeGetCoarseDMNearNullSpaceUserContext");CHKERRQ(ierr);
           ierr = PetscObjectQueryFunction((PetscObject)ctx->dm_coarse,dmcoarse_method,&fp_get_coarsedm_context);CHKERRQ(ierr);
-
           if (!context) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Propagation of user near null-space removal method with non-NULL context requires the coarse DM be composed with a function named \"%s\"",dmcoarse_method);
-
           ierr = MatNullSpaceSetFunction(sub_nearnullspace,nearnullspace->remove,context);CHKERRQ(ierr);
         }
       }
 
-      if (isActiveRank(sred)) {
+      if (PCTelescope_isActiveRank(sred)) {
         ierr = MatSetNearNullSpace(sub_mat,sub_nearnullspace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&sub_nearnullspace);CHKERRQ(ierr);
       }
@@ -379,8 +368,8 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,Ma
 
 PetscErrorCode PCReset_Telescope_CoarseDM(PC pc)
 {
-  PetscErrorCode       ierr;
-  PC_Telescope         sred = (PC_Telescope)pc->data;
+  PetscErrorCode           ierr;
+  PC_Telescope             sred = (PC_Telescope)pc->data;
   PC_Telescope_CoarseDMCtx *ctx;
 
   PetscFunctionBegin;
@@ -398,14 +387,15 @@ PetscErrorCode PCReset_Telescope_CoarseDM(PC pc)
 
 PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
-  PC_Telescope      sred = (PC_Telescope)pc->data;
-  PetscErrorCode    ierr;
-  Vec               yred = NULL;
-  PetscBool         default_init_guess_value = PETSC_FALSE;
+  PC_Telescope             sred = (PC_Telescope)pc->data;
+  PetscErrorCode           ierr;
+  Vec                      yred = NULL;
+  PetscBool                default_init_guess_value = PETSC_FALSE;
   PC_Telescope_CoarseDMCtx *ctx;
 
+  PetscFunctionBegin;
   ctx = (PC_Telescope_CoarseDMCtx*)sred->dm_ctx;
-  yred    = sred->yred;
+  yred = sred->yred;
 
   if (its > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope_CoarseDM only supports max_it = 1");
   *reason = (PCRichardsonConvergedReason)0;
@@ -416,14 +406,14 @@ PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC pc,Vec x,Vec y,Vec w,Pets
     ierr = ctx->fp_dm_field_scatter(ctx->dm_fine,y,SCATTER_FORWARD,ctx->dm_coarse,yred);CHKERRQ(ierr);
   }
 
-  if (isActiveRank(sred)) {
+  if (PCTelescope_isActiveRank(sred)) {
     ierr = KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value);CHKERRQ(ierr);
     if (!zeroguess) ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   ierr = PCApply_Telescope_CoarseDM(pc,x,y);CHKERRQ(ierr);
 
-  if (isActiveRank(sred)) {
+  if (PCTelescope_isActiveRank(sred)) {
     ierr = KSPSetInitialGuessNonzero(sred->ksp,default_init_guess_value);CHKERRQ(ierr);
   }
 

@@ -25,9 +25,6 @@ struct _PC_Telescope {
   PetscErrorCode    (*pctelescope_reset_type)(PC);
 };
 
- PetscBool isActiveRank(PC_Telescope);
- DM private_PCTelescopeGetSubDM(PC_Telescope);
-
 /* DMDA */
 typedef struct {
   DM              dmrepart;
@@ -38,16 +35,25 @@ typedef struct {
   PetscInt        *start_i_re,*start_j_re,*start_k_re;
 } PC_Telescope_DMDACtx;
 
- PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,
-                                               PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,
-                                               PetscMPIInt*,PetscMPIInt*,PetscMPIInt*,PetscMPIInt*);
+PETSC_STATIC_INLINE PetscBool PetscSubcomm_isActiveRank(PetscSubcomm scomm)
+{
+  if (scomm->color == 0) return(PETSC_TRUE);
+  else return(PETSC_FALSE);
+}
 
- PetscErrorCode _DMDADetermineGlobalS0(PetscInt,PetscMPIInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+PETSC_STATIC_INLINE PetscBool PCTelescope_isActiveRank(PC_Telescope sred)
+{
+  if (sred->psubcomm) return(PetscSubcomm_isActiveRank(sred->psubcomm));
+  else {
+    if (sred->subcomm != MPI_COMM_NULL) return(PETSC_TRUE);
+    else return (PETSC_FALSE);
+  }
+}
 
- PetscErrorCode PCTelescopeSetUp_dmda(PC,PC_Telescope);
- PetscErrorCode PCTelescopeMatCreate_dmda(PC,PC_Telescope,MatReuse,Mat*);
- PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC,PC_Telescope,Mat);
- PetscErrorCode PCApply_Telescope_dmda(PC,Vec,Vec);
+PetscErrorCode PCTelescopeSetUp_dmda(PC,PC_Telescope);
+PetscErrorCode PCTelescopeMatCreate_dmda(PC,PC_Telescope,MatReuse,Mat*);
+PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC,PC_Telescope,Mat);
+PetscErrorCode PCApply_Telescope_dmda(PC,Vec,Vec);
 PetscErrorCode PCApplyRichardson_Telescope_dmda(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
 PetscErrorCode PCReset_Telescope_dmda(PC);
 PetscErrorCode PCTelescopeSetUp_CoarseDM(PC,PC_Telescope);
