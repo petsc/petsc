@@ -743,7 +743,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
       ierr = DMSetUp(dmroot);CHKERRQ(ierr);
       ierr = DMDASetUniformCoordinates(dmroot,0,1,0,1,0,0);CHKERRQ(ierr);
       ierr = DMDASetFieldName(dmroot,0,"Pressure");CHKERRQ(ierr);
-      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"root-decomp-%D",d);
+      ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"root-decomp-%D",d);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)dmroot,name);CHKERRQ(ierr);
       /*ierr = DMView(dmroot,PETSC_VIEWER_STDOUT_(commlist[d]));CHKERRQ(ierr);*/
     }
@@ -754,7 +754,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
 
       if (commlist[d] != MPI_COMM_NULL) {
         ierr = DMRefine(dalist[d*levelrefs + (k-1)],MPI_COMM_NULL,&dmref);CHKERRQ(ierr);
-        PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ref%D-decomp-%D",k,d);
+        ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ref%D-decomp-%D",k,d);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject)dmref,name);CHKERRQ(ierr);
         ierr = DMDAGetInfo(dmref,NULL,&nx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
         /*ierr = DMView(dmref,PETSC_VIEWER_STDOUT_(commlist[d]));CHKERRQ(ierr);*/
@@ -774,7 +774,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
       for (k=0; k<levelrefs; k++) {
         ierr = DMShellCreate_ShellDA(dalist[d*levelrefs + k],&dmlist[d*levelrefs + k]);CHKERRQ(ierr);
         ierr = DMSetApplicationContext(dmlist[d*levelrefs + k],(void*)ctx);CHKERRQ(ierr);
-        PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"level%D-decomp-%D",k,d);
+        ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"level%D-decomp-%D",k,d);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject)dmlist[d*levelrefs + k],name);CHKERRQ(ierr);
       }
     }
