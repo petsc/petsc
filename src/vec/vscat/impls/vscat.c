@@ -552,11 +552,15 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx,PetscErrorCode (*vecs
   if (ixblock) {
     /* special case block to block */
     if (iyblock) {
-      PetscInt       nx,ny,bsx,bsy;
+      PetscInt       nx,ny,bsx,bsy,min,max;
       const PetscInt *idx,*idy;
       ierr = ISGetBlockSize(iy,&bsy);CHKERRQ(ierr);
       ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);
-      if (bsx == bsy && VecScatterOptimizedBS(bsx)) {
+      min  = PetscMin(bsx,bsy);
+      max  = PetscMax(bsx,bsy);
+      ierr = MPIU_Allreduce(MPI_IN_PLACE,&min,1,MPIU_INT,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(MPI_IN_PLACE,&max,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+      if (min == max && VecScatterOptimizedBS(bsx)) {
         ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
         ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
         ierr = ISBlockGetLocalSize(iy,&ny);CHKERRQ(ierr);
