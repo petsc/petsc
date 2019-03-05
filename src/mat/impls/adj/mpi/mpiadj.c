@@ -12,7 +12,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
 {
   PetscInt           nlrows_is,icols_n,i,j,nroots,nleaves,owner,rlocalindex,*ncols_send,*ncols_recv;
   PetscInt           nlrows_mat,*adjncy_recv,Ncols_recv,Ncols_send,*xadj_recv,*values_recv;
-  PetscInt          *ncols_recv_offsets,loc,rnclos,*sadjncy,*sxadj,*svalues,isvalue;
+  PetscInt          *ncols_recv_offsets,loc,rnclos,*sadjncy,*sxadj,*svalues,isvalue,isvalue_tmp;
   const PetscInt    *irows_indices,*icols_indices,*xadj, *adjncy;
   Mat_MPIAdj        *a = (Mat_MPIAdj*)adj->data;
   PetscLayout        rmap;
@@ -74,9 +74,9 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
   }
   ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
   /*if we need to deal with edge weights ???*/
-  if (a->values){isvalue=1;} else {isvalue=0;}
+  if (a->values){isvalue_tmp=1;} else {isvalue_tmp=0;}
   /*involve a global communication */
-  /*ierr = MPIU_Allreduce(&isvalue,&isvalue,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);*/
+  ierr = MPIU_Allreduce(&isvalue_tmp,&isvalue,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   if (isvalue){ierr = PetscCalloc1(Ncols_recv,&values_recv);CHKERRQ(ierr);}
   nroots = Ncols_send;
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
