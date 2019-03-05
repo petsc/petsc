@@ -221,7 +221,7 @@ int main(int argc,char **argv)
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n lambda: d[Psi(tf)]/d[phi0]  d[Psi(tf)]/d[omega0]\n");CHKERRQ(ierr);
     ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n mu: d[Psi(tf)]/d[pm]  d[Psi(tf)]/d[pm]\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n mu: d[Psi(tf)]/d[pm]\n");CHKERRQ(ierr);
     ierr = VecView(mu[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
     ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
@@ -236,7 +236,7 @@ int main(int argc,char **argv)
   }
 
   if (sa == SA_TLM) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n trajectory sensitivity: d[Psi(tf)]/d[pm]  d[Psi(tf)]/d[pm]\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n trajectory sensitivity: d[phi(tf)]/d[pm]  d[omega(tf)]/d[pm]\n");CHKERRQ(ierr);
     ierr = MatView(sp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
     ierr = VecGetArray(q,&s_ptr);CHKERRQ(ierr);
