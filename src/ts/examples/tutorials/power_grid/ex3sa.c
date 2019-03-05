@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   Vec            lambda[1],q,mu[1];
   PetscInt       direction[2];
   PetscBool      terminate[2];
-  Vec            qgrad[1];      /* Forward sesivitiy */
+  Mat            qgrad;
   Mat            sp;            /* Forward sensitivity matrix */
   SAMethod       sa;
 
@@ -134,36 +134,29 @@ int main(int argc,char **argv)
 
   /*   Set RHS JacobianP */
   ierr = TSSetRHSJacobianP(ts,ctx.Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
+
+  ierr = TSCreateQuadratureTS(ts,PETSC_FALSE,&quadts);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(quadts,NULL,(TSRHSFunction)CostIntegrand,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(quadts,ctx.DRDU,ctx.DRDU,(TSRHSJacobian)DRDUJacobianTranspose,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(quadts,ctx.DRDP,DRDPJacobianTranspose,&ctx);CHKERRQ(ierr);
   if (sa == SA_ADJ) {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       Save trajectory of solution so that TSAdjointSolve() may be used
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-
     ierr = MatCreateVecs(ctx.Jac,&lambda[0],NULL);CHKERRQ(ierr);
     ierr = MatCreateVecs(ctx.Jacp,&mu[0],NULL);CHKERRQ(ierr);
     ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
-    ierr = TSCreateQuadratureTS(ts,PETSC_FALSE,&quadts);CHKERRQ(ierr);
-    ierr = TSSetRHSFunction(quadts,NULL,(TSRHSFunction)CostIntegrand,&ctx);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(quadts,ctx.DRDU,ctx.DRDU,(TSRHSJacobian)DRDUJacobianTranspose,&ctx);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobianP(quadts,ctx.DRDP,DRDPJacobianTranspose,&ctx);CHKERRQ(ierr);
   }
 
   if (sa == SA_TLM) {
     PetscScalar val[2];
     PetscInt    row[]={0,1},col[]={0};
 
-    ierr = VecCreate(PETSC_COMM_WORLD,&qgrad[0]);CHKERRQ(ierr);
-    ierr = VecSetSizes(qgrad[0],PETSC_DECIDE,1);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(qgrad[0]);CHKERRQ(ierr);
-
+    ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,&qgrad);CHKERRQ(ierr);
     ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,&sp);CHKERRQ(ierr);
     ierr = TSForwardSetSensitivities(ts,1,sp);CHKERRQ(ierr);
-    ierr = TSForwardSetIntegralGradients(ts,1,qgrad);CHKERRQ(ierr);
-    ierr = TSCreateQuadratureTS(ts,PETSC_TRUE,&quadts);CHKERRQ(ierr);
-    ierr = TSSetRHSFunction(quadts,NULL,(TSRHSFunction)CostIntegrand,&ctx);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(quadts,ctx.DRDU,ctx.DRDU,(TSRHSJacobian)DRDUJacobianTranspose,&ctx);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobianP(quadts,ctx.DRDP,DRDPJacobianTranspose,&ctx);CHKERRQ(ierr);
+    ierr = TSForwardSetSensitivities(quadts,1,qgrad);CHKERRQ(ierr);
     val[0] = 1./PetscSqrtScalar(1.-(ctx.Pm/ctx.Pmax)*(ctx.Pm/ctx.Pmax))/ctx.Pmax;
     val[1] = 0.0;
     ierr = MatSetValues(sp,2,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
@@ -234,7 +227,6 @@ int main(int argc,char **argv)
     ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
     ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
   }
-
   if (sa == SA_TLM) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n trajectory sensitivity: d[phi(tf)]/d[pm]  d[omega(tf)]/d[pm]\n");CHKERRQ(ierr);
     ierr = MatView(sp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -242,10 +234,10 @@ int main(int argc,char **argv)
     ierr = VecGetArray(q,&s_ptr);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%g\n",(double)(s_ptr[0]-ctx.Pm));CHKERRQ(ierr);
     ierr = VecRestoreArray(q,&s_ptr);CHKERRQ(ierr);
-    ierr = VecGetArray(qgrad[0],&s_ptr);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(qgrad,&s_ptr);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n gradient=%g\n",(double)s_ptr[0]);CHKERRQ(ierr);
-    ierr = VecRestoreArray(qgrad[0],&s_ptr);CHKERRQ(ierr);
-    ierr = VecDestroy(&qgrad[0]);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(qgrad,&s_ptr);CHKERRQ(ierr);
+    ierr = MatDestroy(&qgrad);CHKERRQ(ierr);
     ierr = MatDestroy(&sp);CHKERRQ(ierr);
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -253,6 +245,8 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&ctx.Jac);CHKERRQ(ierr);
   ierr = MatDestroy(&ctx.Jacp);CHKERRQ(ierr);
+  ierr = MatDestroy(&ctx.DRDU);CHKERRQ(ierr);
+  ierr = MatDestroy(&ctx.DRDP);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();

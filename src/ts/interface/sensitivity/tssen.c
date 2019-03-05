@@ -1107,12 +1107,14 @@ PetscErrorCode TSAdjointReset(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->vecs_integral_sensip) {
-    ierr = VecDestroy(&ts->vec_drdu_col);CHKERRQ(ierr);
-    ierr = VecDestroy(&ts->vec_drdp_col);CHKERRQ(ierr);
-  }
   if (ts->ops->adjointreset) {
     ierr = (*ts->ops->adjointreset)(ts);CHKERRQ(ierr);
+  }
+  if (ts->quadraturets) { /* if there is integral in the cost function */
+    ierr = VecDestroy(&ts->vec_drdu_col);CHKERRQ(ierr);
+    if (ts->vecs_sensip){
+      ierr = VecDestroy(&ts->vec_drdp_col);CHKERRQ(ierr);
+    }
   }
   if (ts->vec_dir) { /* second-order adjoint */
     ierr = TSForwardReset(ts);CHKERRQ(ierr);
@@ -1705,16 +1707,12 @@ PetscErrorCode TSForwardSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->forwardsetupcalled) PetscFunctionReturn(0);
-  if (ts->vec_costintegral && !ts->vecs_integral_sensip ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSForwardSetIntegralGradients() before TSSetCostIntegrand()");
-  if (ts->vecs_integral_sensip) {
-    ierr = VecDuplicate(ts->vec_sol,&ts->vec_drdu_col);CHKERRQ(ierr);
-    ierr = VecDuplicate(ts->vecs_integral_sensip[0],&ts->vec_drdp_col);CHKERRQ(ierr);
-  }
   if (!ts->Jacp && ts->Jacprhs) ts->Jacp = ts->Jacprhs;
 
   if (ts->ops->forwardsetup) {
     ierr = (*ts->ops->forwardsetup)(ts);CHKERRQ(ierr);
   }
+  ierr = VecDuplicate(ts->vec_sol,&ts->vec_sensip_col);CHKERRQ(ierr);
   ts->forwardsetupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1735,21 +1733,21 @@ PetscErrorCode TSForwardSetUp(TS ts)
 @*/
 PetscErrorCode TSForwardReset(TS ts)
 {
+  TS             quadts = ts->quadraturets;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->vecs_integral_sensip) {
-    ierr = VecDestroy(&ts->vec_drdu_col);CHKERRQ(ierr);
-    ierr = VecDestroy(&ts->vec_drdp_col);CHKERRQ(ierr);
-  }
   if (ts->ops->forwardreset) {
     ierr = (*ts->ops->forwardreset)(ts);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
-  ts->vecs_integral_sensip = NULL;
-  ts->forward_solve        = PETSC_FALSE;
-  ts->forwardsetupcalled   = PETSC_FALSE;
+  if (quadts) {
+    ierr = MatDestroy(&quadts->mat_sensip);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&ts->vec_sensip_col);CHKERRQ(ierr);
+  ts->forward_solve      = PETSC_FALSE;
+  ts->forwardsetupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1761,7 +1759,7 @@ PetscErrorCode TSForwardReset(TS ts)
 . numfwdint- number of integrals
 . vp = the vectors containing the gradients for each integral w.r.t. parameters
 
-  Level: intermediate
+  Level: deprecated
 
 .keywords: TS, forward sensitivity
 
@@ -1787,7 +1785,7 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts,PetscInt numfwdint,Vec *vp)
   Output Parameter:
 . vp = the vectors containing the gradients for each integral w.r.t. parameters
 
-  Level: intermediate
+  Level: deprecated
 
 .keywords: TS, forward sensitivity
 
@@ -2011,7 +2009,6 @@ PetscErrorCode TSCreateQuadratureTS(TS ts,PetscBool fwd,TS *quadts)
   } else {
     ierr = VecCreateSeq(PETSC_COMM_SELF,1,&(*quadts)->vec_sol);CHKERRQ(ierr);
   }
-  ierr = VecDuplicate((*quadts)->vec_sol,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegralfwd = fwd;
   PetscFunctionReturn(0);
 }

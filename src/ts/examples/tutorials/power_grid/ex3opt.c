@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   PetscBool          printtofile;
   PetscInt           direction[2];
   PetscBool          terminate[2];
-  Vec                qgrad[1];      /* Forward sesivitiy */
+  Mat                qgrad;         /* Forward sesivitiy */
   Mat                sp;            /* Forward sensitivity matrix */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -136,13 +136,11 @@ int main(int argc,char **argv)
     ierr = TSSetRHSJacobianP(ctx.quadts,ctx.DRDP,DRDPJacobianTranspose,&ctx);CHKERRQ(ierr);
   }
   if (ctx.sa == SA_TLM) {
-    ierr = VecCreate(PETSC_COMM_WORLD,&qgrad[0]);CHKERRQ(ierr);
-    ierr = VecSetSizes(qgrad[0],PETSC_DECIDE,1);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(qgrad[0]);CHKERRQ(ierr);
+    ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,&qgrad);CHKERRQ(ierr);
     ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,&sp);CHKERRQ(ierr);
     ierr = TSForwardSetSensitivities(ctx.ts,1,sp);CHKERRQ(ierr);
-    ierr = TSForwardSetIntegralGradients(ctx.ts,1,qgrad);CHKERRQ(ierr);
     ierr = TSCreateQuadratureTS(ctx.ts,PETSC_TRUE,&ctx.quadts);CHKERRQ(ierr);
+    ierr = TSForwardSetSensitivities(ctx.quadts,1,qgrad);CHKERRQ(ierr);
     ierr = TSSetRHSFunction(ctx.quadts,NULL,(TSRHSFunction)CostIntegrand,&ctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ctx.quadts,ctx.DRDU,ctx.DRDU,(TSRHSJacobian)DRDUJacobianTranspose,&ctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobianP(ctx.quadts,ctx.DRDP,DRDPJacobianTranspose,&ctx);CHKERRQ(ierr);
@@ -208,6 +206,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&ctx.Jac);CHKERRQ(ierr);
   ierr = MatDestroy(&ctx.Jacp);CHKERRQ(ierr);
+  ierr = MatDestroy(&ctx.DRDU);CHKERRQ(ierr);
   ierr = MatDestroy(&ctx.DRDP);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx.U);CHKERRQ(ierr);
   if (ctx.sa == SA_ADJ) {
@@ -215,7 +214,7 @@ int main(int argc,char **argv)
     ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
   }
   if (ctx.sa == SA_TLM) {
-    ierr = VecDestroy(&qgrad[0]);CHKERRQ(ierr);
+    ierr = MatDestroy(&qgrad);CHKERRQ(ierr);
     ierr = MatDestroy(&sp);CHKERRQ(ierr);
   }
   ierr = TSDestroy(&ctx.ts);CHKERRQ(ierr);
@@ -248,7 +247,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   PetscInt       steps;
   PetscScalar    *u;
   PetscScalar    *x_ptr,*y_ptr;
-  Vec            q,*qgrad;
+  Vec            q;
+  Mat            qgrad;
   PetscErrorCode ierr;
 
   ierr = VecGetArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
@@ -277,12 +277,14 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = VecSet(q,0.0);CHKERRQ(ierr);
 
   if (ctx->sa == SA_TLM) { /* reset the forward sensitivities */
+    TS             quadts;
     Mat            sp;
     PetscScalar    val[2];
     const PetscInt row[]={0,1},col[]={0};
 
-    ierr = TSForwardGetIntegralGradients(ctx->ts,NULL,&qgrad);CHKERRQ(ierr);
-    ierr = VecSet(qgrad[0],0.0);CHKERRQ(ierr);
+    ierr = TSGetQuadratureTS(ctx->ts,&quadts);CHKERRQ(ierr);
+    ierr = TSForwardGetSensitivities(quadts,NULL,&qgrad);CHKERRQ(ierr);
+    ierr = MatZeroEntries(qgrad);CHKERRQ(ierr);
     ierr = TSForwardGetSensitivities(ctx->ts,NULL,&sp);CHKERRQ(ierr);
     val[0] = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax;
     val[1] = 0.0;
@@ -319,9 +321,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   if (ctx->sa == SA_TLM) {
     ierr = VecGetArray(G,&x_ptr);CHKERRQ(ierr);
-    ierr = VecGetArray(qgrad[0],&y_ptr);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(qgrad,&y_ptr);CHKERRQ(ierr);
     x_ptr[0] = y_ptr[0]-1.;
-    ierr = VecRestoreArray(qgrad[0],&y_ptr);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(qgrad,&y_ptr);CHKERRQ(ierr);
     ierr = VecRestoreArray(G,&x_ptr);CHKERRQ(ierr);
   }
 

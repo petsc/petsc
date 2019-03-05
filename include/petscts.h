@@ -368,8 +368,8 @@ PETSC_EXTERN PetscErrorCode TSAdjointInitializeForward(TS,Mat);
 
 PETSC_EXTERN PetscErrorCode TSForwardSetSensitivities(TS,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode TSForwardGetSensitivities(TS,PetscInt*,Mat*);
-PETSC_EXTERN PetscErrorCode TSForwardSetIntegralGradients(TS,PetscInt,Vec *);
-PETSC_EXTERN PetscErrorCode TSForwardGetIntegralGradients(TS,PetscInt*,Vec **);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSCreateQuadratureTS and TSForwardSetSensitivities") PetscErrorCode TSForwardSetIntegralGradients(TS,PetscInt,Vec *);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSForwardGetSensitivities")                          PetscErrorCode TSForwardGetIntegralGradients(TS,PetscInt*,Vec **);
 PETSC_EXTERN PetscErrorCode TSForwardSetRHSJacobianP(TS,Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,void*),void*);
 PETSC_EXTERN PetscErrorCode TSForwardComputeRHSJacobianP(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSForwardSetUp(TS);
