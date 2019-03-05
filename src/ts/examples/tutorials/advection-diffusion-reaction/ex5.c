@@ -2,7 +2,8 @@
 static char help[] = "Demonstrates Pattern Formation with Reaction-Diffusion Equations.\n";
 
 /*F
-     Page 21, Pattern Formation with Reaction-Diffusion Equations
+     This example is taken from the book, Numerical Solution of Time-Dependent Advection-Diffusion-Reaction Equations by
+      W. Hundsdorf and J.G. Verwer,  Page 21, Pattern Formation with Reaction-Diffusion Equations
 \begin{eqnarray*}
         u_t = D_1 (u_{xx} + u_{yy})  - u*v^2 + \gamma(1 -u)           \\
         v_t = D_2 (v_{xx} + v_{yy})  + u*v^2 - (\gamma + \kappa)v
@@ -27,22 +28,23 @@ F*/
 /*
 
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
-   Include "petscts.h" so that we can use SNES solvers.  Note that this
+   Include "petscts.h" so that we can use SNES numerical (ODE) integrators.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+     petscsys.h       - base PETSc routines   petscvec.h  - vectors
+     petscmat.h - matrices                    petscis.h   - index sets  
+     petscksp.h - Krylov subspace methods     petscpc.h   - preconditioners
+     petscviewer.h - viewers                  petscsnes.h - nonlinear solvers
 */
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
+/*  Simple C struct that allows us to access the two velocity (x and y directions) values easily in the code */
 typedef struct {
   PetscScalar u,v;
 } Field;
 
+/*  Data structure to store the model parameters */
 typedef struct {
   PetscReal D1,D2,gamma,kappa;
 } AppCtx;
@@ -81,8 +83,7 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DMDA; then duplicate for remaining
-     vectors that are the same types
+     Create global vector from DMDA; this will be used to store the solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 
@@ -117,8 +118,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.  All PETSc objects should be destroyed when they
-     are no longer needed.
+     Free work space.  
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
@@ -129,17 +129,19 @@ int main(int argc,char **argv)
 }
 /* ------------------------------------------------------------------- */
 /*
-   RHSFunction - Evaluates nonlinear function, F(x).
+   RHSFunction - Evaluates nonlinear function, that defines the right 
+     hand side of the ODE
 
    Input Parameters:
 .  ts - the TS context
-.  X - input vector
+.  time - current time
+.  U - input vector
 .  ptr - optional user-defined context, as set by TSSetRHSFunction()
 
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
+PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec U,Vec F,void *ptr)
 {
   AppCtx         *appctx = (AppCtx*)ptr;
   DM             da;
@@ -152,34 +154,33 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  /* Get local (ghosted) work vector */
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
+  /* Get information about mesh needed for discretization */
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx = 2.50/(PetscReal)(Mx); sx = 1.0/(hx*hx);
   hy = 2.50/(PetscReal)(My); sy = 1.0/(hy*hy);
 
   /*
-     Scatter ghost points to local vector,using the 2-step process
-        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
+     Scatter ghost points to local vector, using the 2-step process
   */
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
 
   /*
-     Get pointers to vector data
+     Get pointers to actual vector data
   */
   ierr = DMDAVecGetArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries
+     Get local grid boundaries; this is the region that this process owns and must operate on
   */
   ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /*
-     Compute function over the locally owned part of the grid
+     Compute function over the locally owned part of the grid with standard finite differences
   */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
@@ -196,7 +197,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
 
   /*
-     Restore vectors
+     Restore access to vectors and return no longer needed work vector
   */
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
@@ -219,7 +220,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   hy = 2.5/(PetscReal)(My);
 
   /*
-     Get pointers to vector data
+     Get pointers to actual vector data
   */
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
@@ -243,12 +244,27 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   }
 
   /*
-     Restore vectors
+     Restore access to vector
   */
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+/*
+   RHSJacobian - Evaluates the Jacobian of the right hand side
+     function of the ODE.
+
+   Input Parameters:
+.  ts - the TS context
+.  time - current time
+.  U - input vector
+.  ptr - optional user-defined context, as set by TSSetRHSJacobian()
+
+   Output Parameter:
+.  A - the Jacobian
+.  BB - optional additional matrix where an approximation to the Jacobian
+        may be stored from which the preconditioner is constructed
+ */
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
@@ -272,9 +288,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
 
   /*
      Scatter ghost points to local vector,using the 2-step process
-        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
   */
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
