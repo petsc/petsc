@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* Print y. Since y is sequential, we put y in a parallel z to print its value on both ranks */
-  ierr = VecGetArrayRead(y,&yv);
+  ierr = VecGetArrayRead(y,&yv);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,yv,&z);CHKERRQ(ierr);
   ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(y,&yv);CHKERRQ(ierr);
