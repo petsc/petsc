@@ -97,7 +97,7 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f,MPI_Comm comm_c,Petsc
   */
   count = 0;
   if (comm_c != MPI_COMM_NULL) {
-    ierr = MPI_Group_translate_ranks(group_c,size_c,ranks_c,group_f,ranks_f);
+    (void)MPI_Group_translate_ranks(group_c,size_c,ranks_c,group_f,ranks_f);
     for (k=0; k<size_f; k++) {
       if (ranks_f[k] == MPI_UNDEFINED) {
         count++;
