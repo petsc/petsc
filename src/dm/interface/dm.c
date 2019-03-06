@@ -4255,7 +4255,6 @@ PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
 @*/
 PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 {
-  PetscDS        ds;
   PetscInt       Nf, f;
   PetscErrorCode ierr;
 
