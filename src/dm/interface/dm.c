@@ -4330,6 +4330,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject field)
   dm->fields[f].disc  = field;
   ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
+  ierr = DMClearDS(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4361,6 +4362,7 @@ PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
   dm->fields[Nf].disc  = field;
   ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
+  ierr = DMClearDS(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4562,7 +4564,7 @@ PetscErrorCode DMGetRegionDS(DM dm, DMLabel label, PetscDS *ds)
   for (s = 0; s < Nds; ++s) {
     if (dm->probs[s].label == label) {*ds = dm->probs[s].ds; PetscFunctionReturn(0);}
   }
-  SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Label not found in DM");
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -4679,6 +4681,12 @@ PetscErrorCode DMCreateDS(DM dm)
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   /* Create default DS */
   ierr = DMGetRegionDS(dm, NULL, &prob);CHKERRQ(ierr);
+  if (!prob) {
+    ierr = PetscDSCreate(comm, &prob);CHKERRQ(ierr);
+    ierr = DMSetRegionDS(dm, NULL, prob);CHKERRQ(ierr);
+    ierr = PetscDSDestroy(&prob);CHKERRQ(ierr);
+    ierr = DMGetRegionDS(dm, NULL, &prob);CHKERRQ(ierr);
+  }
   ierr = PetscDSSetCoordinateDimension(prob, dimEmbed);CHKERRQ(ierr);
   /* Optionally create hybrid DS */
   for (f = 0; f < dm->Nf; ++f) {
