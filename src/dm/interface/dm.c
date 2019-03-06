@@ -4487,11 +4487,19 @@ PetscErrorCode DMClearDS(DM dm)
 @*/
 PetscErrorCode DMGetDS(DM dm, PetscDS *prob)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(prob, 2);
-  if (dm->Nds) *prob = dm->probs[0].ds;
-  else         *prob = NULL;
+  if (dm->Nds <= 0) {
+    PetscDS ds;
+
+    ierr = PetscDSCreate(PetscObjectComm((PetscObject) dm), &ds);CHKERRQ(ierr);
+    ierr = DMSetRegionDS(dm, NULL, ds);CHKERRQ(ierr);
+    ierr = PetscDSDestroy(&ds);CHKERRQ(ierr);
+  }
+  *prob = dm->probs[0].ds;
   PetscFunctionReturn(0);
 }
 
@@ -4509,7 +4517,7 @@ PetscErrorCode DMGetDS(DM dm, PetscDS *prob)
 
   Level: developer
 
-.seealso: DMGetDS(), DMSetDS()
+.seealso: DMGetDS(), DMSetRegionDS()
 @*/
 PetscErrorCode DMGetCellDS(DM dm, PetscInt point, PetscDS *prob)
 {
