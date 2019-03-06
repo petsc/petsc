@@ -2085,29 +2085,59 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
       if (dofsArrayWithAll) {
         ierr = PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofsWithAll);CHKERRQ(ierr);
       }
-      /*
-       * 0--1
-       * |\-|
-       * |+\|
-       * 2--3
-       * [0, 2, 3, 0, 1, 3]
-       */
-      for (i = 0; i < numIntFacets; i++) {
-        for (c = 0; c < 2; c++) {
-          const PetscInt cell = facetCells[2*(intFacetOffset + i) + c];
-          for (d = 0; d < patch->totalDofsPerCell; d++) {
-            facetDofs[idx] = dofsArray[(offset + cell)*patch->totalDofsPerCell + d];
-            if (dofsArrayWithAll) {
-              facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell)*patch->totalDofsPerCell + d];
+      if (patch->precomputeElementTensors) {
+        PetscInt           nFacetDof = 2*patch->totalDofsPerCell;
+        const PetscScalar *elementTensors;
+
+        ierr = VecGetArrayRead(patch->intFacetMats, &elementTensors);CHKERRQ(ierr);
+
+        for (i = 0; i < numIntFacets; i++) {
+          const PetscInt     facet = intFacetsArray[i + intFacetOffset];
+          const PetscScalar *v     = elementTensors + patch->precomputedIntFacetTensorLocations[facet]*nFacetDof*nFacetDof;
+          idx = 0;
+          /*
+           * 0--1
+           * |\-|
+           * |+\|
+           * 2--3
+           * [0, 2, 3, 0, 1, 3]
+           */
+          for (c = 0; c < 2; c++) {
+            const PetscInt cell = facetCells[2*(intFacetOffset + i) + c];
+            for (d = 0; d < patch->totalDofsPerCell; d++) {
+              facetDofs[idx] = dofsArray[(offset + cell)*patch->totalDofsPerCell + d];
+              idx++;
             }
-            idx++;
+          }
+          ierr = MatSetValues(mat, nFacetDof, facetDofs, nFacetDof, facetDofs, v, ADD_VALUES);CHKERRQ(ierr);
+        }
+        ierr = VecRestoreArrayRead(patch->intFacetMats, &elementTensors);CHKERRQ(ierr);
+      } else {
+        /*
+         * 0--1
+         * |\-|
+         * |+\|
+         * 2--3
+         * [0, 2, 3, 0, 1, 3]
+         */
+        for (i = 0; i < numIntFacets; i++) {
+          for (c = 0; c < 2; c++) {
+            const PetscInt cell = facetCells[2*(intFacetOffset + i) + c];
+            for (d = 0; d < patch->totalDofsPerCell; d++) {
+              facetDofs[idx] = dofsArray[(offset + cell)*patch->totalDofsPerCell + d];
+              if (dofsArrayWithAll) {
+                facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell)*patch->totalDofsPerCell + d];
+              }
+              idx++;
+            }
           }
         }
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, numIntFacets, intFacetsArray + intFacetOffset, PETSC_USE_POINTER, &facetIS);CHKERRQ(ierr);
+        ierr = patch->usercomputeopintfacet(pc, point, x, mat, facetIS, 2*numIntFacets*patch->totalDofsPerCell, facetDofs, facetDofsWithAll, patch->usercomputeopintfacetctx);CHKERRQ(ierr);
+        ierr = ISDestroy(&facetIS);CHKERRQ(ierr);
       }
-      ierr = ISCreateGeneral(PETSC_COMM_SELF, numIntFacets, intFacetsArray + intFacetOffset, PETSC_USE_POINTER, &facetIS);CHKERRQ(ierr);
-      ierr = patch->usercomputeopintfacet(pc, point, x, mat, facetIS, 2*numIntFacets*patch->totalDofsPerCell, facetDofs, facetDofsWithAll, patch->usercomputeopintfacetctx);CHKERRQ(ierr);
-      ierr = ISDestroy(&facetIS);CHKERRQ(ierr);
       ierr = ISRestoreIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
       ierr = PetscFree(facetDofs);CHKERRQ(ierr);
       ierr = PetscFree(facetDofsWithAll);CHKERRQ(ierr);
     }
@@ -2173,7 +2203,6 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
 {
   PC_PATCH       *patch = (PC_PATCH *)pc->data;
   const PetscInt *cellsArray;
-  PetscScalar    *elementArray;
   PetscInt        ncell, offset;
   const PetscInt *dofMapArray;
   PetscInt        i, j;
@@ -2222,7 +2251,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
     ierr = PetscHSetIDestroy(&cells);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, allCells, PETSC_OWN_POINTER, &patch->allCells);CHKERRQ(ierr);
   }
-
+  ierr = ISGetSize(patch->allCells, &ncell);CHKERRQ(ierr);
   if (!patch->cellMats) {
     ierr = VecCreateSeq(PETSC_COMM_SELF, ncell*ndof*ndof, &patch->cellMats);CHKERRQ(ierr);
     ierr = VecSetBlockSize(patch->cellMats, ndof);CHKERRQ(ierr);
@@ -2240,13 +2269,75 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   PetscStackPush("PCPatch user callback");
   /* TODO: Fix for DMPlex compute op, this bypasses a lot of the machinery and just assembles every element tensor. */
   ierr = patch->usercomputeop(pc, -1, NULL, vecMat, cellIS, ndof*ncell, dofMapArray, NULL, patch->usercomputeopctx);CHKERRQ(ierr);
+  PetscStackPop;
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = MatDestroy(&vecMat);CHKERRQ(ierr);
-  /*ierr = VecView(patch->cellMats, 0);CHKERRQ(ierr);*/
   ierr = ISRestoreIndices(patch->allCells, &cellsArray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(dofMap, &dofMapArray);CHKERRQ(ierr);
   ierr = ISDestroy(&dofMap);CHKERRQ(ierr);
-  ierr = PetscFree(dofMap);CHKERRQ(ierr);
+
+  if (patch->usercomputeopintfacet) {
+    PetscInt nIntFacets;
+    IS       intFacetsIS;
+    const PetscInt *intFacetsArray = NULL;
+    if (!patch->allIntFacets) {
+      PetscHSetI      facets;
+      PetscHashIter   hi;
+      PetscInt pStart, pEnd, fStart, fEnd;
+      PetscInt *allIntFacets = NULL;
+      ierr = PetscHSetICreate(&facets);CHKERRQ(ierr);
+      ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
+      ierr = PetscSectionGetChart(patch->intFacetCounts, &pStart, &pEnd);CHKERRQ(ierr);
+      for (i = pStart; i < pEnd; i++) {
+        ierr = PetscSectionGetDof(patch->intFacetCounts, i, &nIntFacets);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(patch->intFacetCounts, i, &offset);CHKERRQ(ierr);
+        if (nIntFacets <= 0) continue;
+        for (j = 0; j < nIntFacets; j++) {
+          PetscHSetIAdd(facets, intFacetsArray[offset + j]);CHKERRQ(ierr);
+        }
+      }
+      ierr = ISRestoreIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
+      ierr = PetscHSetIGetSize(facets, &nIntFacets);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nIntFacets, &allIntFacets);CHKERRQ(ierr);
+      ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
+      ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+      ierr = PetscMalloc1(fEnd-fStart, &patch->precomputedIntFacetTensorLocations);CHKERRQ(ierr);
+      i = 0;
+      PetscHashIterBegin(facets, hi);
+      while (!PetscHashIterAtEnd(facets, hi)) {
+        PetscHashIterGetKey(facets, hi, allIntFacets[i]);
+        patch->precomputedIntFacetTensorLocations[allIntFacets[i]] = i;
+        PetscHashIterNext(facets, hi);
+        i++;
+      }
+      ierr = PetscHSetIDestroy(&facets);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF, nIntFacets, allIntFacets, PETSC_OWN_POINTER, &patch->allIntFacets);CHKERRQ(ierr);
+    }
+    ierr = ISGetSize(patch->allIntFacets, &nIntFacets);CHKERRQ(ierr);
+    if (!patch->intFacetMats) {
+      ierr = VecCreateSeq(PETSC_COMM_SELF, nIntFacets*ndof*ndof*4, &patch->intFacetMats);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(patch->intFacetMats, ndof*2);CHKERRQ(ierr);
+    }
+    ierr = VecSet(patch->intFacetMats, 0);CHKERRQ(ierr);
+
+    ierr = MatCreateShell(PETSC_COMM_SELF, nIntFacets*ndof*2, nIntFacets*ndof*2, nIntFacets*ndof*2, nIntFacets*ndof*2,
+                          (void*)patch->intFacetMats, &vecMat);
+    ierr = MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void(*)(void))&MatSetValues_PCPatch_Private);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF, 2*ndof*nIntFacets, 0, 1, &dofMap);CHKERRQ(ierr);
+    ierr = ISGetIndices(dofMap, &dofMapArray);CHKERRQ(ierr);
+    ierr = ISGetIndices(patch->allIntFacets, &intFacetsArray);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, nIntFacets, intFacetsArray, PETSC_USE_POINTER, &intFacetsIS);CHKERRQ(ierr);
+    PetscStackPush("PCPatch user callback (interior facets)");
+    /* TODO: Fix for DMPlex compute op, this bypasses a lot of the machinery and just assembles every element tensor. */
+    ierr = patch->usercomputeopintfacet(pc, -1, NULL, vecMat, intFacetsIS, 2*ndof*nIntFacets, dofMapArray, NULL, patch->usercomputeopintfacetctx);CHKERRQ(ierr);
+    PetscStackPop;
+    ierr = ISDestroy(&intFacetsIS);CHKERRQ(ierr);
+    ierr = MatDestroy(&vecMat);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(patch->allIntFacets, &intFacetsArray);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(dofMap, &dofMapArray);CHKERRQ(ierr);
+    ierr = ISDestroy(&dofMap);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -2810,6 +2901,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   ierr = ISDestroy(&patch->dofsWithAll);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->offsWithAll);CHKERRQ(ierr);
   ierr = VecDestroy(&patch->cellMats);CHKERRQ(ierr);
+  ierr = VecDestroy(&patch->intFacetMats);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->allCells);CHKERRQ(ierr);
 
   if (patch->dofSection) for (i = 0; i < patch->nsubspaces; i++) {ierr = PetscSectionDestroy(&patch->dofSection[i]);CHKERRQ(ierr);}
@@ -2868,9 +2960,9 @@ static PetscErrorCode PCReset_PATCH(PC pc)
     for (i = 0; i < patch->npatch; ++i) {ierr = ISDestroy(&patch->userIS[i]);CHKERRQ(ierr);}
     ierr = PetscFree(patch->userIS);CHKERRQ(ierr);
   }
-  if (patch->precomputedTensorLocations) {
-    ierr = PetscFree(patch->precomputedTensorLocations);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(patch->precomputedTensorLocations);CHKERRQ(ierr);
+  ierr = PetscFree(patch->precomputedIntFacetTensorLocations);CHKERRQ(ierr);
+  
   patch->bs          = 0;
   patch->cellNodeMap = NULL;
   patch->nsubspaces  = 0;
