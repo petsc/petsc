@@ -171,6 +171,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   ierr = DMSetType(*pdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(*pdm, dim);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, *pdm);CHKERRQ(ierr);
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   if (section) {
     ierr = PetscSectionPermute(section, perm, &sectionNew);CHKERRQ(ierr);
