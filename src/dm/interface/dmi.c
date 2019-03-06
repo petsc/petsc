@@ -190,8 +190,6 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
       ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
     }
     if (dm->probs) {
-      PetscInt Nf;
-
       ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
         PetscObject disc;
@@ -200,8 +198,6 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
         ierr = DMSetField(*subdm, f, NULL, disc);CHKERRQ(ierr);
       }
       ierr = DMCreateDS(*subdm);CHKERRQ(ierr);
-      ierr = PetscDSGetNumFields(dm->probs[0].ds, &Nf);CHKERRQ(ierr);
-      if (nF != Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", Nf, nF);
       if (numFields == 1 && is) {
         PetscObject disc, space, pmat;
 
