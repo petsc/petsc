@@ -1709,26 +1709,26 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal *v, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
+  DM             cdm;
   PetscFE        fe = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(detJ, 7);
-  if (dm->coordinateDM) {
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  if (cdm) {
     PetscClassId id;
     PetscInt     numFields;
     PetscDS      prob;
     PetscObject  disc;
 
-    ierr = DMGetNumFields(dm->coordinateDM, &numFields);CHKERRQ(ierr);
+    ierr = DMGetNumFields(cdm, &numFields);CHKERRQ(ierr);
     if (numFields) {
-      ierr = DMGetDS(dm->coordinateDM, &prob);CHKERRQ(ierr);
-      if (prob) {
-        ierr = PetscDSGetDiscretization(prob,0,&disc);CHKERRQ(ierr);
-        ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
-        if (id == PETSCFE_CLASSID) {
-          fe = (PetscFE) disc;
-        }
+      ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(prob,0,&disc);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        fe = (PetscFE) disc;
       }
     }
   }
