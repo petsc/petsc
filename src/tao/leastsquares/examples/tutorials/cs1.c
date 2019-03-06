@@ -13,11 +13,10 @@
 
 /*
 Description:   Compressive sensing test example 1.
-               0.5*||Ax-b||^2 + lambda*||D*x||_1                
+               0.5*||Ax-b||^2 + lambda*||D*x||_1
                Xiang Huang: Nov 19, 2018
 
 Reference:     None
-               
 */
 
 static char help[] = "Finds the least-squares solution to the under constraint linear model Ax = b, with L1-norm regularizer. \n\
@@ -92,7 +91,7 @@ int main(int argc,char **argv)
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBRGN);CHKERRQ(ierr);
 
-  /* User set application context: A, D matrice, and b vector. */   
+  /* User set application context: A, D matrice, and b vector. */
   ierr = InitializeUserData(&user);CHKERRQ(ierr);
 
   /* Set initial guess */
@@ -114,12 +113,12 @@ int main(int argc,char **argv)
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  /* XH: Debug: View the result, function and Jacobian.  */    
-  ierr = PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n");CHKERRQ(ierr);  
+  /* XH: Debug: View the result, function and Jacobian.  */
+  ierr = PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n");CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecView(f,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = MatView(J,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -150,7 +149,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  
+
   /* Even for linear least square, we do not direct use matrix operation f = A*x - b now, just for future modification and compatability for nonlinear least square */
   for (m=0;m<M;m++) {
     f[m] = -b[m];
@@ -170,7 +169,7 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscInt       m,n;
-  const PetscReal *x;  
+  const PetscReal *x;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -178,7 +177,7 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
   /* XH: TODO:  For linear least square, we can just set J=A fixed once, instead of keep update it! Maybe just create a function getFixedJacobian?
     For nonlinear least square, we require x to compute J, keep codes here for future nonlinear least square*/
   for (m=0; m<M; ++m) {
-    for (n=0; n<N; ++n) {  
+    for (n=0; n<N; ++n) {
       user->J[m][n] = user->A[m][n];
     }
   }
@@ -194,15 +193,15 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 
 /* ------------------------------------------------------------ */
 /* Currently fixed matrix, in future may be dynamic for D(x)? */
-PetscErrorCode FormDictionaryMatrix(Mat D,AppCtx *user) 
-{  
+PetscErrorCode FormDictionaryMatrix(Mat D,AppCtx *user)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSetValues(D,K,user->idk,N,user->idn,(PetscReal *)user->D,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   PetscLogFlops(0); /* 0 for fixed dictionary matrix, >0 for varying dictionary matrix */
   PetscFunctionReturn(0);
 }
@@ -228,17 +227,17 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   b[m++] = 0.28;
   b[m++] = 0.55;
   b[m++] = 0.96;
-  
+
   /* matlab generated random matrix, uniformly distributed in [0,1] with 2 digits accuracy. rng(0); A = rand(M, N); A = round(A*100)/100;
   A = [0.81  0.91  0.28  0.96  0.96
        0.91  0.63  0.55  0.16  0.49
-       0.13  0.10  0.96  0.97  0.80]       
+       0.13  0.10  0.96  0.97  0.80]
   */
-  m=0; n=0; user->A[m][n++] = 0.81; user->A[m][n++] = 0.91; user->A[m][n++] = 0.28; user->A[m][n++] = 0.96; user->A[m][n++] = 0.96; 
+  m=0; n=0; user->A[m][n++] = 0.81; user->A[m][n++] = 0.91; user->A[m][n++] = 0.28; user->A[m][n++] = 0.96; user->A[m][n++] = 0.96;
   ++m; n=0; user->A[m][n++] = 0.91; user->A[m][n++] = 0.63; user->A[m][n++] = 0.55; user->A[m][n++] = 0.16; user->A[m][n++] = 0.49;
   ++m; n=0; user->A[m][n++] = 0.13; user->A[m][n++] = 0.10; user->A[m][n++] = 0.96; user->A[m][n++] = 0.97; user->A[m][n++] = 0.80;
-  
-  /* initialize to 0 */  
+
+  /* initialize to 0 */
   for (k=0; k<K; k++) {
     for (n=0; n<N; n++) {
       user->D[k][n] = 0.0;
@@ -248,10 +247,10 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   /* for (k=0; k<K; k++) user->D[k][k] = 1.0; */
   /* Choice II: set D to Backward difference matrix of size (N-1)*N, with zero extended boundary assumption */
   for (k=0;k<K;k++) {
-      user->D[k][k]   = -1.0; 
-      user->D[k][k+1] = 1.0; 
+      user->D[k][k]   = -1.0;
+      user->D[k][k+1] = 1.0;
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -263,7 +262,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
    test:
       localrunfiles: cs1Data_A_b_xGT
       args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-6
-      
+
    test:
       suffix: 2
       localrunfiles: cs1Data_A_b_xGT

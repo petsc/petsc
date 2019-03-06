@@ -1,5 +1,5 @@
-/* XH: 
-    Todo: add cs1f.F90 and adjust makefile. 
+/* XH:
+    Todo: add cs1f.F90 and adjust makefile.
     Todo: maybe provide code template to generate 1D/2D/3D gradient, DCT tranform matrix for D etc.
 */
 /*
@@ -16,9 +16,8 @@
 
 /*
 Description:   BRGN tomography reconstruction example .
-               0.5*||Ax-b||^2 + lambda*g(x)               
+               0.5*||Ax-b||^2 + lambda*g(x)
 Reference:     None
-               
 */
 
 static char help[] = "Finds the least-squares solution to the under constraint linear model Ax = b, with regularizer. \n\
@@ -41,9 +40,9 @@ T*/
 
 /* User-defined application context */
 typedef struct {
-  /* Working space. linear least square:  res(x) = A*x - b */  
+  /* Working space. linear least square:  res(x) = A*x - b */
   PetscInt  M,N,K;            /* Problem dimension: A is M*N Matrix, D is K*N Matrix */
-  Mat       A,D;              /* Coefficients, Dictionary Transform of size M*N and K*N respectively. For linear least square, Jacobian Matrix J = A. For nonlinear least square, it is different from A */  
+  Mat       A,D;              /* Coefficients, Dictionary Transform of size M*N and K*N respectively. For linear least square, Jacobian Matrix J = A. For nonlinear least square, it is different from A */
   Vec       b,xGT,xlb,xub;    /* observation b, ground truth xGT, the lower bound and upper bound of x*/
 } AppCtx;
 
@@ -60,14 +59,14 @@ PetscErrorCode EvaluateRegularizerHessianProd(Mat,Vec,Vec);
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;               /* used to check for functions returning nonzeros */
-  Vec            x,res;              /* solution, function res(x) = A*x-b */  
+  Vec            x,res;              /* solution, function res(x) = A*x-b */
   Mat            Hreg;               /* regularizer Hessian matrix for user specified regularizer*/
-  Tao            tao;                /* Tao solver context */    
+  Tao            tao;                /* Tao solver context */
   PetscReal      hist[100],resid[100],v1,v2;
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
   PetscViewer    fd;   /* used to save result to file */
-  char           resultFile[] = "tomographyResult_x";  /* Debug: change from "tomographyResult_x" to "cs1Result_x" */  
+  char           resultFile[] = "tomographyResult_x";  /* Debug: change from "tomographyResult_x" to "cs1Result_x" */
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
 
@@ -75,7 +74,7 @@ int main(int argc,char **argv)
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBRGN);CHKERRQ(ierr);
 
-  /* User set application context: A, D matrice, and b vector. */   
+  /* User set application context: A, D matrice, and b vector. */
   ierr = InitializeUserData(&user);CHKERRQ(ierr);
 
   /* Allocate solution vector x,  and function vectors Ax-b, */
@@ -84,12 +83,12 @@ int main(int argc,char **argv)
 
   /* Set initial guess */
   ierr = FormStartingPoint(x,&user);CHKERRQ(ierr);
-  
+
   /* Bind x to tao->solution. */
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
   /* Sets the upper and lower bounds of x */
   ierr = TaoSetVariableBounds(tao,user.xlb,user.xub);CHKERRQ(ierr);
-  
+
   /* Bind user.D to tao->data->D */
   ierr = TaoBRGNSetDictionaryMatrix(tao,user.D);CHKERRQ(ierr);
 
@@ -98,21 +97,21 @@ int main(int argc,char **argv)
   /* Jacobian matrix fixed as user.A for Linear least sqaure problem. */
   ierr = TaoSetJacobianResidualRoutine(tao,user.A,user.A,EvaluateJacobian,(void*)&user);CHKERRQ(ierr);
 
-  /* User set the regularizer objective, gradient, and hessian. Set it the same as using l2prox choice, for testing purpose.  */  
+  /* User set the regularizer objective, gradient, and hessian. Set it the same as using l2prox choice, for testing purpose.  */
   ierr = TaoBRGNSetRegularizerObjectiveAndGradientRoutine(tao,EvaluateRegularizerObjectiveAndGradient,(void*)&user);CHKERRQ(ierr);
   /* User defined regularizer Hessian setup, here is identiy shell matrix */
   ierr = MatCreate(PETSC_COMM_SELF,&Hreg);CHKERRQ(ierr);
   ierr = MatSetSizes(Hreg,PETSC_DECIDE,PETSC_DECIDE,user.N,user.N);CHKERRQ(ierr);
   ierr = MatSetType(Hreg,MATSHELL);CHKERRQ(ierr);
   ierr = MatSetUp(Hreg);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(Hreg,MATOP_MULT,(void (*)(void))EvaluateRegularizerHessianProd);CHKERRQ(ierr);    
-  ierr = TaoBRGNSetRegularizerHessianRoutine(tao,Hreg,EvaluateRegularizerHessian,(void*)&user);CHKERRQ(ierr);  
+  ierr = MatShellSetOperation(Hreg,MATOP_MULT,(void (*)(void))EvaluateRegularizerHessianProd);CHKERRQ(ierr);
+  ierr = TaoBRGNSetRegularizerHessianRoutine(tao,Hreg,EvaluateRegularizerHessian,(void*)&user);CHKERRQ(ierr);
 
   /* Check for any TAO command line arguments */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
@@ -132,15 +131,15 @@ int main(int argc,char **argv)
 
    /* Free PETSc data structures */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&res);CHKERRQ(ierr);  
+  ierr = VecDestroy(&res);CHKERRQ(ierr);
   ierr = MatDestroy(&Hreg);CHKERRQ(ierr);
-  /* Free user data structures */  
+  /* Free user data structures */
   ierr = MatDestroy(&user.A);CHKERRQ(ierr);
   ierr = MatDestroy(&user.D);CHKERRQ(ierr);
   ierr = VecDestroy(&user.b);CHKERRQ(ierr);
   ierr = VecDestroy(&user.xGT);CHKERRQ(ierr);
   ierr = VecDestroy(&user.xlb);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.xub);CHKERRQ(ierr);  
+  ierr = VecDestroy(&user.xub);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -153,7 +152,7 @@ PetscErrorCode EvaluateResidual(Tao tao,Vec X,Vec F,void *ptr)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Compute Ax - b */  
+  /* Compute Ax - b */
   ierr = MatMult(user->A,X,F);CHKERRQ(ierr);
   ierr = VecAXPY(F,-1,user->b);CHKERRQ(ierr);
   PetscLogFlops(user->M*user->N*2);
@@ -164,7 +163,7 @@ PetscErrorCode EvaluateResidual(Tao tao,Vec X,Vec F,void *ptr)
 PetscErrorCode EvaluateJacobian(Tao tao,Vec X,Mat J,Mat Jpre,void *ptr)
 {
   /* Jacobian is not changing here, so use a empty dummy function here.  J[m][n] = df[m]/dx[n] = A[m][n] for linear least square */
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
@@ -173,12 +172,12 @@ PetscErrorCode EvaluateRegularizerObjectiveAndGradient(Tao tao,Vec X,PetscReal *
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   /* compute regularizer objective = 0.5*x'*x */
-  ierr = VecDot(X,X,f_reg);CHKERRQ(ierr);    
+  ierr = VecDot(X,X,f_reg);CHKERRQ(ierr);
   *f_reg *= 0.5;
-  /* compute regularizer gradient = x */  
-  ierr = VecCopy(X,G_reg);CHKERRQ(ierr);  
+  /* compute regularizer gradient = x */
+  ierr = VecCopy(X,G_reg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -186,20 +185,20 @@ PetscErrorCode EvaluateRegularizerHessianProd(Mat Hreg,Vec in,Vec out)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecCopy(in,out);CHKERRQ(ierr);  
+  ierr = VecCopy(in,out);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------ */
 PetscErrorCode EvaluateRegularizerHessian(Tao tao,Vec X,Mat Hreg,void *ptr)
-{  
+{
   /* Hessian for regularizer objective = 0.5*x'*x is identity matrix, and is not changing*/
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------ */
-PetscErrorCode FormStartingPoint(Vec X,AppCtx *user) 
+PetscErrorCode FormStartingPoint(Vec X,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -209,9 +208,9 @@ PetscErrorCode FormStartingPoint(Vec X,AppCtx *user)
 
 /* ---------------------------------------------------------------------- */
 PetscErrorCode InitializeUserData(AppCtx *user)
-{  
-  PetscInt       k,n; /* indices for row and columns of D. */  
-  char           dataFile[] = "tomographyData_A_b_xGT";   /* Matrix A and vectors b, xGT(ground truth) binary files generated by Matlab. Debug: change from "tomographyData_A_b_xGT" to "cs1Data_A_b_xGT". */  
+{
+  PetscInt       k,n; /* indices for row and columns of D. */
+  char           dataFile[] = "tomographyData_A_b_xGT";   /* Matrix A and vectors b, xGT(ground truth) binary files generated by Matlab. Debug: change from "tomographyData_A_b_xGT" to "cs1Data_A_b_xGT". */
   PetscInt       dictChoice = 1; /* choose from 0:identity, 1:gradient1D, 2:gradient2D, 3:DCT etc */
   PetscViewer    fd;   /* used to load data from file */
   PetscErrorCode ierr;
@@ -219,9 +218,9 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 
   PetscFunctionBegin;
 
-  /* 
-  Matrix Vector read and write refer to: 
-  https://www.mcs.anl.gov/petsc/petsc-current/src/mat/examples/tutorials/ex10.c 
+  /*
+  Matrix Vector read and write refer to:
+  https://www.mcs.anl.gov/petsc/petsc-current/src/mat/examples/tutorials/ex10.c
   https://www.mcs.anl.gov/petsc/petsc-current/src/mat/examples/tutorials/ex12.c
  */
   /* Load the A matrix, b vector, and xGT vector from a binary file. */
@@ -252,7 +251,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   /* Speficy D */
   /* (1) Specify D Size */
   switch (dictChoice) {
-    case 0: /* 0:identity */ 
+    case 0: /* 0:identity */
       user->K = user->N;
       break;
     case 1: /* 1:gradient1D */
@@ -267,25 +266,25 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 
   /* (2) Specify D Content */
   switch (dictChoice) {
-    case 0: /* 0:identity */ 
+    case 0: /* 0:identity */
       for (k=0; k<user->K; k++) {
-        v = 1.0;    
+        v = 1.0;
         ierr = MatSetValues(user->D,1,&k,1,&k,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       break;
     case 1: /* 1:gradient1D.  [-1, 1, 0,...; 0, -1, 1, 0, ...] */
       for (k=0; k<user->K; k++) {
         v = 1.0;
-        n = k+1; 
+        n = k+1;
         ierr = MatSetValues(user->D,1,&k,1,&n,&v,INSERT_VALUES);CHKERRQ(ierr);
-        v = -1.0;        
+        v = -1.0;
         ierr = MatSetValues(user->D,1,&k,1,&k,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       break;
   }
   ierr = MatAssemblyBegin(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    
+
   PetscFunctionReturn(0);
 }
 
@@ -298,8 +297,8 @@ PetscErrorCode InitializeUserData(AppCtx *user)
       localrunfiles: tomographyData_A_b_xGT
       args: -tao_max_it 1000 -tao_brgn_regularization_type l1dict -tao_brgn_regularizer_weight 1e-8 -tao_brgn_l1_smooth_epsilon 1e-6 -tao_gatol 1.e-8
 
-   test:     
-      suffix: 2 
+   test:
+      suffix: 2
       localrunfiles: tomographyData_A_b_xGT
       args: -tao_monitor -tao_max_it 1000 -tao_brgn_regularization_type l2prox -tao_brgn_regularizer_weight 1e-8 -tao_gatol 1.e-6
 
@@ -307,5 +306,5 @@ PetscErrorCode InitializeUserData(AppCtx *user)
       suffix: 3
       localrunfiles: tomographyData_A_b_xGT
       args: -tao_monitor -tao_max_it 1000 -tao_brgn_regularization_type user -tao_brgn_regularizer_weight 1e-8 -tao_gatol 1.e-6
-            
+
 TEST*/
