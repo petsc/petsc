@@ -1720,13 +1720,15 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
     PetscDS      prob;
     PetscObject  disc;
 
-    ierr = DMGetDS(dm->coordinateDM, &prob);CHKERRQ(ierr);
-    ierr = PetscDSGetNumFields(prob, &numFields);CHKERRQ(ierr);
+    ierr = DMGetNumFields(dm->coordinateDM, &numFields);CHKERRQ(ierr);
     if (numFields) {
-      ierr = PetscDSGetDiscretization(prob,0,&disc);CHKERRQ(ierr);
-      ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
-      if (id == PETSCFE_CLASSID) {
-        fe = (PetscFE) disc;
+      ierr = DMGetDS(dm->coordinateDM, &prob);CHKERRQ(ierr);
+      if (prob) {
+        ierr = PetscDSGetDiscretization(prob,0,&disc);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID) {
+          fe = (PetscFE) disc;
+        }
       }
     }
   }
