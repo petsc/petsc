@@ -86,7 +86,7 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
 {
   PetscSection   section, sectionGlobal;
   PetscInt      *subIndices;
-  PetscInt       subSize = 0, subOff = 0, nF, f, pStart, pEnd, p;
+  PetscInt       subSize = 0, subOff = 0, Nf, f, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -95,8 +95,8 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
   ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting fields");
   if (!sectionGlobal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
-  ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
-  if (numFields > nF) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, nF);
+  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+  if (numFields > Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, Nf);
   if (is) {
     PetscInt bs, bsLocal[2], bsMinMax[2];
 
