@@ -68,9 +68,14 @@ def chkenable():
   #Replace all 'enable-'/'disable-' with 'with-'=0/1/tail
   #enable-fortran is a special case, the resulting --with-fortran is ambiguous.
   #Would it mean --with-fc=
+  en_dash = u'\N{EN DASH}'
+  if sys.version_info < (3, 0):
+    en_dash = en_dash.encode('utf-8')
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
 
+    if name.find(en_dash)  >= 0:
+      sys.argv[l] = name.replace(en_dash,'-')
     if name.find('enable-cxx') >= 0:
       if name.find('=') == -1:
         sys.argv[l] = name.replace('enable-cxx','with-clanguage=C++')

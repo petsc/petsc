@@ -855,7 +855,10 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
     /* Call general purpose update function */
     if (snes->ops->update) {ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);}
   }
-  if (nasm->finaljacobian) {ierr = SNESNASMComputeFinalJacobian_Private(snes,X);CHKERRQ(ierr);}
+  if (nasm->finaljacobian) {
+    ierr = SNESNASMComputeFinalJacobian_Private(snes,X);CHKERRQ(ierr);
+    SNESCheckJacobianDomainerror(snes);
+  }
   if (normschedule == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {
       ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);

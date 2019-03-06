@@ -59,7 +59,7 @@ typedef struct {
   PetscInt    *api,*apj;       /* symbolic structure of A*P */
   PetscScalar *apa;            /* temporary array for storing one row of A*P */
   PetscErrorCode (*destroy)(Mat);
-} Mat_PtAP;
+} Mat_AP;
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -116,12 +116,13 @@ typedef struct {
   PetscBool   idiagvalid;                     /* current idiag[] and mdiag[] are valid */
   PetscScalar *ibdiag;                        /* inverses of block diagonals */
   PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
+  PetscBool   diagonaldense;                  /* all entries along the diagonal have been set; i.e. no missing diagonal terms */
   PetscScalar fshift,omega;                   /* last used omega and fshift */
 
   ISColoring  coloring;                       /* set with MatADSetColoring() used by MatADSetValues() */
 
   PetscScalar         *matmult_abdense;    /* used by MatMatMult() */
-  Mat_PtAP            *ptap;               /* used by MatPtAP() */
+  Mat_AP              *ap;                 /* used by MatPtAP() */
   Mat_MatMatMatMult   *matmatmatmult;      /* used by MatMatMatMult() */
   Mat_RARt            *rart;               /* used by MatRARt() */
   Mat_MatMatTransMult *abt;                /* used by MatMatTransposeMult() */

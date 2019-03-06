@@ -277,6 +277,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
   PetscErrorCode ierr;
   void           (*aij)(void);
   void           (*is)(void);
+  void           (*hyp)(void) = NULL;
 
   PetscFunctionBegin;
   ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
@@ -293,14 +294,20 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
   */
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatISSetPreallocation_C",&is);CHKERRQ(ierr);
-  if (!aij && !is) {
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatHYPRESetPreallocation_C",&hyp);CHKERRQ(ierr);
+#endif
+  if (!aij && !is && !hyp) {
     ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
   }
-  if (aij || is) {
+  if (aij || is || hyp) {
     if (bs == 1) {
       ierr = MatSeqAIJSetPreallocation(A,0,dnnz);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
       ierr = MatISSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+      ierr = MatHYPRESetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
+#endif
     } else {                    /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
       ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
@@ -312,6 +319,9 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
       ierr = MatSeqAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
       ierr = MatISSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+      ierr = MatHYPRESetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
+#endif
       ierr = PetscFree2(sdnnz,sonnz);CHKERRQ(ierr);
     }
   }

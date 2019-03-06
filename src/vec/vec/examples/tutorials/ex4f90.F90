@@ -20,19 +20,20 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-       PetscScalar  xwork(6)
-       PetscScalar, pointer ::  xx_v(:),yy_v(:)
-       PetscInt i,n,loc(6)
+       PetscInt, parameter :: n=6
+       PetscScalar, dimension(n) ::  xwork
+       PetscScalar, pointer, dimension(:) ::  xx_v,yy_v
+       PetscInt, dimension(n) :: loc
+       PetscInt i
        PetscErrorCode ierr
        Vec     x,y
 
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-       if (ierr .ne. 0) then
+       if (ierr /= 0) then
          print*,'PetscInitialize failed'
          stop
        endif
-       n = 6
 
 !  Create initial vector and duplicate it
 

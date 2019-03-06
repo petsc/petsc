@@ -476,6 +476,40 @@ static PetscErrorCode PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 }
 
 /* --------------------------------------------------------------------------------------------*/
+static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PetscOptionItems *PetscOptionsObject,PC pc)
+{
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      flag;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE Euclid Options");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_hypre_euclid_level","Factorization levels","None",jac->eu_level,&jac->eu_level,&flag);CHKERRQ(ierr);
+  if (flag) PetscStackCallStandard(HYPRE_EuclidSetLevel,(jac->hsolver,jac->eu_level));
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
+{
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Euclid preconditioning\n");CHKERRQ(ierr);
+    if (jac->eu_level != PETSC_DEFAULT) {
+      ierr = PetscViewerASCIIPrintf(viewer,"    factorization levels %d\n",jac->eu_level);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"    default factorization levels \n");CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------------------------------------------------------------------*/
 
 static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
 {
@@ -681,7 +715,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
     PetscStackCallStandard(HYPRE_BoomerAMGSetRelaxType,(jac->hsolver, indx));
     /* by default, coarse type set to 9 */
     jac->relaxtype[2] = 9;
-
+    PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,(jac->hsolver, 9, 3));
   }
   ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -1592,6 +1626,19 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->factorrowsize      = PETSC_DEFAULT;
     PetscFunctionReturn(0);
   }
+  ierr = PetscStrcmp("euclid",jac->hypre_type,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
+    PetscStackCallStandard(HYPRE_EuclidCreate,(jac->comm_hypre,&jac->hsolver));
+    pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Euclid;
+    pc->ops->view           = PCView_HYPRE_Euclid;
+    jac->destroy            = HYPRE_EuclidDestroy;
+    jac->setup              = HYPRE_EuclidSetup;
+    jac->solve              = HYPRE_EuclidSolve;
+    jac->factorrowsize      = PETSC_DEFAULT;
+    jac->eu_level           = PETSC_DEFAULT; /* default */
+    PetscFunctionReturn(0);
+  }
   ierr = PetscStrcmp("parasails",jac->hypre_type,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
@@ -1800,7 +1847,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
   ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
 
   jac->hypre_type = NULL;
-  SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, boomeramg, ams",name);
+  SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are euclid, pilut, parasails, boomeramg, ams",name);
   PetscFunctionReturn(0);
 }
 
@@ -1812,7 +1859,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObjec
 {
   PetscErrorCode ierr;
   PetscInt       indx;
-  const char     *type[] = {"pilut","parasails","boomeramg","ams","ads"};
+  const char     *type[] = {"euclid","pilut","parasails","boomeramg","ams","ads"};
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -1835,10 +1882,10 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObjec
 
    Input Parameters:
 +     pc - the preconditioner context
--     name - either  pilut, parasails, boomeramg, ams, ads
+-     name - either  euclid, pilut, parasails, boomeramg, ams, ads
 
    Options Database Keys:
-   -pc_hypre_type - One of pilut, parasails, boomeramg, ams, ads
+   -pc_hypre_type - One of euclid, pilut, parasails, boomeramg, ams, ads
 
    Level: intermediate
 
@@ -1864,7 +1911,7 @@ PetscErrorCode  PCHYPRESetType(PC pc,const char name[])
 .     pc - the preconditioner context
 
    Output Parameter:
-.     name - either  pilut, parasails, boomeramg, ams, ads
+.     name - either  euclid, pilut, parasails, boomeramg, ams, ads
 
    Level: intermediate
 
@@ -1887,7 +1934,7 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
      PCHYPRE - Allows you to use the matrix element based preconditioners in the LLNL package hypre
 
    Options Database Keys:
-+   -pc_hypre_type - One of pilut, parasails, boomeramg, ams, ads
++   -pc_hypre_type - One of euclid, pilut, parasails, boomeramg, ams, ads
 -   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX
           preconditioner
 

@@ -610,6 +610,7 @@ PETSC_EXTERN PetscErrorCode PetscSignalHandlerDefault(int,void*);
 PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
+PETSC_EXTERN void PetscSignalSegvCheckPointer(void);
 
 /*MC
     PetscErrorPrintf - Prints error messages.
@@ -929,8 +930,12 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
    Developer Note: this is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
 */
-#define PetscStackCallStandard(func,args) do {                        \
-    PetscStackPush(#func);ierr = func args;PetscStackPop; if (ierr) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",#func,(int)ierr); \
+#define PetscStackCallStandard(func,args) do {                                                            \
+    PetscErrorCode __ierr;                                                                                \
+    PetscStackPush(#func);                                                                                \
+    __ierr = func args;                                                                                   \
+    PetscStackPop;                                                                                        \
+    if (__ierr) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",#func,(int)__ierr); \
   } while (0)
 
 PETSC_EXTERN PetscErrorCode PetscStackCreate(void);

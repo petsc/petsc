@@ -231,7 +231,6 @@ int main(int argc, char **argv)
   AppCtx              ctx;
   PetscErrorCode   (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   DM                  dm;
-  PetscDS             prob;
   PetscFE             fe;
   DMInterpolationInfo interpolator;
   Vec                 lu, fieldVals;
@@ -244,7 +243,7 @@ int main(int argc, char **argv)
   PetscViewer         selfviewer;
   PetscErrorCode      ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &ctx, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);
@@ -265,8 +264,8 @@ int main(int argc, char **argv)
   ierr = VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Setup Discretization */
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), ctx.dim, Nc, ctx.cellSimplex, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   /* Create function */
   ierr = PetscCalloc2(Nc, &funcs, Nc, &vals);CHKERRQ(ierr);

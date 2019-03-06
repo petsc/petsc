@@ -526,11 +526,13 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
 
 PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
+  PetscDS        prob;
   PetscInt       numBd, b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumBoundary(prob, &numBd);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     DMBoundaryConditionType type;
     const char             *labelname;
@@ -547,7 +549,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
     ierr = DMGetBoundary(dm, b, &type, NULL, &labelname, &field, &Nc, &comps, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
     if (insertEssential != (type & DM_BC_ESSENTIAL)) continue;
     ierr = DMGetLabel(dm, labelname, &label);CHKERRQ(ierr);
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       switch (type) {
@@ -662,7 +664,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -698,7 +700,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
       void * const ctx = ctxs ? ctxs[field] : NULL;
       PetscInt     Nb, Nc, q, fc;
 
-      ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
@@ -765,7 +767,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
     PetscFE  fe;
     PetscInt Nc;
 
-    ierr = DMGetField(dm, field, (PetscObject *) &fe);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
     numComponents += Nc;
@@ -791,7 +793,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
       PetscReal       *basisDer;
       PetscInt         Nb, Nc, q, fc;
 
-      ierr = DMGetField(dm, field, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = DMGetField(dm, field, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
       ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
@@ -858,7 +860,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -894,7 +896,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
 
       PetscReal       elemDiff = 0.0;
 
-      ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
@@ -979,7 +981,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -1014,7 +1016,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
       void * const ctx = ctxs ? ctxs[field] : NULL;
       PetscInt     Nb, Nc, q, fc;
 
-      ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
@@ -1094,7 +1096,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -1138,7 +1140,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
         PetscInt     Nb, Nc, q, qc = 0;
 
         ierr = PetscMemzero(grad, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
-        ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+        ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
         ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
@@ -2618,23 +2620,18 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   DM_Plex         *mesh       = (DM_Plex *) dm->data;
   const char      *name       = "Residual";
   DM               dmAux      = NULL;
-  DM               dmGrad     = NULL;
   DMLabel          ghostLabel = NULL;
   PetscDS          prob       = NULL;
   PetscDS          probAux    = NULL;
   PetscBool        useFEM     = PETSC_FALSE;
-  PetscBool        useFVM     = PETSC_FALSE;
   PetscBool        isImplicit = (locX_t || t == PETSC_MIN_REAL) ? PETSC_TRUE : PETSC_FALSE;
-  PetscFV          fvm        = NULL;
-  PetscFVCellGeom *cgeomFVM   = NULL;
-  PetscFVFaceGeom *fgeomFVM   = NULL;
   DMField          coordField = NULL;
-  Vec              locA, cellGeometryFVM = NULL, faceGeometryFVM = NULL, grad, locGrad = NULL;
-  PetscScalar     *u = NULL, *u_t, *a, *uL, *uR;
+  Vec              locA;
+  PetscScalar     *u = NULL, *u_t, *a, *uL = NULL, *uR = NULL;
   IS               chunkIS;
   const PetscInt  *cells;
   PetscInt         cStart, cEnd, numCells;
-  PetscInt         Nf, f, totDim, totDimAux, numChunks, cellChunkSize, faceChunkSize, chunk, fStart, fEnd;
+  PetscInt         Nf, f, totDim, totDimAux, numChunks, cellChunkSize, chunk, fStart, fEnd;
   PetscInt         maxDegree = PETSC_MAX_INT;
   PetscQuadrature  affineQuad = NULL, *quads = NULL;
   PetscFEGeom     *affineGeom = NULL, **geoms = NULL;
@@ -2665,7 +2662,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {useFEM = PETSC_TRUE;}
-    if (id == PETSCFV_CLASSID) {useFVM = PETSC_TRUE; fvm = (PetscFV) obj;}
+    if (id == PETSCFV_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Use of FVM with PCPATCH not yet implemented");
   }
   if (useFEM) {
     ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
@@ -2696,27 +2693,6 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
       }
     }
   }
-  if (useFVM) {
-#if 0
-    ierr = DMPlexSNESGetGeometryFVM(dm, &faceGeometryFVM, &cellGeometryFVM, NULL);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(faceGeometryFVM, (const PetscScalar **) &fgeomFVM);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(cellGeometryFVM, (const PetscScalar **) &cgeomFVM);CHKERRQ(ierr);
-    /* Reconstruct and limit cell gradients */
-    ierr = DMPlexSNESGetGradientDM(dm, fvm, &dmGrad);CHKERRQ(ierr);
-    if (dmGrad) {
-      ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-      ierr = DMGetGlobalVector(dmGrad, &grad);CHKERRQ(ierr);
-      ierr = DMPlexReconstructGradients_Internal(dm, fvm, fStart, fEnd, faceGeometryFVM, cellGeometryFVM, locX, grad);CHKERRQ(ierr);
-      /* Communicate gradient values */
-      ierr = DMGetLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);
-      ierr = DMGlobalToLocalBegin(dmGrad, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
-      ierr = DMGlobalToLocalEnd(dmGrad, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(dmGrad, &grad);CHKERRQ(ierr);
-    }
-    /* Handle non-essential (e.g. outflow) boundary values */
-    ierr = DMPlexInsertBoundaryValues(dm, PETSC_FALSE, locX, time, faceGeometryFVM, cellGeometryFVM, locGrad);CHKERRQ(ierr);
-#endif
-  }
   /* Loop over chunks */
   ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
@@ -2724,14 +2700,13 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   numCells      = cEnd - cStart;
   numChunks     = 1;
   cellChunkSize = numCells/numChunks;
-  faceChunkSize = (fEnd - fStart)/numChunks;
   numChunks     = PetscMin(1,numCells);
   for (chunk = 0; chunk < numChunks; ++chunk) {
-    PetscScalar     *elemVec, *fluxL, *fluxR;
-    PetscReal       *vol;
-    PetscFVFaceGeom *fgeom;
+    PetscScalar     *elemVec, *fluxL = NULL, *fluxR = NULL;
+    PetscReal       *vol = NULL;
+    PetscFVFaceGeom *fgeom = NULL;
     PetscInt         cS = cStart+chunk*cellChunkSize, cE = PetscMin(cS+cellChunkSize, cEnd), numCells = cE - cS, c;
-    PetscInt         fS = fStart+chunk*faceChunkSize, fE = PetscMin(fS+faceChunkSize, fEnd), numFaces = 0, face;
+    PetscInt         numFaces = 0;
 
     /* Extract field coefficients */
     if (useFEM) {
@@ -2739,16 +2714,6 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
       ierr = DMPlexGetCellFields(dm, chunkIS, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
       ierr = DMGetWorkArray(dm, numCells*totDim, MPIU_SCALAR, &elemVec);CHKERRQ(ierr);
       ierr = PetscMemzero(elemVec, numCells*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
-    }
-    if (useFVM) {
-#if 0
-      ierr = DMPlexGetFaceFields(dm, fS, fE, locX, locX_t, faceGeometryFVM, cellGeometryFVM, locGrad, &numFaces, &uL, &uR);CHKERRQ(ierr);
-      ierr = DMPlexGetFaceGeometry(dm, fS, fE, faceGeometryFVM, cellGeometryFVM, &numFaces, &fgeom, &vol);CHKERRQ(ierr);
-      ierr = DMGetWorkArray(dm, numFaces*totDim, MPIU_SCALAR, &fluxL);CHKERRQ(ierr);
-      ierr = DMGetWorkArray(dm, numFaces*totDim, MPIU_SCALAR, &fluxR);CHKERRQ(ierr);
-      ierr = PetscMemzero(fluxL, numFaces*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscMemzero(fluxR, numFaces*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
-#endif
     }
     /* TODO We will interlace both our field coefficients (u, u_t, uL, uR, etc.) and our output (elemVec, fL, fR). I think this works */
     /* Loop over fields */
@@ -2812,49 +2777,6 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
         ierr = DMPlexVecSetClosure(dm, section, locF, cell, &elemVec[cind*totDim], ADD_ALL_VALUES);CHKERRQ(ierr);
       }
     }
-    if (useFVM) {
-#if 0
-      PetscScalar *fa;
-      PetscInt     iface;
-
-      ierr = VecGetArray(locF, &fa);CHKERRQ(ierr);
-      for (f = 0; f < Nf; ++f) {
-        PetscFV      fv;
-        PetscObject  obj;
-        PetscClassId id;
-        PetscInt     foff, pdim;
-
-        ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
-        ierr = PetscDSGetFieldOffset(prob, f, &foff);CHKERRQ(ierr);
-        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-        if (id != PETSCFV_CLASSID) continue;
-        fv   = (PetscFV) obj;
-        ierr = PetscFVGetNumComponents(fv, &pdim);CHKERRQ(ierr);
-        /* Accumulate fluxes to cells */
-        for (face = fS, iface = 0; face < fE; ++face) {
-          const PetscInt *scells;
-          PetscScalar    *fL = NULL, *fR = NULL;
-          PetscInt        ghost, d, nsupp, nchild;
-
-          ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
-          ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
-          ierr = DMPlexGetTreeChildren(dm, face, &nchild, NULL);CHKERRQ(ierr);
-          if (ghost >= 0 || nsupp > 2 || nchild > 0) continue;
-          ierr = DMPlexGetSupport(dm, face, &scells);CHKERRQ(ierr);
-          ierr = DMLabelGetValue(ghostLabel,scells[0],&ghost);CHKERRQ(ierr);
-          if (ghost <= 0) {ierr = DMPlexPointLocalFieldRef(dm, scells[0], f, fa, &fL);CHKERRQ(ierr);}
-          ierr = DMLabelGetValue(ghostLabel,scells[1],&ghost);CHKERRQ(ierr);
-          if (ghost <= 0) {ierr = DMPlexPointLocalFieldRef(dm, scells[1], f, fa, &fR);CHKERRQ(ierr);}
-          for (d = 0; d < pdim; ++d) {
-            if (fL) fL[d] -= fluxL[iface*totDim+foff+d];
-            if (fR) fR[d] += fluxR[iface*totDim+foff+d];
-          }
-          ++iface;
-        }
-      }
-      ierr = VecRestoreArray(locF, &fa);CHKERRQ(ierr);
-#endif
-    }
     /* Handle time derivative */
     if (locX_t) {
       PetscScalar *x_t, *fa;
@@ -2893,15 +2815,6 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
     if (useFEM) {
       ierr = DMPlexRestoreCellFields(dm, chunkIS, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
       ierr = DMRestoreWorkArray(dm, numCells*totDim, MPIU_SCALAR, &elemVec);CHKERRQ(ierr);
-    }
-    if (useFVM) {
-#if 0
-      ierr = DMPlexRestoreFaceFields(dm, fS, fE, locX, locX_t, faceGeometryFVM, cellGeometryFVM, locGrad, &numFaces, &uL, &uR);CHKERRQ(ierr);
-      ierr = DMPlexRestoreFaceGeometry(dm, fS, fE, faceGeometryFVM, cellGeometryFVM, &numFaces, &fgeom, &vol);CHKERRQ(ierr);
-      ierr = DMRestoreWorkArray(dm, numFaces*totDim, MPIU_SCALAR, &fluxL);CHKERRQ(ierr);
-      ierr = DMRestoreWorkArray(dm, numFaces*totDim, MPIU_SCALAR, &fluxR);CHKERRQ(ierr);
-      if (dmGrad) {ierr = DMRestoreLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);}
-#endif
     }
   }
   if (useFEM) {ierr = ISDestroy(&chunkIS);CHKERRQ(ierr);}

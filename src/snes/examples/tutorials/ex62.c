@@ -474,12 +474,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
+PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->solType) {
   case SOL_QUADRATIC:
     switch (user->dim) {
@@ -526,7 +528,6 @@ PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? DM_BC_ESSENTIAL : DM_BC_NATURAL, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0]);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 1, user->exactFuncs[1]);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -536,7 +537,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   const PetscInt  dim   = user->dim;
   PetscFE         fe[2];
   PetscQuadrature q;
-  PetscDS         prob;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -550,12 +550,12 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, user);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
@@ -582,7 +582,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt dummy, MatNullSpac
     PetscObject  pressure;
     MatNullSpace nullspacePres;
 
-    ierr = DMGetField(dm, 1, &pressure);CHKERRQ(ierr);
+    ierr = DMGetField(dm, 1, NULL, &pressure);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullspacePres);CHKERRQ(ierr);
     ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nullspacePres);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspacePres);CHKERRQ(ierr);

@@ -20,16 +20,16 @@
       Vec     x
       PetscViewer  viewer
       PetscScalar  v
-      PetscInt i,istart,iend,n,ione
+      PetscInt :: i,istart,iend
+      PetscInt, parameter :: ione = 1, n = 50
       PetscErrorCode ierr
       PetscBool  flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
+      if (ierr /= 0) then
          print*,'PetscInitialize failed'
          stop
       endif
-      n = 50
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
      &                        '-n',n,flg,ierr)
 
@@ -50,7 +50,6 @@
 !  Set the vector elements.
 !   - Always specify global locations of vector entries.
 !   - Each processor needs to insert only elements that it owns locally.
-      ione = 1
       do 100 i=istart,iend-1
          v = 1.0*real(i)
          call VecSetValues(x,ione,i,v,INSERT_VALUES,ierr)

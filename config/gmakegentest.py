@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 import os,shutil, string, re
-from distutils.sysconfig import parse_makefile
 import sys
 import logging, time
 import types
@@ -13,7 +12,7 @@ from gmakegen import *
 
 import inspect
 thisscriptdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.insert(0,thisscriptdir) 
+sys.path.insert(0,thisscriptdir)
 import testparse
 import example_template
 
@@ -80,8 +79,8 @@ class generateExamples(Petsc):
     gmakegen.py has basic structure for finding the files, writing out
       the dependencies, etc.
   """
-  def __init__(self,petsc_dir=None, petsc_arch=None, testdir='tests', verbose=False, single_ex=False, srcdir=None):
-    super(generateExamples, self).__init__(petsc_dir=petsc_dir, petsc_arch=petsc_arch, verbose=verbose)
+  def __init__(self,petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None, pkg_name=None, pkg_pkgs=None, testdir='tests', verbose=False, single_ex=False, srcdir=None):
+    super(generateExamples, self).__init__(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_arch=pkg_arch, pkg_name=pkg_name, pkg_pkgs=pkg_pkgs, verbose=verbose)
 
     self.single_ex=single_ex
     self.srcdir=srcdir
@@ -114,8 +113,8 @@ class generateExamples(Petsc):
 
     # For help in setting the requirements
     self.precision_types="single double __float128 int32".split()
-    self.integer_types="int32 int64".split()
-    self.languages="fortran cuda cxx".split()    # Always requires C so do not list
+    self.integer_types="int32 int64 long32 long64".split()
+    self.languages="fortran cuda cxx cpp".split()    # Always requires C so do not list
 
     # Things that are not test
     self.buildkeys=testparse.buildkeys
@@ -125,7 +124,7 @@ class generateExamples(Petsc):
     self.sources={}
     self.objects={}
     self.tests={}
-    for pkg in PKGS:
+    for pkg in self.pkg_pkgs:
       self.sources[pkg]={}
       self.objects[pkg]=[]
       self.tests[pkg]={}
@@ -170,7 +169,7 @@ class generateExamples(Petsc):
     needs to convey the srcdir and srcfile.  There are two ways of doing this.
     """
     if self.ptNaming:
-      if srcfile.startswith('run'): srcfile=re.sub('^run','',srcfile) 
+      if srcfile.startswith('run'): srcfile=re.sub('^run','',srcfile)
       cdir=srcdir
       prefix=cdir.replace('/examples/','_').replace("/","_")+"-"
       nameString=prefix+srcfile
@@ -189,6 +188,7 @@ class generateExamples(Petsc):
     if srcext in ".F90".split(): langReq="F90"
     if srcext in ".F".split(): langReq="F"
     if srcext in ".cxx".split(): langReq="cxx"
+    if srcext in ".cpp".split(): langReq="cpp"
     if srcext == ".cu": langReq="cu"
     if srcext == ".c": langReq="c"
     #if not langReq: print("ERROR: ", srcext, srcfile)
@@ -197,7 +197,7 @@ class generateExamples(Petsc):
   def _getLoopVars(self,inDict,testname, isSubtest=False):
     """
     Given: 'args: -bs {{1 2 3 4 5}} -pc_type {{cholesky sor}} -ksp_monitor'
-    Return: 
+    Return:
       inDict['args']: -ksp_monitor
       inDict['subargs']: -bs ${bs} -pc_type ${pc_type}
       loopVars['subargs']['varlist']=['bs' 'pc_type']   # Don't worry about OrderedDict
@@ -285,6 +285,7 @@ class generateExamples(Petsc):
     relpfile=os.path.join(rpath,exfile)
     lang=self.getLanguage(exfile)
     if not lang: return
+    if pkg not in self.sources: return
     self.sources[pkg][lang]['srcs'].append(relpfile)
     self.sources[pkg][lang][relpfile] = []
     if 'depends' in srcDict:
@@ -308,6 +309,7 @@ class generateExamples(Petsc):
     nmtest=os.path.join(rpath,test)
     lang=self.getLanguage(exfile)
     if not lang: return
+    if pkg not in self.tests: return
     self.tests[pkg][lang][nmtest]={}
     self.tests[pkg][lang][nmtest]['exfile']=os.path.join(rpath,exfile)
     self.tests[pkg][lang][nmtest]['exec']=execname
@@ -316,7 +318,7 @@ class generateExamples(Petsc):
 
   def getExecname(self,exfile,rpath):
     """
-      Generate bash script using template found next to this file.  
+      Generate bash script using template found next to this file.
       This file is read in at constructor time to avoid file I/O
     """
     if self.single_ex:
@@ -335,7 +337,7 @@ class generateExamples(Petsc):
     # Handle defaults of testparse.acceptedkeys (e.g., ignores subtests)
     if 'nsize' not in testDict: testDict['nsize'] = '1'
     if 'timeoutfactor' not in testDict: testDict['timeoutfactor']="1"
-    for ak in testparse.acceptedkeys: 
+    for ak in testparse.acceptedkeys:
       if ak=='test': continue
       subst[ak]=(testDict[ak] if ak in testDict else '')
 
@@ -346,7 +348,7 @@ class generateExamples(Petsc):
 
     # Others
     subst['subargs']=''  # Default.  For variables override
-    subst['srcdir']=os.path.join(os.path.dirname(self.srcdir), 'src', rpath)
+    subst['srcdir']=os.path.join(self.srcdir, rpath)
     subst['label_suffix']=''
     subst['comments']="\n#".join(subst['comments'].split("\n"))
     if subst['comments']: subst['comments']="#"+subst['comments']
@@ -365,14 +367,10 @@ class generateExamples(Petsc):
       subst['mpiexec']='petsc_mpiexec_valgrind ' + self.conf['MPIEXEC']
     else:
       subst['mpiexec']=self.conf['MPIEXEC']
-    subst['petsc_dir']=self.petsc_dir # not self.conf['PETSC_DIR'] as this could be windows path
-    subst['petsc_arch']=self.petsc_arch
-    if self.inInstallDir:
-      # Case 2
-      subst['CONFIG_DIR']=os.path.join(os.path.dirname(self.srcdir),'config')
-    else:
-      # Case 1
-      subst['CONFIG_DIR']=os.path.join(self.petsc_dir,'config')
+    subst['pkg_name']=self.pkg_name
+    subst['pkg_dir']=self.pkg_dir
+    subst['pkg_arch']=self.petsc_arch
+    subst['CONFIG_DIR']=thisscriptdir
     subst['PETSC_BINDIR']=os.path.join(self.petsc_dir,'lib','petsc','bin')
     subst['diff']=self.conf['DIFF']
     subst['rm']=self.conf['RM']
@@ -386,7 +384,7 @@ class generateExamples(Petsc):
     subst['defroot']=defroot
     subst['label']=self.nameSpace(defroot,self.srcrelpath(subst['srcdir']))
     subst['redirect_file']=defroot+".tmp"
-    if 'output_file' not in testDict: 
+    if 'output_file' not in testDict:
       subst['output_file']="output/"+defroot+".out"
     # Add in the full path here.
     subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
@@ -430,7 +428,7 @@ class generateExamples(Petsc):
 
   def getCmds(self,subst,i):
     """
-      Generate bash script using template found next to this file.  
+      Generate bash script using template found next to this file.
       This file is read in at constructor time to avoid file I/O
     """
     nindnt=i # the start and has to be consistent with below
@@ -531,7 +529,7 @@ class generateExamples(Petsc):
 
   def genRunScript(self,testname,root,isRun,srcDict):
     """
-      Generate bash script using template found next to this file.  
+      Generate bash script using template found next to this file.
       This file is read in at constructor time to avoid file I/O
     """
     # runscript_dir directory has to be consistent with gmakefile
@@ -573,7 +571,7 @@ class generateExamples(Petsc):
     self._writeTodoSkip(fh,'todo',[s for s in [srcDict.get('TODO',''), testDict.get('TODO','')] if s],footer)
     self._writeTodoSkip(fh,'skip',srcDict.get('SKIP',[]) + testDict.get('SKIP',[]),footer)
 
-    j=0  # for indentation 
+    j=0  # for indentation
 
     if loopVars:
       (loopHead,j) = self.getLoopVarsHead(loopVars,j)
@@ -589,18 +587,18 @@ class generateExamples(Petsc):
         subst.update(testDict[stest])
         subst['label_suffix']='-'+string.ascii_letters[k]; k+=1
         sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
-        if sLoopVars: 
+        if sLoopVars:
           (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j,allLoopVars)
           allLoopVars+=list(sLoopVars.keys())
           fh.write(sLoopHead+"\n")
         fh.write(self.getCmds(subst,j)+"\n")
-        if sLoopVars: 
+        if sLoopVars:
           (sLoopFoot,j) = self.getLoopVarsFoot(sLoopVars,j)
           fh.write(sLoopFoot+"\n")
     else:
       fh.write(self.getCmds(subst,j)+"\n")
 
-    if loopVars: 
+    if loopVars:
       (loopFoot,j) = self.getLoopVarsFoot(loopVars,j)
       fh.write(loopFoot+"\n")
 
@@ -638,19 +636,21 @@ class generateExamples(Petsc):
 
   def _isBuilt(self,exfile,srcDict):
     """
-    Determine if this file should be built. 
+    Determine if this file should be built.
     """
     # Get the language based on file extension
     srcDict['SKIP'] = []
     lang=self.getLanguage(exfile)
-    if (lang=="F" or lang=="F90"): 
-      if not self.have_fortran: 
+    if (lang=="F" or lang=="F90"):
+      if not self.have_fortran:
         srcDict["SKIP"].append("Fortran required for this test")
-      elif lang=="F90" and 'PETSC_USING_F90FREEFORM' not in self.conf: 
+      elif lang=="F90" and 'PETSC_USING_F90FREEFORM' not in self.conf:
         srcDict["SKIP"].append("Fortran f90freeform required for this test")
-    if lang=="cu" and 'PETSC_HAVE_CUDA' not in self.conf: 
+    if lang=="cu" and 'PETSC_HAVE_CUDA' not in self.conf:
       srcDict["SKIP"].append("CUDA required for this test")
-    if lang=="cxx" and 'PETSC_HAVE_CXX' not in self.conf: 
+    if lang=="cxx" and 'PETSC_HAVE_CXX' not in self.conf:
+      srcDict["SKIP"].append("C++ required for this test")
+    if lang=="cpp" and 'PETSC_HAVE_CXX' not in self.conf:
       srcDict["SKIP"].append("C++ required for this test")
 
     # Deprecated source files
@@ -658,8 +658,8 @@ class generateExamples(Petsc):
       return False
 
     # isRun can work with srcDict to handle the requires
-    if "requires" in srcDict: 
-      if srcDict["requires"]: 
+    if "requires" in srcDict:
+      if srcDict["requires"]:
         return self._isRun(srcDict)
 
     return srcDict['SKIP'] == []
@@ -728,6 +728,17 @@ class generateExamples(Petsc):
             elif not isNull:
               testDict['SKIP'].append("int64 required")
               continue
+          if requirement.startswith("long"):
+            reqsize = int(requirement[4:])//8
+            longsize = int(self.conf['PETSC_SIZEOF_LONG'].strip())
+            if longsize==reqsize:
+              if isNull:
+                testDict['SKIP'].append("not %s required" % requirement)
+                continue
+              continue  # Success
+            elif not isNull:
+              testDict['SKIP'].append("%s required" % requirement)
+              continue
         # Datafilespath
         if requirement=="datafilespath" and not isNull:
           testDict['SKIP'].append("Requires DATAFILESPATH")
@@ -747,18 +758,30 @@ class generateExamples(Petsc):
         # Rest should be packages that we can just get from conf
         if requirement == "complex":
           petscconfvar="PETSC_USE_COMPLEX"
+          pkgconfvar="PETSC_USE_COMPLEX"
         else:
           petscconfvar="PETSC_HAVE_"+requirement.upper()
-        if self.conf.get(petscconfvar):
+          pkgconfvar=self.pkg_name.upper()+'_HAVE_'+requirement.upper()
+        petsccv = self.conf.get(petscconfvar)
+        pkgcv = self.conf.get(pkgconfvar)
+
+        if petsccv or pkgcv:
           if isNull:
-            testDict['SKIP'].append("Not "+petscconfvar+" requirement not met")
-            continue
+            if petsccv:
+              testDict['SKIP'].append("Not "+petscconfvar+" requirement not met")
+              continue
+            else:
+              testDict['SKIP'].append("Not "+pkgconfvar+" requirement not met")
+              continue
           continue  # Success
         elif not isNull:
-          if debug: print("requirement not found: ", requirement)
-          testDict['SKIP'].append(petscconfvar+" requirement not met")
-          continue
-
+          if not petsccv and not pkgcv:
+            if debug: print("requirement not found: ", requirement)
+            if self.pkg_name == 'petsc':
+              testDict['SKIP'].append(petscconfvar+" requirement not met")
+            else:
+              testDict['SKIP'].append(petscconfvar+" or "+pkgconfvar+" requirement not met")
+            continue
     return testDict['SKIP'] == []
 
   def genPetscTests_summarize(self,dataDict):
@@ -852,13 +875,13 @@ class generateExamples(Petsc):
 
   def gen_gnumake(self, fd):
     """
-     Overwrite of the method in the base PETSc class 
+     Overwrite of the method in the base PETSc class
     """
     def write(stem, srcs):
       for lang in LANGS:
         if srcs[lang]['srcs']:
           fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang, srcs=' '.join(srcs[lang]['srcs'])))
-    for pkg in PKGS:
+    for pkg in self.pkg_pkgs:
         srcs = self.gen_pkg(pkg)
         write('testsrcs-' + pkg, srcs)
         # Handle dependencies
@@ -881,7 +904,7 @@ class generateExamples(Petsc):
 
   def gen_pkg(self, pkg):
     """
-     Overwrite of the method in the base PETSc class 
+     Overwrite of the method in the base PETSc class
     """
     return self.sources[pkg]
 
@@ -906,7 +929,7 @@ class generateExamples(Petsc):
     # Write out the tests and execname targets
     fd.write("\n#Tests and executables\n")    # Delimiter
 
-    for pkg in PKGS:
+    for pkg in self.pkg_pkgs:
       # These grab the ones that are built
       for lang in LANGS:
         testdeps=[]
@@ -952,16 +975,17 @@ class generateExamples(Petsc):
     fd.close()
     return
 
-def main(petsc_dir=None, petsc_arch=None, verbose=False, single_ex=False, srcdir=None, testdir=None):
+def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None, pkg_name=None, pkg_pkgs=None, verbose=False, single_ex=False, srcdir=None, testdir=None):
     # Allow petsc_arch to have both petsc_dir and petsc_arch for convenience
     testdir=os.path.normpath(testdir)
-    if petsc_arch: 
+    if petsc_arch:
         petsc_arch=petsc_arch.rstrip(os.path.sep)
         if len(petsc_arch.split(os.path.sep))>1:
             petsc_dir,petsc_arch=os.path.split(petsc_arch)
     output = os.path.join(testdir, 'testfiles')
 
     pEx=generateExamples(petsc_dir=petsc_dir, petsc_arch=petsc_arch,
+                         pkg_dir=pkg_dir, pkg_arch=pkg_arch, pkg_name=pkg_name, pkg_pkgs=pkg_pkgs,
                          verbose=verbose, single_ex=single_ex, srcdir=srcdir,
                          testdir=testdir)
     dataDict=pEx.walktree(os.path.join(pEx.srcdir))
@@ -976,6 +1000,10 @@ if __name__ == '__main__':
     parser.add_option('--srcdir', help='Set location of sources different from PETSC_DIR/src', default=None)
     parser.add_option('-s', '--single_executable', dest='single_executable', action="store_false", help='Whether there should be single executable per src subdir.  Default is false')
     parser.add_option('-t', '--testdir', dest='testdir',  help='Test directory [$PETSC_ARCH/tests]')
+    parser.add_option('--pkg-dir', help='Set the directory of the package (different from PETSc) you want to generate the makefile rules for', default=None)
+    parser.add_option('--pkg-name', help='Set the name of the package you want to generate the makefile rules for', default=None)
+    parser.add_option('--pkg-arch', help='Set the package arch name you want to generate the makefile rules for', default=None)
+    parser.add_option('--pkg-pkgs', help='Set the package folders (comma separated list, different from the usual sys,vec,mat etc) you want to generate the makefile rules for', default=None)
 
     opts, extra_args = parser.parse_args()
     if extra_args:
@@ -986,6 +1014,7 @@ if __name__ == '__main__':
       opts.testdir = os.path.join(opts.petsc_arch, 'tests')
 
     main(petsc_dir=opts.petsc_dir, petsc_arch=opts.petsc_arch,
+         pkg_dir=opts.pkg_dir,pkg_arch=opts.pkg_arch,pkg_name=opts.pkg_name,pkg_pkgs=opts.pkg_pkgs,
          verbose=opts.verbose,
          single_ex=opts.single_executable, srcdir=opts.srcdir,
          testdir=opts.testdir)

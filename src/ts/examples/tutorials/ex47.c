@@ -191,12 +191,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
+static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (ctx->formType) {
   case PRIMITIVE:
     ierr = PetscDSSetResidual(prob, 0, f0_prim_phi, NULL);CHKERRQ(ierr);
@@ -226,11 +228,29 @@ static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
+{
+  DM             dmAux, coordDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
+  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
+  if (!feAux) PetscFunctionReturn(0);
+  ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
+  ierr = DMSetField(dmAux, 0, NULL, (PetscObject) feAux);CHKERRQ(ierr);
+  ierr = DMCreateDS(dmAux);CHKERRQ(ierr);
+  ierr = SetupVelocity(dm, dmAux, user);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 {
   DM              cdm = dm;
   const PetscInt  dim = ctx->dim;
-  PetscDS         prob, probAux;
   PetscFE         fe,   feAux;
   PetscQuadrature q;
   MPI_Comm        comm;
@@ -245,25 +265,15 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   ierr = PetscFECreateDefault(comm, dim, dim, ctx->simplex, "vel_", -1, &feAux);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
-  ierr = PetscDSCreate(PetscObjectComm((PetscObject) dm), &probAux);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = SetupProblem(prob, ctx);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, ctx);CHKERRQ(ierr);
   while (cdm) {
-    DM        dmAux, coordDM;
     PetscBool hasLabel;
 
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
-
-    ierr = DMGetCoordinateDM(cdm, &coordDM);CHKERRQ(ierr);
-    ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
-    ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
-    ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) cdm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = SetupVelocity(cdm, dmAux, ctx);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
+    ierr = SetupAuxDM(cdm, feAux, ctx);CHKERRQ(ierr);
 
     ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
     if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
@@ -271,7 +281,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
-  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +336,7 @@ int main(int argc, char **argv)
   PetscReal      t       = 0.0;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &dm, &ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr);

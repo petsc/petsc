@@ -38,6 +38,9 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 
   /* Solve J Y = F, where J is Jacobian matrix */
   ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+
+  SNESCheckJacobianDomainerror(snes);
+
   ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   if (ksponly->transpose_solve) {
     ierr = KSPSolveTranspose(snes->ksp,F,Y);CHKERRQ(ierr);

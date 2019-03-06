@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
   IS             isrow,iscol;
   PetscBool      random = PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetOperation(B,MATOP_CREATE_SUBMATRIX,NULL);CHKERRQ(ierr);

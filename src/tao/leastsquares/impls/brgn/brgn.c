@@ -198,6 +198,21 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
   PetscFunctionReturn(0);
 }
 
+/*MC
+  TAOBRGN - Bounded Regularized Gauss-Newton method for solving nonlinear least-squares 
+            problems with bound constraints. This algorithm is a thin wrapper around TAOBNTL 
+            that constructs the Guass-Newton problem with the user-provided least-squares 
+            residual and Jacobian. The problem is regularized with an L2-norm proximal point 
+            term.
+
+  Options Database Keys:
+  + -tao_bqnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
+  . -tao_bqnk_init_type - trust radius initialization method ("constant", "direction", "interpolation")
+  . -tao_bqnk_update_type - trust radius update method ("step", "direction", "interpolation")
+  - -tao_bqnk_as_type - active-set estimation method ("none", "bertsekas")
+
+  Level: beginner
+M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
 {
   TAO_BRGN       *gn;

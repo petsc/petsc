@@ -144,7 +144,7 @@ int main(int argc, char **argv)
   Vec            localX;
 
   /* Initialize PETSc, TAO */
-  ierr = PetscInitialize(&argc, &argv, (char *)0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char *)0, help);if (ierr) return ierr;
 
   /*
      Initialize the user-defined application context with reasonable

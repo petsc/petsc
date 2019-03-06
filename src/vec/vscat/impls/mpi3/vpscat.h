@@ -44,7 +44,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     VecCUDAAllocateCheckHost(xin);
     if (xin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
       if (xin->spptr && ctx->spptr) {
-        ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr);CHKERRQ(ierr);
+        ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr,mode);CHKERRQ(ierr);
       } else {
         ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
       }

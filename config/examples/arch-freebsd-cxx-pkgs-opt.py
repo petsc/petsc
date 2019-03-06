@@ -18,7 +18,7 @@ configure_options = [
   '--with-cxx-dialect=C++11',
   '--download-elemental=1',
   '--download-hdf5',
-  '--download-zlib=1',
+  '--with-zlib=1',
   '--download-sundials=1',
   '--download-hypre=1',
   '--download-suitesparse=1',

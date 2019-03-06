@@ -146,6 +146,14 @@
           integer z
         end subroutine
 
+        subroutine MatSeqBAIJSetPreallocation(a,b,c,d,z)
+          use petscmatdef
+          Mat a
+          PetscInt b,c
+          PetscInt d(*)
+          integer z
+        end subroutine
+
         subroutine MatMPIAIJSetPreallocation(a,b,c,d,e,z)
           use petscmatdef
           Mat a
@@ -166,6 +174,25 @@
           PetscInt f (*) ! PetscInt
           integer z
         end subroutine
+
+        subroutine MatSetValue(myMat,i,j,va,mode,ierr)
+          use petscmatdef
+          Mat :: myMat
+          PetscInt :: i,j
+          PetscScalar :: va
+          InsertMode :: mode
+          integer, intent(out) :: ierr
+        end subroutine
+
+        subroutine MatSetValueLocal(myMat,i,j,va,mode,ierr)
+          use petscmatdef
+          Mat :: myMat
+          PetscInt :: i,j
+          PetscScalar :: va
+          InsertMode :: mode
+          integer, intent(out) :: ierr
+        end subroutine
+
         end interface
 
         Interface MatSetValues
@@ -718,6 +745,80 @@
        integer z
        end subroutine
       End Interface
+
+      interface MatGetOwnershipRange
+      subroutine MatGetOwnershipRange00(a,b,c,ierr)
+       use petscmatdef
+       Mat,intent(in) :: a ! Mat
+       PetscInt :: b,c ! PetscInt
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+      subroutine MatGetOwnershipRange10(a,b,c,ierr)
+       use petscmatdef
+       Mat,intent(in) :: a ! Mat
+       PetscInt,dimension(:) :: b ! PetscInt
+       PetscInt              :: c ! PetscInt
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+      subroutine MatGetOwnershipRange01(a,b,c,ierr)
+       use petscmatdef
+       Mat,intent(in) :: a ! Mat
+       PetscInt              :: b ! PetscInt
+       PetscInt,dimension(:) :: c ! PetscInt
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+      subroutine MatGetOwnershipRange11(a,b,c,ierr)
+       use petscmatdef
+       Mat,intent(in) :: a ! Mat
+       PetscInt,dimension(:) :: b,c ! PetscInt
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+      end interface
+
+      interface
+      subroutine MatGetFactor(m,t,ft,f,ierr)
+      use petscmatdef
+       Mat, intent(in) ::  m
+       character(*), intent(in) :: t
+       MatFactorType,intent(in) :: ft
+       Mat, intent(out) ::  f
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningCreate(a,b,ierr)
+      use petscmatdef
+       integer, intent(in) :: a ! MPI_comm
+       MatPartitioning, intent(out) ::  b
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningDestroy(a,ierr)
+      use petscmatdef
+       MatPartitioning, intent(in) ::  a
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningSetAdjacency(a,b,ierr)
+      use petscmatdef
+       MatPartitioning, intent(in) ::  a
+       Mat, intent(in) ::  b
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningSetFromOptions(a,ierr)
+      use petscmatdef
+       MatPartitioning, intent(in) ::  a
+       PetscErrorCode,intent(out) :: ierr
+      end subroutine
+
+      subroutine MatPartitioningApply(a,b,ierr)
+      use petscmatdef
+       MatPartitioning, intent(in) ::  a
+       IS, intent(out) :: b
+       PetscErrorCode :: ierr
+      end subroutine
+     
+      end interface
 
 ! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines
 #undef MAT_INFO_SIZE

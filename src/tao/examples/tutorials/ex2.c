@@ -197,12 +197,14 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
   return 0;
 }
 
-PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
+PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, user->useDualPenalty == PETSC_TRUE ? f0_u_full : f0_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 1, f0_a, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 2, f0_l, f1_l);CHKERRQ(ierr);
@@ -229,7 +231,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[3];
   PetscQuadrature q;
   PetscInt        f;
-  PetscDS         prob;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -246,11 +247,11 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) fe[2], "multiplier");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[2], q);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-  for (f = 0; f < 3; ++f) {ierr = PetscDSSetDiscretization(prob, f, (PetscObject) fe[f]);CHKERRQ(ierr);}
-  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
+  for (f = 0; f < 3; ++f) {ierr = DMSetField(dm, f, NULL, (PetscObject) fe[f]);CHKERRQ(ierr);}
+  ierr = DMCreateDS(cdm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, user);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   for (f = 0; f < 3; ++f) {ierr = PetscFEDestroy(&fe[f]);CHKERRQ(ierr);}

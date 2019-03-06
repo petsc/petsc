@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v6.1.0'
+    self.gitcommit         = 'v6.1.1'
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['SuperLU_DIST','superlu_dist']
     self.functions        = ['set_default_options_dist']
@@ -66,6 +66,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DMPI_C_COMPILER:STRING="'+self.framework.getCompiler()+'"')
     args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
     args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
+    args.append('-DMPI_C_HEADER_DIR:STRING=""')
     args.append('-DMPI_C_LIBRARIES:STRING=""')
     args.append('-DCMAKE_INSTALL_LIBDIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 

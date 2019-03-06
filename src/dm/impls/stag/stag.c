@@ -225,7 +225,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Stag(DM dm,Vec l,InsertMode mode,Vec 
   } else if (mode == INSERT_VALUES) {
     ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
     for (d=0; d<dim; ++d) {
-      if (stag->nRanks[d] == 1 && stag->stencilWidth > 0 && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED && stag->boundaryType[d] != DM_BOUNDARY_NONE) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Local to Global not supported for single rank with boundary conditions creating a non-injective local->global map");
+      if (stag->nRanks[d] == 1 && stag->stencilWidth > 0 && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED && stag->boundaryType[d] != DM_BOUNDARY_NONE) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Local to Global scattering with INSERT_VALUES is not supported for single rank in a direction with boundary conditions (e.g. periodic) inducing a non-injective local->global map. Either change the boundary conditions, use a stencil width of zero, or use more than one rank in the relevant direction (e.g. -stag_ranks_x 2)");
     }
     ierr = VecScatterBegin(stag->gtol,l,g,mode,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported InsertMode");

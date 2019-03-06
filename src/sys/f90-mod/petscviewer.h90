@@ -1,59 +1,80 @@
+interface
+  Subroutine PetscViewerDestroy(v,ierr)
+    use petscdef
+    PetscViewer v
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
+  Subroutine PetscViewerBinaryOpen(c,n,t,v,ierr)
+    use petscdef
+    MPI_Comm :: c
+    character(len=*), intent(in) :: n
+    PetscFileMode, intent(in) :: t
+    PetscViewer, intent(out) :: v
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
+  Subroutine PetscViewerGetSubViewer(v,c,vn,ierr)
+    use petscdef
+    PetscViewer, intent(in) :: v
+    MPI_Comm :: c
+    PetscFileMode, intent(out) :: vn
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
+end interface
 
-      Interface PetscViewerBinaryWrite
-        Subroutine PetscViewerBinaryWriteInt(v,a,cnt,tmp,ierr)
-          use petscdef
-          PetscViewer v
-          PetscInt a(*)
-          PetscInt cnt
-          PetscBool  tmp
-          PetscErrorCode ierr
-        End Subroutine
+Interface PetscViewerBinaryWrite
+  Subroutine PetscViewerBinaryWriteInt(v,a,cnt,tmp,ierr)
+    use petscdef
+    PetscViewer v
+    PetscInt a(*)
+    PetscInt cnt
+    PetscBool  tmp
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
 
-        Subroutine PetscViewerBinaryWriteScalar(v,a,cnt,tmp,ierr)
-          use petscdef
-          PetscViewer v
-          PetscScalar a(*)
-          PetscInt cnt
-          PetscBool  tmp
-          PetscErrorCode ierr
-        End Subroutine
-
-#if defined(PETSC_USE_COMPLEX)
-        Subroutine PetscViewerBinaryWriteReal(v,a,cnt,tmp,ierr)
-          use petscdef
-          PetscViewer v
-          PetscReal a(*)
-          PetscInt cnt
-          PetscBool  tmp
-          PetscErrorCode ierr
-        End Subroutine
-#endif
-
-        Subroutine PetscViewerBinaryReadInt(v,a,cnt,ierr)
-          use petscdef
-          PetscViewer v
-          PetscInt a(*)
-          PetscInt cnt
-          PetscErrorCode ierr
-        End Subroutine
-
-        Subroutine PetscViewerBinaryReadScalar(v,a,cnt,ierr)
-          use petscdef
-          PetscViewer v
-          PetscScalar a(*)
-          PetscInt cnt
-          PetscErrorCode ierr
-        End Subroutine
+  Subroutine PetscViewerBinaryWriteScalar(v,a,cnt,tmp,ierr)
+    use petscdef
+    PetscViewer v
+    PetscScalar a(*)
+    PetscInt cnt
+    PetscBool  tmp
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
 
 #if defined(PETSC_USE_COMPLEX)
-        Subroutine PetscViewerBinaryReadReal(v,a,cnt,ierr)
-          use petscdef
-          PetscViewer v
-          PetscReal a(*)
-          PetscInt cnt
-          PetscErrorCode ierr
-        End Subroutine
+  Subroutine PetscViewerBinaryWriteReal(v,a,cnt,tmp,ierr)
+    use petscdef
+    PetscViewer v
+    PetscReal a(*)
+    PetscInt cnt
+    PetscBool  tmp
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
 #endif
 
-      End Interface
+  Subroutine PetscViewerBinaryReadInt(v,a,cnt,ierr)
+    use petscdef
+    PetscViewer v
+    PetscInt a(*)
+    PetscInt cnt
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
 
+  Subroutine PetscViewerBinaryReadScalar(v,a,cnt,ierr)
+    use petscdef
+    PetscViewer v
+    PetscScalar a(*)
+    PetscInt cnt
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
+
+#if defined(PETSC_USE_COMPLEX)
+  Subroutine PetscViewerBinaryReadReal(v,a,cnt,ierr)
+    use petscdef
+    PetscViewer v
+    PetscReal a(*)
+    PetscInt cnt
+    PetscErrorCode, intent(out):: ierr
+  End Subroutine
+#endif
+
+End Interface

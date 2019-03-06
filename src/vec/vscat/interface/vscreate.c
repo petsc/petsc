@@ -277,6 +277,8 @@ PetscErrorCode VecScatterSetData(VecScatter ctx,Vec xin,IS ix,Vec yin,IS iy)
     Level: intermediate
 
   Notes:
+   If both xin and yin are parallel, their communicator must be on the same
+   set of processes, but their process order can be different.
    In calls to VecScatter() you can use different vectors than the xin and
    yin you used above; BUT they must have the same parallel data layout, for example,
    they could be obtained from VecDuplicate().
@@ -301,8 +303,8 @@ PetscErrorCode VecScatterCreateWithData(Vec xin,IS ix,Vec yin,IS iy,VecScatter *
 {
   VecScatter        ctx;
   PetscErrorCode    ierr;
-  PetscMPIInt       size;
-  MPI_Comm          comm,ycomm;
+  PetscMPIInt       size,xsize,ysize,result;
+  MPI_Comm          comm,xcomm,ycomm;
 
   PetscFunctionBegin;
   PetscValidPointer(newctx,5);
@@ -310,20 +312,24 @@ PetscErrorCode VecScatterCreateWithData(Vec xin,IS ix,Vec yin,IS iy,VecScatter *
   ierr = VecScatterInitializePackage();CHKERRQ(ierr);
 
   /* Get comm from xin and yin */
-  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)xin,&xcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(xcomm,&xsize);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)yin,&ycomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(ycomm,&size);CHKERRQ(ierr);
-  if (size > 1) comm = ycomm;
+  ierr = MPI_Comm_size(ycomm,&ysize);CHKERRQ(ierr);
 
-  /* TODO: If the size of both comms is > 1 check that the comms are the same */
+  if (xsize > 1 && ysize > 1) {
+    ierr = MPI_Comm_compare(xcomm,ycomm,&result);CHKERRQ(ierr);
+    if (result == MPI_UNEQUAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"VecScatterCreate: parallel vectors xin and yin must have identical/congruent/similar communicators");
+  }
+
+  comm = xsize > ysize ? xcomm : ycomm;
+  size = xsize > ysize ? xsize : ysize;
 
   ierr = VecScatterCreate(comm,&ctx);CHKERRQ(ierr);
   ierr = VecScatterSetData(ctx,xin,ix,yin,iy);CHKERRQ(ierr);
   *newctx = ctx;
 
   /* Set default scatter type */
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = VecScatterSetType(ctx,VECSCATTERSEQ);CHKERRQ(ierr);
   } else {
@@ -345,6 +351,8 @@ PetscErrorCode VecScatterCreateWithData(Vec xin,IS ix,Vec yin,IS iy,VecScatter *
 
       Output Parameter:
 .       newctx - the vector scatter object
+
+      Level: intermediate
 
 .seealso: VecScatterCreateWithData(), VecScatterSetFromOptions(), VecScatterBegin(), VecScatterEnd()
 

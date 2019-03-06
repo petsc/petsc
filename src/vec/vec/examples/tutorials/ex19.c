@@ -48,7 +48,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(x2, &array);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "ex19.h5", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
   ierr = VecView(x1, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/testBlockSize");CHKERRQ(ierr);
   ierr = VecView(x2, viewer);CHKERRQ(ierr);
@@ -57,7 +56,6 @@ int main(int argc,char **argv)
   ierr = VecView(x2, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5SetTimestep(viewer, 1);CHKERRQ(ierr);
   ierr = VecView(x2, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -80,7 +78,6 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject) y4, "TestVec2");CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "ex19.h5", FILE_MODE_READ, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
   ierr = VecLoad(y1, viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5PushGroup(viewer, "/testBlockSize");CHKERRQ(ierr);
@@ -90,7 +87,6 @@ int main(int argc,char **argv)
   ierr = VecLoad(y3, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5SetTimestep(viewer, 1);CHKERRQ(ierr);
   ierr = VecLoad(y4, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

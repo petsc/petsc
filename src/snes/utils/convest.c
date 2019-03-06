@@ -291,7 +291,6 @@ and then fit the result to our model above using linear regression.
 PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 {
   DM            *dm;
-  PetscDS        prob;
   PetscObject    disc;
   MPI_Comm       comm;
   const char    *uname, *dmname;
@@ -306,7 +305,6 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   ierr = PetscObjectGetComm((PetscObject) ce, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(ce->idm, &dim);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
-  ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMGetRefineLevel(ce->idm, &oldlevel);CHKERRQ(ierr);
   ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*ce->Nf, &dof);CHKERRQ(ierr);
@@ -324,7 +322,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
     if (r > 0) {
       ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
-      ierr = DMSetDS(dm[r], prob);CHKERRQ(ierr);
+      ierr = DMCopyDisc(ce->idm, dm[r]);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
       for (f = 0; f <= ce->Nf; ++f) {
@@ -336,7 +334,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
     ierr = DMViewFromOptions(dm[r], NULL, "-conv_dm_view");CHKERRQ(ierr);
     /* Create solution */
     ierr = DMCreateGlobalVector(dm[r], &u);CHKERRQ(ierr);
-    ierr = PetscDSGetDiscretization(prob, 0, &disc);CHKERRQ(ierr);
+    ierr = DMGetField(dm[r], 0, NULL, &disc);CHKERRQ(ierr);
     ierr = PetscObjectGetName(disc, &uname);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) u, uname);CHKERRQ(ierr);
     /* Setup solver */

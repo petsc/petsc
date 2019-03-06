@@ -18,7 +18,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       i,N,ng,*gindices,rstart,rend,M;
+  PetscInt       i,ng,*gindices,rstart,rend,M;
   PetscScalar    one = 1.0;
   Vec            x;
 
@@ -35,7 +35,6 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,rank+1,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&N);CHKERRQ(ierr);
   ierr = VecSet(x,one);CHKERRQ(ierr);
 
   /*

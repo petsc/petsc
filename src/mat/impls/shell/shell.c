@@ -376,13 +376,12 @@ PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
+PetscErrorCode MatDiagonalSet_Shell_Private(Mat A,Vec D,PetscScalar s)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ins == INSERT_VALUES) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE, "Operation not supported with INSERT_VALUES");
   if (!shell->dshift) {ierr = VecDuplicate(D,&shell->dshift);CHKERRQ(ierr);}
   if (shell->left || shell->right) {
     if (!shell->right_work) {ierr = VecDuplicate(shell->left ? shell->left : shell->right, &shell->right_work);CHKERRQ(ierr);}
@@ -398,10 +397,29 @@ PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
       ierr = VecDuplicate(shell->left ? shell->left : shell->right, &shell->dshift);CHKERRQ(ierr);
       ierr = VecCopy(shell->dshift,shell->right_work);CHKERRQ(ierr);
     } else {
-      ierr = VecAXPY(shell->dshift,1.0,shell->right_work);CHKERRQ(ierr);
+      ierr = VecAXPY(shell->dshift,s,shell->right_work);CHKERRQ(ierr);
     }
   } else {
-    ierr = VecAXPY(shell->dshift,1.0,D);CHKERRQ(ierr);
+    ierr = VecAXPY(shell->dshift,s,D);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
+{
+  Vec            d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ins == INSERT_VALUES) {
+    if (!A->ops->getdiagonal) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Operation MATOP_GETDIAGONAL must be set first");
+    ierr = VecDuplicate(D,&d);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(A,d);CHKERRQ(ierr);
+    ierr = MatDiagonalSet_Shell_Private(A,d,-1.);CHKERRQ(ierr);
+    ierr = MatDiagonalSet_Shell_Private(A,D,1.);CHKERRQ(ierr);
+    ierr = VecDestroy(&d);CHKERRQ(ierr);
+  } else {
+    ierr = MatDiagonalSet_Shell_Private(A,D,1.);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -463,8 +481,6 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   }
   PetscFunctionReturn(0);
 }
-
-PETSC_INTERN PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
 
 static PetscErrorCode MatMissingDiagonal_Shell(Mat A,PetscBool  *missing,PetscInt *d)
 {

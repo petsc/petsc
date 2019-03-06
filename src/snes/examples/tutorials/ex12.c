@@ -29,7 +29,7 @@ typedef struct {
   RunType        runType;           /* Whether to run tests, or solve the full problem */
   PetscBool      jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
   PetscLogEvent  createMeshEvent;
-  PetscBool      showInitial, showSolution, restart, check, quiet, nonzInit;
+  PetscBool      showInitial, showSolution, restart, quiet, nonzInit;
   /* Domain and mesh definition */
   PetscInt       dim;               /* The topological mesh dimension */
   DMBoundaryType periodicity[3];    /* The domain periodicity */
@@ -436,7 +436,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showInitial         = PETSC_FALSE;
   options->showSolution        = PETSC_FALSE;
   options->restart             = PETSC_FALSE;
-  options->check               = PETSC_FALSE;
   options->viewHierarchy       = PETSC_FALSE;
   options->simplex             = PETSC_TRUE;
   options->quiet               = PETSC_FALSE;
@@ -477,7 +476,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex12.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex12.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-restart", "Read in the mesh and solution from a file", "ex12.c", options->restart, &options->restart, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-check", "Compare with default integration routines", "ex12.c", options->check, &options->check, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_view_hierarchy", "View the coarsened hierarchy", "ex12.c", options->viewHierarchy, &options->viewHierarchy, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex12.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-quiet", "Don't print any vecs", "ex12.c", options->quiet, &options->quiet, NULL);CHKERRQ(ierr);
@@ -623,12 +621,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
+static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->variableCoefficient) {
   case COEFF_NONE:
     if (user->periodicity[0]) {
@@ -699,7 +699,6 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
                             "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL,
                             user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -735,20 +734,37 @@ static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
+{
+  DM             dmAux, coordDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
+  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
+  if (!feAux) PetscFunctionReturn(0);
+  ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
+  ierr = DMSetField(dmAux, 0, NULL, (PetscObject) feAux);CHKERRQ(ierr);
+  ierr = DMCreateDS(dmAux);CHKERRQ(ierr);
+  if (user->fieldBC) {ierr = SetupBC(dm, dmAux, user);CHKERRQ(ierr);}
+  else               {ierr = SetupMaterial(dm, dmAux, user);CHKERRQ(ierr);}
+  ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM             cdm   = dm;
-  const PetscInt dim   = user->dim;
-  PetscFE        feAux = NULL;
-  PetscFE        feCh  = NULL;
-  PetscFE        fe;
-  PetscDS        prob, probAux = NULL, probCh = NULL;
-  PetscBool      simplex = user->simplex;
+  DM             cdm = dm;
+  const PetscInt dim = user->dim;
+  PetscFE        fe, feAux = NULL;
+  PetscBool      simplex   = user->simplex;
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* Create finite element */
+  /* Create finite element for each field and auxiliary field */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "potential");CHKERRQ(ierr);
@@ -758,51 +774,20 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = PetscFECreateDefault(comm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
-    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
   } else if (user->fieldBC) {
     PetscQuadrature q;
 
     ierr = PetscFECreateDefault(comm, dim, 1, simplex, "bc_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
-    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
-  }
-  if (user->check) {
-    ierr = PetscFECreateDefault(comm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);
-    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probCh);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
   }
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, user);CHKERRQ(ierr);
   while (cdm) {
-    DM coordDM;
-
-    ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(cdm,&coordDM);CHKERRQ(ierr);
-    if (feAux) {
-      DM      dmAux;
-
-      ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
-      ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
-      ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-      if (user->fieldBC) {ierr = SetupBC(cdm, dmAux, user);CHKERRQ(ierr);}
-      else               {ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);}
-      ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
-    }
-    if (feCh) {
-      DM      dmCh;
-
-      ierr = DMClone(cdm, &dmCh);CHKERRQ(ierr);
-      ierr = DMSetCoordinateDM(dmCh, coordDM);CHKERRQ(ierr);
-      ierr = DMSetDS(dmCh, probCh);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "dmCh", (PetscObject) dmCh);CHKERRQ(ierr);
-      ierr = DMDestroy(&dmCh);CHKERRQ(ierr);
-    }
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
+    ierr = SetupAuxDM(cdm, feAux, user);CHKERRQ(ierr);
     if (user->bcType == DIRICHLET) {
       PetscBool hasLabel;
 
@@ -813,9 +798,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feCh);CHKERRQ(ierr);
-  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
-  ierr = PetscDSDestroy(&probCh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

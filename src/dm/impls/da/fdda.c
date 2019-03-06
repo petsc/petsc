@@ -62,7 +62,7 @@ static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillspars
 
   /* Allocate space for our copy of the given sparse matrix representation. */
   ierr = PetscMalloc1(nz + w + 1,rfill);CHKERRQ(ierr);
-  ierr = PetscMemcpy(*rfill,dfillsparse,(nz+w+1)*sizeof(PetscInt));
+  ierr = PetscMemcpy(*rfill,dfillsparse,(nz+w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -91,6 +91,10 @@
 #define matgetlocalsize01_               MATGETLOCALSIZE01
 #define matsetnullspace_                 MATSETNULLSPACE
 #define matgetownershiprange_            MATGETOWNERSHIPRANGE
+#define matgetownershiprange00_          MATGETOWNERSHIPRANGE00
+#define matgetownershiprange10_          MATGETOWNERSHIPRANGE10
+#define matgetownershiprange01_          MATGETOWNERSHIPRANGE01
+#define matgetownershiprange11_          MATGETOWNERSHIPRANGE11
 #define matgetownershipis_               MATGETOWNERSHIPIS
 #define matgetownershiprangecolumn_      MATGETOWNERSHIPRANGECOLUMN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -180,11 +184,43 @@
 #define matgetlocalsize01_               matgetlocalsize01
 #define matsetnullspace_                 matsetnullspace
 #define matgetownershiprange_            matgetownershiprange
+#define matgetownershiprange00_          matgetownershiprange00
+#define matgetownershiprange10_          matgetownershiprange10
+#define matgetownershiprange01_          matgetownershiprange01
+#define matgetownershiprange11_          matgetownershiprange11
 #define matgetownershipis_               matgetownershipis
 #define matgetownershiprangecolumn_      matgetownershiprangecolumn
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange00_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange10_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange01_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange11_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
 {
   CHKFORTRANNULLINTEGER(m);
   CHKFORTRANNULLINTEGER(n);

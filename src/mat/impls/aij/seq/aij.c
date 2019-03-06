@@ -1519,6 +1519,69 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatShift_SeqAIJ(Mat A,PetscScalar v)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  const PetscInt    *diag = (const PetscInt*)a->diag;
+  const PetscInt    *ii = (const PetscInt*) a->i;
+  PetscInt          i,*mdiag = NULL;
+  PetscErrorCode    ierr;
+  PetscInt          cnt = 0; /* how many diagonals are missing */
+
+  PetscFunctionBegin;
+  if (!A->preallocated || !a->nz) {
+    ierr = MatSeqAIJSetPreallocation(A,1,NULL);CHKERRQ(ierr);
+    ierr = MatShift_Basic(A,v);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  if (a->diagonaldense) {
+    cnt = 0;
+  } else {
+    ierr = PetscCalloc1(A->rmap->n,&mdiag);CHKERRQ(ierr);
+    for (i=0; i<A->rmap->n; i++) {
+      if (diag[i] >= ii[i+1]) {
+        cnt++;
+        mdiag[i] = 1;
+      }
+    }
+  }
+  if (!cnt) {
+    ierr = MatShift_Basic(A,v);CHKERRQ(ierr);
+  } else {
+    PetscScalar *olda = a->a;  /* preserve pointers to current matrix nonzeros structure and values */
+    PetscInt    *oldj = a->j, *oldi = a->i;
+    PetscBool   singlemalloc = a->singlemalloc,free_a = a->free_a,free_ij = a->free_ij;
+
+    a->a = NULL;
+    a->j = NULL;
+    a->i = NULL;
+    /* increase the values in imax for each row where a diagonal is being inserted then reallocate the matrix data structures */
+    for (i=0; i<A->rmap->n; i++) {
+      a->imax[i] += mdiag[i];
+    }
+    ierr = MatSeqAIJSetPreallocation_SeqAIJ(A,0,a->imax);CHKERRQ(ierr);
+
+    /* copy old values into new matrix data structure */
+    for (i=0; i<A->rmap->n; i++) {
+      ierr = MatSetValues(A,1,&i,a->imax[i] - mdiag[i],&oldj[oldi[i]],&olda[oldi[i]],ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(A,i,i,v,ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (singlemalloc) {
+      ierr = PetscFree3(olda,oldj,oldi);CHKERRQ(ierr);
+    } else {
+      if (free_a)  {ierr = PetscFree(olda);CHKERRQ(ierr);}
+      if (free_ij) {ierr = PetscFree(oldj);CHKERRQ(ierr);}
+      if (free_ij) {ierr = PetscFree(oldi);CHKERRQ(ierr);}
+    }
+  }
+  ierr = PetscFree(mdiag);CHKERRQ(ierr);
+  a->diagonaldense = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /*
      Checks for missing diagonals
 */
@@ -3189,19 +3252,6 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShift_SeqAIJ(Mat Y,PetscScalar a)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)Y->data;
-
-  PetscFunctionBegin;
-  if (!Y->preallocated || !aij->nz) {
-    ierr = MatSeqAIJSetPreallocation(Y,1,NULL);CHKERRQ(ierr);
-  }
-  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatGetRow_SeqAIJ,
@@ -4273,6 +4323,8 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newMat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  /* force binary viewer to load .info file if it has not yet done so */
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
   if (isbinary) {
@@ -4300,8 +4352,6 @@ PetscErrorCode MatLoad_SeqAIJ_Binary(Mat newMat, PetscViewer viewer)
   PetscInt       bs = newMat->rmap->bs;
 
   PetscFunctionBegin;
-  /* force binary viewer to load .info file if it has not yet done so */
-  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"view must have one processor");
@@ -4471,8 +4521,8 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 #if defined(PETSC_USE_DEBUG)
     if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %D length = %D",ii,i[ii+1] - i[ii]);
     for (jj=i[ii]+1; jj<i[ii+1]; jj++) {
-      if (j[jj] < j[jj-1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is not sorted",jj-i[ii],j[jj],ii);
-      if (j[jj] == j[jj-1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is identical to previous entry",jj-i[ii],j[jj],ii);
+      if (j[jj] < j[jj-1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual column %D) in row %D is not sorted",jj-i[ii],j[jj],ii);
+      if (j[jj] == j[jj-1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual column %D) in row %D is identical to previous entry",jj-i[ii],j[jj],ii);
     }
 #endif
   }

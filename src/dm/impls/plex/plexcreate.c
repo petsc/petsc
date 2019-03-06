@@ -2252,6 +2252,19 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexIsSimplex_Static(DM dm, PetscBool *isSimplex)
+{
+  PetscInt       dim, cStart, coneSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
+  *isSimplex = coneSize == dim+1 ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -2272,6 +2285,31 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   /* Projection behavior */
   ierr = PetscOptionsInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL);CHKERRQ(ierr);
+  /* Checking structure */
+  {
+    const char *cellTypes[] = {"simplex", "tensor", "unknown", "DMPlexCellType", "DM_PLEX_CELLTYPE_", NULL};
+    PetscEnum   ct;
+    PetscBool   flg = PETSC_FALSE, flg2 = PETSC_FALSE;
+
+    ierr = PetscOptionsBool("-dm_plex_check_symmetry", "Check that the adjacency information in the mesh is symmetric", "DMPlexCheckSymmetry", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
+    if (flg && flg2) {ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);}
+    ierr = PetscOptionsEnum("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices", "DMPlexCheckSkeleton", cellTypes, (PetscEnum) 0, &ct, &flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscBool isSimplex = ct ? PETSC_FALSE : PETSC_TRUE;
+
+      if (ct == (PetscEnum) DM_PLEX_CELLTYPE_UNKNOWN) {ierr = DMPlexIsSimplex_Static(dm, &isSimplex);CHKERRQ(ierr);}
+      ierr = DMPlexCheckSkeleton(dm, isSimplex, 0);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsEnum("-dm_plex_check_faces", "Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type", "DMPlexCheckFaces", cellTypes, (PetscEnum) 0, &ct, &flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscBool isSimplex = ct ? PETSC_FALSE : PETSC_TRUE;
+
+      if (ct == (PetscEnum) DM_PLEX_CELLTYPE_UNKNOWN) {ierr = DMPlexIsSimplex_Static(dm, &isSimplex);CHKERRQ(ierr);}
+      ierr = DMPlexCheckFaces(dm, isSimplex, 0);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsBool("-dm_plex_check_geometry", "Check that cells have positive volume", "DMPlexCheckGeometry", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
+    if (flg && flg2) {ierr = DMPlexCheckGeometry(dm);CHKERRQ(ierr);}
+  }
 
   ierr = PetscPartitionerSetFromOptions(mesh->partitioner);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2496,9 +2534,18 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
                     ownership of the underlying DMPlex points. This is specified by another PetscSection object.
 
   Options Database Keys:
-+ -dm_view :mesh.tex:ascii_latex - View the mesh in LaTeX/TikZ
-. -dm_plex_view_scale <num>      - Scale the TikZ
-- -dm_plex_print_fem <num>       - View FEM assembly information, such as element vectors and matrices
++ -dm_plex_hash_location             - Use grid hashing for point location
+. -dm_plex_partition_balance         - Attempt to evenly divide points on partition boundary between processes
+. -dm_plex_remesh_bd                 - Allow changes to the boundary on remeshing
+. -dm_plex_max_projection_height     - Maxmimum mesh point height used to project locally
+. -dm_plex_regular_refinement        - Use special nested projection algorithm for regular refinement
+. -dm_plex_check_symmetry            - Check that the adjacency information in the mesh is symmetric
+. -dm_plex_check_skeleton <celltype> - Check that each cell has the correct number of vertices
+. -dm_plex_check_faces <celltype>    - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type
+. -dm_plex_check_geometry            - Check that cells have positive volume
+. -dm_view :mesh.tex:ascii_latex     - View the mesh in LaTeX/TikZ
+. -dm_plex_view_scale <num>          - Scale the TikZ
+- -dm_plex_print_fem <num>           - View FEM assembly information, such as element vectors and matrices
 
 
   Level: intermediate
@@ -3208,6 +3255,8 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
 PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   const char    *extGmsh    = ".msh";
+  const char    *extGmsh2   = ".msh2";
+  const char    *extGmsh4   = ".msh4";
   const char    *extCGNS    = ".cgns";
   const char    *extExodus  = ".exo";
   const char    *extGenesis = ".gen";
@@ -3217,7 +3266,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extPLY     = ".ply";
   const char    *extCV      = ".dat";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isCV;
+  PetscBool      isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isCV;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -3228,6 +3277,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Filename must be a valid path");
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh,    4, &isGmsh);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extGmsh2,   5, &isGmsh2);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extGmsh4,   5, &isGmsh4);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,    5, &isCGNS);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus,  4, &isExodus);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGenesis, 4, &isGenesis);CHKERRQ(ierr);
@@ -3236,7 +3287,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extMed,     4, &isMed);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extPLY,     4, &isPLY);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extCV,      4, &isCV);CHKERRQ(ierr);
-  if (isGmsh) {
+  if (isGmsh || isGmsh2 || isGmsh4) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
     ierr = DMPlexCreateCGNSFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
@@ -3248,6 +3299,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     PetscBool      load_hdf5_xdmf = PETSC_FALSE;
     PetscViewer viewer;
 
+    /* PETSC_VIEWER_HDF5_XDMF is used if the filename ends with .xdmf.h5, or if -dm_plex_create_from_hdf5_xdmf option is present */
+    ierr = PetscStrncmp(&filename[PetscMax(0,len-8)], ".xdmf",  5, &load_hdf5_xdmf);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_create_from_hdf5_xdmf", &load_hdf5_xdmf, NULL);CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);

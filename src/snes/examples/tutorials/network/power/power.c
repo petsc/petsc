@@ -86,7 +86,7 @@ int main(int argc,char ** argv)
   Mat              J;
   SNES             snes;
 
-  ierr = PetscInitialize(&argc,&argv,"poweroptions",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,"poweroptions",help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   {
     /* introduce the const crank so the clang static analyzer realizes that if it enters any of the if (crank) then it must have entered the first */

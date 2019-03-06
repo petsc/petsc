@@ -917,7 +917,9 @@ can be parallel or sequential. The only requirements are that the
 number of entries in the index set of the first vector, \lstinline{ix},
 equals the number in the destination index set, \lstinline{iy}, and that the
 vectors be long enough to contain all the indices referred to in the
-index sets.  The argument \lstinline{INSERT_VALUES} specifies that the
+index sets. If both \lstinline{x} and \lstinline{y} are parallel,
+their communicator must be on the same set of processes, but their process order can be different.
+The argument \lstinline{INSERT_VALUES} specifies that the
 vector elements will be inserted into the specified locations of the
 destination vector, overwriting any existing values.  To add the
 components, rather than insert them, the user should select the option
@@ -3764,9 +3766,7 @@ For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_typ
   \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERMKL_CPARDISO|    & \trl{mkl_cpardiso}  \\ 
   \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERPASTIX|          & \trl{pastix}        \\
   \trl{aij}          & \trl{cholesky}     &  \lstinline|MATSOLVERBAS|             & \trl{bas}           \\
-  \trl{aijcusp}      & \trl{lu}           &  \lstinline|MATSOLVERCUSPARSE|        & \trl{cusparse}      \\
-  \trl{aijcusparse}  & \trl{lu}           &                                       &                     \\
-  \trl{aijcusp}      & \trl{cholesky}     &                                       &                     \\
+  \trl{aijcusparse}  & \trl{lu}           &  \lstinline|MATSOLVERCUSPARSE|        & \trl{cusparse}      \\
   \trl{aijcusparse}  & \trl{cholesky}     &                                       &                     \\
   \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERPETSC|           & \trl{petsc}         \\ 
   \trl{baij}         &                    &                                       &                     \\

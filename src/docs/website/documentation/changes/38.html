@@ -101,6 +101,9 @@
       </div>
 
       <h4>General:</h4>
+      <ul>
+        <li><tt>--download-metis</tt> is changed to not builds metis with flag <tt>-DMETIS_USE_DOUBLEPRECISION=1</tt> to have consistent behavior between single/double/quad precision builds (and with external build of metis). This affects parmetis aswell</li>
+      </ul>
       <h4>Configure/Build:</h4>
       <ul>
         <li>removed with-mpiuni-fortran-binding option</li>

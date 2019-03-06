@@ -419,7 +419,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = ISDestroy(&aIS);CHKERRQ(ierr);
   }
   ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, (PetscObject) user->fe);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) user->fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (!isPlex) {
     PetscSection    section;
@@ -654,13 +655,10 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMPlexConstructGhostCells(dmRedist,NULL,NULL,&dmfv);CHKERRQ(ierr);
   ierr = DMDestroy(&dmRedist);CHKERRQ(ierr);
   ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
-  ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
+  ierr = DMSetField(dmfv, 0, NULL, (PetscObject) fv);CHKERRQ(ierr);
+  ierr = DMCreateDS(dmfv);CHKERRQ(ierr);
   ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
-  if (refTree) {
-    PetscDS ds;
-    ierr = DMGetDS(dmfv,&ds);CHKERRQ(ierr);
-    ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
-  }
+  if (refTree) {ierr = DMCopyDisc(dmfv,refTree);CHKERRQ(ierr);}
   ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
   nvecs = user->dim * (user->dim+1) / 2;

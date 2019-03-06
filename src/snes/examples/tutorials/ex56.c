@@ -395,8 +395,9 @@ int main(int argc,char **args)
       ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
       ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
       /* FEM prob */
+      ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+      ierr = DMCreateDS(dm);CHKERRQ(ierr);
       ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-      ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
       /* setup problem */
       if (run_type==1) {
         ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
@@ -415,7 +416,7 @@ int main(int argc,char **args)
         ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
       }
       while (cdm) {
-        ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
+        ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
         ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
       }
       ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
@@ -437,7 +438,7 @@ int main(int argc,char **args)
       PetscObject  deformation;
       ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
       ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
-      ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
+      ierr = DMGetField(dm, 0, NULL, &deformation);CHKERRQ(ierr);
       ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
       ierr = DMDestroy(&subdm);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr); /* created by DM and destroyed by Mat */

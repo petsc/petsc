@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
 from collections import defaultdict
 
-PKGS = 'sys vec mat dm ksp snes ts tao'.split()
-LANGS = dict(c='C', cxx='CXX', cu='CU', F='F', F90='F90')
+PetscPKGS = 'sys vec mat dm ksp snes ts tao'.split()
+LANGS = dict(c='C', cxx='CXX', cpp='CPP', cu='CU', F='F', F90='F90')
 
 class debuglogger(object):
     def __init__(self, log):
@@ -19,7 +19,7 @@ class debuglogger(object):
         self._log.debug(string)
 
 class Petsc(object):
-    def __init__(self, petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, verbose=False):
+    def __init__(self, petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, pkg_pkgs=None, verbose=False):
         if petsc_dir is None:
             petsc_dir = os.environ.get('PETSC_DIR')
             if petsc_dir is None:
@@ -38,7 +38,6 @@ class Petsc(object):
                         raise RuntimeError('Could not determine PETSC_ARCH, please set in environment')
         self.petsc_dir = os.path.normpath(petsc_dir)
         self.petsc_arch = petsc_arch.rstrip(os.sep)
-        self.read_conf()
         self.pkg_dir = pkg_dir
         self.pkg_name = pkg_name
         self.pkg_arch = pkg_arch
@@ -50,6 +49,10 @@ class Petsc(object):
           self.pkg_name = os.path.basename(os.path.normpath(self.pkg_dir))
         if self.pkg_arch is None:
           self.pkg_arch = self.petsc_arch
+        self.pkg_pkgs = PetscPKGS
+        if pkg_pkgs is not None:
+          self.pkg_pkgs += list(set(pkg_pkgs.split(','))-set(self.pkg_pkgs))
+        self.read_conf()
         try:
             logging.basicConfig(filename=self.pkg_arch_path('lib',self.pkg_name,'conf', 'gmake.log'), level=logging.DEBUG)
         except IOError:
@@ -75,6 +78,20 @@ class Petsc(object):
                 val = define[space+1:]
                 self.conf[key] = val
         self.conf.update(parse_makefile(self.arch_path('lib','petsc','conf', 'petscvariables')))
+        # allow parsing package additional configurations (if any)
+        if self.pkg_name != 'petsc' :
+            f = self.pkg_arch_path('include', self.pkg_name + 'conf.h')
+            if os.path.isfile(f):
+                for line in open(self.pkg_arch_path('include', self.pkg_name + 'conf.h')):
+                    if line.startswith('#define '):
+                        define = line[len('#define '):]
+                        space = define.find(' ')
+                        key = define[:space]
+                        val = define[space+1:]
+                        self.conf[key] = val
+            f = self.pkg_arch_path('lib',self.pkg_name,'conf', self.pkg_name + 'variables')
+            if os.path.isfile(f):
+                self.conf.update(parse_makefile(self.pkg_arch_path('lib',self.pkg_name,'conf', self.pkg_name + 'variables')))
         self.have_fortran = int(self.conf.get('PETSC_HAVE_FORTRAN', '0'))
 
     def inconf(self, key, val):
@@ -135,14 +152,14 @@ class Petsc(object):
         def write(stem, srcs):
             for lang in LANGS:
                 fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang, srcs=' '.join(srcs[lang])))
-        for pkg in PKGS:
+        for pkg in self.pkg_pkgs:
             srcs = self.gen_pkg(pkg)
             write('srcs-' + pkg, srcs)
         return self.gendeps
 
     def gen_ninja(self, fd):
         libobjs = []
-        for pkg in PKGS:
+        for pkg in self.pkg_pkgs:
             srcs = self.gen_pkg(pkg)
             for lang in LANGS:
                 for src in srcs[lang]:
@@ -222,11 +239,11 @@ def WriteNinja(petsc):
                                                        petsc.arch_path('lib','petsc','conf', 'petscvariables'),
                                                        ' '.join(os.path.join(petsc.pkg_dir, dep) for dep in petsc.gendeps)))
 
-def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, output=None, verbose=False):
+def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, pkg_pkgs=None, output=None, verbose=False):
     if output is None:
         output = 'gnumake'
     writer = dict(gnumake=WriteGnuMake, ninja=WriteNinja)
-    petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_name=pkg_name, pkg_arch=pkg_arch, verbose=verbose)
+    petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_name=pkg_name, pkg_arch=pkg_arch, pkg_pkgs=pkg_pkgs, verbose=verbose)
     writer[output](petsc)
     petsc.summary()
 
@@ -238,10 +255,11 @@ if __name__ == '__main__':
     parser.add_option('--pkg-dir', help='Set the directory of the package (different from PETSc) you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-name', help='Set the name of the package you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-arch', help='Set the package arch name you want to generate the makefile rules for', default=None)
+    parser.add_option('--pkg-pkgs', help='Set the package folders (comma separated list, different from the usual sys,vec,mat etc) you want to generate the makefile rules for', default=None)
     parser.add_option('--output', help='Location to write output file', default=None)
     opts, extra_args = parser.parse_args()
     if extra_args:
         import sys
         sys.stderr.write('Unknown arguments: %s\n' % ' '.join(extra_args))
         exit(1)
-    main(petsc_arch=opts.petsc_arch, pkg_dir=opts.pkg_dir, pkg_name=opts.pkg_name, pkg_arch=opts.pkg_arch, output=opts.output, verbose=opts.verbose)
+    main(petsc_arch=opts.petsc_arch, pkg_dir=opts.pkg_dir, pkg_name=opts.pkg_name, pkg_arch=opts.pkg_arch, pkg_pkgs=opts.pkg_pkgs, output=opts.output, verbose=opts.verbose)

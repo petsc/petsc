@@ -22,23 +22,36 @@
 PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
+  PetscInt       M1,M2,N1,N2;
   PetscInt       m1,m2,n1,n2;
   PetscBool      sametype;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
   PetscValidLogicalCollectiveScalar(Y,a,2);
-  ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
-  ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
-  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
+  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
+  PetscCheckSameComm(Y,1,X,3);
+  ierr = MatGetSize(X,&M1,&N1);CHKERRQ(ierr);
+  ierr = MatGetSize(Y,&M2,&N2);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(X,&m1,&n1);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(Y,&m2,&n2);CHKERRQ(ierr);
+  if (M1 != M2 || N1 != N2) SETERRQ4(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_SIZ,"Non conforming matrix add: global sizes %D x %D, %D x %D",M1,M2,N1,N2);
+  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes %D x %D, %D x %D",m1,m2,n1,n2);
 
   ierr = PetscStrcmp(((PetscObject)X)->type_name,((PetscObject)Y)->type_name,&sametype);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
   if (Y->ops->axpy && sametype) {
     ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
   } else {
-    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    if (str != DIFFERENT_NONZERO_PATTERN) {
+      ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    } else {
+      Mat B;
+
+      ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
+      ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+      ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
+    }
   }
   ierr = PetscLogEventEnd(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
@@ -46,6 +59,52 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
     Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
   }
 #endif
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*preall)(Mat,Mat,Mat*) = NULL;
+
+  PetscFunctionBegin;
+  /* look for any available faster alternative to the general preallocator */
+  ierr = PetscObjectQueryFunction((PetscObject)Y,"MatAXPYGetPreallocation_C",&preall);CHKERRQ(ierr);
+  if (preall) {
+    ierr = (*preall)(Y,X,B);CHKERRQ(ierr);
+  } else { /* Use MatPrellocator, assumes same row-col distribution */
+    Mat      preallocator;
+    PetscInt r,rstart,rend;
+    PetscInt m,n,M,N;
+
+    ierr = MatGetSize(Y,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(Y,&m,&n);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)Y),&preallocator);CHKERRQ(ierr);
+    ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
+    ierr = MatSetSizes(preallocator,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(preallocator,&rstart,&rend);CHKERRQ(ierr);
+    for (r = rstart; r < rend; ++r) {
+      PetscInt          ncols;
+      const PetscInt    *row;
+      const PetscScalar *vals;
+
+      ierr = MatGetRow(Y,r,&ncols,&row,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(preallocator,1,&r,ncols,row,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Y,r,&ncols,&row,&vals);CHKERRQ(ierr);
+      ierr = MatGetRow(X,r,&ncols,&row,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(preallocator,1,&r,ncols,row,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(X,r,&ncols,&row,&vals);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+    ierr = MatCreate(PetscObjectComm((PetscObject)Y),B);CHKERRQ(ierr);
+    ierr = MatSetType(*B,((PetscObject)Y)->type_name);CHKERRQ(ierr);
+    ierr = MatSetSizes(*B,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatPreallocatorPreallocate(preallocator,PETSC_FALSE,*B);CHKERRQ(ierr);
+    ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -67,12 +126,16 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc1(n+1,&val);CHKERRQ(ierr);
+    PetscInt vs = 100;
+    /* realloc if needed, as this function may be used in parallel */
+    ierr = PetscMalloc1(vs,&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      for (j=0; j<ncols; j++) {
-        val[j] = a*vals[j];
+      if (vs < ncols) {
+        vs   = PetscMin(2*ncols,n);
+        ierr = PetscRealloc(vs*sizeof(*val),&val);CHKERRQ(ierr);
       }
+      for (j=0; j<ncols; j++) val[j] = a*vals[j];
       ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
@@ -105,16 +168,20 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc1(n+1,&val);CHKERRQ(ierr);
+    PetscInt vs = 100;
+    /* realloc if needed, as this function may be used in parallel */
+    ierr = PetscMalloc1(vs,&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
       ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
 
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      for (j=0; j<ncols; j++) {
-        val[j] = a*vals[j];
+      if (vs < ncols) {
+        vs   = PetscMin(2*ncols,n);
+        ierr = PetscRealloc(vs*sizeof(*val),&val);CHKERRQ(ierr);
       }
+      for (j=0; j<ncols; j++) val[j] = a*vals[j];
       ierr = MatSetValues(B,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
@@ -297,11 +364,8 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 @*/
 PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 {
-  Vec            in,out;
   PetscErrorCode ierr;
-  PetscInt       i,m,n,M,N,*rows,start,end;
   MPI_Comm       comm;
-  PetscScalar    *array,zero = 0.0,one = 1.0;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
@@ -310,44 +374,7 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 
   ierr = PetscObjectGetComm((PetscObject)inmat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  ierr = MatGetLocalSize(inmat,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetSize(inmat,&M,&N);CHKERRQ(ierr);
-  ierr = MatCreateVecs(inmat,&in,&out);CHKERRQ(ierr);
-  ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(out,&start,&end);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m,&rows);CHKERRQ(ierr);
-  for (i=0; i<m; i++) rows[i] = start + i;
-
-  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*mat,n,NULL,N-n,NULL);CHKERRQ(ierr);
-  }
-
-  for (i=0; i<N; i++) {
-
-    ierr = VecSet(in,zero);CHKERRQ(ierr);
-    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
-
-    ierr = MatMult(inmat,in,out);CHKERRQ(ierr);
-
-    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
-
-  }
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecDestroy(&out);CHKERRQ(ierr);
-  ierr = VecDestroy(&in);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatConvert_Shell(inmat,size == 1 ? MATSEQDENSE : MATAIJ,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

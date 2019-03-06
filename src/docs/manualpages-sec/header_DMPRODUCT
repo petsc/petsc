@@ -1,0 +1,9 @@
+<HTML>
+<HEAD>
+<TITLE>DMProduct Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<H2> DMProduct </H2>
+
+The DMProduct class represents a (local) Cartesian product of other DM objects.
+<P>

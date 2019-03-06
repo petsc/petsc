@@ -51,7 +51,7 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
    will hold vector values in the natural numbering, rather than in
    the PETSc parallel numbering associated with the DMDA.
 
-   Collective on DMDA
+   Collective
 
    Input Parameter:
 .  da - the distributed array

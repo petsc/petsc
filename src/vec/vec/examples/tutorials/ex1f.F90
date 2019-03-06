@@ -20,31 +20,33 @@
 !     x, y, w - vectors
 !     z       - array of vectors
 
-      Vec              x,y,w,z(5)
-      PetscReal        norm,v,v1,v2
-      PetscInt           n,ithree
-      PetscBool  flg
-      PetscErrorCode ierr
-      PetscMPIInt  rank
-      PetscScalar  one,two,three
-      PetscScalar  dots(3),dot
-      character*(40)   name
-      PetscReal    nfloat
+      Vec               :: x,y,w
+      Vec, dimension(5) :: z
+      PetscReal         :: norm,v,v1,v2
+      PetscInt, parameter :: &
+        ithree = 3, &
+        n = 20
+      PetscBool         :: flg
+      PetscErrorCode    :: ierr
+      PetscMPIInt       :: rank
+      PetscScalar, parameter :: &
+        one = 1.0, &
+        two = 2.0, &
+        three = 3.0
+      PetscScalar :: dot
+      PetscScalar, dimension(3) :: dots
+      character(len=40) ::  name
+      PetscReal    :: nfloat
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
+      if (ierr /= 0) then
         print*,'Unable to initialize PETSc'
         stop
       endif
-      one   = 1.0
-      two   = 2.0
-      three = 3.0
-      n     = 20
-      ithree = 3
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       nfloat = n
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -121,62 +123,62 @@
       call VecNorm(x,NORM_2,norm,ierr)
       v = abs(norm-2.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,130) v
+      if (rank == 0) write(6,130) v
  130  format ('VecScale ',1pe9.2)
 
       call VecCopy(x,w,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = abs(norm-2.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,140) v
+      if (rank == 0) write(6,140) v
  140  format ('VecCopy ',1pe9.2)
 
       call VecAXPY(y,three,x,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = abs(norm-8.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,150) v
+      if (rank == 0) write(6,150) v
  150  format ('VecAXPY ',1pe9.2)
 
       call VecAYPX(y,two,x,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = abs(norm-18.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,160) v
+      if (rank == 0) write(6,160) v
  160  format ('VecAYXP ',1pe9.2)
 
       call VecSwap(x,y,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = abs(norm-2.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,170) v
+      if (rank == 0) write(6,170) v
  170  format ('VecSwap ',1pe9.2)
 
       call VecNorm(x,NORM_2,norm,ierr)
       v = abs(norm-18.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,180) v
+      if (rank == 0) write(6,180) v
  180  format ('VecSwap ',1pe9.2)
 
       call VecWAXPY(w,two,x,y,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = abs(norm-38.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,190) v
+      if (rank == 0) write(6,190) v
  190  format ('VecWAXPY ',1pe9.2)
 
       call VecPointwiseMult(w,y,x,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = abs(norm-36.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,200) v
+      if (rank == 0) write(6,200) v
  200  format ('VecPointwiseMult ',1pe9.2)
 
       call VecPointwiseDivide(w,x,y,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = abs(norm-9.0*sqrt(nfloat))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
-      if (rank .eq. 0) write(6,210) v
+      if (rank == 0) write(6,210) v
  210  format ('VecPointwiseDivide ',1pe9.2)
 
 

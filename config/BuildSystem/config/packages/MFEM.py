@@ -109,7 +109,7 @@ class Configure(config.package.Package):
       self.addMakeRule('mfem-build','mfembuild mfeminstall')
       self.addMakeRule('mfem-install','')
 
-    exampleDir = os.path.join(configDir,'examples')
+    exampleDir = os.path.join(self.packageDir,'examples')
     self.logClearRemoveDirectory()
     self.logPrintBox('MFEM examples are available at '+exampleDir)
     self.logResetRemoveDirectory()

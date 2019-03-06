@@ -2,14 +2,14 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define chkmemfortran_             CHKMEMFORTRAN
-#define petscoffsetfortran_        PETSCOFFSETFORTRAN
-#define petscobjectstateincrease_  PETSCOBJECTSTATEINCREASE
+#define chkmemfortran_              CHKMEMFORTRAN
+#define petscoffsetfortran_         PETSCOFFSETFORTRAN
+#define petscobjectstateincrease_   PETSCOBJECTSTATEINCREASE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscoffsetfortran_        petscoffsetfortran
-#define chkmemfortran_             chkmemfortran
-#define flush__                    flush_
-#define petscobjectstateincrease_  petscobjectstateincrease
+#define petscoffsetfortran_         petscoffsetfortran
+#define chkmemfortran_              chkmemfortran
+#define flush__                     flush_
+#define petscobjectstateincrease_   petscobjectstateincrease
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)

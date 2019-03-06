@@ -162,6 +162,16 @@ struct _n_Boundary {
   DMBoundary  next;
 };
 
+typedef struct _n_Field {
+  PetscObject disc;
+  DMLabel     label;
+} RegionField;
+
+typedef struct _n_Space {
+  PetscDS ds;
+  DMLabel label;
+} DMSpace;
+
 PETSC_EXTERN PetscErrorCode DMDestroyLabelLinkList(DM);
 
 struct _p_DM {
@@ -186,6 +196,7 @@ struct _p_DM {
   PetscBool               structure_only; /* Flag indicating the DMCreateMatrix() create matrix structure without values */
   PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
+  PetscBool               setfromoptionscalled;
   void                    *data;
   /* Hierarchy / Submeshes */
   DM                      coarseMesh;
@@ -224,8 +235,11 @@ struct _p_DM {
   NullSpaceFunc           nullspaceConstructors[10];
   NullSpaceFunc           nearnullspaceConstructors[10];
   /* Fields are represented by objects */
-  PetscDS                 prob;
-  DMBoundary              boundary;          /* List of boundary conditions */
+  PetscInt                Nf;                   /* Number of fields defined on the total domain */
+  RegionField            *fields;               /* Array of discretization fields with regions of validity */
+  DMBoundary              boundary;             /* List of boundary conditions */
+  PetscInt                Nds;                  /* Number of discrete systems defined on the total domain */
+  DMSpace                *probs;                /* Array of discrete systems */
   /* Output structures */
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */

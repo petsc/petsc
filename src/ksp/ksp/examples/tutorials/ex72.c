@@ -581,6 +581,10 @@ int main(int argc,char **args)
          suffix: 17
          requires: hypre
          args: -pc_type hypre -pc_hypre_type boomeramg
+      test:
+         suffix: 18
+         requires: hypre
+         args: -pc_type hypre -pc_hypre_type euclid
 
    testset:
       suffix: 19

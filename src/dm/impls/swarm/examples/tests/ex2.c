@@ -198,20 +198,21 @@ static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
 {
-  PetscDS        prob;
   PetscFE        fe;
+  PetscDS        ds;
   PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, user->simplex, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe,"fe");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fe, "fe");CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   /* Setup to form mass matrix */
-  ierr = PetscDSSetJacobian(prob, 0, 0, identity, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 0, identity, NULL, NULL, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -516,7 +517,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
     PetscClassId id;
     PetscInt     Nc;
 
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -558,7 +559,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
         PetscInt     Nb, Nc, q, qc = 0;
 
         ierr = PetscMemzero(grad, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
-        ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+        ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
         ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
@@ -675,7 +676,7 @@ int main (int argc, char * argv[]) {
   AppCtx         user;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);

@@ -130,12 +130,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
+static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 {
+  PetscDS        prob;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_temp, f1_temp);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, g0_temp, NULL, NULL, g3_temp);CHKERRQ(ierr);
   ctx->exactFuncs[0] = analytic_temp;
@@ -147,7 +149,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 {
   DM             cdm = dm;
   const PetscInt dim = ctx->dim;
-  PetscDS        prob;
   PetscFE        fe;
   PetscErrorCode ierr;
 
@@ -156,13 +157,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, ctx->simplex, "temp_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "temperature");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = SetupProblem(prob, ctx);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, ctx);CHKERRQ(ierr);
   while (cdm) {
     PetscBool hasLabel;
 
-    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
     if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);

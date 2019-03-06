@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscInt       parentId[] = {-1,         2,         0,         -1,         2,         1,         0};
   PetscInt       Nlevels,*Level,*Levelcnt,*Idbylevel,*Column;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscProcessTree(n,mask,parentId,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (!mask[i]) {

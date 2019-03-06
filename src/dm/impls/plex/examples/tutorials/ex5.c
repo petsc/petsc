@@ -36,7 +36,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], PetscViewerFormat format, DM *dm_new)
+static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], PetscViewerFormat format, const char prefix[], DM *dm_new)
 {
   DM             dmnew;
   PetscViewer    v;
@@ -50,7 +50,8 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], Petsc
   ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = DMCreate(PETSC_COMM_WORLD, &dmnew);CHKERRQ(ierr);
   ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
-  ierr = DMLoad(dmnew, v);
+  ierr = DMSetOptionsPrefix(dmnew, prefix);CHKERRQ(ierr);
+  ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
 
   ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
@@ -88,15 +89,14 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
-  ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, &dmnew);CHKERRQ(ierr);
+  ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, "new_", &dmnew);CHKERRQ(ierr);
 
   if (user.second_write_read) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm = dmnew;
-    ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, &dmnew);CHKERRQ(ierr);
+    ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, "new_", &dmnew);CHKERRQ(ierr);
   }
 
-  ierr = DMSetOptionsPrefix(dmnew,"new_");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dmnew, NULL, "-dm_view");CHKERRQ(ierr);
   /* TODO: Is it still true? */
   /* The NATIVE format for coordiante viewing is killing parallel output, since we have a local vector. Map it to global, and it will work. */

@@ -139,15 +139,14 @@ static PetscErrorCode test3(DM dm, AppCtx *options)
 
 static PetscErrorCode test4(DM dm, AppCtx *options)
 {
-  PetscDS        ds;
   PetscFE        fe;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), options->dim, 1, options->simplex, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(ds, 0, (PetscObject)fe);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = test2(dm, options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -194,30 +193,28 @@ static PetscErrorCode test6(DM dm, AppCtx *options)
 
 static PetscErrorCode test7(DM dm, AppCtx *options)
 {
-  PetscDS        ds;
   PetscFE        fe;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), options->dim, 1, options->simplex, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(ds, 0, (PetscObject)fe);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = test5(dm, options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode test8(DM dm, AppCtx *options)
 {
-  PetscDS        ds;
   PetscFE        fe;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), options->dim, 1, options->simplex, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(ds, 0, (PetscObject)fe);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = test6(dm, options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

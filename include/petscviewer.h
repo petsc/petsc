@@ -102,6 +102,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer,const char[]
 PETSC_EXTERN PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer,const char*[]);
 
+PETSC_EXTERN PetscErrorCode PetscViewerReadable(PetscViewer,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscViewerWritable(PetscViewer,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscViewerCheckReadable(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
+
 /*E
     PetscViewerFormat - Way a viewer presents the object
 
@@ -142,6 +147,7 @@ typedef enum {
   PETSC_VIEWER_HDF5_PETSC,
   PETSC_VIEWER_HDF5_VIZ,
   PETSC_VIEWER_HDF5_XDMF,
+  PETSC_VIEWER_HDF5_MAT,
   PETSC_VIEWER_NOFORMAT,
   PETSC_VIEWER_LOAD_BALANCE
   } PetscViewerFormat;

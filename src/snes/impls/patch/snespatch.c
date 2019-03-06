@@ -154,7 +154,6 @@ static PetscErrorCode PCReset_PATCH_Nonlinear(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (patch->solver) {
     for (i = 0; i < patch->npatch; ++i) {ierr = SNESReset((SNES) patch->solver[i]);CHKERRQ(ierr);}
   }
@@ -175,7 +174,6 @@ static PetscErrorCode PCReset_PATCH_Nonlinear(PC pc)
   }
 
   ierr = VecDestroy(&patch->localState);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -291,7 +289,6 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = SNESGetSolution(snes, &state);CHKERRQ(ierr);
   ierr = SNESGetSolutionUpdate(snes, &update);CHKERRQ(ierr);
   ierr = SNESGetRhs(snes, &rhs);CHKERRQ(ierr);

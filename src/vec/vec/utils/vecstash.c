@@ -414,7 +414,7 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
     ierr = PetscSortIntWithArray(stash->n,stash->idx,perm);CHKERRQ(ierr);
 
     /* Out-of-place copy of arr */
-    ierr = PetscMemcpy(arr,stash->array,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(arr,stash->array+perm[0]*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=1,j=0; i<stash->n; i++) {
       PetscInt k;
       if (stash->idx[i] == stash->idx[j]) {

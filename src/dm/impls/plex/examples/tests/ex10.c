@@ -162,6 +162,7 @@ int main(int argc, char **argv)
     ierr = DMPlexCreateDoublet(PETSC_COMM_WORLD, user.dim, user.cellSimplex, user.interpolate, user.refinementUniform, user.refinementLimit, &dm);CHKERRQ(ierr);
     ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
     ierr = DMSetNumFields(dm, user.numFields);CHKERRQ(ierr);
+    ierr = DMCreateDS(dm);CHKERRQ(ierr);
     ierr = DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
     ierr = DMSetSection(dm, s);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);

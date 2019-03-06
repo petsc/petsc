@@ -1,0 +1,4 @@
+
+On rank 0 of PETSC_COMM_WORLD, x  =  0 1 2 3 4
+On rank 0 of PETSC_COMM_WORLD, y1 =  0 1 2 3 4
+On rank 0 of PETSC_COMM_WORLD, y2 =  5 6 7 8 9

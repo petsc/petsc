@@ -199,7 +199,6 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   DM             dm_laplace;
   PetscDS        prob_mass;
   PetscDS        prob_laplace;
-  PetscDS        prob;
   PetscFE        fe;
   DMLabel        label;
   PetscSection   section;
@@ -216,8 +215,8 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   /* make the data we seek to match */
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, PETSC_TRUE, NULL, 4, &fe);CHKERRQ(ierr);
 
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm, &user->data);CHKERRQ(ierr);
 
   /* ugh, this is hideous */
@@ -229,6 +228,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
 
   /* assemble(inner(u, v)*dx), almost */
   ierr = DMClone(dm, &dm_mass);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, dm_mass);CHKERRQ(ierr);
   ierr = DMSetNumFields(dm_mass, 1);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(dm, dm_mass);CHKERRQ(ierr); /* why do I have to do this separately? */
   ierr = DMGetDS(dm_mass, &prob_mass);CHKERRQ(ierr);
@@ -241,6 +241,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
 
   /* inner(grad(u), grad(v))*dx with homogeneous Dirichlet boundary conditions */
   ierr = DMClone(dm, &dm_laplace);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, dm_laplace);CHKERRQ(ierr);
   ierr = DMSetNumFields(dm_laplace, 1);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(dm, dm_laplace);CHKERRQ(ierr);
   ierr = DMGetDS(dm_laplace, &prob_laplace);CHKERRQ(ierr);

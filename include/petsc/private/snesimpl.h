@@ -139,6 +139,8 @@ struct _p_SNES {
   PetscInt    maxLinearSolveFailures;
 
   PetscBool   domainerror;       /* set with SNESSetFunctionDomainError() */
+  PetscBool   jacobiandomainerror; /* set with SNESSetJacobianDomainError() */
+  PetscBool   checkjacdomainerror; /* if or not check Jacobian domain error after Jacobian evaluations */
 
   PetscBool   ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
   void        *kspconvctx;       /* Eisenstat-Walker KSP convergence context */
@@ -282,6 +284,18 @@ PETSC_INTERN const char SNESCitation[];
       PetscFunctionReturn(0);\
     }\
   }
+
+#define SNESCheckJacobianDomainerror(snes) \
+  if (snes->checkjacdomainerror) {\
+   PetscBool domainerror;\
+   PetscErrorCode ierr = MPIU_Allreduce((int*)&snes->jacobiandomainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
+   if (domainerror) {\
+     snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN;\
+     if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Jacobian domain error");\
+     PetscFunctionReturn(0);\
+   }\
+ }
+
 
 #define SNESCheckKSPSolve(snes)\
   {\

@@ -133,7 +133,7 @@ def generate_xml(directory):
         # in order to correct assemble the folder path for problem outputs, we 
         # iterate over any possible subpackage names and test suffixes
         testname_short = testname_list[:-1]
-        prob_subdir = os.path.join(*testname_short)
+        prob_subdir = os.path.join('', *testname_short)
         probfolder = 'run%s'%probname
         probdir = os.path.join('..', prob_subdir, 'examples', testtype, probfolder)
         if not os.path.exists(probdir):

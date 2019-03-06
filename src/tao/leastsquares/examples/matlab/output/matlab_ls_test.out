@@ -1,0 +1,7 @@
+Running problem 5
+5
+iter =   0, Function value 4.9892e+06, Residual: 23718.9 
+iter =   1, Function value 4.03924e+06, Residual: 85366.7 
+iter =   2, Function value 2.44001e+06, Residual: 265396. 
+iter =   3, Function value 444347., Residual: 453018. 
+iter =   4, Function value 9.8806, Residual: < 1.0e-6
