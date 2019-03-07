@@ -980,7 +980,7 @@ PetscErrorCode PetscSFBcastAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,const voi
       for (j=0; j<n; j++) { ierr = MPI_Reduce_local(packstart+j*typesize,((char *) leafdata)+(leafloc[leafoffset[i]+j])*typesize,1,unit,op);CHKERRQ(ierr); }
     }
 #else
-    else { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op"); }
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
 #endif
   }
 
@@ -1077,9 +1077,7 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
       }
     }
 #else
-    else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
-    }
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
 #endif
   }
   ierr = PetscSFBasicReclaimPack(sf,&link);CHKERRQ(ierr);
