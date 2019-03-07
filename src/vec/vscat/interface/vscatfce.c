@@ -390,7 +390,7 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt fromma
   Sometimes PETSc internally needs to use the matrix-vector-multiply vecscatter context for other purposes. The client code
   usually only uses MPI_Send/Recv. This group of subroutines provides info needed for such uses.
  */
-PetscErrorCode VecScatterGetRemoteCount_Private(const VecScatter ctx,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
+PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter ctx,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
 {
   VecScatter_MPI_General *vs;
   PetscErrorCode         ierr;
@@ -426,7 +426,7 @@ PetscErrorCode VecScatterGetRemoteCount_Private(const VecScatter ctx,PetscBool s
 
   .seealso: VecScatterRestoreRemote_Private(), VecScatterGetRemoteOrdered_Private()
  */
-PetscErrorCode VecScatterGetRemote_Private(const VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+PetscErrorCode VecScatterGetRemote_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   VecScatter_MPI_General *vs;
   PetscErrorCode         ierr;
@@ -469,7 +469,7 @@ PetscErrorCode VecScatterGetRemote_Private(const VecScatter ctx,PetscBool send,P
   Notes:
   Output parameters like starts, indices must also be adapted according to the sorted ranks.
  */
-PetscErrorCode VecScatterGetRemoteOrdered_Private(const VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   VecScatter_MPI_General *vs;
   PetscErrorCode         ierr;
@@ -512,7 +512,7 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(const VecScatter ctx,PetscBool
 
   .seealso: VecScatterGetRemote_Private()
  */
-PetscErrorCode VecScatterRestoreRemote_Private(const VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+PetscErrorCode VecScatterRestoreRemote_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   VecScatter_MPI_General *vs;
   PetscErrorCode         ierr;
@@ -546,7 +546,7 @@ PetscErrorCode VecScatterRestoreRemote_Private(const VecScatter ctx,PetscBool se
 
   .seealso: VecScatterGetRemoteOrdered_Private()
  */
-PetscErrorCode VecScatterRestoreRemoteOrdered_Private(const VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

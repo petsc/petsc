@@ -156,7 +156,7 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterGetRemoteCount_SF(const VecScatter vscat,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
+static PetscErrorCode VecScatterGetRemoteCount_SF(VecScatter vscat,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
 {
   VecScatter_SF     *data = (VecScatter_SF *)vscat->data;
   PetscSF           sf = data->sf;
@@ -183,7 +183,7 @@ static PetscErrorCode VecScatterGetRemoteCount_SF(const VecScatter vscat,PetscBo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterGetRemote_SF(const VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+static PetscErrorCode VecScatterGetRemote_SF(VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   VecScatter_SF     *data = (VecScatter_SF *)vscat->data;
   PetscSF           sf = data->sf;
@@ -216,7 +216,7 @@ static PetscErrorCode VecScatterGetRemote_SF(const VecScatter vscat,PetscBool se
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterGetRemoteOrdered_SF(const VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+static PetscErrorCode VecScatterGetRemoteOrdered_SF(VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   PetscErrorCode ierr;
 
@@ -225,7 +225,7 @@ static PetscErrorCode VecScatterGetRemoteOrdered_SF(const VecScatter vscat,Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterRestoreRemote_SF(const VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+static PetscErrorCode VecScatterRestoreRemote_SF(VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   PetscFunctionBegin;
   if (starts)   *starts  = NULL;
@@ -234,7 +234,7 @@ static PetscErrorCode VecScatterRestoreRemote_SF(const VecScatter vscat,PetscBoo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterRestoreRemoteOrdered_SF(const VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+static PetscErrorCode VecScatterRestoreRemoteOrdered_SF(VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
