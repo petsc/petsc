@@ -9,6 +9,7 @@ cdef extern from * nogil:
     PetscDMType DMSHELL
     PetscDMType DMMESH
     PetscDMType DMPLEX
+    PetscDMType DMSTAG
     PetscDMType DMREDUNDANT
     PetscDMType DMPATCH
     PetscDMType DMMOAB
@@ -17,6 +18,7 @@ cdef extern from * nogil:
     PetscDMType DMP4EST
     PetscDMType DMP8EST
     PetscDMType DMSWARM
+    PetscDMType DMPRODUCT
 
     ctypedef enum PetscDMBoundaryType"DMBoundaryType":
         DM_BOUNDARY_NONE

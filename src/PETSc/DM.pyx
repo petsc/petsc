@@ -6,6 +6,8 @@ class DMType(object):
     SLICED    = S_(DMSLICED)
     SHELL     = S_(DMSHELL)
     PLEX      = S_(DMPLEX)
+    STAG      = S_(DMSTAG)
+    PRODUCT   = S_(DMPRODUCT)
     REDUNDANT = S_(DMREDUNDANT)
     PATCH     = S_(DMPATCH)
     MOAB      = S_(DMMOAB)
