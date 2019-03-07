@@ -1,0 +1,7 @@
+Attempt rebalancing of shared points of depth 0 on interface of mesh distribution.
+Size of generated auxiliary graph: 125
+Using ParMETIS to partition graph.
+Comparing number of owned entities of depth 0 on each process before rebalancing, after rebalancing, and after consistency checks.
+Initial.     Min: 108, Max: 181, Ratio: 1.675926
+Rebalanced.  Min: 139, Max: 147, Ratio: 1.057554
+After.      Min: 139, Max: 147, Ratio: 1.057554

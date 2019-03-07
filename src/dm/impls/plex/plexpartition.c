@@ -2402,6 +2402,13 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscInt    *leafsNew;
   PetscSFNode *leafLocationsNew;
   Mat         A;
+  PetscBool   flg = PETSC_FALSE;
+  const char *prefix = NULL;
+
+  PetscFunctionBegin;
+
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, prefix, "-dm_rebalance_partition_view", &flg, NULL);
 
   ierr = PetscLogEventBegin(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
 
@@ -2654,9 +2661,14 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     if (ncon>1) vtxwgt[ncon*(i+1)+1] = 0;
   }
 
-  PetscPrintf(comm, "Graph size: %i\n", cumSumVertices[size]);
+  if (flg) {
+    ierr = PetscPrintf(comm, "Attempt rebalancing of shared points of depth %D on interface of mesh distribution.\n", entityDepth);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Size of generated auxiliary graph: %D\n", cumSumVertices[size]);CHKERRQ(ierr);
+  }
   if (parallel) {
+    if (flg) { ierr = PetscPrintf(comm, "Using ParMETIS to partition graph.\n");CHKERRQ(ierr); }
     if (useInitialGuess) {
+      if (flg) { ierr = PetscPrintf(comm, "Using current distribution of points as initial guess.\n");CHKERRQ(ierr); }
       PetscStackPush("ParMETIS_V3_RefineKway");
       ierr = ParMETIS_V3_RefineKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscStackPop;
@@ -2666,6 +2678,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscStackPop;
     }
   } else {
+    if (flg) { ierr = PetscPrintf(comm, "Using METIS to partition graph.\n");CHKERRQ(ierr); }
     Mat As;
     PetscInt numRows;
     PetscInt *partGlobal;
@@ -2725,7 +2738,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       for (i=0; i<numRows; i++) {
           distribution[partGlobal[i]] += vtxwgt_g[ncon*i];
       }
-      ierr = PetscIntView(size, distribution, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PetscIntView(size, distribution, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      }
       ierr = PetscFree(distribution);CHKERRQ(ierr);
       ierr = PetscFree(xadj_g);CHKERRQ(ierr);
       ierr = PetscFree(adjncy_g);CHKERRQ(ierr);
@@ -2769,7 +2784,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
 
   /*Let's check how well we did distributing points*/
-  {
+  if (flg) {
     PetscInt *distribution, *distribution_before, min, max, min_before, max_before;
     ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
     ierr = PetscCalloc1(size, &distribution_before);CHKERRQ(ierr);
@@ -2789,8 +2804,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       if (distribution_before[i]<min_before) min_before=distribution_before[i];
       if (distribution_before[i]>max_before) max_before=distribution_before[i];
     }
-    PetscPrintf(comm, "Before.     Min: %i, Max: %i, Ratio: %f\n", min_before, max_before, (max_before*1.)/min_before);
-    PetscPrintf(comm, "Rebalance.  Min: %i, Max: %i, Ratio: %f\n", min, max, (max*1.)/min);
+    PetscPrintf(comm, "Comparing number of owned entities of depth %D on each process before rebalancing, after rebalancing, and after consistency checks.\n", entityDepth);
+    ierr = PetscPrintf(comm, "Initial.     Min: %D, Max: %D, Ratio: %f\n", min_before, max_before, (max_before*1.)/min_before);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Rebalanced.  Min: %D, Max: %D, Ratio: %f\n", min, max, (max*1.)/min);CHKERRQ(ierr);
     ierr = PetscFree(distribution);CHKERRQ(ierr);
     ierr = PetscFree(distribution_before);CHKERRQ(ierr);
   }
@@ -2806,7 +2822,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   }
 
   /* Let's see how significant the influences of the previous fixing up step was.*/
-  {
+  if (flg) {
     PetscInt *distribution, min, max;
     ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
     for (i=0; i<cumSumVertices[rank+1]-cumSumVertices[rank]; i++) {
@@ -2819,7 +2835,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       if (distribution[i]<min) min=distribution[i];
       if (distribution[i]>max) max=distribution[i];
     }
-    PetscPrintf(comm, "Fixed.      Min: %i, Max: %i, Ratio: %f\n", min, max, (max*1.)/min);
+    ierr = PetscPrintf(comm, "After.      Min: %D, Max: %D, Ratio: %f\n", min, max, (max*1.)/min);CHKERRQ(ierr);
     ierr = PetscFree(distribution);CHKERRQ(ierr);
   }
 

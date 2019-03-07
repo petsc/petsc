@@ -1,0 +1,8 @@
+Attempt rebalancing of shared points of depth 0 on interface of mesh distribution.
+Size of generated auxiliary graph: 26
+Using METIS to partition graph.
+0: 60 60
+Comparing number of owned entities of depth 0 on each process before rebalancing, after rebalancing, and after consistency checks.
+Initial.     Min: 48, Max: 72, Ratio: 1.500000
+Rebalanced.  Min: 60, Max: 60, Ratio: 1.000000
+After.      Min: 60, Max: 60, Ratio: 1.000000
