@@ -283,11 +283,11 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Scatter(PetscInt 
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter,PetscBool,PetscInt*,PetscInt*);
-PETSC_INTERN PetscErrorCode VecScatterGetRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
-PETSC_INTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
-PETSC_INTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
-PETSC_INTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter,PetscBool,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
 
 typedef struct _VecScatterOps *VecScatterOps;
 struct _VecScatterOps {
