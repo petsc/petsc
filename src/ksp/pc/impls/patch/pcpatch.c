@@ -2076,10 +2076,14 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
       const PetscInt *intFacetsArray = NULL;
       PetscInt idx = 0;
       PetscInt i, c, d;
+      PetscInt fStart;
+      DM       dm;
       IS       facetIS = NULL;
       const PetscInt *facetCells = NULL;
       ierr = ISGetIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
       ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
+      ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(dm, 1, &fStart, NULL);CHKERRQ(ierr);
       /* FIXME: Pull this malloc out. */
       ierr = PetscMalloc1(2 * patch->totalDofsPerCell * numIntFacets, &facetDofs);CHKERRQ(ierr);
       if (dofsArrayWithAll) {
@@ -2093,7 +2097,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
 
         for (i = 0; i < numIntFacets; i++) {
           const PetscInt     facet = intFacetsArray[i + intFacetOffset];
-          const PetscScalar *v     = elementTensors + patch->precomputedIntFacetTensorLocations[facet]*nFacetDof*nFacetDof;
+          const PetscScalar *v     = elementTensors + patch->precomputedIntFacetTensorLocations[facet - fStart]*nFacetDof*nFacetDof;
           idx = 0;
           /*
            * 0--1
@@ -2288,6 +2292,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
       ierr = PetscHSetICreate(&facets);CHKERRQ(ierr);
       ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(patch->intFacetCounts, &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
       for (i = pStart; i < pEnd; i++) {
         ierr = PetscSectionGetDof(patch->intFacetCounts, i, &nIntFacets);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(patch->intFacetCounts, i, &offset);CHKERRQ(ierr);
@@ -2301,13 +2306,12 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
       ierr = PetscMalloc1(nIntFacets, &allIntFacets);CHKERRQ(ierr);
       ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-      ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
       ierr = PetscMalloc1(fEnd-fStart, &patch->precomputedIntFacetTensorLocations);CHKERRQ(ierr);
       i = 0;
       PetscHashIterBegin(facets, hi);
       while (!PetscHashIterAtEnd(facets, hi)) {
         PetscHashIterGetKey(facets, hi, allIntFacets[i]);
-        patch->precomputedIntFacetTensorLocations[allIntFacets[i]] = i;
+        patch->precomputedIntFacetTensorLocations[allIntFacets[i] - fStart] = i;
         PetscHashIterNext(facets, hi);
         i++;
       }
