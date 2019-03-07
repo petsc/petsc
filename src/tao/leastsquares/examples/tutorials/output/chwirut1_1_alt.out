@@ -20,9 +20,14 @@ iter =  18, Function value 2384.5, Residual: 28.9932
 iter =  19, Function value 2384.5, Residual: 3.30949 
 iter =  20, Function value 2384.48, Residual: 0.144579 
 iter =  21, Function value 2384.48, Residual: 0.0523328 
-iter =  22, Function value 2384.48, Residual: 0.00410568 
+iter =  22, Function value 2384.48, Residual: 0.00410567 
 iter =  23, Function value 2384.48, Residual: 0.499829 
 iter =  24, Function value 2384.48, Residual: 0.0125533 
 iter =  25, Function value 2384.48, Residual: 0.00062701 
-iter =  26, Function value 2384.48, Residual: 4.42228e-05 
-iter =  27, Function value 2384.48, Residual: 2.28262e-05
+iter =  26, Function value 2384.48, Residual: 4.42226e-05 
+iter =  27, Function value 2384.48, Residual: 2.28259e-05 
+Vec Object: 1 MPI processes
+  type: seq
+0.190261
+0.00613116
+0.0105315
