@@ -41,6 +41,7 @@ typedef const char* DMType;
 #define DMSTAG      "stag"
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
+PETSC_EXTERN const char *const DMBoundaryConditionTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMClone(DM,DM*);
