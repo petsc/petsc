@@ -1860,9 +1860,9 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
     ierr = PetscMalloc1(PetscMax(nvtxs,1),&vwgt);CHKERRQ(ierr);
     ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
     if (section) {
-      PetscInt vStart, vEnd, dof;
-      ierr = DMPlexGetHeightStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-      for (v = vStart; v < vEnd; ++v) {
+      PetscInt vStart, eEnd, dof;
+      ierr = DMPlexGetHeightStratum(dm, 0, &vStart, &eEnd);CHKERRQ(ierr);
+      for (v = vStart; v < eEnd; ++v) {
         ierr = PetscSectionGetDof(section, v, &dof);CHKERRQ(ierr);
         /* WARNING: Assumes that meshes with overlap have the overlapped cells at the end of the stratum. */
         /* To do this properly, we should use the cell numbering created in DMPlexCreatePartitionerGraph. */
@@ -2374,12 +2374,12 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
 
 @*/
 
-PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, PetscBool parallel)
+PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBool useInitialGuess, PetscBool parallel)
 {
 #if defined(PETSC_HAVE_PARMETIS)
   PetscSF     sf;
   PetscInt    ierr, i, j;
-  PetscInt    vBegin, vEnd, nroots, nleafs, pStart, pEnd, sumDegrees;
+  PetscInt    eBegin, eEnd, nroots, nleafs, pStart, pEnd, sumDegrees;
   const       PetscInt *degree, *ilocal;
   const       PetscSFNode *iremote; /* Do I need to free these? */
   PetscBool   *toBalance, *isLeaf, *isExclusivelyOwned, *isNonExclusivelyOwned;
@@ -2414,12 +2414,12 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscBool useInitialGuess, Pet
   /* Figure out all points in the plex that we are interested in balancing.  In
    * this case we are just interested in vertices. Should generalize that at
    * some point.  */
-  ierr = DMPlexGetDepthStratum(dm, 0, &vBegin, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, entityDepth, &eBegin, &eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart, &toBalance);CHKERRQ(ierr);
 
   for (i=0; i<pEnd-pStart; i++) {
-    toBalance[i] = (i-pStart>=vBegin && i-pStart<vEnd);
+    toBalance[i] = (i-pStart>=eBegin && i-pStart<eEnd);
   }
 
 
