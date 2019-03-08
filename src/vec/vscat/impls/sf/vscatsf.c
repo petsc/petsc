@@ -34,10 +34,9 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
     }
   }
 
-  if (x != y) {
-    ierr = VecGetArray(y,&vscat->ydata);CHKERRQ(ierr);
-    ierr = VecWriteLock(y);CHKERRQ(ierr);
-  } else vscat->ydata = (PetscScalar *)vscat->xdata;
+  if (x != y) {ierr = VecGetArray(y,&vscat->ydata);CHKERRQ(ierr);}
+  else vscat->ydata = (PetscScalar *)vscat->xdata;
+  ierr = VecWriteLock(y);CHKERRQ(ierr);
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
   sf = (mode & SCATTER_LOCAL) ? data->lsf : data->sf;

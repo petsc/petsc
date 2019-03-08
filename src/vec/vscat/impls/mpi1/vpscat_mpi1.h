@@ -60,10 +60,9 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }
 
-  if (xin != yin) {
-    ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
-    ierr = VecWriteLock(yin);CHKERRQ(ierr);
-  } else yv = (PetscScalar *)xv;
+  if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);}
+  else yv = (PetscScalar *)xv;
+  ierr = VecWriteLock(yin);CHKERRQ(ierr);
 
   ctx->xdata = xv;
   ctx->ydata = yv;
