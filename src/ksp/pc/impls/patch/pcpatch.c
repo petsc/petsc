@@ -580,20 +580,23 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 . func - The callback
 - ctx  - The user context
 
+  Calling sequence of func:
+$   func (PC pc,PetscInt point,Vec x,Vec f,IS cellIS,PetscInt n,const PetscInt* dofsArray,const PetscInt* dofsArrayWithAll,void* ctx)
+
++  pc               - The PC
+.  point            - The point
+.  x                - The input solution (not used in linear problems)
+.  f                - The patch residual vector
+.  cellIS           - An array of the cell numbers
+.  n                - The size of dofsArray
+.  dofsArray        - The dofmap for the dofs to be solved for
+.  dofsArrayWithAll - The dofmap for all dofs on the patch
+-  ctx              - The user context
+
   Level: advanced
 
-  Note:
-  The callback has signature:
-+  usercomputef(pc, point, x, f, cellIS, n, u, ctx)
-+  pc     - The PC
-+  point  - The point
-+  x      - The input solution (not used in linear problems)
-+  f      - The patch residual vector
-+  cellIS - An array of the cell numbers
-+  n      - The size of g2l
-+  g2l    - The global to local dof translation table
-+  ctx    - The user context
-  and can assume that the matrix entries have been set to zero before the call.
+  Notes:
+  The matrix entries have been set to zero before the call.
 
 .seealso: PCPatchSetComputeOperator(), PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo()
 @*/
@@ -611,25 +614,30 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, Petsc
 
   PCPatchSetComputeFunctionInteriorFacets - Set the callback used to compute facet integrals for patch residuals
 
+  Logically collective on PC
+
   Input Parameters:
 + pc   - The PC
 . func - The callback
 - ctx  - The user context
 
+  Calling sequence of func:
+$   func (PC pc,PetscInt point,Vec x,Vec f,IS facetIS,PetscInt n,const PetscInt* dofsArray,const PetscInt* dofsArrayWithAll,void* ctx)
+
++  pc               - The PC
+.  point            - The point
+.  x                - The input solution (not used in linear problems)
+.  f                - The patch residual vector
+.  facetIS          - An array of the facet numbers
+.  n                - The size of dofsArray
+.  dofsArray        - The dofmap for the dofs to be solved for
+.  dofsArrayWithAll - The dofmap for all dofs on the patch
+-  ctx              - The user context
+
   Level: advanced
 
-  Note:
-  The callback has signature:
-+  usercomputef(pc, point, x, f, facetIS, n, u, ctx)
-+  pc     - The PC
-+  point  - The point
-+  x      - The input solution (not used in linear problems)
-+  f      - The patch residual vector
-+  facetIS - An array of the facet numbers
-+  n      - The size of g2l
-+  g2l    - The global to local dof translation table
-+  ctx    - The user context
-  and can assume that the matrix entries have been set to zero before the call.
+  Notes:
+  The matrix entries have been set to zero before the call.
 
 .seealso: PCPatchSetComputeOperator(), PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo()
 @*/
@@ -647,25 +655,30 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
 
   PCPatchSetComputeOperator - Set the callback used to compute patch matrices
 
+  Logically collective on PC
+
   Input Parameters:
 + pc   - The PC
 . func - The callback
 - ctx  - The user context
 
+  Calling sequence of func:
+$   func (PC pc,PetscInt point,Vec x,Mat mat,IS facetIS,PetscInt n,const PetscInt* dofsArray,const PetscInt* dofsArrayWithAll,void* ctx)
+
++  pc               - The PC
+.  point            - The point
+.  x                - The input solution (not used in linear problems)
+.  mat              - The patch matrix
+.  cellIS           - An array of the cell numbers
+.  n                - The size of dofsArray
+.  dofsArray        - The dofmap for the dofs to be solved for
+.  dofsArrayWithAll - The dofmap for all dofs on the patch
+-  ctx              - The user context
+
   Level: advanced
 
-  Note:
-  The callback has signature:
-+  usercomputeop(pc, point, x, mat, cellIS, n, u, ctx)
-+  pc     - The PC
-+  point  - The point
-+  x      - The input solution (not used in linear problems)
-+  mat    - The patch matrix
-+  cellIS - An array of the cell numbers
-+  n      - The size of g2l
-+  g2l    - The global to local dof translation table
-+  ctx    - The user context
-  and can assume that the matrix entries have been set to zero before the call.
+  Notes:
+  The matrix entries have been set to zero before the call.
 
 .seealso: PCPatchGetComputeOperator(), PCPatchSetComputeFunction(), PCPatchSetDiscretisationInfo()
 @*/
@@ -681,27 +694,30 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
 
 /*@C
 
-  PCPatchSetComputeOperator - Set the callback used to compute facet integrals for patch matrices
+  PCPatchSetComputeOperatorInteriorFacets - Set the callback used to compute facet integrals for patch matrices
 
   Input Parameters:
 + pc   - The PC
 . func - The callback
 - ctx  - The user context
 
+  Calling sequence of func:
+$   func (PC pc,PetscInt point,Vec x,Mat mat,IS facetIS,PetscInt n,const PetscInt* dofsArray,const PetscInt* dofsArrayWithAll,void* ctx)
+
++  pc               - The PC
+.  point            - The point
+.  x                - The input solution (not used in linear problems)
+.  mat              - The patch matrix
+.  facetIS          - An array of the facet numbers
+.  n                - The size of dofsArray
+.  dofsArray        - The dofmap for the dofs to be solved for
+.  dofsArrayWithAll - The dofmap for all dofs on the patch
+-  ctx              - The user context
+
   Level: advanced
 
-  Note:
-  The callback has signature:
-+  usercomputeopintfacet(pc, point, x, mat, facetIS, n, u, ctx)
-+  pc     - The PC
-+  point  - The point
-+  x      - The input solution (not used in linear problems)
-+  mat    - The patch matrix
-+  facetIS - An IS of the facet numbers
-+  n      - The size of g2l
-+  g2l    - The global to local dof translation table
-+  ctx    - The user context
-  and can assume that the matrix entries have been set to zero before the call.
+  Notes:
+  The matrix entries have been set to zero before the call.
 
 .seealso: PCPatchGetComputeOperator(), PCPatchSetComputeFunction(), PCPatchSetDiscretisationInfo()
 @*/
@@ -1768,7 +1784,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
 
       if (patch->usercomputeopintfacet) {
         const PetscInt *intFacetsArray = NULL;
-        PetscInt i, numIntFacets, intFacetOffset;
+        PetscInt        i, numIntFacets, intFacetOffset;
         const PetscInt *facetCells = NULL;
 
         ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
@@ -1778,16 +1794,16 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
         for (i = 0; i < numIntFacets; i++) {
           const PetscInt cell0 = facetCells[2*(intFacetOffset + i) + 0];
           const PetscInt cell1 = facetCells[2*(intFacetOffset + i) + 1];
-          PetscInt celli, cellj;
+          PetscInt       celli, cellj;
 
           for (celli = 0; celli < patch->totalDofsPerCell; celli++) {
             const PetscInt row = dofsArray[(offset + cell0)*patch->totalDofsPerCell + celli];
             if (row < 0) continue;
             for (cellj = 0; cellj < patch->totalDofsPerCell; cellj++) {
-                const PetscInt col = dofsArray[(offset + cell1)*patch->totalDofsPerCell + cellj];
-                const PetscInt key = row*rsize + col;
-                if (col < 0) continue;
-                if (!PetscBTLookupSet(bt, key)) ++dnnz[row];
+              const PetscInt col = dofsArray[(offset + cell1)*patch->totalDofsPerCell + cellj];
+              const PetscInt key = row*rsize + col;
+              if (col < 0) continue;
+              if (!PetscBTLookupSet(bt, key)) ++dnnz[row];
             }
           }
 
@@ -1795,10 +1811,10 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
             const PetscInt row = dofsArray[(offset + cell1)*patch->totalDofsPerCell + celli];
             if (row < 0) continue;
             for (cellj = 0; cellj < patch->totalDofsPerCell; cellj++) {
-                const PetscInt col = dofsArray[(offset + cell0)*patch->totalDofsPerCell + cellj];
-                const PetscInt key = row*rsize + col;
-                if (col < 0) continue;
-                if (!PetscBTLookupSet(bt, key)) ++dnnz[row];
+              const PetscInt col = dofsArray[(offset + cell0)*patch->totalDofsPerCell + cellj];
+              const PetscInt key = row*rsize + col;
+              if (col < 0) continue;
+              if (!PetscBTLookupSet(bt, key)) ++dnnz[row];
             }
           }
         }
@@ -1858,7 +1874,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
 
       if (patch->usercomputeopintfacet) {
         const PetscInt *intFacetsArray = NULL;
-        PetscInt i, numIntFacets, intFacetOffset;
+        PetscInt        i, numIntFacets, intFacetOffset;
         const PetscInt *facetCells = NULL;
 
         ierr = PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets);CHKERRQ(ierr);
@@ -2072,14 +2088,15 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     ierr = PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset);CHKERRQ(ierr);
     if (numIntFacets > 0) {
       /* For each interior facet, grab the two cells (in local numbering, and concatenate dof numberings for those cells) */
-      PetscInt *facetDofs = NULL, *facetDofsWithAll = NULL;
+      PetscInt       *facetDofs = NULL, *facetDofsWithAll = NULL;
       const PetscInt *intFacetsArray = NULL;
-      PetscInt idx = 0;
-      PetscInt i, c, d;
-      PetscInt fStart;
-      DM       dm;
-      IS       facetIS = NULL;
+      PetscInt        idx = 0;
+      PetscInt        i, c, d;
+      PetscInt        fStart;
+      DM              dm;
+      IS              facetIS = NULL;
       const PetscInt *facetCells = NULL;
+
       ierr = ISGetIndices(patch->intFacetsToPatchCell, &facetCells);CHKERRQ(ierr);
       ierr = ISGetIndices(patch->intFacets, &intFacetsArray);CHKERRQ(ierr);
       ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
@@ -2175,9 +2192,9 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
 static PetscErrorCode MatSetValues_PCPatch_Private(Mat mat, PetscInt m, const PetscInt idxm[],
                                                    PetscInt n, const PetscInt idxn[], const PetscScalar *v, InsertMode addv)
 {
-  Vec data;
-  PetscScalar *array;
-  PetscInt bs, nz, i, j, cell;
+  Vec            data;
+  PetscScalar   *array;
+  PetscInt       bs, nz, i, j, cell;
   PetscErrorCode ierr;
 
   ierr = MatShellGetContext(mat, &data);CHKERRQ(ierr);
