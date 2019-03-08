@@ -4,7 +4,6 @@
 typedef struct {
   PetscSF           sf;     /* the whole scatter, including local and remote */
   PetscSF           lsf;    /* the local part of the scatter, used for SCATTER_LOCAL */
-  const PetscScalar *xdata; /* array data of vector x. It is set in VecScatterBegin. PETSc only allows one ongoing scatter per context */
 } VecScatter_SF;
 
 static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode addv,ScatterMode mode)
@@ -15,6 +14,8 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (x != y) {ierr = VecLockPush(x);CHKERRQ(ierr);}
+
   {
 #if defined(PETSC_HAVE_CUDA)
     PetscBool is_cudatype = PETSC_FALSE;
@@ -25,13 +26,18 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
         if (x->spptr && vscat->spptr) {ierr = VecCUDACopyFromGPUSome_Public(x,(PetscCUDAIndices)vscat->spptr,mode);CHKERRQ(ierr);}
         else {ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);}
       }
-      data->xdata = *((PetscScalar**)x->data);
+      vscat->xdata = *((PetscScalar**)x->data);
     } else
 #endif
     {
-      ierr = VecGetArrayRead(x,&data->xdata);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(x,&vscat->xdata);CHKERRQ(ierr);
     }
   }
+
+  if (x != y) {
+    ierr = VecGetArray(y,&vscat->ydata);CHKERRQ(ierr);
+    ierr = VecWriteLock(y);CHKERRQ(ierr);
+  } else vscat->ydata = (PetscScalar *)vscat->xdata;
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
   sf = (mode & SCATTER_LOCAL) ? data->lsf : data->sf;
@@ -42,9 +48,9 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   else SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"Unsupported InsertMode %D in VecScatterBegin/End",addv);
 
   if (mode & SCATTER_REVERSE) { /* reverse scatter sends root to leaf. Note that x and y are swapped in input */
-    ierr = PetscSFBcastAndOpBegin(sf,MPIU_SCALAR,data->xdata,NULL/*not needed*/,mop);CHKERRQ(ierr);
+    ierr = PetscSFBcastAndOpBegin(sf,MPIU_SCALAR,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
   } else { /* forward scatter sends leaf to root, i.e., x to y */
-    ierr = PetscSFReduceBegin(sf,MPIU_SCALAR,data->xdata,NULL/*not needed*/,mop);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_SCALAR,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -54,12 +60,9 @@ static PetscErrorCode VecScatterEnd_SF(VecScatter vscat,Vec x,Vec y,InsertMode a
   VecScatter_SF  *data=(VecScatter_SF*)vscat->data;
   PetscSF        sf;
   MPI_Op         mop=MPI_OP_NULL;
-  PetscScalar    *ydata;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(y,&ydata);CHKERRQ(ierr);
-
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
   sf = (mode & SCATTER_LOCAL) ? data->lsf : data->sf;
 
@@ -69,13 +72,19 @@ static PetscErrorCode VecScatterEnd_SF(VecScatter vscat,Vec x,Vec y,InsertMode a
   else SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"Unsupported InsertMode %D in VecScatterBegin/End",addv);
 
   if (mode & SCATTER_REVERSE) {/* reverse scatter sends root to leaf. Note that x and y are swapped in input */
-    ierr = PetscSFBcastAndOpEnd(sf,MPIU_SCALAR,data->xdata,ydata,mop);CHKERRQ(ierr);
+    ierr = PetscSFBcastAndOpEnd(sf,MPIU_SCALAR,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
   } else { /* forward scatter sends leaf to root, i.e., x to y */
-    ierr = PetscSFReduceEnd(sf,MPIU_SCALAR,data->xdata,ydata,mop);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPIU_SCALAR,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
   }
 
-  ierr = VecRestoreArrayRead(x,&data->xdata);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&ydata);CHKERRQ(ierr);
+  if (x != y) {
+    ierr = VecRestoreArrayRead(x,&vscat->xdata);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);
+    ierr = VecLockPop(x);CHKERRQ(ierr);
+  } else {
+    ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);
+  }
+  ierr = VecWriteUnlock(y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
