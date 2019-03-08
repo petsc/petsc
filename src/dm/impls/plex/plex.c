@@ -974,6 +974,27 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
       ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
     }
+    /* If no fields are specified, people do not want to see adjacency */
+    if (dm->Nf) {
+      PetscInt f;
+
+      for (f = 0; f < dm->Nf; ++f) {
+        const char *name;
+
+        ierr = PetscObjectGetName(dm->fields[f].disc, &name);CHKERRQ(ierr);
+        if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Field %s:\n", name);CHKERRQ(ierr);}
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        if (dm->fields[f].label) {ierr = DMLabelView(dm->fields[f].label, viewer);CHKERRQ(ierr);}
+        if (dm->fields[f].adjacency[0]) {
+          if (dm->fields[f].adjacency[1]) {ierr = PetscViewerASCIIPrintf(viewer, "adjacency FVM++\n");CHKERRQ(ierr);}
+          else                            {ierr = PetscViewerASCIIPrintf(viewer, "adjacency adj FVM\n");CHKERRQ(ierr);}
+        } else {
+          if (dm->fields[f].adjacency[1]) {ierr = PetscViewerASCIIPrintf(viewer, "adjacency FEM\n");CHKERRQ(ierr);}
+          else                            {ierr = PetscViewerASCIIPrintf(viewer, "adjacency FUNKY\n");CHKERRQ(ierr);}
+        }
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      }
+    }
     ierr = DMGetCoarseDM(dm, &cdm);CHKERRQ(ierr);
     if (cdm) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
