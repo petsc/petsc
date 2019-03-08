@@ -1,9 +1,5 @@
-
-        module petscpcdummy
-#include <../src/ksp/f90-mod/petscpc.h>
-#include <../src/ksp/f90-mod/petscksp.h>
-        end module
-
+#include "petsc/finclude/petscpc.h"
+#include "petsc/finclude/petscksp.h"
         module petscpc
         use petsckspdef
         use petscdm
