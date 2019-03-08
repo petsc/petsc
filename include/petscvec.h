@@ -519,11 +519,21 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar *
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecLockPush(Vec);
 PETSC_EXTERN PetscErrorCode VecLockPop(Vec);
-#define VecLocked(x,arg) do {PetscInt _st; PetscErrorCode __ierr = VecLockGet(x,&_st); CHKERRQ(__ierr); if (_st > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is locked read only, argument # %d",arg);} while (0)
+PETSC_EXTERN PetscErrorCode VecWriteLock(Vec);
+PETSC_EXTERN PetscErrorCode VecWriteUnlock(Vec);
+#define VecLocked(x,arg) \
+  do { \
+    PetscInt       __st; \
+    PetscErrorCode __ierr; \
+    __ierr = VecLockGet(x,&__st);CHKERRQ(__ierr); \
+    if (__st != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %d",arg); \
+  } while (0)
 #else
 #define VecLockGet(x,arg)     *(arg) = 0
 #define VecLockPush(x)        0
 #define VecLockPop(x)         0
+#define VecWriteLock(Vec)     0
+#define VecWriteUnlock(Vec)   0
 #define VecLocked(x,arg)
 #endif
 
