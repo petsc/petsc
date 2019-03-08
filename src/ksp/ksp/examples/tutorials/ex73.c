@@ -418,14 +418,7 @@ PetscErrorCode DMCoarsen_ShellDA(DM dm,MPI_Comm comm,DM *dmc)
   *dmc = NULL;
   ierr = DMGetCoarseDM(dm,dmc);CHKERRQ(ierr);
   if (!*dmc) {
-    DM da,dac;
-
-    ierr = PetscPrintf(PETSC_COMM_SELF,"<<< DMCoarsen_ShellDA :: should never enter here >>>\n");CHKERRQ(ierr);
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"The hierarchy should already be built");
-    ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
-    ierr = DMCoarsen(da,comm,&dac);CHKERRQ(ierr);
-    ierr = DMShellCreate_ShellDA(dac,dmc);CHKERRQ(ierr);
-    ierr = DMSetCoarseDM(dm,*dmc);CHKERRQ(ierr);
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"The coarse DM should never be NULL. The DM hierarchy should have already been defined");
   } else {
     ierr = PetscObjectReference((PetscObject)(*dmc));CHKERRQ(ierr);
   }
