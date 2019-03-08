@@ -309,16 +309,18 @@ struct _VecScatterOps {
 
 struct _p_VecScatter {
   PETSCHEADER(struct _VecScatterOps);
-  PetscInt       to_n,from_n;
-  PetscBool      inuse;                /* prevents corruption from mixing two scatters */
-  PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
-  void           *fromdata,*todata;
-  void           *spptr;
-  PetscBool      is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */
-  Vec            to_v,from_v;          /* used in VecScatterCreateWithData() and VecScatterSetData() */
-  IS             to_is,from_is;        /* used in VecScatterCreateWithData() and VecScatterSetData() */
+  PetscInt          to_n,from_n;
+  PetscBool         inuse;                /* prevents corruption from mixing two scatters */
+  PetscBool         beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
+  void              *fromdata,*todata;
+  void              *spptr;
+  PetscBool         is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */
+  Vec               to_v,from_v;          /* used in VecScatterCreateWithData() and VecScatterSetData() */
+  IS                to_is,from_is;        /* used in VecScatterCreateWithData() and VecScatterSetData() */
+  const PetscScalar *xdata;               /* vector data to read from */
+  PetscScalar       *ydata;               /* vector data to write to */
 
-  void           *data;                /* implementation specific data */
+  void              *data;                /* implementation specific data */
 };
 
 PETSC_INTERN PetscErrorCode VecScatterCreate_Seq(VecScatter);

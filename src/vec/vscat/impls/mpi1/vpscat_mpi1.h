@@ -12,7 +12,8 @@
 PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;
-  PetscScalar            *xv,*yv,*svalues;
+  const PetscScalar      *xv;
+  PetscScalar            *yv,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
   PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
@@ -21,6 +22,9 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
 #endif
 
   PetscFunctionBegin;
+  /* If xin != yin, lock xin for read-only access; otherwise, we need to lock xin (yin) for read/write access once we get its data */
+  if (xin != yin) {ierr = VecLockPush(xin);CHKERRQ(ierr);}
+
   if (mode & SCATTER_REVERSE) {
     to     = (VecScatter_MPI_General*)ctx->fromdata;
     from   = (VecScatter_MPI_General*)ctx->todata;
@@ -56,8 +60,13 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }
 
-  if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);}
-  else yv = xv;
+  if (xin != yin) {
+    ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
+    ierr = VecWriteLock(yin);CHKERRQ(ierr);
+  } else yv = (PetscScalar *)xv;
+
+  ctx->xdata = xv;
+  ctx->ydata = yv;
 
   if (!(mode & SCATTER_LOCAL)) {
     /* post receives since they were not previously posted    */
@@ -90,8 +99,6 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
       }
     }
   }
-  ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-  if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -109,8 +116,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
-  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
-
+  yv      = ctx->ydata;
   to      = (VecScatter_MPI_General*)ctx->todata;
   from    = (VecScatter_MPI_General*)ctx->fromdata;
   rwaits  = from->requests;
@@ -144,7 +150,14 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
 
   /* wait on sends */
   if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
-  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
+  if (xin != yin) {
+    ierr = VecRestoreArrayRead(xin,&ctx->xdata);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&ctx->ydata);CHKERRQ(ierr);
+    ierr = VecLockPop(xin);CHKERRQ(ierr);
+  } else {
+    ierr = VecRestoreArray(yin,&ctx->ydata);CHKERRQ(ierr);
+  }
+  ierr = VecWriteUnlock(yin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
