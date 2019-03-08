@@ -393,6 +393,7 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt fromma
 PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter ctx,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
 {
   VecScatter_MPI_General *vs;
+  PetscBool              par;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -400,9 +401,9 @@ PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter ctx,PetscBool send,Pe
     ierr = (*ctx->ops->getremotecount)(ctx,send,num_procs,num_entries);CHKERRQ(ierr);
   } else {
     vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
-    if (vs->format != VEC_SCATTER_MPI_GENERAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ctx must be a VecScatter_MPI_General");
-    if (num_procs)   *num_procs   = vs->n;
-    if (num_entries) *num_entries = vs->starts[vs->n];
+    par = (vs->format == VEC_SCATTER_MPI_GENERAL)? PETSC_TRUE : PETSC_FALSE;
+    if (num_procs)   *num_procs   = par ? vs->n             : 0;
+    if (num_entries) *num_entries = par ? vs->starts[vs->n] : 0;
   }
   PetscFunctionReturn(0);
 }
@@ -429,6 +430,7 @@ PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter ctx,PetscBool send,Pe
 PetscErrorCode VecScatterGetRemote_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   VecScatter_MPI_General *vs;
+  PetscBool              par;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -436,12 +438,12 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter ctx,PetscBool send,PetscIn
     ierr = (*ctx->ops->getremote)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
   } else {
     vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
-    if (vs->format != VEC_SCATTER_MPI_GENERAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ctx must be a VecScatter_MPI_General");
-    if (n)       *n       = vs->n;
-    if (indices) *indices = vs->indices;
-    if (starts)  *starts  = vs->starts;
-    if (procs)   *procs   = vs->procs;
-    if (bs)      *bs      = vs->bs;
+    par = (vs->format == VEC_SCATTER_MPI_GENERAL)? PETSC_TRUE : PETSC_FALSE;
+    if (n)       *n       = par ? vs->n       : 0;
+    if (indices) *indices = par ? vs->indices : NULL;
+    if (starts)  *starts  = par ? vs->starts  : NULL;
+    if (procs)   *procs   = par ? vs->procs   : NULL;
+    if (bs)      *bs      = par ? vs->bs      : 0;
   }
   PetscFunctionReturn(0);
 }
@@ -472,6 +474,7 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter ctx,PetscBool send,PetscIn
 PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   VecScatter_MPI_General *vs;
+  PetscBool              par;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -479,12 +482,12 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter ctx,PetscBool send,
     ierr = (*ctx->ops->getremoteordered)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
   } else {
     vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
-    if (vs->format != VEC_SCATTER_MPI_GENERAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ctx must be a VecScatter_MPI_General");
-    if (n)       *n       = vs->n;
-    if (indices) *indices = vs->indices;
-    if (starts)  *starts  = vs->starts;
-    if (procs)   *procs   = vs->procs;
-    if (bs)      *bs      = vs->bs;
+    par = (vs->format == VEC_SCATTER_MPI_GENERAL)? PETSC_TRUE : PETSC_FALSE;
+    if (n)       *n       = par ? vs->n       : 0;
+    if (indices) *indices = par ? vs->indices : NULL;
+    if (starts)  *starts  = par ? vs->starts  : NULL;
+    if (procs)   *procs   = par ? vs->procs   : NULL;
+    if (bs)      *bs      = par ? vs->bs      : 0;
   }
 #if defined(PETSC_USE_DEBUG)
   if (n && procs) {
@@ -514,15 +517,12 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter ctx,PetscBool send,
  */
 PetscErrorCode VecScatterRestoreRemote_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
-  VecScatter_MPI_General *vs;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if (ctx->ops->restoreremote) {
     ierr = (*ctx->ops->restoreremote)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
   } else {
-    vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
-    if (vs->format != VEC_SCATTER_MPI_GENERAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ctx must be a VecScatter_MPI_General");
     if (starts)  *starts  = NULL;
     if (indices) *indices = NULL;
     if (procs)   *procs   = NULL;
