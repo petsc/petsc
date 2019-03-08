@@ -575,6 +575,8 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 
   PCPatchSetComputeFunction - Set the callback used to compute patch residuals
 
+  Logically collective on PC
+
   Input Parameters:
 + pc   - The PC
 . func - The callback
@@ -695,6 +697,8 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
 /*@C
 
   PCPatchSetComputeOperatorInteriorFacets - Set the callback used to compute facet integrals for patch matrices
+
+  Logically collective on PC
 
   Input Parameters:
 + pc   - The PC
