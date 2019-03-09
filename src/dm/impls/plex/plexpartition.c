@@ -2392,6 +2392,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   Mat         A;
   PetscBool   flg = PETSC_FALSE;
   const char *prefix = NULL;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
 
@@ -2401,6 +2403,12 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscLogEventBegin(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+
+  if (flg) {
+    ierr = PetscOptionsGetViewer(comm,((PetscObject)dm)->options, prefix,"-dm_rebalance_partition_view",&viewer,&format,NULL);
+    ierr = PetscViewerPushFormat(viewer,format);
+  }
+
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -2648,13 +2656,13 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   }
 
   if (flg) {
-    ierr = PetscPrintf(comm, "Attempt rebalancing of shared points of depth %D on interface of mesh distribution.\n", entityDepth);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Size of generated auxiliary graph: %D\n", cumSumVertices[size]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Attempt rebalancing of shared points of depth %D on interface of mesh distribution.\n", entityDepth);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Size of generated auxiliary graph: %D\n", cumSumVertices[size]);CHKERRQ(ierr);
   }
   if (parallel) {
-    if (flg) { ierr = PetscPrintf(comm, "Using ParMETIS to partition graph.\n");CHKERRQ(ierr); }
+    if (flg) { ierr = PetscViewerASCIIPrintf(viewer, "Using ParMETIS to partition graph.\n");CHKERRQ(ierr); }
     if (useInitialGuess) {
-      if (flg) { ierr = PetscPrintf(comm, "Using current distribution of points as initial guess.\n");CHKERRQ(ierr); }
+      if (flg) { ierr = PetscViewerASCIIPrintf(viewer, "Using current distribution of points as initial guess.\n");CHKERRQ(ierr); }
       PetscStackPush("ParMETIS_V3_RefineKway");
       ierr = ParMETIS_V3_RefineKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscStackPop;
@@ -2664,7 +2672,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscStackPop;
     }
   } else {
-    if (flg) { ierr = PetscPrintf(comm, "Using METIS to partition graph.\n");CHKERRQ(ierr); }
+    if (flg) { ierr = PetscViewerASCIIPrintf(viewer, "Using METIS to partition graph.\n");CHKERRQ(ierr); }
     Mat As;
     PetscInt numRows;
     PetscInt *partGlobal;
@@ -2778,9 +2786,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       if (distribution_before[i]<min_before) min_before=distribution_before[i];
       if (distribution_before[i]>max_before) max_before=distribution_before[i];
     }
-    PetscPrintf(comm, "Comparing number of owned entities of depth %D on each process before rebalancing, after rebalancing, and after consistency checks.\n", entityDepth);
-    ierr = PetscPrintf(comm, "Initial.     Min: %D, Max: %D, Ratio: %f\n", min_before, max_before, (max_before*1.)/min_before);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Rebalanced.  Min: %D, Max: %D, Ratio: %f\n", min, max, (max*1.)/min);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Comparing number of owned entities of depth %D on each process before rebalancing, after rebalancing, and after consistency checks.\n", entityDepth);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Initial.     Min: %D, Max: %D, Ratio: %f\n", min_before, max_before, (max_before*1.)/min_before);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Rebalanced.  Min: %D, Max: %D, Ratio: %f\n", min, max, (max*1.)/min);CHKERRQ(ierr);
     ierr = PetscFree(distribution);CHKERRQ(ierr);
     ierr = PetscFree(distribution_before);CHKERRQ(ierr);
   }
@@ -2809,7 +2817,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       if (distribution[i]<min) min=distribution[i];
       if (distribution[i]>max) max=distribution[i];
     }
-    ierr = PetscPrintf(comm, "After.      Min: %D, Max: %D, Ratio: %f\n", min, max, (max*1.)/min);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "After.      Min: %D, Max: %D, Ratio: %f\n", min, max, (max*1.)/min);CHKERRQ(ierr);
     ierr = PetscFree(distribution);CHKERRQ(ierr);
   }
 
@@ -2918,6 +2926,10 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscFree(isExclusivelyOwned);CHKERRQ(ierr);
   ierr = PetscFree(newOwners);CHKERRQ(ierr);
   ierr = PetscFree(newNumbers);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerPopFormat(viewer);
+    ierr = PetscViewerDestroy(&viewer);
+  }
   ierr = PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
 #else
   SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
