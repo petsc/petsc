@@ -78,11 +78,9 @@ static PetscErrorCode VecScatterEnd_SF(VecScatter vscat,Vec x,Vec y,InsertMode a
 
   if (x != y) {
     ierr = VecRestoreArrayRead(x,&vscat->xdata);CHKERRQ(ierr);
-    ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);
     ierr = VecLockPop(x);CHKERRQ(ierr);
-  } else {
-    ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);
   ierr = VecWriteUnlock(y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
