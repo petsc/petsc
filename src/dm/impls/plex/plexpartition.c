@@ -1743,27 +1743,15 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
 
   ierr = SCOTCH_dgraphInit(&grafdat, comm);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_dgraphBuild(&grafdat, 0, vertlocnbr, vertlocnbr, xadj, xadj + 1, veloloctab, NULL, edgelocnbr, edgelocnbr, adjncy, NULL, edloloctab);CHKERRPTSCOTCH(ierr);
-/*#if defined(PETSC_USE_DEBUG)*/
+#if defined(PETSC_USE_DEBUG)
   ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRPTSCOTCH(ierr);
-/*#endif*/
+#endif
   ierr = SCOTCH_stratInit(&stradat);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_stratDgraphMapBuild(&stradat, flagval, procglbnbr, nparts, kbalval);CHKERRQ(ierr);
   ierr = SCOTCH_archInit(&archdat);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_archCmplt(&archdat, nparts);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_dgraphMapInit(&grafdat, &mappdat, &archdat, part);CHKERRPTSCOTCH(ierr);
   
-  /*PetscSynchronizedPrintf(comm,"[%d] part: ", proclocnum);*/
-  /*for(int i=0;i<vertlocnbr;i++) {*/
-  /*  PetscSynchronizedPrintf(comm, "%i ", part[i]);*/
-  /*}*/
-  /*PetscSynchronizedPrintf(comm, "\n");*/
-  /*PetscSynchronizedFlush(comm, PETSC_STDOUT);*/
-  /*PetscSynchronizedPrintf(comm,"[%d] veloloctab: ", proclocnum);*/
-  /*for(int i=0;i<vertlocnbr;i++) {*/
-  /*  PetscSynchronizedPrintf(comm, "%i ", veloloctab[i]);*/
-  /*}*/
-  /*PetscSynchronizedPrintf(comm, "\n");*/
-  /*PetscSynchronizedFlush(comm, PETSC_STDOUT);*/
   ierr = SCOTCH_dgraphMapCompute(&grafdat, &mappdat, &stradat);CHKERRPTSCOTCH(ierr);
   SCOTCH_dgraphMapExit(&grafdat, &mappdat);
   SCOTCH_archExit(&archdat);
@@ -2717,7 +2705,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
         xadj_g[i+1] = counter;
         ierr = MatRestoreRow(As, i, &temp, &cols, NULL);CHKERRQ(ierr);
       }
-      /*METIS_PartGraphKway(&numRows, &ncon, xadj_g, adjncy_g, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &edgecut, part);*/
       ierr = PetscMalloc1(2*numRows, &vtxwgt_g);CHKERRQ(ierr);
       for (i=0; i<size; i++){
         vtxwgt_g[ncon*cumSumVertices[i]] = numExclusivelyOwnedAll[i];
@@ -2733,15 +2720,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscStackPush("METIS_PartGraphKway");
       METIS_PartGraphKway(&numRows, &ncon, xadj_g, adjncy_g, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
       PetscStackPop;
-      PetscInt *distribution;
-      ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
-      for (i=0; i<numRows; i++) {
-          distribution[partGlobal[i]] += vtxwgt_g[ncon*i];
-      }
-      if (flg) {
-        ierr = PetscIntView(size, distribution, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(distribution);CHKERRQ(ierr);
       ierr = PetscFree(xadj_g);CHKERRQ(ierr);
       ierr = PetscFree(adjncy_g);CHKERRQ(ierr);
       ierr = PetscFree(vtxwgt_g);CHKERRQ(ierr);
@@ -2875,9 +2853,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
               }
             }
           }
-          if (newNumber == -1) {
-            SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Couldn't find the new owner of vertex.");
-          }
+          if (newNumber == -1) SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Couldn't find the new owner of vertex.");
+
           newOwners[oldNumber] = newOwner;
           newNumbers[oldNumber] = newNumber;
           counter++;
@@ -2889,10 +2866,10 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscFree(locationsOfLeafs);CHKERRQ(ierr);
   ierr = PetscFree(remoteLocalPointOfLeafs);CHKERRQ(ierr);
 
-  PetscSFBcastBegin(sf, MPIU_INT, newOwners, newOwners);
-  PetscSFBcastEnd(sf, MPIU_INT, newOwners, newOwners);
-  PetscSFBcastBegin(sf, MPIU_INT, newNumbers, newNumbers);
-  PetscSFBcastEnd(sf, MPIU_INT, newNumbers, newNumbers);
+  ierr = PetscSFBcastBegin(sf, MPIU_INT, newOwners, newOwners);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_INT, newOwners, newOwners);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPIU_INT, newNumbers, newNumbers);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_INT, newNumbers, newNumbers);CHKERRQ(ierr);
 
   /* Now count how many leafs we have on each processor. */
   leafCounter=0;
