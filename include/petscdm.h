@@ -235,6 +235,8 @@ PETSC_EXTERN PetscErrorCode DMClearFields(DM);
 PETSC_EXTERN PetscErrorCode DMCopyFields(DM, DM);
 PETSC_EXTERN PetscErrorCode DMGetAdjacency(DM, PetscInt, PetscBool *, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSetAdjacency(DM, PetscInt, PetscBool, PetscBool);
+PETSC_EXTERN PetscErrorCode DMGetBasicAdjacency(DM, PetscBool *, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMSetBasicAdjacency(DM, PetscBool, PetscBool);
 
 PETSC_EXTERN PetscErrorCode DMGetNumDS(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetDS(DM, PetscDS *);

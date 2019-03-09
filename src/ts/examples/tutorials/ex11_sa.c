@@ -1476,8 +1476,7 @@ int main(int argc, char **argv)
   {
     DM dmDist;
 
-    ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
     if (dmDist) {
       ierr = DMDestroy(&dm);CHKERRQ(ierr);

@@ -40,13 +40,12 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
 . adjacency       - Point connectivity in the graph
 - globalNumbering - A map from the local cell numbering to the global numbering used in "adjacency".  Negative indicates that the cell is a duplicate from another process.
 
-  The user can control the definition of adjacency for the mesh using DMPlexGetAdjacencyUseCone() and
-  DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
+  The user can control the definition of adjacency for the mesh using DMSetAdjacency(). They should choose the combination appropriate for the function
   representation on the mesh.
 
   Level: developer
 
-.seealso: PetscPartitionerGetType(), PetscPartitionerCreate(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
+.seealso: PetscPartitionerGetType(), PetscPartitionerCreate(), DMSetAdjacency()
 @*/
 PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
 {
@@ -90,10 +89,8 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
   ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&adjBuffer);CHKERRQ(ierr);
   /* Always use FVM adjacency to create partitioner graph */
-  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &cellNumbering);CHKERRQ(ierr);
   if (globalNumbering) {
     ierr = PetscObjectReference((PetscObject)cellNumbering);CHKERRQ(ierr);
@@ -166,8 +163,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     (*numVertices)++;
   }
   ierr = PetscFree2(adjCells, remoteCells);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseCone(dm, useCone);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(dm, useClosure);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(dm, useCone, useClosure);CHKERRQ(ierr);
   /* Derive CSR graph from section/segbuffer */
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);

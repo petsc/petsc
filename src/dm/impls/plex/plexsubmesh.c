@@ -841,7 +841,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   DMLabel        label;
   const char    *name = labelName ? labelName : "Face Sets";
   PetscInt       dim;
-  PetscBool      flag;
+  PetscBool      useCone, useClosure;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -852,10 +852,8 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   ierr = DMSetType(gdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(gdm, dim);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseCone(dm, &flag);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseCone(gdm, flag);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseClosure(dm, &flag);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(gdm, flag);CHKERRQ(ierr);
+  ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(gdm, useCone,  useClosure);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
   if (!label) {
     /* Get label for boundary faces */
@@ -865,6 +863,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   }
   ierr = DMPlexConstructGhostCells_Internal(dm, label, numGhostCells, gdm);CHKERRQ(ierr);
   ierr = DMCopyBoundary(dm, gdm);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, gdm);CHKERRQ(ierr);
   gdm->setfromoptionscalled = dm->setfromoptionscalled;
   *dmGhosted = gdm;
   PetscFunctionReturn(0);
