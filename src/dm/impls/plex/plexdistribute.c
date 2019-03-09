@@ -1311,8 +1311,6 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
   PetscFunctionReturn(0);
 }
 
-
-
 /*@
   DMPlexSetPartitionBalance - Should distribution of the DM attempt to balance the shared point partition?
 
