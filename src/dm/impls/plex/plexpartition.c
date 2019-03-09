@@ -2631,9 +2631,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscInt        temp=0;
       const PetscInt *cols;
       ierr = MatGetRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
-      for (j=0; j<temp; j++) {
-        adjncy[counter+j] = cols[j];
-      }
+      ierr = PetscMemcpy(&adjncy[counter], cols, temp*sizeof(PetscInt));CHKERRQ(ierr);
       counter += temp;
       xadj[i+1] = counter;
       ierr = MatRestoreRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
@@ -2698,9 +2696,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
         PetscInt        temp=0;
         const PetscInt *cols;
         ierr = MatGetRow(As, i, &temp, &cols, NULL);CHKERRQ(ierr);
-        for (j=0; j<temp; j++) {
-          adjncy_g[counter+j] = cols[j];
-        }
+        ierr = PetscMemcpy(&adjncy_g[counter], cols, temp*sizeof(PetscInt));CHKERRQ(ierr);
         counter += temp;
         xadj_g[i+1] = counter;
         ierr = MatRestoreRow(As, i, &temp, &cols, NULL);CHKERRQ(ierr);
