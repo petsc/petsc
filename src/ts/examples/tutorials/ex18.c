@@ -850,7 +850,9 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBeginUser;
   ierr = CreateMesh(comm, user, dm);CHKERRQ(ierr);
-  /* Handle refinement, etc. */
+  /* Setup BC */
+  ierr = SetupBC(*dm, user);CHKERRQ(ierr);
+  /* Handle refinement, BC ids, etc. */
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   /* Construct ghost cells */
   if (user->useFV) {
@@ -866,8 +868,6 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   /* Setup problem */
   ierr = SetupDiscretization(*dm, user);CHKERRQ(ierr);
-  /* Setup BC */
-  ierr = SetupBC(*dm, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
