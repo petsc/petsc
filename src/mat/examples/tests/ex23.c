@@ -652,6 +652,12 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  if (!usemult && B) {
+    PetscBool hasnorm;
+
+    ierr = MatHasOperation(B,MATOP_NORM,&hasnorm);CHKERRQ(ierr);
+    if (!hasnorm) usemult = PETSC_TRUE;
+  }
   if (!usemult) {
     if (B) {
       MatType Btype;
