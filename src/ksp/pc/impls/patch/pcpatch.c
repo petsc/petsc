@@ -935,7 +935,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   PetscInt       *cellsArray, *pointsArray, *intFacetsArray, *extFacetsArray, *intFacetsToPatchCell;
   PetscInt        numCells, numPoints, numIntFacets, numExtFacets;
   const PetscInt *leaves;
-  PetscInt        nleaves, pStart, pEnd, cStart, cEnd, vStart, vEnd, v;
+  PetscInt        nleaves, pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, v;
   PetscBool       isFiredrake;
   PetscErrorCode  ierr;
 
@@ -991,7 +991,6 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   intFacetCounts = patch->intFacetCounts;
   ierr = PetscSectionSetChart(intFacetCounts, vStart, vEnd);CHKERRQ(ierr);
   /* Count cells and points in the patch surrounding each entity */
-  PetscInt       fStart, fEnd;
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     PetscHashIter hi;
@@ -2206,9 +2205,8 @@ static PetscErrorCode MatSetValues_PCPatch_Private(Mat mat, PetscInt m, const Pe
   ierr = VecGetSize(data, &nz);CHKERRQ(ierr);
   ierr = VecGetArray(data, &array);CHKERRQ(ierr);
   if (m != n) SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONG, "Only for square insertion");
-  cell = (PetscInt)(idxm[0]/bs); // use the fact that this is called once per cell
+  cell = (PetscInt)(idxm[0]/bs); /* use the fact that this is called once per cell */
   for (i = 0; i < m; i++) {
-    //const PetscInt row = idxm[i];
     if (idxm[i] != idxn[i]) SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONG, "Row and column indices must match!");
     for (j = 0; j < n; j++) {
       const PetscScalar v_ = v[i*bs + j];
