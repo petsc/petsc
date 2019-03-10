@@ -1,6 +1,6 @@
   0 SNES Function norm 5.511227472885e+00 
   Linear solve converged due to CONVERGED_RTOL iterations 45
-  1 SNES Function norm 1.343123150261e-04 
+  1 SNES Function norm 1.343123150263e-04 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -30,6 +30,7 @@ SNES Object: 1 MPI processes
       Schwarz type: additive
       Weighting by partition of unity
       Not symmetrising sweep
+      Not precomputing element tensors (overlapping cells rebuilt in every patch assembly)
       Saving patch operators (rebuilt every PCSetUp)
       Patch construction operator: Vanka
       KSP on patches (all same):
