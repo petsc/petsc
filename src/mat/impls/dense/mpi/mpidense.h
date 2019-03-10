@@ -18,7 +18,10 @@ typedef struct { /* used by MatTransposeMatMult_MPIDense_MPIDense() */
 typedef struct { /* used by MatMatTransposeMult_MPIDense_MPIDense() */
   PetscScalar    *buf[2];
   PetscMPIInt    tag;
+  PetscMPIInt    *recvcounts;
+  PetscMPIInt    *recvdispls;
   PetscErrorCode (*destroy)(Mat);
+  PetscInt       alg; /* algorithm used */
 } Mat_MatTransMultDense;
 
 typedef struct {

@@ -203,4 +203,16 @@ int main(int argc,char **argv)
       output_file: output/ex104.out
       args: -M 23 -N 31
 
+    test:
+      suffix: 4
+      nsize: 4
+      output_file: output/ex104.out
+      args: -M 23 -N 31 -matmattransmult_mpidense_mpidense_via cyclic
+
+    test:
+      suffix: 5
+      nsize: 4
+      output_file: output/ex104.out
+      args: -M 23 -N 31 -matmattransmult_mpidense_mpidense_via allgatherv
+
 TEST*/

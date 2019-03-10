@@ -9957,7 +9957,13 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices and for the SeqDense class.
+   This routine is currently only implemented for pairs of SeqAIJ matrices, for the SeqDense class,
+   and for pairs of MPIDense matrices.
+
+   Options Database Keys:
++  -matmattransmult_mpidense_mpidense_via {allgatherv,cyclic} - Choose between algorthims for MPIDense matrices: the
+                                                                first redundantly copies the transposed B matrix on each process and requiers O(log P) communication complexity;
+                                                                the second never stores more than one portion of the B matrix at a time by requires O(P) communication complexity.
 
    Level: intermediate
 

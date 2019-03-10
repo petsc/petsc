@@ -1888,6 +1888,7 @@ PetscErrorCode MatDestroy_MatMatTransMult_MPIDense_MPIDense(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscFree2(abt->buf[0],abt->buf[1]);CHKERRQ(ierr);
+  ierr = PetscFree2(abt->recvcounts,abt->recvdispls);CHKERRQ(ierr);
   ierr = (abt->destroy)(A);CHKERRQ(ierr);
   ierr = PetscFree(abt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1918,15 +1919,15 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = PetscBLASIntCast(a->A->rmap->n,&am);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->N,&aN);CHKERRQ(ierr);
   PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&an,&bn,&am,&_DOne,aseq->v,&aseq->lda,bseq->v,&bseq->lda,&_DZero,atbarray,&aN));
- 
+
   ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
   for (i=0; i<size; i++) recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
-  
+
   /* arrange atbarray into sendbuf */
   k = 0;
   for (proc=0; proc<size; proc++) {
     for (j=0; j<cN; j++) {
-      for (i=ranges[proc]; i<ranges[proc+1]; i++) sendbuf[k++] = atbarray[i+j*cM]; 
+      for (i=ranges[proc]; i<ranges[proc+1]; i++) sendbuf[k++] = atbarray[i+j*cM];
     }
   }
   /* sum all atbarray to local values of C */
@@ -1995,10 +1996,16 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   PetscInt              maxRows, bufsiz;
   Mat_MPIDense          *c;
   PetscMPIInt           tag;
+  const char            *algTypes[2] = {"allgatherv","cyclic"};
+  PetscInt              alg, nalg = 2;
   Mat_MatTransMultDense *abt;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  alg = 0; /* default is allgatherv */
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatMatTransposeMult","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-matmattransmult_mpidense_mpidense_via","Algorithmic approach","MatMatTransposeMult",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (A->cmap->N != B->cmap->N) {
     SETERRQ2(comm,PETSC_ERR_ARG_SIZ,"Matrix global column dimensions are incompatible, A (%D) != B (%D)",A->cmap->N,B->cmap->N);
   }
@@ -2017,9 +2024,20 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscNew(&abt);CHKERRQ(ierr);
   abt->tag = tag;
-  for (maxRows = 0, i = 0; i < size; i++) maxRows = PetscMax(maxRows, (B->rmap->range[i + 1] - B->rmap->range[i]));
-  bufsiz = A->cmap->N * maxRows;
-  ierr = PetscMalloc2(bufsiz,&(abt->buf[0]),bufsiz,&(abt->buf[1]));CHKERRQ(ierr);
+  abt->alg = alg;
+  switch (alg) {
+  case 1:
+    for (maxRows = 0, i = 0; i < size; i++) maxRows = PetscMax(maxRows, (B->rmap->range[i + 1] - B->rmap->range[i]));
+    bufsiz = A->cmap->N * maxRows;
+    ierr = PetscMalloc2(bufsiz,&(abt->buf[0]),bufsiz,&(abt->buf[1]));CHKERRQ(ierr);
+    break;
+  default:
+    ierr = PetscMalloc2(B->rmap->n * B->cmap->N, &(abt->buf[0]), B->rmap->N * B->cmap->N, &(abt->buf[1]));CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,&(abt->recvcounts),size+1,&(abt->recvdispls));CHKERRQ(ierr);
+    for (i = 0; i <= size; i++) abt->recvdispls[i] = B->rmap->range[i] * A->cmap->N;
+    for (i = 0; i < size; i++) abt->recvcounts[i] = abt->recvdispls[i + 1] - abt->recvdispls[i];
+    break;
+  }
 
   c                    = (Mat_MPIDense*)Cdense->data;
   c->abtdense          = abt;
@@ -2028,7 +2046,7 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
+static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A, Mat B, Mat C)
 {
   Mat_MPIDense   *a=(Mat_MPIDense*)A->data, *b=(Mat_MPIDense*)B->data, *c=(Mat_MPIDense*)C->data;
   Mat_SeqDense   *aseq=(Mat_SeqDense*)(a->A)->data, *bseq=(Mat_SeqDense*)(b->A)->data;
@@ -2096,6 +2114,60 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
     bn = nextbn;
     recvisfrom = nextrecvisfrom;
     sendbuf = recvbuf;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Mat A, Mat B, Mat C)
+{
+  Mat_MPIDense   *a=(Mat_MPIDense*)A->data, *b=(Mat_MPIDense*)B->data, *c=(Mat_MPIDense*)C->data;
+  Mat_SeqDense   *aseq=(Mat_SeqDense*)(a->A)->data, *bseq=(Mat_SeqDense*)(b->A)->data;
+  Mat_SeqDense   *cseq=(Mat_SeqDense*)(c->A)->data;
+  Mat_MatTransMultDense *abt = c->abtdense;
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscMPIInt    rank,size;
+  PetscScalar    *sendbuf, *recvbuf;
+  PetscInt       i,cK=A->cmap->N,k,j,bn;
+  PetscScalar    _DOne=1.0,_DZero=0.0;
+  PetscBLASInt   cm, cn, ck;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  /* copy transpose of B into buf[0] */
+  bn      = B->rmap->n;
+  sendbuf = abt->buf[0];
+  recvbuf = abt->buf[1];
+  for (k = 0, j = 0; j < bn; j++) {
+    for (i = 0; i < cK; i++, k++) {
+      sendbuf[k] = bseq->v[i * bseq->lda + j];
+    }
+  }
+  ierr = MPI_Allgatherv(sendbuf, bn * cK, MPIU_SCALAR, recvbuf, abt->recvcounts, abt->recvdispls, MPIU_SCALAR, comm);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(cK,&ck);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(c->A->rmap->n,&cm);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(c->A->cmap->n,&cn);CHKERRQ(ierr);
+  PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&cm,&cn,&ck,&_DOne,aseq->v,&aseq->lda,recvbuf,&ck,&_DZero,cseq->v,&cseq->lda));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
+{
+  Mat_MPIDense   *c=(Mat_MPIDense*)C->data;
+  Mat_MatTransMultDense *abt = c->abtdense;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (abt->alg) {
+  case 1:
+    ierr = MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(A, B, C);CHKERRQ(ierr);
+    break;
+  default:
+    ierr = MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(A, B, C);CHKERRQ(ierr);
+    break;
   }
   PetscFunctionReturn(0);
 }
