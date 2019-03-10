@@ -329,7 +329,7 @@ $    -mat_partitioning_view
 PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
   PetscErrorCode ierr;
-  PetscBool      viewbalance;
+  PetscBool      viewbalance,improve;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
@@ -347,10 +347,62 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   ierr = PetscObjectOptionsBegin((PetscObject)matp);CHKERRQ(ierr);
   viewbalance = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_partitioning_view_imbalance","Display imbalance information of a partition",NULL,PETSC_FALSE,&viewbalance,NULL);CHKERRQ(ierr);
+  improve = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_partitioning_improve","Improve the quality of a partition",NULL,PETSC_FALSE,&improve,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  if (improve) {
+    ierr = MatPartitioningImprove(matp,partitioning);CHKERRQ(ierr);
+  }
+
   if (viewbalance) {
     ierr = MatPartitioningViewImbalance(matp,*partitioning);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+
+/*@
+   MatPartitioningImprove - Improves the quality of a given partition.
+
+   Collective on Mat
+
+   Input Parameters:
+.  matp - the matrix partitioning object
+.  partitioning - the partitioning. For each local node this tells the processor
+                   number that that node is assigned to.
+
+   Output Parameters:
+.   partitioning - the partitioning. For each local node this tells the processor
+                   number that that node is assigned to.
+
+   Options Database Keys:
+   To improve the quality of the partition
+$    -mat_partitioning_improve
+
+   Level: beginner
+
+
+.keywords: matrix, improve, partitioning
+
+.seealso:  MatPartitioningApply(), MatPartitioningCreate(),
+           MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
+           ISPartitioningCount()
+@*/
+PetscErrorCode  MatPartitioningImprove(MatPartitioning matp,IS *partitioning)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
+  PetscValidHeaderSpecific(partitioning,IS_CLASSID,2);
+  if (!matp->adj->assembled) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (matp->adj->factortype) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
+  if (matp->ops->improve) {
+    ierr = (*matp->ops->improve)(matp,partitioning);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

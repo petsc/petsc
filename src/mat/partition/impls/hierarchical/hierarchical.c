@@ -24,7 +24,8 @@ typedef struct {
   IS                   coarseparts; /* partitioning on coarse level */
   IS                   fineparts; /* partitioning on fine level */
   MatPartitioning      coarseMatPart; /* MatPartititioning on coarse level (first level) */
-  MatPartitioning      fineMatPart; /* MatPartitioning on fine level (second level)*/
+  MatPartitioning      fineMatPart; /* MatPartitioning on fine level (second level) */
+  MatPartitioning      improver; /* Improve the quality of a partition */
 } MatPartitioning_Hierarchical;
 
 /*
@@ -482,7 +483,59 @@ PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
   ierr = ISDestroy(&hpart->coarseparts);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&hpart->coarseMatPart);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&hpart->fineMatPart);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(&hpart->improver);CHKERRQ(ierr);
   ierr = PetscFree(hpart);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+   Improves the quality  of a partition
+*/
+static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, IS *partitioning)
+{
+  PetscErrorCode               ierr;
+  MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
+  Mat                           mat = part->adj, adj;
+  PetscBool                    flg;
+  PetscInt                     *vertex_weights;
+  const char                   *prefix;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
+  if (flg) {
+    adj = mat;
+    ierr = PetscObjectReference((PetscObject)adj);CHKERRQ(ierr);
+  }else {
+    /* bs indicates if the converted matrix is "reduced" from the original and hence the
+       resulting partition results need to be stretched to match the original matrix */
+   ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&adj);CHKERRQ(ierr);
+  }
+
+  /* If there exists a mat partitioner, we should delete it */
+  if (hpart->improver) {
+    ierr = MatPartitioningDestroy(&hpart->improver);CHKERRQ(ierr);
+  }
+  ierr = MatPartitioningCreate(PetscObjectComm((PetscObject)part),&hpart->improver);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)part,&prefix);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)hpart->improver,prefix);CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)hpart->improver,"hierarch_improver_");CHKERRQ(ierr);
+  /* Only parmetis supports to refine a partition */
+#if defined(PETSC_HAVE_PARMETIS)
+    ierr = MatPartitioningSetType(hpart->improver,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject)adj),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis\n");
+#endif
+
+  ierr = MatPartitioningSetAdjacency(hpart->improver,adj);CHKERRQ(ierr);
+  ierr = MatPartitioningSetNParts(hpart->improver, part->n);CHKERRQ(ierr);
+  /* copy over vertex weights */
+  if(part->vertex_weights){
+    ierr = PetscMalloc1(adj->rmap->n,&vertex_weights);CHKERRQ(ierr);
+    ierr = PetscMemcpy(vertex_weights,part->vertex_weights,sizeof(PetscInt)*adj->rmap->n);CHKERRQ(ierr);
+    ierr = MatPartitioningSetVertexWeights(hpart->improver,vertex_weights);CHKERRQ(ierr);
+  }
+  ierr = MatPartitioningImprove(hpart->improver,partitioning);CHKERRQ(ierr);
+  ierr = MatDestroy(&adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -544,5 +597,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning p
   part->ops->view           = MatPartitioningView_Hierarchical;
   part->ops->destroy        = MatPartitioningDestroy_Hierarchical;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Hierarchical;
+  part->ops->improve        = MatPartitioningImprove_Hierarchical;
   PetscFunctionReturn(0);
 }
