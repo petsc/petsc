@@ -987,7 +987,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         if (dm->fields[f].label) {ierr = DMLabelView(dm->fields[f].label, viewer);CHKERRQ(ierr);}
         if (dm->fields[f].adjacency[0]) {
           if (dm->fields[f].adjacency[1]) {ierr = PetscViewerASCIIPrintf(viewer, "adjacency FVM++\n");CHKERRQ(ierr);}
-          else                            {ierr = PetscViewerASCIIPrintf(viewer, "adjacency adj FVM\n");CHKERRQ(ierr);}
+          else                            {ierr = PetscViewerASCIIPrintf(viewer, "adjacency FVM\n");CHKERRQ(ierr);}
         } else {
           if (dm->fields[f].adjacency[1]) {ierr = PetscViewerASCIIPrintf(viewer, "adjacency FEM\n");CHKERRQ(ierr);}
           else                            {ierr = PetscViewerASCIIPrintf(viewer, "adjacency FUNKY\n");CHKERRQ(ierr);}
