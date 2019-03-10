@@ -149,6 +149,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer, "  cell total dim %D total comp %D\n", prob->totDim, prob->totComp);CHKERRQ(ierr);
   if (prob->isHybrid) {ierr = PetscViewerASCIIPrintf(viewer, "  hybrid cell\n");CHKERRQ(ierr);}
   for (f = 0; f < prob->Nf; ++f) {
+    DSBoundary      b;
     PetscObject     obj;
     PetscClassId    id;
     PetscQuadrature q;
@@ -191,6 +192,35 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
     if (id == PETSCFE_CLASSID)      {ierr = PetscFEView((PetscFE) obj, viewer);CHKERRQ(ierr);}
     else if (id == PETSCFV_CLASSID) {ierr = PetscFVView((PetscFV) obj, viewer);CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+
+    for (b = prob->boundary; b; b = b->next) {
+      PetscInt c, i;
+
+      if (b->field != f) continue;
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Boundary %s (%s) %s\n", b->name, b->labelname, DMBoundaryConditionTypes[b->type]);CHKERRQ(ierr);
+      if (!b->numcomps) {
+        ierr = PetscViewerASCIIPrintf(viewer, "  all components\n");CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer, "  components: ");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        for (c = 0; c < b->numcomps; ++c) {
+          if (c > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIIPrintf(viewer, "%D", b->comps[c]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "  ids: ");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      for (i = 0; i < b->numids; ++i) {
+        if (i > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+        ierr = PetscViewerASCIIPrintf(viewer, "%D", b->ids[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   }
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (numConstants) {

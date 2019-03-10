@@ -1807,8 +1807,8 @@ int main(int argc, char **argv)
   }
   /* FV is now structured with one field having all physics as components */
   ierr = DMAddField(dm, NULL, (PetscObject) fvm);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
   ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
   ierr = (*mod->setupbc)(prob,phys);CHKERRQ(ierr);

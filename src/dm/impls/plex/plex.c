@@ -3395,6 +3395,9 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = DMSetDefaultConstraints(*cdm, s, m);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = MatDestroy(&m);CHKERRQ(ierr);
+
+  ierr = DMSetNumFields(*cdm, 1);CHKERRQ(ierr);
+  ierr = DMCreateDS(*cdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
