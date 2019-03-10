@@ -393,6 +393,24 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *
   PetscFunctionReturn(0);
 }
 
+/*@
+   MatMatTransposeMultEqual - Test A*B^T*x = C*x for n random vector x
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the first matrix
+-  B - the second matrix
+-  C - the third matrix
+-  n - number of random vectors to be tested
+
+   Output Parameter:
+.  flg - PETSC_TRUE if the products are equal; PETSC_FALSE otherwise.
+
+   Level: intermediate
+
+   Concepts: matrices^equality between
+@*/
 PetscErrorCode MatMatTransposeMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *flg)
 {
   PetscErrorCode ierr;
