@@ -1,7 +1,5 @@
-// gmsh -3 gmsh-3d.geo -o gmsh-3d-ascii.msh2
-// gmsh -3 gmsh-3d.geo -o gmsh-3d-ascii.msh4
-// gmsh -3 -bin gmsh-3d.geo -o gmsh-3d-binary.msh2
-// gmsh -3 -bin gmsh-3d.geo -o gmsh-3d-binary.msh4
+// gmsh -3 gmsh-3d.geo -o gmsh-3d-ascii.msh
+// gmsh -3 -bin gmsh-3d.geo -o gmsh-3d-binary.msh
 
 
 x0 = 0; x1 = 1;
