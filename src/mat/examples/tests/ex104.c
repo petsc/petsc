@@ -115,7 +115,6 @@ int main(int argc,char **argv)
     ierr = MatDuplicate(D,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
-    /* ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
@@ -173,7 +172,6 @@ int main(int argc,char **argv)
     if (diff > PETSC_SMALL * scale) SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatMatTransposeMult() differs between MAT_INITIAL_MATRIX and MAT_REUSE_MATRIX");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
-    /* ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = MatMatTransposeMultEqual(A,B,D,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
