@@ -4190,6 +4190,8 @@ static PetscErrorCode DMSetDefaultAdjacency_Private(DM dm, PetscInt f, PetscObje
     ierr = DMSetAdjacency(dm, f, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
   } else if (id == PETSCFV_CLASSID) {
     ierr = DMSetAdjacency(dm, f, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
+  } else {
+    ierr = DMSetAdjacency(dm, f, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
