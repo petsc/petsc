@@ -2927,6 +2927,8 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   ierr = ISDestroy(&patch->intFacets);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->extFacets);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->intFacetsToPatchCell);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&patch->intFacetCounts);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&patch->extFacetCounts);CHKERRQ(ierr);
 
   if (patch->dofSection) for (i = 0; i < patch->nsubspaces; i++) {ierr = PetscSectionDestroy(&patch->dofSection[i]);CHKERRQ(ierr);}
   ierr = PetscFree(patch->dofSection);CHKERRQ(ierr);
