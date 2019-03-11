@@ -395,7 +395,7 @@ PetscErrorCode  MatPartitioningImprove(MatPartitioning matp,IS *partitioning)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
-  PetscValidHeaderSpecific(partitioning,IS_CLASSID,2);
+  PetscValidPointer(partitioning,2);
   if (!matp->adj->assembled) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (matp->adj->factortype) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
