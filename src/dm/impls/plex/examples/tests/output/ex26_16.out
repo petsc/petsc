@@ -2218,8 +2218,8 @@ Labels:
   Cell Sets: 2 strata with value/size (1 (16), 2 (16))
   depth: 4 strata with value/size (0 (75), 1 (170), 2 (128), 3 (32))
 Field Field_0:
-  adjacency FUNKY
+  adjacency FEM
 Field Field_1:
-  adjacency FUNKY
+  adjacency FEM
 Field Field_2:
-  adjacency FUNKY
+  adjacency FEM

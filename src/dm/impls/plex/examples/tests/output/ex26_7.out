@@ -536,8 +536,8 @@ Labels:
   Cell Sets: 2 strata with value/size (1 (9), 2 (9))
   depth: 3 strata with value/size (0 (28), 1 (45), 2 (18))
 Field Field_0:
-  adjacency FVM
+  adjacency FEM
 Field Field_1:
-  adjacency FUNKY
+  adjacency FEM
 Field Field_2:
-  adjacency FUNKY
+  adjacency FEM
