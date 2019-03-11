@@ -516,24 +516,30 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar *
 }
 
 #if defined(PETSC_USE_DEBUG)
+PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
+PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
+/* We also have a non-public VecLockWriteSet_Private() in vecimpl.h */
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
-PETSC_EXTERN PetscErrorCode VecLockPush(Vec);
-PETSC_EXTERN PetscErrorCode VecLockPop(Vec);
-PETSC_EXTERN PetscErrorCode VecWriteLock(Vec);
-PETSC_EXTERN PetscErrorCode VecWriteUnlock(Vec);
-#define VecLocked(x,arg) \
+#define VecSetErrorIfLocked(x,arg) \
   do { \
     PetscInt       __st; \
     PetscErrorCode __ierr; \
     __ierr = VecLockGet(x,&__st);CHKERRQ(__ierr); \
     if (__st != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %d",arg); \
   } while (0)
+
+/* The three are deprecated */
+PETSC_DEPRECATED("Use VecLockReadPush (since v3.11)") PetscErrorCode VecLockPush(Vec);
+PETSC_DEPRECATED("Use VecLockReadPop (since v3.11)")  PetscErrorCode VecLockPop(Vec);
+#define VecLocked(x,arg) VecSetErrorIfLocked(x,arg)
 #else
-#define VecLockGet(x,arg)     *(arg) = 0
-#define VecLockPush(x)        0
-#define VecLockPop(x)         0
-#define VecWriteLock(Vec)     0
-#define VecWriteUnlock(Vec)   0
+#define VecLockReadPush(x)
+#define VecLockReadPop(x)
+#define VecLockGet(x,s) *(s) = 0
+#define VecSetErrorIfLocked(x,arg)
+/* The three are deprecated */
+#define VecLockPush(x)
+#define VecLockPop(x)
 #define VecLocked(x,arg)
 #endif
 
