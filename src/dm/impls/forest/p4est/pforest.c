@@ -5137,6 +5137,7 @@ static PetscErrorCode DMClone_pforest(DM dm, DM *newdm)
 
   PetscFunctionBegin;
   ierr = DMClone_Forest(dm,newdm);CHKERRQ(ierr);
+  ierr = DMInitialize_pforest(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
