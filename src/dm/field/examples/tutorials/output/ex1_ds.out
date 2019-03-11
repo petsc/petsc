@@ -12,6 +12,8 @@ DMField Object: field 1 MPI processes
     Face Sets: 1 strata with value/size (1 (12))
     marker: 1 strata with value/size (1 (24))
     depth: 3 strata with value/size (0 (16), 1 (33), 2 (18))
+  Field MyPetscFE:
+    adjacency FEM
   PetscDS field 0
     PetscFE Object: MyPetscFE 1 MPI processes
       type: basic
