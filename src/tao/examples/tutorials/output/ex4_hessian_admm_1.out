@@ -1,13 +1,13 @@
-ADMM 0: ||x - z|| = 1.81923
-ADMM 1: ||x - z|| = 1.33753
-ADMM 2: ||x - z|| = 1.11121
-ADMM 3: ||x - z|| = 0.963057
-ADMM 4: ||x - z|| = 0.851287
-ADMM 5: ||x - z|| = 0.760807
-ADMM 6: ||x - z|| = 0.684795
-ADMM 7: ||x - z|| = 0.478585
-ADMM 8: ||x - z|| = 0.354416
-ADMM 9: ||x - z|| = 0.285869
+Iter 0 : ||x-z||: 1.81923, mu*||z-zold||: 0.
+Iter 1 : ||x-z||: 1.33753, mu*||z-zold||: 0.
+Iter 2 : ||x-z||: 1.11121, mu*||z-zold||: 0.
+Iter 3 : ||x-z||: 0.963057, mu*||z-zold||: 0.
+Iter 4 : ||x-z||: 0.851287, mu*||z-zold||: 0.
+Iter 5 : ||x-z||: 0.760807, mu*||z-zold||: 0.
+Iter 6 : ||x-z||: 0.684795, mu*||z-zold||: 0.
+Iter 7 : ||x-z||: 0.478585, mu*||z-zold||: 0.197965
+Iter 8 : ||x-z||: 0.354416, mu*||z-zold||: 0.217479
+Iter 9 : ||x-z||: 0.285869, mu*||z-zold||: 0.220793
 J(xhat): 108.714, predicted: 20.6301, diff 88.084
 J(xhat): 40.4056, predicted: 16.3031, diff 24.1026
 J(xhat): 21.2033, predicted: 14.1395, diff 7.06373
