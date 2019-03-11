@@ -455,7 +455,7 @@ PetscErrorCode  MatPartitioningViewImbalance(MatPartitioning matp, IS partitioni
   ierr = PetscFree2(subdomainsizes,subdomainsizes_tmp);CHKERRQ(ierr);
   ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);
   ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Partitioning Imbalance Info: Max %D, Min %D, Avg %D, R %g\n",maxsub, minsub, avgsub, maxsub/(PetscReal)minsub);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Partitioning Imbalance Info: Max %D, Min %D, Avg %D, R %g\n",maxsub, minsub, avgsub, (double)(maxsub/(PetscReal)minsub));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

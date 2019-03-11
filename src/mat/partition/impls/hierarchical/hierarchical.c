@@ -73,7 +73,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   if(!hpart->nfineparts) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," must set number of small subdomains for each big subdomain \n");
   if(!hpart->ncoarseparts && !part->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," did not either set number of coarse parts or total number of parts \n");
 
-  /* Partitioning the domain into one single subdomains is the trivial case, and we should just return  */
+  /* Partitioning the domain into one single subdomain is a trivial case, and we should just return  */
   if (part->n==1) {
     ierr = PetscCalloc1(bs*adj->rmap->n,&parts_indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,bs*adj->rmap->n,parts_indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
@@ -112,9 +112,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     offsets[i] += offsets[i-1];
 
   /* If these exists a mat partitioner, we should delete it */
-  if (hpart->coarseMatPart) {
-    ierr = MatPartitioningDestroy(&hpart->coarseMatPart);CHKERRQ(ierr);
-  }
+  ierr = MatPartitioningDestroy(&hpart->coarseMatPart);CHKERRQ(ierr);
   ierr = MatPartitioningCreate(comm,&hpart->coarseMatPart);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)part,&prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)hpart->coarseMatPart,prefix);CHKERRQ(ierr);
@@ -177,9 +175,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
      * need to do partitioning
      * */
     if((i+rank)<hpart->ncoarseparts) {
-      if (hpart->fineMatPart) {
-        ierr = MatPartitioningDestroy(&hpart->fineMatPart);CHKERRQ(ierr);
-      }
+      ierr = MatPartitioningDestroy(&hpart->fineMatPart);CHKERRQ(ierr);
       /* create a fine partitioner */
       ierr = MatPartitioningCreate(scomm,&hpart->fineMatPart);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)hpart->fineMatPart,prefix);CHKERRQ(ierr);
@@ -512,9 +508,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   }
 
   /* If there exists a mat partitioner, we should delete it */
-  if (hpart->improver) {
-    ierr = MatPartitioningDestroy(&hpart->improver);CHKERRQ(ierr);
-  }
+  ierr = MatPartitioningDestroy(&hpart->improver);CHKERRQ(ierr);
   ierr = MatPartitioningCreate(PetscObjectComm((PetscObject)part),&hpart->improver);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)part,&prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)hpart->improver,prefix);CHKERRQ(ierr);
