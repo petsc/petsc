@@ -1124,9 +1124,11 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
       ierr = DMPlexVecRestoreClosure(plex, section, locX_t, cell, NULL, &x_t);CHKERRQ(ierr);
     }
     if (locA) {
-      ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, cell, NULL, &x);CHKERRQ(ierr);
+      PetscInt subcell;
+      ierr = DMPlexGetAuxiliaryPoint(plex, plexA, cell, &subcell);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subcell, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) al[cind*totDimAux+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, cell, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subcell, NULL, &x);CHKERRQ(ierr);
     }
   }
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
@@ -1700,8 +1702,10 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, IS cellIS, PetscReal time, 
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
   if (locA) {
+    PetscInt subcell;
+    ierr = DMPlexGetAuxiliaryPoint(dm, dmAux, cStart, &subcell);CHKERRQ(ierr);
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
-    ierr = DMGetCellDS(dmAux, cStart, &probAux);CHKERRQ(ierr);
+    ierr = DMGetCellDS(dmAux, subcell, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
   /* 2: Get geometric data */
@@ -2467,9 +2471,11 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, IS cellIS, PetscReal t, Pet
       ierr = DMPlexVecRestoreClosure(dm, section, X_t, cell, NULL, &x_t);CHKERRQ(ierr);
     }
     if (dmAux) {
-      ierr = DMPlexVecGetClosure(plex, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
+      PetscInt subcell;
+      ierr = DMPlexGetAuxiliaryPoint(dm, dmAux, cell, &subcell);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(plex, sectionAux, A, subcell, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) a[cind*totDimAux+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(plex, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(plex, sectionAux, A, subcell, NULL, &x);CHKERRQ(ierr);
     }
   }
   if (hasJac)  {ierr = PetscMemzero(elemMat,  numCells*totDim*totDim * sizeof(PetscScalar));CHKERRQ(ierr);}
@@ -2716,9 +2722,11 @@ PetscErrorCode DMPlexComputeJacobianAction(DM dm, IS cellIS, PetscReal t, PetscR
       ierr = DMPlexVecRestoreClosure(dm, section, X_t, cell, NULL, &x_t);CHKERRQ(ierr);
     }
     if (dmAux) {
-      ierr = DMPlexVecGetClosure(plexAux, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
+      PetscInt subcell;
+      ierr = DMPlexGetAuxiliaryPoint(dm, dmAux, cell, &subcell);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(plexAux, sectionAux, A, subcell, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) a[cind*totDimAux+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(plexAux, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(plexAux, sectionAux, A, subcell, NULL, &x);CHKERRQ(ierr);
     }
     ierr = DMPlexVecGetClosure(dm, section, Y, cell, NULL, &x);CHKERRQ(ierr);
     for (i = 0; i < totDim; ++i) y[cind*totDim+i] = x[i];
