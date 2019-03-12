@@ -88,6 +88,7 @@ PETSC_EXTERN PetscErrorCode KSPSetUpOnBlocks(KSP);
 PETSC_EXTERN PetscErrorCode KSPSolve(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPSolveTranspose(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPReset(KSP);
+PETSC_EXTERN PetscErrorCode KSPResetViewers(KSP);
 PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPSetSkipPCSetFromOptions(KSP,PetscBool);

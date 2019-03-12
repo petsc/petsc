@@ -960,6 +960,58 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 }
 
 /*@
+   KSPResetViewers - Resets all the viewers set from the options database during KSPSetFromOptions()
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Level: beginner
+
+.keywords: destroy
+
+.seealso: KSPCreate(), KSPSetUp(), KSPSolve(), KSPSetFromOptions(), KSP
+@*/
+PetscErrorCode  KSPResetViewers(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ksp) PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (!ksp) PetscFunctionReturn(0);
+  ierr = PetscViewerDestroy(&ksp->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPre);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerReason);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerMat);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPMat);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerRhs);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerSol);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerMatExp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerEV);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerSV);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerEVExp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerFinalRes);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPOpExp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerDScale);CHKERRQ(ierr);
+  ksp->view         = PETSC_FALSE;
+  ksp->viewPre      = PETSC_FALSE;
+  ksp->viewReason   = PETSC_FALSE;
+  ksp->viewMat      = PETSC_FALSE;
+  ksp->viewPMat     = PETSC_FALSE;
+  ksp->viewRhs      = PETSC_FALSE;
+  ksp->viewSol      = PETSC_FALSE;
+  ksp->viewMatExp   = PETSC_FALSE;
+  ksp->viewEV       = PETSC_FALSE;
+  ksp->viewSV       = PETSC_FALSE;
+  ksp->viewEVExp    = PETSC_FALSE;
+  ksp->viewFinalRes = PETSC_FALSE;
+  ksp->viewPOpExp   = PETSC_FALSE;
+  ksp->viewDScale   = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
    KSPReset - Resets a KSP context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
 
    Collective on KSP
@@ -994,19 +1046,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   ierr = VecDestroy(&ksp->diagonal);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->truediagonal);CHKERRQ(ierr);
 
-  ierr = PetscViewerDestroy(&ksp->viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerPre);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerReason);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerMat);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerPMat);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerRhs);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerSol);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerMatExp);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerEV);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerSV);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerEVExp);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerFinalRes);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerPOpExp);CHKERRQ(ierr);
+  ierr = KSPResetViewers(ksp);CHKERRQ(ierr);
 
   ksp->setupstage = KSP_SETUP_NEW;
   PetscFunctionReturn(0);
