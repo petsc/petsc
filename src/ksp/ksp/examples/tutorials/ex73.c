@@ -1154,6 +1154,7 @@ PetscErrorCode ComputeMatrix_ShellDA(KSP ksp,Mat J,Mat jac,void *ctx)
   test:
     suffix: basic_neumann
     nsize: 4
+    requires: !single
     args: -tid 0 -ksp_monitor_short -pc_type telescope -telescope_ksp_max_it 100000 -telescope_pc_type jacobi -telescope_ksp_type fgmres -telescope_ksp_monitor_short -ksp_type gcr -bc_type neumann
 
   test:
