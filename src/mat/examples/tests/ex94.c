@@ -301,8 +301,9 @@ int main(int argc,char **args)
       ierr = MatDestroy(&Adense);CHKERRQ(ierr);
     }
 
-    /* Test MatDuplicate() of C=PtAP */
+    /* Test MatDuplicate() of C=PtAP and MatView(Cdup,...) */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
+    ierr = MatView(Cdup,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
 
     if (size>1 || !seqaij) Test_MatRARt = PETSC_FALSE;
