@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC   = telescope.c telescope_dmda.c
+SOURCEC   = telescope.c telescope_dmda.c telescope_coarsedm.c
 SOURCEF   =
 SOURCEH   =
 LIBBASE   = libpetscksp
