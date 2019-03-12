@@ -23,7 +23,7 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
 
   PetscFunctionBegin;
   /* If xin != yin, lock xin for read-only access; otherwise, we need to lock xin (yin) for read/write access once we get its data */
-  if (xin != yin) {ierr = VecLockPush(xin);CHKERRQ(ierr);}
+  if (xin != yin) {ierr = VecLockReadPush(xin);CHKERRQ(ierr);}
 
   if (mode & SCATTER_REVERSE) {
     to     = (VecScatter_MPI_General*)ctx->fromdata;
@@ -153,7 +153,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
 functionend:
   if (xin != yin) {
     ierr = VecRestoreArrayRead(xin,&ctx->xdata);CHKERRQ(ierr);
-    ierr = VecLockPop(xin);CHKERRQ(ierr);
+    ierr = VecLockReadPop(xin);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(yin,&ctx->ydata);CHKERRQ(ierr);
   ierr = VecLockWriteSet_Private(yin,PETSC_FALSE);CHKERRQ(ierr);

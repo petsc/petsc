@@ -1433,7 +1433,7 @@ PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm comm, PetscBool has_const, PetscIn
   ierr = MatNullSpaceCreate(comm,has_const,nvecs,quad_vecs,nnsp);CHKERRQ(ierr);
   for (i=0;i<nvecs;i++) { /* reset vectors */
     PetscInt first,last;
-    ierr = VecLockPop(quad_vecs[i]);CHKERRQ(ierr);
+    ierr = VecLockReadPop(quad_vecs[i]);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(quad_vecs[i],&first,&last);CHKERRQ(ierr);
     if (i>=first && i < last) {
       PetscScalar *data;
@@ -1447,7 +1447,7 @@ PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm comm, PetscBool has_const, PetscIn
       ierr = VecRestoreArray(quad_vecs[i],&data);CHKERRQ(ierr);
     }
     ierr = PetscObjectStateIncrease((PetscObject)quad_vecs[i]);CHKERRQ(ierr);
-    ierr = VecLockPush(quad_vecs[i]);CHKERRQ(ierr);
+    ierr = VecLockReadPush(quad_vecs[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1486,7 +1486,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   ierr = VecDestroy(&quad_vec);CHKERRQ(ierr);
   ierr = PCBDDCNullSpaceCreate(PetscObjectComm((PetscObject)A),PETSC_FALSE,maxneighs,quad_vecs,nnsp);CHKERRQ(ierr);
   for (i=0;i<maxneighs;i++) {
-    ierr = VecLockPop(quad_vecs[i]);CHKERRQ(ierr);
+    ierr = VecLockReadPop(quad_vecs[i]);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(quad_vecs[i],map);CHKERRQ(ierr);
   }
 
@@ -1547,7 +1547,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   for (i=0;i<maxneighs;i++) {
     ierr = VecAssemblyEnd(quad_vecs[i]);CHKERRQ(ierr);
     ierr = VecViewFromOptions(quad_vecs[i],NULL,"-pc_bddc_quad_vecs_view");CHKERRQ(ierr);
-    ierr = VecLockPush(quad_vecs[i]);CHKERRQ(ierr);
+    ierr = VecLockReadPush(quad_vecs[i]);CHKERRQ(ierr);
   }
   ierr = VecDestroyVecs(maxneighs,&quad_vecs);CHKERRQ(ierr);
   PetscFunctionReturn(0);

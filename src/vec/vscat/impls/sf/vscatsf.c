@@ -14,7 +14,7 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (x != y) {ierr = VecLockPush(x);CHKERRQ(ierr);}
+  if (x != y) {ierr = VecLockReadPush(x);CHKERRQ(ierr);}
 
   {
 #if defined(PETSC_HAVE_CUDA)
@@ -78,7 +78,7 @@ static PetscErrorCode VecScatterEnd_SF(VecScatter vscat,Vec x,Vec y,InsertMode a
 
   if (x != y) {
     ierr = VecRestoreArrayRead(x,&vscat->xdata);CHKERRQ(ierr);
-    ierr = VecLockPop(x);CHKERRQ(ierr);
+    ierr = VecLockReadPop(x);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);
   ierr = VecLockWriteSet_Private(y,PETSC_FALSE);CHKERRQ(ierr);

@@ -3928,11 +3928,11 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMSetOutputSequenceNumber(dm,step,ptime);CHKERRQ(ierr);
 
-  ierr = VecLockPush(u);CHKERRQ(ierr);
+  ierr = VecLockReadPush(u);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = (*ts->monitor[i])(ts,step,ptime,u,ts->monitorcontext[i]);CHKERRQ(ierr);
   }
-  ierr = VecLockPop(u);CHKERRQ(ierr);
+  ierr = VecLockReadPop(u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

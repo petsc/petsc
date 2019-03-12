@@ -541,7 +541,7 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
   PetscValidLogicalCollectiveScalar(x,alpha,2);
-  VecLocked(x,1);
+  VecSetErrorIfLocked(x,1);
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(x,alpha);CHKERRQ(ierr);
@@ -603,13 +603,13 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   VecCheckSameSize(x,1,y,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
-  VecLocked(y,1);
+  VecSetErrorIfLocked(y,1);
 
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpy)(y,alpha,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1290,7 +1290,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
         ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
         ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
         ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
-        ierr = VecLockPush(Z);CHKERRQ(ierr);
+        ierr = VecLockReadPush(Z);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
       } else {
         PetscScalar *x;
@@ -1576,7 +1576,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  VecLocked(x,1);
+  VecSetErrorIfLocked(x,1);
   if (x->petscnative) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {

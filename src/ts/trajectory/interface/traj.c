@@ -993,11 +993,11 @@ PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscRe
   }
   ierr = TSTrajectoryGetVecs(tj,ts,PETSC_DECIDE,&time,U ? tj->U : NULL,Udot ? tj->Udot : NULL);CHKERRQ(ierr);
   if (U) {
-    ierr = VecLockPush(tj->U);CHKERRQ(ierr);
+    ierr = VecLockReadPush(tj->U);CHKERRQ(ierr);
     *U   = tj->U;
   }
   if (Udot) {
-    ierr  = VecLockPush(tj->Udot);CHKERRQ(ierr);
+    ierr  = VecLockReadPush(tj->Udot);CHKERRQ(ierr);
     *Udot = tj->Udot;
   }
   PetscFunctionReturn(0);
@@ -1030,11 +1030,11 @@ PetscErrorCode TSTrajectoryRestoreUpdatedHistoryVecs(TSTrajectory tj, Vec *U, Ve
   if (U && *U != tj->U) SETERRQ(PetscObjectComm((PetscObject)*U),PETSC_ERR_USER,"U was not obtained from TSTrajectoryGetUpdatedHistoryVecs()");
   if (Udot && *Udot != tj->Udot) SETERRQ(PetscObjectComm((PetscObject)*Udot),PETSC_ERR_USER,"Udot was not obtained from TSTrajectoryGetUpdatedHistoryVecs()");
   if (U) {
-    ierr = VecLockPop(tj->U);CHKERRQ(ierr);
+    ierr = VecLockReadPop(tj->U);CHKERRQ(ierr);
     *U   = NULL;
   }
   if (Udot) {
-    ierr  = VecLockPop(tj->Udot);CHKERRQ(ierr);
+    ierr  = VecLockReadPop(tj->Udot);CHKERRQ(ierr);
     *Udot = NULL;
   }
   PetscFunctionReturn(0);
