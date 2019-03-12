@@ -710,6 +710,7 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject,co
 +  opt - the option one is seeking
 .  text - short string describing option
 .  man - manual page for option
+.  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
 -  n - maximum number of values
 
    Output Parameter:
