@@ -14,7 +14,7 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *names[5] = {"none", "ghosted", "mirror", "periodic", "twist"};
+  const char    *names[5] = {"none", "ghosted", "mirror", "periodic", "twist", "DMBoundaryType", "DM_BOUNDARY_", NULL};
   PetscInt       n;
   PetscErrorCode ierr;
 
