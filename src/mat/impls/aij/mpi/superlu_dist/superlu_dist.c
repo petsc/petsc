@@ -17,13 +17,6 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END
 
-/*
-    GLOBAL - The sparse matrix and right hand side are all stored initially on process 0. (Deprecated)
-    DISTRIBUTED - The sparse matrix and right hand size are initially stored across the entire MPI communicator.
-*/
-typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
-const char *SuperLU_MatInputModes[] = {"DISTRIBUTED","SuperLU_MatInputMode","PETSC_",0};
-
 typedef struct {
   int_t                  nprow,npcol,*row,*col;
   gridinfo_t             grid;
@@ -32,7 +25,6 @@ typedef struct {
   ScalePermstruct_t      ScalePermstruct;
   LUstruct_t             LUstruct;
   int                    StatPrint;
-  SuperLU_MatInputMode   MatInputMode;
   SOLVEstruct_t          SOLVEstruct;
   fact_t                 FactPattern;
   MPI_Comm               comm_superlu;
@@ -479,7 +471,6 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A,PetscViewer viewer)
   ierr    = PetscViewerASCIIPrintf(viewer,"SuperLU_DIST run parameters:\n");CHKERRQ(ierr);
   ierr    = PetscViewerASCIIPrintf(viewer,"  Process grid nprow %D x npcol %D \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
   ierr    = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscBools[options.Equil != NO]);CHKERRQ(ierr);
-  ierr    = PetscViewerASCIIPrintf(viewer,"  Matrix input mode %d \n",lu->MatInputMode);CHKERRQ(ierr);
   ierr    = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscBools[options.ReplaceTinyPivot != NO]);CHKERRQ(ierr);
   ierr    = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscBools[options.IterRefine == SLU_DOUBLE]);CHKERRQ(ierr);
   ierr    = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
@@ -621,8 +612,6 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,(PetscInt*)&lu->nprow,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,(PetscInt*)&lu->npcol,NULL);CHKERRQ(ierr);
   if (size != lu->nprow * lu->npcol) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %d * npcol %d",size,lu->nprow,lu->npcol);
-
-  lu->MatInputMode = DISTRIBUTED;
 
   ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && !flg) options.Equil = NO;
