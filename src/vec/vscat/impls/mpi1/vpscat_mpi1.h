@@ -62,7 +62,7 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
 
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);}
   else yv = (PetscScalar *)xv;
-  ierr = VecWriteLock(yin);CHKERRQ(ierr);
+  ierr = VecLockWriteSet_Private(yin,PETSC_TRUE);CHKERRQ(ierr);
 
   ctx->xdata = xv;
   ctx->ydata = yv;
@@ -156,7 +156,7 @@ functionend:
     ierr = VecLockPop(xin);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(yin,&ctx->ydata);CHKERRQ(ierr);
-  ierr = VecWriteUnlock(yin);CHKERRQ(ierr);
+  ierr = VecLockWriteSet_Private(yin,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
