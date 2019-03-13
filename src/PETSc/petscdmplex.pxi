@@ -91,11 +91,7 @@ cdef extern from * nogil:
     #int DMPlexCheckSkeleton(PetscDM,PetscBool,PetscInt)
     #int DMPlexCheckFaces(PetscDM,PetscBool,PetscInt)
 
-    int DMPlexSetAdjacencyUseCone(PetscDM,PetscBool)
-    int DMPlexSetAdjacencyUseClosure(PetscDM,PetscBool)
     int DMPlexSetAdjacencyUseAnchors(PetscDM,PetscBool)
-    int DMPlexGetAdjacencyUseCone(PetscDM,PetscBool*)
-    int DMPlexGetAdjacencyUseClosure(PetscDM,PetscBool*)
     int DMPlexGetAdjacencyUseAnchors(PetscDM,PetscBool*)
     int DMPlexGetAdjacency(PetscDM,PetscInt,PetscInt*,PetscInt*[])
     #int DMPlexCreateNeighborCSR(PetscDM,PetscInt,PetscInt*,PetscInt**,PetscInt**)

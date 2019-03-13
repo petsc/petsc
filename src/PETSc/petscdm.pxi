@@ -40,6 +40,9 @@ cdef extern from * nogil:
     int DMSetFromOptions(PetscDM)
     int DMSetUp(PetscDM)
 
+    int DMGetAdjacency(DM,PetscInt,PetscBool*,PetscBool*)
+    int DMSetAdjacency(DM,PetscInt,PetscBool,PetscBool)
+
     int DMGetDS(PetscDM,PetscDS*)
     int DMCopyDisc(PetscDM,PetscDM)
 

@@ -106,6 +106,19 @@ cdef class DM(Object):
 
     #
 
+    def setAdjacency(self, useCone, useClosure):
+        cdef PetscBool uC  = useCone
+        cdef PetscBool uCl = useClosure
+        CHKERR( DMSetAdjacency(self.dm, uC, uCl) )
+
+    def getAdjacency(self):
+        cdef PetscBool uC  = PETSC_FALSE
+        cdef PetscBool uCl = PETSC_FALSE
+        CHKERR( DMGetAdjacency(self.dm, &uC, &uCl) )
+        return toBool(uC), toBool(uCl)
+
+    #
+
     def copyDisc(self, DM dm):
         CHKERR( DMCopyDisc(self.dm, dm.dm) )
 

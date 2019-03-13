@@ -435,24 +435,6 @@ cdef class DMPlex(DM):
         CHKERR( DMGetLabel(self.dm, cval, &clbl) )
         CHKERR( DMPlexMarkBoundaryFaces(self.dm, ival, clbl) )
 
-    def setAdjacencyUseCone(self, useCone=True):
-        cdef PetscBool flag = useCone
-        CHKERR( DMPlexSetAdjacencyUseCone(self.dm, flag) )
-
-    def getAdjacencyUseCone(self):
-        cdef PetscBool flag = PETSC_FALSE
-        CHKERR( DMPlexGetAdjacencyUseCone(self.dm, &flag) )
-        return toBool(flag)
-
-    def setAdjacencyUseClosure(self, useClosure=True):
-        cdef PetscBool flag = useClosure
-        CHKERR( DMPlexSetAdjacencyUseClosure(self.dm, flag) )
-
-    def getAdjacencyUseClosure(self):
-        cdef PetscBool flag = PETSC_FALSE
-        CHKERR( DMPlexGetAdjacencyUseClosure(self.dm, &flag) )
-        return toBool(flag)
-
     def setAdjacencyUseAnchors(self, useAnchors=True):
         cdef PetscBool flag = useAnchors
         CHKERR( DMPlexSetAdjacencyUseAnchors(self.dm, flag) )
