@@ -1859,15 +1859,17 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
    Input Parameters:
 +  pc - the solver context
 .  dim - the dimension of the coordinates 1, 2, or 3
--  coords - the coordinates
+.  nloc - the blocked size of the coordinates array
+-  coords - the coordinates array
 
    Level: intermediate
 
    Notes:
-    coords is an array of the 3D coordinates for the nodes on
-   the local processor.  So if there are 108 equation on a processor
+   coords is an array of the dim coordinates for the nodes on
+   the local processor, of size dim*nloc.
+   If there are 108 equation on a processor
    for a displacement finite element discretization of elasticity (so
-   that there are 36 = 108/3 nodes) then the array must have 108
+   that there are nloc = 36 = 108/3 nodes) then the array must have 108
    double precision values (ie, 3 * 36).  These x y z coordinates
    should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,
    ... , N-1.z ].

@@ -34,20 +34,20 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscErrorCode ierr;
-  PetscInt       arrsz,bs,my0,kk,ii,nloc,Iend;
+  PetscInt       arrsz,bs,my0,kk,ii,nloc,Iend,aloc;
   Mat            Amat = pc->pmat;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 1);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &my0, &Iend);CHKERRQ(ierr);
+  aloc = (Iend-my0);
   nloc = (Iend-my0)/bs;
 
-  if (nloc!=a_nloc) SETERRQ2(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Stokes not supported nloc = %D %D.",a_nloc,nloc);
-  if ((Iend-my0)%bs!=0) SETERRQ1(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Bad local size %D.",nloc);
+  if (nloc!=a_nloc && aloc!=a_nloc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
 
   pc_gamg->data_cell_rows = 1;
-  if (!coords && nloc > 0) SETERRQ(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
+  if (!coords && nloc > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
   pc_gamg->data_cell_cols = ndm; /* coordinates */
 
   arrsz = nloc*pc_gamg->data_cell_rows*pc_gamg->data_cell_cols;
@@ -60,9 +60,17 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   for (kk=0; kk<arrsz; kk++) pc_gamg->data[kk] = -999.;
   pc_gamg->data[arrsz] = -99.;
   /* copy data in - column oriented */
-  for (kk = 0; kk < nloc; kk++) {
-    for (ii = 0; ii < ndm; ii++) {
-      pc_gamg->data[ii*nloc + kk] =  coords[kk*ndm + ii];
+  if (nloc == a_nloc) {
+    for (kk = 0; kk < nloc; kk++) {
+      for (ii = 0; ii < ndm; ii++) {
+        pc_gamg->data[ii*nloc + kk] =  coords[kk*ndm + ii];
+      }
+    }
+  } else { /* assumes the coordinates are blocked */
+    for (kk = 0; kk < nloc; kk++) {
+      for (ii = 0; ii < ndm; ii++) {
+        pc_gamg->data[ii*nloc + kk] =  coords[bs*kk*ndm + ii];
+      }
     }
   }
   if (pc_gamg->data[arrsz] != -99.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->data[arrsz %D] %g != -99.",arrsz,pc_gamg->data[arrsz]);

@@ -94,7 +94,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->pde       = PDE_POISSON;
   options->elemMat   = NULL;
-  options->dim       = 2;
+  options->dim       = 1;
   options->cells[0]  = 8;
   options->cells[1]  = 6;
   options->cells[2]  = 4;
@@ -165,6 +165,7 @@ int main(int argc,char **args)
   Mat                    A;
   DM                     da;
   Vec                    x,b,xcoor,xcoorl;
+  IS                     zero;
   ISLocalToGlobalMapping map;
   MatNullSpace           nullsp = NULL;
   PetscInt               i;
@@ -250,11 +251,12 @@ int main(int argc,char **args)
   ierr = DMDARestoreElements(da,&nel,&nen,&e_loc);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Boundary conditions */
+  zero = NULL;
   if (user.dirbc) { /* fix one side of DMDA */
     Vec         nat,glob;
-    IS          zero;
     PetscScalar *vals;
     PetscInt    n,*idx,j,st;
 
@@ -295,7 +297,6 @@ int main(int argc,char **args)
     ierr = VecDestroy(&glob);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_WORLD,j,idx,PETSC_OWN_POINTER,&zero);CHKERRQ(ierr);
     ierr = MatZeroRowsColumnsIS(A,zero,1.0,NULL,NULL);CHKERRQ(ierr);
-    ierr = ISDestroy(&zero);CHKERRQ(ierr);
   } else {
     switch (user.pde) {
     case PDE_POISSON:
@@ -375,6 +376,7 @@ int main(int argc,char **args)
   ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCBDDC);CHKERRQ(ierr);
+  /* ierr = PCBDDCSetDirichletBoundaries(pc,zero);CHKERRQ(ierr); */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
@@ -389,6 +391,7 @@ int main(int argc,char **args)
   ierr = DMRestoreGlobalVector(da,&b);CHKERRQ(ierr);
 
   /* cleanup */
+  ierr = ISDestroy(&zero);CHKERRQ(ierr);
   ierr = PetscFree(e_glo);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -418,26 +421,34 @@ int main(int argc,char **args)
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
+   suffix: bddc_elast_3lev
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 1 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_bddc_corner_selection
+ test:
+   nsize: 8
+   requires: !single
+   filter: grep -v "variant HERMITIAN"
+   suffix: bddc_elast_4lev
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 2 -pc_bddc_coarsening_ratio 2 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_bddc_corner_selection -pc_bddc_coarse_l1_pc_bddc_corner_selection -mat_partitioning_type average -options_left 0
+ test:
+   nsize: 8
+   filter: grep -v "variant HERMITIAN"
    suffix: bddc_elast_deluxe_layers
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_deluxe_scaling -pc_bddc_schur_layers 1
  test:
-   requires: ml
    nsize: 8
-   filter: grep -v "variant HERMITIAN" | grep -v "using I-node" | sed -e "s/nonzeros=57[0-9]/nonzeros=576/g"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_dir_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type ml -ksp_monitor_short -ksp_converged_reason -pc_bddc_dirichlet_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type gamg -ksp_converged_reason -pc_bddc_dirichlet_approximate
  test:
-   requires: ml
    nsize: 8
-   filter: grep -v "variant HERMITIAN"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_neu_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_neumann_pc_type ml -ksp_monitor_short -ksp_converged_reason -pc_bddc_neumann_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_neumann_pc_type gamg -ksp_converged_reason -pc_bddc_neumann_approximate
  test:
-   requires: ml
    nsize: 8
-   filter: grep -v "variant HERMITIAN" | grep -v "using I-node" | sed -e "s/nonzeros=57[0-9]/nonzeros=576/g"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_both_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type ml -pc_bddc_neumann_pc_type ml -ksp_monitor_short -ksp_converged_reason -pc_bddc_neumann_approximate -pc_bddc_dirichlet_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type gamg -pc_bddc_neumann_pc_type gamg -ksp_converged_reason -pc_bddc_neumann_approximate -pc_bddc_dirichlet_approximate
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN"

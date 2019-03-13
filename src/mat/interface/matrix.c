@@ -1064,7 +1064,6 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   if (iascii) {
-    if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -8060,14 +8059,12 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
   /* if original matrix is on just one processor then use submatrix generated */
   if (mat->ops->createsubmatrices && !mat->ops->createsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
     ierr = MatCreateSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
-    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
-    PetscFunctionReturn(0);
+    goto setproperties;
   } else if (mat->ops->createsubmatrices && !mat->ops->createsubmatrix && size == 1) {
     ierr    = MatCreateSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     ierr    = PetscFree(local);CHKERRQ(ierr);
-    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
-    PetscFunctionReturn(0);
+    goto setproperties;
   } else if (!mat->ops->createsubmatrix) {
     /* Create a new matrix type that implements the operation using the full matrix */
     ierr = PetscLogEventBegin(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
@@ -8081,8 +8078,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
     default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
     }
     ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
-    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
-    PetscFunctionReturn(0);
+    goto setproperties;
   }
 
   if (!mat->ops->createsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
@@ -8091,6 +8087,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
   ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
 
   /* Propagate symmetry information for diagonal blocks */
+setproperties:
   if (isrow == iscoltmp) {
     if (mat->symmetric_set && mat->symmetric) {
       ierr = MatSetOption(*newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);

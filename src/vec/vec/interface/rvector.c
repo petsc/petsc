@@ -951,6 +951,7 @@ PetscErrorCode  VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const 
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (!ni) PetscFunctionReturn(0);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -1070,6 +1071,7 @@ PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],c
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (!ni) PetscFunctionReturn(0);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -1124,6 +1126,8 @@ PetscErrorCode  VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(x,nv,2);
+  if (!nv) PetscFunctionReturn(0);
   PetscValidPointer(y,3);
   PetscValidHeaderSpecific(*y,VEC_CLASSID,3);
   PetscValidScalarPointer(val,4);
@@ -1173,6 +1177,7 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(x,nv,2);
   if (!nv) PetscFunctionReturn(0);
   if (nv < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidPointer(y,3);
@@ -1216,6 +1221,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(y,nv,2);
   if (!nv) PetscFunctionReturn(0);
   if (nv < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidScalarPointer(alpha,3);
