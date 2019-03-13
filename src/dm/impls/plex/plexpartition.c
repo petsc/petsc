@@ -2030,6 +2030,36 @@ static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, PetscInt point
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode DMPlexPartitionLabelClosure_Private(DM,DMLabel,PetscInt,PetscInt,const PetscInt[],IS*);
+
+PetscErrorCode DMPlexPartitionLabelClosure_Private(DM dm, DMLabel label, PetscInt rank, PetscInt numPoints, const PetscInt points[], IS *closureIS)
+{
+  DM_Plex        *mesh = (DM_Plex *)dm->data;
+  PetscBool      hasTree = (mesh->parentSection || mesh->childSection) ? PETSC_TRUE : PETSC_FALSE;
+  PetscInt       *closure = NULL, closureSize, nelems, *elems, off = 0, p, c;
+  PetscHSetI     ht;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetIResize(ht, numPoints*16);CHKERRQ(ierr);
+  for (p = 0; p < numPoints; ++p) {
+    ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (c = 0; c < closureSize*2; c += 2) {
+      ierr = PetscHSetIAdd(ht, closure[c]);CHKERRQ(ierr);
+      if (hasTree) {ierr = DMPlexAddClosure_Tree(dm, ht, closure[c], PETSC_TRUE, PETSC_TRUE);CHKERRQ(ierr);}
+    }
+  }
+  if (closure) {ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, NULL, &closure);CHKERRQ(ierr);}
+  ierr = PetscHSetIGetSize(ht, &nelems);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nelems, &elems);CHKERRQ(ierr);
+  ierr = PetscHSetIGetElems(ht, &off, elems);CHKERRQ(ierr);
+  ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
+  ierr = PetscSortInt(nelems, elems);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, nelems, elems, PETSC_OWN_POINTER, closureIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexPartitionLabelClosure - Add the closure of all points to the partition label
 
@@ -2043,49 +2073,26 @@ static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, PetscInt point
 @*/
 PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
 {
-  IS              rankIS,   pointIS;
+  IS              rankIS,   pointIS, closureIS;
   const PetscInt *ranks,   *points;
-  PetscInt        numRanks, numPoints, r, p, c, closureSize;
-  PetscInt       *closure = NULL;
-  DM_Plex        *mesh    = (DM_Plex *)dm->data;
-  PetscBool       hasTree = (mesh->parentSection || mesh->childSection) ? PETSC_TRUE : PETSC_FALSE;
+  PetscInt        numRanks, numPoints, r;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMLabelGetValueIS(label, &rankIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
   ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
-
   for (r = 0; r < numRanks; ++r) {
     const PetscInt rank = ranks[r];
-    PetscHSetI     ht;
-    PetscInt       nelems, *elems, off = 0;
-
     ierr = DMLabelGetStratumIS(label, rank, &pointIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-    ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
-    ierr = PetscHSetIResize(ht, numPoints*16);CHKERRQ(ierr);
-    for (p = 0; p < numPoints; ++p) {
-      ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (c = 0; c < closureSize*2; c += 2) {
-        ierr = PetscHSetIAdd(ht, closure[c]);CHKERRQ(ierr);
-        if (hasTree) {ierr = DMPlexAddClosure_Tree(dm, ht, closure[c], PETSC_TRUE, PETSC_TRUE);CHKERRQ(ierr);}
-      }
-    }
+    ierr = DMPlexPartitionLabelClosure_Private(dm, label, rank, numPoints, points, &closureIS);CHKERRQ(ierr);
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-    ierr = PetscHSetIGetSize(ht, &nelems);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nelems, &elems);CHKERRQ(ierr);
-    ierr = PetscHSetIGetElems(ht, &off, elems);CHKERRQ(ierr);
-    ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
-    ierr = PetscSortInt(nelems, elems);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, nelems, elems, PETSC_OWN_POINTER, &pointIS);CHKERRQ(ierr);
-    ierr = DMLabelSetStratumIS(label, rank, pointIS);CHKERRQ(ierr);
-    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    ierr = DMLabelSetStratumIS(label, rank, closureIS);CHKERRQ(ierr);
+    ierr = ISDestroy(&closureIS);CHKERRQ(ierr);
   }
-
-  if (closure) {ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, NULL, &closure);CHKERRQ(ierr);}
   ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
   ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
