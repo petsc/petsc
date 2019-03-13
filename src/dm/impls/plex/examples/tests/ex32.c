@@ -160,26 +160,26 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -faces 3,1,0 -periodicity periodic,none,none -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -faces 3,1,0 -periodicity periodic,none,none -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 2
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -faces 6,2,0 -periodicity periodic,none,none -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -faces 6,2,0 -periodicity periodic,none,none -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 3
     nsize: 4
-    args: -dim 2 -cell_simplex 0 -faces 6,2,0 -periodicity periodic,none,none -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -faces 6,2,0 -periodicity periodic,none,none -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 4
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -faces 3,1,0 -periodicity periodic,none,none -dm_plex_periodic_cut -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -faces 3,1,0 -periodicity periodic,none,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 5
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -faces 6,2,0 -periodicity periodic,none,none -dm_plex_periodic_cut -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -faces 6,2,0 -periodicity periodic,none,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 6
     nsize: 4
-    args: -dim 2 -cell_simplex 0 -faces 6,2,0 -periodicity periodic,none,none -dm_plex_periodic_cut -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -faces 6,2,0 -periodicity periodic,none,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view ::ascii_info_detail
 
 TEST*/
