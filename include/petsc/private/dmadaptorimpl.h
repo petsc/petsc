@@ -37,6 +37,7 @@ struct _p_DMAdaptor {
   /* Auxiliary objects */
   PetscLimiter       limiter;
   PetscErrorCode  (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+  void             **exactCtx;
 };
 
 #endif

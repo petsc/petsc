@@ -15,7 +15,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMProjectFunction(adm, 0.0, adaptor->exactSol, (void **) ctx, INSERT_ALL_VALUES, au);CHKERRQ(ierr);
+  ierr = DMProjectFunction(adm, 0.0, adaptor->exactSol, adaptor->exactCtx, INSERT_ALL_VALUES, au);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -92,7 +92,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
   }
   ierr = VecTaggerDestroy(&(*adaptor)->refineTag);CHKERRQ(ierr);
   ierr = VecTaggerDestroy(&(*adaptor)->coarsenTag);CHKERRQ(ierr);
-  ierr = PetscFree((*adaptor)->exactSol);CHKERRQ(ierr);
+  ierr = PetscFree2((*adaptor)->exactSol, (*adaptor)->exactCtx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(adaptor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -287,9 +287,9 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
   ierr = VecTaggerSetUp(adaptor->refineTag);CHKERRQ(ierr);
   ierr = VecTaggerSetUp(adaptor->coarsenTag);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Nf, &adaptor->exactSol);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nf, &adaptor->exactSol, Nf, &adaptor->exactCtx);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    ierr = PetscDSGetExactSolution(prob, f, &adaptor->exactSol[f]);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(prob, f, &adaptor->exactSol[f], &adaptor->exactCtx[f]);CHKERRQ(ierr);
     /* TODO Have a flag that forces projection rather than using the exact solution */
     if (adaptor->exactSol[0]) {ierr = DMAdaptorSetTransferFunction(adaptor, DMAdaptorTransferSolution_Exact_Private);CHKERRQ(ierr);}
   }

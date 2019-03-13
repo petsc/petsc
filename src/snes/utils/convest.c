@@ -66,7 +66,7 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
     *ce = NULL;
     PetscFunctionReturn(0);
   }
-  ierr = PetscFree2((*ce)->initGuess, (*ce)->exactSol);CHKERRQ(ierr);
+  ierr = PetscFree3((*ce)->initGuess, (*ce)->exactSol, (*ce)->ctxs);CHKERRQ(ierr);
   ierr = PetscFree((*ce)->errors);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ce);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -197,10 +197,10 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
   ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &ce->Nf);CHKERRQ(ierr);
   ierr = PetscMalloc1((ce->Nr+1)*ce->Nf, &ce->errors);CHKERRQ(ierr);
-  ierr = PetscMalloc2(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol, ce->Nf, &ce->ctxs);CHKERRQ(ierr);
   for (f = 0; f < ce->Nf; ++f) ce->initGuess[f] = zero_private;
   for (f = 0; f < ce->Nf; ++f) {
-    ierr = PetscDSGetExactSolution(prob, f, &ce->exactSol[f]);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(prob, f, &ce->exactSol[f], &ce->ctxs[f]);CHKERRQ(ierr);
     if (!ce->exactSol[f]) SETERRQ1(PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %D", f);
   }
   PetscFunctionReturn(0);
@@ -343,10 +343,10 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
     ierr = DMPlexSetSNESLocalFEM(dm[r], ctx, ctx, ctx);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(ce->snes);CHKERRQ(ierr);
     /* Create initial guess */
-    ierr = DMProjectFunction(dm[r], t, ce->initGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm[r], t, ce->initGuess, ce->ctxs, INSERT_VALUES, u);CHKERRQ(ierr);
     ierr = SNESSolve(ce->snes, NULL, u);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(event, ce, 0, 0, 0);CHKERRQ(ierr);
-    ierr = DMComputeL2FieldDiff(dm[r], t, ce->exactSol, NULL, u, &ce->errors[r*ce->Nf]);CHKERRQ(ierr);
+    ierr = DMComputeL2FieldDiff(dm[r], t, ce->exactSol, ce->ctxs, u, &ce->errors[r*ce->Nf]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(event, ce, 0, 0, 0);CHKERRQ(ierr);
     for (f = 0; f < ce->Nf; ++f) {
       PetscSection s, fs;
