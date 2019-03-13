@@ -468,6 +468,7 @@ int main(int argc,char **args)
 
    test:
       suffix: view
+      nsize: 2
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/tiny -f1 ${DATAFILESPATH}/matrices/tiny -viewer_binary_skip_info -matptap_view
       output_file: output/ex94_2.out
