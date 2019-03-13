@@ -106,15 +106,28 @@ cdef class DM(Object):
 
     #
 
-    def setAdjacency(self, useCone, useClosure):
+    def setBasicAdjacency(self, useCone, useClosure):
         cdef PetscBool uC  = useCone
         cdef PetscBool uCl = useClosure
-        CHKERR( DMSetAdjacency(self.dm, uC, uCl) )
+        CHKERR( DMSetBasicAdjacency(self.dm, uC, uCl) )
 
-    def getAdjacency(self):
+    def getBasicAdjacency(self):
         cdef PetscBool uC  = PETSC_FALSE
         cdef PetscBool uCl = PETSC_FALSE
-        CHKERR( DMGetAdjacency(self.dm, &uC, &uCl) )
+        CHKERR( DMGetBasicAdjacency(self.dm, &uC, &uCl) )
+        return toBool(uC), toBool(uCl)
+
+    def setFieldAdjacency(self, field, useCone, useClosure):
+        cdef PetscInt  f   = field
+        cdef PetscBool uC  = useCone
+        cdef PetscBool uCl = useClosure
+        CHKERR( DMSetAdjacency(self.dm, f, uC, uCl) )
+
+    def getFieldAdjacency(self, field):
+        cdef PetscInt  f   = field
+        cdef PetscBool uC  = PETSC_FALSE
+        cdef PetscBool uCl = PETSC_FALSE
+        CHKERR( DMGetAdjacency(self.dm, f, &uC, &uCl) )
         return toBool(uC), toBool(uCl)
 
     #
