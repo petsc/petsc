@@ -533,14 +533,14 @@ PETSC_DEPRECATED("Use VecLockReadPush (since v3.11)") PetscErrorCode VecLockPush
 PETSC_DEPRECATED("Use VecLockReadPop (since v3.11)")  PetscErrorCode VecLockPop(Vec);
 #define VecLocked(x,arg) VecSetErrorIfLocked(x,arg)
 #else
-#define VecLockReadPush(x)
-#define VecLockReadPop(x)
-#define VecLockGet(x,s) *(s) = 0
-#define VecSetErrorIfLocked(x,arg)
+#define VecLockReadPush(x)           0
+#define VecLockReadPop(x)            0
+#define VecLockGet(x,s)              *(s) = 0
+#define VecSetErrorIfLocked(x,arg)   0
 /* The three are deprecated */
-#define VecLockPush(x)
-#define VecLockPop(x)
-#define VecLocked(x,arg)
+#define VecLockPush(x)               0
+#define VecLockPop(x)                0
+#define VecLocked(x,arg)             0
 #endif
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);
