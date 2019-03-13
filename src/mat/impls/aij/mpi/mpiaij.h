@@ -95,7 +95,7 @@ PETSC_INTERN PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat,ISColoring,MatFDColor
 PETSC_INTERN PetscErrorCode MatCreateSubMatrices_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_INTERN PetscErrorCode MatCreateSubMatricesMPI_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat,MatCreateSubMatrixOption,MatReuse,Mat *[]);
-
+PETSC_INTERN PetscErrorCode MatView_MPIAIJ(Mat,PetscViewer);
 
 PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat,IS,IS,PetscInt,MatReuse,Mat*);
