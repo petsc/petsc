@@ -933,6 +933,40 @@ PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
 }
 
 /*MC
+   PetscLogEventSync - Synchronizes the beginning of a user event.
+
+   Synopsis:
+   #include <petsclog.h>
+   PetscErrorCode PetscLogEventSync(int e,MPI_Comm comm)
+
+   Collective
+
+   Input Parameters:
++  e - integer associated with the event obtained from PetscLogEventRegister()
+-  comm - an MPI communicator
+
+   Usage:
+.vb
+     PetscLogEvent USER_EVENT;
+     PetscLogEventRegister("User event",0,&USER_EVENT);
+     PetscLogEventSync(USER_EVENT,PETSC_COMM_WORLD);
+     PetscLogEventBegin(USER_EVENT,0,0,0,0);
+        [code segment to monitor]
+     PetscLogEventEnd(USER_EVENT,0,0,0,0);
+.ve
+
+   Notes:
+   This routine should be called only if there is not a
+   PetscObject available to pass to PetscLogEventBegin().
+
+   Level: developer
+
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
+
+.keywords: log, event, synchronization
+M*/
+
+/*MC
    PetscLogEventBegin - Logs the beginning of a user event.
 
    Synopsis:
