@@ -26,7 +26,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->faces[2]       = 1;
   options->periodicity[0] = DM_BOUNDARY_NONE;
   options->periodicity[1] = DM_BOUNDARY_NONE;
-  options->periodicity[2] = 1;
+  options->periodicity[2] = DM_BOUNDARY_NONE;
   options->filename[0]    = '\0';
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
