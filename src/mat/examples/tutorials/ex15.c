@@ -117,4 +117,10 @@ int main(int argc, char **args)
       nsize: 3
       requires: parmetis
       args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100 -test_vertex_weights 1
+
+   test:
+      suffix: 7
+      nsize: 2
+      requires: parmetis
+      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 2 -mat_partitioning_nparts 10  -mat_partitioning_hierarchical_fineparttype hierarch -malloc_dump -N 100 -mat_partitioning_improve 1
 TEST*/

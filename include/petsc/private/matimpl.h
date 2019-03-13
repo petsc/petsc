@@ -443,6 +443,7 @@ struct _MatPartitioningOps {
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,MatPartitioning);
   PetscErrorCode (*destroy)(MatPartitioning);
   PetscErrorCode (*view)(MatPartitioning,PetscViewer);
+  PetscErrorCode (*improve)(MatPartitioning,IS*);
 };
 
 struct _p_MatPartitioning {

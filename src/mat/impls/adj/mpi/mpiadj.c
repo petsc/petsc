@@ -246,7 +246,11 @@ static PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
     for (i=0; i<m; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %D:",i+A->rmap->rstart);CHKERRQ(ierr);
       for (j=a->i[i]; j<a->i[i+1]; j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D ",a->j[j]);CHKERRQ(ierr);
+        if (a->values) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%D, %D) ",a->j[j], a->values[j]);CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D ",a->j[j]);CHKERRQ(ierr);
+        }
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
