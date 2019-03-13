@@ -206,7 +206,7 @@ PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
 #if defined(PETSC_USE_DEBUG)
 PETSC_INTERN PetscErrorCode VecLockWriteSet_Private(Vec,PetscBool);
 #else
-#define VecLockWriteSet_Private(x,flg)
+#define VecLockWriteSet_Private(x,flg) 0
 #endif
 
 /* Default obtain and release vectors; can be used by any implementation */
