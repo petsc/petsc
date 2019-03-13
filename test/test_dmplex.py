@@ -58,26 +58,20 @@ class BaseTestPlex(object):
                     self.assertIn(i, star)
 
     def testAdjacency(self):
-        setAdjacencyUseList = [
-            PETSc.DMPlex.setAdjacencyUseCone,
-            PETSc.DMPlex.setAdjacencyUseClosure,
-            PETSc.DMPlex.setAdjacencyUseAnchors]
-        getAdjacencyUseList = [
-            PETSc.DMPlex.getAdjacencyUseCone,
-            PETSc.DMPlex.getAdjacencyUseClosure,
-            PETSc.DMPlex.getAdjacencyUseAnchors]
-        for getAdjacencyUse, expected in \
-            zip(getAdjacencyUseList, [False, True, False]):
-            flag = getAdjacencyUse(self.plex)
-            self.assertEqual(flag, expected)
-        for setAdjacencyUse, getAdjacencyUse in \
-            zip(setAdjacencyUseList, getAdjacencyUseList):
-            setAdjacencyUse(self.plex, False)
-            flag = getAdjacencyUse(self.plex)
-            self.assertFalse(flag)
-            setAdjacencyUse(self.plex)
-            flag = getAdjacencyUse(self.plex)
-            self.assertTrue(flag)
+        PETSc.DMPlex.setAdjacencyUseAnchors(self.plex, False)
+        flag = PETSc.DMPlex.getAdjacencyUseAnchors(self.plex)
+        self.assertFalse(flag)
+        PETSc.DMPlex.setAdjacencyUseAnchors(self.plex, True)
+        flag = PETSc.DMPlex.getAdjacencyUseAnchors(self.plex)
+        self.assertTrue(flag)
+        PETSc.DMPlex.setBasicAdjacency(self.plex, False, False)
+        flagA, flagB = PETSc.DMPlex.getBasicAdjacency(self.plex)
+        self.assertFalse(flagA)
+        self.assertFalse(flagB)
+        PETSc.DMPlex.setBasicAdjacency(self.plex, True, True)
+        flagA, flagB = PETSc.DMPlex.getAdjacency(self.plex)
+        self.assertTrue(flagA)
+        self.assertTrue(flagB)
         pStart, pEnd = self.plex.getChart()
         for p in range(pStart, pEnd):
             adjacency = self.plex.getAdjacency(p)
