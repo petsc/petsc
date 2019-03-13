@@ -1004,6 +1004,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     }
     ierr = PetscFree2(orients,orientPoints);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&cellQuad);CHKERRQ(ierr);
+    for (f = 0; f < coneSize; f++) {ierr = PetscFree(counts[f]);CHKERRQ(ierr);}
     ierr = PetscFree2(co,counts);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
