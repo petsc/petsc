@@ -8,7 +8,7 @@ const char *const PetscDataTypes[] = {"UNKNOWN",
                                       "DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
                                       "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE",
                                       "OBJECT","FUNCTION","STRING","FP16","STRUCT",
-                                      "INT",
+                                      "INT","INT64",
                                       "PetscDataType","PETSC_",0};
 
 /*@C
@@ -44,6 +44,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
   else if (ptype == PETSC_SHORT)       *mtype = MPI_SHORT;
   else if (ptype == PETSC_ENUM)        *mtype = MPI_INT;
   else if (ptype == PETSC_BOOL)        *mtype = MPI_INT;
+  else if (ptype == PETSC_INT64)       *mtype = MPIU_INT64;
   else if (ptype == PETSC_FLOAT)       *mtype = MPI_FLOAT;
   else if (ptype == PETSC_CHAR)        *mtype = MPI_CHAR;
   else if (ptype == PETSC_BIT_LOGICAL) *mtype = MPI_BYTE;
@@ -78,6 +79,7 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
 #if defined(PETSC_USE_64BIT_INDICES)
   else if (mtype == MPI_INT)         *ptype = PETSC_ENUM;
 #endif
+  else if (mtype == MPIU_INT64)      *ptype = PETSC_INT64;
   else if (mtype == MPI_DOUBLE)      *ptype = PETSC_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -108,9 +110,10 @@ typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
               PETSC_SHORT_SIZE       = sizeof(short),
               PETSC_FLOAT_SIZE       = sizeof(float),
               PETSC_CHAR_SIZE        = sizeof(char),
-              PETSC_BIT_LOGICAL_SIZE = sizeof(char),
-              PETSC_ENUM_SIZE        = sizeof(PetscBool),
-              PETSC_BOOL_SIZE        = sizeof(PetscBool)
+              PETSC_ENUM_SIZE        = sizeof(PetscEnum),
+              PETSC_BOOL_SIZE        = sizeof(PetscBool),
+              PETSC_INT64_SIZE       = sizeof(PetscInt64),
+              PETSC_BIT_LOGICAL_SIZE = sizeof(char)
 #if defined(PETSC_USE_REAL___FLOAT128)
               ,PETSC___FLOAT128_SIZE  = sizeof(__float128)
 #elif defined(PETSC_USE_REAL___FP16)
@@ -151,8 +154,9 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
   else if (ptype == PETSC_FLOAT)       *size = PETSC_FLOAT_SIZE;
   else if (ptype == PETSC_CHAR)        *size = PETSC_CHAR_SIZE;
   else if (ptype == PETSC_ENUM)        *size = PETSC_ENUM_SIZE;
-  else if (ptype == PETSC_BIT_LOGICAL) *size = PETSC_BIT_LOGICAL_SIZE;
   else if (ptype == PETSC_BOOL)        *size = PETSC_BOOL_SIZE;
+  else if (ptype == PETSC_INT64)       *size = PETSC_INT64_SIZE;
+  else if (ptype == PETSC_BIT_LOGICAL) *size = PETSC_BIT_LOGICAL_SIZE;
 #if defined(PETSC_USE_REAL___FLOAT128)
   else if (ptype == PETSC___FLOAT128)  *size = PETSC___FLOAT128_SIZE;
 #elif defined(PETSC_USE_REAL___FP16)
