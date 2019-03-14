@@ -1482,7 +1482,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior) {
       if (benign_correction_computed) { /* we have already saved the changed rhs */
-        ierr = VecLockPop(pcis->vec1_global);CHKERRQ(ierr);
+        ierr = VecLockReadPop(pcis->vec1_global);CHKERRQ(ierr);
       } else {
         ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,pcis->vec1_global);CHKERRQ(ierr);
       }
@@ -1508,7 +1508,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
     pcbddc->exact_dirichlet_trick_app = PETSC_TRUE;
   } else if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior && benign_correction_computed && pcbddc->use_exact_dirichlet_trick) {
-    ierr = VecLockPop(pcis->vec1_global);CHKERRQ(ierr);
+    ierr = VecLockReadPop(pcis->vec1_global);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1914,7 +1914,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
     if (pcbddc->benign_apply_coarse_only && pcbddc->use_exact_dirichlet_trick && pcbddc->change_interior) {
       ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
+      ierr = VecLockReadPush(pcis->vec1_global);CHKERRQ(ierr);
     }
   }
   if (pcbddc->benign_have_null) { /* get p0 from r */
@@ -2074,7 +2074,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
     if (pcbddc->benign_apply_coarse_only && pcbddc->exact_dirichlet_trick_app && pcbddc->change_interior) {
       ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
+      ierr = VecLockReadPush(pcis->vec1_global);CHKERRQ(ierr);
     }
   }
   if (pcbddc->benign_have_null) { /* get p0 from r */

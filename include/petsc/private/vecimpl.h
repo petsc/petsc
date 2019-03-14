@@ -136,7 +136,7 @@ struct _p_Vec {
   PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
-  PetscInt               lock;   /* vector is locked to read only */
+  PetscInt               lock;         /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadFlag       valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
   void                   *spptr; /* this is the special pointer to the array on the GPU */
@@ -201,6 +201,13 @@ PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
   PetscScalar *array;                      \
   PetscScalar *array_allocated;                        /* if the array was allocated by PETSc this is its pointer */  \
   PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */
+
+/* Lock a vector for exclusive read&write access */
+#if defined(PETSC_USE_DEBUG)
+PETSC_INTERN PetscErrorCode VecLockWriteSet_Private(Vec,PetscBool);
+#else
+#define VecLockWriteSet_Private(x,flg) 0
+#endif
 
 /* Default obtain and release vectors; can be used by any implementation */
 PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);

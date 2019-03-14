@@ -846,6 +846,10 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
     ierr = VecScatterBegin(mumps->scat_sol,mumps->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mumps->scat_sol,mumps->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
+
+  if (mumps->petsc_size > 1) {if (!mumps->myid) {ierr = VecRestoreArray(b_seq,&array);CHKERRQ(ierr);}}
+  else {ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);}
+
   ierr = PetscLogFlops(2.0*mumps->id.RINFO(3));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

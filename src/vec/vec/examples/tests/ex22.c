@@ -73,6 +73,10 @@ int main(int argc,char **argv)
         suffix: cuda
         args: -vec_type cuda
       test:
+       requires: cuda
+        suffix: cuda_sf
+        args: -vec_type cuda -vecscatter_type sf
+      test:
         requires: viennacl
         suffix:  viennacl
         args: -vec_type viennacl

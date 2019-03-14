@@ -205,6 +205,14 @@ int main(int argc,char **args)
       requires: cuda
 
    test:
+      suffix: 2_aijcusparse_3
+      nsize: 3
+      args: -mat_type mpiaijcusparse -vec_type cuda -vecscatter_type sf
+      filter: grep -v type
+      output_file: output/ex5_23.out
+      requires: cuda
+
+   test:
       suffix: 31
       args: -mat_type mpiaij -test_diagonalscale
       filter: grep -v type

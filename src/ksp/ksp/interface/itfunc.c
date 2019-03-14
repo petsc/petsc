@@ -725,7 +725,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
-  VecLocked(ksp->vec_sol,3);
+  ierr = VecSetErrorIfLocked(ksp->vec_sol,3);CHKERRQ(ierr);
 
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
@@ -775,13 +775,13 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     vec_rhs      = ksp->vec_rhs;
     ksp->vec_rhs = btmp;
   }
-  ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
+  ierr = VecLockReadPush(ksp->vec_rhs);CHKERRQ(ierr);
   if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
     ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
 
-  ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
+  ierr = VecLockReadPop(ksp->vec_rhs);CHKERRQ(ierr);
   if (nullsp) {
     ksp->vec_rhs = vec_rhs;
     ierr = VecDestroy(&btmp);CHKERRQ(ierr);

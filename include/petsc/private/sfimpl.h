@@ -9,6 +9,8 @@ PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;
 PETSC_EXTERN PetscLogEvent PETSCSF_SetUp;
 PETSC_EXTERN PetscLogEvent PETSCSF_BcastBegin;
 PETSC_EXTERN PetscLogEvent PETSCSF_BcastEnd;
+PETSC_EXTERN PetscLogEvent PETSCSF_BcastAndOpBegin;
+PETSC_EXTERN PetscLogEvent PETSCSF_BcastAndOpEnd;
 PETSC_EXTERN PetscLogEvent PETSCSF_ReduceBegin;
 PETSC_EXTERN PetscLogEvent PETSCSF_ReduceEnd;
 PETSC_EXTERN PetscLogEvent PETSCSF_FetchAndOpBegin;
@@ -23,10 +25,13 @@ struct _PetscSFOps {
   PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
   PetscErrorCode (*BcastBegin)(PetscSF,MPI_Datatype,const void*,void*);
   PetscErrorCode (*BcastEnd)(PetscSF,MPI_Datatype,const void*,void*);
+  PetscErrorCode (*BcastAndOpBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*BcastAndOpEnd)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*ReduceBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*ReduceEnd)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op);
   PetscErrorCode (*FetchAndOpEnd)(PetscSF,MPI_Datatype,void*,const void *,void *,MPI_Op);
+  PetscErrorCode (*GetLeafRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt **);
 };
 
 struct _p_PetscSF {

@@ -311,54 +311,57 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt fromma
   if (tomap)   PetscValidIntPointer(tomap,2);
   if (frommap) PetscValidIntPointer(frommap,3);
 
-  to     = (VecScatter_MPI_General*)scat->todata;
-  from   = (VecScatter_MPI_General*)scat->fromdata;
-  ssto   = (VecScatter_Seq_Stride*)scat->todata;
-  sgto   = (VecScatter_Seq_General*)scat->todata;
-  sgfrom = (VecScatter_Seq_General*)scat->fromdata;
+  if (scat->ops->remap) {
+    ierr = (*scat->ops->remap)(scat,tomap,frommap);CHKERRQ(ierr);
+  } else {
+    to     = (VecScatter_MPI_General*)scat->todata;
+    from   = (VecScatter_MPI_General*)scat->fromdata;
+    ssto   = (VecScatter_Seq_Stride*)scat->todata;
+    sgto   = (VecScatter_Seq_General*)scat->todata;
+    sgfrom = (VecScatter_Seq_General*)scat->fromdata;
 
-  /* remap indices from where we take/read data */
-  if (tomap) {
-    if (to->format == VEC_SCATTER_MPI_TOALL) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not for to all scatter");
-    } else if (to->format == VEC_SCATTER_MPI_GENERAL) {
-      /* handle off processor parts */
-      for (i=0; i<to->starts[to->n]; i++) to->indices[i] = tomap[to->indices[i]];
+    /* remap indices from where we take/read data */
+    if (tomap) {
+      if (to->format == VEC_SCATTER_MPI_TOALL) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not for to all scatter");
+      } else if (to->format == VEC_SCATTER_MPI_GENERAL) {
+        /* handle off processor parts */
+        for (i=0; i<to->starts[to->n]; i++) to->indices[i] = tomap[to->indices[i]];
 
-      /* handle local part */
-      for (i=0; i<to->local.n; i++) to->local.vslots[i] = tomap[to->local.vslots[i]];
+        /* handle local part */
+        for (i=0; i<to->local.n; i++) to->local.vslots[i] = tomap[to->local.vslots[i]];
 
-      /* the memcpy optimizations in vecscatter was based on index patterns it has.
-         They need to be recalculated when indices are changed (remapped).
-       */
-      ierr = VecScatterMemcpyPlanDestroy_PtoP(to,from);CHKERRQ(ierr);
-      ierr = VecScatterMemcpyPlanCreate_PtoP(to,from);CHKERRQ(ierr);
-    } else if (sgfrom->format == VEC_SCATTER_SEQ_GENERAL) {
-      /* remap indices*/
-      for (i=0; i<sgfrom->n; i++) sgfrom->vslots[i] = tomap[sgfrom->vslots[i]];
-      /* update optimizations, which happen when it is a Stride1toSG, SGtoStride1 or SGToSG vecscatter */
-      if (ssto->format == VEC_SCATTER_SEQ_STRIDE && ssto->step == 1) {
-        PetscInt tmp[2];
-        tmp[0] = 0; tmp[1] = sgfrom->n;
-        ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
-        ierr = VecScatterMemcpyPlanCreate_Index(1,tmp,sgfrom->vslots,1/*bs*/,&sgfrom->memcpy_plan);CHKERRQ(ierr);
-      } else if (sgto->format == VEC_SCATTER_SEQ_GENERAL) {
-        ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);;
-        ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
-        ierr = VecScatterMemcpyPlanCreate_SGToSG(1/*bs*/,sgto,sgfrom);CHKERRQ(ierr);
-      }
-    } else if (sgfrom->format == VEC_SCATTER_SEQ_STRIDE) {
-      VecScatter_Seq_Stride *ssto = (VecScatter_Seq_Stride*)sgfrom;
-
-      /* if the remapping is the identity and stride is identity then skip remap */
-      if (ssto->step == 1 && ssto->first == 0) {
-        for (i=0; i<ssto->n; i++) {
-          if (tomap[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+        /* the memcpy optimizations in vecscatter was based on index patterns it has.
+           They need to be recalculated when indices are changed (remapped).
+         */
+        ierr = VecScatterMemcpyPlanDestroy_PtoP(to,from);CHKERRQ(ierr);
+        ierr = VecScatterMemcpyPlanCreate_PtoP(to,from);CHKERRQ(ierr);
+      } else if (sgfrom->format == VEC_SCATTER_SEQ_GENERAL) {
+        /* remap indices*/
+        for (i=0; i<sgfrom->n; i++) sgfrom->vslots[i] = tomap[sgfrom->vslots[i]];
+        /* update optimizations, which happen when it is a Stride1toSG, SGtoStride1 or SGToSG vecscatter */
+        if (ssto->format == VEC_SCATTER_SEQ_STRIDE && ssto->step == 1) {
+          PetscInt tmp[2];
+          tmp[0] = 0; tmp[1] = sgfrom->n;
+          ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
+          ierr = VecScatterMemcpyPlanCreate_Index(1,tmp,sgfrom->vslots,1/*bs*/,&sgfrom->memcpy_plan);CHKERRQ(ierr);
+        } else if (sgto->format == VEC_SCATTER_SEQ_GENERAL) {
+          ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);;
+          ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
+          ierr = VecScatterMemcpyPlanCreate_SGToSG(1/*bs*/,sgto,sgfrom);CHKERRQ(ierr);
         }
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
-  }
+      } else if (sgfrom->format == VEC_SCATTER_SEQ_STRIDE) {
+        VecScatter_Seq_Stride *ssto = (VecScatter_Seq_Stride*)sgfrom;
 
+        /* if the remapping is the identity and stride is identity then skip remap */
+        if (ssto->step == 1 && ssto->first == 0) {
+          for (i=0; i<ssto->n; i++) {
+            if (tomap[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+          }
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+    }
+  }
   if (frommap) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
 
   /*
@@ -370,41 +373,187 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt fromma
   PetscFunctionReturn(0);
 }
 
-/*
- VecScatterGetTypes_Private - Returns the scatter types.
+/* Given a parallel VecScatter context, return number of procs and vector entries involved in remote (i.e., off-process) communication
 
- scatter - The scatter.
- from    - Upon exit this contains the type of the from scatter.
- to      - Upon exit this contains the type of the to scatter.
-*/
-PetscErrorCode VecScatterGetTypes_Private(VecScatter scatter,VecScatterFormat *from,VecScatterFormat *to)
+  Input Parameters:
++ ctx   - the context (must be a parallel vecscatter)
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ num_procs   - number of remote processors
+- num_entries - number of vector entries to send or recv
+
+
+  .seealso: VecScatterGetRemote_Private(), VecScatterGetRemoteOrdered_Private()
+
+  Notes:
+  Sometimes PETSc internally needs to use the matrix-vector-multiply vecscatter context for other purposes. The client code
+  usually only uses MPI_Send/Recv. This group of subroutines provides info needed for such uses.
+ */
+PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter ctx,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
 {
-  VecScatter_Common* fromdata = (VecScatter_Common*)scatter->fromdata;
-  VecScatter_Common* todata   = (VecScatter_Common*)scatter->todata;
+  VecScatter_MPI_General *vs;
+  PetscBool              par;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  *from = fromdata->format;
-  *to = todata->format;
+  if (ctx->ops->getremotecount) {
+    ierr = (*ctx->ops->getremotecount)(ctx,send,num_procs,num_entries);CHKERRQ(ierr);
+  } else {
+    vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
+    par = (vs->format == VEC_SCATTER_MPI_GENERAL)? PETSC_TRUE : PETSC_FALSE;
+    if (num_procs)   *num_procs   = par ? vs->n             : 0;
+    if (num_entries) *num_entries = par ? vs->starts[vs->n] : 0;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Given a parallel VecScatter context, return a plan that represents the remote communication.
+   Any output parameter can be NULL.
+
+  Input Parameters:
++ ctx   - the context
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ n        - number of remote processors
+. starts   - starting point in indices for each proc. ATTENTION: starts[0] is not necessarily zero.
+             Therefore, expressions like starts[i+1]-starts[i] and indices[starts[i]+j] work as
+             expected for a CSR structure but buf[starts[i]+j] may be out of range if buf was allocated
+             with length starts[n]-starts[0]. One should use buf[starts[i]-starts[0]+j] instead.
+. indices  - indices of entries to send/recv
+. procs    - ranks of remote processors
+- bs       - block size
+
+  .seealso: VecScatterRestoreRemote_Private(), VecScatterGetRemoteOrdered_Private()
+ */
+PetscErrorCode VecScatterGetRemote_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  VecScatter_MPI_General *vs;
+  PetscBool              par;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  if (ctx->ops->getremote) {
+    ierr = (*ctx->ops->getremote)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  } else {
+    vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
+    par = (vs->format == VEC_SCATTER_MPI_GENERAL)? PETSC_TRUE : PETSC_FALSE;
+    if (n)       *n       = par ? vs->n       : 0;
+    if (indices) *indices = par ? vs->indices : NULL;
+    if (starts)  *starts  = par ? vs->starts  : NULL;
+    if (procs)   *procs   = par ? vs->procs   : NULL;
+    if (bs)      *bs      = par ? vs->bs      : 0;
+  }
   PetscFunctionReturn(0);
 }
 
 
-/*
-  VecScatterIsSequential_Private - Returns true if the scatter is sequential.
+/* Given a parallel VecScatter context, return a plan that represents the remote communication. Ranks of remote
+   processors returned in procs must be sorted in ascending order. Any output parameter can be NULL.
 
-  scatter - The scatter.
-  flag    - Upon exit flag is true if the scatter is of type VecScatter_Seq_General
-            or VecScatter_Seq_Stride; otherwise flag is false.
-*/
-PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBool *flag)
+  Input Parameters:
++ ctx   - the context
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ n        - number of remote processors
+. starts   - starting point in indices for each proc. ATTENTION: starts[0] is not necessarily zero.
+             Therefore, expressions like starts[i+1]-starts[i] and indices[starts[i]+j] work as
+             expected for a CSR structure but buf[starts[i]+j] may be out of range if buf was allocated
+             with length starts[n]-starts[0]. One should use buf[starts[i]-starts[0]+j] instead.
+. indices  - indices of entries to send/recv
+. procs    - ranks of remote processors
+- bs       - block size
+
+  .seealso: VecScatterRestoreRemoteOrdered_Private(), VecScatterGetRemote_Private()
+
+  Notes:
+  Output parameters like starts, indices must also be adapted according to the sorted ranks.
+ */
+PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
-  VecScatterFormat scatterType = scatter->format;
+  VecScatter_MPI_General *vs;
+  PetscBool              par;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  if (scatterType == VEC_SCATTER_SEQ_GENERAL || scatterType == VEC_SCATTER_SEQ_STRIDE) {
-    *flag = PETSC_TRUE;
+  if (ctx->ops->getremoteordered) {
+    ierr = (*ctx->ops->getremoteordered)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
   } else {
-    *flag = PETSC_FALSE;
+    vs = (VecScatter_MPI_General*)(send ? ctx->todata : ctx->fromdata);
+    par = (vs->format == VEC_SCATTER_MPI_GENERAL)? PETSC_TRUE : PETSC_FALSE;
+    if (n)       *n       = par ? vs->n       : 0;
+    if (indices) *indices = par ? vs->indices : NULL;
+    if (starts)  *starts  = par ? vs->starts  : NULL;
+    if (procs)   *procs   = par ? vs->procs   : NULL;
+    if (bs)      *bs      = par ? vs->bs      : 0;
+  }
+#if defined(PETSC_USE_DEBUG)
+  if (n && procs) {
+    PetscInt i;
+    /* from back to front to also handle cases *n=0 */
+    for (i=*n-1; i>0; i--) { if ((*procs)[i-1] > (*procs)[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"procs[] are not ordered"); }
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+/* Given a parallel VecScatter context, restore the plan returned by VecScatterGetRemote_Private. This gives a chance for
+   an implementation to free memory allocated in the VecScatterGetRemote_Private call.
+
+  Input Parameters:
++ ctx   - the context
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ n        - number of remote processors
+. starts   - starting point in indices for each proc
+. indices  - indices of entries to send/recv
+. procs    - ranks of remote processors
+- bs       - block size
+
+  .seealso: VecScatterGetRemote_Private()
+ */
+PetscErrorCode VecScatterRestoreRemote_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  if (ctx->ops->restoreremote) {
+    ierr = (*ctx->ops->restoreremote)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  } else {
+    if (starts)  *starts  = NULL;
+    if (indices) *indices = NULL;
+    if (procs)   *procs   = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Given a parallel VecScatter context, restore the plan returned by VecScatterGetRemoteOrdered_Private. This gives a chance for
+   an implementation to free memory allocated in the VecScatterGetRemoteOrdered_Private call.
+
+  Input Parameters:
++ ctx   - the context
+- send  - true to select the send info (i.e., todata), otherwise to select the recv info (i.e., fromdata)
+
+  Output parameters:
++ n        - number of remote processors
+. starts   - starting point in indices for each proc
+. indices  - indices of entries to send/recv
+. procs    - ranks of remote processors
+- bs       - block size
+
+  .seealso: VecScatterGetRemoteOrdered_Private()
+ */
+PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter ctx,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (ctx->ops->restoreremoteordered) {
+    ierr = (*ctx->ops->restoreremoteordered)(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
+  } else {
+    ierr = VecScatterRestoreRemote_Private(ctx,send,n,starts,indices,procs,bs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -435,58 +584,47 @@ PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBo
 @*/
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter inctx,Vec x)
 {
-  PetscFunctionBegin;
-  VecScatter_MPI_General *to,*from;
-  PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstartsSends,*sstartsRecvs,nrecvs,nsends,bs;
-  PetscBool              isSeq1,isSeq2;
+  PetscErrorCode ierr;
+  PetscInt       i,nrecvs,nsends,sbs,rbs,ns,nr;
+  const PetscInt *sstarts,*rstarts,*sindices,*rindices;
 
   PetscFunctionBegin;
-  ierr = VecScatterIsSequential_Private((VecScatter_Common*)inctx->fromdata,&isSeq1);CHKERRQ(ierr);
-  ierr = VecScatterIsSequential_Private((VecScatter_Common*)inctx->todata,&isSeq2);CHKERRQ(ierr);
-  if (isSeq1 || isSeq2) {
-    PetscFunctionReturn(0);
-  }
+  ierr = VecScatterGetRemote_Private(inctx,PETSC_TRUE/*send*/, &nsends,&sstarts,&sindices,NULL/*procs*/,&sbs);CHKERRQ(ierr);
+  ierr = VecScatterGetRemote_Private(inctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,&rindices,NULL/*procs*/,&rbs);CHKERRQ(ierr);
+  ns   = nsends ? sstarts[nsends]-sstarts[0] : 0; /* s/rstarts[0] is not necessarily zero */
+  nr   = nrecvs ? rstarts[nrecvs]-rstarts[0] : 0;
 
-  to           = (VecScatter_MPI_General*)inctx->todata;
-  from         = (VecScatter_MPI_General*)inctx->fromdata;
-  bs           = to->bs;
-  nrecvs       = from->n;
-  nsends       = to->n;
-  indices      = to->indices;
-  sstartsSends = to->starts;
-  sstartsRecvs = from->starts;
   if (x->valid_GPU_array != PETSC_OFFLOAD_UNALLOCATED && (nsends>0 || nrecvs>0)) {
     if (!inctx->spptr) {
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
-      PetscInt ns = sstartsSends[nsends],nr = sstartsRecvs[nrecvs];
       /* Here we create indices for both the senders and receivers. */
       ierr = PetscMalloc1(ns,&tindicesSends);CHKERRQ(ierr);
       ierr = PetscMalloc1(nr,&tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMemcpy(tindicesSends,indices,ns*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemcpy(tindicesRecvs,from->indices,nr*sizeof(PetscInt));CHKERRQ(ierr);
+      /* s/rindices and s/rstarts could be NULL when ns or nr is zero */
+      if (ns) {ierr = PetscMemcpy(tindicesSends,&sindices[sstarts[0]],ns*sizeof(PetscInt));CHKERRQ(ierr);}
+      if (nr) {ierr = PetscMemcpy(tindicesRecvs,&rindices[rstarts[0]],nr*sizeof(PetscInt));CHKERRQ(ierr);}
 
       ierr = PetscSortRemoveDupsInt(&ns,tindicesSends);CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&nr,tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMalloc1(bs*ns,&sindicesSends);CHKERRQ(ierr);
-      ierr = PetscMalloc1(from->bs*nr,&sindicesRecvs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(sbs*ns,&sindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc1(rbs*nr,&sindicesRecvs);CHKERRQ(ierr);
 
       /* sender indices */
       for (i=0; i<ns; i++) {
-        for (k=0; k<bs; k++) sindicesSends[i*bs+k] = tindicesSends[i]+k;
+        for (k=0; k<sbs; k++) sindicesSends[i*sbs+k] = tindicesSends[i]+k;
       }
       ierr = PetscFree(tindicesSends);CHKERRQ(ierr);
 
       /* receiver indices */
       for (i=0; i<nr; i++) {
-        for (k=0; k<from->bs; k++) sindicesRecvs[i*from->bs+k] = tindicesRecvs[i]+k;
+        for (k=0; k<rbs; k++) sindicesRecvs[i*rbs+k] = tindicesRecvs[i]+k;
       }
       ierr = PetscFree(tindicesRecvs);CHKERRQ(ierr);
 
       /* create GPU indices, work vectors, ... */
-      ierr = VecScatterCUDAIndicesCreate_PtoP(ns*bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUDAIndices*)&inctx->spptr);CHKERRQ(ierr);
+      ierr = VecScatterCUDAIndicesCreate_PtoP(ns*sbs,sindicesSends,nr*rbs,sindicesRecvs,(PetscCUDAIndices*)&inctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindicesSends);CHKERRQ(ierr);
       ierr = PetscFree(sindicesRecvs);CHKERRQ(ierr);
     }
