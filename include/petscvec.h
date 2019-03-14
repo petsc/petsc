@@ -520,14 +520,16 @@ PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
 PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
 /* We also have a non-public VecLockWriteSet_Private() in vecimpl.h */
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
-#define VecSetErrorIfLocked(x,arg) \
-  do { \
-    PetscInt       __st; \
-    PetscErrorCode __ierr; \
-    __ierr = VecLockGet(x,&__st);CHKERRQ(__ierr); \
-    if (__st != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %d",arg); \
-  } while (0)
+PETSC_STATIC_INLINE PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
+{
+  PetscInt       state;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  ierr = VecLockGet(x,&state);CHKERRQ(ierr);
+  if (state != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %d",arg);
+  PetscFunctionReturn(0);
+}
 /* The three are deprecated */
 PETSC_DEPRECATED("Use VecLockReadPush (since v3.11)") PetscErrorCode VecLockPush(Vec);
 PETSC_DEPRECATED("Use VecLockReadPop (since v3.11)")  PetscErrorCode VecLockPop(Vec);
