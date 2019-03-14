@@ -26,6 +26,7 @@ in the momentum term.
 typedef struct {
   PetscReal Delta; /* Pressure drop per unit length */
   PetscReal nu;    /* Kinematic viscosity */
+  PetscReal u_0;   /* Tangential velocity at the wall */
 } Parameter;
 
 typedef struct {
@@ -38,17 +39,10 @@ typedef struct {
   PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 } AppCtx;
 
-PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
-  PetscInt d;
-  for (d = 0; d < dim; ++d) u[d] = 0.0;
-  return 0;
-}
-
 /*
   In 2D, plane Poiseuille flow has exact solution:
 
-    u = \Delta/(2 \nu) y (1 - y)
+    u = \Delta/(2 \nu) y (1 - y) + u_0
     v = 0
     p = -\Delta x
     f = 0
@@ -60,7 +54,7 @@ PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 
   In 3D we use exact solution:
 
-    u = \Delta/(4 \nu) (y (1 - y) + z (1 - z))
+    u = \Delta/(4 \nu) (y (1 - y) + z (1 - z)) + u_0
     v = 0
     w = 0
     p = -\Delta x
@@ -76,10 +70,11 @@ PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   Parameter *param = (Parameter *) ctx;
   PetscReal  Delta = param->Delta;
   PetscReal  nu    = param->nu;
+  PetscReal  u_0   = param->u_0;
   PetscReal  fac   = (PetscReal) (dim - 1);
   PetscInt   d;
 
-  u[0] = 0.0;
+  u[0] = u_0;
   for (d = 1; d < dim; ++d) {
     u[0] += Delta/(fac * 2.0*nu) * x[d] * (1.0 - x[d]);
     u[d]  = 0.0;
@@ -93,6 +88,17 @@ PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], Petsc
   PetscReal  Delta = param->Delta;
 
   p[0] = -Delta * x[0];
+  return 0;
+}
+
+PetscErrorCode wall_velocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  Parameter *param = (Parameter *) ctx;
+  PetscReal  u_0   = param->u_0;
+  PetscInt   d;
+
+  u[0] = u_0;
+  for (d = 1; d < dim; ++d) u[d] = 0.0;
   return 0;
 }
 
@@ -217,6 +223,7 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
   bag  = user->bag;
   ierr = PetscBagRegisterReal(bag, &p->Delta, 1.0, "Delta", "Pressure drop per unit length");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &p->nu,    1.0, "nu",    "Kinematic viscosity");CHKERRQ(ierr);
+  ierr = PetscBagRegisterReal(bag, &p->u_0,   0.0, "u_0",   "Tangential velocity at the wall");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -263,22 +270,23 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   /* Setup constants */
   {
     Parameter  *param;
-    PetscScalar constants[2];
+    PetscScalar constants[3];
 
     ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
 
     constants[0] = param->Delta;
     constants[1] = param->nu;
-    ierr = PetscDSSetConstants(prob, 2, constants);CHKERRQ(ierr);
+    constants[2] = param->u_0;
+    ierr = PetscDSSetConstants(prob, 3, constants);CHKERRQ(ierr);
   }
   /* Setup Boundary Conditions */
   ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   id   = 3;
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "top wall",    "marker", 0, 0, NULL, (void (*)(void)) zero_vector, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "top wall",    "marker", 0, 0, NULL, (void (*)(void)) wall_velocity, 1, &id, ctx);CHKERRQ(ierr);
   id   = 1;
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "bottom wall", "marker", 0, 0, NULL, (void (*)(void)) zero_vector, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "bottom wall", "marker", 0, 0, NULL, (void (*)(void)) wall_velocity, 1, &id, ctx);CHKERRQ(ierr);
   id   = 2;
-  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL,   "right wall",  "marker", 0, 0, NULL, (void (*)(void)) zero_vector, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL,   "right wall",  "marker", 0, 0, NULL, (void (*)(void)) NULL,          1, &id, ctx);CHKERRQ(ierr);
   /* Setup exact solution */
   user->exactFuncs[0] = quadratic_u;
   user->exactFuncs[1] = linear_p;
@@ -370,6 +378,16 @@ int main(int argc, char **argv)
     suffix: 2d_quad_q1_p0_conv
     requires: !single
     args: -simplex 0 -dm_plex_separate_marker -dm_refine 1 \
+      -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
+      -snes_convergence_estimate -convest_num_refine 2 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+  test:
+    suffix: 2d_quad_q1_p0_conv_u0
+    requires: !single
+    args: -simplex 0 -dm_plex_separate_marker -dm_refine 1 -u_0 0.125 \
       -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
       -snes_convergence_estimate -convest_num_refine 2 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
