@@ -13,6 +13,12 @@ class Configure(config.package.Package):
     self.noMPIUni               = 1
     return
 
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument('MFEM', '-download-mfem-ghv-cxx=<prog>', nargs.Arg(None, None, 'CXX Front-end compiler to compile get_hypre_version'))
+    return
+
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.hypre = framework.require('config.packages.hypre',self)
@@ -44,10 +50,15 @@ class Configure(config.package.Package):
     cxxflags = self.setCompilers.getCompilerFlags()
     cxxflags = cxxflags.replace('-fvisibility=hidden','') # MFEM is currently broken with -fvisibility=hidden
     self.setCompilers.popLanguage()
+    if 'download-mfem-ghv-cxx' in self.argDB and self.argDB['download-mfem-ghv-cxx']:
+      ghv = self.argDB['download-mfem-ghv-cxx']
+    else:
+      ghv = cxx
 
     with open(os.path.join(configDir,'user.mk'),'w') as g:
       g.write('PREFIX = '+prefix+'\n')
       g.write('MPICXX = '+cxx+'\n')
+      g.write('export GHV_CXX = '+ghv+'\n')
       g.write('CXXFLAGS = '+cxxflags+'\n')
       if self.argDB['with-shared-libraries']:
         g.write('SHARED = YES\n')
