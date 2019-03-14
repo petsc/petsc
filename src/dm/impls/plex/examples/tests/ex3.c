@@ -635,8 +635,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   comm = PetscObjectComm((PetscObject)dm);
   /* duplicate DM, give dup. a FV discretization */
-  ierr = DMPlexSetAdjacencyUseCone(dm,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(dm,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(dm,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   dmRedist = NULL;
   if (size > 1) {

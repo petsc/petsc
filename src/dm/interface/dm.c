@@ -61,6 +61,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr                        = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
   ierr                        = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
   v->labels                   = NULL;
+  v->adjacency[0]             = PETSC_FALSE;
+  v->adjacency[1]             = PETSC_TRUE;
   v->depthLabel               = NULL;
   v->defaultSection           = NULL;
   v->defaultGlobalSection     = NULL;
@@ -170,6 +172,12 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
     const DMBoundaryType *bd;
     ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
     ierr = DMSetPeriodicity(*newdm, isper, maxCell,  L,  bd);CHKERRQ(ierr);
+  }
+  {
+    PetscBool useCone, useClosure;
+
+    ierr = DMGetAdjacency(dm, PETSC_DEFAULT, &useCone, &useClosure);CHKERRQ(ierr);
+    ierr = DMSetAdjacency(*newdm, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -4172,6 +4180,23 @@ PetscErrorCode DMSetPointSF(DM dm, PetscSF sf)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMSetDefaultAdjacency_Private(DM dm, PetscInt f, PetscObject disc)
+{
+  PetscClassId   id;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetClassId(disc, &id);CHKERRQ(ierr);
+  if (id == PETSCFE_CLASSID) {
+    ierr = DMSetAdjacency(dm, f, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
+  } else if (id == PETSCFV_CLASSID) {
+    ierr = DMSetAdjacency(dm, f, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
+  } else {
+    ierr = DMSetAdjacency(dm, f, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMFieldEnlarge_Static(DM dm, PetscInt NfNew)
 {
   RegionField   *tmpr;
@@ -4332,6 +4357,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject field)
   dm->fields[f].disc  = field;
   ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
+  ierr = DMSetDefaultAdjacency_Private(dm, f, field);CHKERRQ(ierr);
   ierr = DMClearDS(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4364,6 +4390,7 @@ PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
   dm->fields[Nf].disc  = field;
   ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
+  ierr = DMSetDefaultAdjacency_Private(dm, Nf, field);CHKERRQ(ierr);
   ierr = DMClearDS(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4395,9 +4422,170 @@ PetscErrorCode DMCopyFields(DM dm, DM newdm)
   for (f = 0; f < Nf; ++f) {
     DMLabel     label;
     PetscObject field;
+    PetscBool   useCone, useClosure;
 
     ierr = DMGetField(dm, f, &label, &field);CHKERRQ(ierr);
     ierr = DMSetField(newdm, f, label, field);CHKERRQ(ierr);
+    ierr = DMGetAdjacency(dm, f, &useCone, &useClosure);CHKERRQ(ierr);
+    ierr = DMSetAdjacency(newdm, f, useCone, useClosure);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMGetAdjacency - Returns the flags for determining variable influence
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM object
+- f  - The field number, or PETSC_DEFAULT for the default adjacency
+
+  Output Parameter:
++ useCone    - Flag for variable influence starting with the cone operation
+- useClosure - Flag for variable influence using transitive closure
+
+  Notes:
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
+$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
+  Further explanation can be found in the User's Manual Section on the Influence of Variables on One Another.
+
+  Level: developer
+
+.seealso: DMSetAdjacency(), DMGetField(), DMSetField()
+@*/
+PetscErrorCode DMGetAdjacency(DM dm, PetscInt f, PetscBool *useCone, PetscBool *useClosure)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (useCone) PetscValidPointer(useCone, 3);
+  if (useClosure) PetscValidPointer(useClosure, 4);
+  if (f < 0) {
+    if (useCone)    *useCone    = dm->adjacency[0];
+    if (useClosure) *useClosure = dm->adjacency[1];
+  } else {
+    PetscInt       Nf;
+    PetscErrorCode ierr;
+
+    ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+    if (f >= Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, Nf);
+    if (useCone)    *useCone    = dm->fields[f].adjacency[0];
+    if (useClosure) *useClosure = dm->fields[f].adjacency[1];
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetAdjacency - Set the flags for determining variable influence
+
+  Not collective
+
+  Input Parameters:
++ dm         - The DM object
+. f          - The field number
+. useCone    - Flag for variable influence starting with the cone operation
+- useClosure - Flag for variable influence using transitive closure
+
+  Notes:
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
+$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
+  Further explanation can be found in the User's Manual Section on the Influence of Variables on One Another.
+
+  Level: developer
+
+.seealso: DMGetAdjacency(), DMGetField(), DMSetField()
+@*/
+PetscErrorCode DMSetAdjacency(DM dm, PetscInt f, PetscBool useCone, PetscBool useClosure)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (f < 0) {
+    dm->adjacency[0] = useCone;
+    dm->adjacency[1] = useClosure;
+  } else {
+    PetscInt       Nf;
+    PetscErrorCode ierr;
+
+    ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+    if (f >= Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, Nf);
+    dm->fields[f].adjacency[0] = useCone;
+    dm->fields[f].adjacency[1] = useClosure;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMGetBasicAdjacency - Returns the flags for determining variable influence, using either the default or field 0 if it is defined
+
+  Not collective
+
+  Input Parameters:
+. dm - The DM object
+
+  Output Parameter:
++ useCone    - Flag for variable influence starting with the cone operation
+- useClosure - Flag for variable influence using transitive closure
+
+  Notes:
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
+$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
+
+  Level: developer
+
+.seealso: DMSetBasicAdjacency(), DMGetField(), DMSetField()
+@*/
+PetscErrorCode DMGetBasicAdjacency(DM dm, PetscBool *useCone, PetscBool *useClosure)
+{
+  PetscInt       Nf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (useCone) PetscValidPointer(useCone, 3);
+  if (useClosure) PetscValidPointer(useClosure, 4);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = DMGetAdjacency(dm, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetAdjacency(dm, 0, useCone, useClosure);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetBasicAdjacency - Set the flags for determining variable influence, using either the default or field 0 if it is defined
+
+  Not collective
+
+  Input Parameters:
++ dm         - The DM object
+. useCone    - Flag for variable influence starting with the cone operation
+- useClosure - Flag for variable influence using transitive closure
+
+  Notes:
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
+$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
+
+  Level: developer
+
+.seealso: DMGetBasicAdjacency(), DMGetField(), DMSetField()
+@*/
+PetscErrorCode DMSetBasicAdjacency(DM dm, PetscBool useCone, PetscBool useClosure)
+{
+  PetscInt       Nf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = DMSetAdjacency(dm, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
+  } else {
+    ierr = DMSetAdjacency(dm, 0, useCone, useClosure);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

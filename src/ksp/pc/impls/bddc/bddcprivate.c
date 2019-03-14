@@ -2223,10 +2223,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
     ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&adjBuffer);CHKERRQ(ierr);
     /* Always use FVM adjacency to create partitioner graph */
-    ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-    ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
+    ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
     ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
     for (n = 0, p = pStart; p < pEnd; p++) {
@@ -2245,8 +2243,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
       }
       n++;
     }
-    ierr = DMPlexSetAdjacencyUseCone(dm, useCone);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseClosure(dm, useClosure);CHKERRQ(ierr);
+    ierr = DMSetBasicAdjacency(dm, useCone, useClosure);CHKERRQ(ierr);
     /* Derive CSR graph from section/segbuffer */
     ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
