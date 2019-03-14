@@ -262,7 +262,8 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 
   if (size == 1) {
     aa = (Mat_SeqAIJ*)A->data;
-    nz = aa->nz;
+    rstart = 0;
+    nz     = aa->nz;
   } else {
     Mat_MPIAIJ *mat = (Mat_MPIAIJ*)A->data;
     aa = (Mat_SeqAIJ*)(mat->A)->data;
