@@ -377,6 +377,18 @@ int main(int argc, char **argv)
         -fieldsplit_velocity_pc_type lu \
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   test:
+    suffix: 2d_quad_q1_p0_conv_gmg_vanka
+    requires: !single
+    args: -simplex 0 -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
+      -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
+      -snes_convergence_estimate -convest_num_refine 1 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type mg \
+          -fieldsplit_velocity_mg_levels_pc_type patch -fieldsplit_velocity_mg_levels_pc_patch_partition_of_unity 0 \
+          -fieldsplit_velocity_mg_levels_pc_patch_construct_codim 0 -fieldsplit_velocity_mg_levels_pc_patch_construct_type vanka \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+  test:
     suffix: 2d_tri_p2_p1_conv
     requires: triangle !single
     args: -dm_plex_separate_marker -dm_refine 1 \
@@ -385,5 +397,15 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+  test:
+    suffix: 2d_tri_p2_p1_conv_gmg_vcycle
+    requires: triangle !single
+    args: -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
+      -snes_convergence_estimate -convest_num_refine 1 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type mg \
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
 TEST*/
