@@ -906,7 +906,7 @@ actually a combination of scatters and gathers.
 To copy selected components from one vector
 to another, one uses the following set of commands:
 \begin{lstlisting}
-VecScatterCreateWithData(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
+VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
 VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterDestroy(VecScatter *ctx);
@@ -918,7 +918,7 @@ number of entries in the index set of the first vector, \lstinline{ix},
 equals the number in the destination index set, \lstinline{iy}, and that the
 vectors be long enough to contain all the indices referred to in the
 index sets. If both \lstinline{x} and \lstinline{y} are parallel,
-their communicator must be on the same set of processes, but their process order can be different.
+their communicator must have the same set of processes, but their process order can be different.
 The argument \lstinline{INSERT_VALUES} specifies that the
 vector elements will be inserted into the specified locations of the
 destination vector, overwriting any existing values.  To add the
@@ -958,11 +958,11 @@ option is used.
 Once a \lstinline{VecScatter} object has been created it may be used with any vectors
 that have the appropriate parallel data layout. That is, one can call
 \lstinline{VecScatterBegin()} and \lstinline{VecScatterEnd()} with different vectors than
-used in the call to \lstinline{VecScatterCreateWithData()} so long as they have the same
+used in the call to \lstinline{VecScatterCreate()} as long as they have the same
 parallel layout (number of elements on each process are the same). Usually,
 these ``different'' vectors would have been obtained via calls to
 \lstinline{VecDuplicate()} from the original vectors used in the call to
-\lstinline{VecScatterCreateWithData()}.
+\lstinline{VecScatterCreate()}.
 
 \sindex{vector values, getting}
 There is a PETSc routine that is nearly the opposite of \lstinline{VecSetValues()}, that is, \lstinline{VecGetValues()}, but it can only get local values from the vector.
@@ -988,7 +988,7 @@ PetscInt    idx_from[] = {100,200}, idx_to[] = {0,1};
 VecCreateSeq(PETSC_COMM_SELF,2,&x);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,PETSC_COPY_VALUES,&from);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_to,PETSC_COPY_VALUES,&to);
-VecScatterCreateWithData(p,from,x,to,&scatter);
+VecScatterCreate(p,from,x,to,&scatter);
 VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecGetArray(x,&values);
