@@ -5248,10 +5248,19 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
   if (!dm->coordinates && dm->coordinatesLocal) {
-    DM cdm = NULL;
+    DM        cdm = NULL;
+    PetscBool localized;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(cdm, &dm->coordinates);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
+    /* Block size is not correctly set by CreateGlobalVector() if coordinates are localized */
+    if (localized) {
+      PetscInt cdim;
+
+      ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(dm->coordinates, cdim);CHKERRQ(ierr);
+    }
     ierr = PetscObjectSetName((PetscObject) dm->coordinates, "coordinates");CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(cdm, dm->coordinatesLocal, INSERT_VALUES, dm->coordinates);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(cdm, dm->coordinatesLocal, INSERT_VALUES, dm->coordinates);CHKERRQ(ierr);
@@ -5275,14 +5284,24 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
 @*/
 PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
 {
-  DM cdm = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (!dm->coordinatesLocal && dm->coordinates) {
+    DM        cdm = NULL;
+    PetscBool localized;
+
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(cdm, &dm->coordinatesLocal);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
+    /* Block size is not correctly set by CreateLocalVector() if coordinates are localized */
+    if (localized) {
+      PetscInt cdim;
+
+      ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(dm->coordinates, cdim);CHKERRQ(ierr);
+    }
     ierr = PetscObjectSetName((PetscObject) dm->coordinatesLocal, "coordinates");CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(cdm, dm->coordinates, INSERT_VALUES, dm->coordinatesLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(cdm, dm->coordinates, INSERT_VALUES, dm->coordinatesLocal);CHKERRQ(ierr);
@@ -5862,10 +5881,10 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm,PetscBool *areLocalized)
 
   /* We need some generic way of refering to cells/vertices */
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isPlex);CHKERRQ(ierr);
-  if (!isPlex) SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
+  if (!isPlex) PetscFunctionReturn(0);
 
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(coordSection, &sStart, &sEnd);CHKERRQ(ierr);
   alreadyLocalized = PETSC_FALSE;
