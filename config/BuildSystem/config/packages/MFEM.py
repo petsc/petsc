@@ -16,7 +16,7 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('MFEM', '-download-mfem-ghv-cxx=<string>', nargs.ArgString(None, None, 'Front-end compiler invocation to compile get_hypre_version'))
+    help.addArgument('MFEM', '-download-mfem-ghv-cxx=<prog>', nargs.Arg(None, None, 'CXX Front-end compiler to compile get_hypre_version'))
     return
 
   def setupDependencies(self, framework):
