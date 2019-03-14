@@ -5340,7 +5340,6 @@ PetscErrorCode MatAssembled(Mat mat,PetscBool  *assembled)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   PetscValidPointer(assembled,2);
   *assembled = mat->assembled;
   PetscFunctionReturn(0);
