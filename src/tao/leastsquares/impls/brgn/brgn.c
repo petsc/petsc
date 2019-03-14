@@ -134,9 +134,9 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GNHookFunction(Tao tao,PetscInt iter)
+static PetscErrorCode GNHookFunction(Tao tao,PetscInt iter, void *ctx)
 {
-  TAO_BRGN              *gn = (TAO_BRGN *)tao->user_update;
+  TAO_BRGN              *gn = (TAO_BRGN *)ctx;
   PetscErrorCode        ierr;
   
   PetscFunctionBegin;
@@ -160,7 +160,7 @@ static PetscErrorCode GNHookFunction(Tao tao,PetscInt iter)
   ierr = VecCopy(tao->gradient,gn->parent->gradient);CHKERRQ(ierr);
   /* Call general purpose update function */
   if (gn->parent->ops->update) {
-    ierr = (*gn->parent->ops->update)(gn->parent,gn->parent->niter);CHKERRQ(ierr);
+    ierr = (*gn->parent->ops->update)(gn->parent,gn->parent->niter,gn->parent->user_update);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -175,7 +175,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   while (1) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     
     shrink = 0;

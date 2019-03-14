@@ -173,9 +173,9 @@ static PetscErrorCode ourtaoequalityconstraintsroutine(Tao tao, Vec x, Vec c, vo
     PetscObjectUseFortranCallback(tao,_cb.coneq,(Tao*,Vec*,Vec*,void*,PetscErrorCode*),(&tao,&x,&c,_ctx,&ierr));
 }
 
-static PetscErrorCode ourtaoupdateroutine(Tao tao, PetscInt iter)
+static PetscErrorCode ourtaoupdateroutine(Tao tao, PetscInt iter, void *ctx)
 {
-    PetscObjectUseFortranCallback(tao,_cb.update,(Tao*,PetscInt*),(&tao,&iter));
+    PetscObjectUseFortranCallback(tao,_cb.update,(Tao*,PetscInt*,void*),(&tao,&iter,_ctx));
 }
 
 EXTERN_C_BEGIN

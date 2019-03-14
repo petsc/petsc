@@ -1361,7 +1361,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 
 .seealso TaoSolve()
 @*/
-PetscErrorCode  TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt), void *ctx)
+PetscErrorCode  TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt,void*), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID,1);

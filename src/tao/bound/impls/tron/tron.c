@@ -127,7 +127,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   while (tao->reason==TAO_CONTINUE_ITERATING){
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     
     /* Perform projected gradient iterations */
