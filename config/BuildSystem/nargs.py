@@ -348,7 +348,7 @@ class ArgDirList(Arg):
     import os
     self.checkKey()
     if not isinstance(value, list):
-      value = [value]
+      value = value.split(':')
     # Should check whether it is a well-formed path
     nvalue = []
     for dir in value:
