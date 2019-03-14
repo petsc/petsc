@@ -242,19 +242,19 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *
 
 static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqAIJ       *aa,*bb;
+  Mat_SeqAIJ       *aa=NULL,*bb=NULL;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
   PetscErrorCode   ierr;
-  PetscInt         M=A->rmap->N,N=A->cmap->N,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
-                   m=A->rmap->n, colA_start,j,jcol,jB,countA,countB,*bjj,*ajj=NULL;
+  PetscInt         M=A->rmap->N,N=A->cmap->N,i,*ai=NULL,*aj=NULL,*bi=NULL,*bj=NULL,nz,rstart,*garray=NULL,
+                   m=A->rmap->n, colA_start,j,jcol,jB,countA,countB,*bjj=NULL,*ajj=NULL;
   int              sinfo;   /* SuperLU_Dist info flag is always an int even with long long indices */
   PetscMPIInt      size;
   SuperLUStat_t    stat;
   double           *berr=0;
 #if defined(PETSC_USE_COMPLEX)
-  doublecomplex    *av, *bv;
+  doublecomplex    *av=NULL, *bv=NULL;
 #else
-  double           *av, *bv;
+  double           *av=NULL, *bv=NULL;
 #endif
 
   PetscFunctionBegin;
