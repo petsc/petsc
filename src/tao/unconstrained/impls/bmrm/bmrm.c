@@ -604,7 +604,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 
   *lam_ext = lambda;
   if(innerIter >= df->maxProjIter) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "WARNING: DaiFletcher max iterations\n");CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"WARNING: DaiFletcher max iterations\n");CHKERRQ(ierr);
   }
   return innerIter;
 }

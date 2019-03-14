@@ -20,7 +20,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by cg algorithm\n");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by cg algorithm\n");CHKERRQ(ierr);
   }
 
   /*  Check convergence criteria */
