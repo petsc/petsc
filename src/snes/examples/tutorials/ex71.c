@@ -2,21 +2,20 @@ static char help[] = "Poiseuille Flow in 2d and 3d channels with finite elements
 We solve the Poiseuille flow problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
-/*
-The isoviscous Stokes problem, which we discretize using the finite
-element method on an unstructured mesh. The weak form equations are
+/*F
+A Poiseuille flow is a steady-state isoviscous Stokes flow in a pipe of constant cross-section. We discretize using the
+finite element method on an unstructured mesh. The weak form equations are
+\begin{align*}
+  < \nabla v, \nu (\nabla u + {\nabla u}^T) > - < \nabla\cdot v, p > + < v, \Delta >_{\Gamma_o} = 0
+  < q, \nabla\cdot u >                                                                          = 0
+\end{align*}
+where $\nu$ is the kinematic viscosity, $\Delta$ is the pressure drop per unit length, assuming that pressure is 0 on
+the left edge, and $\Gamma_o$ is the outlet boundary at the right edge of the pipe. The normal velocity will be zero at
+the wall, but we will allow a fixed tangential velocity $u_0$.
 
-  < \nabla v, \mu (\nabla u + {\nabla u}^T) > - < \nabla\cdot v, p > + < v, f > = 0
-  < q, \nabla\cdot u >                                                          = 0
-
-which a pressure drop boundary condition. Assuming pressure is 0 on the left edge
-and -1 on the right edge, we have the boundary integral
-
-  < v, 1>_{right}
-
-in the momentum term.
-
-*/
+In order to test our global to local basis transformation, we will allow the pipe to be at an angle $\alpha$ to the
+coordinate axes.
+F*/
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
@@ -27,6 +26,7 @@ typedef struct {
   PetscReal Delta; /* Pressure drop per unit length */
   PetscReal nu;    /* Kinematic viscosity */
   PetscReal u_0;   /* Tangential velocity at the wall */
+  PetscReal alpha; /* Angle of pipe wall to x-axis */
 } Parameter;
 
 typedef struct {
@@ -64,6 +64,19 @@ typedef struct {
 
     -\nu \Delta u + \nabla p + f = <Delta, 0, 0> + <-Delta, 0, 0> + <0, 0, 0> = 0
     \nabla \cdot u               = 0 + 0 + 0                                  = 0
+
+  In 2D, plane Poiseuille flow in a rotated frame has exact solution:
+
+    u = \cos\alpha [\Delta/(2 \nu) y (1 - y) + u_0]
+    v = \sin\alpha [\Delta/(2 \nu) y (1 - y) + u_0]
+    p = -\Delta [\cos\alpha x + \sin\alpha y]
+
+  and in 3D
+
+    u = \Delta/(4 \nu) (y (1 - y) + z (1 - z)) + u_0
+    v = 0
+    w = 0
+    p = -\Delta x
 */
 PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
@@ -71,12 +84,17 @@ PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   PetscReal  Delta = param->Delta;
   PetscReal  nu    = param->nu;
   PetscReal  u_0   = param->u_0;
+  PetscReal  alpha = param->alpha;
   PetscReal  fac   = (PetscReal) (dim - 1);
   PetscInt   d;
 
   u[0] = u_0;
   for (d = 1; d < dim; ++d) {
     u[0] += Delta/(fac * 2.0*nu) * x[d] * (1.0 - x[d]);
+  }
+  u[1] = PetscSinReal(alpha)*u[0];
+  u[0] = PetscCosReal(alpha)*u[0];
+  for (d = 2; d < dim; ++d) {
     u[d]  = 0.0;
   }
   return 0;
@@ -86,8 +104,9 @@ PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], Petsc
 {
   Parameter *param = (Parameter *) ctx;
   PetscReal  Delta = param->Delta;
+  PetscReal  alpha = param->alpha;
 
-  p[0] = -Delta * x[0];
+  p[0] = -Delta * (PetscCosReal(alpha)*x[0] + PetscSinReal(alpha)*x[1]);
   return 0;
 }
 
@@ -95,10 +114,12 @@ PetscErrorCode wall_velocity(PetscInt dim, PetscReal time, const PetscReal x[], 
 {
   Parameter *param = (Parameter *) ctx;
   PetscReal  u_0   = param->u_0;
+  PetscReal  alpha = param->alpha;
   PetscInt   d;
 
-  u[0] = u_0;
-  for (d = 1; d < dim; ++d) u[d] = 0.0;
+  u[0] = PetscCosReal(alpha)*u_0;
+  u[1] = PetscSinReal(alpha)*u_0;
+  for (d = 2; d < dim; ++d) u[d] = 0.0;
   return 0;
 }
 
@@ -210,7 +231,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetUpParameters(AppCtx *user)
+static PetscErrorCode SetupParameters(AppCtx *user)
 {
   PetscBag       bag;
   Parameter     *p;
@@ -219,11 +240,12 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
   PetscFunctionBeginUser;
   /* setup PETSc parameter bag */
   ierr = PetscBagGetData(user->bag, (void **) &p);CHKERRQ(ierr);
-  ierr = PetscBagSetName(user->bag, "par", "Problem parameters");CHKERRQ(ierr);
+  ierr = PetscBagSetName(user->bag, "par", "Poiseuille flow parameters");CHKERRQ(ierr);
   bag  = user->bag;
   ierr = PetscBagRegisterReal(bag, &p->Delta, 1.0, "Delta", "Pressure drop per unit length");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &p->nu,    1.0, "nu",    "Kinematic viscosity");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &p->u_0,   0.0, "u_0",   "Tangential velocity at the wall");CHKERRQ(ierr);
+  ierr = PetscBagRegisterReal(bag, &p->alpha, 0.0, "alpha", "Angle of pipe wall to x-axis");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -235,12 +257,36 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBeginUser;
   ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   {
+    Parameter   *param;
+    Vec          coordinates;
+    PetscScalar *coords;
+    PetscReal    alpha;
+    PetscInt     cdim, N, bs, i;
+
+    ierr = DMGetCoordinateDim(*dm, &cdim);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(*dm, &coordinates);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
+    if (bs != cdim) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "Invalid coordinate blocksize %D != embedding dimension %D", bs, cdim);
+    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
+    alpha = param->alpha;
+    for (i = 0; i < N; i += cdim) {
+      PetscScalar x = coords[i+0];
+      PetscScalar y = coords[i+1];
+
+      coords[i+0] = PetscCosReal(alpha)*x - PetscSinReal(alpha)*y;
+      coords[i+1] = PetscSinReal(alpha)*x + PetscCosReal(alpha)*y;
+    }
+    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    ierr = DMSetCoordinates(*dm, coordinates);CHKERRQ(ierr);
+  }
+  {
     DM               pdm = NULL;
     PetscPartitioner part;
 
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
     if (pdm) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -270,14 +316,15 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   /* Setup constants */
   {
     Parameter  *param;
-    PetscScalar constants[3];
+    PetscScalar constants[4];
 
     ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
 
     constants[0] = param->Delta;
     constants[1] = param->nu;
     constants[2] = param->u_0;
-    ierr = PetscDSSetConstants(prob, 3, constants);CHKERRQ(ierr);
+    constants[3] = param->alpha;
+    ierr = PetscDSSetConstants(prob, 4, constants);CHKERRQ(ierr);
   }
   /* Setup Boundary Conditions */
   ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
@@ -337,13 +384,12 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
+  ierr = PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag);CHKERRQ(ierr);
+  ierr = SetupParameters(&user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &user);CHKERRQ(ierr);
-  /* Setup problem parameters */
-  ierr = PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag);CHKERRQ(ierr);
-  ierr = SetUpParameters(&user);CHKERRQ(ierr);
   /* Setup problem */
   ierr = PetscMalloc(2 * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
   ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
