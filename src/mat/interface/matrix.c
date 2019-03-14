@@ -2378,7 +2378,7 @@ PetscErrorCode MatMult(Mat mat,Vec x,Vec y)
   if (mat->rmap->N != y->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->rmap->N,y->map->N);
   if (mat->rmap->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %D %D",mat->rmap->n,y->map->n);
 #endif
-  VecSetErrorIfLocked(y,3);
+  ierr = VecSetErrorIfLocked(y,3);CHKERRQ(ierr);
   if (mat->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   MatCheckPreallocated(mat,1);
 

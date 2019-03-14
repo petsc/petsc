@@ -453,7 +453,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
   if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);
   if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);
-  VecSetErrorIfLocked(y,3);
+  ierr = VecSetErrorIfLocked(y,3);CHKERRQ(ierr);
 
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->apply) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply");

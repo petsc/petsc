@@ -723,7 +723,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
-  VecSetErrorIfLocked(ksp->vec_sol,3);
+  ierr = VecSetErrorIfLocked(ksp->vec_sol,3);CHKERRQ(ierr);
 
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
