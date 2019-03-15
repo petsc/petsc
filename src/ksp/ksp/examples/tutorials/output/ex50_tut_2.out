@@ -1,5 +1,5 @@
   0 KSP Residual norm 3.039809126331e+00 
-  1 KSP Residual norm 2.966524951610e-14 
+  1 KSP Residual norm 2.395703277441e-14
 KSP Object: 4 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -24,11 +24,10 @@ PC Object: 4 MPI processes
             SuperLU_DIST run parameters:
               Process grid nprow 2 x npcol 2 
               Equilibrate matrix TRUE 
-              Matrix input mode 1 
               Replace tiny pivots FALSE 
               Use iterative refinement FALSE 
               Processors in row 2 col partition 2 
-              Row permutation LargeDiag_MC64 
+              Row permutation LargeDiag_MC64
               Column permutation METIS_AT_PLUS_A
               Parallel symbolic factorization FALSE 
               Repeated factorization SamePattern
