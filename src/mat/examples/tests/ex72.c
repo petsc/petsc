@@ -172,4 +172,8 @@ int main(int argc,char **argv)
       args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/LFAT5.mtx -fout petscmat.sbaij
       output_file: output/ex72_2.out
 
+   test:
+      suffix: 3
+      args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/m_05_05_crk.mtx -fout petscmat.aij
+      output_file: output/ex72_3.out
 TEST*/
