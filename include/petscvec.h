@@ -118,6 +118,7 @@ typedef const char* VecScatterType;
 #define VECSCATTERMPI1      "mpi1"
 #define VECSCATTERMPI3      "mpi3"     /* use MPI3 on-node shared memory */
 #define VECSCATTERMPI3NODE  "mpi3node" /* use MPI3 on-node shared memory for vector type VECNODE */
+#define VECSCATTERSF        "sf"       /* use StarForest */
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList VecScatterList;
@@ -515,15 +516,33 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar *
 }
 
 #if defined(PETSC_USE_DEBUG)
+PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
+PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
+/* We also have a non-public VecLockWriteSet_Private() in vecimpl.h */
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
-PETSC_EXTERN PetscErrorCode VecLockPush(Vec);
-PETSC_EXTERN PetscErrorCode VecLockPop(Vec);
-#define VecLocked(x,arg) do {PetscInt _st; PetscErrorCode __ierr = VecLockGet(x,&_st); CHKERRQ(__ierr); if (_st > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is locked read only, argument # %d",arg);} while (0)
+PETSC_STATIC_INLINE PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
+{
+  PetscInt       state;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecLockGet(x,&state);CHKERRQ(ierr);
+  if (state != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %d",arg);
+  PetscFunctionReturn(0);
+}
+/* The three are deprecated */
+PETSC_DEPRECATED("Use VecLockReadPush (since v3.11)") PetscErrorCode VecLockPush(Vec);
+PETSC_DEPRECATED("Use VecLockReadPop (since v3.11)")  PetscErrorCode VecLockPop(Vec);
+#define VecLocked(x,arg) VecSetErrorIfLocked(x,arg)
 #else
-#define VecLockGet(x,arg)     *(arg) = 0
-#define VecLockPush(x)        0
-#define VecLockPop(x)         0
-#define VecLocked(x,arg)
+#define VecLockReadPush(x)           0
+#define VecLockReadPop(x)            0
+#define VecLockGet(x,s)              *(s) = 0
+#define VecSetErrorIfLocked(x,arg)   0
+/* The three are deprecated */
+#define VecLockPush(x)               0
+#define VecLockPop(x)                0
+#define VecLocked(x,arg)             0
 #endif
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);

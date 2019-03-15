@@ -425,6 +425,8 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
 
+  ierr = KSPResetViewers(ksp);CHKERRQ(ierr);
+
   ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCGetReusePreconditioner(ksp->pc,&reuse);CHKERRQ(ierr);

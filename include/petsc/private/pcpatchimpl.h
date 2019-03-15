@@ -20,6 +20,11 @@ typedef struct {
   PetscInt             dim, codim;         /* Dimension or codimension of mesh points to loop over; only one of them can be set */
   PetscSection         cellCounts;         /* Maps patch -> # cells in patch */
   IS                   cells;              /* [patch][cell in patch]: Cell number */
+  IS                   extFacets;
+  IS                   intFacets;
+  IS                   intFacetsToPatchCell; /* Support of interior facet in local patch point numbering: AKA which two cells touch the facet (in patch local numbering of cells) */
+  PetscSection         intFacetCounts;
+  PetscSection         extFacetCounts;
   PetscSection         cellNumbering;      /* Plex: NULL Firedrake: Numbering of cells in DM */
   PetscSection         pointCounts;        /* Maps patch -> # points with dofs in patch */
   IS                   points;             /* [patch][point in patch]: Point number */
@@ -59,12 +64,25 @@ typedef struct {
   void                *usercomputeopctx;
   PetscErrorCode     (*usercomputef)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
   void                *usercomputefctx;
+  /* Interior facet integrals: Jacobian */
+  PetscErrorCode     (*usercomputeopintfacet)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
+  void                *usercomputeopintfacetctx;
+  /* Residual */
+  PetscErrorCode     (*usercomputefintfacet)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
+  void                *usercomputefintfacetctx;
   IS                   cellIS;             /* Temporary IS for each cell patch */
   PetscBool            save_operators;     /* Save all operators (or create/destroy one at a time?) */
+  PetscBool            precomputeElementTensors; /* Precompute all element tensors (each cell is assembled exactly once)? */
+  IS                   allCells;                 /* Unique cells in union of all patches */
+  IS                   allIntFacets;                 /* Unique interior facets in union of all patches */
   PetscBool            partition_of_unity; /* Weight updates by dof multiplicity? */
   PetscBool            multiplicative;     /* Gauss-Seidel instead of Jacobi?  */
   PCCompositeType      local_composition_type; /* locally additive or multiplicative? */
   /* Patch solves */
+  Vec                  cellMats;           /* Cell element tensors */
+  PetscInt            *precomputedTensorLocations; /* Locations of the precomputed tensors for each cell. */
+  Vec                  intFacetMats;               /* interior facet element tensors */
+  PetscInt            *precomputedIntFacetTensorLocations; /* Locations of the precomputed tensors for each interior facet. */
   Mat                 *mat;                /* System matrix for each patch */
   Mat                 *matWithArtificial;   /* System matrix including dofs with artificial bcs for each patch */
   MatType              sub_mat_type;       /* Matrix type for patch systems */
@@ -90,6 +108,12 @@ typedef struct {
   PetscBool            viewCells;          /* View cells for each patch */
   PetscViewer          viewerCells;        /*   Viewer for patch cells */
   PetscViewerFormat    formatCells;        /*   Format for patch cells */
+  PetscBool            viewIntFacets;          /* View intFacets for each patch */
+  PetscViewer          viewerIntFacets;        /*   Viewer for patch intFacets */
+  PetscViewerFormat    formatIntFacets;        /*   Format for patch intFacets */
+  PetscBool            viewExtFacets;          /* View extFacets for each patch */
+  PetscViewer          viewerExtFacets;        /*   Viewer for patch extFacets */
+  PetscViewerFormat    formatExtFacets;        /*   Format for patch extFacets */
   PetscBool            viewPoints;         /* View points for each patch */
   PetscViewer          viewerPoints;       /*   Viewer for patch points */
   PetscViewerFormat    formatPoints;       /*   Format for patch points */

@@ -1333,11 +1333,11 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipelcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr);CHKERRQ(ierr);
     iscg = (PetscBool)(iscg || isgroppcg || ispipecg || ispipelcg || ispipecgrr);
-    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || !iscg) {
+    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || !iscg || pc->mat != pc->pmat) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
-  if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static) {
+  if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || pc->mat != pc->pmat) {
     ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
   }
 
@@ -1482,7 +1482,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior) {
       if (benign_correction_computed) { /* we have already saved the changed rhs */
-        ierr = VecLockPop(pcis->vec1_global);CHKERRQ(ierr);
+        ierr = VecLockReadPop(pcis->vec1_global);CHKERRQ(ierr);
       } else {
         ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,pcis->vec1_global);CHKERRQ(ierr);
       }
@@ -1508,7 +1508,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
     pcbddc->exact_dirichlet_trick_app = PETSC_TRUE;
   } else if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior && benign_correction_computed && pcbddc->use_exact_dirichlet_trick) {
-    ierr = VecLockPop(pcis->vec1_global);CHKERRQ(ierr);
+    ierr = VecLockReadPop(pcis->vec1_global);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1615,12 +1615,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
   computesubschurs = (PetscBool)(pcbddc->adaptive_selection || pcbddc->use_deluxe_scaling);
-  if (pcbddc->switch_static) {
-    PetscBool ismatis;
-
-    ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&ismatis);CHKERRQ(ierr);
-    if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"When the static switch is one, the iteration matrix should be of type MATIS");
-  }
 
   /* activate all connected components if the netflux has been requested */
   if (pcbddc->compute_nonetflux) {
@@ -1646,6 +1640,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
     }
   }
+  if (pcbddc->corner_selected) pcbddc->use_vertices = PETSC_TRUE;
 
   /* change basis if requested by the user */
   if (pcbddc->user_ChangeOfBasisMatrix) {
@@ -1893,18 +1888,22 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
 {
   PC_IS             *pcis = (PC_IS*)(pc->data);
   PC_BDDC           *pcbddc = (PC_BDDC*)(pc->data);
+  Mat               lA = NULL;
   PetscInt          n_B = pcis->n_B, n_D = pcis->n - n_B;
   PetscErrorCode    ierr;
   const PetscScalar one = 1.0;
   const PetscScalar m_one = -1.0;
   const PetscScalar zero = 0.0;
-
 /* This code is similar to that provided in nn.c for PCNN
    NN interface preconditioner changed to BDDC
    Added support for M_3 preconditioner in the reference article (code is active if pcbddc->switch_static == PETSC_TRUE) */
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+  if (pcbddc->switch_static) {
+    ierr = MatISGetLocalMat(pc->useAmat ? pc->mat : pc->pmat,&lA);CHKERRQ(ierr);
+  }
+
   if (pcbddc->ChangeOfBasisMatrix) {
     Vec swap;
 
@@ -1915,7 +1914,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
     if (pcbddc->benign_apply_coarse_only && pcbddc->use_exact_dirichlet_trick && pcbddc->change_interior) {
       ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
+      ierr = VecLockReadPush(pcis->vec1_global);CHKERRQ(ierr);
     }
   }
   if (pcbddc->benign_have_null) { /* get p0 from r */
@@ -1936,16 +1935,14 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
       ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
       if (pcbddc->switch_static) {
-        Mat_IS *matis = (Mat_IS*)(pc->mat->data);
-
         ierr = VecSet(pcis->vec1_N,0.);CHKERRQ(ierr);
         ierr = VecScatterBegin(pcis->N_to_D,pcis->vec2_D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         ierr = VecScatterEnd(pcis->N_to_D,pcis->vec2_D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         if (!pcbddc->switch_static_change) {
-          ierr = MatMult(matis->A,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+          ierr = MatMult(lA,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
         } else {
           ierr = MatMult(pcbddc->switch_static_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
-          ierr = MatMult(matis->A,pcis->vec2_N,pcis->vec1_N);CHKERRQ(ierr);
+          ierr = MatMult(lA,pcis->vec2_N,pcis->vec1_N);CHKERRQ(ierr);
           ierr = MatMultTranspose(pcbddc->switch_static_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
         }
         ierr = VecScatterBegin(pcis->N_to_D,pcis->vec2_N,pcis->vec1_D,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1979,17 +1976,15 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   ierr = VecScatterEnd(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (n_B) {
     if (pcbddc->switch_static) {
-      Mat_IS *matis = (Mat_IS*)(pc->mat->data);
-
       ierr = VecScatterBegin(pcis->N_to_D,pcis->vec1_D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcis->N_to_D,pcis->vec1_D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_B,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_B,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       if (!pcbddc->switch_static_change) {
-        ierr = MatMult(matis->A,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+        ierr = MatMult(lA,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
       } else {
         ierr = MatMult(pcbddc->switch_static_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
-        ierr = MatMult(matis->A,pcis->vec2_N,pcis->vec1_N);CHKERRQ(ierr);
+        ierr = MatMult(lA,pcis->vec2_N,pcis->vec1_N);CHKERRQ(ierr);
         ierr = MatMultTranspose(pcbddc->switch_static_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
       }
       ierr = VecScatterBegin(pcis->N_to_D,pcis->vec2_N,pcis->vec3_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1998,13 +1993,11 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
       ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec3_D);CHKERRQ(ierr);
     }
   } else if (pcbddc->switch_static) { /* n_B is zero */
-    Mat_IS *matis = (Mat_IS*)(pc->mat->data);
-
     if (!pcbddc->switch_static_change) {
-      ierr = MatMult(matis->A,pcis->vec1_D,pcis->vec3_D);CHKERRQ(ierr);
+      ierr = MatMult(lA,pcis->vec1_D,pcis->vec3_D);CHKERRQ(ierr);
     } else {
       ierr = MatMult(pcbddc->switch_static_change,pcis->vec1_D,pcis->vec1_N);CHKERRQ(ierr);
-      ierr = MatMult(matis->A,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+      ierr = MatMult(lA,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
       ierr = MatMultTranspose(pcbddc->switch_static_change,pcis->vec2_N,pcis->vec3_D);CHKERRQ(ierr);
     }
   }
@@ -2059,6 +2052,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
 {
   PC_IS             *pcis = (PC_IS*)(pc->data);
   PC_BDDC           *pcbddc = (PC_BDDC*)(pc->data);
+  Mat               lA = NULL;
   PetscInt          n_B = pcis->n_B, n_D = pcis->n - n_B;
   PetscErrorCode    ierr;
   const PetscScalar one = 1.0;
@@ -2067,6 +2061,9 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+  if (pcbddc->switch_static) {
+    ierr = MatISGetLocalMat(pc->useAmat ? pc->mat : pc->pmat,&lA);CHKERRQ(ierr);
+  }
   if (pcbddc->ChangeOfBasisMatrix) {
     Vec swap;
 
@@ -2077,7 +2074,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
     if (pcbddc->benign_apply_coarse_only && pcbddc->exact_dirichlet_trick_app && pcbddc->change_interior) {
       ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
+      ierr = VecLockReadPush(pcis->vec1_global);CHKERRQ(ierr);
     }
   }
   if (pcbddc->benign_have_null) { /* get p0 from r */
@@ -2098,16 +2095,14 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
       ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
       if (pcbddc->switch_static) {
-        Mat_IS *matis = (Mat_IS*)(pc->mat->data);
-
         ierr = VecSet(pcis->vec1_N,0.);CHKERRQ(ierr);
         ierr = VecScatterBegin(pcis->N_to_D,pcis->vec2_D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         ierr = VecScatterEnd(pcis->N_to_D,pcis->vec2_D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         if (!pcbddc->switch_static_change) {
-          ierr = MatMultTranspose(matis->A,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+          ierr = MatMultTranspose(lA,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
         } else {
           ierr = MatMult(pcbddc->switch_static_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
-          ierr = MatMultTranspose(matis->A,pcis->vec2_N,pcis->vec1_N);CHKERRQ(ierr);
+          ierr = MatMultTranspose(lA,pcis->vec2_N,pcis->vec1_N);CHKERRQ(ierr);
           ierr = MatMultTranspose(pcbddc->switch_static_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
         }
         ierr = VecScatterBegin(pcis->N_to_D,pcis->vec2_N,pcis->vec1_D,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -2139,17 +2134,15 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
   ierr = VecScatterEnd(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (n_B) {
     if (pcbddc->switch_static) {
-      Mat_IS *matis = (Mat_IS*)(pc->mat->data);
-
       ierr = VecScatterBegin(pcis->N_to_D,pcis->vec1_D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcis->N_to_D,pcis->vec1_D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_B,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_B,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       if (!pcbddc->switch_static_change) {
-        ierr = MatMultTranspose(matis->A,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+        ierr = MatMultTranspose(lA,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
       } else {
         ierr = MatMult(pcbddc->switch_static_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
-        ierr = MatMultTranspose(matis->A,pcis->vec2_N,pcis->vec1_N);CHKERRQ(ierr);
+        ierr = MatMultTranspose(lA,pcis->vec2_N,pcis->vec1_N);CHKERRQ(ierr);
         ierr = MatMultTranspose(pcbddc->switch_static_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
       }
       ierr = VecScatterBegin(pcis->N_to_D,pcis->vec2_N,pcis->vec3_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -2158,13 +2151,11 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
       ierr = MatMultTranspose(pcis->A_BI,pcis->vec1_B,pcis->vec3_D);CHKERRQ(ierr);
     }
   } else if (pcbddc->switch_static) { /* n_B is zero */
-    Mat_IS *matis = (Mat_IS*)(pc->mat->data);
-
     if (!pcbddc->switch_static_change) {
-      ierr = MatMultTranspose(matis->A,pcis->vec1_D,pcis->vec3_D);CHKERRQ(ierr);
+      ierr = MatMultTranspose(lA,pcis->vec1_D,pcis->vec3_D);CHKERRQ(ierr);
     } else {
       ierr = MatMult(pcbddc->switch_static_change,pcis->vec1_D,pcis->vec1_N);CHKERRQ(ierr);
-      ierr = MatMultTranspose(matis->A,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+      ierr = MatMultTranspose(lA,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
       ierr = MatMultTranspose(pcbddc->switch_static_change,pcis->vec2_N,pcis->vec3_D);CHKERRQ(ierr);
     }
   }
@@ -2301,6 +2292,9 @@ static PetscErrorCode PCSetCoordinates_BDDC(PC pc, PetscInt dim, PetscInt nloc, 
   mat_graph->cnloc = nloc;
   mat_graph->cdim  = dim;
   mat_graph->cloc  = PETSC_FALSE;
+  /* flg setup */
+  pcbddc->recompute_topography = PETSC_TRUE;
+  pcbddc->corner_selected = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

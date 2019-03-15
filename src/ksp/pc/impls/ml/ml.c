@@ -441,7 +441,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   PC_MG          *mg    = (PC_MG*)pc->data;
   PC_ML          *pc_ml = (PC_ML*)mg->innerctx;
   PetscErrorCode ierr;
-  PetscInt       arrsz,oldarrsz,bs,my0,kk,ii,nloc,Iend;
+  PetscInt       arrsz,oldarrsz,bs,my0,kk,ii,nloc,Iend,aloc;
   Mat            Amat = pc->pmat;
 
   /* this function copied and modified from PCSetCoordinates_GEO -TGI */
@@ -450,15 +450,15 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(Amat, &my0, &Iend);CHKERRQ(ierr);
+  aloc = (Iend-my0);
   nloc = (Iend-my0)/bs;
 
-  if (nloc!=a_nloc) SETERRQ2(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Number of local blocks must locations = %d %d.",a_nloc,nloc);
-  if ((Iend-my0)%bs!=0) SETERRQ1(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
+  if (nloc!=a_nloc && aloc != a_nloc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
 
   oldarrsz    = pc_ml->dim * pc_ml->nloc;
   pc_ml->dim  = ndm;
-  pc_ml->nloc = a_nloc;
-  arrsz       = ndm * a_nloc;
+  pc_ml->nloc = nloc;
+  arrsz       = ndm * nloc;
 
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_ml->coords==0 || (oldarrsz != arrsz)) {
@@ -467,9 +467,17 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   }
   for (kk=0; kk<arrsz; kk++) pc_ml->coords[kk] = -999.;
   /* copy data in - column oriented */
-  for (kk = 0; kk < nloc; kk++) {
-    for (ii = 0; ii < ndm; ii++) {
-      pc_ml->coords[ii*nloc + kk] =  coords[kk*ndm + ii];
+  if (nloc == a_nloc) {
+    for (kk = 0; kk < nloc; kk++) {
+      for (ii = 0; ii < ndm; ii++) {
+        pc_ml->coords[ii*nloc + kk] =  coords[kk*ndm + ii];
+      }
+    }
+  } else { /* assumes the coordinates are blocked */
+    for (kk = 0; kk < nloc; kk++) {
+      for (ii = 0; ii < ndm; ii++) {
+        pc_ml->coords[ii*nloc + kk] =  coords[bs*kk*ndm + ii];
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -486,17 +494,16 @@ PetscErrorCode PCReset_ML(PC pc)
 
   PetscFunctionBegin;
   if (dim) {
-    ML_Aggregate_Viz_Stats * grid_info = (ML_Aggregate_Viz_Stats*) pc_ml->ml_object->Grid[0].Grid;
-
     for (level=0; level<=fine_level; level++) {
       ierr = VecDestroy(&pc_ml->gridctx[level].coords);CHKERRQ(ierr);
     }
-
-    grid_info->x = 0; /* do this so ML doesn't try to free coordinates */
-    grid_info->y = 0;
-    grid_info->z = 0;
-
-    PetscStackCall("ML_Operator_Getrow",ML_Aggregate_VizAndStats_Clean(pc_ml->ml_object));
+    if (pc_ml->ml_object && pc_ml->ml_object->Grid) {
+      ML_Aggregate_Viz_Stats * grid_info = (ML_Aggregate_Viz_Stats*) pc_ml->ml_object->Grid[0].Grid;
+      grid_info->x = 0; /* do this so ML doesn't try to free coordinates */
+      grid_info->y = 0;
+      grid_info->z = 0;
+      PetscStackCall("ML_Operator_Getrow",ML_Aggregate_VizAndStats_Clean(pc_ml->ml_object));
+    }
   }
   PetscStackCall("ML_Aggregate_Destroy",ML_Aggregate_Destroy(&pc_ml->agg_object));
   PetscStackCall("ML_Aggregate_Destroy",ML_Destroy(&pc_ml->ml_object));
@@ -1027,7 +1034,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
   partindx   = 0;
 
   ierr = PetscOptionsInt("-pc_ml_PrintLevel","Print level","ML_Set_PrintLevel",PrintLevel,&PrintLevel,NULL);CHKERRQ(ierr);
-  PetscStackCall("ML_Set_PrintLeve",ML_Set_PrintLevel(PrintLevel));
+  PetscStackCall("ML_Set_PrintLevel",ML_Set_PrintLevel(PrintLevel));
   ierr = PetscOptionsInt("-pc_ml_maxNlevels","Maximum number of levels","None",pc_ml->MaxNlevels,&pc_ml->MaxNlevels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_ml_maxCoarseSize","Maximum coarsest mesh size","ML_Aggregate_Set_MaxCoarseSize",pc_ml->MaxCoarseSize,&pc_ml->MaxCoarseSize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-pc_ml_CoarsenScheme","Aggregate Coarsen Scheme","ML_Aggregate_Set_CoarsenScheme_*",scheme,4,scheme[0],&indx,NULL);CHKERRQ(ierr);

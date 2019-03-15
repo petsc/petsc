@@ -149,6 +149,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer, "  cell total dim %D total comp %D\n", prob->totDim, prob->totComp);CHKERRQ(ierr);
   if (prob->isHybrid) {ierr = PetscViewerASCIIPrintf(viewer, "  hybrid cell\n");CHKERRQ(ierr);}
   for (f = 0; f < prob->Nf; ++f) {
+    DSBoundary      b;
     PetscObject     obj;
     PetscClassId    id;
     PetscQuadrature q;
@@ -174,13 +175,6 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
     else        {ierr = PetscViewerASCIIPrintf(viewer, "%D component ", Nc);CHKERRQ(ierr);}
     if (prob->implicit[f]) {ierr = PetscViewerASCIIPrintf(viewer, " (implicit)");CHKERRQ(ierr);}
     else                   {ierr = PetscViewerASCIIPrintf(viewer, " (explicit)");CHKERRQ(ierr);}
-    if (prob->adjacency[f*2+0]) {
-      if (prob->adjacency[f*2+1]) {ierr = PetscViewerASCIIPrintf(viewer, " (adj FVM++)");CHKERRQ(ierr);}
-      else                        {ierr = PetscViewerASCIIPrintf(viewer, " (adj FVM)");CHKERRQ(ierr);}
-    } else {
-      if (prob->adjacency[f*2+1]) {ierr = PetscViewerASCIIPrintf(viewer, " (adj FEM)");CHKERRQ(ierr);}
-      else                        {ierr = PetscViewerASCIIPrintf(viewer, " (adj FUNKY)");CHKERRQ(ierr);}
-    }
     if (q) {
       ierr = PetscQuadratureGetData(q, NULL, &Nqc, &Nq, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, " (Nq %D Nqc %D)", Nq, Nqc);CHKERRQ(ierr);
@@ -191,6 +185,35 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
     if (id == PETSCFE_CLASSID)      {ierr = PetscFEView((PetscFE) obj, viewer);CHKERRQ(ierr);}
     else if (id == PETSCFV_CLASSID) {ierr = PetscFVView((PetscFV) obj, viewer);CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+
+    for (b = prob->boundary; b; b = b->next) {
+      PetscInt c, i;
+
+      if (b->field != f) continue;
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Boundary %s (%s) %s\n", b->name, b->labelname, DMBoundaryConditionTypes[b->type]);CHKERRQ(ierr);
+      if (!b->numcomps) {
+        ierr = PetscViewerASCIIPrintf(viewer, "  all components\n");CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer, "  components: ");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        for (c = 0; c < b->numcomps; ++c) {
+          if (c > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIIPrintf(viewer, "%D", b->comps[c]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "  ids: ");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      for (i = 0; i < b->numids; ++i) {
+        if (i > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+        ierr = PetscViewerASCIIPrintf(viewer, "%D", b->ids[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   }
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (numConstants) {
@@ -401,7 +424,7 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
 static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 {
   PetscObject      *tmpd;
-  PetscBool        *tmpi, *tmpa;
+  PetscBool        *tmpi;
   PetscPointFunc   *tmpobj, *tmpf, *tmpup;
   PetscPointJac    *tmpg, *tmpgp, *tmpgt;
   PetscBdPointFunc *tmpfbd;
@@ -409,21 +432,20 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscRiemannFunc *tmpr;
   PetscSimplePointFunc *tmpexactSol;
   void            **tmpctx;
-  PetscInt          Nf = prob->Nf, f, i;
+  PetscInt          Nf = prob->Nf, f;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (Nf >= NfNew) PetscFunctionReturn(0);
   prob->setup = PETSC_FALSE;
   ierr = PetscDSDestroyStructs_Static(prob);CHKERRQ(ierr);
-  ierr = PetscMalloc3(NfNew, &tmpd, NfNew, &tmpi, NfNew*2, &tmpa);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpi[f] = prob->implicit[f]; for (i = 0; i < 2; ++i) tmpa[f*2+i] = prob->adjacency[f*2+i];}
-  for (f = Nf; f < NfNew; ++f) {tmpd[f] = NULL; tmpi[f] = PETSC_TRUE; tmpa[f*2+0] = PETSC_FALSE; tmpa[f*2+1] = PETSC_TRUE;}
-  ierr = PetscFree3(prob->disc, prob->implicit, prob->adjacency);CHKERRQ(ierr);
+  ierr = PetscMalloc2(NfNew, &tmpd, NfNew, &tmpi);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpi[f] = prob->implicit[f];}
+  for (f = Nf; f < NfNew; ++f) {tmpd[f] = NULL; tmpi[f] = PETSC_TRUE;}
+  ierr = PetscFree2(prob->disc, prob->implicit);CHKERRQ(ierr);
   prob->Nf        = NfNew;
   prob->disc      = tmpd;
   prob->implicit  = tmpi;
-  prob->adjacency = tmpa;
   ierr = PetscCalloc7(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg, NfNew*NfNew*4, &tmpgp, NfNew*NfNew*4, &tmpgt, NfNew, &tmpr, NfNew, &tmpctx);CHKERRQ(ierr);
   ierr = PetscCalloc1(NfNew, &tmpup);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpobj[f] = prob->obj[f];
@@ -500,7 +522,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   for (f = 0; f < (*prob)->Nf; ++f) {
     ierr = PetscObjectDereference((*prob)->disc[f]);CHKERRQ(ierr);
   }
-  ierr = PetscFree3((*prob)->disc, (*prob)->implicit, (*prob)->adjacency);CHKERRQ(ierr);
+  ierr = PetscFree2((*prob)->disc, (*prob)->implicit);CHKERRQ(ierr);
   ierr = PetscFree7((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->gp,(*prob)->gt,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
   ierr = PetscFree((*prob)->update);CHKERRQ(ierr);
   ierr = PetscFree3((*prob)->fBd,(*prob)->gBd,(*prob)->exactSol);CHKERRQ(ierr);
@@ -548,14 +570,12 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
 
   ierr = PetscHeaderCreate(p, PETSCDS_CLASSID, "PetscDS", "Discrete System", "PetscDS", comm, PetscDSDestroy, PetscDSView);CHKERRQ(ierr);
 
-  p->Nf    = 0;
-  p->setup = PETSC_FALSE;
-  p->numConstants  = 0;
-  p->constants     = NULL;
-  p->dimEmbed      = -1;
-  p->defaultAdj[0] = PETSC_FALSE;
-  p->defaultAdj[1] = PETSC_TRUE;
-  p->useJacPre     = PETSC_TRUE;
+  p->Nf           = 0;
+  p->setup        = PETSC_FALSE;
+  p->numConstants = 0;
+  p->constants    = NULL;
+  p->dimEmbed     = -1;
+  p->useJacPre    = PETSC_TRUE;
 
   *prob = p;
   PetscFunctionReturn(0);
@@ -825,10 +845,8 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
     ierr = PetscObjectGetClassId(disc, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       ierr = PetscDSSetImplicit(prob, f, PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscDSSetAdjacency(prob, f, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       ierr = PetscDSSetImplicit(prob, f, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscDSSetAdjacency(prob, f, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -902,74 +920,6 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   prob->implicit[f] = implicit;
-  PetscFunctionReturn(0);
-}
-
-/*@
-  PetscDSGetAdjacency - Returns the flags for determining variable influence
-
-  Not collective
-
-  Input Parameters:
-+ prob - The PetscDS object
-- f - The field number
-
-  Output Parameter:
-+ useCone    - Flag for variable influence starting with the cone operation
-- useClosure - Flag for variable influence using transitive closure
-
-  Note: See the discussion in DMPlexGetAdjacencyUseCone() and DMPlexGetAdjacencyUseClosure()
-
-  Level: developer
-
-.seealso: PetscDSSetAdjacency(), DMPlexGetAdjacencyUseCone(), DMPlexGetAdjacencyUseClosure(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
-@*/
-PetscErrorCode PetscDSGetAdjacency(PetscDS prob, PetscInt f, PetscBool *useCone, PetscBool *useClosure)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if (useCone) PetscValidPointer(useCone, 3);
-  if (useClosure) PetscValidPointer(useClosure, 4);
-  if (f < 0) {
-    if (useCone)    *useCone    = prob->defaultAdj[0];
-    if (useClosure) *useClosure = prob->defaultAdj[1];
-  } else {
-    if (f >= prob->Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-    if (useCone)    *useCone    = prob->adjacency[f*2+0];
-    if (useClosure) *useClosure = prob->adjacency[f*2+1];
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-  PetscDSSetAdjacency - Set the flags for determining variable influence
-
-  Not collective
-
-  Input Parameters:
-+ prob - The PetscDS object
-. f - The field number
-. useCone    - Flag for variable influence starting with the cone operation
-- useClosure - Flag for variable influence using transitive closure
-
-  Note: See the discussion in DMPlexGetAdjacencyUseCone() and DMPlexGetAdjacencyUseClosure()
-
-  Level: developer
-
-.seealso: PetscDSGetAdjacency(), DMPlexGetAdjacencyUseCone(), DMPlexGetAdjacencyUseClosure(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
-@*/
-PetscErrorCode PetscDSSetAdjacency(PetscDS prob, PetscInt f, PetscBool useCone, PetscBool useClosure)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if (f < 0) {
-    prob->defaultAdj[0] = useCone;
-    prob->defaultAdj[1] = useClosure;
-  } else {
-    if (f >= prob->Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-    prob->adjacency[f*2+0] = useCone;
-    prob->adjacency[f*2+1] = useClosure;
-  }
   PetscFunctionReturn(0);
 }
 

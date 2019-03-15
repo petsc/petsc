@@ -331,13 +331,14 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
       /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
       ierr = MatSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
     } else {
+      hessComputed = diagExists = PETSC_FALSE;
       if (tao->hessian) {
         ierr = MatAssembled(tao->hessian, &hessComputed);CHKERRQ(ierr);
-        ierr = MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
-      } else {
-        hessComputed = diagExists = PETSC_FALSE;
       }
-      if (hessComputed && diagExists) {
+      if (hessComputed) {
+        ierr = MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
+      }
+      if (diagExists) {
         /* BFGS preconditioner doesn't exist so let's invert the absolute diagonal of the Hessian instead onto the gradient */
         ierr = MatGetDiagonal(tao->hessian, bnk->Xwork);CHKERRQ(ierr);
         ierr = VecAbs(bnk->Xwork);CHKERRQ(ierr);

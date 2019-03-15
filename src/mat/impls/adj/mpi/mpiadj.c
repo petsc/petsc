@@ -12,7 +12,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
 {
   PetscInt           nlrows_is,icols_n,i,j,nroots,nleaves,owner,rlocalindex,*ncols_send,*ncols_recv;
   PetscInt           nlrows_mat,*adjncy_recv,Ncols_recv,Ncols_send,*xadj_recv,*values_recv;
-  PetscInt          *ncols_recv_offsets,loc,rnclos,*sadjncy,*sxadj,*svalues,isvalue;
+  PetscInt          *ncols_recv_offsets,loc,rnclos,*sadjncy,*sxadj,*svalues;
   const PetscInt    *irows_indices,*icols_indices,*xadj, *adjncy;
   Mat_MPIAdj        *a = (Mat_MPIAdj*)adj->data;
   PetscLayout        rmap;
@@ -74,10 +74,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
   }
   ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
   /*if we need to deal with edge weights ???*/
-  if (a->values){isvalue=1;} else {isvalue=0;}
-  /*involve a global communication */
-  /*ierr = MPIU_Allreduce(&isvalue,&isvalue,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);*/
-  if (isvalue){ierr = PetscCalloc1(Ncols_recv,&values_recv);CHKERRQ(ierr);}
+  if (a->useedgeweights){ierr = PetscCalloc1(Ncols_recv,&values_recv);CHKERRQ(ierr);}
   nroots = Ncols_send;
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,nroots,nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
@@ -85,7 +82,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(sf,MPIU_INT,adjncy,adjncy_recv);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,adjncy,adjncy_recv);CHKERRQ(ierr);
-  if (isvalue){
+  if (a->useedgeweights){
     ierr = PetscSFBcastBegin(sf,MPIU_INT,a->values,values_recv);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf,MPIU_INT,a->values,values_recv);CHKERRQ(ierr);
   }
@@ -99,7 +96,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
       ierr = PetscFindInt(adjncy_recv[j], icols_n, icols_indices, &loc);CHKERRQ(ierr);
       if (loc<0){
         adjncy_recv[j] = -1;
-        if (isvalue) values_recv[j] = -1;
+        if (a->useedgeweights) values_recv[j] = -1;
         ncols_recv[i]--;
       } else {
         rnclos++;
@@ -108,14 +105,14 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
   }
   ierr = ISRestoreIndices(icols,&icols_indices);CHKERRQ(ierr);
   ierr = PetscCalloc1(rnclos,&sadjncy);CHKERRQ(ierr);
-  if (isvalue) {ierr = PetscCalloc1(rnclos,&svalues);CHKERRQ(ierr);}
+  if (a->useedgeweights) {ierr = PetscCalloc1(rnclos,&svalues);CHKERRQ(ierr);}
   ierr = PetscCalloc1(nlrows_is+1,&sxadj);CHKERRQ(ierr);
   rnclos = 0;
   for(i=0; i<nlrows_is; i++){
     for(j=ncols_recv_offsets[i]; j<ncols_recv_offsets[i+1]; j++){
       if (adjncy_recv[j]<0) continue;
       sadjncy[rnclos] = adjncy_recv[j];
-      if (isvalue) svalues[rnclos] = values_recv[j];
+      if (a->useedgeweights) svalues[rnclos] = values_recv[j];
       rnclos++;
     }
   }
@@ -125,13 +122,13 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
   if (sadj_xadj)  { *sadj_xadj = sxadj;} else    { ierr = PetscFree(sxadj);CHKERRQ(ierr);}
   if (sadj_adjncy){ *sadj_adjncy = sadjncy;} else { ierr = PetscFree(sadjncy);CHKERRQ(ierr);}
   if (sadj_values){
-    if (isvalue) *sadj_values = svalues; else *sadj_values=0;
+    if (a->useedgeweights) *sadj_values = svalues; else *sadj_values=0;
   } else {
-    if (isvalue) {ierr = PetscFree(svalues);CHKERRQ(ierr);}
+    if (a->useedgeweights) {ierr = PetscFree(svalues);CHKERRQ(ierr);}
   }
   ierr = PetscFree4(ncols_send,xadj_recv,ncols_recv_offsets,ncols_recv);CHKERRQ(ierr);
   ierr = PetscFree(adjncy_recv);CHKERRQ(ierr);
-  if (isvalue) {ierr = PetscFree(values_recv);CHKERRQ(ierr);}
+  if (a->useedgeweights) {ierr = PetscFree(values_recv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -249,7 +246,11 @@ static PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
     for (i=0; i<m; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %D:",i+A->rmap->rstart);CHKERRQ(ierr);
       for (j=a->i[i]; j<a->i[i+1]; j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D ",a->j[j]);CHKERRQ(ierr);
+        if (a->values) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%D, %D) ",a->j[j], a->values[j]);CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D ",a->j[j]);CHKERRQ(ierr);
+        }
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
@@ -622,6 +623,7 @@ static struct _MatOps MatOps_Values = {0,
 static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
   Mat_MPIAdj     *b = (Mat_MPIAdj*)B->data;
+  PetscBool       useedgeweights;
   PetscErrorCode ierr;
 #if defined(PETSC_USE_DEBUG)
   PetscInt ii;
@@ -630,6 +632,9 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+  if (values) useedgeweights = PETSC_TRUE; else useedgeweights = PETSC_FALSE;
+  /* Make everybody knows if they are using edge weights or not */
+  ierr = MPIU_Allreduce((int*)&useedgeweights,(int*)&b->useedgeweights,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)B));CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   if (i[0] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);

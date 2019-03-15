@@ -1282,8 +1282,10 @@ PetscErrorCode MatDestroy_SeqAIJ_MatTransMatMult(Mat A)
   Mat_MatTransMatMult *atb = a->atb;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&atb->At);CHKERRQ(ierr);
-  ierr = (atb->destroy)(A);CHKERRQ(ierr);
+  if (atb) {
+    ierr = MatDestroy(&atb->At);CHKERRQ(ierr);
+    ierr = (*atb->destroy)(A);CHKERRQ(ierr);
+  }
   ierr = PetscFree(atb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

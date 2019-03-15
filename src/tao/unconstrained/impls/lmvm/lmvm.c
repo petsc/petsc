@@ -16,7 +16,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscFunctionBegin;
 
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by lmvm algorithm\n");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by lmvm algorithm\n");CHKERRQ(ierr);
   }
 
   /*  Check convergence criteria */
@@ -42,7 +42,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     
     /*  Compute direction */

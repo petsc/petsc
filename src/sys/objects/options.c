@@ -240,7 +240,7 @@ PetscErrorCode PetscOptionsInsertString(PetscOptions options,const char in_str[]
   char           *first,*second;
   PetscErrorCode ierr;
   PetscToken     token;
-  PetscBool      key,ispush,ispop;
+  PetscBool      key,ispush,ispop,isopts;
 
   PetscFunctionBegin;
   ierr = PetscTokenCreate(in_str,' ',&token);CHKERRQ(ierr);
@@ -248,6 +248,7 @@ PetscErrorCode PetscOptionsInsertString(PetscOptions options,const char in_str[]
   while (first) {
     ierr = PetscStrcasecmp(first,"-prefix_push",&ispush);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(first,"-prefix_pop",&ispop);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(first,"-options_file",&isopts);CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(first,&key);CHKERRQ(ierr);
     if (ispush) {
       ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
@@ -255,6 +256,10 @@ PetscErrorCode PetscOptionsInsertString(PetscOptions options,const char in_str[]
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
     } else if (ispop) {
       ierr = PetscOptionsPrefixPop(options);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+    } else if (isopts) {
+      ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertFile(PETSC_COMM_SELF,options,second,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
     } else if (key) {
       ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);

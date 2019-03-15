@@ -104,7 +104,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     
     /* compute bt = Remp(Wt-1) - <Wt-1, At> */
@@ -604,7 +604,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 
   *lam_ext = lambda;
   if(innerIter >= df->maxProjIter) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "WARNING: DaiFletcher max iterations\n");CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"WARNING: DaiFletcher max iterations\n");CHKERRQ(ierr);
   }
   return innerIter;
 }

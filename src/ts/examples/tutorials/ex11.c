@@ -1757,8 +1757,7 @@ int main(int argc, char **argv)
   {
     DM dmDist;
 
-    ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
     if (dmDist) {
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -1807,8 +1806,8 @@ int main(int argc, char **argv)
   }
   /* FV is now structured with one field having all physics as components */
   ierr = DMAddField(dm, NULL, (PetscObject) fvm);CHKERRQ(ierr);
+  ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
   ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
   ierr = (*mod->setupbc)(prob,phys);CHKERRQ(ierr);

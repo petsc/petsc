@@ -163,8 +163,9 @@ struct _n_Boundary {
 };
 
 typedef struct _n_Field {
-  PetscObject disc;
-  DMLabel     label;
+  PetscObject disc;         /* Field discretization, or a PetscContainer with the field name */
+  DMLabel     label;        /* Label defining the domain of definition of the field */
+  PetscBool   adjacency[2]; /* Flags for defining variable influence (adjacency) for each field [use cone() or support() first, use the transitive closure] */
 } RegionField;
 
 typedef struct _n_Space {
@@ -215,6 +216,7 @@ struct _p_DM {
   PetscSF                 sfNatural;            /* SF mapping to the "natural" ordering */
   PetscBool               useNatural;           /* Create the natural SF */
   /* Allows a non-standard data layout */
+  PetscBool               adjacency[2];         /* [use cone() or support() first, use the transitive closure] */
   PetscSection            defaultSection;       /* Layout for local vectors */
   PetscSection            defaultGlobalSection; /* Layout for global vectors */
   PetscLayout             map;

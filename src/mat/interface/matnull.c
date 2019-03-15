@@ -78,11 +78,11 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt
    Level: advanced
 
    Notes:
-    If you are solving an elasticity problems you should likely use this, in conjunction with ee MatSetNearNullspace(), to provide information that 
-           the PCGAMG preconditioner can use to construct a much more efficient preconditioner.
+     If you are solving an elasticity problem you should likely use this, in conjunction with MatSetNearNullspace(), to provide information that 
+     the PCGAMG preconditioner can use to construct a much more efficient preconditioner.
 
-           If you are solving an elasticity problem with pure Neumann boundary conditions you can use this in conjunction with MatSetNullspace() to
-           provide this information to the linear solver so it can handle the null space appropriately in the linear solution.
+     If you are solving an elasticity problem with pure Neumann boundary conditions you can use this in conjunction with MatSetNullspace() to
+     provide this information to the linear solver so it can handle the null space appropriately in the linear solution.
 
 
 .seealso: MatNullSpaceCreate(), MatSetNearNullspace(), MatSetNullspace()
@@ -258,7 +258,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   if (n) {
     for (i=0; i<n; i++) {
       /* prevent the user from changes values in the vector */
-      ierr = VecLockPush(vecs[i]);CHKERRQ(ierr);
+      ierr = VecLockReadPush(vecs[i]);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_USE_DEBUG)
@@ -340,7 +340,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
   if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
 
   for (i=0; i < (*sp)->n; i++) {
-    ierr = VecLockPop((*sp)->vecs[i]);CHKERRQ(ierr);
+    ierr = VecLockReadPop((*sp)->vecs[i]);CHKERRQ(ierr);
   }
 
   ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr);

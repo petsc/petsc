@@ -144,7 +144,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   while(1) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     ierr = TaoBNCGConductIteration(tao, gnorm);CHKERRQ(ierr);
     if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);

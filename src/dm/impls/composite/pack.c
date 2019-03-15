@@ -208,7 +208,7 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
         const PetscScalar *array;
         ierr = VecGetArrayRead(gvec,&array);CHKERRQ(ierr);
         ierr = VecPlaceArray(*vec,array+next->rstart);CHKERRQ(ierr);
-        ierr = VecLockPush(*vec);CHKERRQ(ierr);
+        ierr = VecLockReadPush(*vec);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(gvec,&array);CHKERRQ(ierr);
       } else {
         PetscScalar *array;
@@ -272,7 +272,7 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
         const PetscScalar *array;
         ierr = VecGetArrayRead(pvec,&array);CHKERRQ(ierr);
         ierr = VecPlaceArray(v,array+link->rstart);CHKERRQ(ierr);
-        ierr = VecLockPush(v);CHKERRQ(ierr);
+        ierr = VecLockReadPush(v);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(pvec,&array);CHKERRQ(ierr);
       } else {
         PetscScalar *array;
@@ -338,7 +338,7 @@ PetscErrorCode  DMCompositeGetLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,c
         const PetscScalar *array;
         ierr = VecGetArrayRead(pvec,&array);CHKERRQ(ierr);
         ierr = VecPlaceArray(v,array+nlocal);CHKERRQ(ierr);
-        ierr = VecLockPush(v);CHKERRQ(ierr);
+        ierr = VecLockReadPush(v);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(pvec,&array);CHKERRQ(ierr);
       } else {
         PetscScalar *array;
@@ -401,7 +401,7 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
     if (vec) {
       ierr = VecResetArray(*vec);CHKERRQ(ierr);
       if (readonly) {
-        ierr = VecLockPop(*vec);CHKERRQ(ierr);
+        ierr = VecLockReadPop(*vec);CHKERRQ(ierr);
       }
       ierr = DMRestoreGlobalVector(next->dm,vec);CHKERRQ(ierr);
     }
@@ -450,7 +450,7 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
     if (!wanted || i == wanted[wnum]) {
       ierr = VecResetArray(vecs[wnum]);CHKERRQ(ierr);
       if (readonly) {
-        ierr = VecLockPop(vecs[wnum]);CHKERRQ(ierr);
+        ierr = VecLockReadPop(vecs[wnum]);CHKERRQ(ierr);
       }
       ierr = DMRestoreGlobalVector(link->dm,&vecs[wnum]);CHKERRQ(ierr);
       wnum++;
@@ -504,7 +504,7 @@ PetscErrorCode  DMCompositeRestoreLocalAccessArray(DM dm,Vec pvec,PetscInt nwant
     if (!wanted || i == wanted[wnum]) {
       ierr = VecResetArray(vecs[wnum]);CHKERRQ(ierr);
       if (readonly) {
-        ierr = VecLockPop(vecs[wnum]);CHKERRQ(ierr);
+        ierr = VecLockReadPop(vecs[wnum]);CHKERRQ(ierr);
       }
       ierr = DMRestoreLocalVector(link->dm,&vecs[wnum]);CHKERRQ(ierr);
       wnum++;

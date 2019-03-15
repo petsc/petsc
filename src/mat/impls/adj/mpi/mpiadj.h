@@ -17,6 +17,7 @@ typedef struct {
   PetscInt  *i;                      /* pointer to beginning of each row */
   PetscInt  *j;                      /* column values: j + i[k] is start of row k */
   PetscInt  *values;                 /* numerical values */
+  PetscBool useedgeweights;          /* if edge weights are used  */
   PetscBool symmetric;               /* user indicates the nonzero structure is symmetric */
   PetscBool freeaij;                 /* free a, i,j at destroy */
   PetscBool freeaijwithfree;         /* use free() to free i,j instead of PetscFree() */

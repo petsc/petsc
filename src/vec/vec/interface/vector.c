@@ -583,13 +583,13 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
-  ierr = VecLockPush(vec);CHKERRQ(ierr);
+  ierr = VecLockReadPush(vec);CHKERRQ(ierr);
   if ((format == PETSC_VIEWER_NATIVE || format == PETSC_VIEWER_LOAD_BALANCE) && vec->ops->viewnative) {
     ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
   } else {
     ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   }
-  ierr = VecLockPop(vec);CHKERRQ(ierr);
+  ierr = VecLockReadPop(vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1569,7 +1569,7 @@ PetscErrorCode  VecCopy(Vec x,Vec y)
   if (x == y) PetscFunctionReturn(0);
   VecCheckSameLocalSize(x,1,y,2);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  VecLocked(y,2);
+  ierr = VecSetErrorIfLocked(y,2);CHKERRQ(ierr);
 
 #if !defined(PETSC_USE_MIXED_PRECISION)
   for (i=0; i<4; i++) {

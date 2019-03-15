@@ -541,7 +541,7 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
   PetscValidLogicalCollectiveScalar(x,alpha,2);
-  VecLocked(x,1);
+  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(x,alpha);CHKERRQ(ierr);
@@ -603,13 +603,13 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   VecCheckSameSize(x,1,y,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
-  VecLocked(y,1);
+  ierr = VecSetErrorIfLocked(y,1);CHKERRQ(ierr);
 
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpy)(y,alpha,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -951,6 +951,7 @@ PetscErrorCode  VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const 
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (!ni) PetscFunctionReturn(0);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -1070,6 +1071,7 @@ PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],c
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (!ni) PetscFunctionReturn(0);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -1124,6 +1126,8 @@ PetscErrorCode  VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(x,nv,2);
+  if (!nv) PetscFunctionReturn(0);
   PetscValidPointer(y,3);
   PetscValidHeaderSpecific(*y,VEC_CLASSID,3);
   PetscValidScalarPointer(val,4);
@@ -1173,6 +1177,7 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(x,nv,2);
   if (!nv) PetscFunctionReturn(0);
   if (nv < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidPointer(y,3);
@@ -1216,6 +1221,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(y,nv,2);
   if (!nv) PetscFunctionReturn(0);
   if (nv < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidScalarPointer(alpha,3);
@@ -1290,7 +1296,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
         ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
         ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
         ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
-        ierr = VecLockPush(Z);CHKERRQ(ierr);
+        ierr = VecLockReadPush(Z);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
       } else {
         PetscScalar *x;
@@ -1576,7 +1582,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  VecLocked(x,1);
+  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
   if (x->petscnative) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
@@ -2929,13 +2935,14 @@ PetscErrorCode  VecRestoreArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
 .  x - the vector
 
    Output Parameter:
-.  state - greater than zero indicates the vector is still locked
+.  state - greater than zero indicates the vector is locked for read; less then zero indicates the vector is
+           locked for write; equal to zero means the vector is unlocked, that is, it is free to read or write.
 
    Level: beginner
 
    Concepts: vector^accessing local values
 
-.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockPush(), VecLockGet()
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockReadPush(), VecLockReadPop()
 @*/
 PetscErrorCode VecLockGet(Vec x,PetscInt *state)
 {
@@ -2946,7 +2953,7 @@ PetscErrorCode VecLockGet(Vec x,PetscInt *state)
 }
 
 /*@
-   VecLockPush  - Lock a vector from writing
+   VecLockReadPush  - Pushes a read-only lock on a vector to prevent it from writing
 
    Logically Collective on Vec
 
@@ -2956,24 +2963,26 @@ PetscErrorCode VecLockGet(Vec x,PetscInt *state)
    Notes:
     If this is set then calls to VecGetArray() or VecSetValues() or any other routines that change the vectors values will fail.
 
-    Call VecLockPop() to remove the latest lock
+    The call can be nested, i.e., called multiple times on the same vector, but each VecLockReadPush(x) has to have one matching
+    VecLockReadPop(x), which removes the latest read-only lock.
 
    Level: beginner
 
    Concepts: vector^accessing local values
 
-.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockPop(), VecLockGet()
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockReadPop(), VecLockGet()
 @*/
-PetscErrorCode VecLockPush(Vec x)
+PetscErrorCode VecLockReadPush(Vec x)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (x->lock < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector is already locked for exclusive write access but you want to read it");
   x->lock++;
   PetscFunctionReturn(0);
 }
 
 /*@
-   VecLockPop  - Unlock a vector from writing
+   VecLockReadPop  - Pops a read-only lock from a vector
 
    Logically Collective on Vec
 
@@ -2984,14 +2993,96 @@ PetscErrorCode VecLockPush(Vec x)
 
    Concepts: vector^accessing local values
 
-.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockPush(), VecLockGet()
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockReadPush(), VecLockGet()
 @*/
-PetscErrorCode VecLockPop(Vec x)
+PetscErrorCode VecLockReadPop(Vec x)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   x->lock--;
-  if (x->lock < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector has been unlocked too many times");
+  if (x->lock < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector has been unlocked from read-only access too many times");
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecLockWriteSet_Private  - Lock or unlock a vector for exclusive read/write access
+
+   Logically Collective on Vec
+
+   Input Parameter:
++  x   - the vector
+-  flg - PETSC_TRUE to lock the vector for writing; PETSC_FALSE to unlock it.
+
+   Notes:
+    The function is usefull in split-phase computations, which usually have a begin phase and an end phase.
+    One can call VecLockWriteSet_Private(x,PETSC_TRUE) in the begin phase to lock a vector for exclusive
+    access, and call VecLockWriteSet_Private(x,PETSC_FALSE) in the end phase to unlock the vector from exclusive
+    access. In this way, one is ensured no other operations can access the vector in between. The code may like
+
+
+       VecGetArray(x,&xdata); // begin phase
+       VecLockWriteSet_Private(v,PETSC_TRUE);
+
+       Other operations, which can not acceess x anymore (they can access xdata, of course)
+
+       VecRestoreArray(x,&vdata); // end phase
+       VecLockWriteSet_Private(v,PETSC_FALSE);
+
+    The call can not be nested on the same vector, in other words, one can not call VecLockWriteSet_Private(x,PETSC_TRUE)
+    again before calling VecLockWriteSet_Private(v,PETSC_FALSE).
+
+   Level: beginner
+
+   Concepts: vector^accessing local values
+
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockReadPush(), VecLockReadPop(), VecLockGet()
+@*/
+PetscErrorCode VecLockWriteSet_Private(Vec x,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (flg) {
+    if (x->lock > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector is already locked for read-only access but you want to write it");
+    else if (x->lock < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector is already locked for exclusive write access but you want to write it");
+    else x->lock = -1;
+  } else {
+    if (x->lock != -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector is not locked for exclusive write access but you want to unlock it from that");
+    x->lock = 0;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecLockPush  - Pushes a read-only lock on a vector to prevent it from writing
+
+   Level: deprecated
+
+   Concepts: vector^accessing local values
+
+.seealso: VecLockReadPush()
+@*/
+PetscErrorCode VecLockPush(Vec x)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecLockPop  - Pops a read-only lock from a vector
+
+   Level: deprecated
+
+   Concepts: vector^accessing local values
+
+.seealso: VecLockReadPop()
+@*/
+PetscErrorCode VecLockPop(Vec x)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

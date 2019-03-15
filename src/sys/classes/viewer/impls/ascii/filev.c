@@ -1042,6 +1042,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
     else if (dtype == PETSC_STRING)  ret = fscanf(fd, "%s",  &(((char*)data)[i]));
     else if (dtype == PETSC_INT)     ret = fscanf(fd, "%" PetscInt_FMT,  &(((PetscInt*)data)[i]));
     else if (dtype == PETSC_ENUM)    ret = fscanf(fd, "%d",  &(((int*)data)[i]));
+    else if (dtype == PETSC_INT64)   ret = fscanf(fd, "%" PetscInt64_FMT,  &(((PetscInt64*)data)[i]));
     else if (dtype == PETSC_LONG)    ret = fscanf(fd, "%ld", &(((long*)data)[i]));
     else if (dtype == PETSC_FLOAT)   ret = fscanf(fd, "%f",  &(((float*)data)[i]));
     else if (dtype == PETSC_DOUBLE)  ret = fscanf(fd, "%lg", &(((double*)data)[i]));

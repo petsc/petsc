@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   PetscSFNode    *remote;
   PetscMPIInt    rank,size;
   PetscSF        sf;
-  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert,test_sf_distribute;
+  PetscBool      test_bcast,test_bcastop,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert,test_sf_distribute;
   MPI_Op         mop=MPI_OP_NULL; /* initialize to prevent compiler warnings with cxx_quad build */
   char           opstring[256];
   PetscBool      strflg;
@@ -57,6 +57,8 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF Test Options","none");CHKERRQ(ierr);
   test_bcast      = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,NULL);CHKERRQ(ierr);
+  test_bcastop    = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_bcastop","Test broadcast and reduce","",test_bcastop,&test_bcastop,NULL);CHKERRQ(ierr);
   test_reduce     = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL);CHKERRQ(ierr);
   mop             = MPI_SUM;
@@ -186,6 +188,28 @@ int main(int argc,char **argv)
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n");CHKERRQ(ierr);
     ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  }
+
+  if (test_bcastop) {         /* Reduce rootdata into leafdata */
+    PetscInt *rootdata,*leafdata;
+    /* Allocate space for send and recieve buffers. This example communicates PetscInt, but other types, including
+     * user-defined structures, could also be used. */
+    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    /* Set rootdata buffer to be broadcast */
+    for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
+    for (i=0; i<nroots; i++) rootdata[i*stride] = 100*(rank+1) + i;
+    /* Set leaf values to reduce with */
+    for (i=0; i<nleavesalloc; i++) leafdata[i] = -10*(rank+1) - i;
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-BcastAndOp Leafdata\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    /* Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls. */
+    ierr = PetscSFBcastAndOpBegin(sf,MPIU_INT,rootdata,leafdata,mop);CHKERRQ(ierr);
+    ierr = PetscSFBcastAndOpEnd(sf,MPIU_INT,rootdata,leafdata,mop);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## BcastAndOp Rootdata\n");CHKERRQ(ierr);
+    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## BcastAndOp Leafdata\n");CHKERRQ(ierr);
     ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   }
@@ -413,6 +437,12 @@ int main(int argc,char **argv)
       nsize: 4
       args: -test_bcast -sf_type basic
       output_file: output/ex1_1_basic.out
+
+   test:
+      suffix: bcastop_basic
+      nsize: 4
+      args: -test_bcastop -sf_type basic
+      output_file: output/ex1_bcastop_basic.out
 
    test:
       suffix: 8

@@ -40,9 +40,6 @@ struct _p_PetscDS {
   PetscInt     dimEmbed;          /* The real space coordinate dimension */
   PetscInt     Nf;                /* The number of solution fields */
   PetscObject *disc;              /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
-  /* Data Layout */
-  PetscBool             defaultAdj[2]; /* [use cone() or support() first, use the transitive closure] for the case of no fields */
-  PetscBool            *adjacency;     /* Flags for defining variable influence (adjacency) for each field [use cone() or support() first, use the transitive closure] */
   /* Equations */
   DSBoundary            boundary;      /* Linked list of boundary conditions */
   PetscBool             useJacPre;     /* Flag for using the Jacobian preconditioner */

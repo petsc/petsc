@@ -2,7 +2,7 @@
 /*
    Provides an interface to the CHOLMOD sparse solver available through SuiteSparse version 4.2.1
 
-   When build with PETSC_USE_64BIT_INDICES this will use Suitesparse_long as the
+   When built with PETSC_USE_64BIT_INDICES this will use Suitesparse_long as the
    integer type in UMFPACK, otherwise it will use int. This means
    all integers in this file as simply declared as PetscInt. Also it means
    that one cannot use 64BIT_INDICES on 32bit machines [as Suitesparse_long is 32bit only]

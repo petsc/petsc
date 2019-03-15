@@ -20,7 +20,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by cg algorithm\n");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by cg algorithm\n");CHKERRQ(ierr);
   }
 
   /*  Check convergence criteria */
@@ -56,7 +56,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
   while (1) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     
     /*  Save the current gradient information */

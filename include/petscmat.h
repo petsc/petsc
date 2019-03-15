@@ -540,6 +540,7 @@ PETSC_EXTERN PetscErrorCode MatMultTransposeEqual(Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatTransposeMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMatTransposeMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatIsLinear(Mat,PetscInt,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal*);
@@ -1355,6 +1356,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning,Mat);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
 PETSC_EXTERN PetscErrorCode MatPartitioningApply(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningImprove(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningViewImbalance(MatPartitioning,IS);
 PETSC_EXTERN PetscErrorCode MatPartitioningApplyND(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning*);
 

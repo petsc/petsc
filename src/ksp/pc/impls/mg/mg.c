@@ -609,7 +609,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr     = PCMGSetLevels(pc,levels,NULL);CHKERRQ(ierr);
       n        = levels;
       ierr     = PCSetFromOptions(pc);CHKERRQ(ierr); /* it is bad to call this here, but otherwise will never be called for the new hierarchy */
-      mglevels =  mg->levels;
+      mglevels = mg->levels;
     }
   }
   ierr = KSPGetPC(mglevels[0]->smoothd,&cpc);CHKERRQ(ierr);
@@ -627,11 +627,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   if (!opsset) {
     ierr = PCGetUseAmat(pc,&use_amat);CHKERRQ(ierr);
-    if(use_amat){
+    if (use_amat) {
       ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
       ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat);CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = PetscInfo(pc,"Using matrix (pmat) operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
       ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->pmat,pc->pmat);CHKERRQ(ierr);
     }

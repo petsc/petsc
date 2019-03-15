@@ -1200,8 +1200,46 @@ reasonable approximation of the gradient of the objective. In practice, the
 typical grounds for termination for expensive derivative-free problems is
 the maximum number of function evaluations allowed. 
 
+\subsection{Bound-constrained Regularized Gauss-Newton}
 
+The Gauss-Newton method is used to iteratively solve nonlinear least squares problem with the 
+iterations
+\begin{equation}
+x_{k+1} = x_k - \alpha_k(J_k^T J_k)^{-1} J_k^T r(x_k)
+\end{equation}
+where $r(x)$ is the least-squares residual vector, $J_k = \partial r(x_k)/\partial x$ is 
+the Jacobian of the residual, and $\alpha_k$ is the step length parameter. In other words,
+the Gauss-Newton method approximates the Hessian of the objective as $H_k \approx (J_k^T J_k)$ 
+and the gradient of the objective as $g_k \approx -J_k r(x_k)$.
 
+The BRGN implementation adds a regularization term $\beta(x)$ such that
+\begin{equation}
+\min_{x} \; \frac{1}{2}||R(x)||_2^2 + \lambda\beta(x),
+\end{equation}
+where $\lambda$ is the scalar weight of the regularizer. BRGN provides two default implementations 
+for $\beta(x)$:
+\begin{itemize}
+  \item \textbf{L2-norm Proximal Point} - $\beta(x) = \frac{1}{2}||x_k - x_{k-1}||_2^2$
+  \item \textbf{L1-norm with Dictionary} - $\beta(x) = ||Dx||_1 \approx \sum_{i} \sqrt{y_i^2 + \epsilon^2}-\epsilon$ 
+        where $y = Dx$ and $\epsilon$ is the smooth approximation parameter.
+\end{itemize}
+The regularizer weight can be controlled with either {\tt TaoBRGNSetRegularizerWeight()} or 
+{\tt -tao\_brgn\_regularizer\_weight} command line option, while the smooth approximation parameter can be set 
+with either {\tt TaoBRGNSetL1SmoothEpsilon()} or {\tt -tao\_brgn\_l1\_smooth\_epsilon}. For the L1-norm term, 
+the user can supply a dictionary matrix with {\tt TaoBRGNSetDictionaryMatrix()}. If no dictionary 
+is provided, the dictionary is assumed to be an identity matrix and the regularizer reduces to a 
+sparse solution term.
+
+The regularization selection can be made using the command line option \texttt{-tao\_brgn\_regularization\_type} 
+{\tt <l2prox, l1dict, user>} where the ``user'' option allows the user to define a custom 
+$\mathcal{C}2$-continuous regularization term. This custom term can be defined by using the 
+interface functions:
+\begin{itemize} 
+  \item {\tt TaoBRGNSetRegularizerObjectiveAndGradientRoutine()} - Provide user-call back for 
+        evaluating the function value and gradient evaluaton for the regularization term.
+  \item {\tt TaoBRGNSetRegularizerHessianRoutine()} - Provide user call-back for evaluating the 
+        Hessian of the regularization term.
+\end{itemize}
 
 \section{Complementarity}
 \label{sec:complementarity}

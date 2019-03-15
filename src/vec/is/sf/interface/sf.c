@@ -655,6 +655,41 @@ PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **r
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PetscSFGetLeafRanks - Get leaf ranks referencing roots on this process
+
+   Not Collective
+
+   Input Arguments:
+.  sf - star forest
+
+   Output Arguments:
++  niranks - number of leaf ranks referencing roots on this process
+.  iranks - array of ranks
+.  ioffset - offset in irootloc for each rank (length niranks+1)
+-  irootloc - concatenated array holding local indices of roots referenced by each leaf rank
+
+   Level: developer
+
+.seealso: PetscSFGetRanks()
+@*/
+PetscErrorCode PetscSFGetLeafRanks(PetscSF sf,PetscInt *niranks,const PetscMPIInt **iranks,const PetscInt **ioffset,const PetscInt **irootloc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (!sf->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
+  if (sf->ops->GetLeafRanks) {
+    ierr = (sf->ops->GetLeafRanks)(sf,niranks,iranks,ioffset,irootloc);CHKERRQ(ierr);
+  } else {
+    PetscSFType type;
+    ierr = PetscSFGetType(sf,&type);CHKERRQ(ierr);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSFGetLeafRanks() is not supported on this StarForest type: %s", type);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscBool InList(PetscMPIInt needle,PetscMPIInt n,const PetscMPIInt *list) {
   PetscInt i;
   for (i=0; i<n; i++) {
@@ -1079,6 +1114,68 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata
   ierr = PetscLogEventBegin(PETSCSF_BcastEnd,sf,0,0,0);CHKERRQ(ierr);
   ierr = (*sf->ops->BcastEnd)(sf,unit,rootdata,leafdata);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_BcastEnd,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscSFBcastAndOpBegin - begin pointwise broadcast with root value being reduced to leaf value, to be concluded with call to PetscSFBcastAndOpEnd()
+
+   Collective on PetscSF
+
+   Input Arguments:
++  sf - star forest on which to communicate
+.  unit - data type associated with each node
+.  rootdata - buffer to broadcast
+-  op - operation to use for reduction
+
+   Output Arguments:
+.  leafdata - buffer to be reduced with values from each leaf's respective root
+
+   Level: intermediate
+
+.seealso: PetscSFBcastAndOpEnd(), PetscSFBcastBegin(), PetscSFBcastEnd()
+@*/
+PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  ierr = (*sf->ops->BcastAndOpBegin)(sf,unit,rootdata,leafdata,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscSFBcastAndOpEnd - end a broadcast & reduce operation started with PetscSFBcastAndOpBegin()
+
+   Collective
+
+   Input Arguments:
++  sf - star forest
+.  unit - data type
+.  rootdata - buffer to broadcast
+-  op - operation to use for reduction
+
+   Output Arguments:
+.  leafdata - buffer to be reduced with values from each leaf's respective root
+
+   Level: intermediate
+
+.seealso: PetscSFSetGraph(), PetscSFReduceEnd()
+@*/
+PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_BcastAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
+  ierr = (*sf->ops->BcastAndOpEnd)(sf,unit,rootdata,leafdata,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_BcastAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

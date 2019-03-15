@@ -40,8 +40,8 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidLogicalCollectiveInt(v,start,2);
   PetscValidLogicalCollectiveScalar(v,s,3);
-  VecLocked(v,1);
-  
+  ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
+
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
@@ -90,8 +90,8 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidLogicalCollectiveInt(v,start,2);
   PetscValidLogicalCollectiveScalar(v,scale,3);
-  VecLocked(v,1);
-  
+  ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
+
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
@@ -377,8 +377,8 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidScalarPointer(scales,2);
-  VecLocked(v,1);
-  
+  ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
+
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
@@ -1481,7 +1481,7 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidLogicalCollectiveScalar(v,shift,2);
-  VecLocked(v,1);
+  ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
 
   if (v->ops->shift) {
     ierr = (*v->ops->shift)(v,shift);CHKERRQ(ierr);
@@ -1515,8 +1515,8 @@ PetscErrorCode  VecAbs(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  VecLocked(v,1);
-  
+  ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
+
   if (v->ops->abs) {
     ierr = (*v->ops->abs)(v);CHKERRQ(ierr);
   } else {
@@ -1551,8 +1551,8 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  VecLocked(x,1);
-  
+  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecGetArray(x, &array);CHKERRQ(ierr);

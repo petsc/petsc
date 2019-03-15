@@ -16,7 +16,7 @@
 
      Any setting here overrides other configuration of DMPlex adjacency determination.
 
-.seealso: DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexGetAdjacency(), DMPlexGetAdjacencyUser()
+.seealso: DMSetAdjacency(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexGetAdjacency(), DMPlexGetAdjacencyUser()
 @*/
 PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,PetscInt*,PetscInt[],void*),void *ctx)
 {
@@ -41,7 +41,7 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,P
 
   Level: advanced
 
-.seealso: DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexGetAdjacency(), DMPlexSetAdjacencyUser()
+.seealso: DMSetAdjacency(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexGetAdjacency(), DMPlexSetAdjacencyUser()
 @*/
 PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM,PetscInt,PetscInt*,PetscInt[],void*), void **ctx)
 {
@@ -55,148 +55,6 @@ PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM,PetscInt
 }
 
 /*@
-  DMPlexSetAdjacencyUseCone - Define adjacency in the mesh using either the cone or the support first
-
-  Input Parameters:
-+ dm      - The DM object
-- useCone - Flag to use the cone first
-
-  Level: intermediate
-
-  Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
-$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
-
-.seealso: DMPlexGetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexGetAdjacencyUseClosure(), DMPlexDistribute(), DMPlexPreallocateOperator()
-@*/
-PetscErrorCode DMPlexSetAdjacencyUseCone(DM dm, PetscBool useCone)
-{
-  PetscDS        prob;
-  PetscBool      useClosure;
-  PetscInt       Nf;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  if (!Nf) {
-    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, NULL, &useClosure);CHKERRQ(ierr);
-    ierr = PetscDSSetAdjacency(prob, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
-  } else {
-    ierr = PetscDSGetAdjacency(prob, 0, NULL, &useClosure);CHKERRQ(ierr);
-    ierr = PetscDSSetAdjacency(prob, 0, useCone, useClosure);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexGetAdjacencyUseCone - Query whether adjacency in the mesh uses the cone or the support first
-
-  Input Parameter:
-. dm      - The DM object
-
-  Output Parameter:
-. useCone - Flag to use the cone first
-
-  Level: intermediate
-
-  Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
-$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
-
-.seealso: DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexGetAdjacencyUseClosure(), DMPlexDistribute(), DMPlexPreallocateOperator()
-@*/
-PetscErrorCode DMPlexGetAdjacencyUseCone(DM dm, PetscBool *useCone)
-{
-  PetscDS        prob;
-  PetscInt       Nf;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  if (!Nf) {
-    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, useCone, NULL);CHKERRQ(ierr);
-  } else {
-    ierr = PetscDSGetAdjacency(prob, 0, useCone, NULL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexSetAdjacencyUseClosure - Define adjacency in the mesh using the transitive closure
-
-  Input Parameters:
-+ dm      - The DM object
-- useClosure - Flag to use the closure
-
-  Level: intermediate
-
-  Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
-$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
-
-.seealso: DMPlexGetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator()
-@*/
-PetscErrorCode DMPlexSetAdjacencyUseClosure(DM dm, PetscBool useClosure)
-{
-  PetscDS        prob;
-  PetscBool      useCone;
-  PetscInt       Nf;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  if (!Nf) {
-    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, &useCone, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetAdjacency(prob, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
-  } else {
-    ierr = PetscDSGetAdjacency(prob, 0, &useCone, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetAdjacency(prob, 0, useCone, useClosure);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexGetAdjacencyUseClosure - Query whether adjacency in the mesh uses the transitive closure
-
-  Input Parameter:
-. dm      - The DM object
-
-  Output Parameter:
-. useClosure - Flag to use the closure
-
-  Level: intermediate
-
-  Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
-$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
-
-.seealso: DMPlexSetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator()
-@*/
-PetscErrorCode DMPlexGetAdjacencyUseClosure(DM dm, PetscBool *useClosure)
-{
-  PetscDS        prob;
-  PetscInt       Nf;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  if (!Nf) {
-    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, NULL, useClosure);CHKERRQ(ierr);
-  } else {
-    ierr = PetscDSGetAdjacency(prob, 0, NULL, useClosure);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
   DMPlexSetAdjacencyUseAnchors - Define adjacency in the mesh using the point-to-point constraints.
 
   Input Parameters:
@@ -205,7 +63,7 @@ PetscErrorCode DMPlexGetAdjacencyUseClosure(DM dm, PetscBool *useClosure)
 
   Level: intermediate
 
-.seealso: DMPlexGetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
+.seealso: DMGetAdjacency(), DMSetAdjacency(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
 @*/
 PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors)
 {
@@ -228,7 +86,7 @@ PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors)
 
   Level: intermediate
 
-.seealso: DMPlexSetAdjacencyUseAnchors(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
+.seealso: DMPlexSetAdjacencyUseAnchors(), DMSetAdjacency(), DMGetAdjacency(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
 @*/
 PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors)
 {
@@ -425,7 +283,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
   Notes:
     The user must PetscFree the adj array if it was not passed in.
 
-.seealso: DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexDistribute(), DMCreateMatrix(), DMPlexPreallocateOperator()
+.seealso: DMSetAdjacency(), DMPlexDistribute(), DMCreateMatrix(), DMPlexPreallocateOperator()
 @*/
 PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt *adj[])
 {
@@ -436,8 +294,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(adjSize,3);
   PetscValidPointer(adj,4);
-  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+  ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
   ierr = DMPlexGetAdjacencyUseAnchors(dm, &useAnchors);CHKERRQ(ierr);
   ierr = DMPlexGetAdjacency_Internal(dm, p, useCone, useClosure, useAnchors, adjSize, adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -681,8 +538,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
     ierr = DMPlexPartitionLabelAdjacency(dm, ovAdjByRank);CHKERRQ(ierr);
   }
   /* We require the closure in the overlap */
-  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+  ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
   if (useCone || !useClosure) {
     ierr = DMPlexPartitionLabelClosure(dm, ovAdjByRank);CHKERRQ(ierr);
   }
@@ -1135,11 +991,9 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   {
     PetscBool useCone, useClosure, useAnchors;
 
-    ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-    ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+    ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
+    ierr = DMSetBasicAdjacency(dmParallel, useCone, useClosure);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacencyUseAnchors(dm, &useAnchors);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseCone(dmParallel, useCone);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseClosure(dmParallel, useClosure);CHKERRQ(ierr);
     ierr = DMPlexSetAdjacencyUseAnchors(dmParallel, useAnchors);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1448,11 +1302,9 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
   {
     PetscBool useCone, useClosure, useAnchors;
 
-    ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-    ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+    ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
+    ierr = DMSetBasicAdjacency(dmParallel, useCone, useClosure);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacencyUseAnchors(dm, &useAnchors);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseCone(dmParallel, useCone);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseClosure(dmParallel, useClosure);CHKERRQ(ierr);
     ierr = DMPlexSetAdjacencyUseAnchors(dmParallel, useAnchors);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
@@ -1721,14 +1573,13 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
   Note: If the mesh was not distributed, the output dmParallel will be NULL.
 
-  The user can control the definition of adjacency for the mesh using DMPlexSetAdjacencyUseCone() and
-  DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
+  The user can control the definition of adjacency for the mesh using DMSetAdjacency(). They should choose the combination appropriate for the function
   representation on the mesh.
 
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
+.seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMSetAdjacency()
 @*/
 PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
@@ -1885,14 +1736,13 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   Note: If the mesh was not distributed, the return value is NULL.
 
-  The user can control the definition of adjacency for the mesh using DMPlexGetAdjacencyUseCone() and
-  DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
+  The user can control the definition of adjacency for the mesh using DMSetAdjacency(). They should choose the combination appropriate for the function
   representation on the mesh.
 
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
+.seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMSetAdjacency()
 @*/
 PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM *dmOverlap)
 {

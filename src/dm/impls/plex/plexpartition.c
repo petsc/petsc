@@ -40,13 +40,12 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
 . adjacency       - Point connectivity in the graph
 - globalNumbering - A map from the local cell numbering to the global numbering used in "adjacency".  Negative indicates that the cell is a duplicate from another process.
 
-  The user can control the definition of adjacency for the mesh using DMPlexGetAdjacencyUseCone() and
-  DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
+  The user can control the definition of adjacency for the mesh using DMSetAdjacency(). They should choose the combination appropriate for the function
   representation on the mesh.
 
   Level: developer
 
-.seealso: PetscPartitionerGetType(), PetscPartitionerCreate(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
+.seealso: PetscPartitionerGetType(), PetscPartitionerCreate(), DMSetAdjacency()
 @*/
 PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
 {
@@ -90,10 +89,8 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
   ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&adjBuffer);CHKERRQ(ierr);
   /* Always use FVM adjacency to create partitioner graph */
-  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &cellNumbering);CHKERRQ(ierr);
   if (globalNumbering) {
     ierr = PetscObjectReference((PetscObject)cellNumbering);CHKERRQ(ierr);
@@ -166,8 +163,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     (*numVertices)++;
   }
   ierr = PetscFree2(adjCells, remoteCells);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseCone(dm, useCone);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(dm, useClosure);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(dm, useCone, useClosure);CHKERRQ(ierr);
   /* Derive CSR graph from section/segbuffer */
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
@@ -587,6 +583,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   if (part->ops->setfromoptions) {
     ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, &part->formatGraph, &part->viewGraph);CHKERRQ(ierr);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -638,6 +635,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
   if (--((PetscObject)(*part))->refct > 0) {*part = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*part))->refct = 0;
 
+  ierr = PetscViewerDestroy(&(*part)->viewerGraph);CHKERRQ(ierr);
   if ((*part)->ops->destroy) {ierr = (*(*part)->ops->destroy)(*part);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -693,6 +691,9 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 + partSection     - The PetscSection giving the division of points by partition
 - partition       - The list of points by partition
 
+  Options Database:
+. -petscpartitioner_view_graph - View the graph we are partitioning
+
   Note: Instead of cells, points at a given height can be partitioned by calling PetscPartitionerSetPointHeight()
 
   Level: developer
@@ -730,6 +731,29 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
     IS       globalNumbering;
 
     ierr = DMPlexCreatePartitionerGraph(dm, 0, &numVertices, &start, &adjacency, &globalNumbering);CHKERRQ(ierr);
+    if (part->viewGraph) {
+      PetscViewer viewer = part->viewerGraph;
+      PetscBool   isascii;
+      PetscInt    v, i;
+      PetscMPIInt rank;
+
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) viewer), &rank);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+      if (isascii) {
+        ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]Nv: %D\n", rank, numVertices);CHKERRQ(ierr);
+        for (v = 0; v < numVertices; ++v) {
+          const PetscInt s = start[v];
+          const PetscInt e = start[v+1];
+
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]  ", rank);CHKERRQ(ierr);
+          for (i = s; i < e; ++i) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%D ", adjacency[i]);CHKERRQ(ierr);}
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D-%D)\n", s, e);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+      }
+    }
     if (!part->ops->partition) SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_WRONGSTATE, "PetscPartitioner has no type");
     ierr = (*part->ops->partition)(part, dm, size, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
     ierr = PetscFree(start);CHKERRQ(ierr);

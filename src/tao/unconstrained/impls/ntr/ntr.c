@@ -62,7 +62,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by ntr algorithm\n");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by ntr algorithm\n");CHKERRQ(ierr);
   }
 
   ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
@@ -78,22 +78,22 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   tao->trust = PetscMax(tao->trust, tr->min_radius);
   tao->trust = PetscMin(tao->trust, tr->max_radius);
 
-/* Allocate the vectors needed for the BFGS approximation */
-ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
-ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &is_bfgs);CHKERRQ(ierr);
-ierr = PetscObjectTypeCompare((PetscObject)pc, PCJACOBI, &is_jacobi);CHKERRQ(ierr);
-if (is_bfgs) {
-  tr->bfgs_pre = pc;
-  ierr = PCLMVMGetMatLMVM(tr->bfgs_pre, &tr->M);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(tao->solution, &n);CHKERRQ(ierr);
-  ierr = VecGetSize(tao->solution, &N);CHKERRQ(ierr);
-  ierr = MatSetSizes(tr->M, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatLMVMAllocate(tr->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-  ierr = MatIsSymmetricKnown(tr->M, &sym_set, &is_symmetric);CHKERRQ(ierr);
-  if (!sym_set || !is_symmetric) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
-} else if (is_jacobi) {
-  ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
-}
+  /* Allocate the vectors needed for the BFGS approximation */
+  ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &is_bfgs);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc, PCJACOBI, &is_jacobi);CHKERRQ(ierr);
+  if (is_bfgs) {
+    tr->bfgs_pre = pc;
+    ierr = PCLMVMGetMatLMVM(tr->bfgs_pre, &tr->M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(tao->solution, &n);CHKERRQ(ierr);
+    ierr = VecGetSize(tao->solution, &N);CHKERRQ(ierr);
+    ierr = MatSetSizes(tr->M, n, n, N, N);CHKERRQ(ierr);
+    ierr = MatLMVMAllocate(tr->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+    ierr = MatIsSymmetricKnown(tr->M, &sym_set, &is_symmetric);CHKERRQ(ierr);
+    if (!sym_set || !is_symmetric) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
+  } else if (is_jacobi) {
+    ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
+  }
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ if (is_bfgs) {
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /*  Initialize trust-region radius */
-  switch(tr->init_type) {
+  switch (tr->init_type) {
   case NTR_INIT_CONSTANT:
     /*  Use the initial radius specified */
     break;
@@ -249,7 +249,7 @@ if (is_bfgs) {
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     ++tao->niter;
     tao->ksp_its=0;

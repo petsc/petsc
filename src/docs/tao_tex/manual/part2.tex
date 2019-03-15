@@ -640,22 +640,28 @@ matrices.
 \subsection{Nonlinear Least Squares}\label{sec:evalsof}
 For nonlinear least squares applications, we are solving
 the optimization problem
-\[
-\begin{array}{ll}
-\displaystyle \min_{x} & \displaystyle \sum_i (f_i(x) - d_i)^2.
-\end{array}
-\]
+\begin{equation*}
+\min_{x} \;\frac{1}{2}||r(x)||_2^2.
+\end{equation*}
 For these problems, the objective function value should be computed as a 
-vector of residuals, $f_i(x) - d_i$, for better algorithmic results using 
-a separable objective function, computed with a function of the form
+vector of residuals, $r(x)$, computed with a function of the form
 \begin{verbatim}
-   PetscErrorCode EvaluateSeparableFunction(Tao,Vec,Vec,void*);
+   PetscErrorCode EvaluateResidual(Tao,Vec,Vec,void*);
 \end{verbatim}
 and set with the
 \begin{verbatim}
-   TaoSetSeparableObjectiveRoutine(Tao,
-                     PetscErrorCode (*)(Tao,Vec,Vec,void*),
-                     void *);
+   TaoSetResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Vec,void*), 
+                         void *);
+\end{verbatim}
+routine. If required by the algorithm, the Jacobian of the residual, $J = \partial r(x) / \partial x$, 
+should be computed with a function of the form 
+\begin{verbatim}
+   PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,void*);
+\end{verbatim}
+and set with the 
+\begin{verbatim}
+   TaoSetJacobianResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Mat,void*),
+                                 void *);
 \end{verbatim}
 routine.
 

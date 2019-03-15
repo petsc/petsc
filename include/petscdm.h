@@ -41,6 +41,7 @@ typedef const char* DMType;
 #define DMSTAG      "stag"
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
+PETSC_EXTERN const char *const DMBoundaryConditionTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMClone(DM,DM*);
@@ -232,6 +233,10 @@ PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, DMLabel, PetscObject);
 PETSC_EXTERN PetscErrorCode DMAddField(DM, DMLabel, PetscObject);
 PETSC_EXTERN PetscErrorCode DMClearFields(DM);
 PETSC_EXTERN PetscErrorCode DMCopyFields(DM, DM);
+PETSC_EXTERN PetscErrorCode DMGetAdjacency(DM, PetscInt, PetscBool *, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMSetAdjacency(DM, PetscInt, PetscBool, PetscBool);
+PETSC_EXTERN PetscErrorCode DMGetBasicAdjacency(DM, PetscBool *, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMSetBasicAdjacency(DM, PetscBool, PetscBool);
 
 PETSC_EXTERN PetscErrorCode DMGetNumDS(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetDS(DM, PetscDS *);

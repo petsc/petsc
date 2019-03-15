@@ -32,7 +32,6 @@ Vec Object: 1 MPI processes
   type: seq
 2.96782e+08
 1.41731e+09
-Norm_1: 1.81019e+09, Norm_infty 2.03106e+09
 MatDiagonalSet not tested on MATSHELL
 
 Matrix of type: seqaij
@@ -68,7 +67,6 @@ Vec Object: 1 MPI processes
   type: seq
 2.96782e+08
 1.41731e+09
-Norm_1: 1.81019e+09, Norm_infty 2.03106e+09
 Vec Object: 1 MPI processes
   type: seq
 11.
@@ -107,7 +105,6 @@ Vec Object: 1 MPI processes
   type: seq
 2.96782e+08
 1.41731e+09
-Norm_1: 1.81019e+09, Norm_infty 2.03106e+09
 Vec Object: 1 MPI processes
   type: seq
 11.

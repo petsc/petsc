@@ -526,6 +526,81 @@ PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPII
 }
 
 /* -----------------------------------------------------------------------*/
+#define SWAP2MPIIntInt(a,b,c,d,t1,t2) {t1=a;a=b;b=t1;t2=c;c=d;d=t2;}
+
+/*
+   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
+   Assumes 0 origin for v, number of elements = right+1 (right is index of
+   right-most member).
+*/
+static PetscErrorCode PetscSortMPIIntWithIntArray_Private(PetscMPIInt *v,PetscInt *V,PetscMPIInt right)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    i,vl,last,t1;
+  PetscInt       t2;
+
+  PetscFunctionBegin;
+  if (right <= 1) {
+    if (right == 1) {
+      if (v[0] > v[1]) SWAP2MPIIntInt(v[0],v[1],V[0],V[1],t1,t2);
+    }
+    PetscFunctionReturn(0);
+  }
+  SWAP2MPIIntInt(v[0],v[right/2],V[0],V[right/2],t1,t2);
+  vl   = v[0];
+  last = 0;
+  for (i=1; i<=right; i++) {
+    if (v[i] < vl) {last++; SWAP2MPIIntInt(v[last],v[i],V[last],V[i],t1,t2);}
+  }
+  SWAP2MPIIntInt(v[0],v[last],V[0],V[last],t1,t2);
+  ierr = PetscSortMPIIntWithIntArray_Private(v,V,last-1);CHKERRQ(ierr);
+  ierr = PetscSortMPIIntWithIntArray_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscSortMPIIntWithIntArray - Sorts an array of MPI integers in place in increasing order;
+       changes a second array of Petsc intergers to match the sorted first array.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  i  - array of MPI integers
+-  I - second array of Petsc integers
+
+   Level: intermediate
+
+   Notes: this routine is useful when one needs to sort MPI ranks with other integer arrays.
+
+   Concepts: sorting^ints with array
+
+.seealso: PetscSortMPIIntWithArray()
+@*/
+PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n,PetscMPIInt i[],PetscInt Ii[])
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    j,k,t1,ik;
+  PetscInt       t2;
+
+  PetscFunctionBegin;
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      ik = i[k];
+      for (j=k+1; j<n; j++) {
+        if (ik > i[j]) {
+          SWAP2MPIIntInt(i[k],i[j],Ii[k],Ii[j],t1,t2);
+          ik = i[k];
+        }
+      }
+    }
+  } else {
+    ierr = PetscSortMPIIntWithIntArray_Private(i,Ii,n-1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* -----------------------------------------------------------------------*/
 #define SWAP2IntScalar(a,b,c,d,t,ts) {t=a;a=b;b=t;ts=c;c=d;d=ts;}
 
 /*

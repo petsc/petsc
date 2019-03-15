@@ -87,15 +87,10 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   for (i=0; i<2; i++) {
     ierr = VecScatterCreateWithData(b,bis[i],bX[i],NULL,&vscat[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscat[i],bX[i],b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-  for (i=0; i<2; i++) {
     ierr = VecScatterEnd(vscat[i],bX[i],b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-
-  /* tidy up */
-  for (i=0; i<2; i++) {
     ierr = VecScatterDestroy(&vscat[i]);CHKERRQ(ierr);
   }
+
   ierr = PetscFree(vscat);CHKERRQ(ierr);
   ierr = MatDestroy(&Auu);CHKERRQ(ierr);
   ierr = MatDestroy(&Aup);CHKERRQ(ierr);

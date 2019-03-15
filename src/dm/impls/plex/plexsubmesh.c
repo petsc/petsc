@@ -841,7 +841,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   DMLabel        label;
   const char    *name = labelName ? labelName : "Face Sets";
   PetscInt       dim;
-  PetscBool      flag;
+  PetscBool      useCone, useClosure;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -852,10 +852,8 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   ierr = DMSetType(gdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(gdm, dim);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseCone(dm, &flag);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseCone(gdm, flag);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseClosure(dm, &flag);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(gdm, flag);CHKERRQ(ierr);
+  ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(gdm, useCone,  useClosure);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
   if (!label) {
     /* Get label for boundary faces */
@@ -865,6 +863,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   }
   ierr = DMPlexConstructGhostCells_Internal(dm, label, numGhostCells, gdm);CHKERRQ(ierr);
   ierr = DMCopyBoundary(dm, gdm);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, gdm);CHKERRQ(ierr);
   gdm->setfromoptionscalled = dm->setfromoptionscalled;
   *dmGhosted = gdm;
   PetscFunctionReturn(0);
@@ -3704,6 +3703,7 @@ PetscErrorCode DMPlexGetSubpoint(DM dm, PetscInt p, PetscInt *subp)
   DMLabel        spmap;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   *subp = p;
   ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
   if (spmap) {
@@ -3719,6 +3719,46 @@ PetscErrorCode DMPlexGetSubpoint(DM dm, PetscInt p, PetscInt *subp)
     if (*subp < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d not found in submesh", p);
     ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
     ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetAuxiliaryPoint - For a given point in the DM, return the matching point in the auxiliary DM.
+
+  Note collective
+
+  Input Parameters:
++ dm    - The DM
+. dmAux - The related auxiliary DM
+- p     - The point in the original DM
+
+  Output Parameter:
+. subp - The point in the auxiliary DM
+
+  Notes: If the DM is a submesh, we assume the dmAux is as well and just return the point. If only dmAux is a submesh,
+  then we map the point back to the original space.
+
+  Level: developer
+
+.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointMap(), DMPlexCreateSubpointIS()
+@*/
+PetscErrorCode DMPlexGetAuxiliaryPoint(DM dm, DM dmAux, PetscInt p, PetscInt *subp)
+{
+  DMLabel        spmap;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *subp = p;
+  /* If dm is a submesh, do not get subpoint */
+  ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
+  if (dmAux && !spmap) {
+    PetscInt h;
+
+    ierr = DMPlexGetVTKCellHeight(dmAux, &h);CHKERRQ(ierr);
+    ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
+    if (spmap && !h) {ierr = DMLabelGetValue(spmap, p, subp);CHKERRQ(ierr);}
+    else             {ierr = DMPlexGetSubpoint(dmAux, p, subp);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

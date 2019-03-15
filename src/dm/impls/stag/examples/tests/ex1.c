@@ -156,4 +156,14 @@ static PetscErrorCode TestFields(DM dmstag)
       nsize: 12
       args: -dm_view -dim 3 -setSizes
 
+   test:
+      suffix: stencil_none_1
+      nsize: 6
+      args:  -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_stencil_type none -stag_stencil_width 0
+
+   test:
+      suffix: stencil_none_2
+      nsize: 8
+      args:  -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_stencil_type none -stag_stencil_width 0
+
 TEST*/

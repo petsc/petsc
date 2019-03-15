@@ -62,8 +62,8 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscScalar    diag[2]     = { 2.9678190300000000e+08, 1.4173141580000000e+09};
   PetscScalar    multadd[2]  = {-6.8966198500000000e+08,-2.0310609940000000e+09};
   PetscScalar    multtadd[2] = {-9.1052873900000000e+08,-1.8101942400000000e+09};
-  PetscReal      nrm,norm1,norminf;
-
+  PetscReal      nrm;
+    
   PetscFunctionBegin;
   ierr = PetscObjectGetType((PetscObject)A,&mattypename);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\nMatrix of type: %s\n",mattypename);CHKERRQ(ierr);
@@ -133,9 +133,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecNorm(diff,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() produces incorrect result");
   ierr = VecDestroy(&diff);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_INFINITY,&norminf);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Norm_1: %g, Norm_infty %g\n",(double)norm1,(double)norminf);CHKERRQ(ierr);
+
   /* MATSHELL does not support MatDiagonalSet after MatScale */
   if (strncmp(mattypename, "shell", 5)) {
     ierr = MatDiagonalSet(A,X,INSERT_VALUES);CHKERRQ(ierr);

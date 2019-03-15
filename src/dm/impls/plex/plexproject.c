@@ -96,18 +96,9 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {
-    DMLabel  spmap;
-    PetscInt subp = p;
+    PetscInt subp;
 
-    /* If dm is a submesh, do not get subpoint */
-    ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
-    if (!spmap) {
-      PetscInt h;
-      ierr = DMPlexGetVTKCellHeight(dmAux, &h);CHKERRQ(ierr);
-      ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
-      if (spmap && !h) { ierr = DMLabelGetValue(spmap, p, &subp);CHKERRQ(ierr); }
-      else             { ierr = DMPlexGetSubpoint(dmAux, p, &subp);CHKERRQ(ierr); }
-    }
+    ierr = DMPlexGetAuxiliaryPoint(dm, dmAux, p, &subp);CHKERRQ(ierr);
     ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
