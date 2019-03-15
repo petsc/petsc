@@ -1,8 +1,9 @@
-static char help[] = "Read a real (non-complex) sparse matrix from a Matrix Market (v. 2.0) file\n\
+static char help[] = "Read a non-complex sparse matrix from a Matrix Market (v. 2.0) file\n\
 and write it to a file in petsc sparse binary format. If the matrix is symmetric, the binary file is in \n\
 PETSc MATSBAIJ format, otherwise it is in MATAIJ format \n\
 Usage:  ./ex72 -fin <infile> -fout <outfile> \n\
-(See http://math.nist.gov/MatrixMarket for details.)\n\\n";
+(See http://math.nist.gov/MatrixMarket for details.)\n\
+The option -aij_only allows to use MATAIJ for all cases.\n\\n";
 
 /*
 *   NOTES:
@@ -53,7 +54,7 @@ int main(int argc,char **argv)
   /*  This is how one can screen matrix types if their application */
   /*  only supports a subset of the Matrix Market data types.      */
   if (!mm_is_matrix(matcode) || !mm_is_sparse(matcode)){
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input must be a real sparse matrix. Market Market type: [%s]\n", mm_typecode_to_str(matcode));
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input must be a sparse matrix. Market Market type: [%s]\n", mm_typecode_to_str(matcode));
   }
 
   if (mm_is_symmetric(matcode)) symmetric = PETSC_TRUE;
@@ -87,11 +88,9 @@ int main(int argc,char **argv)
     }
     ia[i]--; ja[i]--;     /* adjust from 1-based to 0-based */
     if (ia[i] != ja[i]) { /* already counted the diagonals above */
-      if (symmetric || skew) {
-        if (aijonly) {
-          rownz[ia[i]]++;
-          rownz[ja[i]]++;
-        } else rownz[ja[i]]++; /* transpose. For symmetric matrices, MM uses lower triangular, PETSc uses upper triangular */
+      if ((symmetric && aijonly) || skew) { /* transpose */
+        rownz[ia[i]]++;
+        rownz[ja[i]]++;
       } else rownz[ia[i]]++;
     }
   }
@@ -102,7 +101,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
 
-  if ((symmetric || skew) && !aijonly) {
+  if (symmetric && !aijonly) {
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatSetUp(A);CHKERRQ(ierr);
@@ -117,39 +116,35 @@ int main(int argc,char **argv)
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&sametype);CHKERRQ(ierr);
     if (!sametype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
   }
-  if (symmetric || skew) {
-    if (aijonly) {
-      /* Add zero to diagonals, in case the matrix missing diagonals */
-      for (j=0; j<M; j++)  {ierr = MatSetValues(A,1,&j,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);}
-      /* lower triangular part */
-      for (j=0; j<nz; j++) {ierr = MatSetValues(A,1,&ia[j],1,&ja[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);}
-      if (skew) {
-        /* upper triangular part */
-        for (j=0; j<nz; j++) {
-          val[j] = -val[j];
-          ierr = MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);
-        }
-      } else {
-        /* upper triangular part */
-        for (j=0; j<nz; j++) {ierr = MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);}
-      }
-    } else {
-      /* Add zero to diagonals, in case the matrix missing diagonals */
-      for (j=0; j<M; j++) {ierr = MatSetValues(A,1,&j,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);}
-      /* MatrixMarket matrix stores symm matrix in lower triangular part. Take its transpose */
-      for (j=0; j<nz; j++) {ierr = MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);}
+
+  /* Add zero to diagonals, in case the matrix missing diagonals */
+  for (j=0; j<M; j++)  {
+    ierr = MatSetValues(A,1,&j,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  /* Add values to the matrix, these correspond to lower triangular part for symmetric or skew matrices */
+  for (j=0; j<nz; j++) {
+    ierr = MatSetValues(A,1,&ia[j],1,&ja[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);
+  }
+
+  /* Add values to upper triangular part for some cases */
+  if (symmetric && aijonly) {
+    /* MatrixMarket matrix stores symm matrix in lower triangular part. Take its transpose */
+    for (j=0; j<nz; j++) {
+      ierr = MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);
     }
-  } else {
-    /* Add zero to diagonals, in case the matrix missing diagonals */
-    for (j=0; j<M; j++)  {ierr = MatSetValues(A,1,&j,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);}
-    for (j=0; j<nz; j++) {ierr = MatSetValues(A,1,&ia[j],1,&ja[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);}
+  }
+  if (skew) {
+    for (j=0; j<nz; j++) {
+      val[j] = -val[j];
+      ierr = MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Write out matrix */
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Writing matrix to binary file %s using PETSc %s format ...\n",fileout,((symmetric || skew) && !aijonly)?"SBAIJ":"AIJ");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Writing matrix to binary file %s using PETSc %s format ...\n",fileout,(symmetric && !aijonly)?"SBAIJ":"AIJ");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
