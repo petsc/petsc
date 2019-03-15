@@ -174,6 +174,6 @@ int main(int argc,char **argv)
 
    test:
       suffix: 3
-      args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/m_05_05_crk.mtx -fout petscmat.aij
+      args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/m_05_05_crk.mtx -fout petscmat2.aij
       output_file: output/ex72_3.out
 TEST*/
