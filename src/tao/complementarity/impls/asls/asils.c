@@ -157,7 +157,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     tao->niter++;
 

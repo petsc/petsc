@@ -55,7 +55,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by ntl algorithm\n");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by ntl algorithm\n");CHKERRQ(ierr);
   }
 
   ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
@@ -232,7 +232,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     ++tao->niter;
     tao->ksp_its=0;

@@ -1,6 +1,5 @@
 mu 1., steps 0, ftime 0.5
 mu 1., steps 7, ftime 0.5
-WARNING: Variable bounds have been set but will be ignored by cg algorithm
 mu 6., steps 16, ftime 0.5
 Observed value y_ob=[2.007040; -0.377156], ODE solution y=1.987294, Cost function f=0.070857
   0 TAO,  Function value: 0.0708569,  Residual: 0.00976621 
