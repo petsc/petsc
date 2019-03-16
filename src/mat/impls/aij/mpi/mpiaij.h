@@ -16,18 +16,19 @@ typedef struct { /* used by MatCreateMPIAIJSumSeqAIJ for reusing the merged matr
 } Mat_Merge_SeqsToMPI;
 
 typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ() */
-  PetscInt    *startsj_s,*startsj_r;    /* used by MatGetBrowsOfAoCols_MPIAIJ */
-  PetscScalar *bufa;                    /* used by MatGetBrowsOfAoCols_MPIAIJ */
-  Mat         P_loc,P_oth;     /* partial B_seq -- intend to replace B_seq */
-  PetscInt    *api,*apj;       /* symbolic i and j arrays of the local product A_loc*B_seq */
-  PetscScalar *apv;
-  MatReuse    reuse;           /* flag to skip MatGetBrowsOfAoCols_MPIAIJ() and MatMPIAIJGetLocalMat() in 1st call of MatPtAPNumeric_MPIAIJ_MPIAIJ() */
-  PetscScalar *apa;            /* tmp array for store a row of A*P used in MatMatMult() */
-  Mat         A_loc;           /* used by MatTransposeMatMult(), contains api and apj */
-  Mat         Pt;              /* used by MatTransposeMatMult(), Pt = P^T */
-  PetscBool   freestruct;      /* flag for MatFreeIntermediateDataStructures() */
-  Mat         Rd,Ro,AP_loc,C_loc,C_oth;
-  PetscInt    algType;         /* implementation algorithm */
+  PetscInt               *startsj_s,*startsj_r;    /* used by MatGetBrowsOfAoCols_MPIAIJ */
+  PetscScalar            *bufa;                    /* used by MatGetBrowsOfAoCols_MPIAIJ */
+  Mat                     P_loc,P_oth;             /* partial B_seq -- intend to replace B_seq */
+  PetscInt                *api,*apj;               /* symbolic i and j arrays of the local product A_loc*B_seq */
+  PetscScalar             *apv;
+  MatReuse                reuse;                   /* flag to skip MatGetBrowsOfAoCols_MPIAIJ() and MatMPIAIJGetLocalMat() in 1st call of MatPtAPNumeric_MPIAIJ_MPIAIJ() */
+  PetscScalar             *apa;                    /* tmp array for store a row of A*P used in MatMatMult() */
+  Mat                     A_loc;                   /* used by MatTransposeMatMult(), contains api and apj */
+  ISLocalToGlobalMapping  ltog;                    /* mapping from local column indices to global column indices for A_loc */
+  Mat                     Pt;                      /* used by MatTransposeMatMult(), Pt = P^T */
+  PetscBool               freestruct;              /* flag for MatFreeIntermediateDataStructures() */
+  Mat                     Rd,Ro,AP_loc,C_loc,C_oth;
+  PetscInt                algType;                 /* implementation algorithm */
 
   Mat_Merge_SeqsToMPI *merge;
   PetscErrorCode (*destroy)(Mat);
