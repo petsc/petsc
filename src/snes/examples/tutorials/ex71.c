@@ -6,8 +6,8 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 A Poiseuille flow is a steady-state isoviscous Stokes flow in a pipe of constant cross-section. We discretize using the
 finite element method on an unstructured mesh. The weak form equations are
 \begin{align*}
-  < \nabla v, \nu (\nabla u + {\nabla u}^T) > - < \nabla\cdot v, p > + < v, \Delta >_{\Gamma_o} = 0
-  < q, \nabla\cdot u >                                                                          = 0
+  < \nabla v, \nu (\nabla u + {\nabla u}^T) > - < \nabla\cdot v, p > + < v, \Delta \hat n >_{\Gamma_o} = 0
+  < q, \nabla\cdot u >                                                                                 = 0
 \end{align*}
 where $\nu$ is the kinematic viscosity, $\Delta$ is the pressure drop per unit length, assuming that pressure is 0 on
 the left edge, and $\Gamma_o$ is the outlet boundary at the right edge of the pipe. The normal velocity will be zero at
@@ -15,6 +15,10 @@ the wall, but we will allow a fixed tangential velocity $u_0$.
 
 In order to test our global to local basis transformation, we will allow the pipe to be at an angle $\alpha$ to the
 coordinate axes.
+
+For visualization, use
+
+  -dm_view hdf5:$PWD/sol.h5 -sol_vec_view hdf5:$PWD/sol.h5::append -exact_vec_view hdf5:$PWD/sol.h5::append
 F*/
 
 #include <petscdmplex.h>
@@ -65,61 +69,40 @@ typedef struct {
     -\nu \Delta u + \nabla p + f = <Delta, 0, 0> + <-Delta, 0, 0> + <0, 0, 0> = 0
     \nabla \cdot u               = 0 + 0 + 0                                  = 0
 
-  In 2D, plane Poiseuille flow in a rotated frame has exact solution:
-
-    u = \cos\alpha [\Delta/(2 \nu) y (1 - y) + u_0]
-    v = \sin\alpha [\Delta/(2 \nu) y (1 - y) + u_0]
-    p = -\Delta [\cos\alpha x + \sin\alpha y]
-
-  and in 3D
-
-    u = \Delta/(4 \nu) (y (1 - y) + z (1 - z)) + u_0
-    v = 0
-    w = 0
-    p = -\Delta x
+  Note that these functions use coordinates X in the global (rotated) frame
 */
-PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   Parameter *param = (Parameter *) ctx;
   PetscReal  Delta = param->Delta;
   PetscReal  nu    = param->nu;
   PetscReal  u_0   = param->u_0;
-  PetscReal  alpha = param->alpha;
   PetscReal  fac   = (PetscReal) (dim - 1);
   PetscInt   d;
 
   u[0] = u_0;
-  for (d = 1; d < dim; ++d) {
-    u[0] += Delta/(fac * 2.0*nu) * x[d] * (1.0 - x[d]);
-  }
-  u[1] = PetscSinReal(alpha)*u[0];
-  u[0] = PetscCosReal(alpha)*u[0];
-  for (d = 2; d < dim; ++d) {
-    u[d]  = 0.0;
-  }
+  for (d = 1; d < dim; ++d) u[0] += Delta/(fac * 2.0*nu) * X[d] * (1.0 - X[d]);
+  for (d = 1; d < dim; ++d) u[d]  = 0.0;
   return 0;
 }
 
-PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *p, void *ctx)
+PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, void *ctx)
 {
   Parameter *param = (Parameter *) ctx;
   PetscReal  Delta = param->Delta;
-  PetscReal  alpha = param->alpha;
 
-  p[0] = -Delta * (PetscCosReal(alpha)*x[0] + PetscSinReal(alpha)*x[1]);
+  p[0] = -Delta * X[0];
   return 0;
 }
 
-PetscErrorCode wall_velocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode wall_velocity(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   Parameter *param = (Parameter *) ctx;
   PetscReal  u_0   = param->u_0;
-  PetscReal  alpha = param->alpha;
   PetscInt   d;
 
-  u[0] = PetscCosReal(alpha)*u_0;
-  u[1] = PetscSinReal(alpha)*u_0;
-  for (d = 2; d < dim; ++d) u[d] = 0.0;
+  u[0] = u_0;
+  for (d = 1; d < dim; ++d) u[d] = 0.0;
   return 0;
 }
 
@@ -130,7 +113,7 @@ void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  const PetscReal nu = constants[1];
+  const PetscReal nu = PetscRealPart(constants[1]);
   const PetscInt  Nc = dim;
   PetscInt        c, d;
 
@@ -153,14 +136,20 @@ void f0_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (d = 0, f0[0] = 0.0; d < dim; ++d) f0[0] += u_x[d*dim+d];
 }
 
+/* Residual functions are in reference coordinates */
 static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                     PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscReal Delta = constants[0];
+  const PetscReal Delta = PetscRealPart(constants[0]);
+  PetscReal       alpha = PetscRealPart(constants[3]);
+  PetscReal       X     = PetscCosReal(alpha)*x[0] + PetscSinReal(alpha)*x[1];
+  PetscInt        d;
 
-  f0[0] = -Delta * x[0];
+  for (d = 0; d < dim; ++d) {
+    f0[d] = -Delta * X * n[d];
+  }
 }
 
 /* < q, \nabla\cdot u >
@@ -192,7 +181,7 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
            PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  const PetscReal nu = constants[1];
+  const PetscReal nu = PetscRealPart(constants[1]);
   const PetscInt  Nc = dim;
   PetscInt        c, d;
 
@@ -201,14 +190,6 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
       g3[((c*Nc+c)*dim+d)*dim+d] = nu;
     }
   }
-}
-
-void pressure(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar p[])
-{
-  p[0] = u[uOff[1]];
 }
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -402,6 +383,17 @@ int main(int argc, char **argv)
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
+  {
+    Parameter *param;
+    void      *ctxs[2];
+
+    ierr = PetscBagGetData(user.bag, (void **) &param);CHKERRQ(ierr);
+    ctxs[0] = ctxs[1] = param;
+    ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
+  }
+  ierr = DMSNESCheckFromOptions(snes, u, NULL, NULL);CHKERRQ(ierr);
   ierr = VecSet(u, 0.0);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
@@ -410,9 +402,9 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
-  ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
