@@ -2224,14 +2224,15 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
 PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF processSF, DMLabel leafLabel)
 {
   MPI_Comm           comm;
-  PetscMPIInt        rank, size;
-  PetscInt           p, n, numNeighbors, ssize, l, nleaves;
+  PetscMPIInt        rank, size, r;
+  PetscInt           p, n, numNeighbors, numPoints, dof, off, rootSize, l, nleaves, leafSize;
   PetscSF            sfPoint;
+  PetscSection       rootSection;
   PetscSFNode       *rootPoints, *leafPoints;
-  PetscSection       rootSection, leafSection;
   const PetscSFNode *remote;
   const PetscInt    *local, *neighbors;
   IS                 valueIS;
+  PetscBool          mpiOverflow = PETSC_FALSE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -2247,19 +2248,16 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
   ierr = ISGetLocalSize(valueIS, &numNeighbors);CHKERRQ(ierr);
   ierr = ISGetIndices(valueIS, &neighbors);CHKERRQ(ierr);
   for (n = 0; n < numNeighbors; ++n) {
-    PetscInt numPoints;
-
     ierr = DMLabelGetStratumSize(rootLabel, neighbors[n], &numPoints);CHKERRQ(ierr);
     ierr = PetscSectionAddDof(rootSection, neighbors[n], numPoints);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(rootSection, &ssize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ssize, &rootPoints);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(rootSection, &rootSize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rootSize, &rootPoints);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
   for (n = 0; n < numNeighbors; ++n) {
     IS              pointIS;
     const PetscInt *points;
-    PetscInt        off, numPoints, p;
 
     ierr = PetscSectionGetOffset(rootSection, neighbors[n], &off);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(rootLabel, neighbors[n], &pointIS);CHKERRQ(ierr);
@@ -2274,20 +2272,68 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
-  ierr = ISRestoreIndices(valueIS, &neighbors);CHKERRQ(ierr);
-  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-  /* Communicate overlap */
-  ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
-  ierr = DMPlexDistributeData(dm, processSF, rootSection, MPIU_2INT, rootPoints, leafSection, (void**) &leafPoints);CHKERRQ(ierr);
-  /* Filter remote contributions (ovLeafPoints) into the overlapSF */
-  ierr = PetscSectionGetStorageSize(leafSection, &ssize);CHKERRQ(ierr);
-  for (p = 0; p < ssize; p++) {
+
+  /* Try to communicate overlap using All-to-All */
+  if (!processSF) {
+    PetscInt64  counter = 0;
+    PetscBool   locOverflow = PETSC_FALSE;
+    PetscMPIInt *scounts, *sdispls, *rcounts, *rdispls;
+
+    ierr = PetscCalloc4(size, &scounts, size, &sdispls, size, &rcounts, size, &rdispls);CHKERRQ(ierr);
+    for (n = 0; n < numNeighbors; ++n) {
+      ierr = PetscSectionGetDof(rootSection, neighbors[n], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(rootSection, neighbors[n], &off);CHKERRQ(ierr);
+#if defined(PETSC_USE_64BIT_INDICES)
+      if (dof > PETSC_MPI_INT_MAX) {locOverflow = PETSC_TRUE; break;}
+      if (off > PETSC_MPI_INT_MAX) {locOverflow = PETSC_TRUE; break;}
+#endif
+      scounts[neighbors[n]] = (PetscMPIInt) dof;
+      sdispls[neighbors[n]] = (PetscMPIInt) off;
+    }
+    ierr = MPI_Alltoall(scounts, 1, MPI_INT, rcounts, 1, MPI_INT, comm);CHKERRQ(ierr);
+    for (r = 0; r < size; ++r) { rdispls[r] = (int)counter; counter += rcounts[r]; }
+    if (counter > PETSC_MPI_INT_MAX) locOverflow = PETSC_TRUE;
+    ierr = MPI_Allreduce(&locOverflow, &mpiOverflow, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
+    if (!mpiOverflow) {
+      leafSize = (PetscInt) counter;
+      ierr = PetscMalloc1(leafSize, &leafPoints);CHKERRQ(ierr);
+      ierr = MPI_Alltoallv(rootPoints, scounts, sdispls, MPIU_2INT, leafPoints, rcounts, rdispls, MPIU_2INT, comm);CHKERRQ(ierr);
+    }
+    ierr = PetscFree4(scounts, sdispls, rcounts, rdispls);CHKERRQ(ierr);
+  }
+
+  /* Communicate overlap using process star forest */
+  if (processSF || mpiOverflow) {
+    PetscSF      procSF;
+    PetscSFNode  *remote;
+    PetscSection leafSection;
+
+    if (processSF) {
+      ierr = PetscObjectReference((PetscObject)processSF);CHKERRQ(ierr);
+      procSF = processSF;
+    } else {
+      ierr = PetscMalloc1(size, &remote);CHKERRQ(ierr);
+      for (r = 0; r < size; ++r) { remote[r].rank  = r; remote[r].index = rank; }
+      ierr = PetscSFCreate(comm, &procSF);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(procSF, size, size, NULL, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    }
+
+    ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &leafSection);CHKERRQ(ierr);
+    ierr = DMPlexDistributeData(dm, processSF, rootSection, MPIU_2INT, rootPoints, leafSection, (void**) &leafPoints);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(leafSection, &leafSize);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&procSF);CHKERRQ(ierr);
+  }
+
+  for (p = 0; p < leafSize; p++) {
     ierr = DMLabelSetValue(leafLabel, leafPoints[p].index, leafPoints[p].rank);CHKERRQ(ierr);
   }
-  ierr = PetscFree(rootPoints);CHKERRQ(ierr);
+
+  ierr = ISRestoreIndices(valueIS, &neighbors);CHKERRQ(ierr);
+  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscFree(rootPoints);CHKERRQ(ierr);
   ierr = PetscFree(leafPoints);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

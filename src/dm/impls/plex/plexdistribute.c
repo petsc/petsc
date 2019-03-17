@@ -469,7 +469,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
 {
   MPI_Comm           comm;
   DMLabel            ovAdjByRank; /* A DMLabel containing all points adjacent to shared points, separated by rank (value in label) */
-  PetscSF            sfPoint, sfProc;
+  PetscSF            sfPoint;
   const PetscSFNode *remote;
   const PetscInt    *local;
   const PetscInt    *nrank, *rrank;
@@ -548,21 +548,9 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)dm), &viewer);CHKERRQ(ierr);
     ierr = DMLabelView(ovAdjByRank, viewer);CHKERRQ(ierr);
   }
-  /* Make global process SF and invert sender to receiver label */
-  {
-    /* Build a global process SF */
-    PetscSFNode *remoteProc;
-    ierr = PetscMalloc1(size, &remoteProc);CHKERRQ(ierr);
-    for (p = 0; p < size; ++p) {
-      remoteProc[p].rank  = p;
-      remoteProc[p].index = rank;
-    }
-    ierr = PetscSFCreate(comm, &sfProc);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) sfProc, "Process SF");CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sfProc, size, size, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  }
+  /* Invert sender to receiver label */
   ierr = DMLabelCreate(PETSC_COMM_SELF, "Overlap label", ovLabel);CHKERRQ(ierr);
-  ierr = DMPlexPartitionLabelInvert(dm, ovAdjByRank, sfProc, *ovLabel);CHKERRQ(ierr);
+  ierr = DMPlexPartitionLabelInvert(dm, ovAdjByRank, NULL, *ovLabel);CHKERRQ(ierr);
   /* Add owned points, except for shared local points */
   for (p = pStart; p < pEnd; ++p) {ierr = DMLabelSetValue(*ovLabel, p, rank);CHKERRQ(ierr);}
   for (l = 0; l < nleaves; ++l) {
@@ -571,7 +559,6 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   }
   /* Clean up */
   ierr = DMLabelDestroy(&ovAdjByRank);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfProc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1593,9 +1580,9 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   PetscSection           cellPartSection;
   DM                     dmCoord;
   DMLabel                lblPartition, lblMigration;
-  PetscSF                sfProcess, sfMigration, sfStratified, sfPoint;
+  PetscSF                sfMigration, sfStratified, sfPoint;
   PetscBool              flg, balance;
-  PetscMPIInt            rank, size, p;
+  PetscMPIInt            rank, size;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -1651,20 +1638,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     }
     ierr = ISRestoreIndices(cellPart, &points);CHKERRQ(ierr);
   }
-  {
-    /* Build a global process SF */
-    PetscSFNode *remoteProc;
-    ierr = PetscMalloc1(size, &remoteProc);CHKERRQ(ierr);
-    for (p = 0; p < size; ++p) {
-      remoteProc[p].rank  = p;
-      remoteProc[p].index = rank;
-    }
-    ierr = PetscSFCreate(comm, &sfProcess);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) sfProcess, "Process SF");CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sfProcess, size, size, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  }
   ierr = DMLabelCreate(PETSC_COMM_SELF, "Point migration", &lblMigration);CHKERRQ(ierr);
-  ierr = DMPlexPartitionLabelInvert(dm, lblPartition, sfProcess, lblMigration);CHKERRQ(ierr);
+  ierr = DMPlexPartitionLabelInvert(dm, lblPartition, NULL, lblMigration);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelCreateSF(dm, lblMigration, &sfMigration);CHKERRQ(ierr);
   /* Stratify the SF in case we are migrating an already parallel plex */
   ierr = DMPlexStratifyMigrationSF(dm, sfMigration, &sfStratified);CHKERRQ(ierr);
@@ -1719,7 +1694,6 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     sfMigration = sfOverlapPoint;
   }
   /* Cleanup Partition */
-  ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&lblPartition);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&lblMigration);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
