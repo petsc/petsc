@@ -64,10 +64,10 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
   ierr = DMGetLocalVector(dm,&Xloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&Floc);CHKERRQ(ierr);
   ierr = VecZeroEntries(Xloc);CHKERRQ(ierr);
-  if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
   ierr = VecZeroEntries(Floc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
   CHKMEMQ;
   ierr = (*dmlocalsnes->residuallocal)(dm,Xloc,Floc,dmlocalsnes->residuallocalctx);CHKERRQ(ierr);
   CHKMEMQ;
@@ -108,9 +108,9 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,vo
   if (dmlocalsnes->jacobianlocal) {
     ierr = DMGetLocalVector(dm,&Xloc);CHKERRQ(ierr);
     ierr = VecZeroEntries(Xloc);CHKERRQ(ierr);
-    if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
     ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+    if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
     CHKMEMQ;
     ierr = (*dmlocalsnes->jacobianlocal)(dm,Xloc,A,B,dmlocalsnes->jacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
