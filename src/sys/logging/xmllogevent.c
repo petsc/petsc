@@ -906,7 +906,7 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer,PetscEventP
 
   ierr = MPIU_Allreduce(&time, &timeMx, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
 
-  *isPrinted = (timeMx/totalTime) >= THRESHOLD;
+  *isPrinted = ((timeMx/totalTime) >= THRESHOLD) ? PETSC_TRUE : PETSC_FALSE;
   if (*isPrinted) {
     ierr = PetscViewerXMLStartSection(viewer, "event", NULL);CHKERRQ(ierr);
     ierr = PetscViewerXMLPutString(viewer, "name", NULL, name);CHKERRQ(ierr);
