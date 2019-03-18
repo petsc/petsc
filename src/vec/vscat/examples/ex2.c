@@ -57,7 +57,7 @@ int main(int argc,char **argv)
     ierr = ISView(isx,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  ierr = VecScatterCreateWithData(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
 
   /* Test forward vecscatter */

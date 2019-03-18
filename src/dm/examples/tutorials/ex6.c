@@ -73,7 +73,7 @@ int main(int argc,char **argv)
     ierr = PetscFree(ifrom);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_WORLD,0,NULL,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   }
-  ierr = VecScatterCreateWithData(global,from,local,to,&scatter1);CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,local,to,&scatter1);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
     ierr = PetscFree(ifrom);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_WORLD,0,NULL,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   }
-  ierr = VecScatterCreateWithData(global,from,local,to,&scatter2);CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,local,to,&scatter2);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 

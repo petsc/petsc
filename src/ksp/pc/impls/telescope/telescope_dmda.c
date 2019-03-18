@@ -192,7 +192,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred,DM 
   ierr = VecSetSizes(perm_coors,PETSC_DECIDE,Ml*Nl*2);CHKERRQ(ierr);
   ierr = VecSetType(perm_coors,VECSEQ);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(coor_natural,is_fine,perm_coors,is_local,&sctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(coor_natural,is_fine,perm_coors,is_local,&sctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(  sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   /* access */
@@ -293,7 +293,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred,DM 
   ierr = VecCreate(PETSC_COMM_SELF,&perm_coors);CHKERRQ(ierr);
   ierr = VecSetSizes(perm_coors,PETSC_DECIDE,Ml*Nl*Pl*3);CHKERRQ(ierr);
   ierr = VecSetType(perm_coors,VECSEQ);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(coor_natural,is_fine,perm_coors,is_local,&sctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(coor_natural,is_fine,perm_coors,is_local,&sctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(  sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -685,7 +685,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc,PC_Telescope sred,PC_Telesco
   ierr = VecSetSizes(xtmp,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(xtmp,bs);CHKERRQ(ierr);
   ierr = VecSetType(xtmp,((PetscObject)x)->type_name);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
   sred->xred    = xred;
   sred->yred    = yred;
   sred->isin    = isin;

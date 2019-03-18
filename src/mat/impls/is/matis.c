@@ -2451,13 +2451,13 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
   ierr = MatCreateVecs(A,&cglobal,&rglobal);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockIndices(A->rmap->mapping,&garray);CHKERRQ(ierr);
   ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),rbs,nr/rbs,garray,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(rglobal,from,is->y,NULL,&is->rctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(rglobal,from,is->y,NULL,&is->rctx);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingRestoreBlockIndices(A->rmap->mapping,&garray);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   if (A->rmap->mapping != A->cmap->mapping) {
     ierr = ISLocalToGlobalMappingGetBlockIndices(A->cmap->mapping,&garray);CHKERRQ(ierr);
     ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),cbs,nc/cbs,garray,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(cglobal,from,is->x,NULL,&is->cctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate(cglobal,from,is->x,NULL,&is->cctx);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreBlockIndices(A->cmap->mapping,&garray);CHKERRQ(ierr);
     ierr = ISDestroy(&from);CHKERRQ(ierr);
   } else {

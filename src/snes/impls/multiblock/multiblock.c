@@ -387,7 +387,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     blocks = mb->blocks;
     ierr   = MatCreateVecs(snes->jacobian_pre, &xtmp, NULL);CHKERRQ(ierr);
     while (blocks) {
-      ierr   = VecScatterCreateWithData(xtmp, blocks->is, blocks->x, NULL, &blocks->sctx);CHKERRQ(ierr);
+      ierr   = VecScatterCreate(xtmp, blocks->is, blocks->x, NULL, &blocks->sctx);CHKERRQ(ierr);
       blocks = blocks->next;
     }
     ierr = VecDestroy(&xtmp);CHKERRQ(ierr);

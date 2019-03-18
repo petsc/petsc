@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,iy,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
 
   /* create a vecscatter that shifts x to the tail by quater periodically and puts the results in y */
-  ierr = VecScatterCreateWithData(x,isx,y,isy,&vscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&vscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   ierr = ISDuplicate(isx,&isy);CHKERRQ(ierr);
 
   /* create a vecscatter that just copies x to y */
-  ierr = VecScatterCreateWithData(x,isx,y,isy,&vscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&vscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -171,7 +171,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_SELF,32,0,1,&isy);CHKERRQ(ierr);
 
   /* create a vecscatter that just copies even entries of x to y */
-  ierr = VecScatterCreateWithData(x,isx,y,isy,&vscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&vscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 

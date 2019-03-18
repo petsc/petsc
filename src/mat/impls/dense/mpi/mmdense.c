@@ -26,7 +26,7 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mdn->nvec,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
   /* Generate the scatter context */
-  ierr = VecScatterCreateWithData(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)mdn->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)mdn->lvec);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);

@@ -467,8 +467,8 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = SNESCreateSubVectors_VINEWTONRSLS(snes,nis_inact,&Y_inact);CHKERRQ(ierr);
 
     /* Create scatter contexts */
-    ierr = VecScatterCreateWithData(Y,IS_act,Y_act,NULL,&scat_act);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(Y,vi->IS_inact,Y_inact,NULL,&scat_inact);CHKERRQ(ierr);
+    ierr = VecScatterCreate(Y,IS_act,Y_act,NULL,&scat_act);CHKERRQ(ierr);
+    ierr = VecScatterCreate(Y,vi->IS_inact,Y_inact,NULL,&scat_inact);CHKERRQ(ierr);
 
     /* Do a vec scatter to active and inactive set vectors */
     ierr = VecScatterBegin(scat_inact,F,F_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

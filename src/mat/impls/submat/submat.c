@@ -354,8 +354,8 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = VecSetSizes(right,n,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetUp(left);CHKERRQ(ierr);
   ierr = VecSetUp(right);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(Na->lwork,isrow,left,NULL,&Na->lrestrict);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(right,NULL,Na->rwork,iscol,&Na->rprolong);CHKERRQ(ierr);
+  ierr = VecScatterCreate(Na->lwork,isrow,left,NULL,&Na->lrestrict);CHKERRQ(ierr);
+  ierr = VecScatterCreate(right,NULL,Na->rwork,iscol,&Na->rprolong);CHKERRQ(ierr);
   ierr = VecDestroy(&left);CHKERRQ(ierr);
   ierr = VecDestroy(&right);CHKERRQ(ierr);
 

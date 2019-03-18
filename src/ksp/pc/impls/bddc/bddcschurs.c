@@ -1242,7 +1242,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatCreateVecs(sub_schurs->S,&vec1_B,NULL);CHKERRQ(ierr);
       if (!schur_has_vertices) {
         ierr = ISGlobalToLocalMappingApplyIS(sub_schurs->BtoNmap,IS_GTOLM_DROP,is_A_all,&msolv_ctx->is_B);CHKERRQ(ierr);
-        ierr = VecScatterCreateWithData(vec1_B,msolv_ctx->is_B,msolv_ctx->sol_B,NULL,&msolv_ctx->correction_scatter_B);CHKERRQ(ierr);
+        ierr = VecScatterCreate(vec1_B,msolv_ctx->is_B,msolv_ctx->sol_B,NULL,&msolv_ctx->correction_scatter_B);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)is_A_all);CHKERRQ(ierr);
         msolv_ctx->is_R = is_A_all;
       } else {
@@ -1258,7 +1258,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = ISGlobalToLocalMappingApplyIS(sub_schurs->BtoNmap,IS_GTOLM_DROP,is_B_all,&msolv_ctx->is_B);CHKERRQ(ierr);
         ierr = ISDestroy(&is_B_all);CHKERRQ(ierr);
         ierr = ISCreateStride(PetscObjectComm((PetscObject)is_A_all),dual,0,1,&is_B_all);CHKERRQ(ierr);
-        ierr = VecScatterCreateWithData(vec1_B,msolv_ctx->is_B,msolv_ctx->sol_B,is_B_all,&msolv_ctx->correction_scatter_B);CHKERRQ(ierr);
+        ierr = VecScatterCreate(vec1_B,msolv_ctx->is_B,msolv_ctx->sol_B,is_B_all,&msolv_ctx->correction_scatter_B);CHKERRQ(ierr);
         ierr = ISDestroy(&is_B_all);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is_A_all),n-n_v,idxs,PETSC_COPY_VALUES,&msolv_ctx->is_R);CHKERRQ(ierr);
         ierr = ISRestoreIndices(is_A_all,&idxs);CHKERRQ(ierr);

@@ -329,10 +329,10 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
 
   ierr = VecGetOwnershipRange(tsrhs,&UVstart,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(tsdae->comm,nU,UVstart,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(tsdae->U,NULL,tsrhs,is,&full->scatterU);CHKERRQ(ierr);
+  ierr = VecScatterCreate(tsdae->U,NULL,tsrhs,is,&full->scatterU);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISCreateStride(tsdae->comm,nV,UVstart+nU,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(tsdae->V,NULL,tsrhs,is,&full->scatterV);CHKERRQ(ierr);
+  ierr = VecScatterCreate(tsdae->V,NULL,tsrhs,is,&full->scatterV);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   ierr = TSSetRHSFunction(full->ts,tsrhs,TSDAESimple_Full_TSRHSFunction,tsdae);CHKERRQ(ierr);

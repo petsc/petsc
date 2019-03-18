@@ -2090,7 +2090,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = VecSetType(VNodeEdgeInfoOv,VECSEQ);CHKERRQ(ierr);
 
   ierr = ISCreateBlock(PETSC_COMM_WORLD,2,nvertices,grid->loc2pet,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr); /* Address the nodes in overlap to get info from */
-  ierr = VecScatterCreateWithData(VNodeEdgeInfo,isglobal,VNodeEdgeInfoOv,NULL,&neiscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(VNodeEdgeInfo,isglobal,VNodeEdgeInfoOv,NULL,&neiscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&neiscat);CHKERRQ(ierr);
@@ -2109,7 +2109,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = VecRestoreArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,nedgeOv,eIdxOv,PETSC_USE_POINTER,&isedgeOv);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,nedgeOv,&VNodeEdgeOv);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(VNodeEdge,isedgeOv,VNodeEdgeOv,NULL,&nescat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(VNodeEdge,isedgeOv,VNodeEdgeOv,NULL,&nescat);CHKERRQ(ierr);
   ierr = VecScatterBegin(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&nescat);CHKERRQ(ierr);
@@ -2417,7 +2417,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(svertices);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(grid->qnode,isglobal,grid->qnodeLoc,islocal,&grid->scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(grid->qnode,isglobal,grid->qnodeLoc,islocal,&grid->scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
   ierr = ISDestroy(&islocal);CHKERRQ(ierr);
 
@@ -2441,7 +2441,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
   ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(svertices);
-  ierr = VecScatterCreateWithData(grid->grad,isglobal,grid->gradLoc,islocal,&grid->gradScatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(grid->grad,isglobal,grid->gradLoc,islocal,&grid->gradScatter);CHKERRQ(ierr);
   ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
   ierr = ISDestroy(&islocal);CHKERRQ(ierr);
 

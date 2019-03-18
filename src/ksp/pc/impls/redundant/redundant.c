@@ -138,14 +138,14 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         }
         ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
         ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
-        ierr = VecScatterCreateWithData(x,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
+        ierr = VecScatterCreate(x,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is2);CHKERRQ(ierr);
 
         /* Impl below is good for PETSC_SUBCOMM_INTERLACED (no inter-process communication) and PETSC_SUBCOMM_CONTIGUOUS (communication within subcomm) */
         ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*M,1,&is1);CHKERRQ(ierr);
         ierr = ISCreateStride(comm,mlocal,mstart,1,&is2);CHKERRQ(ierr);
-        ierr = VecScatterCreateWithData(red->xdup,is1,x,is2,&red->scatterout);CHKERRQ(ierr);
+        ierr = VecScatterCreate(red->xdup,is1,x,is2,&red->scatterout);CHKERRQ(ierr);
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is2);CHKERRQ(ierr);
         ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);

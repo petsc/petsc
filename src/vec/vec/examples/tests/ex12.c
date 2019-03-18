@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(y,is2,x,is1,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(y,is2,x,is1,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,y,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,y,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
