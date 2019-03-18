@@ -2389,7 +2389,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscInt    leafCounter;
   PetscInt    *leafsNew;
   PetscSFNode *leafLocationsNew;
-  Mat         A;
+  Mat         A, Apre;
+  PetscScalar one = 1;
   PetscBool   flg = PETSC_FALSE;
   const char *prefix = NULL;
   PetscViewer       viewer;
@@ -2549,62 +2550,49 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   }
 
 
-
-  ierr = MatCreate(comm, &A);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, 1+numNonExclusivelyOwned, 1+numNonExclusivelyOwned, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  ierr = MatCreate(comm, &Apre);CHKERRQ(ierr);
+  ierr = MatSetType(Apre, MATPREALLOCATOR);CHKERRQ(ierr);
+  ierr = MatSetSizes(Apre, 1+numNonExclusivelyOwned, 1+numNonExclusivelyOwned, cumSumVertices[size], cumSumVertices[size]);CHKERRQ(ierr);
+  ierr = MatSetUp(Apre);CHKERRQ(ierr);
 
   for (i=0; i<pEnd-pStart; i++) {
     if (toBalance[i]) {
       if (isNonExclusivelyOwned[i]) {
-        PetscInt adjSize = PETSC_DETERMINE;
-        PetscInt *adj = NULL;
-        ierr = MatSetValue(A, cumSumVertices[rank], globalNumbersOfLocalOwnedVertices[i], 1, INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[i], cumSumVertices[rank], 1, INSERT_VALUES);CHKERRQ(ierr);
-        ierr = DMPlexGetAdjacency(dm, i+pStart, &adjSize, &adj);CHKERRQ(ierr);
-        adjSize = 0;
-        for (j=0; j<adjSize; j++) {
-          if (toBalance[adj[j]] && i+pStart != adj[j]) {
-            if (isNonExclusivelyOwned[adj[j]]) {
-              ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[i], globalNumbersOfLocalOwnedVertices[adj[j]], 1, INSERT_VALUES);CHKERRQ(ierr);
-              ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[adj[j]], globalNumbersOfLocalOwnedVertices[i], 1, INSERT_VALUES);CHKERRQ(ierr);
-            }
-            else if (isLeaf[adj[j]]) {
-              ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[i], leafGlobalNumbers[adj[j]], 1, INSERT_VALUES);CHKERRQ(ierr);
-              ierr = MatSetValue(A, leafGlobalNumbers[adj[j]], globalNumbersOfLocalOwnedVertices[i], 1, INSERT_VALUES);CHKERRQ(ierr);
-            }
-          }
-        }
-        ierr = PetscFree(adj);CHKERRQ(ierr);
+        ierr = MatSetValues(Apre, 1, &(cumSumVertices[rank]), 1, &(globalNumbersOfLocalOwnedVertices[i]), &one, INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(Apre, 1, &(globalNumbersOfLocalOwnedVertices[i]), 1, &(cumSumVertices[rank]), &one, INSERT_VALUES);CHKERRQ(ierr);
       } else if (isLeaf[i]) {
-        PetscInt adjSize = PETSC_DETERMINE;
-        PetscInt *adj = NULL;
-        ierr = MatSetValue(A, cumSumVertices[rank], leafGlobalNumbers[i], 1, INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValue(A, leafGlobalNumbers[i], cumSumVertices[rank], 1, INSERT_VALUES);CHKERRQ(ierr);
-        ierr = DMPlexGetAdjacency(dm, i+pStart, &adjSize, &adj);CHKERRQ(ierr);
-        adjSize = 0;
-        for (j=0; j<adjSize; j++) {
-          if (toBalance[adj[j]] && i+pStart != adj[j]) {
-            if (isNonExclusivelyOwned[adj[j]]) {
-              ierr = MatSetValue(A, leafGlobalNumbers[i], globalNumbersOfLocalOwnedVertices[adj[j]], 1, INSERT_VALUES);CHKERRQ(ierr);
-              ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[adj[j]], leafGlobalNumbers[i], 1, INSERT_VALUES);CHKERRQ(ierr);
-            } else if (isLeaf[adj[j]]) {
-              ierr = MatSetValue(A, leafGlobalNumbers[i], leafGlobalNumbers[adj[j]], 1, INSERT_VALUES);CHKERRQ(ierr);
-              ierr = MatSetValue(A, leafGlobalNumbers[adj[j]], leafGlobalNumbers[i], 1, INSERT_VALUES);CHKERRQ(ierr);
-            }
-          }
-        }
-        ierr = PetscFree(adj);CHKERRQ(ierr);
+        ierr = MatSetValues(Apre, 1, &(cumSumVertices[rank]), 1, &(leafGlobalNumbers[i]), &one, INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(Apre, 1, &(leafGlobalNumbers[i]), 1, &(cumSumVertices[rank]), &one, INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
-  ierr = PetscFree(leafGlobalNumbers);CHKERRQ(ierr);
-  ierr = PetscFree(globalNumbersOfLocalOwnedVertices);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(Apre, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Apre, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = MatCreate(comm, &A);CHKERRQ(ierr);
+  ierr = MatSetType(A, MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetSizes(A, 1+numNonExclusivelyOwned, 1+numNonExclusivelyOwned, cumSumVertices[size], cumSumVertices[size]);CHKERRQ(ierr);
+  ierr = MatPreallocatorPreallocate(Apre, PETSC_FALSE, A);CHKERRQ(ierr);
+  ierr = MatDestroy(&Apre);CHKERRQ(ierr);
+
+  for (i=0; i<pEnd-pStart; i++) {
+    if (toBalance[i]) {
+      if (isNonExclusivelyOwned[i]) {
+        ierr = MatSetValue(A, cumSumVertices[rank], globalNumbersOfLocalOwnedVertices[i], 1, INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[i], cumSumVertices[rank], 1, INSERT_VALUES);CHKERRQ(ierr);
+      } else if (isLeaf[i]) {
+        ierr = MatSetValue(A, cumSumVertices[rank], leafGlobalNumbers[i], 1, INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValue(A, leafGlobalNumbers[i], cumSumVertices[rank], 1, INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
 
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  /*MatView(A, 	PETSC_VIEWER_STDOUT_WORLD);*/
+  ierr = PetscFree(leafGlobalNumbers);CHKERRQ(ierr);
+  ierr = PetscFree(globalNumbersOfLocalOwnedVertices);CHKERRQ(ierr);
+
   nparts = size;
   wgtflag = 2;
 
