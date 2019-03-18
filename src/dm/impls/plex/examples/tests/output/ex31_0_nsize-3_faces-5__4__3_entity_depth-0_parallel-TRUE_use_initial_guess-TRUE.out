@@ -3,6 +3,6 @@ Size of generated auxiliary graph: 42
 Using ParMETIS to partition graph.
 Using current distribution of points as initial guess.
 Comparing number of owned entities of depth 0 on each process before rebalancing, after rebalancing, and after consistency checks.
-Initial.     Min: 30, Max: 54, Ratio: 1.800000
-Rebalanced.  Min: 37, Max: 44, Ratio: 1.189189
-After.      Min: 37, Max: 44, Ratio: 1.189189
+Initial.     Min: 30, Avg: 40, Max: 54, Balance: 1.350000
+Rebalanced.  Min: 37, Avg: 40, Max: 44, Balance: 1.100000
+After.       Min: 37, Avg: 40, Max: 44, Balance: 1.100000

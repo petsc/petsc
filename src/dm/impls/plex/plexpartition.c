@@ -2352,6 +2352,31 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt skip, PetscInt *vtxwgt, PetscInt *part, PetscViewer viewer)
+{
+    PetscInt *distribution, min, max, sum, size, rank, i, ierr;
+    PetscFunctionBegin;
+    ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+    ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      if (part) distribution[part[i]] += vtxwgt[skip*i];
+      else distribution[rank] += vtxwgt[skip*i];
+    }
+    ierr = MPI_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+    min = distribution[0];
+    max = distribution[0];
+    sum = distribution[0];
+    for (i=1; i<size; i++) {
+      if (distribution[i]<min) min=distribution[i];
+      if (distribution[i]>max) max=distribution[i];
+      sum += distribution[i];
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "Min: %D, Avg: %D, Max: %D, Balance: %f\n", min, sum/size, max, (max*1.*size)/sum);CHKERRQ(ierr);
+    ierr = PetscFree(distribution);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexRebalanceSharedPoints - Redistribute points in the plex that are shared in order to achieve better balancing. This routine updates the PointSF of the DM inplace.
 
@@ -2756,30 +2781,11 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   /*Let's check how well we did distributing points*/
   if (viewer) {
-    PetscInt *distribution, *distribution_before, min, max, min_before, max_before;
-    ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
-    ierr = PetscCalloc1(size, &distribution_before);CHKERRQ(ierr);
-    for (i=0; i<cumSumVertices[rank+1]-cumSumVertices[rank]; i++) {
-      distribution[part[i]] += vtxwgt[ncon*i];
-      distribution_before[rank] += vtxwgt[ncon*i];
-    }
-    ierr = MPI_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, distribution_before, size, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-    min = distribution[0];
-    max = distribution[0];
-    min_before = distribution_before[0];
-    max_before = distribution_before[0];
-    for (i=1; i<size; i++) {
-      if (distribution[i]<min) min=distribution[i];
-      if (distribution[i]>max) max=distribution[i];
-      if (distribution_before[i]<min_before) min_before=distribution_before[i];
-      if (distribution_before[i]>max_before) max_before=distribution_before[i];
-    }
     ierr = PetscViewerASCIIPrintf(viewer, "Comparing number of owned entities of depth %D on each process before rebalancing, after rebalancing, and after consistency checks.\n", entityDepth);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Initial.     Min: %D, Max: %D, Ratio: %f\n", min_before, max_before, (max_before*1.)/min_before);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Rebalanced.  Min: %D, Max: %D, Ratio: %f\n", min, max, (max*1.)/min);CHKERRQ(ierr);
-    ierr = PetscFree(distribution);CHKERRQ(ierr);
-    ierr = PetscFree(distribution_before);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Initial.     ");CHKERRQ(ierr);
+    ierr = DMPlexViewDistribution(comm, cumSumVertices[rank+1]-cumSumVertices[rank], ncon, vtxwgt, NULL, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Rebalanced.  ");CHKERRQ(ierr);
+    ierr = DMPlexViewDistribution(comm, cumSumVertices[rank+1]-cumSumVertices[rank], ncon, vtxwgt, part, viewer);CHKERRQ(ierr);
   }
 
   /* Now check that every vertex is owned by a process that it is actually connected to. */
@@ -2794,20 +2800,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   /* Let's see how significant the influences of the previous fixing up step was.*/
   if (viewer) {
-    PetscInt *distribution, min, max;
-    ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
-    for (i=0; i<cumSumVertices[rank+1]-cumSumVertices[rank]; i++) {
-      distribution[part[i]] += vtxwgt[ncon*i];
-    }
-    ierr = MPI_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-    min = distribution[0];
-    max = distribution[0];
-    for (i=1; i<size; i++) {
-      if (distribution[i]<min) min=distribution[i];
-      if (distribution[i]>max) max=distribution[i];
-    }
-    ierr = PetscViewerASCIIPrintf(viewer, "After.      Min: %D, Max: %D, Ratio: %f\n", min, max, (max*1.)/min);CHKERRQ(ierr);
-    ierr = PetscFree(distribution);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "After.       ");CHKERRQ(ierr);
+    ierr = DMPlexViewDistribution(comm, cumSumVertices[rank+1]-cumSumVertices[rank], ncon, vtxwgt, part, viewer);CHKERRQ(ierr);
   }
 
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
