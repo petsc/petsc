@@ -44,6 +44,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
     help.addArgument('PETSc', '-with-display=<x11display>',       nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
+    help.addArgument('PETSc', '-with-package-scripts=<pyscripts>',nargs.ArgFileList(None,None,'Specify configure package scripts for user provided packages'))
     return
 
   def registerPythonFile(self,filename,directory):
@@ -117,16 +118,15 @@ class Configure(config.base.Configure):
     self.functions.headerPrefix  = self.headerPrefix
     self.libraries.headerPrefix  = self.headerPrefix
 
-    # Look for any user provided --download-xxx=directory packages
-    for arg in sys.argv:
-      if arg.startswith('--download-') and arg.find('=') > -1:
-        pname = arg[11:arg.find('=')]
-        if not hasattr(self,pname):
-          dname = os.path.dirname(arg[arg.find('=')+1:])
-          if os.path.isdir(dname) and not os.path.isfile(os.path.join(dname,pname+'.py')):
-            self.framework.logPrint('User is registering a new package: '+arg)
-            sys.path.append(dname)
-            self.registerPythonFile(pname+'.py','')
+    # Register user provided package scripts
+    if 'with-package-scripts' in self.framework.argDB:
+      for script in self.framework.argDB['with-package-scripts']:
+        if os.path.splitext(script)[1] != '.py':
+          raise RuntimeError('Only python scripts compatible with configure package script format should be specified! Invalid option -with-package-scripts='+script)
+        self.framework.logPrint('User is registering a new package script: '+script)
+        dname,fname = os.path.split(script)
+        if dname: sys.path.append(dname)
+        self.registerPythonFile(fname,'')
 
     # test for a variety of basic headers and functions
     headersC = map(lambda name: name+'.h', ['setjmp','dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
