@@ -258,6 +258,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
       coords[i+0] = PetscCosReal(alpha)*x - PetscSinReal(alpha)*y;
       coords[i+1] = PetscSinReal(alpha)*x + PetscCosReal(alpha)*y;
+#if 0
+      if ((PetscAbsReal(x - 0.333333333) < 1.0e-7) && (PetscAbsReal(y - 0.333333333) < 1.0e-7)) {
+        coords[i+0] += PetscCosReal(alpha)*0.05;
+        coords[i+1] += PetscSinReal(alpha)*0.05;
+      }
+#endif
     }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = DMSetCoordinates(*dm, coordinates);CHKERRQ(ierr);
@@ -329,6 +335,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   const PetscInt  dim   = user->dim;
   PetscFE         fe[2];
   PetscQuadrature q;
+  Parameter      *param;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -346,8 +353,10 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = SetupProblem(dm, user);CHKERRQ(ierr);
+  ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
   while (cdm) {
     ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBasisRotation(cdm, param->alpha, 0.0, 0.0);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
@@ -433,6 +442,16 @@ int main(int argc, char **argv)
         -fieldsplit_velocity_pc_type lu \
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   test:
+    suffix: 2d_quad_q1_p0_conv_u0_alpha
+    requires: !single
+    args: -simplex 0 -dm_plex_separate_marker -dm_refine 1 -u_0 0.125 -alpha 0.3927 \
+      -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
+      -snes_convergence_estimate -convest_num_refine 2 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+  test:
     suffix: 2d_quad_q1_p0_conv_gmg_vanka
     requires: !single long_runtime
     args: -simplex 0 -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
@@ -449,7 +468,17 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -dm_refine 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
-      -snes_convergence_estimate -convest_num_refine 2 -snes_error_if_not_converged \
+      -dmsnes_check -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+  test:
+    suffix: 2d_tri_p2_p1_conv_u0_alpha
+    requires: triangle !single
+    args: -dm_plex_separate_marker -dm_refine 0 -u_0 0.125 -alpha 0.3927 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
+      -dmsnes_check -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
@@ -459,7 +488,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
-      -snes_convergence_estimate -convest_num_refine 1 -snes_error_if_not_converged \
+      -dmsnes_check -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type mg \
