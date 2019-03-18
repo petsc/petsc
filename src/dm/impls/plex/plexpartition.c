@@ -2353,7 +2353,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
 }
 
 /*@
-  DMPlexRebalanceSharedPoints - Redistribute points in the plex that are shared in order to achieve better balancing.
+  DMPlexRebalanceSharedPoints - Redistribute points in the plex that are shared in order to achieve better balancing. This routine updates the PointSF of the DM inplace.
 
   Input parameters:
   + dm - The DMPlex object.
@@ -2376,7 +2376,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscBool   *toBalance, *isLeaf, *isExclusivelyOwned, *isNonExclusivelyOwned;
   PetscInt    numExclusivelyOwned, numNonExclusivelyOwned;
   PetscMPIInt rank, size;
-  PetscInt    *numLocalVerticesAllProcesses, *cumSumVertices, *cumSumDegrees, *globalNumbersOfLocalOwnedVertices, *locationsOfLeafs, *rankOnLeafs, *remoteLocalPointOfLeafs, *points, *leafGlobalNumbers;
+  PetscInt    *cumSumDegrees, *globalNumbersOfLocalOwnedVertices, *locationsOfLeafs, *rankOnLeafs, *remoteLocalPointOfLeafs, *points, *leafGlobalNumbers;
+  const       PetscInt *cumSumVertices;
   PetscInt    offset, counter;
   PetscInt    lenadjncy, numNonExclusivelyOwnedConnectTo, numLeafs;
   PetscInt    *xadj, *adjncy, *vtxwgt;
@@ -2394,22 +2395,18 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscSFNode *leafLocationsNew;
   Mat         A, Apre;
   PetscScalar one = 1;
-  PetscBool   flg = PETSC_FALSE;
   const char *prefix = NULL;
   PetscViewer       viewer;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
 
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, prefix, "-dm_rebalance_partition_view", &flg, NULL);
-
   ierr = PetscLogEventBegin(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
 
-  if (flg) {
-    ierr = PetscOptionsGetViewer(comm,((PetscObject)dm)->options, prefix,"-dm_rebalance_partition_view",&viewer,&format,NULL);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject)dm)->options, prefix,"-dm_rebalance_partition_view",&viewer,&format,NULL);
+  if(viewer) {
     ierr = PetscViewerPushFormat(viewer,format);
   }
 
@@ -2475,17 +2472,13 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   /* We are going to build a graph with one vertex per core representing the
    * exclusively owned points and then one vertex per nonExclusively owned
    * point. */
-  ierr = PetscMalloc1(size, &numLocalVerticesAllProcesses);CHKERRQ(ierr);
-  numLocalVerticesAllProcesses[rank] = 1 + numNonExclusivelyOwned;
-  /* For numbering purposes we need to figure out how many vertices are on each core. */
-  ierr = MPI_Allgather(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,numLocalVerticesAllProcesses,1,MPIU_INT,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(size+1, &cumSumVertices);CHKERRQ(ierr);
-  cumSumVertices[0] = 0;
-  for (i=1; i<=size; i++) {
-    cumSumVertices[i] = cumSumVertices[i-1] + numLocalVerticesAllProcesses[i-1];
-  }
-  ierr = PetscFree(numLocalVerticesAllProcesses);CHKERRQ(ierr);
+  PetscLayout layout;
+  ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(layout, 1 + numNonExclusivelyOwned);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(layout, &cumSumVertices);CHKERRQ(ierr);
+
   ierr = PetscMalloc1(pEnd-pStart+1, &cumSumDegrees);CHKERRQ(ierr);
   cumSumDegrees[0] = 0;
   for (i=1; i<=pEnd-pStart; i++) {
@@ -2644,24 +2637,24 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     if (ncon>1) vtxwgt[ncon*(i+1)+1] = 0;
   }
 
-  if (flg) {
+  if (viewer) {
     ierr = PetscViewerASCIIPrintf(viewer, "Attempt rebalancing of shared points of depth %D on interface of mesh distribution.\n", entityDepth);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Size of generated auxiliary graph: %D\n", cumSumVertices[size]);CHKERRQ(ierr);
   }
   if (parallel) {
-    if (flg) { ierr = PetscViewerASCIIPrintf(viewer, "Using ParMETIS to partition graph.\n");CHKERRQ(ierr); }
+    if (viewer) { ierr = PetscViewerASCIIPrintf(viewer, "Using ParMETIS to partition graph.\n");CHKERRQ(ierr); }
     if (useInitialGuess) {
-      if (flg) { ierr = PetscViewerASCIIPrintf(viewer, "Using current distribution of points as initial guess.\n");CHKERRQ(ierr); }
+      if (viewer) { ierr = PetscViewerASCIIPrintf(viewer, "Using current distribution of points as initial guess.\n");CHKERRQ(ierr); }
       PetscStackPush("ParMETIS_V3_RefineKway");
-      ierr = ParMETIS_V3_RefineKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+      ierr = ParMETIS_V3_RefineKway((PetscInt*)cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscStackPop;
     } else {
       PetscStackPush("ParMETIS_V3_PartKway");
-      ierr = ParMETIS_V3_PartKway(cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+      ierr = ParMETIS_V3_PartKway((PetscInt*)cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscStackPop;
     }
   } else {
-    if (flg) { ierr = PetscViewerASCIIPrintf(viewer, "Using METIS to partition graph.\n");CHKERRQ(ierr); }
+    if (viewer) { ierr = PetscViewerASCIIPrintf(viewer, "Using METIS to partition graph.\n");CHKERRQ(ierr); }
     Mat As;
     PetscInt numRows;
     PetscInt *partGlobal;
@@ -2674,7 +2667,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
     ierr = MatGetSize(As, &numRows, NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(numRows, &partGlobal);CHKERRQ(ierr);
-    if (rank == 0) {
+    if (!rank) {
       PetscInt *adjncy_g, *xadj_g, *vtxwgt_g;
       lenadjncy = 0;
   
@@ -2709,7 +2702,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       }
       ierr = PetscMalloc1(64, &options);CHKERRQ(ierr);
       ierr = METIS_SetDefaultOptions(options); /* initialize all defaults */
-      options[METIS_OPTION_CONTIG]  = 1;
+      options[METIS_OPTION_CONTIG] = 1;
       PetscStackPush("METIS_PartGraphKway");
       METIS_PartGraphKway(&numRows, &ncon, xadj_g, adjncy_g, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
       PetscStackPop;
@@ -2719,10 +2712,17 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     }
     ierr = PetscFree(numExclusivelyOwnedAll);CHKERRQ(ierr);
 
-    ierr = MPI_Bcast(partGlobal,numRows,MPIU_INT,0, comm);CHKERRQ(ierr);
-    for (i=cumSumVertices[rank]; i<cumSumVertices[rank+1]; i++) {
-      part[i-cumSumVertices[rank]] = partGlobal[i];
+    /* Now scatter the parts array. */
+    {
+      PetscInt *counts;
+      ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
+      for(i=0; i<size; i++) {
+        counts[i] = cumSumVertices[i+1] - cumSumVertices[i];
+      }
+      ierr = MPI_Scatterv(partGlobal, counts, cumSumVertices, MPIU_INT, part, counts[rank], MPIU_INT, 0, comm);CHKERRQ(ierr);
+      ierr = PetscFree(counts);CHKERRQ(ierr);
     }
+
     ierr = PetscFree(partGlobal);CHKERRQ(ierr);
     ierr = MatDestroy(&As);CHKERRQ(ierr);
   }
@@ -2755,7 +2755,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
 
   /*Let's check how well we did distributing points*/
-  if (flg) {
+  if (viewer) {
     PetscInt *distribution, *distribution_before, min, max, min_before, max_before;
     ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
     ierr = PetscCalloc1(size, &distribution_before);CHKERRQ(ierr);
@@ -2793,7 +2793,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   }
 
   /* Let's see how significant the influences of the previous fixing up step was.*/
-  if (flg) {
+  if (viewer) {
     PetscInt *distribution, min, max;
     ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
     for (i=0; i<cumSumVertices[rank+1]-cumSumVertices[rank]; i++) {
@@ -2810,7 +2810,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     ierr = PetscFree(distribution);CHKERRQ(ierr);
   }
 
-  ierr = PetscFree(cumSumVertices);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscFree(firstVertices);CHKERRQ(ierr);
   ierr = PetscFree(renumbering);CHKERRQ(ierr);
   ierr = PetscFree(xadj);CHKERRQ(ierr);
@@ -2915,7 +2915,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscFree(isExclusivelyOwned);CHKERRQ(ierr);
   ierr = PetscFree(newOwners);CHKERRQ(ierr);
   ierr = PetscFree(newNumbers);CHKERRQ(ierr);
-  if (flg) {
+  if (viewer) {
     ierr = PetscViewerPopFormat(viewer);
     ierr = PetscViewerDestroy(&viewer);
   }
