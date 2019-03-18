@@ -81,8 +81,28 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-/* This assumes that the DM has been cloned prior to the call */
-PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+/*@C
+  DMCreateSectionSubDM - Returns an IS and subDM+subSection encapsulating a subproblem defined by the fields in a PetscSection in the DM.
+
+  Not collective
+
+  Input Parameters:
++ dm        - The DM object
+. numFields - The number of fields in this subproblem
+- fields    - The field numbers of the selected fields
+
+  Output Parameters:
++ is - The global indices for the subproblem
+- subdm - The DM for the subproblem, which must already have be cloned from dm
+
+  Note: This handles all information in the DM class and the PetscSection. This is used as the basis for creating subDMs in specialized classes,
+  such as Plex and Forest.
+
+  Level: intermediate
+
+.seealso DMCreateSubDM(), DMGetSection(), DMPlexSetMigrationSF(), DMView()
+@*/
+PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscSection   section, sectionGlobal;
   PetscInt      *subIndices;
@@ -220,8 +240,27 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
   PetscFunctionReturn(0);
 }
 
-/* This assumes that the DM has been cloned prior to the call */
-PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, DM *superdm)
+/*@C
+  DMCreateSectionSuperDM - Returns an arrays of ISes and DM+Section encapsulating a superproblem defined by the DM+Sections passed in.
+
+  Not collective
+
+  Input Parameter:
++ dms - The DM objects
+- len - The number of DMs
+
+  Output Parameters:
++ is - The global indices for the subproblem, or NULL
+- superdm - The DM for the superproblem, which must already have be cloned
+
+  Note: This handles all information in the DM class and the PetscSection. This is used as the basis for creating subDMs in specialized classes,
+  such as Plex and Forest.
+
+  Level: intermediate
+
+.seealso DMCreateSuperDM(), DMGetSection(), DMPlexSetMigrationSF(), DMView()
+@*/
+PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
 {
   MPI_Comm       comm;
   PetscSection   supersection, *sections, *sectionGlobals;
