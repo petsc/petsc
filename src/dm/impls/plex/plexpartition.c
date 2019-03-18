@@ -2356,7 +2356,10 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
   DMPlexRebalanceSharedPoints - Redistribute points in the plex that are shared in order to achieve better balancing.
 
   Input parameters:
-  + dm - The DMPlex object
+  + dm - The DMPlex object.
+  + entityDepth: depth of the entity to balance (0 -> balance vertices).
+  + useInitialGuess: whether to use the current distribution as initial guess (only used by ParMETIS).
+  + parallel: Whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
 
   Level: user
 
@@ -2415,9 +2418,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size==1) PetscFunctionReturn(0);
 
-  /* Figure out all points in the plex that we are interested in balancing.  In
-   * this case we are just interested in vertices. Should generalize that at
-   * some point.  */
+  /* Figure out all points in the plex that we are interested in balancing. */
   ierr = DMPlexGetDepthStratum(dm, entityDepth, &eBegin, &eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd-pStart, &toBalance);CHKERRQ(ierr);
