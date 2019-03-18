@@ -33,21 +33,14 @@ cdef class Scatter(Object):
         CHKERR( VecScatterDestroy(&self.sct) )
         return self
 
-    def createWithData(self, Vec vec_from, IS is_from or None,
+    def create(self, Vec vec_from, IS is_from or None,
                Vec vec_to, IS is_to or None):
         cdef PetscIS cisfrom = NULL, cisto = NULL
         if is_from is not None: cisfrom = is_from.iset
         if is_to   is not None: cisto   = is_to.iset
         cdef PetscScatter newsct = NULL
-        CHKERR( VecScatterCreateWithData(
+        CHKERR( VecScatterCreate(
                 vec_from.vec, cisfrom, vec_to.vec, cisto, &newsct) )
-        PetscCLEAR(self.obj); self.sct = newsct
-        return self
-
-    def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscScatter newsct = NULL
-        CHKERR( VecScatterCreate(ccomm, &newsct) )
         PetscCLEAR(self.obj); self.sct = newsct
         return self
 

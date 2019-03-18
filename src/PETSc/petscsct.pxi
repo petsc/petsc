@@ -10,8 +10,7 @@ cdef extern from * nogil:
 
     int VecScatterView(PetscScatter,PetscViewer)
     int VecScatterDestroy(PetscScatter*)
-    int VecScatterCreateWithData(PetscVec,PetscIS,PetscVec,PetscIS,PetscScatter*)
-    int VecScatterCreate(MPI_Comm,PetscScatter*)
+    int VecScatterCreate(PetscVec,PetscIS,PetscVec,PetscIS,PetscScatter*)
     int VecScatterSetFromOptions(PetscScatter)
     int VecScatterSetType(PetscScatter,PetscScatterType)
     int VecScatterGetType(PetscScatter,PetscScatterType*)
