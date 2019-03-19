@@ -3426,18 +3426,15 @@ PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
 PetscErrorCode  MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMapping *mapping)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
-#if defined(PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
   PetscInt           gid,lid,i,j,ncols,ec;
   PetscInt           *garray;
-#endif
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(mapping,2);
-#if defined(PETSC_USE_CTABLE)
   /* use a table */
   ierr = PetscTableCreate(mat->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
   ec = 0;
@@ -3483,9 +3480,6 @@ PetscErrorCode  MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalM
   ierr = PetscLayoutSetUp((mat->cmap));CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,mat->cmap->bs,mat->cmap->n,garray,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingSetType(*mapping,ISLOCALTOGLOBALMAPPINGHASH);CHKERRQ(ierr);
-#else
-  SETERRQ(PETSC_COMM_SELF,"Require ctable \n");
-#endif
   PetscFunctionReturn(0);
 }
 
