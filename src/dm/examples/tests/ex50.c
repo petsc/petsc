@@ -3,7 +3,7 @@ static char help[] = "Test GLVis high-order support with DMDAs\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmplex.h>
-#include <petscdt.h>
+#include <petscgll.h>
 
 static PetscErrorCode MapPoint(PetscScalar xyz[],PetscScalar mxyz[])
 {
@@ -61,17 +61,17 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
   if (ho) { /* each element mapped to a sphere */
     DM           cdm;
     Vec          cv;
+    PetscGLL     gll;
     PetscSection cSec;
     DMDACoor3d   ***_coords;
     PetscScalar  shift[3],*cptr;
     PetscInt     nel,dof = 3,nex,ney,nez,gx = 0,gy = 0,gz = 0;
     PetscInt     i,j,k,pi,pj,pk;
-    PetscReal    nodes[dof],weights[dof];
     char         name[256];
 
     ierr = PetscOptionsGetInt(NULL,NULL,"-order",&dof,NULL);CHKERRQ(ierr);
     dof += 1;
-    ierr = PetscDTGaussLobattoLegendreQuadrature(dof,PETSCGLL_VIA_LINEARALGEBRA,nodes,weights);CHKERRQ(ierr);
+    ierr = PetscGLLCreate(dof,PETSCGLL_VIA_LINEARALGEBRA,&gll);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm,&cv);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
     if (plex) {
@@ -113,11 +113,11 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
           for (pk=0;pk<dof;pk++) {
             PetscScalar xyz[3];
 
-            xyz[2] = nodes[pk];
+            xyz[2] = gll.nodes[pk];
             for (pj=0;pj<dof;pj++) {
-              xyz[1] = nodes[pj];
+              xyz[1] = gll.nodes[pj];
               for (pi=0;pi<dof;pi++) {
-                xyz[0] = nodes[pi];
+                xyz[0] = gll.nodes[pi];
                 ierr = MapPoint(xyz,cptr);CHKERRQ(ierr);
                 cptr[0] += shift[0];
                 cptr[1] += shift[1];
@@ -129,6 +129,7 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
         }
       }
     }
+    ierr = PetscGLLDestroy(&gll);CHKERRQ(ierr);
     if (!plex) {
       ierr = DMDAVecRestoreArray(cdm,cv,&_coords);CHKERRQ(ierr);
     }

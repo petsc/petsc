@@ -1,6 +1,5 @@
 
-#include <petscdt.h>
-#include <petscdmplex.h>
+#include <petscgll.h>
 #include <petscdraw.h>
 #include <petscviewer.h>
 #include <petscksp.h>
@@ -11,18 +10,18 @@
       Plots the L_2 norm of the error (evaluated via the GLL nodes and weights) as a function of n.
 
 */
-PetscErrorCode ComputeSolution(PetscInt n,PetscReal *nodes,PetscReal *weights,Vec x)
+PetscErrorCode ComputeSolution(PetscGLL *gll,Vec x)
 {
   PetscErrorCode ierr;
-  PetscInt       i,m;
+  PetscInt       i,n;
   PetscScalar    *xx;
   PetscReal      xd;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(x,&m);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    xd    = nodes[i];
+  for (i=0; i<n; i++) {
+    xd    = gll->nodes[i];
     xx[i] = (xd*xd - 1.0)*PetscCosReal(5.*PETSC_PI*xd);
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
@@ -33,19 +32,19 @@ PetscErrorCode ComputeSolution(PetscInt n,PetscReal *nodes,PetscReal *weights,Ve
       Evaluates \integral_{-1}^{1} f*v_i  where v_i is the ith basis polynomial via the GLL nodes and weights, since the v_i
       basis function is zero at all nodes except the ith one the integral is simply the weight_i * f(node_i)
 */
-PetscErrorCode ComputeRhs(PetscInt n,PetscReal *nodes,PetscReal *weights,Vec b)
+PetscErrorCode ComputeRhs(PetscGLL *gll,Vec b)
 {
   PetscErrorCode ierr;
-  PetscInt       i,m;
+  PetscInt       i,n;
   PetscScalar    *bb;
   PetscReal      xd;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(b,&m);CHKERRQ(ierr);
+  ierr = VecGetSize(b,&n);CHKERRQ(ierr);
   ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    xd    = nodes[i];
-    bb[i] = -weights[i]*(-20.*PETSC_PI*xd*PetscSinReal(5.*PETSC_PI*xd) + (2. - (5.*PETSC_PI)*(5.*PETSC_PI)*(xd*xd - 1.))*PetscCosReal(5.*PETSC_PI*xd));
+  for (i=0; i<n; i++) {
+    xd    = gll->nodes[i];
+    bb[i] = -gll->weights[i]*(-20.*PETSC_PI*xd*PetscSinReal(5.*PETSC_PI*xd) + (2. - (5.*PETSC_PI)*(5.*PETSC_PI)*(xd*xd - 1.))*PetscCosReal(5.*PETSC_PI*xd));
   }
   ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -54,8 +53,7 @@ PetscErrorCode ComputeRhs(PetscInt n,PetscReal *nodes,PetscReal *weights,Vec b)
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscReal      *nodes;
-  PetscReal      *weights;
+  PetscGLL       gll;
   PetscInt       N = 80,n;
   PetscReal      **A;
   Mat            K;
@@ -81,20 +79,19 @@ int main(int argc,char **args)
 
   for (n=4; n<N; n+=2) {
     /*
-       compute GLL node and weight values
+       gll simply contains the GLL node and weight values
     */
-    ierr = PetscMalloc2(n,&nodes,n,&weights);CHKERRQ(ierr);
-    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGLL_VIA_LINEARALGEBRA,nodes,weights);
+    ierr = PetscGLLCreate(n,PETSCGLL_VIA_LINEARALGEBRA,&gll);CHKERRQ(ierr);
     /*
        Creates the element stiffness matrix for the given gll
     */
-    ierr = PetscGLLElementLaplacianCreate(n,nodes,weights,&A);CHKERRQ(ierr);
+    ierr = PetscGLLElementLaplacianCreate(&gll,&A);CHKERRQ(ierr);
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,&A[0][0],&K);CHKERRQ(ierr);
     rows[0] = 0;
     rows[1] = n-1;
     ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
     ierr = MatCreateVecs(K,&x,&b);CHKERRQ(ierr);
-    ierr = ComputeRhs(n,nodes,weights,b);CHKERRQ(ierr);
+    ierr = ComputeRhs(&gll,b);CHKERRQ(ierr);
     /*
         Replace the first and last rows/columns of the matrix with the identity to obtain the zero Dirichlet boundary conditions
     */
@@ -106,12 +103,12 @@ int main(int argc,char **args)
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
     /* compute the error to the continium problem */
-    ierr = ComputeSolution(n,nodes,weights,b);CHKERRQ(ierr);
+    ierr = ComputeSolution(&gll,b);CHKERRQ(ierr);
     ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
 
     /* compute the L^2 norm of the error */
     ierr = VecGetArray(x,&f);CHKERRQ(ierr);
-    ierr = PetscGLLIntegrate(n,nodes,weights,f,&norm);CHKERRQ(ierr);
+    ierr = PetscGLLIntegrate(&gll,f,&norm);CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&f);CHKERRQ(ierr);
     norm = PetscSqrtReal(norm);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"L^2 norm of the error %D %g\n",n,(double)norm);CHKERRQ(ierr);
@@ -124,8 +121,8 @@ int main(int argc,char **args)
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
     ierr = MatDestroy(&K);CHKERRQ(ierr);
-    ierr = PetscGLLElementLaplacianDestroy(n,nodes,weights,&A);CHKERRQ(ierr);
-    ierr = PetscFree2(nodes,weights);CHKERRQ(ierr);
+    ierr = PetscGLLElementLaplacianDestroy(&gll,&A);CHKERRQ(ierr);
+    ierr = PetscGLLDestroy(&gll);CHKERRQ(ierr);
   }
   ierr = PetscDrawSetPause(draw,-2);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);

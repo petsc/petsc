@@ -342,16 +342,6 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixGeneral(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBody(DM, MatNullSpace *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBodies(DM, PetscInt, DMLabel, const PetscInt[], const PetscInt[], MatNullSpace *);
 
-PETSC_EXTERN PetscErrorCode PetscGLLIntegrate(PetscInt, PetscReal *, PetscReal *, const PetscReal *, PetscReal *);
-PETSC_EXTERN PetscErrorCode PetscGLLElementLaplacianCreate(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
-PETSC_EXTERN PetscErrorCode PetscGLLElementLaplacianDestroy(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
-PETSC_EXTERN PetscErrorCode PetscGLLElementGradientCreate(PetscInt, PetscReal *, PetscReal *, PetscReal ***, PetscReal ***);
-PETSC_EXTERN PetscErrorCode PetscGLLElementGradientDestroy(PetscInt, PetscReal *, PetscReal *, PetscReal ***, PetscReal ***);
-PETSC_EXTERN PetscErrorCode PetscGLLElementAdvectionCreate(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
-PETSC_EXTERN PetscErrorCode PetscGLLElementAdvectionDestroy(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
-PETSC_EXTERN PetscErrorCode PetscGLLElementMassCreate(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
-PETSC_EXTERN PetscErrorCode PetscGLLElementMassDestroy(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
-
 PETSC_EXTERN PetscErrorCode DMPlexSetSNESLocalFEM(DM,void *,void *,void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualFEM(DM, Vec, Vec, void *);

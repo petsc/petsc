@@ -1,5 +1,5 @@
 
-#include <petscdmplex.h>
+#include <petscgll.h>
 #include <petscdraw.h>
 #include <petscviewer.h>
 #include <petscksp.h>
@@ -13,12 +13,6 @@
       This is not intended to be highly optimized in either memory usage or time, but strifes for simplicity.
 
 */
-
-typedef struct {
-  PetscInt  n;                /* number of nodes */
-  PetscReal *nodes;           /* GLL nodes */
-  PetscReal *weights;         /* GLL weights */
-} PetscGLL;
 
 PetscErrorCode ComputeSolution(DM da,PetscGLL *gll,Vec u)
 {
@@ -134,15 +128,13 @@ int main(int argc,char **args)
     /*
        gll simply contains the GLL node and weight values
     */
-    ierr = PetscMalloc2(n,&gll.nodes,n,&gll.weights);CHKERRQ(ierr);
-    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGLL_VIA_LINEARALGEBRA,gll.nodes,gll.weights);CHKERRQ(ierr);
-    gll.n = n;
-    ierr = DMDASetGLLCoordinates(da,gll.n,gll.nodes);CHKERRQ(ierr);
+    ierr = PetscGLLCreate(n,PETSCGLL_VIA_LINEARALGEBRA,&gll);CHKERRQ(ierr);
+    ierr = DMDASetGLLCoordinates(da,&gll);CHKERRQ(ierr);
 
     /*
        Creates the element stiffness matrix for the given gll
     */
-    ierr = PetscGLLElementLaplacianCreate(gll.n,gll.nodes,gll.weights,&A);CHKERRQ(ierr);
+    ierr = PetscGLLElementLaplacianCreate(&gll,&A);CHKERRQ(ierr);
 
     /*
       Scale the element stiffness and weights by the size of the element
@@ -198,7 +190,7 @@ int main(int argc,char **args)
 
     /* compute the L^2 norm of the error */
     ierr = VecGetArray(x,&f);CHKERRQ(ierr);
-    ierr = PetscGLLIntegrate(gll.n,gll.nodes,gll.weights,f,&norm);CHKERRQ(ierr);
+    ierr = PetscGLLIntegrate(&gll,f,&norm);CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&f);CHKERRQ(ierr);
     norm = PetscSqrtReal(norm);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"L^2 norm of the error %D %g\n",n,(double)norm);CHKERRQ(ierr);
@@ -212,8 +204,8 @@ int main(int argc,char **args)
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
     ierr = MatDestroy(&K);CHKERRQ(ierr);
-    ierr = PetscGLLElementLaplacianDestroy(gll.n,gll.nodes,gll.weights,&A);CHKERRQ(ierr);
-    ierr = PetscFree2(gll.nodes,gll.weights);CHKERRQ(ierr);
+    ierr = PetscGLLElementLaplacianDestroy(&gll,&A);CHKERRQ(ierr);
+    ierr = PetscGLLDestroy(&gll);CHKERRQ(ierr);
     ierr = DMDestroy(&da);CHKERRQ(ierr);
   }
   ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
