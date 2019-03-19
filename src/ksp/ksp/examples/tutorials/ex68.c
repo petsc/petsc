@@ -1,6 +1,5 @@
 
 #include <petscdt.h>
-#include <petscdmplex.h>
 #include <petscdraw.h>
 #include <petscviewer.h>
 #include <petscksp.h>
@@ -84,11 +83,11 @@ int main(int argc,char **args)
        compute GLL node and weight values
     */
     ierr = PetscMalloc2(n,&nodes,n,&weights);CHKERRQ(ierr);
-    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGLL_VIA_LINEARALGEBRA,nodes,weights);
+    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA,nodes,weights);
     /*
        Creates the element stiffness matrix for the given gll
     */
-    ierr = PetscGLLElementLaplacianCreate(n,nodes,weights,&A);CHKERRQ(ierr);
+    ierr = PetscGaussLobattoLegendreElementLaplacianCreate(n,nodes,weights,&A);CHKERRQ(ierr);
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,&A[0][0],&K);CHKERRQ(ierr);
     rows[0] = 0;
     rows[1] = n-1;
@@ -111,7 +110,7 @@ int main(int argc,char **args)
 
     /* compute the L^2 norm of the error */
     ierr = VecGetArray(x,&f);CHKERRQ(ierr);
-    ierr = PetscGLLIntegrate(n,nodes,weights,f,&norm);CHKERRQ(ierr);
+    ierr = PetscGaussLobattoLegendreIntegrate(n,nodes,weights,f,&norm);CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&f);CHKERRQ(ierr);
     norm = PetscSqrtReal(norm);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"L^2 norm of the error %D %g\n",n,(double)norm);CHKERRQ(ierr);
@@ -124,7 +123,7 @@ int main(int argc,char **args)
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
     ierr = MatDestroy(&K);CHKERRQ(ierr);
-    ierr = PetscGLLElementLaplacianDestroy(n,nodes,weights,&A);CHKERRQ(ierr);
+    ierr = PetscGaussLobattoLegendreElementLaplacianDestroy(n,nodes,weights,&A);CHKERRQ(ierr);
     ierr = PetscFree2(nodes,weights);CHKERRQ(ierr);
   }
   ierr = PetscDrawSetPause(draw,-2);CHKERRQ(ierr);

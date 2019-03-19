@@ -587,7 +587,7 @@ static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp
 
    Input Parameter:
 +  n - number of grid nodes
--  type - PETSCGLL_VIA_LINEARALGEBRA or PETSCGLL_VIA_NEWTON
+-  type - PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA or PETSCGaussLobattoLegendre_VIA_NEWTON
 
    Output Arguments:
 +  x - quadrature points
@@ -606,14 +606,14 @@ static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp
 .seealso: PetscDTGaussQuadrature()
 
 @*/
-PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGLLCreateType type,PetscReal *x,PetscReal *w)
+PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGaussLobattoLegendreCreateType type,PetscReal *x,PetscReal *w)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (npoints < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
 
-  if (type == PETSCGLL_VIA_LINEARALGEBRA) {
+  if (type == PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA) {
     PetscReal      *M,si;
     PetscBLASInt   bn,lierr;
     PetscReal      x0,z0,z1,z2;
@@ -659,7 +659,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGLLCr
     PetscReal *pt;
     ierr = PetscMalloc1(npoints,&pt);CHKERRQ(ierr);
 
-    if (npoints > 30) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PETSCGLL_VIA_NEWTON produces incorrect answers for n > 30");
+    if (npoints > 30) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PETSCGaussLobattoLegendre_VIA_NEWTON produces incorrect answers for n > 30");
     x[0]     = -1.0;
     x[npoints-1]   = 1.0;
     w[0]   = w[npoints-1] = 2./(((PetscReal)npoints)*(((PetscReal)npoints)-1.0));;
@@ -1383,3 +1383,394 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
   ierr = PetscFree4(tau,Bsinv,targety,Btarget);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@C
+   PetscGaussLobattoLegendreIntegrate - Compute the L2 integral of a function on the GLL points
+
+   Not Collective
+
+   Input Parameter:
++  n - the number of GLL nodes
+.  nodes - the GLL nodes
+.  weights - the GLL weights
+.  f - the function values at the nodes
+
+   Output Parameter:
+.  in - the value of the integral
+
+   Level: beginner
+
+.seealso: PetscDTGaussLobattoLegendreQuadrature()
+
+@*/
+PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n,PetscReal *nodes,PetscReal *weights,const PetscReal *f,PetscReal *in)
+{
+  PetscInt          i;
+
+  PetscFunctionBegin;
+  *in = 0.;
+  for (i=0; i<n; i++) {
+    *in += f[i]*f[i]*weights[i];
+  }
+  PetscFunctionReturn(0);
+}
+
+static void gllqAndLEvaluation(PetscInt n,PetscReal x,PetscReal *q,PetscReal *qp,PetscReal *Ln)
+/*
+  Compute the polynomial q(x) = L_{N+1}(x) - L_{n-1}(x) and its derivative in
+  addition to L_N(x) as these are needed for computing the GLL points via Newton's method.
+  Reference: "Implementing Spectral Methods for Partial Differential Equations: Algorithms
+  for Scientists and Engineers" by David A. Kopriva.
+*/
+{
+  PetscInt k;
+
+  PetscReal Lnp;
+  PetscReal Lnp1, Lnp1p;
+  PetscReal Lnm1, Lnm1p;
+  PetscReal Lnm2, Lnm2p;
+
+  Lnm1  = 1.0;
+  *Ln   = x;
+  Lnm1p = 0.0;
+  Lnp   = 1.0;
+
+  for (k=2; k<=n; ++k) {
+    Lnm2  = Lnm1;
+    Lnm1  = *Ln;
+    Lnm2p = Lnm1p;
+    Lnm1p = Lnp;
+    *Ln   = (2.*((PetscReal)k)-1.)/(1.0*((PetscReal)k))*x*Lnm1 - (((PetscReal)k)-1.)/((PetscReal)k)*Lnm2;
+    Lnp   = Lnm2p + (2.0*((PetscReal)k)-1.)*Lnm1;
+  }
+  k     = n+1;
+  Lnp1  = (2.*((PetscReal)k)-1.)/(((PetscReal)k))*x*(*Ln) - (((PetscReal)k)-1.)/((PetscReal)k)*Lnm1;
+  Lnp1p = Lnm1p + (2.0*((PetscReal)k)-1.)*(*Ln);
+  *q    = Lnp1 - Lnm1;
+  *qp   = Lnp1p - Lnm1p;
+}
+
+/*@C
+   PetscGaussLobattoLegendreElementLaplacianCreate - computes the Laplacian for a single 1d GLL element
+
+   Not Collective
+
+   Input Parameter:
++  n - the number of GLL nodes
+.  nodes - the GLL nodes
+.  weights - the GLL weights
+
+   Output Parameter:
+.  A - the stiffness element
+
+   Level: beginner
+
+   Notes:
+    Destroy this with PetscGaussLobattoLegendreElementLaplacianDestroy()
+
+   You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row oriented (the array is symmetric)
+
+.seealso: PetscDTGaussLobattoLegendreQuadrature(), PetscGaussLobattoLegendreElementLaplacianDestroy()
+
+@*/
+PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n,PetscReal *nodes,PetscReal *weights,PetscReal ***AA)
+{
+  PetscReal        **A;
+  PetscErrorCode  ierr;
+  const PetscReal  *gllnodes = nodes;
+  const PetscInt   p = n-1;
+  PetscReal        z0,z1,z2 = -1,x,Lpj,Lpr;
+  PetscInt         i,j,nn,r;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(n,&A);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*n,&A[0]);CHKERRQ(ierr);
+  for (i=1; i<n; i++) A[i] = A[i-1]+n;
+
+  for (j=1; j<p; j++) {
+    x  = gllnodes[j];
+    z0 = 1.;
+    z1 = x;
+    for (nn=1; nn<p; nn++) {
+      z2 = x*z1*(2.*((PetscReal)nn)+1.)/(((PetscReal)nn)+1.)-z0*(((PetscReal)nn)/(((PetscReal)nn)+1.));
+      z0 = z1;
+      z1 = z2;
+    }
+    Lpj=z2;
+    for (r=1; r<p; r++) {
+      if (r == j) {
+        A[j][j]=2./(3.*(1.-gllnodes[j]*gllnodes[j])*Lpj*Lpj);
+      } else {
+        x  = gllnodes[r];
+        z0 = 1.;
+        z1 = x;
+        for (nn=1; nn<p; nn++) {
+          z2 = x*z1*(2.*((PetscReal)nn)+1.)/(((PetscReal)nn)+1.)-z0*(((PetscReal)nn)/(((PetscReal)nn)+1.));
+          z0 = z1;
+          z1 = z2;
+        }
+        Lpr     = z2;
+        A[r][j] = 4./(((PetscReal)p)*(((PetscReal)p)+1.)*Lpj*Lpr*(gllnodes[j]-gllnodes[r])*(gllnodes[j]-gllnodes[r]));
+      }
+    }
+  }
+  for (j=1; j<p+1; j++) {
+    x  = gllnodes[j];
+    z0 = 1.;
+    z1 = x;
+    for (nn=1; nn<p; nn++) {
+      z2 = x*z1*(2.*((PetscReal)nn)+1.)/(((PetscReal)nn)+1.)-z0*(((PetscReal)nn)/(((PetscReal)nn)+1.));
+      z0 = z1;
+      z1 = z2;
+    }
+    Lpj     = z2;
+    A[j][0] = 4.*PetscPowRealInt(-1.,p)/(((PetscReal)p)*(((PetscReal)p)+1.)*Lpj*(1.+gllnodes[j])*(1.+gllnodes[j]));
+    A[0][j] = A[j][0];
+  }
+  for (j=0; j<p; j++) {
+    x  = gllnodes[j];
+    z0 = 1.;
+    z1 = x;
+    for (nn=1; nn<p; nn++) {
+      z2 = x*z1*(2.*((PetscReal)nn)+1.)/(((PetscReal)nn)+1.)-z0*(((PetscReal)nn)/(((PetscReal)nn)+1.));
+      z0 = z1;
+      z1 = z2;
+    }
+    Lpj=z2;
+
+    A[p][j] = 4./(((PetscReal)p)*(((PetscReal)p)+1.)*Lpj*(1.-gllnodes[j])*(1.-gllnodes[j]));
+    A[j][p] = A[p][j];
+  }
+  A[0][0]=0.5+(((PetscReal)p)*(((PetscReal)p)+1.)-2.)/6.;
+  A[p][p]=A[0][0];
+  *AA = A;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscGaussLobattoLegendreElementLaplacianDestroy - frees the Laplacian for a single 1d GLL element
+
+   Not Collective
+
+   Input Parameter:
++  n - the number of GLL nodes
+.  nodes - the GLL nodes
+.  weights - the GLL weightss
+-  A - the stiffness element
+
+   Level: beginner
+
+.seealso: PetscDTGaussLobattoLegendreQuadrature(), PetscGaussLobattoLegendreElementLaplacianCreate()
+
+@*/
+PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n,PetscReal *nodes,PetscReal *weights,PetscReal ***AA)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree((*AA)[0]);CHKERRQ(ierr);
+  ierr = PetscFree(*AA);CHKERRQ(ierr);
+  *AA  = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscGaussLobattoLegendreElementGradientCreate - computes the gradient for a single 1d GLL element
+
+   Not Collective
+
+   Input Parameter:
++  n - the number of GLL nodes
+.  nodes - the GLL nodes
+.  weights - the GLL weights
+
+   Output Parameter:
+.  AA - the stiffness element
+-  AAT - the transpose of AA (pass in NULL if you do not need this array)
+
+   Level: beginner
+
+   Notes:
+    Destroy this with PetscGaussLobattoLegendreElementGradientDestroy()
+
+   You can access entries in these arrays with AA[i][j] but in memory it is stored in contiguous memory, row oriented
+
+.seealso: PetscDTGaussLobattoLegendreQuadrature(), PetscGaussLobattoLegendreElementLaplacianDestroy()
+
+@*/
+PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n,PetscReal *nodes,PetscReal *weights,PetscReal ***AA,PetscReal ***AAT)
+{
+  PetscReal        **A, **AT = NULL;
+  PetscErrorCode  ierr;
+  const PetscReal  *gllnodes = nodes;
+  const PetscInt   p = n-1;
+  PetscReal        q,qp,Li, Lj,d0;
+  PetscInt         i,j;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(n,&A);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*n,&A[0]);CHKERRQ(ierr);
+  for (i=1; i<n; i++) A[i] = A[i-1]+n;
+
+  if (AAT) {
+    ierr = PetscMalloc1(n,&AT);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n*n,&AT[0]);CHKERRQ(ierr);
+    for (i=1; i<n; i++) AT[i] = AT[i-1]+n;
+  }
+
+  if (n==1) {A[0][0] = 0.;}
+  d0 = (PetscReal)p*((PetscReal)p+1.)/4.;
+  for  (i=0; i<n; i++) {
+    for  (j=0; j<n; j++) {
+      A[i][j] = 0.;
+      gllqAndLEvaluation(p,gllnodes[i],&q,&qp,&Li);
+      gllqAndLEvaluation(p,gllnodes[j],&q,&qp,&Lj);
+      if (i!=j)             A[i][j] = Li/(Lj*(gllnodes[i]-gllnodes[j]));
+      if ((j==i) && (i==0)) A[i][j] = -d0;
+      if (j==i && i==p)     A[i][j] = d0;
+      if (AT) AT[j][i] = A[i][j];
+    }
+  }
+  if (AAT) *AAT = AT;
+  *AA  = A;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscGaussLobattoLegendreElementGradientDestroy - frees the gradient for a single 1d GLL element obtained with PetscGaussLobattoLegendreElementGradientCreate()
+
+   Not Collective
+
+   Input Parameter:
++  n - the number of GLL nodes
+.  nodes - the GLL nodes
+.  weights - the GLL weights
+.  AA - the stiffness element
+-  AAT - the transpose of the element
+
+   Level: beginner
+
+.seealso: PetscDTGaussLobattoLegendreQuadrature(), PetscGaussLobattoLegendreElementLaplacianCreate(), PetscGaussLobattoLegendreElementAdvectionCreate()
+
+@*/
+PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n,PetscReal *nodes,PetscReal *weights,PetscReal ***AA,PetscReal ***AAT)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree((*AA)[0]);CHKERRQ(ierr);
+  ierr = PetscFree(*AA);CHKERRQ(ierr);
+  *AA  = NULL;
+  if (*AAT) {
+    ierr = PetscFree((*AAT)[0]);CHKERRQ(ierr);
+    ierr = PetscFree(*AAT);CHKERRQ(ierr);
+    *AAT  = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscGaussLobattoLegendreElementAdvectionCreate - computes the advection operator for a single 1d GLL element
+
+   Not Collective
+
+   Input Parameter:
++  n - the number of GLL nodes
+.  nodes - the GLL nodes
+.  weights - the GLL weightss
+
+   Output Parameter:
+.  AA - the stiffness element
+
+   Level: beginner
+
+   Notes:
+    Destroy this with PetscGaussLobattoLegendreElementAdvectionDestroy()
+
+   This is the same as the Gradient operator multiplied by the diagonal mass matrix
+
+   You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row oriented
+
+.seealso: PetscDTGaussLobattoLegendreQuadrature(), PetscGaussLobattoLegendreElementLaplacianCreate(), PetscGaussLobattoLegendreElementAdvectionDestroy()
+
+@*/
+PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n,PetscReal *nodes,PetscReal *weights,PetscReal ***AA)
+{
+  PetscReal       **D;
+  PetscErrorCode  ierr;
+  const PetscReal  *gllweights = weights;
+  const PetscInt   glln = n;
+  PetscInt         i,j;
+
+  PetscFunctionBegin;
+  ierr = PetscGaussLobattoLegendreElementGradientCreate(n,nodes,weights,&D,NULL);CHKERRQ(ierr);
+  for (i=0; i<glln; i++){
+    for (j=0; j<glln; j++) {
+      D[i][j] = gllweights[i]*D[i][j];
+    }
+  }
+  *AA = D;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscGaussLobattoLegendreElementAdvectionDestroy - frees the advection stiffness for a single 1d GLL element
+
+   Not Collective
+
+   Input Parameter:
++  n - the number of GLL nodes
+.  nodes - the GLL nodes
+.  weights - the GLL weights
+-  A - advection
+
+   Level: beginner
+
+.seealso: PetscDTGaussLobattoLegendreQuadrature(), PetscGaussLobattoLegendreElementAdvectionCreate()
+
+@*/
+PetscErrorCode PetscGaussLobattoLegendreElementAdvectionDestroy(PetscInt n,PetscReal *nodes,PetscReal *weights,PetscReal ***AA)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree((*AA)[0]);CHKERRQ(ierr);
+  ierr = PetscFree(*AA);CHKERRQ(ierr);
+  *AA  = NULL;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscGaussLobattoLegendreElementMassCreate(PetscInt n,PetscReal *nodes,PetscReal *weights,PetscReal ***AA)
+{
+  PetscReal        **A;
+  PetscErrorCode  ierr;
+  const PetscReal  *gllweights = weights;
+  const PetscInt   glln = n;
+  PetscInt         i,j;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(glln,&A);CHKERRQ(ierr);
+  ierr = PetscMalloc1(glln*glln,&A[0]);CHKERRQ(ierr);
+  for (i=1; i<glln; i++) A[i] = A[i-1]+glln;
+  if (glln==1) {A[0][0] = 0.;}
+  for  (i=0; i<glln; i++) {
+    for  (j=0; j<glln; j++) {
+      A[i][j] = 0.;
+      if (j==i)     A[i][j] = gllweights[i];
+    }
+  }
+  *AA  = A;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt n,PetscReal *nodes,PetscReal *weights,PetscReal ***AA)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree((*AA)[0]);CHKERRQ(ierr);
+  ierr = PetscFree(*AA);CHKERRQ(ierr);
+  *AA  = NULL;
+  PetscFunctionReturn(0);
+}
+
