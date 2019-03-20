@@ -2374,14 +2374,11 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   const         PetscSFNode *iremote;
   const         PetscInt *ilocal;
   PetscBool    *isLeaf;
-
-
-  PetscSF   sf;
-  MPI_Comm  comm;
-  PetscInt  rank, size;
+  PetscSF       sf;
+  MPI_Comm      comm;
+  PetscMPIInt   rank, size;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -2485,7 +2482,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   counter = 0;
   for (i=0; i<pEnd-pStart; i++) {
     if (newOwners[i] >= 0) {
-       if(newOwners[i] != rank) {
+      if(newOwners[i] != rank) {
         leafsNew[leafCounter] = i;
         leafLocationsNew[leafCounter].rank = newOwners[i];
         leafLocationsNew[leafCounter].index = newNumbers[i];
@@ -2500,7 +2497,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
       }
     }
     if(isLeaf[i]) {
-        counter++;
+      counter++;
     }
   }
 
@@ -2513,27 +2510,28 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
 
 static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt skip, PetscInt *vtxwgt, PetscInt *part, PetscViewer viewer)
 {
-    PetscInt *distribution, min, max, sum, size, rank, i, ierr;
-    PetscFunctionBegin;
-    ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      if (part) distribution[part[i]] += vtxwgt[skip*i];
-      else distribution[rank] += vtxwgt[skip*i];
-    }
-    ierr = MPI_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-    min = distribution[0];
-    max = distribution[0];
-    sum = distribution[0];
-    for (i=1; i<size; i++) {
-      if (distribution[i]<min) min=distribution[i];
-      if (distribution[i]>max) max=distribution[i];
-      sum += distribution[i];
-    }
-    ierr = PetscViewerASCIIPrintf(viewer, "Min: %D, Avg: %D, Max: %D, Balance: %f\n", min, sum/size, max, (max*1.*size)/sum);CHKERRQ(ierr);
-    ierr = PetscFree(distribution);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscInt *distribution, min, max, sum, i, ierr;
+  PetscMPIInt rank, size;
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscCalloc1(size, &distribution);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    if (part) distribution[part[i]] += vtxwgt[skip*i];
+    else distribution[rank] += vtxwgt[skip*i];
+  }
+  ierr = MPI_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  min = distribution[0];
+  max = distribution[0];
+  sum = distribution[0];
+  for (i=1; i<size; i++) {
+    if (distribution[i]<min) min=distribution[i];
+    if (distribution[i]>max) max=distribution[i];
+    sum += distribution[i];
+  }
+  ierr = PetscViewerASCIIPrintf(viewer, "Min: %D, Avg: %D, Max: %D, Balance: %f\n", min, sum/size, max, (max*1.*size)/sum);CHKERRQ(ierr);
+  ierr = PetscFree(distribution);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -2566,7 +2564,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscInt    lenadjncy;
   PetscInt    *xadj, *adjncy, *vtxwgt;
   PetscInt    lenxadj;
-
   PetscInt    *adjwgt = NULL;
   PetscInt    *part, *options;
   PetscInt    nparts, wgtflag, numflag, ncon, edgecut;
@@ -2579,9 +2576,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   const char *prefix = NULL;
   PetscViewer       viewer;
   PetscViewerFormat format;
+  PetscLayout layout;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -2589,13 +2586,10 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   ierr = PetscLogEventBegin(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
 
-
-  ierr = PetscOptionsGetViewer(comm,((PetscObject)dm)->options, prefix,"-dm_rebalance_partition_view",&viewer,&format,NULL);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject)dm)->options, prefix,"-dm_rebalance_partition_view",&viewer,&format,NULL);CHKERRQ(ierr);
   if(viewer) {
-    ierr = PetscViewerPushFormat(viewer,format);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
   }
-
-
 
   /* Figure out all points in the plex that we are interested in balancing. */
   ierr = DMPlexGetDepthStratum(dm, entityDepth, &eBegin, &eEnd);CHKERRQ(ierr);
@@ -2605,7 +2599,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   for (i=0; i<pEnd-pStart; i++) {
     toBalance[i] = (i-pStart>=eBegin && i-pStart<eEnd);
   }
-
 
   /* There are three types of points:
    * exclusivelyOwned: points that are owned by this process and only seen by this process
@@ -2622,7 +2615,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     isExclusivelyOwned[i] = PETSC_FALSE;
     isLeaf[i] = PETSC_FALSE;
   }
-
 
   /* start by marking all the leafs */
   for (i=0; i<nleafs; i++) {
@@ -2650,19 +2642,16 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     }
   }
 
-
   /* We are going to build a graph with one vertex per core representing the
    * exclusively owned points and then one vertex per nonExclusively owned
    * point. */
 
-  PetscLayout layout;
   ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(layout, 1 + numNonExclusivelyOwned);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(layout, &cumSumVertices);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(pEnd-pStart, &globalNumbersOfLocalOwnedVertices);CHKERRQ(ierr);
-
   offset = cumSumVertices[rank];
   counter = 0;
   for (i=0; i<pEnd-pStart; i++) {
@@ -2673,7 +2662,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       }
     }
   }
-
 
   /* send the global numbers of vertices I own to the leafs so that they know to connect to it */
   ierr = PetscMalloc1(pEnd-pStart, &leafGlobalNumbers);CHKERRQ(ierr);
@@ -2728,47 +2716,38 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   nparts = size;
   wgtflag = 2;
-
   numflag = 0;
   ncon = 2;
   real_t *tpwgts;
   ierr = PetscMalloc1(ncon * nparts, &tpwgts);CHKERRQ(ierr);
-
   for (i=0; i<ncon*nparts; i++) {
     tpwgts[i] = 1./(nparts);
   }
 
-
   ierr = PetscMalloc1(ncon, &ubvec);CHKERRQ(ierr);
   ubvec[0] = 1.01;
-  if (ncon>1) ubvec[1] = 1.01;
-  ierr = PetscMalloc1(4, &options);CHKERRQ(ierr);
-  options[0] = 1;
-  options[1] = 0; /* Verbosity */
-  options[2] = 0; /* Seed */
-  options[3] = PARMETIS_PSR_COUPLED; /* Seed */
-    lenadjncy = 0;
-    for (i=0; i<1+numNonExclusivelyOwned; i++) {
-      PetscInt temp=0;
-      ierr = MatGetRow(A, cumSumVertices[rank] + i, &temp, NULL, NULL);CHKERRQ(ierr);
-      lenadjncy += temp;
-      ierr = MatRestoreRow(A, cumSumVertices[rank] + i, &temp, NULL, NULL);CHKERRQ(ierr);
-    }
-    ierr = PetscMalloc1(lenadjncy, &adjncy);CHKERRQ(ierr);
-    lenxadj = 2 + numNonExclusivelyOwned;
-    ierr = PetscMalloc1(lenxadj, &xadj);CHKERRQ(ierr);
-    xadj[0] = 0;
-    counter = 0;
-    for (i=0; i<1+numNonExclusivelyOwned; i++) {
-      PetscInt        temp=0;
-      const PetscInt *cols;
-      ierr = MatGetRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
-      ierr = PetscMemcpy(&adjncy[counter], cols, temp*sizeof(PetscInt));CHKERRQ(ierr);
-      counter += temp;
-      xadj[i+1] = counter;
-      ierr = MatRestoreRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
-    }
-
+  ubvec[1] = 1.01;
+  lenadjncy = 0;
+  for (i=0; i<1+numNonExclusivelyOwned; i++) {
+    PetscInt temp=0;
+    ierr = MatGetRow(A, cumSumVertices[rank] + i, &temp, NULL, NULL);CHKERRQ(ierr);
+    lenadjncy += temp;
+    ierr = MatRestoreRow(A, cumSumVertices[rank] + i, &temp, NULL, NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc1(lenadjncy, &adjncy);CHKERRQ(ierr);
+  lenxadj = 2 + numNonExclusivelyOwned;
+  ierr = PetscMalloc1(lenxadj, &xadj);CHKERRQ(ierr);
+  xadj[0] = 0;
+  counter = 0;
+  for (i=0; i<1+numNonExclusivelyOwned; i++) {
+    PetscInt        temp=0;
+    const PetscInt *cols;
+    ierr = MatGetRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
+    ierr = PetscMemcpy(&adjncy[counter], cols, temp*sizeof(PetscInt));CHKERRQ(ierr);
+    counter += temp;
+    xadj[i+1] = counter;
+    ierr = MatRestoreRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
+  }
 
   ierr = PetscMalloc1(cumSumVertices[rank+1]-cumSumVertices[rank], &part);CHKERRQ(ierr);
   ierr = PetscMalloc1(ncon*(1 + numNonExclusivelyOwned), &vtxwgt);CHKERRQ(ierr);
@@ -2784,6 +2763,11 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     ierr = PetscViewerASCIIPrintf(viewer, "Size of generated auxiliary graph: %D\n", cumSumVertices[size]);CHKERRQ(ierr);
   }
   if (parallel) {
+    ierr = PetscMalloc1(4, &options);CHKERRQ(ierr);
+    options[0] = 1;
+    options[1] = 0; /* Verbosity */
+    options[2] = 0; /* Seed */
+    options[3] = PARMETIS_PSR_COUPLED; /* Seed */
     if (viewer) { ierr = PetscViewerASCIIPrintf(viewer, "Using ParMETIS to partition graph.\n");CHKERRQ(ierr); }
     if (useInitialGuess) {
       if (viewer) { ierr = PetscViewerASCIIPrintf(viewer, "Using current distribution of points as initial guess.\n");CHKERRQ(ierr); }
@@ -2874,7 +2858,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscFree(tpwgts);CHKERRQ(ierr);
   ierr = PetscFree(options);CHKERRQ(ierr);
 
-
   /* Now rename the result so that the vertex resembling the exclusively owned points stays on the same rank */
 
   ierr = PetscMalloc1(size, &firstVertices);CHKERRQ(ierr);
@@ -2911,7 +2894,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     ierr = PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
     PetscFunctionReturn(1);
   }
-
 
   /*Let's check how well we did distributing points*/
   if (viewer) {
@@ -2959,7 +2941,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     ierr = DMPlexRewriteSF(dm, numNonExclusivelyOwned, pointsToRewrite, part+1, degrees);CHKERRQ(ierr);
     ierr = PetscFree(pointsToRewrite);CHKERRQ(ierr);
   }
-
 
   ierr = PetscFree(toBalance);CHKERRQ(ierr);
   ierr = PetscFree(isLeaf);CHKERRQ(ierr);
