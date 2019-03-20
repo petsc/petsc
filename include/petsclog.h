@@ -356,10 +356,10 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
   ((petsc_isend_ct++,0) || PetscMPITypeSize(&(petsc_isend_len),(count),(datatype)) || MPI_Isend((buf),(count),(datatype),(dest),(tag),(comm),(request)))
 
 #define MPI_Startall_irecv(count,datatype,number,requests) \
-  ((petsc_irecv_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&(petsc_irecv_len),(count),(datatype)) || MPI_Startall((number),(requests)))
+  ((petsc_irecv_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&(petsc_irecv_len),(count),(datatype)) || ((number) && MPI_Startall((number),(requests))))
 
 #define MPI_Startall_isend(count,datatype,number,requests) \
-  ((petsc_isend_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&(petsc_isend_len),(count),(datatype)) || MPI_Startall((number),(requests)))
+  ((petsc_isend_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&(petsc_isend_len),(count),(datatype)) || ((number) && MPI_Startall((number),(requests))))
 
 #define MPI_Start_isend(count,datatype,requests) \
   ((petsc_isend_ct++,0) || PetscMPITypeSize((&petsc_isend_len),(count),(datatype)) || MPI_Start((requests)))
@@ -415,10 +415,10 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #else
 
 #define MPI_Startall_irecv(count,datatype,number,requests) \
-  (MPI_Startall((number),(requests)))
+  ((number) && MPI_Startall((number),(requests)))
 
 #define MPI_Startall_isend(count,datatype,number,requests) \
-  (MPI_Startall((number),(requests)))
+  ((number) && MPI_Startall((number),(requests)))
 
 #define MPI_Start_isend(count,datatype,requests) \
   (MPI_Start((requests)))
@@ -480,8 +480,8 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...);
 #define PetscLogEventEnd(e,o1,o2,o3,o4)    0
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
-#define MPI_Startall_irecv(count,datatype,number,requests) MPI_Startall(number,requests)
-#define MPI_Startall_isend(count,datatype,number,requests) MPI_Startall(number,requests)
+#define MPI_Startall_irecv(count,datatype,number,requests) ((number) && MPI_Startall(number,requests))
+#define MPI_Startall_isend(count,datatype,number,requests) ((number) && MPI_Startall(number,requests))
 #define MPI_Start_isend(count,datatype,requests)           MPI_Start(requests)
 
 #endif   /* PETSC_USE_LOG */
