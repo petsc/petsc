@@ -5,6 +5,7 @@ static char FILENAME[] = "ex31.c";
 #include <petscviewerhdf5.h>
 #include "petscsf.h" 
 
+
 typedef struct {
   PetscInt  dim;                          /* The topological mesh dimension */
   PetscInt  faces[3];                     /* Number of faces per dimension */
@@ -67,10 +68,11 @@ int main(int argc, char **argv)
   PetscPartitioner part;
   AppCtx         user;
   IS             is=NULL;
-  PetscSection   s=NULL;
+  PetscSection   s=NULL, gsection=NULL;
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscSF        sf;
+  PetscInt       pStart, pEnd, p, minBefore, maxBefore, minAfter, maxAfter, gSizeBefore, gSizeAfter;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
@@ -96,11 +98,55 @@ int main(int argc, char **argv)
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
-  if (size>0) {
+  /* We make a PetscSection with a DOF on every mesh entity of depth
+   * user.entityDepth, then make a global section and look at its storage size.
+   * We do the same thing after the rebalancing and then assert that the size
+   * remains the same. We also make sure that the balance has improved at least
+   * a little bit compared to the initial decomposition. */
+
+  if (size>1) {
+    ierr = PetscSectionCreate(comm, &s);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(s, 1);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(s, 0, 1);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, user.entityDepth, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(s, pStart, pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      ierr = PetscSectionSetDof(s, p, 1);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(s, p, 0, 1);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(s);CHKERRQ(ierr);
     ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-    ierr = PetscSFView(sf, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &gsection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(gsection, &gSizeBefore);CHKERRQ(ierr);
+    minBefore = gSizeBefore;
+    maxBefore = gSizeBefore;
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &gSizeBefore, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &minBefore, 1, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &maxBefore, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);
   }
+
   ierr = DMPlexRebalanceSharedPoints(dm, user.entityDepth, user.useInitialGuess, user.parallel);CHKERRQ(ierr);
+
+  if (size>1) {
+    ierr = PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &gsection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(gsection, &gSizeAfter);CHKERRQ(ierr);
+    minAfter = gSizeAfter;
+    maxAfter = gSizeAfter;
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &gSizeAfter, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &minAfter, 1, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &maxAfter, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+    if (gSizeAfter != gSizeBefore) {
+      SETERRQ(comm, PETSC_ERR_PLIB, "Global section has not the same size before and after.");
+    }
+    if(!(minAfter >= minBefore && maxAfter <= maxBefore && (minAfter > minBefore || maxAfter < maxBefore)))
+    {
+      SETERRQ(comm, PETSC_ERR_PLIB, "DMPlexRebalanceSharedPoints did not improve mesh point balance.");
+    }
+    ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
+  }
+
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
