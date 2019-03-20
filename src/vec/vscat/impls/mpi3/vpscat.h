@@ -61,7 +61,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 
   if (!(mode & SCATTER_LOCAL)) {
     /* post receives since they were not previously posted    */
-    if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}
+    ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,MPIU_SCALAR,nrecvs,rwaits);CHKERRQ(ierr);
 
     if (to->sharedspace) {
       /* Pack the send data into my shared memory buffer  --- this is the normal forward scatter */
@@ -77,7 +77,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     /* this version packs and sends one at a time */
     for (i=0; i<nsends; i++) {
       PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
-      ierr = MPI_Start_isend((sstarts[i+1]-sstarts[i])*bs,swaits+i);CHKERRQ(ierr);
+      ierr = MPI_Start_isend((sstarts[i+1]-sstarts[i])*bs,MPIU_SCALAR,swaits+i);CHKERRQ(ierr);
     }
   }
 
@@ -210,12 +210,12 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI3Node)(VecScatter ctx,Vec xin,Vec yin
 
   if (!(mode & SCATTER_LOCAL)) {
     /* post receives since they were not previously posted    */
-    if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}
+    ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,MPIU_SCALAR,nrecvs,rwaits);CHKERRQ(ierr);
 
     /* this version packs and sends one at a time */
     for (i=0; i<nsends; i++) {
       PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
-      ierr = MPI_Start_isend((sstarts[i+1]-sstarts[i])*bs,swaits+i);CHKERRQ(ierr);
+      ierr = MPI_Start_isend((sstarts[i+1]-sstarts[i])*bs,MPIU_SCALAR,swaits+i);CHKERRQ(ierr);
     }
   }
 
