@@ -3,6 +3,7 @@ static char FILENAME[] = "ex31.c";
 
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
+#include "petscsf.h" 
 
 typedef struct {
   PetscInt  dim;                          /* The topological mesh dimension */
@@ -69,6 +70,7 @@ int main(int argc, char **argv)
   PetscSection   s=NULL;
   PetscErrorCode ierr;
   PetscMPIInt    size;
+  PetscSF        sf;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
@@ -94,6 +96,10 @@ int main(int argc, char **argv)
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
+  if (size>0) {
+    ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+    ierr = PetscSFView(sf, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   ierr = DMPlexRebalanceSharedPoints(dm, user.entityDepth, user.useInitialGuess, user.parallel);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
 
@@ -106,9 +112,23 @@ int main(int argc, char **argv)
   test:
     # rebalance a mesh
     suffix: 0
-    nsize: {{1 2 3 4}separate output}
+    nsize: {{2 3 4}separate output}
     requires: parmetis
-    args: -faces {{2,3,4  5,4,3  7,11,5}separate output} -partitioning parmetis -interpolate -dm_rebalance_partition_view -entity_depth {{0 1}separate output} -parallel {{FALSE TRUE}separate output} -use_initial_guess {{FALSE TRUE}separate output}
+    args: -faces {{2,3,4  5,4,3  7,11,5}separate output} -partitioning parmetis -interpolate -dm_rebalance_partition_view -entity_depth {{0 1}separate output} -parallel {{FALSE TRUE}separate output} -use_initial_guess FALSE
+
+  test:
+    # rebalance a mesh but use the initial guess (uses a random algorithm and gives different results on different machines, so just check that it runs).
+    suffix: 1
+    nsize: {{2 3 4}separate output}
+    requires: parmetis
+    args: -faces {{2,3,4  5,4,3  7,11,5}separate output} -partitioning parmetis -interpolate -entity_depth {{0 1}separate output} -parallel TRUE -use_initial_guess TRUE
+
+  test:
+    # no-op in serial
+    suffix: 2
+    nsize: {{1}separate output}
+    requires: parmetis
+    args: -faces 2,3,4 -partitioning parmetis -interpolate -dm_rebalance_partition_view -entity_depth 0 -parallel FALSE -use_initial_guess FALSE
 
 TEST*/
 

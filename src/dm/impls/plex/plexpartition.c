@@ -2742,8 +2742,11 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscMalloc1(ncon, &ubvec);CHKERRQ(ierr);
   ubvec[0] = 1.01;
   if (ncon>1) ubvec[1] = 1.01;
-  ierr = PetscMalloc1(1, &options);CHKERRQ(ierr);
-  options[0] = 0;
+  ierr = PetscMalloc1(4, &options);CHKERRQ(ierr);
+  options[0] = 1;
+  options[1] = 0; /* Verbosity */
+  options[2] = 0; /* Seed */
+  options[3] = PARMETIS_PSR_COUPLED; /* Seed */
     lenadjncy = 0;
     for (i=0; i<1+numNonExclusivelyOwned; i++) {
       PetscInt temp=0;
