@@ -315,8 +315,8 @@ struct _p_VecScatter {
   void              *fromdata,*todata;
   void              *spptr;
   PetscBool         is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */
-  Vec               to_v,from_v;          /* used in VecScatterCreateWithData() and VecScatterSetData() */
-  IS                to_is,from_is;        /* used in VecScatterCreateWithData() and VecScatterSetData() */
+  Vec               to_v,from_v;          /* used in VecScatterCreate() */
+  IS                to_is,from_is;        /* used in VecScatterCreate() */
   const PetscScalar *xdata;               /* vector data to read from */
   PetscScalar       *ydata;               /* vector data to write to */
 

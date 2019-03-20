@@ -158,7 +158,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
     ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, 0, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
   }
   ierr = DMGetGlobalVector(da, &vec);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(vec, is, *newvec, NULL, scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vec, is, *newvec, NULL, scatter);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da, &vec);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);

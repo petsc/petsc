@@ -341,7 +341,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_scatters(DM dmf,DM dmc)
   ierr = VecSetSizes(xtmp,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(xtmp,bs);CHKERRQ(ierr);
   ierr = VecSetType(xtmp,vectype);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
 
   ierr = PetscObjectCompose((PetscObject)dmf,"isin",(PetscObject)isin);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)dmf,"scatter",(PetscObject)scatter);CHKERRQ(ierr);

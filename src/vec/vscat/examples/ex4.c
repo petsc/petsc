@@ -54,7 +54,7 @@ int main(int argc,char **argv)
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,2,ix,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,2,iy,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
 
   ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event1,0,0,0,0);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,ix,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,iy,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
 
   ierr = PetscLogStagePush(stage2);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event2,0,0,0,0);CHKERRQ(ierr);

@@ -1541,7 +1541,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxGlobal,PETSC_OWN_POINTER,&isGlobal);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(global,isGlobal,local,isLocal,&stag->gtol);CHKERRQ(ierr);
+    ierr = VecScatterCreate(global,isGlobal,local,isLocal,&stag->gtol);CHKERRQ(ierr);
     ierr = VecDestroy(&global);CHKERRQ(ierr);
     ierr = VecDestroy(&local);CHKERRQ(ierr);
     ierr = ISDestroy(&isLocal);CHKERRQ(ierr);  /* frees idxLocal */

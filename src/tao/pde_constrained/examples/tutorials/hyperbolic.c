@@ -176,8 +176,8 @@ int main(int argc, char **argv)
   ierr = VecSetSizes(x,hi-lo+hi2-lo2,user.n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(x,user.s_is,user.y,is_allstate,&user.state_scatter);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(x,user.d_is,user.u,is_alldesign,&user.design_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,user.s_is,user.y,is_allstate,&user.state_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,user.d_is,user.u,is_alldesign,&user.design_scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is_alldesign);CHKERRQ(ierr);
   ierr = ISDestroy(&is_allstate);CHKERRQ(ierr);
 
@@ -937,7 +937,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = VecGetOwnershipRange(user->yi[i],&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_yi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo+i*user->mx*user->mx,1,&is_from_y);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->y,is_from_y,user->yi[i],is_to_yi,&user->yi_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->y,is_from_y,user->yi[i],is_to_yi,&user->yi_scatter[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&is_to_yi);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_y);CHKERRQ(ierr);
   }
@@ -965,7 +965,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = VecGetOwnershipRange(user->uxi[i],&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_uxi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo+2*i*user->mx*user->mx,1,&is_from_u);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->u,is_from_u,user->uxi[i],is_to_uxi,&user->uxi_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->u,is_from_u,user->uxi[i],is_to_uxi,&user->uxi_scatter[i]);CHKERRQ(ierr);
 
     ierr = ISDestroy(&is_to_uxi);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_u);CHKERRQ(ierr);
@@ -973,7 +973,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = VecGetOwnershipRange(user->uyi[i],&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_uyi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo+(2*i+1)*user->mx*user->mx,1,&is_from_u);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->u,is_from_u,user->uyi[i],is_to_uyi,&user->uyi_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->u,is_from_u,user->uyi[i],is_to_uyi,&user->uyi_scatter[i]);CHKERRQ(ierr);
 
     ierr = ISDestroy(&is_to_uyi);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_u);CHKERRQ(ierr);
@@ -981,7 +981,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = VecGetOwnershipRange(user->uxi[i],&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_uxi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_from_u);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->ui[i],is_from_u,user->uxi[i],is_to_uxi,&user->ux_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->ui[i],is_from_u,user->uxi[i],is_to_uxi,&user->ux_scatter[i]);CHKERRQ(ierr);
 
     ierr = ISDestroy(&is_to_uxi);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_u);CHKERRQ(ierr);
@@ -989,7 +989,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = VecGetOwnershipRange(user->uyi[i],&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_uyi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo+user->mx*user->mx,1,&is_from_u);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->ui[i],is_from_u,user->uyi[i],is_to_uyi,&user->uy_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->ui[i],is_from_u,user->uyi[i],is_to_uyi,&user->uy_scatter[i]);CHKERRQ(ierr);
 
     ierr = ISDestroy(&is_to_uyi);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_u);CHKERRQ(ierr);
@@ -997,7 +997,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = VecGetOwnershipRange(user->ui[i],&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_uxi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo+2*i*user->mx*user->mx,1,&is_from_u);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->u,is_from_u,user->ui[i],is_to_uxi,&user->ui_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->u,is_from_u,user->ui[i],is_to_uxi,&user->ui_scatter[i]);CHKERRQ(ierr);
 
     ierr = ISDestroy(&is_to_uxi);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_u);CHKERRQ(ierr);

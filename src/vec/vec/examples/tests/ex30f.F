@@ -85,8 +85,8 @@
      &                     fromis,ierr)
       call ISCreateGeneral(PETSC_COMM_SELF,eight,to,PETSC_COPY_VALUES,        &
      &                     tois,ierr)
-      call VecScatterCreateWithData(v1,fromis,v2,tois,scat1,ierr)
-      call VecScatterCreateWithData(v1,fromis,v3,tois,scat2,ierr)
+      call VecScatterCreate(v1,fromis,v2,tois,scat1,ierr)
+      call VecScatterCreate(v1,fromis,v3,tois,scat2,ierr)
       call ISDestroy(fromis,ierr)
       call ISDestroy(tois,ierr)
 

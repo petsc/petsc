@@ -33,7 +33,7 @@ $        VecDestroy(&vout);
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
   automatically (unless you pass NULL in for that argument if you do not need it).
 
-.seealso VecScatterCreateWithData(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
+.seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
 @*/
 PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
@@ -63,7 +63,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,tmpv);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   if (tmpvout) {ierr = VecDestroy(tmpv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -100,7 +100,7 @@ $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(&ctx);
 $        VecDestroy(&vout);
 
-.seealso VecScatterCreateWithData(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
+.seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
   automatically (unless you pass NULL in for that argument if you do not need it).
@@ -136,7 +136,7 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,tmpv);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   if (tmpvout) {ierr = VecDestroy(tmpv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

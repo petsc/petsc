@@ -295,7 +295,7 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
    ierr = MatCreateVecs(pc->pmat,&outervec,NULL);CHKERRQ(ierr);
    ierr = VecCreateMPI(comm,fromrows_localsize,PETSC_DETERMINE,&(osm->pcx));CHKERRQ(ierr);
    ierr = VecDuplicate(osm->pcx,&(osm->pcy));CHKERRQ(ierr);
-   ierr = VecScatterCreateWithData(osm->pcx,NULL,outervec,fromrows,&(osm->pctoouter));CHKERRQ(ierr);
+   ierr = VecScatterCreate(osm->pcx,NULL,outervec,fromrows,&(osm->pctoouter));CHKERRQ(ierr);
    ierr = MatCreateSubMatrix(pc->pmat,fromrows,fromrows,MAT_INITIAL_MATRIX,&(osm->permutationP));CHKERRQ(ierr);
    ierr = PetscObjectReference((PetscObject)fromrows);CHKERRQ(ierr);
    osm->permutationIS = fromrows;
@@ -461,7 +461,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = VecGetOwnershipRange(osm->gx, &gostart, NULL);CHKERRQ(ierr);
     ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),on,gostart,1, &goid);CHKERRQ(ierr);
     /* gois might indices not on local */
-    ierr = VecScatterCreateWithData(x,gois,osm->gx,goid, &(osm->gorestriction));CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,gois,osm->gx,goid, &(osm->gorestriction));CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n,&numbering);CHKERRQ(ierr);
     ierr = PetscObjectsListGetGlobalNumbering(PetscObjectComm((PetscObject)pc),osm->n,(PetscObject*)osm->ois,NULL,numbering);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -517,7 +517,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = VecRestoreArray(osm->gy,&array);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),in,iidx,PETSC_OWN_POINTER,&giis);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),in,ioidx,PETSC_OWN_POINTER,&giois);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(y,giis,osm->gy,giois,&osm->girestriction);CHKERRQ(ierr);
+      ierr = VecScatterCreate(y,giis,osm->gy,giois,&osm->girestriction);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr);
       ierr = ISDestroy(&giis);CHKERRQ(ierr);
       ierr = ISDestroy(&giois);CHKERRQ(ierr);

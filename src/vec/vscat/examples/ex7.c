@@ -44,7 +44,7 @@ int main(int argc,char **argv)
     ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,idx,PETSC_COPY_VALUES,&ix);CHKERRQ(ierr);
     ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,idy,PETSC_COPY_VALUES,&iy);CHKERRQ(ierr);
   }
-  ierr = VecScatterCreateWithData(x,ix,y,iy,&vscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,ix,y,iy,&vscat);CHKERRQ(ierr);
 
   /* Do the vecscatter */
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

@@ -702,7 +702,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
     ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
     ierr = VecGetSize(y,&vsize1);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&list1);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -715,7 +715,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateStride(comm,local_n0,local_0_start,1,&list1);
       ierr = ISCreateStride(comm,local_n0,low,1,&list2);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -731,7 +731,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateStride(comm,local_n0*dim[1],local_0_start*dim[1],1,&list1);
       ierr = ISCreateStride(comm,local_n0*dim[1],low,1,&list2);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -761,7 +761,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       ierr = ISCreateGeneral(comm,local_n0*dim[1],indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,local_n0*dim[1],indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
 
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -778,7 +778,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateStride(comm,local_n0*dim[1]*dim[2],local_0_start*dim[1]*dim[2],1,&list1);
       ierr = ISCreateStride(comm,local_n0*dim[1]*dim[2],low,1,&list2);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -809,7 +809,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateGeneral(comm,local_n0*dim[1]*dim[2],indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,local_n0*dim[1]*dim[2],indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -826,7 +826,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateStride(comm,local_n0*(fftw->partial_dim),local_0_start*(fftw->partial_dim),1,&list1);
       ierr = ISCreateStride(comm,local_n0*(fftw->partial_dim),low,1,&list2);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -860,7 +860,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       }
       ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -932,7 +932,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 
   if (size==1) {
     ierr = ISCreateStride(comm,N,0,1,&list1);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -946,7 +946,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateStride(comm,local_n1,local_1_start,1,&list1);
       ierr = ISCreateStride(comm,local_n1,low,1,&list2);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -962,7 +962,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateStride(comm,local_n0*dim[1],local_0_start*dim[1],1,&list1);
       ierr = ISCreateStride(comm,local_n0*dim[1],low,1,&list2);
-      ierr = VecScatterCreateWithData(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -990,7 +990,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
       ierr = ISCreateGeneral(comm,local_n0*dim[1],indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,local_n0*dim[1],indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
 
-      ierr = VecScatterCreateWithData(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -1006,7 +1006,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateStride(comm,local_n0*dim[1]*dim[2],local_0_start*dim[1]*dim[2],1,&list1);
       ierr = ISCreateStride(comm,local_n0*dim[1]*dim[2],low,1,&list2);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -1036,7 +1036,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
       ierr = ISCreateGeneral(comm,local_n0*dim[1]*dim[2],indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,local_n0*dim[1]*dim[2],indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
 
-      ierr = VecScatterCreateWithData(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -1052,7 +1052,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 
       ierr = ISCreateStride(comm,local_n0*(fftw->partial_dim),local_0_start*(fftw->partial_dim),1,&list1);
       ierr = ISCreateStride(comm,local_n0*(fftw->partial_dim),low,1,&list2);
-      ierr = VecScatterCreateWithData(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
@@ -1085,7 +1085,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
       ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
 
-      ierr = VecScatterCreateWithData(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
