@@ -136,13 +136,8 @@ int main(int argc, char **argv)
     ierr = MPI_Allreduce(MPI_IN_PLACE, &gSizeAfter, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(MPI_IN_PLACE, &minAfter, 1, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(MPI_IN_PLACE, &maxAfter, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
-    if (gSizeAfter != gSizeBefore) {
-      SETERRQ(comm, PETSC_ERR_PLIB, "Global section has not the same size before and after.");
-    }
-    if(!(minAfter >= minBefore && maxAfter <= maxBefore && (minAfter > minBefore || maxAfter < maxBefore)))
-    {
-      SETERRQ(comm, PETSC_ERR_PLIB, "DMPlexRebalanceSharedPoints did not improve mesh point balance.");
-    }
+    if (gSizeAfter != gSizeBefore) SETERRQ(comm, PETSC_ERR_PLIB, "Global section has not the same size before and after.");
+    if (!(minAfter >= minBefore && maxAfter <= maxBefore && (minAfter > minBefore || maxAfter < maxBefore))) SETERRQ(comm, PETSC_ERR_PLIB, "DMPlexRebalanceSharedPoints did not improve mesh point balance.");
     ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   }
