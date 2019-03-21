@@ -163,6 +163,17 @@
       <h4>PetscViewer:</h4>
       <ul>
         <li>Added new command line options to GLVis viewer, see PetscViewerGLVisOpen() manual page for details.</li>
+        <li>PetscViewerHDF5{Has,Read,Write}Attribute():
+          <ul>
+            <li>take the input path as relative to the current (pushed) group</li>
+            <li>support not only dataset attributes but also group attributes</li>
+            <li>PetscViewerHDF5WriteAttribute() creates the group if it doesn't exist</li>
+            <li>PetscViewerHDF5HasAttribute() returns false if the parent path doesn’t exist instead of failing</li>
+          </ul>
+        </li>
+        <li>Added PetscViewerHDF5Has{Group,Object}()</li>
+        <li>Added PetscViewerHDF5{Has,Write,Read}ObjectAttribute()</li>
+        <li>PetscViewerHDF5OpenGroup() opens the root group (/) if none is pushed</li>
       </ul>
       <h4>SYS:</h4>
         <li>PetscOptionsGetViewer() takes a NULL or PetscOptions object as the second argument.</li>
