@@ -2626,8 +2626,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscSFComputeDegreeBegin(sf, &degrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(sf, &degrees);CHKERRQ(ierr);
 
-  numExclusivelyOwned=0;
-  numNonExclusivelyOwned=0;
+  numExclusivelyOwned = 0;
+  numNonExclusivelyOwned = 0;
   for (i=0; i<pEnd-pStart; i++) {
     if (toBalance[i]) {
       if (degrees[i] > 0) {
