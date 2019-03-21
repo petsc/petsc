@@ -2454,7 +2454,6 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   ierr = PetscFree(locationsOfLeafs);CHKERRQ(ierr);
   ierr = PetscFree(remoteLocalPointOfLeafs);CHKERRQ(ierr);
 
-  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(sf, MPIU_INT, newOwners, newOwners);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_INT, newOwners, newOwners);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(sf, MPIU_INT, newNumbers, newNumbers);CHKERRQ(ierr);
@@ -2551,7 +2550,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 {
 #if defined(PETSC_HAVE_PARMETIS)
   PetscSF     sf;
-  PetscInt    ierr, i, j;
+  PetscInt    ierr, i, j, idx, jdx;
   PetscInt    eBegin, eEnd, nroots, nleafs, pStart, pEnd;
   const       PetscInt *degrees, *ilocal;
   const       PetscSFNode *iremote;
@@ -2572,7 +2571,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscInt    failed, failedGlobal;
   MPI_Comm    comm;
   Mat         A, Apre;
-  PetscScalar one = 1;
   const char *prefix = NULL;
   PetscViewer       viewer;
   PetscViewerFormat format;
@@ -2668,8 +2666,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscSFBcastBegin(sf, MPIU_INT, globalNumbersOfLocalOwnedVertices, leafGlobalNumbers);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_INT, globalNumbersOfLocalOwnedVertices, leafGlobalNumbers);CHKERRQ(ierr);
 
-  /* Now start building the data structur for ParMETIS */
-  /* vtxdist = cum_sum_vertices */
+  /* Now start building the data structure for ParMETIS */
 
   ierr = MatCreate(comm, &Apre);CHKERRQ(ierr);
   ierr = MatSetType(Apre, MATPREALLOCATOR);CHKERRQ(ierr);
@@ -2678,13 +2675,12 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   for (i=0; i<pEnd-pStart; i++) {
     if (toBalance[i]) {
-      if (isNonExclusivelyOwned[i]) {
-        ierr = MatSetValues(Apre, 1, &(cumSumVertices[rank]), 1, &(globalNumbersOfLocalOwnedVertices[i]), &one, INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValues(Apre, 1, &(globalNumbersOfLocalOwnedVertices[i]), 1, &(cumSumVertices[rank]), &one, INSERT_VALUES);CHKERRQ(ierr);
-      } else if (isLeaf[i]) {
-        ierr = MatSetValues(Apre, 1, &(cumSumVertices[rank]), 1, &(leafGlobalNumbers[i]), &one, INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValues(Apre, 1, &(leafGlobalNumbers[i]), 1, &(cumSumVertices[rank]), &one, INSERT_VALUES);CHKERRQ(ierr);
-      }
+      idx = cumSumVertices[rank];
+      if (isNonExclusivelyOwned[i]) jdx = globalNumbersOfLocalOwnedVertices[i];
+      else if (isLeaf[i]) jdx = leafGlobalNumbers[i];
+      else continue;
+      ierr = MatSetValue(Apre, idx, jdx, 1, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(Apre, jdx, idx, 1, INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -2699,13 +2695,12 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   for (i=0; i<pEnd-pStart; i++) {
     if (toBalance[i]) {
-      if (isNonExclusivelyOwned[i]) {
-        ierr = MatSetValue(A, cumSumVertices[rank], globalNumbersOfLocalOwnedVertices[i], 1, INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValue(A, globalNumbersOfLocalOwnedVertices[i], cumSumVertices[rank], 1, INSERT_VALUES);CHKERRQ(ierr);
-      } else if (isLeaf[i]) {
-        ierr = MatSetValue(A, cumSumVertices[rank], leafGlobalNumbers[i], 1, INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValue(A, leafGlobalNumbers[i], cumSumVertices[rank], 1, INSERT_VALUES);CHKERRQ(ierr);
-      }
+      idx = cumSumVertices[rank];
+      if (isNonExclusivelyOwned[i]) jdx = globalNumbersOfLocalOwnedVertices[i];
+      else if (isLeaf[i]) jdx = leafGlobalNumbers[i];
+      else continue;
+      ierr = MatSetValue(A, idx, jdx, 1, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(A, jdx, idx, 1, INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
