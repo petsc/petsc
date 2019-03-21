@@ -3,6 +3,70 @@
 #include <petscblaslapack.h>
 #include <petsctime.h>
 
+/*@
+  DMPlexFindVertices - Try to find DAG points based on their coordinates.
+
+  Not Collective (provided DMGetCoordinatesLocalSetUp() has been called already)
+
+  Input Parameters:
++ dm - The DMPlex object
+. npoints - The number of sought points
+. coords - The array of coordinates of the sought points
+- eps - The tolerance or PETSC_DEFAULT
+
+  Output Parameters:
+. dagPoints - The array of found DAG points, or -1 if not found
+
+  Level: intermediate
+
+  Notes:
+  The length of the array coords must be npoints * dim where dim is the spatial dimension returned by DMGetDimension().
+
+  The output array dagPoints is NOT newly allocated; the user must pass an array of length npoints.
+
+  Each rank does the search independently; a nonnegative value is returned only if this rank's local DMPlex portion contains the point.
+
+  The tolerance is interpreted as the maximum Euclidean (L2) distance of the sought point from the specified coordinates.
+
+.seealso: DMPlexCreate(), DMGetCoordinates()
+@*/
+PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord[], PetscReal eps, PetscInt dagPoints[])
+{
+  PetscInt          c, dim, i, j, ndof, o, p, vStart, vEnd;
+  PetscSection      cs;
+  Vec               allCoordsVec;
+  const PetscScalar *allCoords;
+  PetscReal         norm;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (eps < 0) eps = PETSC_SQRT_MACHINE_EPSILON;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &cs);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &allCoordsVec);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  for (i=0,j=0; i < npoints; i++,j+=dim) {
+    dagPoints[i] = -1;
+    for (p = vStart; p < vEnd; p++) {
+      ierr = PetscSectionGetOffset(cs, p, &o);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(cs, p, &ndof);CHKERRQ(ierr);
+      if (PetscUnlikely(ndof != dim)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = dim", p, ndof, dim);
+      norm = 0.0;
+      for (c = 0; c < dim; c++) {
+        norm += PetscSqr(coord[j+c] - PetscRealPart(allCoords[o+c]));
+      }
+      norm = PetscSqrtReal(norm);
+      if (norm <= eps) {
+        dagPoints[i] = p;
+        break;
+      }
+    }
+  }
+  ierr = VecRestoreArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexGetLineIntersection_2D_Internal(const PetscReal segmentA[], const PetscReal segmentB[], PetscReal intersection[], PetscBool *hasIntersection)
 {
   const PetscReal p0_x  = segmentA[0*2+0];
