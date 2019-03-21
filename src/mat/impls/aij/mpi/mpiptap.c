@@ -344,6 +344,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   PetscScalar         *apv;
   PetscTable          ta;
   MatType             mtype;
+  const char          *prefix;
 #if defined(PETSC_USE_INFO)
   PetscReal           apfill;
 #endif
@@ -472,7 +473,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   /* (2-1) compute symbolic Co = Ro*AP_loc  */
   /* ------------------------------------ */
-  ierr = MatSetOptionsPrefix(ptap->Ro,"inner_offdiag_");CHKERRQ(ierr);
+  ierr = MatGetOptionsPrefix(A,&prefix);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(ptap->Ro,prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(ptap->Ro,"inner_offdiag_");CHKERRQ(ierr);
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Ro,ptap->AP_loc,fill,&ptap->C_oth);CHKERRQ(ierr);
 
   /* (3) send coj of C_oth to other processors  */
@@ -529,7 +532,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   /* (2-2) compute symbolic C_loc = Rd*AP_loc */
   /* ---------------------------------------- */
-  ierr = MatSetOptionsPrefix(ptap->Rd,"inner_diag_");CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(ptap->Rd,prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(ptap->Rd,"inner_diag_");CHKERRQ(ierr);
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Rd,ptap->AP_loc,fill,&ptap->C_loc);CHKERRQ(ierr);
   c_loc = (Mat_SeqAIJ*)ptap->C_loc->data;
   ierr = ISLocalToGlobalMappingApply(ptap->ltog,c_loc->i[ptap->C_loc->rmap->n],c_loc->j,c_loc->j);CHKERRQ(ierr);
@@ -697,6 +701,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscScalar         *apv;
   PetscTable          ta;
   MatType             mtype;
+  const char          *prefix;
 #if defined(PETSC_USE_INFO)
   PetscReal           apfill;
 #endif
@@ -826,7 +831,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* (2-1) compute symbolic Co = Ro*AP_loc  */
   /* ------------------------------------ */
-  ierr = MatSetOptionsPrefix(ptap->Ro,"inner_offdiag_");CHKERRQ(ierr);
+  ierr = MatGetOptionsPrefix(A,&prefix);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(ptap->Ro,prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(ptap->Ro,"inner_offdiag_");CHKERRQ(ierr);
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Ro,ptap->AP_loc,fill,&ptap->C_oth);CHKERRQ(ierr);
 
   /* (3) send coj of C_oth to other processors  */
@@ -882,7 +889,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* (2-2) compute symbolic C_loc = Rd*AP_loc */
   /* ---------------------------------------- */
-  ierr = MatSetOptionsPrefix(ptap->Rd,"inner_diag_");CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(ptap->Rd,prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(ptap->Rd,"inner_diag_");CHKERRQ(ierr);
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Rd,ptap->AP_loc,fill,&ptap->C_loc);CHKERRQ(ierr);
   c_loc = (Mat_SeqAIJ*)ptap->C_loc->data;
 
