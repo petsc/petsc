@@ -2464,7 +2464,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   leafCounter=0;
   for (i=0; i<pEnd-pStart; i++) {
     if (newOwners[i] >= 0) {
-      if(newOwners[i] != rank) {
+      if (newOwners[i] != rank) {
         leafCounter++;
       }
     } else {
@@ -2482,7 +2482,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   counter = 0;
   for (i=0; i<pEnd-pStart; i++) {
     if (newOwners[i] >= 0) {
-      if(newOwners[i] != rank) {
+      if (newOwners[i] != rank) {
         leafsNew[leafCounter] = i;
         leafLocationsNew[leafCounter].rank = newOwners[i];
         leafLocationsNew[leafCounter].index = newNumbers[i];
@@ -2496,7 +2496,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
         leafCounter++;
       }
     }
-    if(isLeaf[i]) {
+    if (isLeaf[i]) {
       counter++;
     }
   }
@@ -2587,7 +2587,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscLogEventBegin(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetViewer(comm,((PetscObject)dm)->options, prefix,"-dm_rebalance_partition_view",&viewer,&format,NULL);CHKERRQ(ierr);
-  if(viewer) {
+  if (viewer) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
   }
 
