@@ -2352,7 +2352,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
 
   DMPlexRewriteSF - Rewrites the ownership of the SF of a DM (in place).
 
