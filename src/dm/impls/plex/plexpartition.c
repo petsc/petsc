@@ -2779,6 +2779,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       ierr = ParMETIS_V3_PartKway((PetscInt*)cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscStackPop;
     }
+    ierr = PetscFree(options);CHKERRQ(ierr);
   } else {
     if (viewer) { ierr = PetscViewerASCIIPrintf(viewer, "Using METIS to partition graph.\n");CHKERRQ(ierr); }
     Mat As;
@@ -2832,6 +2833,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscStackPush("METIS_PartGraphKway");
       METIS_PartGraphKway(&numRows, &ncon, xadj_g, adjncy_g, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
       PetscStackPop;
+      ierr = PetscFree(options);CHKERRQ(ierr);
       ierr = PetscFree(xadj_g);CHKERRQ(ierr);
       ierr = PetscFree(adjncy_g);CHKERRQ(ierr);
       ierr = PetscFree(vtxwgt_g);CHKERRQ(ierr);
@@ -2856,7 +2858,6 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFree(ubvec);CHKERRQ(ierr);
   ierr = PetscFree(tpwgts);CHKERRQ(ierr);
-  ierr = PetscFree(options);CHKERRQ(ierr);
 
   /* Now rename the result so that the vertex resembling the exclusively owned points stays on the same rank */
 
