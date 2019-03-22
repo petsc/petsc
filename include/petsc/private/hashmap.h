@@ -511,6 +511,23 @@ PetscErrorCode Petsc##HashT##Duplicate(Petsc##HashT ht,Petsc##HashT *hd)        
 }                                                                                                    \
                                                                                                      \
 PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+PetscErrorCode Petsc##HashT##AddAndScale(Petsc##HashT ht,Petsc##HashT hd, ValType scale)             \
+{                                                                                                    \
+  int     ret;                                                                                       \
+  KeyType key;                                                                                       \
+  ValType val;                                                                                       \
+  PetscFunctionBegin;                                                                                \
+  PetscValidPointer(ht,1);                                                                           \
+  PetscValidPointer(hd,2);                                                                           \
+  kh_foreach(hd,key,val,{ khiter_t i;                                                                \
+      i = kh_put(HashT,ht,key,&ret);                                                                 \
+      PetscHashAssert(ret>=0);                                                                       \
+      if (ret)  kh_val(ht,i) = val*scale;                                                            \
+      else kh_val(ht,i) += val*scale;})                                                              \
+  PetscFunctionReturn(0);                                                                            \
+}                                                                                                    \
+                                                                                                     \
+PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Clear(Petsc##HashT ht)                                                  \
 {                                                                                                    \
   PetscFunctionBegin;                                                                                \
@@ -537,6 +554,16 @@ PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht,PetscInt *n)               
   PetscValidPointer(ht,1);                                                                           \
   PetscValidIntPointer(n,2);                                                                         \
   *n = (PetscInt)kh_size(ht);                                                                        \
+  PetscFunctionReturn(0);                                                                            \
+}                                                                                                    \
+                                                                                                     \
+PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht,PetscInt *n)                                \
+{                                                                                                    \
+  PetscFunctionBegin;                                                                                \
+  PetscValidPointer(ht,1);                                                                           \
+  PetscValidIntPointer(n,2);                                                                         \
+  *n = (PetscInt)kh_n_buckets(ht);                                                                   \
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
@@ -574,6 +601,20 @@ PetscErrorCode Petsc##HashT##Set(Petsc##HashT ht,KeyType key,ValType val)       
   iter = kh_put(HashT,ht,key,&ret);                                                                  \
   PetscHashAssert(ret>=0);                                                                           \
   kh_val(ht,iter) = val;                                                                             \
+  PetscFunctionReturn(0);                                                                            \
+}                                                                                                    \
+                                                                                                     \
+PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+PetscErrorCode Petsc##HashT##Add(Petsc##HashT ht,KeyType key,ValType val)                            \
+{                                                                                                    \
+  int      ret;                                                                                      \
+  khiter_t iter;                                                                                     \
+  PetscFunctionBeginHot;                                                                             \
+  PetscValidPointer(ht,1);                                                                           \
+  iter = kh_put(HashT,ht,key,&ret);                                                                  \
+  PetscHashAssert(ret>=0);                                                                           \
+  if (ret) kh_val(ht,iter) = val;                                                                    \
+  else  kh_val(ht,iter) += val;                                                                      \
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
@@ -699,6 +740,24 @@ PetscErrorCode Petsc##HashT##GetVals(Petsc##HashT ht,PetscInt *off,ValType array
   PetscValidIntPointer(off,2);                                                                       \
   pos = *off;                                                                                        \
   kh_foreach_value(ht,val,array[pos++] = val);                                                       \
+  *off = pos;                                                                                        \
+  PetscFunctionReturn(0);                                                                            \
+}                                                                                                    \
+                                                                                                     \
+                                                                                                     \
+PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+PetscErrorCode Petsc##HashT##GetPairs(Petsc##HashT ht,PetscInt *off,KeyType karray[],ValType varray[]) \
+{                                                                                                    \
+  ValType  val;                                                                                      \
+  KeyType  key;                                                                                      \
+  PetscInt pos;                                                                                      \
+  PetscFunctionBegin;                                                                                \
+  PetscValidPointer(ht,1);                                                                           \
+  PetscValidIntPointer(off,2);                                                                       \
+  pos = *off;                                                                                        \
+  kh_foreach(ht,key,val,                                                                             \
+  { karray[pos] = key;                                                                               \
+  varray[pos++] = val;})                                                                             \
   *off = pos;                                                                                        \
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \

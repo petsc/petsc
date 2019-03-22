@@ -339,4 +339,16 @@ int main(int argc,char **argv)
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via rowmerge -inner_offdiag_matmatmult_via rowmerge
      output_file: output/ex96_1.out
 
+   test:
+     suffix: allatonce
+     nsize: 3
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via allatonce
+     output_file: output/ex96_1.out
+
+   test:
+     suffix: allatonce_merged
+     nsize: 3
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via allatonce_merged
+     output_file: output/ex96_1.out
+
 TEST*/
