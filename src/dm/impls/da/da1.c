@@ -284,7 +284,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   }
 
   ierr = ISCreateBlock(comm,dof,nn-IXs+Xs,&idx[IXs-Xs],PETSC_USE_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(global,from,local,to,&gtol);CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);

@@ -127,7 +127,7 @@ int main(int argc,char **args)
   /* move the vector rows to the new processes they have been assigned to */
   ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xout);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(xin,is,xout,NULL,&scat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(xin,is,xout,NULL,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);

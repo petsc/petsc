@@ -61,7 +61,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Serial(VecTagger tagger,Vec vec,
     PetscScalar *cArray;
 
     ierr = ISCreateStride(PETSC_COMM_SELF,m,i,bs,&isStride);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(vec,isStride,vComp,NULL,&vScat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(vec,isStride,vComp,NULL,&vScat);CHKERRQ(ierr);
     ierr = VecScatterBegin(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger,Vec v
     PetscScalar *cArray;
 
     ierr = ISCreateStride(comm,m,bs * rstart + i,bs,&isStride);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(vec,isStride,vComp,NULL,&vScat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(vec,isStride,vComp,NULL,&vScat);CHKERRQ(ierr);
     ierr = VecScatterBegin(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);

@@ -62,7 +62,7 @@
       stride = 1
       call ISCreateStride(PETSC_COMM_SELF,NN,first,stride,is1,ierr)
       call ISCreateStride(PETSC_COMM_SELF,NN,first,stride,is2,ierr)
-      call VecScatterCreateWithData(y,is2,x,is1,ctx,ierr)
+      call VecScatterCreate(y,is2,x,is1,ctx,ierr)
       call VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_FORWARD,ierr)
       call VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_FORWARD,ierr)
       call VecScatterDestroy(ctx,ierr)

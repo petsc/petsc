@@ -52,6 +52,7 @@
 #define matdenserestorearrayread_        MATDENSERESTOREARRAYREAD
 #define matconvert_                      MATCONVERT
 #define matcreatesubmatrices_            MATCREATESUBMATRICES
+#define matcreatesubmatricesmpi_         MATCREATESUBMATRICESMPI
 #define matzerorowscolumns_              MATZEROROWSCOLUMNS
 #define matzerorowscolumnsis_            MATZEROROWSCOLUMNSIS
 #define matzerorowsstencil_              MATZEROROWSSTENCIL
@@ -148,6 +149,7 @@
 #define matdenserestorearrayread_        matdenserestorearrayread
 #define matconvert_                      matconvert
 #define matcreatesubmatrices_            matcreatesubmatrices
+#define matcreatesubmatricesmpi_         matcreatesubmatricesmpi
 #define matzerorowscolumns_              matzerorowscolumns
 #define matzerorowscolumnsis_            matzerorowscolumnsis
 #define matzerorowsstencil_              matzerorowsstencil
@@ -644,6 +646,27 @@ PETSC_EXTERN void PETSC_STDCALL matcreatesubmatrices_(Mat *mat,PetscInt *n,IS *i
     *ierr = PetscFree(lsmat);
   } else {
     *ierr = MatCreateSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
+  }
+}
+
+/*
+    MatCreateSubmatrices() is slightly different from C since the
+    Fortran provides the array to hold the submatrix objects,while in C that
+    array is allocated by the MatCreateSubmatrices()
+*/
+PETSC_EXTERN void PETSC_STDCALL matcreatesubmatricesmpi_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,PetscErrorCode *ierr)
+{
+  Mat      *lsmat;
+  PetscInt i;
+
+  if (*scall == MAT_INITIAL_MATRIX) {
+    *ierr = MatCreateSubMatricesMPI(*mat,*n,isrow,iscol,*scall,&lsmat);
+    for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data struc */
+      smat[i] = lsmat[i];
+    }
+    *ierr = PetscFree(lsmat);
+  } else {
+    *ierr = MatCreateSubMatricesMPI(*mat,*n,isrow,iscol,*scall,&smat);
   }
 }
 

@@ -351,7 +351,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
     ierr = ISGetLocalSize(osm->lis,&m);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(vec,osm->lis,osm->lx,isl,&osm->restriction);CHKERRQ(ierr);
+    ierr = VecScatterCreate(vec,osm->lis,osm->lx,isl,&osm->restriction);CHKERRQ(ierr);
     ierr = ISDestroy(&isl);CHKERRQ(ierr);
 
 
@@ -376,7 +376,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = ISCreateGeneral(PETSC_COMM_SELF,m,idx_lis,PETSC_OWN_POINTER,&isll);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(osm->ly,isll,osm->y[i],isl,&osm->lrestriction[i]);CHKERRQ(ierr);
+      ierr = VecScatterCreate(osm->ly,isll,osm->y[i],isl,&osm->lrestriction[i]);CHKERRQ(ierr);
       ierr = ISDestroy(&isll);CHKERRQ(ierr);
       ierr = ISDestroy(&isl);CHKERRQ(ierr);
       if (osm->lprolongation) { /* generate a scatter from y[i] to ly picking only the the non-overalapping is_local[i] entries */
@@ -403,7 +403,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx2,PETSC_OWN_POINTER,&isll_local);CHKERRQ(ierr);
 
         ierr = ISRestoreIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
-        ierr = VecScatterCreateWithData(osm->y[i],isll,osm->ly,isll_local,&osm->lprolongation[i]);CHKERRQ(ierr);
+        ierr = VecScatterCreate(osm->y[i],isll,osm->ly,isll_local,&osm->lprolongation[i]);CHKERRQ(ierr);
 
         ierr = ISDestroy(&isll);CHKERRQ(ierr);
         ierr = ISDestroy(&isll_local);CHKERRQ(ierr);

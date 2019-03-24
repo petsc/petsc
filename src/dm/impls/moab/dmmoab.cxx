@@ -1187,7 +1187,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     }
 
     /* now create the scatter object from local to global vector */
-    ierr = VecScatterCreateWithData(local, from, global, to, &dmmoab->ltog_sendrecv);CHKERRQ(ierr);
+    ierr = VecScatterCreate(local, from, global, to, &dmmoab->ltog_sendrecv);CHKERRQ(ierr);
 
     /* clean up IS, Vec */
     ierr = PetscFree(lgmap);CHKERRQ(ierr);

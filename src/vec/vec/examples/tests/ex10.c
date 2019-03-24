@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
 
-  ierr = VecScatterCreateWithData(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
   ierr = VecScatterCopy(ctx,&newctx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 

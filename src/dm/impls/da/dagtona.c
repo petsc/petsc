@@ -49,7 +49,7 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
   ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&from);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,N,0,&tmplocal);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   ierr = AOPetscToApplicationIS(ao,from);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&to);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,M,0,&tmplocal);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(tmplocal,from,global,to,scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(tmplocal,from,global,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);

@@ -181,8 +181,8 @@ int main(int argc, char **argv)
   ierr = VecSetSizes(x,hi-lo+hi2-lo2,user.n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(x,user.s_is,user.y,is_allstate,&user.state_scatter);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(x,user.d_is,user.u,is_alldesign,&user.design_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,user.s_is,user.y,is_allstate,&user.state_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,user.d_is,user.u,is_alldesign,&user.design_scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is_alldesign);CHKERRQ(ierr);
   ierr = ISDestroy(&is_allstate);CHKERRQ(ierr);
 
@@ -1045,7 +1045,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
     ierr = VecGetOwnershipRange(user->yi[i],&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_yi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo2+istart,1,&is_from_y);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->y,is_from_y,user->yi[i],is_to_yi,&user->yi_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->y,is_from_y,user->yi[i],is_to_yi,&user->yi_scatter[i]);CHKERRQ(ierr);
     istart = istart + hi-lo;
     ierr = ISDestroy(&is_to_yi);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_y);CHKERRQ(ierr);
@@ -1064,7 +1064,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
     ierr = VecGetOwnershipRange(user->di[i],&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_di);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo2+istart,1,&is_from_d);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->d,is_from_d,user->di[i],is_to_di,&user->di_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->d,is_from_d,user->di[i],is_to_di,&user->di_scatter[i]);CHKERRQ(ierr);
     istart = istart + hi-lo;
     ierr = ISDestroy(&is_to_di);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_d);CHKERRQ(ierr);

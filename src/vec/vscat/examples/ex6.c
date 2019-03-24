@@ -39,8 +39,8 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(newcomm,n,PETSC_DECIDE,&y2);CHKERRQ(ierr);
 
   /* It looks vscat1/2 are the same, but actually not. y2 is on a different communicator than x */
-  ierr = VecScatterCreateWithData(x,ix,y1,ix,&vscat1);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(x,ix,y2,ix,&vscat2);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,ix,y1,ix,&vscat1);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,ix,y2,ix,&vscat2);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(vscat1,x,y1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterBegin(vscat2,x,y2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

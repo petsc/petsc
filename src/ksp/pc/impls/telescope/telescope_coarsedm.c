@@ -75,7 +75,7 @@ PetscErrorCode PCTelescopeSetUp_scatters_CoarseDM(PC pc,PC_Telescope sred,PC_Tel
   ierr = VecSetSizes(xtmp,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(xtmp,bs);CHKERRQ(ierr);
   ierr = VecSetType(xtmp,((PetscObject)x)->type_name);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
   sred->xred    = xred;
   sred->yred    = yred;
   sred->isin    = isin;

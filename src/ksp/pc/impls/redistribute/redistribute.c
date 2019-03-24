@@ -194,7 +194,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
     ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);
     ierr = MatCreateVecs(pc->pmat,&tvec,NULL);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(tvec,red->is,red->b,NULL,&red->scatter);CHKERRQ(ierr);
+    ierr = VecScatterCreate(tvec,red->is,red->b,NULL,&red->scatter);CHKERRQ(ierr);
     ierr = VecDestroy(&tvec);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
     ierr = KSPSetOperators(red->ksp,tmat,tmat);CHKERRQ(ierr);

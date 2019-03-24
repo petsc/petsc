@@ -384,7 +384,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
       Vec local,global;
       ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(global,isGlobal,local,isLocal,&stag->gtol);CHKERRQ(ierr);
+      ierr = VecScatterCreate(global,isGlobal,local,isLocal,&stag->gtol);CHKERRQ(ierr);
       ierr = VecDestroy(&global);CHKERRQ(ierr);
       ierr = VecDestroy(&local);CHKERRQ(ierr);
     }

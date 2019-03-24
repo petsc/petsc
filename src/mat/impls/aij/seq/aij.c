@@ -3419,6 +3419,70 @@ PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
   PetscFunctionReturn(0);
 }
 
+/*
+ * When a sparse matrix has many zero columns, we should compact them out to save the space
+ * This happens in MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable()
+ * */
+PetscErrorCode  MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMapping *mapping)
+{
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
+  PetscTable         gid1_lid1;
+  PetscTablePosition tpos;
+  PetscInt           gid,lid,i,j,ncols,ec;
+  PetscInt           *garray;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(mapping,2);
+  /* use a table */
+  ierr = PetscTableCreate(mat->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
+  ec = 0;
+  for (i=0; i<mat->rmap->n; i++) {
+    ncols = aij->i[i+1] - aij->i[i];
+    for (j=0; j<ncols; j++) {
+      PetscInt data,gid1 = aij->j[aij->i[i] + j] + 1;
+      ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
+      if (!data) {
+        /* one based table */
+        ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  /* form array of columns we need */
+  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+  ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
+  while (tpos) {
+    ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
+    gid--;
+    lid--;
+    garray[lid] = gid;
+  }
+  ierr = PetscSortInt(ec,garray);CHKERRQ(ierr); /* sort, and rebuild */
+  ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
+  for (i=0; i<ec; i++) {
+    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  /* compact out the extra columns in B */
+  for (i=0; i<mat->rmap->n; i++) {
+	ncols = aij->i[i+1] - aij->i[i];
+    for (j=0; j<ncols; j++) {
+      PetscInt gid1 = aij->j[aij->i[i] + j] + 1;
+      ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
+      lid--;
+      aij->j[aij->i[i] + j] = lid;
+    }
+  }
+  mat->cmap->n = mat->cmap->N = ec;
+  mat->cmap->bs = 1;
+
+  ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((mat->cmap));CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,mat->cmap->bs,mat->cmap->n,garray,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetType(*mapping,ISLOCALTOGLOBALMAPPINGHASH);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
     MatSeqAIJSetColumnIndices - Set the column indices for all the rows
        in the matrix.

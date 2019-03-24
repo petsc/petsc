@@ -2509,14 +2509,13 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       p4est_topidx_t   fltC = p4estC->first_local_tree;
       p4est_topidx_t   lltC = p4estC->last_local_tree;
       p4est_topidx_t   t;
-      PetscMPIInt      blockSizes[5]   = {P4EST_DIM,2,1,1,1};
-      MPI_Aint         blockOffsets[5] = {offsetof(p4est_quadrant_t,x),
+      PetscMPIInt      blockSizes[4]   = {P4EST_DIM,2,1,1};
+      MPI_Aint         blockOffsets[4] = {offsetof(p4est_quadrant_t,x),
                                           offsetof(p4est_quadrant_t,level),
                                           offsetof(p4est_quadrant_t,pad16),
-                                          offsetof(p4est_quadrant_t,p),
-                                          sizeof(p4est_quadrant_t)};
-      MPI_Datatype     blockTypes[5] = {MPI_INT32_T,MPI_INT8_T,MPI_INT16_T,MPI_INT32_T,MPI_UB};
-      MPI_Datatype     quadType;
+                                          offsetof(p4est_quadrant_t,p)};
+      MPI_Datatype     blockTypes[4] = {MPI_INT32_T,MPI_INT8_T,MPI_INT16_T,MPI_INT32_T/* p.which_tree */};
+      MPI_Datatype     quadStruct,quadType;
 
       ierr  = DMPlexGetHeightStratum(plexC,0,&cStartC,&cEndC);CHKERRQ(ierr);
       ierr  = DMPlexGetHybridBounds(plexC,&cEndCInterior,NULL,NULL,NULL);CHKERRQ(ierr);
@@ -2535,12 +2534,18 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         for (q = 0; (size_t) q < tree->quadrants.elem_count; q++) coverQuadsSend[count+q].p.which_tree = t;
         count += tree->quadrants.elem_count;
       }
-      ierr           = MPI_Type_create_struct(5,blockSizes,blockOffsets,blockTypes,&quadType);CHKERRQ(ierr);
+      /* p is of a union type p4est_quadrant_data, but only the p.which_tree field is active at this time. So, we
+         have a simple blockTypes[] to use. Note that quadStruct does not count potential padding in array of
+         p4est_quadrant_t. We have to call MPI_Type_create_resized() to change upper-bound of quadStruct.
+       */
+      ierr           = MPI_Type_create_struct(4,blockSizes,blockOffsets,blockTypes,&quadStruct);CHKERRQ(ierr);
+      ierr           = MPI_Type_create_resized(quadStruct,0,sizeof(p4est_quadrant_t),&quadType);CHKERRQ(ierr);
       ierr           = MPI_Type_commit(&quadType);CHKERRQ(ierr);
       ierr           = PetscSFBcastBegin(coveringSF,nodeClosureType,closurePointsC,newClosurePointsC);CHKERRQ(ierr);
       ierr           = PetscSFBcastBegin(coveringSF,quadType,coverQuadsSend,coverQuads);CHKERRQ(ierr);
       ierr           = PetscSFBcastEnd(coveringSF,nodeClosureType,closurePointsC,newClosurePointsC);CHKERRQ(ierr);
       ierr           = PetscSFBcastEnd(coveringSF,quadType,coverQuadsSend,coverQuads);CHKERRQ(ierr);
+      ierr           = MPI_Type_free(&quadStruct);CHKERRQ(ierr);
       ierr           = MPI_Type_free(&quadType);CHKERRQ(ierr);
       ierr           = PetscFree(coverQuadsSend);CHKERRQ(ierr);
       ierr           = PetscFree(closurePointsC);CHKERRQ(ierr);

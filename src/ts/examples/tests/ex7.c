@@ -100,11 +100,11 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&ctx.UV);CHKERRQ(ierr);
   I    = 2*rank;
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(U,NULL,ctx.UV,is,&ctx.scatterU);CHKERRQ(ierr);
+  ierr = VecScatterCreate(U,NULL,ctx.UV,is,&ctx.scatterU);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   I    = 2*rank + 1;
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(ctx.V,NULL,ctx.UV,is,&ctx.scatterV);CHKERRQ(ierr);
+  ierr = VecScatterCreate(ctx.V,NULL,ctx.UV,is,&ctx.scatterV);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   ierr = VecSet(U,1.0);CHKERRQ(ierr);

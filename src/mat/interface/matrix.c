@@ -1185,10 +1185,18 @@ $    save example.mat A b -v7.3
    Unless -nocompression flag is used to save the file in MATLAB,
    PETSc must be configured with ZLIB package.
 
-   Current HDF5 limitations:
+   See also examples src/mat/examples/tutorials/ex10.c and src/ksp/ksp/examples/tutorials/ex27.c
+
+   Current HDF5 (MAT-File) limitations:
    This reader currently supports only real MATSEQAIJ and MATMPIAIJ matrices.
 
-   MatView() is not yet implemented.
+   Corresponding MatView() is not yet implemented.
+
+   The loaded matrix is transposed with respect to the original one in MATLAB,
+   unless you push PETSC_VIEWER_HDF5_MAT format (see examples above).
+   With PETSC_VIEWER_HDF5_MAT, matrix is automatically transposed by PETSc,
+   unless the matrix is marked as SPD or symmetric
+   (see MatSetOption(), MAT_SPD, MAT_SYMMETRIC).
 
    References:
 1. MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version

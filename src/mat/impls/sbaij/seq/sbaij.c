@@ -2438,10 +2438,11 @@ PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
   sbaij->j = j;
   sbaij->a = a;
 
-  sbaij->singlemalloc = PETSC_FALSE;
-  sbaij->nonew        = -1;             /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
-  sbaij->free_a       = PETSC_FALSE;
-  sbaij->free_ij      = PETSC_FALSE;
+  sbaij->singlemalloc   = PETSC_FALSE;
+  sbaij->nonew          = -1;             /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
+  sbaij->free_a         = PETSC_FALSE;
+  sbaij->free_ij        = PETSC_FALSE;
+  sbaij->free_imax_ilen = PETSC_TRUE;
 
   for (ii=0; ii<m; ii++) {
     sbaij->ilen[ii] = sbaij->imax[ii] = i[ii+1] - i[ii];

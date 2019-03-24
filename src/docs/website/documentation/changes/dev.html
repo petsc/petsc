@@ -111,16 +111,15 @@
       <h4>Vec:</h4>
       <h4>VecScatter:</h4>
       <ul>
-        <li>Changed VecScatterCreate() to VecScatterCreateWithData().</li>
-        <li>Introduced VecScatterSetData().</li>
-        <li>Introduced VecScatterCreate() that creates empty scatter object that can be used with VecScatterSetData().</li>
-        <li>Introduced VecScatterSetUp().</li>
-        </ul>
+        <li>Removed VecScatterCreateEmpty(MPI_Comm,VecScatter*)</li>
+        <li>Added a PetscSF implementation of VecScatter. One can enable it with -vecscatter_type sf</li>
+      </ul>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <ul>
         <li>MatRegisterBaseName() changed to MatRegisterRootName()</li>
-        <li>Added -mat_mffd_complex to use complex number trick instead of differencing to evaluate product; requires real functions but complex configuration</li>        
+        <li>Added -mat_mffd_complex to use complex number trick instead of differencing to evaluate product; requires real functions but complex configuration</li>
+        <li>Added initial support for HDF5 files I/O, particularly MATLAB MAT-File Version 7.3, currently only for reading. See also documentation of MatLoad().</li>
         </ul>
       <h4>PC:</h4>
       <ul>
@@ -164,6 +163,17 @@
       <h4>PetscViewer:</h4>
       <ul>
         <li>Added new command line options to GLVis viewer, see PetscViewerGLVisOpen() manual page for details.</li>
+        <li>PetscViewerHDF5{Has,Read,Write}Attribute():
+          <ul>
+            <li>take the input path as relative to the current (pushed) group</li>
+            <li>support not only dataset attributes but also group attributes</li>
+            <li>PetscViewerHDF5WriteAttribute() creates the group if it doesn't exist</li>
+            <li>PetscViewerHDF5HasAttribute() returns false if the parent path doesn’t exist instead of failing</li>
+          </ul>
+        </li>
+        <li>Added PetscViewerHDF5Has{Group,Object}()</li>
+        <li>Added PetscViewerHDF5{Has,Write,Read}ObjectAttribute()</li>
+        <li>PetscViewerHDF5OpenGroup() opens the root group (/) if none is pushed</li>
       </ul>
       <h4>SYS:</h4>
         <li>PetscOptionsGetViewer() takes a NULL or PetscOptions object as the second argument.</li>
