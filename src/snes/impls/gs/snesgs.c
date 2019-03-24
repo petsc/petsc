@@ -97,7 +97,7 @@ PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,P
 
 .keywords: SNES, nonlinear, set, Gauss-Siedel
 
-.seealso: SNESSetNGS(), SNESGetNGS(), SNESSetPC(), SNESNGSGetSweeps()
+.seealso: SNESSetNGS(), SNESGetNGS(), SNESSetNPC(), SNESNGSGetSweeps()
 @*/
 
 PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
@@ -123,7 +123,7 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 
 .keywords: SNES, nonlinear, set, Gauss-Siedel
 
-.seealso: SNESSetNGS(), SNESGetNGS(), SNESSetPC(), SNESNGSSetSweeps()
+.seealso: SNESSetNGS(), SNESGetNGS(), SNESSetNPC(), SNESNGSSetSweeps()
 @*/
 PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt * sweeps)
 {
@@ -327,7 +327,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
 
 
   Notes:
-  the Gauss-Seidel smoother is inherited through composition.  If a solver has been created with SNESGetPC(), it will have
+  the Gauss-Seidel smoother is inherited through composition.  If a solver has been created with SNESGetNPC(), it will have
   its parent's Gauss-Seidel routine associated with it.
 
    References:
