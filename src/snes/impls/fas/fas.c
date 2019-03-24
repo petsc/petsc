@@ -265,8 +265,8 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
     }
 
     if (fas->fastype == SNES_FAS_FULL) {
-      ierr   = PetscOptionsBool("-snes_fas_full_downsweep","Smooth on the initial upsweep for full FAS cycles","SNESFASFullSetDownSweep",fas->full_downsweep,&fas->full_downsweep,&flg);CHKERRQ(ierr);
-      if (flg) {SNESFASFullSetDownSweep(snes,fas->full_downsweep);CHKERRQ(ierr);}
+      ierr   = PetscOptionsBool("-snes_fas_full_downsweep","Smooth on the initial down sweep for full FAS cycles","SNESFASFullSetDownSweep",fas->full_downsweep,&fas->full_downsweep,&flg);CHKERRQ(ierr);
+      if (flg) {ierr = SNESFASFullSetDownSweep(snes,fas->full_downsweep);CHKERRQ(ierr);}
     }
 
     ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",fas->max_up_it,&n_up,&upflg);CHKERRQ(ierr);
