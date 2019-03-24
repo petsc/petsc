@@ -2389,7 +2389,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
 
   PetscFunctionBegin;
   if (subdm) {ierr = DMClone(dm, subdm);CHKERRQ(ierr);}
-  ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  ierr = DMCreateSectionSubDM(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
   if (subdm) {(*subdm)->useNatural = dm->useNatural;}
   if (dm->useNatural && dm->sfMigration) {
     PetscSF        sfMigrationInv,sfNatural;
@@ -2417,7 +2417,7 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
 
   PetscFunctionBegin;
   ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);
-  ierr = DMCreateSuperDM_Section_Private(dms, len, is, superdm);CHKERRQ(ierr);
+  ierr = DMCreateSectionSuperDM(dms, len, is, superdm);CHKERRQ(ierr);
   (*superdm)->useNatural = PETSC_FALSE;
   for (i = 0; i < len; i++){
     if (dms[i]->useNatural && dms[i]->sfMigration) {

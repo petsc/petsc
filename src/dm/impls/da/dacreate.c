@@ -212,7 +212,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
   }
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   if (section) {
-    ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+    ierr = DMCreateSectionSubDM(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
   } else {
     if (is) {
       PetscInt *indices, cnt = 0, dof = da->w, i, j;

@@ -173,6 +173,8 @@ PETSC_EXTERN PetscErrorCode DMComputeVariableBounds(DM,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode DMCreateSubDM(DM, PetscInt, const PetscInt[], IS *, DM *);
 PETSC_EXTERN PetscErrorCode DMCreateSuperDM(DM[], PetscInt, IS **, DM *);
+PETSC_EXTERN PetscErrorCode DMCreateSectionSubDM(DM,PetscInt,const PetscInt[],IS*,DM*);
+PETSC_EXTERN PetscErrorCode DMCreateSectionSuperDM(DM[],PetscInt,IS**,DM*);
 PETSC_EXTERN PetscErrorCode DMCreateFieldDecomposition(DM,PetscInt*,char***,IS**,DM**);
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecomposition(DM,PetscInt*,char***,IS**,IS**,DM**);
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionScatters(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
