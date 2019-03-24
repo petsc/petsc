@@ -4,6 +4,12 @@ import re
 import os
 import shutil
 
+def remove_xcode_verbose(buf):
+  retbuf =[]
+  for line in buf.splitlines():
+    if not line.startswith('ld: warning: text-based stub file'): retbuf.append(line)
+  return ('\n').join(retbuf)
+
 class MissingProcessor(AttributeError):
   pass
 
@@ -242,6 +248,7 @@ class Configure(config.base.Configure):
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
+    output = remove_xcode_verbose(output)
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
       # Cray has crazy non-matching single quotes so skip the removal
@@ -552,6 +559,7 @@ class Configure(config.base.Configure):
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
+    output = remove_xcode_verbose(output)
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
       if output.count('\'')%2: raise RuntimeError('Mismatched single quotes in C library string')
@@ -939,6 +947,7 @@ class Configure(config.base.Configure):
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
+    output = remove_xcode_verbose(output)
     # replace \CR that ifc puts in each line of output
     output = output.replace('\\\n', '')
 
