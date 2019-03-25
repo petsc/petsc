@@ -66,11 +66,14 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
     PetscScalar  shift[3],*cptr;
     PetscInt     nel,dof = 3,nex,ney,nez,gx = 0,gy = 0,gz = 0;
     PetscInt     i,j,k,pi,pj,pk;
-    PetscReal    nodes[dof],weights[dof];
+    PetscReal    *nodes,*weights;
     char         name[256];
 
     ierr = PetscOptionsGetInt(NULL,NULL,"-order",&dof,NULL);CHKERRQ(ierr);
     dof += 1;
+
+    ierr = PetscMalloc1(dof,&nodes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof,&weights);CHKERRQ(ierr);
     ierr = PetscDTGaussLobattoLegendreQuadrature(dof,PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA,nodes,weights);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm,&cv);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
@@ -137,6 +140,8 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
     ierr = PetscObjectSetName((PetscObject)v,name);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"_glvis_mesh_coords",(PetscObject)v);CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
+    ierr = PetscFree(nodes);CHKERRQ(ierr);
+    ierr = PetscFree(weights);CHKERRQ(ierr);
     ierr = DMViewFromOptions(dm,NULL,"-view");CHKERRQ(ierr);
   } else { /* map the whole domain to a sphere */
     ierr = DMGetCoordinates(dm,&v);CHKERRQ(ierr);

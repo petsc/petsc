@@ -8,11 +8,17 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   
   PetscInt       n = 3,i;
-  PetscReal      la_nodes[n],la_weights[n],n_nodes[n],n_weights[n];
+  PetscReal      *la_nodes,*la_weights,*n_nodes,*n_weights;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(n,&la_nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&la_weights);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&n_nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&n_weights);CHKERRQ(ierr);
   ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA,la_nodes,la_weights);CHKERRQ(ierr);
+
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via linear algebra: \n");CHKERRQ(ierr);
   ierr = PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -28,6 +34,11 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Difference: \n");CHKERRQ(ierr);
   ierr = PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+
+  ierr = PetscFree(la_nodes);CHKERRQ(ierr);
+  ierr = PetscFree(la_weights);CHKERRQ(ierr);
+  ierr = PetscFree(n_nodes);CHKERRQ(ierr);
+  ierr = PetscFree(n_weights);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;
