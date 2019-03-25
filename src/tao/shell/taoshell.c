@@ -5,7 +5,7 @@ typedef struct _n_TaoShell Tao_Shell;
 struct _n_TaoShell
 {
   PetscErrorCode (*solve)(Tao);
-  void *ctx;
+  void            *ctx;
 };
 
 /*@C
