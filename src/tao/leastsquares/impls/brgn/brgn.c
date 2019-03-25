@@ -331,7 +331,7 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
   Options Database Keys:
   + -tao_brgn_regularizer_weight  - regularizer weight (default 1e-4)
   . -tao_brgn_l1_smooth_epsilon   - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
-  - -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l1dict")
+  - -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l1dict") (default "l2prox")
 
   Level: beginner
 M*/
@@ -350,6 +350,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   tao->ops->solve = TaoSolve_BRGN;
   
   tao->data = (void*)gn;
+  gn->reg_type = BRGN_REGULARIZATION_L2PROX;
   gn->lambda = 1e-4;
   gn->epsilon = 1e-6;
   gn->parent = tao;
