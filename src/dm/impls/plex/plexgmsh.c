@@ -906,10 +906,17 @@ static PetscErrorCode DMPlexCreateGmsh_ReadMeshFormat(GmshFile *gmsh)
   PetscFunctionReturn(0);
 }
 
+/*
+PhysicalNames
+  numPhysicalNames(ASCII int)
+  dimension(ASCII int) physicalTag(ASCII int) "name"(127 characters max)
+  ...
+$EndPhysicalNames
+*/
 static PetscErrorCode DMPlexCreateGmsh_ReadPhysicalNames(GmshFile *gmsh)
 {
-  char           line[PETSC_MAX_PATH_LEN];
-  int            snum, numRegions, region;
+  char           line[PETSC_MAX_PATH_LEN], name[128+2], *p, *q;
+  int            snum, numRegions, region, dim, tag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -917,7 +924,15 @@ static PetscErrorCode DMPlexCreateGmsh_ReadPhysicalNames(GmshFile *gmsh)
   snum = sscanf(line, "%d", &numRegions);
   if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
   for (region = 0; region < numRegions; ++region) {
-    ierr = GmshReadString(gmsh, line, 3);CHKERRQ(ierr);
+    ierr = GmshReadString(gmsh, line, 2);CHKERRQ(ierr);
+    snum = sscanf(line, "%d %d", &dim, &tag);
+    if (snum != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = GmshReadString(gmsh, line, -(PetscInt)sizeof(line));CHKERRQ(ierr);
+    ierr = PetscStrchr(line, '"', &p);CHKERRQ(ierr);
+    if (!p) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = PetscStrrchr(line, '"', &q);CHKERRQ(ierr);
+    if (q == p) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = PetscStrncpy(name, p+1, (size_t)(q-p-1));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
