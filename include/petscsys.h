@@ -1195,7 +1195,8 @@ PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDRAM(void);
 PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
 
-#define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
+#define MPIU_PETSCLOGDOUBLE  MPI_DOUBLE
+#define MPIU_2PETSCLOGDOUBLE MPI_2DOUBLE_PRECISION
 
 /*
    Routines for tracing memory corruption/bleeding with default PETSc memory allocation
