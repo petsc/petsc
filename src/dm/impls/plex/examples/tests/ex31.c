@@ -155,21 +155,21 @@ int main(int argc, char **argv)
     suffix: 0
     nsize: {{2 3 4}separate output}
     requires: parmetis
-    args: -faces {{2,3,4  5,4,3  7,11,5}separate output} -partitioning parmetis -interpolate -dm_rebalance_partition_view -entity_depth {{0 1}separate output} -parallel {{FALSE TRUE}separate output} -use_initial_guess FALSE
+    args: -faces {{2,3,4  5,4,3  7,11,5}separate output} -interpolate -dm_rebalance_partition_view -entity_depth {{0 1}separate output} -parallel {{FALSE TRUE}separate output} -use_initial_guess FALSE
 
   test:
     # rebalance a mesh but use the initial guess (uses a random algorithm and gives different results on different machines, so just check that it runs).
     suffix: 1
     nsize: {{2 3 4}separate output}
     requires: parmetis
-    args: -faces {{2,3,4  5,4,3  7,11,5}separate output} -partitioning parmetis -interpolate -entity_depth {{0 1}separate output} -parallel TRUE -use_initial_guess TRUE
+    args: -faces {{2,3,4  5,4,3  7,11,5}separate output} -interpolate -entity_depth {{0 1}separate output} -parallel TRUE -use_initial_guess TRUE
 
   test:
     # no-op in serial
     suffix: 2
     nsize: {{1}separate output}
     requires: parmetis
-    args: -faces 2,3,4 -partitioning parmetis -interpolate -dm_rebalance_partition_view -entity_depth 0 -parallel FALSE -use_initial_guess FALSE
+    args: -faces 2,3,4 -interpolate -dm_rebalance_partition_view -entity_depth 0 -parallel FALSE -use_initial_guess FALSE
 
 TEST*/
 

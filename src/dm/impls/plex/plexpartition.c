@@ -2595,7 +2595,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscMalloc1(pEnd-pStart, &toBalance);CHKERRQ(ierr);
 
   for (i=0; i<pEnd-pStart; i++) {
-    toBalance[i] = (i-pStart>=eBegin && i-pStart<eEnd);
+    toBalance[i] = (PetscBool)(i-pStart>=eBegin && i-pStart<eEnd);
   }
 
   /* There are three types of points:
