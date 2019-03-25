@@ -377,25 +377,19 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
     ierr = PetscViewerASCIIPrintf(viewer," Number of coarse parts: %D \n",hpart->ncoarseparts);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," Coarse partitioner: %s \n",hpart->coarseparttype);CHKERRQ(ierr);
     if (hpart->coarseMatPart) {
-      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-      if (!rank) {
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = MatPartitioningView(hpart->coarseMatPart,sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = MatPartitioningView(hpart->coarseMatPart,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer," Number of fine parts: %D \n",hpart->nfineparts);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," Fine partitioner: %s \n",hpart->fineparttype);CHKERRQ(ierr);
-    if (hpart->fineMatPart) {
-      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-      if (!rank) {
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = MatPartitioningView(hpart->fineMatPart,sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    if (!rank && hpart->fineMatPart) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = MatPartitioningView(hpart->fineMatPart,sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
