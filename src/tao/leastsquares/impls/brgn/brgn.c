@@ -329,9 +329,9 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
             The user can also provide own regularization function.
 
   Options Database Keys:
-  + -tao_brgn_regularizer_weight  - regularizer weight (default 1e-4)
-  . -tao_brgn_l1_smooth_epsilon   - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
-  - -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l1dict") (default "l2prox")
+  + -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l1dict") (default "l2prox")
+  . -tao_brgn_regularizer_weight  - regularizer weight (default 1e-4)
+  - -tao_brgn_l1_smooth_epsilon   - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
 
   Level: beginner
 M*/
