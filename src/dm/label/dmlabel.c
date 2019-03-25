@@ -186,11 +186,28 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelNewStratum(DMLabel label, PetscInt val
   tmpH = label->ht;
   tmpP = label->points;
   tmpB = label->validIS;
-  ierr = PetscRealloc((v+1)*sizeof(*tmpV), &tmpV);CHKERRQ(ierr);
-  ierr = PetscRealloc((v+1)*sizeof(*tmpS), &tmpS);CHKERRQ(ierr);
-  ierr = PetscRealloc((v+1)*sizeof(*tmpH), &tmpH);CHKERRQ(ierr);
-  ierr = PetscRealloc((v+1)*sizeof(*tmpP), &tmpP);CHKERRQ(ierr);
-  ierr = PetscRealloc((v+1)*sizeof(*tmpB), &tmpB);CHKERRQ(ierr);
+  { /* TODO: PetscRealloc() is broken, use malloc+memcpy+free  */
+    PetscInt   *oldV = tmpV;
+    PetscInt   *oldS = tmpS;
+    PetscHSetI *oldH = tmpH;
+    IS         *oldP = tmpP;
+    PetscBool  *oldB = tmpB;
+    ierr = PetscMalloc((v+1)*sizeof(*tmpV), &tmpV);CHKERRQ(ierr);
+    ierr = PetscMalloc((v+1)*sizeof(*tmpS), &tmpS);CHKERRQ(ierr);
+    ierr = PetscMalloc((v+1)*sizeof(*tmpH), &tmpH);CHKERRQ(ierr);
+    ierr = PetscMalloc((v+1)*sizeof(*tmpP), &tmpP);CHKERRQ(ierr);
+    ierr = PetscMalloc((v+1)*sizeof(*tmpB), &tmpB);CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpV, oldV, v*sizeof(*tmpV));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpS, oldS, v*sizeof(*tmpS));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpH, oldH, v*sizeof(*tmpH));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpP, oldP, v*sizeof(*tmpP));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpB, oldB, v*sizeof(*tmpB));CHKERRQ(ierr);
+    ierr = PetscFree(oldV);CHKERRQ(ierr);
+    ierr = PetscFree(oldS);CHKERRQ(ierr);
+    ierr = PetscFree(oldH);CHKERRQ(ierr);
+    ierr = PetscFree(oldP);CHKERRQ(ierr);
+    ierr = PetscFree(oldB);CHKERRQ(ierr);
+  }
   label->numStrata     = v+1;
   label->stratumValues = tmpV;
   label->stratumSizes  = tmpS;
