@@ -194,6 +194,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
 
   Level: beginner
 
-.seealso: MatCreateMPIBAIJMKL(), MATSEQBAIJMKL, MATMPIBAIJMKL
+.seealso: MatCreateBAIJMKL(), MATSEQBAIJMKL, MATMPIBAIJMKL
 M*/
 

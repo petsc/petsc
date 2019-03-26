@@ -9,5 +9,8 @@ if __name__ == '__main__':
     '--with-precision=single',
     '--download-openblas', # default ATLAS blas on Ubuntu 14.04 breaks runex76 in src/mat/examples/tests
     '--with-clanguage=c',
+    # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang
+    # on Mac OS X, MSVC on Windows), you must set -ccbin appropriately in CUDAFLAGS, as in the example for PGI below:
+    # 'CUDAFLAGS=-ccbin pgc++',
   ]
   configure.petsc_configure(configure_options)
