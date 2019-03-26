@@ -540,7 +540,8 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   PetscMPIInt rank,niranks,*iranks;
   MPI_Comm comm;
   MPI_Group group;
-  MPI_Request *rootreqs,*leafreqs;
+  PetscMPIInt nreqs = 0;
+  MPI_Request *reqs;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_group(PETSC_COMM_SELF,&group);CHKERRQ(ierr);
@@ -557,7 +558,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   for (i=0; i<sf->nranks; i++) {
     rlengths[i] = sf->roffset[i+1] - sf->roffset[i]; /* Number of roots referenced by my leaves; for rank sf->ranks[i] */
   }
-  ierr = PetscCommBuildTwoSided(comm,1,MPIU_INT,sf->nranks-sf->ndranks,sf->ranks+sf->ndranks,rlengths+sf->ndranks,&niranks,&iranks,(void**)&ilengths);CHKERRQ(ierr);
+  ierr = PetscCommBuildTwoSided(comm,1,MPIU_INT,sf->nranks-sf->ndranks,sf->ranks+sf->ndranks,rlengths+sf->ndranks,&niranks,&iranks,&ilengths);CHKERRQ(ierr);
 
   /* Sort iranks. See use of VecScatterGetRemoteOrdered_Private() in MatGetBrowsOfAoCols_MPIAIJ() on why.
      We could sort ranks there at the price of allocating extra working arrays. Presumably, niranks is
@@ -574,8 +575,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
     bas->iranks[i] = sf->ranks[i];
     bas->ioffset[i+1] = bas->ioffset[i] + rlengths[i];
   }
-  if (bas->ndiranks > 1 || (bas->ndiranks == 1 && bas->iranks[0] != rank)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Broken setup for shared ranks");
-  for ( ; i<bas->niranks; i++) {
+  for (i=bas->ndiranks; i<bas->niranks; i++) {
     bas->iranks[i] = iranks[i-bas->ndiranks];
     bas->ioffset[i+1] = bas->ioffset[i] + ilengths[i-bas->ndiranks];
   }
@@ -584,27 +584,31 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   ierr = PetscFree(iranks);CHKERRQ(ierr);
   ierr = PetscFree(ilengths);CHKERRQ(ierr);
 
+  /* Sanity checks for distinguished ranks */
+  if (sf->ndranks != bas->ndiranks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Broken setup for shared ranks");
+  if (sf->ndranks > 1 || (sf->ndranks == 1 && sf->ranks[0] != rank)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Broken setup for shared ranks");
+  if (bas->ndiranks > 1 || (bas->ndiranks == 1 && bas->iranks[0] != rank)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Broken setup for shared ranks");
+
   /* Send leaf identities to roots */
   ierr = PetscMalloc1(bas->itotal,&bas->irootloc);CHKERRQ(ierr);
-  ierr = PetscMalloc2(bas->niranks-bas->ndiranks,&rootreqs,sf->nranks-sf->ndranks,&leafreqs);CHKERRQ(ierr);
-  for (i=bas->ndiranks; i<bas->niranks; i++) {
-    ierr = MPI_Irecv(bas->irootloc+bas->ioffset[i],bas->ioffset[i+1]-bas->ioffset[i],MPIU_INT,bas->iranks[i],bas->tag,comm,&rootreqs[i-bas->ndiranks]);CHKERRQ(ierr);
-  }
-  for (i=0; i<sf->nranks; i++) {
+  ierr = PetscMalloc1(bas->niranks-bas->ndiranks+sf->nranks-sf->ndranks,&reqs);CHKERRQ(ierr);
+  for (i=sf->ndranks; i<sf->nranks; i++, nreqs++) {
     PetscMPIInt npoints;
-    ierr = PetscMPIIntCast(sf->roffset[i+1] - sf->roffset[i],&npoints);CHKERRQ(ierr);
-    if (i < sf->ndranks) {
-      if (sf->ranks[i] != rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot interpret distinguished leaf rank");
-      if (bas->iranks[0] != rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot interpret distinguished root rank");
-      if (npoints != bas->ioffset[1]-bas->ioffset[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Distinguished rank exchange has mismatched lengths");
-      ierr = PetscMemcpy(bas->irootloc+bas->ioffset[0],sf->rremote+sf->roffset[i],npoints*sizeof(bas->irootloc[0]));CHKERRQ(ierr);
-      continue;
-    }
-    ierr = MPI_Isend(sf->rremote+sf->roffset[i],npoints,MPIU_INT,sf->ranks[i],bas->tag,comm,&leafreqs[i-sf->ndranks]);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(sf->roffset[i+1]-sf->roffset[i],&npoints);CHKERRQ(ierr);
+    ierr = MPI_Isend(sf->rremote+sf->roffset[i],npoints,MPIU_INT,sf->ranks[i],bas->tag,comm,&reqs[nreqs]);CHKERRQ(ierr);
   }
-  ierr = MPI_Waitall(bas->niranks-bas->ndiranks,rootreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Waitall(sf->nranks-sf->ndranks,leafreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = PetscFree2(rootreqs,leafreqs);CHKERRQ(ierr);
+  for (i=bas->ndiranks; i<bas->niranks; i++, nreqs++) {
+    PetscMPIInt npoints;
+    ierr = PetscMPIIntCast(bas->ioffset[i+1]-bas->ioffset[i],&npoints);CHKERRQ(ierr);
+    ierr = MPI_Irecv(bas->irootloc+bas->ioffset[i],npoints,MPIU_INT,bas->iranks[i],bas->tag,comm,&reqs[nreqs]);CHKERRQ(ierr);
+  }
+  for (i=0; i<sf->ndranks; i++) {
+    PetscInt npoints = sf->roffset[i+1]-sf->roffset[i];
+    if (npoints != bas->ioffset[i+1]-bas->ioffset[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Distinguished rank exchange has mismatched lengths");
+    ierr = PetscMemcpy(bas->irootloc+bas->ioffset[i],sf->rremote+sf->roffset[i],npoints*sizeof(bas->irootloc[0]));CHKERRQ(ierr);
+  }
+  ierr = MPI_Waitall(nreqs,reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = PetscFree(reqs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

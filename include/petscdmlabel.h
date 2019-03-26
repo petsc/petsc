@@ -23,6 +23,8 @@ PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelAddStratum(DMLabel, PetscInt);
+PETSC_EXTERN PetscErrorCode DMLabelAddStrata(DMLabel, PetscInt, const PetscInt[]);
+PETSC_EXTERN PetscErrorCode DMLabelAddStrataIS(DMLabel, IS);
 PETSC_EXTERN PetscErrorCode DMLabelInsertIS(DMLabel, IS, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelGetNumValues(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumBounds(DMLabel, PetscInt, PetscInt *, PetscInt *);
@@ -33,6 +35,7 @@ PETSC_EXTERN PetscErrorCode DMLabelGetStratumSize(DMLabel, PetscInt, PetscInt *)
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumIS(DMLabel, PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMLabelSetStratumIS(DMLabel, PetscInt, IS);
 PETSC_EXTERN PetscErrorCode DMLabelClearStratum(DMLabel, PetscInt);
+
 PETSC_EXTERN PetscErrorCode DMLabelComputeIndex(DMLabel);
 PETSC_EXTERN PetscErrorCode DMLabelCreateIndex(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelDestroyIndex(DMLabel);
