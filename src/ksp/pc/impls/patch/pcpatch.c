@@ -598,9 +598,9 @@ $   func (PC pc,PetscInt point,Vec x,Vec f,IS cellIS,PetscInt n,const PetscInt* 
   Level: advanced
 
   Notes:
-  The matrix entries have been set to zero before the call.
+  The entries of F (the output residual vector) have been set to zero before the call.
 
-.seealso: PCPatchSetComputeOperator(), PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo()
+.seealso: PCPatchSetComputeOperator(), PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo(), PCPatchSetComputeFunctionInteriorFacets()
 @*/
 PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
 {
@@ -639,9 +639,9 @@ $   func (PC pc,PetscInt point,Vec x,Vec f,IS facetIS,PetscInt n,const PetscInt*
   Level: advanced
 
   Notes:
-  The matrix entries have been set to zero before the call.
+  The entries of F (the output residual vector) have been set to zero before the call.
 
-.seealso: PCPatchSetComputeOperator(), PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo()
+.seealso: PCPatchSetComputeOperator(), PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo(), PCPatchSetComputeFunction()
 @*/
 PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
 {
@@ -1973,6 +1973,7 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
     ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   PetscStackPush("PCPatch user callback");
   /* Cannot reuse the same IS because the geometry info is being cached in it */
   ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
@@ -2031,6 +2032,7 @@ static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patc
   PetscFunctionReturn(0);
 }
 
+/* This function zeros mat on entry */
 PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt point, PetscBool withArtificial)
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
@@ -2065,6 +2067,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  ierr = MatZeroEntries(mat);CHKERRQ(ierr);
   if (patch->precomputeElementTensors) {
     PetscInt           i;
     PetscInt           ndof = patch->totalDofsPerCell;
@@ -2444,7 +2447,6 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
       ierr = PCPatchPrecomputePatchTensors_Private(pc);CHKERRQ(ierr);
     }
     for (i = 0; i < patch->npatch; ++i) {
-      ierr = MatZeroEntries(patch->mat[i]);CHKERRQ(ierr);
       ierr = PCPatchComputeOperator_Internal(pc, NULL, patch->mat[i], i, PETSC_FALSE);CHKERRQ(ierr);
       ierr = KSPSetOperators((KSP) patch->solver[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
     }
@@ -2467,7 +2469,6 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
       }
 
       ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
       ierr = PCPatchComputeOperator_Internal(pc, NULL, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
 
       ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
@@ -2775,7 +2776,6 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, Pet
     PetscInt dof;
     IS rowis;
     ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
     ierr = PCPatchComputeOperator_Internal(pc, NULL, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
