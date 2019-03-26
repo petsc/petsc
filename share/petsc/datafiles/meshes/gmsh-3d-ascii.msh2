@@ -1,6 +1,31 @@
+$Comments
+$EndComments
+
+$Comments
+test: comment line 1
+$EndComments
+
+$Comments
+test: comment line 1
+test: comment line 2
+$EndComments
+
 $MeshFormat
 2.2 0 8
 $EndMeshFormat
+
+$Comments
+$EndComments
+
+$Comments
+test: comment line 1
+$EndComments
+
+$Comments
+test: comment line 1
+test: comment line 2
+$EndComments
+
 $PhysicalNames
 2
 2 1 "boundary"

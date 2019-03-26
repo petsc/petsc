@@ -2,68 +2,6 @@
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <petsc/private/hashmapi.h>
 
-/*@C
-  DMPlexCreateGmshFromFile - Create a DMPlex mesh from a Gmsh file
-
-+ comm        - The MPI communicator
-. filename    - Name of the Gmsh file
-- interpolate - Create faces and edges in the mesh
-
-  Output Parameter:
-. dm  - The DM object representing the mesh
-
-  Level: beginner
-
-.seealso: DMPlexCreateFromFile(), DMPlexCreateGmsh(), DMPlexCreate()
-@*/
-PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
-{
-  PetscViewer     viewer;
-  PetscMPIInt     rank;
-  int             fileType;
-  PetscViewerType vtype;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-
-  /* Determine Gmsh file type (ASCII or binary) from file header */
-  if (!rank) {
-    PetscViewer vheader;
-    char        line[PETSC_MAX_PATH_LEN];
-    PetscBool   match;
-    int         snum;
-    float       version;
-
-    ierr = PetscViewerCreate(PETSC_COMM_SELF, &vheader);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(vheader, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(vheader, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(vheader, filename);CHKERRQ(ierr);
-    /* Read only the first two lines of the Gmsh file */
-    ierr = PetscViewerRead(vheader, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
-    ierr = PetscStrncmp(line, "$MeshFormat", sizeof(line), &match);CHKERRQ(ierr);
-    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
-    ierr = PetscViewerRead(vheader, line, 2, NULL, PETSC_STRING);CHKERRQ(ierr);
-    snum = sscanf(line, "%f %d", &version, &fileType);
-    if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
-    if (version < 2.2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file version %3.1f must be at least 2.2", (double)version);
-    if ((int)version == 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file version %3.1f not supported", (double)version);
-    if (version > 4.1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file version %3.1f must be at most 4.1", (double)version);
-    ierr = PetscViewerDestroy(&vheader);CHKERRQ(ierr);
-  }
-  ierr = MPI_Bcast(&fileType, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
-  vtype = (fileType == 0) ? PETSCVIEWERASCII : PETSCVIEWERBINARY;
-
-  /* Create appropriate viewer and build plex */
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, vtype);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  ierr = DMPlexCreateGmsh(comm, viewer, interpolate, dm);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 typedef struct {
   PetscViewer    viewer;
   int            fileFormat;
@@ -121,6 +59,53 @@ static PetscErrorCode GmshReadString(GmshFile *gmsh, char *buf, PetscInt count)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscViewerRead(gmsh->viewer, buf, count, NULL, PETSC_STRING);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode GmshMatch(PETSC_UNUSED GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN], PetscBool *match)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscStrcmp(line, Section, match);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN])
+{
+  PetscBool      match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = GmshMatch(gmsh, Section, line, &match);CHKERRQ(ierr);
+  if (!match) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file, expecting %s",Section);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode GmshReadSection(GmshFile *gmsh, char line[PETSC_MAX_PATH_LEN])
+{
+  PetscBool      match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (PETSC_TRUE) {
+    ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
+    ierr = GmshMatch(gmsh, "$Comments", line, &match);CHKERRQ(ierr);
+    if (!match) break;
+    while (PETSC_TRUE) {
+      ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
+      ierr = GmshMatch(gmsh, "$EndComments", line, &match);CHKERRQ(ierr);
+      if (match) break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode GmshReadEndSection(GmshFile *gmsh, const char EndSection[], char line[PETSC_MAX_PATH_LEN])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
+  ierr = GmshExpect(gmsh, EndSection, line);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -873,6 +858,14 @@ static PetscErrorCode DMPlexCreateGmsh_ReadPeriodic_v41(GmshFile *gmsh, int shif
   PetscFunctionReturn(0);
 }
 
+/*
+$MeshFormat // same as MSH version 2
+  version(ASCII double; currently 4.1)
+  file-type(ASCII int; 0 for ASCII mode, 1 for binary mode)
+  data-size(ASCII int; sizeof(size_t))
+  < int with value one; only in binary mode, to detect endianness >
+$EndMeshFormat
+*/
 static PetscErrorCode DMPlexCreateGmsh_ReadMeshFormat(GmshFile *gmsh)
 {
   char           line[PETSC_MAX_PATH_LEN];
@@ -934,6 +927,67 @@ static PetscErrorCode DMPlexCreateGmsh_ReadPhysicalNames(GmshFile *gmsh)
     if (q == p) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscStrncpy(name, p+1, (size_t)(q-p-1));CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexCreateGmshFromFile - Create a DMPlex mesh from a Gmsh file
+
++ comm        - The MPI communicator
+. filename    - Name of the Gmsh file
+- interpolate - Create faces and edges in the mesh
+
+  Output Parameter:
+. dm  - The DM object representing the mesh
+
+  Level: beginner
+
+.seealso: DMPlexCreateFromFile(), DMPlexCreateGmsh(), DMPlexCreate()
+@*/
+PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
+  PetscViewer     viewer;
+  PetscMPIInt     rank;
+  int             fileType;
+  PetscViewerType vtype;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+
+  /* Determine Gmsh file type (ASCII or binary) from file header */
+  if (!rank) {
+    GmshFile    gmsh_, *gmsh = &gmsh_;
+    char        line[PETSC_MAX_PATH_LEN];
+    int         snum;
+    float       version;
+
+    ierr = PetscMemzero(gmsh,sizeof(GmshFile));CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &gmsh->viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(gmsh->viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(gmsh->viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(gmsh->viewer, filename);CHKERRQ(ierr);
+    /* Read only the first two lines of the Gmsh file */
+    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
+    ierr = GmshExpect(gmsh, "$MeshFormat", line);CHKERRQ(ierr);
+    ierr = GmshReadString(gmsh, line, 2);CHKERRQ(ierr);
+    snum = sscanf(line, "%f %d", &version, &fileType);
+    if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
+    if (version < 2.2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file version %3.1f must be at least 2.2", (double)version);
+    if ((int)version == 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file version %3.1f not supported", (double)version);
+    if (version > 4.1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file version %3.1f must be at most 4.1", (double)version);
+    ierr = PetscViewerDestroy(&gmsh->viewer);CHKERRQ(ierr);
+  }
+  ierr = MPI_Bcast(&fileType, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
+  vtype = (fileType == 0) ? PETSCVIEWERASCII : PETSCVIEWERBINARY;
+
+  /* Create appropriate viewer and build plex */
+  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, vtype);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+  ierr = DMPlexCreateGmsh(comm, viewer, interpolate, dm);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1006,65 +1060,51 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     gmsh->binary = binary;
 
     /* Read mesh format */
-    ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-    ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
+    ierr = GmshExpect(gmsh, "$MeshFormat", line);CHKERRQ(ierr);
     ierr = DMPlexCreateGmsh_ReadMeshFormat(gmsh);CHKERRQ(ierr);
-    ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-    ierr = PetscStrncmp(line, "$EndMeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = GmshReadEndSection(gmsh, "$EndMeshFormat", line);CHKERRQ(ierr);
 
     /* OPTIONAL Read physical names */
-    ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-    ierr = PetscStrncmp(line, "$PhysicalNames", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
+    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
+    ierr = GmshMatch(gmsh,"$PhysicalNames", line, &match);CHKERRQ(ierr);
     if (match) {
       ierr = DMPlexCreateGmsh_ReadPhysicalNames(gmsh);CHKERRQ(ierr);
-      ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-      ierr = PetscStrncmp(line, "$EndPhysicalNames", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-      if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+      ierr = GmshReadEndSection(gmsh, "$EndPhysicalNames", line);CHKERRQ(ierr);
       /* Initial read for entity section */
-      ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
+      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
     }
 
     /* Read entities */
     if (gmsh->fileFormat >= 40) {
-      ierr = PetscStrncmp(line, "$Entities", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-      if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+      ierr = GmshExpect(gmsh, "$Entities", line);CHKERRQ(ierr);
       switch (gmsh->fileFormat) {
       case 41: ierr = DMPlexCreateGmsh_ReadEntities_v41(gmsh, &entities);CHKERRQ(ierr); break;
       default: ierr = DMPlexCreateGmsh_ReadEntities_v40(gmsh, &entities);CHKERRQ(ierr); break;
       }
-      ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-      ierr = PetscStrncmp(line, "$EndEntities", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-      if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+      ierr = GmshReadEndSection(gmsh, "$EndEntities", line);CHKERRQ(ierr);
       /* Initial read for nodes section */
-      ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
+      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
     }
 
     /* Read nodes */
-    ierr = PetscStrncmp(line, "$Nodes", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = GmshExpect(gmsh, "$Nodes", line);CHKERRQ(ierr);
     switch (gmsh->fileFormat) {
     case 41: ierr = DMPlexCreateGmsh_ReadNodes_v41(gmsh, shift, &numVertices, &coordsIn);CHKERRQ(ierr); break;
     case 40: ierr = DMPlexCreateGmsh_ReadNodes_v40(gmsh, shift, &numVertices, &coordsIn);CHKERRQ(ierr); break;
     default: ierr = DMPlexCreateGmsh_ReadNodes_v22(gmsh, shift, &numVertices, &coordsIn);CHKERRQ(ierr); break;
     }
-    ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-    ierr = PetscStrncmp(line, "$EndNodes", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = GmshReadEndSection(gmsh, "$EndNodes", line);CHKERRQ(ierr);
 
     /* Read elements */
-    ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);;
-    ierr = PetscStrncmp(line, "$Elements", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);;
+    ierr = GmshExpect(gmsh, "$Elements", line);CHKERRQ(ierr);
     switch (gmsh->fileFormat) {
     case 41: ierr = DMPlexCreateGmsh_ReadElements_v41(gmsh, shift, entities, &numCells, &gmsh_elem);CHKERRQ(ierr); break;
     case 40: ierr = DMPlexCreateGmsh_ReadElements_v40(gmsh, shift, entities, &numCells, &gmsh_elem);CHKERRQ(ierr); break;
-    default: ierr = DMPlexCreateGmsh_ReadElements_v22(gmsh, shift, &numCells, &gmsh_elem);CHKERRQ(ierr);
+    default: ierr = DMPlexCreateGmsh_ReadElements_v22(gmsh, shift, &numCells, &gmsh_elem);CHKERRQ(ierr); break;
     }
-    ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-    ierr = PetscStrncmp(line, "$EndElements", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = GmshReadEndSection(gmsh, "$EndElements", line);CHKERRQ(ierr);
 
     /* OPTIONAL Read periodic section */
     if (periodic) {
@@ -1074,16 +1114,13 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       ierr = PetscBTCreate(numVertices, &periodicV);CHKERRQ(ierr);
       for (i = 0; i < numVertices; i++) periodicMapT[i] = i;
 
-      ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-      ierr = PetscStrncmp(line, "$Periodic", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-      if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
+      ierr = GmshExpect(gmsh, "$Periodic", line);CHKERRQ(ierr);
       switch (gmsh->fileFormat) {
       case 41: ierr = DMPlexCreateGmsh_ReadPeriodic_v41(gmsh, shift, periodicMapT, periodicV);CHKERRQ(ierr); break;
       default: ierr = DMPlexCreateGmsh_ReadPeriodic_v40(gmsh, shift, periodicMapT, periodicV);CHKERRQ(ierr); break;
       }
-      ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-      ierr = PetscStrncmp(line, "$EndPeriodic", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-      if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+      ierr = GmshReadEndSection(gmsh, "$EndPeriodic", line);CHKERRQ(ierr);
 
       /* we may have slaves of slaves */
       for (i = 0; i < numVertices; i++) {
