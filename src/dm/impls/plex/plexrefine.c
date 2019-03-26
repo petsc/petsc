@@ -24,6 +24,126 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt 
   PetscFunctionReturn(0);
 }
 
+/*
+  Note that j and invj are non-square:
+         v0 + j x_face = x_cell
+    invj (x_cell - v0) = x_face
+*/
+PetscErrorCode CellRefinerGetAffineFaceTransforms_Internal(CellRefiner refiner, PetscInt *numFaces, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[], PetscReal *detj[])
+{
+  PetscReal     *v = NULL, *j = NULL, *invj = NULL, *dj = NULL;
+  PetscInt       cdim, fdim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (refiner) {
+  case REFINER_NOOP: break;
+  case REFINER_SIMPLEX_2D:
+    /*
+     2
+     |\
+     | \
+     |  \
+     |   \
+     |    \
+     |     \
+     |      \
+     2       1
+     |        \
+     |         \
+     |          \
+     0---0-------1
+     */
+    cdim = 2;
+    fdim = 1;
+    if (numFaces) *numFaces = 3;
+    if (v0) {
+      ierr = PetscMalloc1(3*cdim,      &v);CHKERRQ(ierr);
+      ierr = PetscMalloc1(3*cdim*fdim, &j);CHKERRQ(ierr);
+      ierr = PetscMalloc1(3*cdim*fdim, &invj);CHKERRQ(ierr);
+      ierr = PetscMalloc1(3,           &dj);CHKERRQ(ierr);
+      /* 0 */
+      v[0+0] =  0.0; v[0+1] = -1.0;
+      j[0+0] =  1.0;
+      j[0+1] =  0.0;
+      invj[0+0] = 1.0; invj[0+1] = 0.0;
+      dj[0]  = 1.0;
+      /* 1 */
+      v[2+0] =  0.0; v[2+1] =  0.0;
+      j[2+0] = -1.0;
+      j[2+1] =  1.0;
+      invj[2+0] = -0.5; invj[2+1] = 0.5;
+      dj[1]  = 1.414213562373095;
+      /* 2 */
+      v[4+0] = -1.0; v[4+1] =  0.0;
+      j[4+0] =  0.0;
+      j[4+1] = -1.0;
+      invj[4+0] = 0.0; invj[4+1] = -1.0;
+      dj[2]  = 1.0;
+    }
+    break;
+  case REFINER_HEX_2D:
+    /*
+     3---------2---------2
+     |                   |
+     |                   |
+     |                   |
+     3                   1
+     |                   |
+     |                   |
+     |                   |
+     0---------0---------1
+     */
+    cdim = 2;
+    fdim = 1;
+    if (numFaces) *numFaces = 4;
+    if (v0) {
+      ierr = PetscMalloc1(4*cdim,      &v);CHKERRQ(ierr);
+      ierr = PetscMalloc1(4*cdim*fdim, &j);CHKERRQ(ierr);
+      ierr = PetscMalloc1(4*cdim*fdim, &invj);CHKERRQ(ierr);
+      ierr = PetscMalloc1(4,           &dj);CHKERRQ(ierr);
+      /* 0 */
+      v[0+0] =  0.0; v[0+1] = -1.0;
+      j[0+0] =  1.0;
+      j[0+1] =  0.0;
+      invj[0+0] =  1.0; invj[0+1] =  0.0;
+      dj[0]  = 1.0;
+      /* 1 */
+      v[2+0] =  1.0; v[2+1] =  0.0;
+      j[2+0] =  0.0;
+      j[2+1] =  1.0;
+      invj[2+0] =  0.0; invj[2+1] =  1.0;
+      dj[1]  = 1.0;
+      /* 2 */
+      v[4+0] =  0.0; v[4+1] = 1.0;
+      j[4+0] = -1.0;
+      j[4+1] =  0.0;
+      invj[4+0] = -1.0; invj[4+1] =  0.0;
+      dj[2]  = 1.0;
+      /* 3 */
+      v[6+0] = -1.0; v[6+1] =  0.0;
+      j[6+0] =  0.0;
+      j[6+1] = -1.0;
+      invj[6+0] =  0.0; invj[6+1] = -1.0;
+      dj[3]  = 1.0;
+    }
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
+  }
+  if (v0)     {*v0     = v;}
+  else        {ierr = PetscFree(v);CHKERRQ(ierr);}
+  if (jac)    {*jac    = j;}
+  else        {ierr = PetscFree(j);CHKERRQ(ierr);}
+  if (invjac) {*invjac = invj;}
+  else        {ierr = PetscFree(invj);CHKERRQ(ierr);}
+  if (invjac) {*invjac = invj;}
+  else        {ierr = PetscFree(invj);CHKERRQ(ierr);}
+  if (detj)   {*detj   = dj;}
+  else        {ierr = PetscFree(dj);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /* Gets the affine map from the original cell to each subcell */
 PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
 {
