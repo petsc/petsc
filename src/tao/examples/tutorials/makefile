@@ -3,7 +3,7 @@ FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/tao/examples/tutorials/
-MANSEC           = TAO
+MANSEC           = Tao
 EXAMPLESC	 = ex1.c ex2.c ex3.c
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
