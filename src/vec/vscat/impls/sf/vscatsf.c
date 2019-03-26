@@ -400,7 +400,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
 
     data->bs = bs = min;
     ierr     = MPI_Type_contiguous(bs,MPIU_SCALAR,&data->unit);CHKERRQ(ierr);
-    ierr     = MPI_Type_commit(&data->unit);
+    ierr     = MPI_Type_commit(&data->unit);CHKERRQ(ierr);
 
     /* Shrink x and ix */
     ierr = VecCreateMPIWithArray(xcomm,1,xlen/bs,PETSC_DECIDE,NULL,&xx);CHKERRQ(ierr); /* We only care xx's layout */

@@ -2285,7 +2285,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   ierr = VecSet(patch->cellMats, 0);CHKERRQ(ierr);
 
   ierr = MatCreateShell(PETSC_COMM_SELF, ncell*ndof, ncell*ndof, ncell*ndof, ncell*ndof,
-                        (void*)patch->cellMats, &vecMat);
+                        (void*)patch->cellMats, &vecMat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void(*)(void))&MatSetValues_PCPatch_Private);CHKERRQ(ierr);
   ierr = ISGetSize(patch->allCells, &ncell);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF, ndof*ncell, 0, 1, &dofMap);CHKERRQ(ierr);
@@ -2348,7 +2348,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
     ierr = VecSet(patch->intFacetMats, 0);CHKERRQ(ierr);
 
     ierr = MatCreateShell(PETSC_COMM_SELF, nIntFacets*ndof*2, nIntFacets*ndof*2, nIntFacets*ndof*2, nIntFacets*ndof*2,
-                          (void*)patch->intFacetMats, &vecMat);
+                          (void*)patch->intFacetMats, &vecMat);CHKERRQ(ierr);
     ierr = MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void(*)(void))&MatSetValues_PCPatch_Private);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF, 2*ndof*nIntFacets, 0, 1, &dofMap);CHKERRQ(ierr);
     ierr = ISGetIndices(dofMap, &dofMapArray);CHKERRQ(ierr);
@@ -3045,9 +3045,9 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_save_operators", patch->classname);CHKERRQ(ierr);
   ierr = PetscOptionsBool(option,  "Store all patch operators for lifetime of object?", "PCPatchSetSaveOperators", patch->save_operators, &patch->save_operators, &flg);CHKERRQ(ierr);
 
-  ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_precompute_element_tensors", patch->classname);
+  ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_precompute_element_tensors", patch->classname);CHKERRQ(ierr);
   ierr = PetscOptionsBool(option,  "Compute each element tensor only once?", "PCPatchSetPrecomputeElementTensors", patch->precomputeElementTensors, &patch->precomputeElementTensors, &flg);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_partition_of_unity", patch->classname);
+  ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_partition_of_unity", patch->classname);CHKERRQ(ierr);
   ierr = PetscOptionsBool(option, "Weight contributions by dof multiplicity?", "PCPatchSetPartitionOfUnity", patch->partition_of_unity, &patch->partition_of_unity, &flg);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_local_type", patch->classname);CHKERRQ(ierr);

@@ -120,17 +120,17 @@ static PetscErrorCode GmshReadSize(GmshFile *gmsh, PetscInt *buf, PetscInt count
     ierr = GmshRead(gmsh, buf, count, PETSC_INT);CHKERRQ(ierr);
   } else  if (dataSize == sizeof(int)) {
     int *ibuf = NULL;
-    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);
+    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);CHKERRQ(ierr);
     ierr = GmshRead(gmsh, ibuf, count, PETSC_ENUM);CHKERRQ(ierr);
     for (i = 0; i < count; ++i) buf[i] = (PetscInt)ibuf[i];
   } else  if (dataSize == sizeof(long)) {
     long *ibuf = NULL;
-    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);
+    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);CHKERRQ(ierr);
     ierr = GmshRead(gmsh, ibuf, count, PETSC_LONG);CHKERRQ(ierr);
     for (i = 0; i < count; ++i) buf[i] = (PetscInt)ibuf[i];
   } else if (dataSize == sizeof(PetscInt64)) {
     PetscInt64 *ibuf = NULL;
-    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);
+    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);CHKERRQ(ierr);
     ierr = GmshRead(gmsh, ibuf, count, PETSC_INT64);CHKERRQ(ierr);
     for (i = 0; i < count; ++i) buf[i] = (PetscInt)ibuf[i];
   }
