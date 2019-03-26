@@ -34,6 +34,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_CreateGmsh;
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
 
+PETSC_EXTERN const char * const CellRefiners[];
 typedef enum {REFINER_NOOP = 0,
               REFINER_SIMPLEX_1D,
               REFINER_SIMPLEX_2D,
