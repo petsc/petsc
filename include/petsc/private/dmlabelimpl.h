@@ -13,7 +13,7 @@
      - We want flexible insertion and deletion
      - We can live with O(log) query, but we need O(1) iteration over strata
 */
-struct _n_DMLabel {
+struct _p_DMLabel {
   PETSCHEADER(int);
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt    defaultValue;   /* Background value when no value explicitly given */
