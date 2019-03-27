@@ -33,7 +33,7 @@ class Heat(object):
         self.lvec.setUp()
         # Configure scatter from global to local
         isg = PETSc.IS().createGeneral(list(gindices), comm=comm)
-        self.g2l = PETSc.Scatter().createWithData(self.gvec, isg, self.lvec, None)
+        self.g2l = PETSc.Scatter().create(self.gvec, isg, self.lvec, None)
 
         self.tozero, self.zvec = PETSc.Scatter.toZero(self.gvec)
         self.history = []
