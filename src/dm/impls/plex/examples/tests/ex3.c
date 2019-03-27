@@ -13,6 +13,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;               /* The topological mesh dimension */
   PetscBool simplex;           /* Flag for simplex or tensor product mesh */
+  PetscBool refcell;           /* Make the mesh only a reference cell */
   PetscBool useDA;             /* Flag DMDA tensor product mesh */
   PetscBool interpolate;       /* Generate intermediate mesh elements */
   PetscReal refinementLimit;   /* The largest allowable cell volume */
@@ -128,6 +129,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->debug           = 0;
   options->dim             = 2;
   options->simplex         = PETSC_TRUE;
+  options->refcell         = PETSC_FALSE;
   options->useDA           = PETSC_TRUE;
   options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
@@ -149,6 +151,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Flag for simplices or hexhedra", "ex3.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-refcell", "Make the mesh only the reference cell", "ex3.c", options->refcell, &options->refcell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
@@ -247,7 +250,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->simplex) {
+  if (user->refcell) {
+    ierr = DMPlexCreateReferenceCell(comm, dim, user->simplex, dm);CHKERRQ(ierr);
+  } else if (user->simplex || !user->useDA) {
     DM refinedMesh = NULL;
 
     ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
