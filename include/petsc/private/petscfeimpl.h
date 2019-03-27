@@ -405,6 +405,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(Pet
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
+PETSC_INTERN PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
+
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension_Basic(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar []);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar[]);
