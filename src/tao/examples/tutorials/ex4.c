@@ -716,7 +716,7 @@ int main(int argc, char ** argv)
 
   test:
     suffix: l1_1
-    args: -p 1 -tao_type lmvm -alpha 1. -epsilon 1.e-7 -m 64 -n 64 -view_sol -mat_format 1
+    args: -p 1 -tao_type lmvm -alpha 1. -epsilon 1.e-7 -m 64 -n 64 -view_sol -matrix_format 1
 
   test:
     suffix: hessian_1
