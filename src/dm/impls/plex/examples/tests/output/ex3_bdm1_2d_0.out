@@ -1,0 +1,8 @@
+Function tests FAIL for order 0 at tolerance 1e-10 error 2.12132
+Function tests FAIL for order 0 derivatives at tolerance 1e-10 error 16.9115
+Function   convergence rate at refinement 0: 0.31
+Derivative convergence rate at refinement 0: -0.51
+Function   convergence rate at refinement 1: 0.11
+Derivative convergence rate at refinement 1: -0.65
+Function   convergence rate at refinement 2: 0.024
+Derivative convergence rate at refinement 2: -0.76

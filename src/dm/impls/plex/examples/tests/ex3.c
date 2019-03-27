@@ -1206,6 +1206,40 @@ int main(int argc, char **argv)
     requires: triangle
     args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
 
+  # 2D BDM_1 on a triangle
+  test:
+    suffix: bdm1_2d_0
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: bdm1_2d_1
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: bdm1_2d_2
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -porder 2
+
+  # 2D BDM_1 on a quadrilateral
+  test:
+    suffix: bdm1q_2d_0
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: bdm1q_2d_1
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: bdm1q_2d_2
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -porder 2
+
   # Test high order quadrature
   test:
     suffix: p1_quad_2
