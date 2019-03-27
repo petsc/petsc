@@ -69,7 +69,7 @@ class BaseTestPlex(object):
         self.assertFalse(flagA)
         self.assertFalse(flagB)
         PETSc.DMPlex.setBasicAdjacency(self.plex, True, True)
-        flagA, flagB = PETSc.DMPlex.getAdjacency(self.plex)
+        flagA, flagB = PETSc.DMPlex.getBasicAdjacency(self.plex)
         self.assertTrue(flagA)
         self.assertTrue(flagB)
         pStart, pEnd = self.plex.getChart()
