@@ -2700,9 +2700,9 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 2);
-  PetscValidPointer(numCoveredPoints, 3);
-  PetscValidPointer(coveredPoints, 4);
+  PetscValidIntPointer(points, 3);
+  PetscValidIntPointer(numCoveredPoints, 4);
+  PetscValidPointer(coveredPoints, 5);
   ierr = DMGetWorkArray(dm, mesh->maxSupportSize, MPIU_INT, &join[0]);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, mesh->maxSupportSize, MPIU_INT, &join[1]);CHKERRQ(ierr);
   /* Copy in support of first point */
@@ -2811,9 +2811,9 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 2);
-  PetscValidPointer(numCoveredPoints, 3);
-  PetscValidPointer(coveredPoints, 4);
+  PetscValidIntPointer(points, 3);
+  PetscValidIntPointer(numCoveredPoints, 4);
+  PetscValidPointer(coveredPoints, 5);
 
   ierr    = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr    = PetscCalloc1(numPoints, &closures);CHKERRQ(ierr);
