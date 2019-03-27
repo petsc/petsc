@@ -155,7 +155,7 @@ static PetscErrorCode ConfigureContext(UserCtx ctx)
   ierr = PetscOptionsReal("-reltol", "Relative stopping criterion for ADMM", "ex4.c", ctx->reltol, &(ctx->reltol), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-taylor","Flag for Taylor test. Default is true.", "ex4.c", ctx->taylor, &(ctx->taylor), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_admm","Use the ADMM solver in this example.", "ex4.c", ctx->use_admm, &(ctx->use_admm), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-p","Norm type.", "ex4.c", NormTypes,  ctx->p, (PetscEnum *) &(ctx->p), NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-p","Norm type.", "ex4.c", NormTypes, (PetscEnum)ctx->p, (PetscEnum *) &(ctx->p), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* Creating random ctx */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&(ctx->rctx));CHKERRQ(ierr);
@@ -518,7 +518,7 @@ static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
   Vec            xk,z,u;
 
   PetscFunctionBegin;
-  ierr  = TaoShellGetContext(tao, (void*) &ctx);CHKERRQ(ierr);
+  ierr  = TaoShellGetContext(tao, (void**) &ctx);CHKERRQ(ierr);
   alpha = ((UserCtx)ctx)->alpha;
   mu    = ((UserCtx)ctx)->mu;
   xk    = ((UserCtx)ctx)->workRight[4];
@@ -706,6 +706,9 @@ int main(int argc, char ** argv)
 }
 
 /*TEST
+
+  build:
+    requires: !complex
 
   test:
     suffix: 0
