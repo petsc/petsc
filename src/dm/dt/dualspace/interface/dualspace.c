@@ -1014,9 +1014,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(subsp, 3);
   *subsp = NULL;
-  if (sp->ops->getheightsubspace) {
-    ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);
-  }
+  if (sp->ops->getheightsubspace) {ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
