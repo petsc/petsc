@@ -118,13 +118,13 @@ cdef class DM(Object):
         return toBool(uC), toBool(uCl)
 
     def setFieldAdjacency(self, field, useCone, useClosure):
-        cdef PetscInt  f   = field
+        cdef PetscInt  f   = asInt(field)
         cdef PetscBool uC  = useCone
         cdef PetscBool uCl = useClosure
         CHKERR( DMSetAdjacency(self.dm, f, uC, uCl) )
 
     def getFieldAdjacency(self, field):
-        cdef PetscInt  f   = field
+        cdef PetscInt  f   = asInt(field)
         cdef PetscBool uC  = PETSC_FALSE
         cdef PetscBool uCl = PETSC_FALSE
         CHKERR( DMGetAdjacency(self.dm, f, &uC, &uCl) )
@@ -132,14 +132,59 @@ cdef class DM(Object):
 
     #
 
-    def copyDisc(self, DM dm):
-        CHKERR( DMCopyDisc(self.dm, dm.dm) )
+    def setNumFields(self, numFields):
+        cdef PetscInt cnum = asInt(numFields)
+        CHKERR( DMSetNumFields(self.dm, cnum) )
+
+    def getNumFields(self):
+        cdef PetscInt cnum = 0
+        CHKERR( DMGetNumFields(self.dm, &cnum) )
+        return toInt(cnum)
+
+    def setField(self, index, Object field, label=None):
+        cdef PetscInt     cidx = asInt(index)
+        cdef PetscObject  cobj = field.obj[0]
+        cdef PetscDMLabel clbl = NULL
+        assert label is None
+        CHKERR( DMSetField(self.dm, cidx, clbl, cobj) )
+
+    def getField(self, index):
+        cdef PetscInt     cidx = asInt(index)
+        cdef PetscObject  cobj = NULL
+        cdef PetscDMLabel clbl = NULL
+        CHKERR( DMGetField(self.dm, cidx, &clbl, &cobj) )
+        assert clbl == NULL
+        cdef Object field = subtype_Object(cobj)()
+        field.obj[0] = cobj
+        PetscINCREF(field.obj)
+        return (field, None)
+
+    def addField(self, Object field, label=None):
+        cdef PetscObject  cobj = field.obj[0]
+        cdef PetscDMLabel clbl = NULL
+        assert label is None
+        CHKERR( DMAddField(self.dm, clbl, cobj) )
+
+    def copyFields(self, DM dm):
+        CHKERR( DMCopyFields(self.dm, dm.dm) )
+
+    def createDS(self):
+        CHKERR( DMCreateDS(self.dm) )
+
+    def clearDS(self):
+        CHKERR( DMClearDS(self.dm) )
 
     def getDS(self):
         cdef DS ds = DS()
         CHKERR( DMGetDS(self.dm, &ds.ds) )
         PetscINCREF(ds.obj)
         return ds
+
+    def copyDS(self, DM dm):
+        CHKERR( DMCopyDS(self.dm, dm.dm) )
+
+    def copyDisc(self, DM dm):
+        CHKERR( DMCopyDisc(self.dm, dm.dm) )
 
     #
 

@@ -45,7 +45,16 @@ cdef extern from * nogil:
     int DMGetBasicAdjacency(PetscDM,PetscBool*,PetscBool*)
     int DMSetBasicAdjacency(PetscDM,PetscBool,PetscBool)
 
+    int DMSetNumFields(PetscDM,PetscInt)
+    int DMGetNumFields(PetscDM,PetscInt*)
+    int DMSetField(PetscDM,PetscInt,PetscDMLabel,PetscObject)
+    int DMAddField(PetscDM,PetscDMLabel,PetscObject)
+    int DMGetField(PetscDM,PetscInt,PetscDMLabel*,PetscObject*)
+    int DMCopyFields(PetscDM,PetscDM)
+    int DMCreateDS(PetscDM)
+    int DMClearDS(PetscDM)
     int DMGetDS(PetscDM,PetscDS*)
+    int DMCopyDS(PetscDM,PetscDM)
     int DMCopyDisc(PetscDM,PetscDM)
 
     int DMGetBlockSize(PetscDM,PetscInt*)
