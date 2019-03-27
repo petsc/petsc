@@ -6,6 +6,8 @@ PetscClassId PETSCDUALSPACE_CLASSID = 0;
 PetscFunctionList PetscDualSpaceList              = NULL;
 PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 
+const char *const PetscDualSpaceReferenceCells[] = {"SIMPLEX", "TENSOR", "PetscDualSpaceReferenceCell", "PETSCDUALSPACE_REFCELL_",0};
+
 /*@C
   PetscDualSpaceRegister - Adds a new PetscDualSpace implementation
 
