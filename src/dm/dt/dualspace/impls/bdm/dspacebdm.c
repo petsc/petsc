@@ -497,6 +497,7 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_BDM(PetscDualSpace sp, const P
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+<<<<<<< HEAD
   ierr = PetscDualSpaceGetOrder(sp, &order);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
   ierr = DMGetDimension(sp->dm, &dim);CHKERRQ(ierr);
@@ -511,10 +512,32 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_BDM(PetscDualSpace sp, const P
       numPoints = 1;
       for (d = 0; d < dim; d++) numPoints = numPoints * 2 + 1;
       numFaces  = 1 + dim;
+=======
+#if 0
+  ierr = PetscDualSpaceGetOrder(sp, &order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
+  ierr = DMGetDimension(sp->dm, &dim);CHKERRQ(ierr);
+  if (!dim) PetscFunctionReturn(0);
+  if (dim > 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"BDM symmetries not implemented for dim = %D > 3",dim);
+  if (!bdm->symmetries) { /* store symmetries */
+    PetscDualSpace    hsp;
+    DM                K;
+    PetscInt          numPoints = 1, d;
+    PetscInt          numFaces;
+    PetscInt          ***symmetries;
+    const PetscInt    ***hsymmetries;
+    PetscScalar       ***flips;
+    const PetscScalar ***hflips;
+
+    if (bdm->simplexCell) {
+      numFaces = 1 + dim;
+      for (d = 0; d < dim; d++) numPoints = numPoints * 2 + 1;
+>>>>>>> PetscDualSpace: Add a BDM implementation
     } else {
       numPoints = PetscPowInt(3,dim);
       numFaces  = 2 * dim;
     }
+<<<<<<< HEAD
     ierr = PetscCalloc1(numPoints, &symmetries);CHKERRQ(ierr);
     ierr = PetscCalloc1(numPoints, &flips);CHKERRQ(ierr);
     /* compute self symmetries */
@@ -679,12 +702,173 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_BDM(PetscDualSpace sp, const P
         ierr = DMPlexRestoreTransitiveClosure(K, 0, PETSC_TRUE, &KclosureSize, &Kclosure);CHKERRQ(ierr);
         ierr = PetscFree(seen);CHKERRQ(ierr);
       }
+=======
+    ierr = PetscCalloc1(numPoints,&symmetries);CHKERRQ(ierr);
+    ierr = PetscCalloc1(numPoints,&flips);CHKERRQ(ierr);
+    if (0 < dim && dim < 3) { /* compute self symmetries */
+      PetscInt    **cellSymmetries;
+      PetscScalar **cellFlips;
+
+      bdm->numSelfSym = 2 * numFaces;
+      bdm->selfSymOff = numFaces;
+      ierr = PetscCalloc1(2*numFaces,&cellSymmetries);CHKERRQ(ierr);
+      ierr = PetscCalloc1(2*numFaces,&cellFlips);CHKERRQ(ierr);
+      /* we want to be able to index symmetries directly with the orientations, which range from [-numFaces,numFaces) */
+      symmetries[0] = &cellSymmetries[bdm->selfSymOff];
+      flips[0]      = &cellFlips[bdm->selfSymOff];
+      if (dim == 1) {
+        PetscScalar *invert;
+        PetscInt    *reverse;
+        PetscInt     dofPerEdge = order+1, eNc = 1, i, j;
+
+        ierr = PetscMalloc1(dofPerEdge*eNc,&reverse);CHKERRQ(ierr);
+        ierr = PetscMalloc1(dofPerEdge*eNc,&invert);CHKERRQ(ierr);
+        for (i = 0; i < dofPerEdge; i++) {
+          for (j = 0; j < eNc; j++) {
+            reverse[i*eNc + j] = eNc * (dofPerEdge - 1 - i) + j;
+            invert[i*eNc + j]  = -1.0;
+          }
+        }
+        symmetries[0][-2] = reverse;
+        flips[0][-2]      = invert;
+
+        /* yes, this is redundant, but it makes it easier to cleanup if I don't have to worry about what not to free */
+        ierr = PetscMalloc1(dofPerEdge*eNc,&reverse);CHKERRQ(ierr);
+        ierr = PetscMalloc1(dofPerEdge*eNc,&invert);CHKERRQ(ierr);
+        for (i = 0; i < dofPerEdge; i++) {
+          for (j = 0; j < eNc; j++) {
+            reverse[i*eNc + j] = eNc * (dofPerEdge - 1 - i) + j;
+            invert[i*eNc + j]  = -1.0;
+          }
+        }
+        symmetries[0][1] = reverse;
+        flips[0][1]      = invert;
+      } else {
+        PetscInt dofPerEdge = bdm->simplexCell ? (order - 2) : (order - 1), s;
+        PetscInt dofPerFace;
+
+        for (s = -numFaces; s < numFaces; s++) {
+          PetscScalar *flp;
+          PetscInt    *sym, fNc = 1, i, j, k, l;
+
+          if (!s) continue;
+          if (bdm->simplexCell) {
+            dofPerFace = (dofPerEdge * (dofPerEdge + 1))/2;
+            ierr = PetscMalloc1(fNc*dofPerFace,&sym);CHKERRQ(ierr);
+            ierr = PetscMalloc1(fNc*dofPerFace,&flp);CHKERRQ(ierr);
+            for (j = 0, l = 0; j < dofPerEdge; j++) {
+              for (k = 0; k < dofPerEdge - j; k++, l++) {
+                i = dofPerEdge - 1 - j - k;
+                switch (s) {
+                case -3:
+                  sym[fNc*l] = BaryIndex(dofPerEdge,i,k,j);
+                  break;
+                case -2:
+                  sym[fNc*l] = BaryIndex(dofPerEdge,j,i,k);
+                  break;
+                case -1:
+                  sym[fNc*l] = BaryIndex(dofPerEdge,k,j,i);
+                  break;
+                case 1:
+                  sym[fNc*l] = BaryIndex(dofPerEdge,k,i,j);
+                  break;
+                case 2:
+                  sym[fNc*l] = BaryIndex(dofPerEdge,j,k,i);
+                  break;
+                }
+                flp[fNc*l] = s < 0 ? -1.0 : 1.0;
+              }
+            }
+          } else {
+            dofPerFace = dofPerEdge * dofPerEdge;
+            ierr = PetscMalloc1(fNc*dofPerFace,&sym);CHKERRQ(ierr);
+            ierr = PetscMalloc1(fNc*dofPerFace,&flp);CHKERRQ(ierr);
+            for (j = 0, l = 0; j < dofPerEdge; j++) {
+              for (k = 0; k < dofPerEdge; k++, l++) {
+                switch (s) {
+                case -4:
+                  sym[fNc*l] = CartIndex(dofPerEdge,k,j);
+                  break;
+                case -3:
+                  sym[fNc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - j),k);
+                  break;
+                case -2:
+                  sym[fNc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - k),(dofPerEdge - 1 - j));
+                  break;
+                case -1:
+                  sym[fNc*l] = CartIndex(dofPerEdge,j,(dofPerEdge - 1 - k));
+                  break;
+                case 1:
+                  sym[fNc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - k),j);
+                  break;
+                case 2:
+                  sym[fNc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - j),(dofPerEdge - 1 - k));
+                  break;
+                case 3:
+                  sym[fNc*l] = CartIndex(dofPerEdge,k,(dofPerEdge - 1 - j));
+                  break;
+                }
+                flp[fNc*l] = s < 0 ? -1.0 : 1.0;
+              }
+            }
+          }
+          for (i = 0; i < dofPerFace; i++) {
+            sym[fNc*i] *= fNc;
+            for (j = 1; j < fNc; j++) {
+              sym[fNc*i+j] = sym[fNc*i] + j;
+              flp[fNc*i+j] = flp[fNc*i];
+            }
+          }
+          symmetries[0][s] = sym;
+          flips[0][s]      = flp;
+        }
+      }
+    }
+    /* Copy in symmetries from subspaces */
+    ierr = PetscDualSpaceGetHeightSubspace(sp,1,&hsp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetSymmetries(hsp,&hsymmetries,&hflips);CHKERRQ(ierr);
+    if (hsymmetries || hflips) {
+      PetscBool      *seen;
+      const PetscInt *cone;
+      PetscInt       KclosureSize, *Kclosure = NULL;
+
+      ierr = PetscDualSpaceGetDM(sp,&K);CHKERRQ(ierr);
+      ierr = PetscCalloc1(numPoints,&seen);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(K,0,&cone);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(K,0,PETSC_TRUE,&KclosureSize,&Kclosure);CHKERRQ(ierr);
+      for (p = 0; p < numFaces; p++) {
+        PetscInt closureSize, *closure = NULL, q;
+
+        ierr = DMPlexGetTransitiveClosure(K,cone[p],PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+        for (q = 0; q < closureSize; q++) {
+          PetscInt point = closure[2*q], r;
+
+          if(!seen[point]) {
+            for (r = 0; r < KclosureSize; r++) {
+              if (Kclosure[2 * r] == point) break;
+            }
+            seen[point] = PETSC_TRUE;
+            symmetries[r] = (PetscInt **) hsymmetries[q];
+            flips[r]      = (PetscScalar **) hflips[q];
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(K,cone[p],PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(K,0,PETSC_TRUE,&KclosureSize,&Kclosure);CHKERRQ(ierr);
+      ierr = PetscFree(seen);CHKERRQ(ierr);
+>>>>>>> PetscDualSpace: Add a BDM implementation
     }
     bdm->symmetries = symmetries;
     bdm->flips      = flips;
   }
+<<<<<<< HEAD
   if (perms) *perms = (const PetscInt ***)    bdm->symmetries;
   if (rots)  *rots  = (const PetscScalar ***) bdm->flips;
+=======
+  if (perms) *perms = (const PetscInt ***) bdm->symmetries;
+  if (rots)  *rots  = (const PetscScalar ***) bdm->flips;
+#endif
+>>>>>>> PetscDualSpace: Add a BDM implementation
   PetscFunctionReturn(0);
 }
 
@@ -722,7 +906,10 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_BDM(PetscDualSpace sp)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   ierr     = PetscNewLog(sp, &bdm);CHKERRQ(ierr);
   sp->data = bdm;
+<<<<<<< HEAD
   sp->k    = 3;
+=======
+>>>>>>> PetscDualSpace: Add a BDM implementation
 
   bdm->numDof      = NULL;
   bdm->simplexCell = PETSC_TRUE;

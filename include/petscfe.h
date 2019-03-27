@@ -90,6 +90,7 @@ PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 J*/
 typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACELAGRANGE "lagrange"
+#define PETSCDUALSPACEBDM      "bdm"
 #define PETSCDUALSPACESIMPLE   "simple"
 
 PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
