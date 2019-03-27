@@ -802,7 +802,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: 7_hdf5_hierarch
-    requires: hdf5 ptscotch
+    requires: hdf5 ptscotch !complex
     nsize: {{2 3 4}separate output}
     args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
     args: -interpolate serial
