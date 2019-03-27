@@ -91,12 +91,12 @@ struct _p_PetscDualSpace {
 };
 
 typedef struct {
-  PetscInt       *numDof;
-  PetscBool       simplexCell;
-  PetscBool       tensorSpace;
-  PetscBool       continuous;
-  PetscInt        height;
-  PetscDualSpace *subspaces;
+  PetscInt       *numDof;      /* [d]: Number of dofs for d-dimensional point */
+  PetscBool       simplexCell; /* Flag for simplices, as opposed to tensor cells */
+  PetscBool       tensorSpace; /* Flag for tensor product space of polynomials, as opposed to a space of maximum degree */
+  PetscBool       continuous;  /* Flag for a continuous basis, as opposed to discontinuous across element boundaries */
+  PetscInt        height;      /* The number of subspaces stored */
+  PetscDualSpace *subspaces;   /* [h]: The subspace for dimension dim-(h+1) */
   PetscInt     ***symmetries;
   PetscInt        numSelfSym;
   PetscInt        selfSymOff;
