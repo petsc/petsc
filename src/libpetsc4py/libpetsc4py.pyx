@@ -273,8 +273,7 @@ cdef object load_module(object path):
             code = compile(source.read(), path, 'exec')
         finally:
             source.close()
-        namespace = module.__dict__
-        exec code in namespace
+        exec(code, module.__dict__)
     except:
         del module_cache[path]
         raise
@@ -1627,6 +1626,9 @@ cdef PetscErrorCode KSPSolve_Python(
     CHKERR( KSPGetRhs(ksp,&B)      )
     CHKERR( KSPGetSolution(ksp,&X) )
     #
+    ksp.iter = 0
+    ksp.reason = KSP_CONVERGED_ITERATING
+    #
     cdef solve = None
     if ksp.transpose_solve:
         solve = PyKSP(ksp).solveTranspose
@@ -1673,8 +1675,6 @@ cdef PetscErrorCode KSPSolve_Python_default(
     cdef PetscVec R = NULL
     cdef PetscReal rnorm = 0
     #
-    ksp.iter   = 0
-    ksp.reason = KSP_CONVERGED_ITERATING
     CHKERR( KSPBuildResidual(ksp,t,v,&R) )
     CHKERR( VecNorm(R,NORM_2,&rnorm)     )
     #
@@ -1694,7 +1694,6 @@ cdef PetscErrorCode KSPSolve_Python_default(
         CHKERR( KSPConverged(ksp,ksp.iter,rnorm,&ksp.reason) )
         CHKERR( KSPLogHistory(ksp,ksp.norm) )
         CHKERR( KSPMonitor(ksp,ksp.iter,ksp.norm) )
-    <void>its # silent unused warning
     if ksp.iter == ksp.max_its:
         if ksp.reason == KSP_CONVERGED_ITERATING:
             ksp.reason = KSP_DIVERGED_ITS
@@ -1941,6 +1940,9 @@ cdef PetscErrorCode SNESSolve_Python(
     CHKERR( SNESGetRhs(snes,&b)      )
     CHKERR( SNESGetSolution(snes,&x) )
     #
+    snes.iter = 0
+    snes.reason = SNES_CONVERGED_ITERATING
+    #
     cdef solve = PySNES(snes).solve
     if solve is not None:
         solve(SNES_(snes), Vec_(b) if b != NULL else None, Vec_(x))
@@ -1966,8 +1968,6 @@ cdef PetscErrorCode SNESSolve_Python_default(
     cdef PetscReal fnorm = 0.0
     cdef PetscReal ynorm = 0.0
     #
-    snes.iter   = 0
-    snes.reason = SNES_CONVERGED_ITERATING
     CHKERR( VecSet(Y,0.0)                 )
     CHKERR( SNESComputeFunction(snes,X,F) )
     CHKERR( VecNorm(X,NORM_2,&xnorm)      )
@@ -1993,7 +1993,6 @@ cdef PetscErrorCode SNESSolve_Python_default(
         CHKERR( SNESConverged(snes,snes.iter,xnorm,ynorm,fnorm,&snes.reason) )
         CHKERR( SNESLogHistory(snes,snes.norm,lits) )
         CHKERR( SNESMonitor(snes,snes.iter,snes.norm) )
-    <void>its # silent unused warning
     if snes.iter == snes.max_its:
         if snes.reason == SNES_CONVERGED_ITERATING:
             snes.reason = SNES_DIVERGED_MAX_IT
@@ -2492,7 +2491,6 @@ cdef PetscErrorCode TSStep_Python_default(
         break
     if (not stageok or not accept) and ts.reason == 0:
         ts.reason = TS_DIVERGED_STEP_REJECTED
-    <void>r # silent unused warning
     return FunctionEnd()
 
 # --------------------------------------------------------------------
