@@ -2,6 +2,9 @@
 
 configure_options = [
   '--with-debugging=1',
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
   '--download-f2cblaslapack=1',
   '--with-precision=__float128',
   ]

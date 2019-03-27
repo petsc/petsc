@@ -5,6 +5,10 @@ configure_options = [
   '--with-mpi-dir=/home/petsc/soft/mpich-3.1',
   '--with-shared-libraries=0',
   '--with-debugging=0',
+  # not using -g so that the binaries are smaller
+  'COPTFLAGS=-O',
+  'FOPTFLAGS=-O',
+  'CXXOPTFLAGS=-O',
   '--with-visibility=0',
   'FFLAGS=-fno-backtrace -ffree-line-length-0',
   ]

@@ -4,6 +4,10 @@ configure_options = [
 
   '--useThreads=0', # for some reason cmake hangs when invoked from configure on bsd?
 
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
+
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
 

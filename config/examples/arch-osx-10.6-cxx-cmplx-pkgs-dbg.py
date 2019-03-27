@@ -4,6 +4,9 @@ configure_options = [
   '--with-cc=clang',
   '--with-cxx=clang++',
   '--with-fc=gfortran', # http://brew.sh/
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
 
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
   '--with-clanguage=cxx',

@@ -5,6 +5,9 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
+    'COPTFLAGS=-g -O',
+    'FOPTFLAGS=-g -O',
+    'CXXOPTFLAGS=-g -O',
     '--with-cuda=1',
     '--with-precision=single',
     '--download-openblas', # default ATLAS blas on Ubuntu 14.04 breaks runex76 in src/mat/examples/tests

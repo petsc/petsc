@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-debugging=1',
+  '--with-debugging=0',
   '--download-f2cblaslapack=1',
   '--with-precision=__float128',
   '--with-clanguage=cxx',
-  '--with-debugging=0',
   ]
 
 if __name__ == '__main__':
