@@ -87,6 +87,7 @@ struct _p_PetscDualSpace {
   PetscQuadrature *functional; /* The basis of functionals for this space */
   PetscQuadrature  allPoints;
   PetscBool        setupcalled;
+  PetscBool        setfromoptionscalled;
 };
 
 typedef struct {

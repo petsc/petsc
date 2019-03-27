@@ -169,10 +169,12 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 @*/
 PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 {
-  const char    *defaultType;
-  char           name[256];
-  PetscBool      flg;
-  PetscErrorCode ierr;
+  PetscDualSpaceReferenceCell refCell = PETSCDUALSPACE_REFCELL_SIMPLEX;
+  PetscInt                    refDim  = 0;
+  PetscBool                   flg;
+  const char                 *defaultType;
+  char                        name[256];
+  PetscErrorCode              ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
@@ -195,10 +197,21 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsInt("-petscdualspace_refdim", "The spatial dimension of the reference cell", "PetscDualSpaceSetReferenceCell", refDim, &refDim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-petscdualspace_refcell", "Reference cell", "PetscDualSpaceSetReferenceCell", PetscDualSpaceReferenceCells, (PetscEnum) refCell, (PetscEnum *) &refCell, &flg);CHKERRQ(ierr);
+  if (flg) {
+    DM K;
+
+    if (!refDim) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_INCOMP, "Reference cell specified without a dimension. Use -petscdualspace_refdim.");
+    ierr = PetscDualSpaceCreateReferenceCell(sp, refDim, refCell == PETSCDUALSPACE_REFCELL_SIMPLEX ? PETSC_TRUE : PETSC_FALSE, &K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetDM(sp, K);CHKERRQ(ierr);
+    ierr = DMDestroy(&K);CHKERRQ(ierr);
+  }
+
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) sp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscDualSpaceViewFromOptions(sp, NULL, "-petscdualspace_view");CHKERRQ(ierr);
+  sp->setfromoptionscalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -223,6 +236,7 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
   if (sp->setupcalled) PetscFunctionReturn(0);
   sp->setupcalled = PETSC_TRUE;
   if (sp->ops->setup) {ierr = (*sp->ops->setup)(sp);CHKERRQ(ierr);}
+  if (sp->setfromoptionscalled) {ierr = PetscDualSpaceViewFromOptions(sp, NULL, "-petscdualspace_view");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
