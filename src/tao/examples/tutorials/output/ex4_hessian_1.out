@@ -38,7 +38,7 @@
   6 TAO,  Function value: 11.0084,  Residual: 3.82775 
     Residual norms for tao_nls_ solve.
     0 KSP Residual norm 3.827752341362e+00 
-    1 KSP Residual norm 9.116517704444e-03 
+    1 KSP Residual norm 9.116517704445e-03 
     2 KSP Residual norm 2.296195022342e-04 
     3 KSP Residual norm 4.859607736621e-06 
   7 TAO,  Function value: 10.9724,  Residual: 3.41212 
@@ -50,7 +50,7 @@
   8 TAO,  Function value: 10.9359,  Residual: 3.02478 
     Residual norms for tao_nls_ solve.
     0 KSP Residual norm 3.024775350045e+00 
-    1 KSP Residual norm 8.848232417966e-03 
+    1 KSP Residual norm 8.848232417967e-03 
     2 KSP Residual norm 2.127387587744e-04 
     3 KSP Residual norm 3.250674679855e-06 
   9 TAO,  Function value: 10.9181,  Residual: 2.81783 
@@ -69,7 +69,7 @@
     Residual norms for tao_nls_ solve.
     0 KSP Residual norm 2.337385160578e+00 
     1 KSP Residual norm 6.896660449452e-03 
-    2 KSP Residual norm 1.665126498414e-04 
+    2 KSP Residual norm 1.665126498413e-04 
     3 KSP Residual norm 2.802351630423e-06 
  12 TAO,  Function value: 10.8742,  Residual: 2.02932 
     Residual norms for tao_nls_ solve.
@@ -81,7 +81,7 @@
     Residual norms for tao_nls_ solve.
     0 KSP Residual norm 1.894783669609e+00 
     1 KSP Residual norm 5.515250013999e-03 
-    2 KSP Residual norm 1.258921483285e-04 
+    2 KSP Residual norm 1.258921483284e-04 
     3 KSP Residual norm 1.786070766201e-06 
  14 TAO,  Function value: 10.861,  Residual: 1.67873 
     Residual norms for tao_nls_ solve.
@@ -115,7 +115,7 @@
     3 KSP Residual norm 2.161011813727e-06 
  19 TAO,  Function value: 10.8413,  Residual: 0.956156 
     Residual norms for tao_nls_ solve.
-    0 KSP Residual norm 9.561562167150e-01 
+    0 KSP Residual norm 9.561562167151e-01 
     1 KSP Residual norm 4.530038255194e-03 
     2 KSP Residual norm 1.168453006685e-04 
     3 KSP Residual norm 2.936234757525e-06 
@@ -139,7 +139,7 @@
     3 KSP Residual norm 2.180393645711e-06 
  23 TAO,  Function value: 10.8337,  Residual: 0.848192 
     Residual norms for tao_nls_ solve.
-    0 KSP Residual norm 8.481922555224e-01 
+    0 KSP Residual norm 8.481922555223e-01 
     1 KSP Residual norm 4.543348560055e-03 
     2 KSP Residual norm 1.321040130262e-04 
     3 KSP Residual norm 3.434549275334e-06 
@@ -163,7 +163,7 @@
     3 KSP Residual norm 3.033997359358e-06 
  27 TAO,  Function value: 10.8279,  Residual: 0.755604 
     Residual norms for tao_nls_ solve.
-    0 KSP Residual norm 7.556037858248e-01 
+    0 KSP Residual norm 7.556037858249e-01 
     1 KSP Residual norm 4.572564054413e-03 
     2 KSP Residual norm 1.364573415641e-04 
     3 KSP Residual norm 3.456197522732e-06 
@@ -171,7 +171,7 @@
     Residual norms for tao_nls_ solve.
     0 KSP Residual norm 7.093733291057e-01 
     1 KSP Residual norm 4.531458930803e-03 
-    2 KSP Residual norm 1.111774504416e-04 
+    2 KSP Residual norm 1.111774504417e-04 
     3 KSP Residual norm 3.274251031014e-06 
  29 TAO,  Function value: 10.8253,  Residual: 0.719446 
     Residual norms for tao_nls_ solve.
@@ -199,8 +199,8 @@
     3 KSP Residual norm 3.461554264616e-06 
  33 TAO,  Function value: 10.8206,  Residual: 0.664929 
     Residual norms for tao_nls_ solve.
-    0 KSP Residual norm 6.649287356725e-01 
-    1 KSP Residual norm 4.627474667796e-03 
+    0 KSP Residual norm 6.649287356726e-01 
+    1 KSP Residual norm 4.627474667797e-03 
     2 KSP Residual norm 1.362713001483e-04 
     3 KSP Residual norm 3.263404819203e-06 
  34 TAO,  Function value: 10.8191,  Residual: 0.627738 
@@ -247,7 +247,7 @@
     3 KSP Residual norm 3.340497376570e-06 
  41 TAO,  Function value: 10.8125,  Residual: 0.578539 
     Residual norms for tao_nls_ solve.
-    0 KSP Residual norm 5.785387889983e-01 
+    0 KSP Residual norm 5.785387889982e-01 
     1 KSP Residual norm 4.640359129874e-03 
     2 KSP Residual norm 1.308104649443e-04 
     3 KSP Residual norm 2.909804368273e-06 
@@ -289,7 +289,7 @@
     3 KSP Residual norm 2.651848063848e-06 
  48 TAO,  Function value: 10.8058,  Residual: 0.496739 
     Residual norms for tao_nls_ solve.
-    0 KSP Residual norm 4.967391118764e-01 
+    0 KSP Residual norm 4.967391118763e-01 
     1 KSP Residual norm 4.403408536108e-03 
     2 KSP Residual norm 1.132673523148e-04 
     3 KSP Residual norm 3.033610839622e-06 

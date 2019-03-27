@@ -39,30 +39,22 @@
  38 TAO,  Function value: 10.7659,  Residual: 0.61136 
  39 TAO,  Function value: 10.7643,  Residual: 0.791015 
  40 TAO,  Function value: 10.763,  Residual: 0.315937 
- 41 TAO,  Function value: 10.7618,  Residual: 0.318209 
- 42 TAO,  Function value: 10.7617,  Residual: 0.271595 
- 43 TAO,  Function value: 10.7607,  Residual: 0.344766 
- 44 TAO,  Function value: 10.7606,  Residual: 0.288534 
- 45 TAO,  Function value: 10.7601,  Residual: 0.212483 
- 46 TAO,  Function value: 10.7596,  Residual: 0.474515 
- 47 TAO,  Function value: 10.7592,  Residual: 0.431107 
- 48 TAO,  Function value: 10.7592,  Residual: 0.431107 
-J(xhat): 112.606, predicted: 10.2515, diff 102.354
-J(xhat): 41.7466, predicted: 10.5054, diff 31.2412
-J(xhat): 21.2689, predicted: 10.6323, diff 10.6366
-J(xhat): 14.768, predicted: 10.6958, diff 4.07221
-J(xhat): 12.452, predicted: 10.7275, diff 1.72452
-J(xhat): 11.5277, predicted: 10.7434, diff 0.784298
-J(xhat): 11.1239, predicted: 10.7513, diff 0.372593
-J(xhat): 10.9366, predicted: 10.7553, diff 0.181342
-J(xhat): 10.8466, predicted: 10.7573, diff 0.0893669
-J(xhat): 10.8025, predicted: 10.7582, diff 0.0442919
-Convergence rate step 0: 1.71205
-Convergence rate step 1: 1.55442
-Convergence rate step 2: 1.38515
-Convergence rate step 3: 1.23962
-Convergence rate step 4: 1.13672
-Convergence rate step 5: 1.0738
-Convergence rate step 6: 1.03889
-Convergence rate step 7: 1.0209
-Convergence rate step 8: 1.0127
+J(xhat): 112.439, predicted: 10.6288, diff 101.81
+J(xhat): 41.665, predicted: 10.6959, diff 30.9691
+J(xhat): 21.23, predicted: 10.7295, diff 10.5005
+J(xhat): 14.7504, predicted: 10.7462, diff 4.00416
+J(xhat): 12.4451, predicted: 10.7546, diff 1.69048
+J(xhat): 11.5261, predicted: 10.7588, diff 0.767267
+J(xhat): 11.125, predicted: 10.7609, diff 0.364065
+J(xhat): 10.939, predicted: 10.762, diff 0.177065
+J(xhat): 10.8497, predicted: 10.7625, diff 0.0872158
+J(xhat): 10.8059, predicted: 10.7627, diff 0.0432037
+Convergence rate step 0: 1.71698
+Convergence rate step 1: 1.56037
+Convergence rate step 2: 1.39089
+Convergence rate step 3: 1.24406
+Convergence rate step 4: 1.13963
+Convergence rate step 5: 1.07553
+Convergence rate step 6: 1.03991
+Convergence rate step 7: 1.02162
+Convergence rate step 8: 1.01343

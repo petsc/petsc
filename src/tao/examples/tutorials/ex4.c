@@ -728,19 +728,19 @@ int main(int argc, char ** argv)
 
   test:
     suffix: nm_1
-    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 1 -tao_type nm
+    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 1 -tao_type nm -tao_max_it 50
 
   test:
     suffix: nm_2
-    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -tao_type nm
+    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -tao_type nm -tao_max_it 50
 
   test:
     suffix: lmvm_1
-    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 1 -tao_type lmvm
+    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 1 -tao_type lmvm -tao_max_it 40
 
   test:
     suffix: lmvm_2
-    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -tao_type lmvm -tao_max_it 20
+    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -tao_type lmvm -tao_max_it 15
 
   test:
     suffix: soft_threshold_admm_1
@@ -760,7 +760,7 @@ int main(int argc, char ** argv)
 
   test:
     suffix: nm_admm_2
-    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -use_admm -reg_tao_type nm -misfit_tao_type nm
+    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -use_admm -reg_tao_type nm -misfit_tao_type nm -iter 7
 
   test:
     suffix: lmvm_admm_1
