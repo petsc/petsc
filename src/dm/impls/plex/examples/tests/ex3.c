@@ -123,6 +123,7 @@ PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], c
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
+  PetscInt       n = 3;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -146,6 +147,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->testFEjacobian  = PETSC_FALSE;
   options->testFVgrad      = PETSC_FALSE;
   options->testInjector    = PETSC_FALSE;
+  options->constants[0]    = 1.0;
+  options->constants[1]    = 2.0;
+  options->constants[2]    = 3.0;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -168,6 +172,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray("-constants","Set the constant values", "ex3.c", options->constants, &n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   options->numComponents = options->numComponents < 0 ? options->dim : options->numComponents;
@@ -734,9 +739,6 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
-  user->constants[0] = 1.0;
-  user->constants[1] = 2.0;
-  user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   /* Setup functions to approximate */
   switch (order) {
@@ -787,9 +789,6 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
-  user->constants[0] = 1.0;
-  user->constants[1] = 2.0;
-  user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
