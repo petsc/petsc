@@ -260,8 +260,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else if (user->simplex || !user->useDA) {
     DM refinedMesh = NULL;
 
-    ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, NULL, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
     /* Refine mesh using a volume constraint */
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
