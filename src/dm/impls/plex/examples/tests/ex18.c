@@ -824,13 +824,13 @@ int main(int argc, char **argv)
     test:
       # Add back in 'none' and 'parallel'
       suffix: 7_hdf5
-      requires: hdf5
+      requires: hdf5 !complex
       args: -interpolate serial
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     test:
       TODO: Parallel partitioning of uninterpolated meshes not supported
       suffix: 7_hdf5_ppu
-      requires: hdf5
+      requires: hdf5 !complex
       args: -interpolate {{none parallel}}
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
 
