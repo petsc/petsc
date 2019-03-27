@@ -121,6 +121,33 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
+{
+  PetscViewerFormat format;
+  PetscInt          pdim, f;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject) sp, v);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(v, "Dual space with %D components, size %D\n", sp->Nc, pdim);CHKERRQ(ierr);
+  if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
+  ierr = PetscViewerGetFormat(v, &format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+    for (f = 0; f < pdim; ++f) {
+      ierr = PetscViewerASCIIPrintf(v, "Dual basis vector %D\n", f);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+      ierr = PetscQuadratureView(sp->functional[f], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDualSpaceView - Views a PetscDualSpace
 
@@ -143,12 +170,8 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   if (v) PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
-  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp, v);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscViewerASCIIPrintf(v, "Dual space of order %D with %D components\n", sp->order, sp->Nc);CHKERRQ(ierr);}
-  if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscDualSpaceView_ASCII(sp, v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
