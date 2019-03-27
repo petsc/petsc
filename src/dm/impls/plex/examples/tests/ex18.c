@@ -834,4 +834,16 @@ int main(int argc, char **argv)
       args: -interpolate {{none parallel}}
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
 
+
+  test:
+    suffix: 7_hdf5_hierarch
+    requires: hdf5 ptscotch !complex
+    nsize: {{2 3 4}separate output}
+    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -interpolate serial
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    args: -petscpartitioner_type matpartitioning -petscpartitioner_view ::ascii_info
+    args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 2
+    args: -mat_partitioning_hierarchical_coarseparttype ptscotch -mat_partitioning_hierarchical_fineparttype ptscotch
+
 TEST*/
