@@ -136,6 +136,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 @*/
 PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 {
+  PetscInt       pdim;
   PetscBool      iascii;
   PetscErrorCode ierr;
 
@@ -143,10 +144,11 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   if (v) PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
+  ierr = PetscSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,v);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscViewerASCIIPrintf(v, "Space in %D variables with %D components\n", sp->Nv, sp->Nc);CHKERRQ(ierr);}
+  if (iascii) {ierr = PetscViewerASCIIPrintf(v, "Space in %D variables with %D components, size %D\n", sp->Nv, sp->Nc, pdim);CHKERRQ(ierr);}
   if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
