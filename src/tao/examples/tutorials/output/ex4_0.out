@@ -1,0 +1,19 @@
+J(xhat): 24.5106, predicted: 0.851231, diff 23.6594
+J(xhat): 6.76613, predicted: 0.851288, diff 5.91484
+J(xhat): 2.33003, predicted: 0.851317, diff 1.47871
+J(xhat): 1.22101, predicted: 0.851331, diff 0.369677
+J(xhat): 0.943758, predicted: 0.851338, diff 0.0924194
+J(xhat): 0.874447, predicted: 0.851342, diff 0.0231048
+J(xhat): 0.85712, predicted: 0.851344, diff 0.00577621
+J(xhat): 0.852789, predicted: 0.851344, diff 0.00144405
+J(xhat): 0.851706, predicted: 0.851345, diff 0.000361013
+J(xhat): 0.851435, predicted: 0.851345, diff 9.02533e-05
+Convergence rate step 0: 2.
+Convergence rate step 1: 2.
+Convergence rate step 2: 2.
+Convergence rate step 3: 2.
+Convergence rate step 4: 2.
+Convergence rate step 5: 2.
+Convergence rate step 6: 2.
+Convergence rate step 7: 2.
+Convergence rate step 8: 2.

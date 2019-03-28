@@ -1,0 +1,26 @@
+Iter 0 : ||x-z||: 0.909616, mu*||z-zold||: 0.909616
+Iter 1 : ||x-z||: 0.454808, mu*||z-zold||: 0.454808
+Iter 2 : ||x-z||: 0.227404, mu*||z-zold||: 0.227404
+Iter 3 : ||x-z||: 0.113702, mu*||z-zold||: 0.113702
+Iter 4 : ||x-z||: 0.056851, mu*||z-zold||: 0.056851
+Iter 5 : ||x-z||: 0.0284255, mu*||z-zold||: 0.0284255
+Iter 6 : ||x-z||: 0.0142128, mu*||z-zold||: 0.0142128
+J(xhat): 98.3926, predicted: 4.22724, diff 94.1653
+J(xhat): 27.7686, predicted: 4.22724, diff 23.5413
+J(xhat): 10.1126, predicted: 4.22724, diff 5.88533
+J(xhat): 5.69858, predicted: 4.22724, diff 1.47133
+J(xhat): 4.59508, predicted: 4.22724, diff 0.367833
+J(xhat): 4.3192, predicted: 4.22724, diff 0.0919583
+J(xhat): 4.25023, predicted: 4.22724, diff 0.0229896
+J(xhat): 4.23299, predicted: 4.22724, diff 0.0057474
+J(xhat): 4.22868, predicted: 4.22724, diff 0.00143685
+J(xhat): 4.2276, predicted: 4.22724, diff 0.000359212
+Convergence rate step 0: 2.
+Convergence rate step 1: 2.
+Convergence rate step 2: 2.
+Convergence rate step 3: 2.
+Convergence rate step 4: 2.
+Convergence rate step 5: 2.
+Convergence rate step 6: 2.
+Convergence rate step 7: 2.
+Convergence rate step 8: 2.

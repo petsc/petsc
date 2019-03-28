@@ -70,6 +70,7 @@ typedef const char *TaoType;
 #define TAOASILS    "asils"
 #define TAOASFLS    "asfls"
 #define TAOIPM      "ipm"
+#define TAOSHELL    "shell"
 
 PETSC_EXTERN PetscClassId TAO_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoList;
@@ -159,6 +160,10 @@ PETSC_EXTERN PetscErrorCode TaoSetJacobianStateRoutine(Tao,Mat,Mat,Mat, PetscErr
 PETSC_EXTERN PetscErrorCode TaoSetJacobianDesignRoutine(Tao,Mat,PetscErrorCode(*)(Tao,Vec, Mat, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianInequalityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat, Mat, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianEqualityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat, Mat, void*), void*);
+
+PETSC_EXTERN PetscErrorCode TaoShellSetSolve(Tao, PetscErrorCode(*)(Tao));
+PETSC_EXTERN PetscErrorCode TaoShellSetContext(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoShellGetContext(Tao, void**);
 
 PETSC_DEPRECATED("Use TaoSetResidualRoutine()") PETSC_STATIC_INLINE PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
 { return TaoSetResidualRoutine(tao, res, func, ctx); }
