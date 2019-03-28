@@ -323,7 +323,7 @@ int main(int argc,char **argv)
   PFDATA           *pfdata=NULL;
   PetscInt         genj,loadj;
   PetscInt         *edgelist_power=NULL;
-  PetscScalar      Sbase;
+  PetscScalar      Sbase=0.0;
 
   /* Water subnetwork */
   AppCtx_Water     *appctx_water = &user.appctx_water;
