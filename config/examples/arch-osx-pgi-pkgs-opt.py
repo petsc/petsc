@@ -5,6 +5,9 @@ configure_options = [
   #'--with-cc=pgcc',
   #'--with-fc=pgfortran',
   '--with-cxx=0', # osx PGI does not have c++? And autodetect code messes up -L "foo bar" paths
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  #'CXXOPTFLAGS=-g -O',
   #'--download-mpich=1',
   #'--download-mpich-device=ch3:nemesis', # socket code gives 'Error from ioctl = 6; Error is: : Device not configured'
   #'--download-cmake=1', #use from brew

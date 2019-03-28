@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 configure_options = [
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
   '--download-openblas',
   '--download-openblas-64-bit-blas-indices=1',
   ]

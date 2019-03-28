@@ -2,6 +2,9 @@
 
 configure_options = [
   '--with-fc=0',
+  'COPTFLAGS=-g -O',
+  #'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
   '--with-shared-libraries=1'
   ]
 

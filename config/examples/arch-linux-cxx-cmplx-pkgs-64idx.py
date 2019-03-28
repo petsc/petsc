@@ -5,6 +5,10 @@ configure_options = [
   '--with-fc=gfortran',
   '--with-cxx=clang++',
 
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
+
   '--with-clanguage=cxx',
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
   '--with-scalar-type=complex',
