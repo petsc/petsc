@@ -2837,13 +2837,18 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
     /* Now scatter the parts array. */
     {
-      PetscInt *counts;
+      PetscMPIInt *counts, *mpiCumSumVertices;
       ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
+      ierr = PetscMalloc1(size+1, &mpiCumSumVertices);CHKERRQ(ierr);
       for(i=0; i<size; i++) {
-        counts[i] = cumSumVertices[i+1] - cumSumVertices[i];
+        ierr = PetscMPIIntCast(cumSumVertices[i+1] - cumSumVertices[i], &(counts[i]));CHKERRQ(ierr);
       }
-      ierr = MPI_Scatterv(partGlobal, counts, cumSumVertices, MPIU_INT, part, counts[rank], MPIU_INT, 0, comm);CHKERRQ(ierr);
+      for(i=0; i<=size; i++) {
+        ierr = PetscMPIIntCast(cumSumVertices[i], &(mpiCumSumVertices[i]));CHKERRQ(ierr);
+      }
+      ierr = MPI_Scatterv(partGlobal, counts, mpiCumSumVertices, MPIU_INT, part, counts[rank], MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscFree(counts);CHKERRQ(ierr);
+      ierr = PetscFree(mpiCumSumVertices);CHKERRQ(ierr);
     }
 
     ierr = PetscFree(partGlobal);CHKERRQ(ierr);
