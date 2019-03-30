@@ -30,13 +30,30 @@
         End Subroutine
       End Interface
 
-
       Interface
         Subroutine ISRestoreIndicesF90(i,array,ierr)
           use petscisdef
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
          IS      i
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine ISLocalToGlobalMappingGetIndicesF90(i,array,ierr)
+          use petscisdef
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+         ISLocalToGlobalMapping       i
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine ISLocalToGlobalMappingRestoreIndicesF90(i,array,ierr)
+          use petscisdef
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+         ISLocalToGlobalMapping       i
         End Subroutine
       End Interface
 
