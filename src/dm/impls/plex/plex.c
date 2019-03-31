@@ -7206,26 +7206,6 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexAreAllConePointsInArray_Private(DM dm, PetscInt p, PetscInt npoints, const PetscInt *points, PetscInt *missingPoint)
-{
-  PetscInt i,l,n;
-  const PetscInt *cone;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *missingPoint = -1;
-  ierr = DMPlexGetConeSize(dm, p, &n);CHKERRQ(ierr);
-  ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    ierr = PetscFindInt(cone[i], npoints, points, &l);CHKERRQ(ierr);
-    if (l < 0) {
-      *missingPoint = cone[i];
-      break;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 /*@
   DMPlexCheckPointSF - Check that several necessary conditions are met for the point SF of this plex.
 
@@ -7243,15 +7223,13 @@ static PetscErrorCode DMPlexAreAllConePointsInArray_Private(DM dm, PetscInt p, P
 PetscErrorCode DMPlexCheckPointSF(DM dm)
 {
   PetscSF         pointSF;
-  PetscInt        d,depth,i,nleaves,p,plo,phi,missingPoint;
-  PetscInt        nroots,overlap;
-  const PetscInt *locals;
+  PetscInt        cellHeight, cStart, cEnd, l, nleaves, nroots, overlap;
+  const PetscInt *locals, *rootdegree;
   PetscBool       distributed;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &pointSF);CHKERRQ(ierr);
   ierr = DMPlexIsDistributed(dm, &distributed);CHKERRQ(ierr);
   if (!distributed) PetscFunctionReturn(0);
@@ -7263,20 +7241,32 @@ PetscErrorCode DMPlexCheckPointSF(DM dm)
   if (!pointSF) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but does not have PointSF attached");
   ierr = PetscSFGetGraph(pointSF, &nroots, &nleaves, &locals, NULL);CHKERRQ(ierr);
   if (nroots < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but its PointSF has no graph set");
+  ierr = PetscSFComputeDegreeBegin(pointSF, &rootdegree);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeEnd(pointSF, &rootdegree);CHKERRQ(ierr);
 
   /* 1) check there are no faces in 2D, cells in 3D, in interface */
-  ierr = DMPlexGetVTKCellHeight(dm, &d);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, d, &plo, &phi);CHKERRQ(ierr);
-  for (i=0; i<nleaves; i++) {
-    p = locals[i];
-    if (p >= plo && p < phi) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d which is a cell",p);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  for (l = 0; l < nleaves; ++l) {
+    const PetscInt point = locals[l];
+
+    if (point >= cStart && point < cEnd) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D which is a cell", point);
   }
 
-  /* 2) if some point is in interface, then all its cone points must be also in interface  */
-  for (i=0; i<nleaves; i++) {
-    p = locals[i];
-    ierr = DMPlexAreAllConePointsInArray_Private(dm, p, nleaves, locals, &missingPoint);CHKERRQ(ierr);
-    if (missingPoint >= 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d but not %d from its cone",p,missingPoint);
+  /* 2) if some point is in interface, then all its cone points must be also in interface (either as leaves or roots) */
+  for (l = 0; l < nleaves; ++l) {
+    const PetscInt  point = locals[l];
+    const PetscInt *cone;
+    PetscInt        coneSize, c, idx;
+
+    ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+    for (c = 0; c < coneSize; ++c) {
+      if (!rootdegree[cone[c]]) {
+        ierr = PetscFindInt(cone[c], nleaves, locals, &idx);CHKERRQ(ierr);
+        if (idx < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but not %D from its cone", point, cone[c]);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
