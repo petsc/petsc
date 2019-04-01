@@ -356,7 +356,7 @@ class Package(config.base.Configure):
   def generateGuesses(self):
     d = self.checkDownload()
     if d:
-      if not self.liblist or self.builtafterpetsc :
+      if not self.liblist or not self.liblist[0] or self.builtafterpetsc :
         yield('Download '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
       for libdir in [self.libdir, self.altlibdir]:
         libdirpath = os.path.join(d, libdir)
@@ -394,6 +394,9 @@ class Package(config.base.Configure):
                            fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
                            'Do not install software in this location nor use software in this directory.')
 
+      if not self.liblist or not self.liblist[0]:
+          yield('User specified root directory '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
+
       for libdir in [self.libdir, self.altlibdir]:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
@@ -409,7 +412,7 @@ class Package(config.base.Configure):
       raise RuntimeError('--with-'+self.package+'-dir='+self.argDB['with-'+self.package+'-dir']+' did not work')
 
     if 'with-'+self.package+'-include' in self.argDB and not 'with-'+self.package+'-lib' in self.argDB:
-      if self.liblist[0]:
+      if self.liblist and self.liblist[0]:
         raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
     if 'with-'+self.package+'-lib' in self.argDB and not 'with-'+self.package+'-include' in self.argDB:
       if self.includes:
@@ -418,7 +421,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir')
 
     if 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:
-      if self.liblist[0]:
+      if self.liblist and self.liblist[0]:
         libs  = self.argDB['with-'+self.package+'-lib']
         slibs = str(self.argDB['with-'+self.package+'-lib'])
       else:
