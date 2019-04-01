@@ -79,6 +79,7 @@ class BaseTestPlex(object):
             self.assertTrue(len(adjacency) > 1)
 
     def testSectionDofs(self):
+        self.plex.setNumFields(1)
         section = self.plex.createSection([self.COMP], [self.DOFS])
         size = section.getStorageSize()
         entity_dofs = [self.plex.getStratumSize("depth", d) *
