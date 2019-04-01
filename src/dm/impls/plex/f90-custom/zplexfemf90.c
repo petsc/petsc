@@ -1,6 +1,5 @@
 #include <petsc/private/fortranimpl.h>
 #include <petscdmplex.h>
-#include <petscsnes.h>
 #include <petscds.h>
 #include <petsc/private/f90impl.h>
 
