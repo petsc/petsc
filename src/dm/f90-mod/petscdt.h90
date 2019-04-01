@@ -50,15 +50,6 @@
       End Interface
 
       Interface
-        Subroutine PetscFECreate(c,f,ierr)
-          use petscdmdef
-          MPI_Comm, intent(in) :: c
-          PetscFE, intent(out) :: f
-          PetscErrorCode, intent(out) ::  ierr
-        End Subroutine
-      End Interface
-
-      Interface
         Subroutine PetscFECreateDefault(c,d,n,i,str,o,f,ierr)
           use petscdmdef
           MPI_Comm, intent(in) :: c

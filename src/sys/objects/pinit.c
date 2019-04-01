@@ -954,7 +954,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2SCALAR);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
+#if defined(PETSC_USE_64BIT_INDICES)
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 #endif
@@ -1107,7 +1107,7 @@ PetscErrorCode  PetscFreeMPIResources(void)
 #endif
 
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
-#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
+#if defined(PETSC_USE_64BIT_INDICES)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
 #endif
   ierr = MPI_Op_free(&MPIU_MAXSUM_OP);CHKERRQ(ierr);
