@@ -31,7 +31,6 @@
         use petscdmda
         use petscdmplex
         use petscdmnetwork
-        use petscdmnetwork
         use petscdmpatch
         use petscdmforest
         use petscdmlabel
