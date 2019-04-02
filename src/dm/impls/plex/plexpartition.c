@@ -2352,6 +2352,10 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
+/* The two functions below are used by DMPlexRebalanceSharedPoints which errors
+ * when PETSc is built without ParMETIS. To avoid -Wunused-function, we take
+ * them out in that case. */
+#if defined(PETSC_HAVE_PARMETIS) 
 /*@C
 
   DMPlexRewriteSF - Rewrites the ownership of the SF of a DM (in place).
@@ -2532,6 +2536,8 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
   ierr = PetscFree(distribution);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#endif
 
 /*@
   DMPlexRebalanceSharedPoints - Redistribute points in the plex that are shared in order to achieve better balancing. This routine updates the PointSF of the DM inplace.
