@@ -211,6 +211,7 @@ class Configure(config.package.Package):
       # If using 64 bit indices then look for 64 bit integer MKL
       if self.defaultIndexSize == 64: ILP64 = '_ilp64'
       else: ILP64 = '_lp64'
+      ILP64 = '_lp64'
 
       # Look for Multi-Threaded MKL for MKL_C/Pardiso
       useCPardiso=0

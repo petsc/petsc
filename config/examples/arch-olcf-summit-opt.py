@@ -15,9 +15,6 @@ if __name__ == '__main__':
     '--with-cc=mpicc',
     '--with-cxx=mpiCC',
     '--with-fc=mpifort',
-    # The IBM XL Fortran compilers are currently not working with PETSc.
-    # For XL compilers, can disable Fortran as below:
-    #'--with-fc=0',  
 
     '--with-shared-libraries=1',
 
