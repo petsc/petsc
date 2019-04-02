@@ -660,8 +660,8 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecSetSizes(user->x,hi-lo+hi2-lo2,user->n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->x);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(user->x,user->s_is,user->y,is_allstate,&user->state_scatter);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(user->x,user->d_is,user->u,is_alldesign,&user->design_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(user->x,user->s_is,user->y,is_allstate,&user->state_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(user->x,user->d_is,user->u,is_alldesign,&user->design_scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is_alldesign);CHKERRQ(ierr);
   ierr = ISDestroy(&is_allstate);CHKERRQ(ierr);
   /*
@@ -678,7 +678,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   for (i=0; i<user->ns; i++){
     ierr = VecGetOwnershipRange(user->suby,&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo2+istart,1,&is_from_y);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->y,is_from_y,user->suby,NULL,&user->yi_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->y,is_from_y,user->suby,NULL,&user->yi_scatter[i]);CHKERRQ(ierr);
     istart = istart + hi-lo;
     ierr = ISDestroy(&is_from_y);CHKERRQ(ierr);
   }
@@ -701,7 +701,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   for (i=0; i<user->ns; i++){
     ierr = VecGetOwnershipRange(user->subd,&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo2+istart,1,&is_from_d);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(user->d,is_from_d,user->subd,NULL,&user->di_scatter[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(user->d,is_from_d,user->subd,NULL,&user->di_scatter[i]);CHKERRQ(ierr);
     istart = istart + hi-lo;
     ierr = ISDestroy(&is_from_d);CHKERRQ(ierr);
   }

@@ -223,8 +223,10 @@ E*/
 typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN} MatStructure;
 
 #if defined PETSC_HAVE_MKL_SPARSE
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateMPIAIJMKL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateBAIJMKL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A);
+PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqSELL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
@@ -540,6 +542,7 @@ PETSC_EXTERN PetscErrorCode MatMultTransposeEqual(Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatTransposeMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMatTransposeMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatIsLinear(Mat,PetscInt,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal*);
@@ -1355,6 +1358,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning,Mat);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
 PETSC_EXTERN PetscErrorCode MatPartitioningApply(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningImprove(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningViewImbalance(MatPartitioning,IS);
 PETSC_EXTERN PetscErrorCode MatPartitioningApplyND(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning*);
 

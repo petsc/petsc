@@ -2401,11 +2401,11 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     if (sdm->ops->computefunction != SNESObjectiveComputeFunctionDefaultFD) {
       ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
     }
-    ierr = VecLockPush(x);CHKERRQ(ierr);
+    ierr = VecLockReadPush(x);CHKERRQ(ierr);
     PetscStackPush("SNES user function");
     ierr = (*sdm->ops->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = VecLockPop(x);CHKERRQ(ierr);
+    ierr = VecLockReadPop(x);CHKERRQ(ierr);
     if (sdm->ops->computefunction != SNESObjectiveComputeFunctionDefaultFD) {
       ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
     }
@@ -2467,11 +2467,11 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (sdm->ops->computegs) {
-    if (b) {ierr = VecLockPush(b);CHKERRQ(ierr);}
+    if (b) {ierr = VecLockReadPush(b);CHKERRQ(ierr);}
     PetscStackPush("SNES user NGS");
     ierr = (*sdm->ops->computegs)(snes,x,b,sdm->gsctx);CHKERRQ(ierr);
     PetscStackPop;
-    if (b) {ierr = VecLockPop(b);CHKERRQ(ierr);}
+    if (b) {ierr = VecLockReadPop(b);CHKERRQ(ierr);}
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetNGS() before SNESComputeNGS(), likely called from SNESSolve().");
   ierr = PetscLogEventEnd(SNES_NGSEval,snes,x,b,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2713,11 +2713,11 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
   }
 
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,A,B);CHKERRQ(ierr);
-  ierr = VecLockPush(X);CHKERRQ(ierr);
+  ierr = VecLockReadPush(X);CHKERRQ(ierr);
   PetscStackPush("SNES user Jacobian function");
   ierr = (*sdm->ops->computejacobian)(snes,X,A,B,sdm->jacobianctx);CHKERRQ(ierr);
   PetscStackPop;
-  ierr = VecLockPop(X);CHKERRQ(ierr);
+  ierr = VecLockReadPop(X);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,A,B);CHKERRQ(ierr);
 
   /* the next line ensures that snes->ksp exists */
@@ -3888,11 +3888,11 @@ PetscErrorCode  SNESMonitor(SNES snes,PetscInt iter,PetscReal rnorm)
   PetscInt       i,n = snes->numbermonitors;
 
   PetscFunctionBegin;
-  ierr = VecLockPush(snes->vec_sol);CHKERRQ(ierr);
+  ierr = VecLockReadPush(snes->vec_sol);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = (*snes->monitor[i])(snes,iter,rnorm,snes->monitorcontext[i]);CHKERRQ(ierr);
   }
-  ierr = VecLockPop(snes->vec_sol);CHKERRQ(ierr);
+  ierr = VecLockReadPop(snes->vec_sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

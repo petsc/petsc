@@ -115,7 +115,6 @@ int main(int argc,char **argv)
     ierr = MatDuplicate(D,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
-    /* ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
@@ -149,6 +148,37 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
 
+  /* Test MatMatTransposeMult() */
+  if (!iselemental) {
+    PetscReal diff, scale;
+    PetscInt  am, an, aM, aN;
+
+    ierr = MatGetLocalSize(A, &am, &an);CHKERRQ(ierr);
+    ierr = MatGetSize(A, &aM, &aN);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)A),PETSC_DECIDE, an, aM + 10, aN, NULL, &B);CHKERRQ(ierr);
+    ierr = MatSetRandom(B, NULL);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatMatTransposeMult(A,B,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A*A^T */
+
+    /* Test MatDuplicate for matrix product */
+    ierr = MatDuplicate(D,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+
+    ierr = MatMatTransposeMult(A,B,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
+    ierr = MatAXPY(C, -1., D, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+
+    ierr = MatNorm(C, NORM_FROBENIUS, &diff);CHKERRQ(ierr);
+    ierr = MatNorm(D, NORM_FROBENIUS, &scale);CHKERRQ(ierr);
+    if (diff > PETSC_SMALL * scale) SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatMatTransposeMult() differs between MAT_INITIAL_MATRIX and MAT_REUSE_MATRIX");
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+
+    ierr = MatMatTransposeMultEqual(A,B,D,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+  }
+
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -164,5 +194,23 @@ int main(int argc,char **argv)
       suffix: 2
       nsize: 2
       output_file: output/ex104.out
+
+    test:
+      suffix: 3
+      nsize: 4
+      output_file: output/ex104.out
+      args: -M 23 -N 31
+
+    test:
+      suffix: 4
+      nsize: 4
+      output_file: output/ex104.out
+      args: -M 23 -N 31 -matmattransmult_mpidense_mpidense_via cyclic
+
+    test:
+      suffix: 5
+      nsize: 4
+      output_file: output/ex104.out
+      args: -M 23 -N 31 -matmattransmult_mpidense_mpidense_via allgatherv
 
 TEST*/

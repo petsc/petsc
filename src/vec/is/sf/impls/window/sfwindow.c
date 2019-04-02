@@ -478,6 +478,26 @@ PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf,MPI_Datatype unit,const void *r
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSFBcastAndOpBegin_Window(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (op == MPI_REPLACE) { ierr = PetscSFBcastBegin_Window(sf,unit,rootdata,leafdata);CHKERRQ(ierr); }
+  else SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PetscSFBcastAndOpBegin_Window with reduction op has not been implemented");
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSFBcastAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (op == MPI_REPLACE) { ierr = PetscSFBcastEnd_Window(sf,unit,rootdata,leafdata);CHKERRQ(ierr); }
+  else SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PetscSFBcastAndOpEnd_Window with reduction op has not been implemented");
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   PetscSF_Window     *w = (PetscSF_Window*)sf->data;
@@ -561,6 +581,8 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   sf->ops->Duplicate       = PetscSFDuplicate_Window;
   sf->ops->BcastBegin      = PetscSFBcastBegin_Window;
   sf->ops->BcastEnd        = PetscSFBcastEnd_Window;
+  sf->ops->BcastAndOpBegin = PetscSFBcastAndOpBegin_Window;
+  sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Window;
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Window;
   sf->ops->ReduceEnd       = PetscSFReduceEnd_Window;
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Window;

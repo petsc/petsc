@@ -590,6 +590,14 @@ PetscErrorCode  KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
 .   presolve - the function to call before the solve
 -   prectx - any context needed by the function
 
+   Calling sequence of presolve:
+$  func(KSP ksp,Vec rhs,Vec x,void *ctx)
+
++  ksp - the KSP context
+.  rhs - the right-hand side vector
+.  x - the solution vector
+-  ctx - optional user-provided context
+
    Level: developer
 
 .keywords: KSP, create, context
@@ -616,6 +624,14 @@ PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,vo
 -   postctx - any context needed by the function
 
    Level: developer
+
+   Calling sequence of postsolve:
+$  func(KSP ksp,Vec rhs,Vec x,void *ctx)
+
++  ksp - the KSP context
+.  rhs - the right-hand side vector
+.  x - the solution vector
+-  ctx - optional user-provided context
 
 .keywords: KSP, create, context
 

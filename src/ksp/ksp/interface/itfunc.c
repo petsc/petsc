@@ -697,12 +697,14 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   }
   if (ksp->viewPre) {ierr = ObjectView((PetscObject) ksp, ksp->viewerPre, ksp->formatPre);CHKERRQ(ierr);}
 
+  ksp->transpose_solve = PETSC_FALSE;
+
   if (ksp->presolve) {ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);}
-  ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
-  ksp->transpose_solve = PETSC_FALSE;
+
+  ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   if (ksp->guess) {
     PetscObjectState ostate,state;
@@ -723,7 +725,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
-  VecLocked(ksp->vec_sol,3);
+  ierr = VecSetErrorIfLocked(ksp->vec_sol,3);CHKERRQ(ierr);
 
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
@@ -773,13 +775,13 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     vec_rhs      = ksp->vec_rhs;
     ksp->vec_rhs = btmp;
   }
-  ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
+  ierr = VecLockReadPush(ksp->vec_rhs);CHKERRQ(ierr);
   if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
     ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
 
-  ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
+  ierr = VecLockReadPop(ksp->vec_rhs);CHKERRQ(ierr);
   if (nullsp) {
     ksp->vec_rhs = vec_rhs;
     ierr = VecDestroy(&btmp);CHKERRQ(ierr);
@@ -810,11 +812,11 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     }
   }
   ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
-  if (ksp->postsolve) {
-    ierr = (*ksp->postsolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->postctx);CHKERRQ(ierr);
-  }
   if (ksp->guess) {
     ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+  }
+  if (ksp->postsolve) {
+    ierr = (*ksp->postsolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->postctx);CHKERRQ(ierr);
   }
 
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
@@ -904,6 +906,8 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   ksp->vec_sol         = x;
   ksp->transpose_solve = PETSC_TRUE;
 
+  if (ksp->presolve) {ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);}
+
   if (ksp->guess) {
     PetscObjectState ostate,state;
 
@@ -944,6 +948,9 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   if (ksp->guess) {
     ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   }
+  if (ksp->postsolve) {
+    ierr = (*ksp->postsolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->postctx);CHKERRQ(ierr);
+  }
 
   if (ksp->viewMat)      {ierr = ObjectView((PetscObject) mat,          ksp->viewerMat,  ksp->formatMat);CHKERRQ(ierr);}
   if (ksp->viewPMat)     {ierr = ObjectView((PetscObject) pmat,         ksp->viewerPMat, ksp->formatPMat);CHKERRQ(ierr);}
@@ -956,6 +963,58 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
   if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPResetViewers - Resets all the viewers set from the options database during KSPSetFromOptions()
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Level: beginner
+
+.keywords: destroy
+
+.seealso: KSPCreate(), KSPSetUp(), KSPSolve(), KSPSetFromOptions(), KSP
+@*/
+PetscErrorCode  KSPResetViewers(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ksp) PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (!ksp) PetscFunctionReturn(0);
+  ierr = PetscViewerDestroy(&ksp->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPre);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerReason);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerMat);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPMat);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerRhs);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerSol);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerMatExp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerEV);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerSV);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerEVExp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerFinalRes);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPOpExp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerDScale);CHKERRQ(ierr);
+  ksp->view         = PETSC_FALSE;
+  ksp->viewPre      = PETSC_FALSE;
+  ksp->viewReason   = PETSC_FALSE;
+  ksp->viewMat      = PETSC_FALSE;
+  ksp->viewPMat     = PETSC_FALSE;
+  ksp->viewRhs      = PETSC_FALSE;
+  ksp->viewSol      = PETSC_FALSE;
+  ksp->viewMatExp   = PETSC_FALSE;
+  ksp->viewEV       = PETSC_FALSE;
+  ksp->viewSV       = PETSC_FALSE;
+  ksp->viewEVExp    = PETSC_FALSE;
+  ksp->viewFinalRes = PETSC_FALSE;
+  ksp->viewPOpExp   = PETSC_FALSE;
+  ksp->viewDScale   = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -994,19 +1053,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   ierr = VecDestroy(&ksp->diagonal);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->truediagonal);CHKERRQ(ierr);
 
-  ierr = PetscViewerDestroy(&ksp->viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerPre);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerReason);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerMat);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerPMat);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerRhs);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerSol);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerMatExp);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerEV);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerSV);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerEVExp);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerFinalRes);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerPOpExp);CHKERRQ(ierr);
+  ierr = KSPResetViewers(ksp);CHKERRQ(ierr);
 
   ksp->setupstage = KSP_SETUP_NEW;
   PetscFunctionReturn(0);

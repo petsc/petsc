@@ -164,8 +164,8 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"size(U)=%D, size(V)=%D\n",sizeU,sizeV);CHKERRQ(ierr);
   }
   ierr = ISCreateStride(((PetscObject)lclP->V)->comm,hi-lo,lo,1,&is_design);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(tao->solution,tao->design_is,lclP->V,is_design,&lclP->design_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(tao->solution,tao->design_is,lclP->V,is_design,&lclP->design_scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is_state);CHKERRQ(ierr);
   ierr = ISDestroy(&is_design);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -250,7 +250,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     tao->ksp_its=0;
     /* Compute a descent direction for the linearly constrained subproblem

@@ -85,17 +85,12 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   bX[0] = f;  bX[1] = h;
   ierr  = PetscMalloc1(2,&vscat);CHKERRQ(ierr);
   for (i=0; i<2; i++) {
-    ierr = VecScatterCreateWithData(b,bis[i],bX[i],NULL,&vscat[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(b,bis[i],bX[i],NULL,&vscat[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscat[i],bX[i],b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-  for (i=0; i<2; i++) {
     ierr = VecScatterEnd(vscat[i],bX[i],b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-
-  /* tidy up */
-  for (i=0; i<2; i++) {
     ierr = VecScatterDestroy(&vscat[i]);CHKERRQ(ierr);
   }
+
   ierr = PetscFree(vscat);CHKERRQ(ierr);
   ierr = MatDestroy(&Auu);CHKERRQ(ierr);
   ierr = MatDestroy(&Aup);CHKERRQ(ierr);
@@ -155,11 +150,11 @@ PetscErrorCode port_lsd_bfbt(void)
     ierr = MatCreateVecs(A22,&pvec,NULL);CHKERRQ(ierr);
 
     /* perform the scatter from x -> (u,p) */
-    ierr = VecScatterCreateWithData(x,isu,uvec,NULL,&uscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,isu,uvec,NULL,&uscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-    ierr = VecScatterCreateWithData(x,isp,pvec,NULL,&pscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,isp,pvec,NULL,&pscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 

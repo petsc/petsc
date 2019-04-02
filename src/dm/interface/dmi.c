@@ -81,12 +81,32 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-/* This assumes that the DM has been cloned prior to the call */
-PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+/*@C
+  DMCreateSectionSubDM - Returns an IS and subDM+subSection encapsulating a subproblem defined by the fields in a PetscSection in the DM.
+
+  Not collective
+
+  Input Parameters:
++ dm        - The DM object
+. numFields - The number of fields in this subproblem
+- fields    - The field numbers of the selected fields
+
+  Output Parameters:
++ is - The global indices for the subproblem
+- subdm - The DM for the subproblem, which must already have be cloned from dm
+
+  Note: This handles all information in the DM class and the PetscSection. This is used as the basis for creating subDMs in specialized classes,
+  such as Plex and Forest.
+
+  Level: intermediate
+
+.seealso DMCreateSubDM(), DMGetSection(), DMPlexSetMigrationSF(), DMView()
+@*/
+PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscSection   section, sectionGlobal;
   PetscInt      *subIndices;
-  PetscInt       subSize = 0, subOff = 0, nF, f, pStart, pEnd, p;
+  PetscInt       subSize = 0, subOff = 0, Nf, f, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -95,8 +115,8 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
   ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting fields");
   if (!sectionGlobal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
-  ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
-  if (numFields > nF) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, nF);
+  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+  if (numFields > Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, Nf);
   if (is) {
     PetscInt bs, bsLocal[2], bsMinMax[2];
 
@@ -190,8 +210,6 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
       ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
     }
     if (dm->probs) {
-      PetscInt Nf;
-
       ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
         PetscObject disc;
@@ -200,8 +218,6 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
         ierr = DMSetField(*subdm, f, NULL, disc);CHKERRQ(ierr);
       }
       ierr = DMCreateDS(*subdm);CHKERRQ(ierr);
-      ierr = PetscDSGetNumFields(dm->probs[0].ds, &Nf);CHKERRQ(ierr);
-      if (nF != Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", Nf, nF);
       if (numFields == 1 && is) {
         PetscObject disc, space, pmat;
 
@@ -224,8 +240,27 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
   PetscFunctionReturn(0);
 }
 
-/* This assumes that the DM has been cloned prior to the call */
-PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, DM *superdm)
+/*@C
+  DMCreateSectionSuperDM - Returns an arrays of ISes and DM+Section encapsulating a superproblem defined by the DM+Sections passed in.
+
+  Not collective
+
+  Input Parameter:
++ dms - The DM objects
+- len - The number of DMs
+
+  Output Parameters:
++ is - The global indices for the subproblem, or NULL
+- superdm - The DM for the superproblem, which must already have be cloned
+
+  Note: This handles all information in the DM class and the PetscSection. This is used as the basis for creating subDMs in specialized classes,
+  such as Plex and Forest.
+
+  Level: intermediate
+
+.seealso DMCreateSuperDM(), DMGetSection(), DMPlexSetMigrationSF(), DMView()
+@*/
+PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
 {
   MPI_Comm       comm;
   PetscSection   supersection, *sections, *sectionGlobals;

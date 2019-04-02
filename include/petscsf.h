@@ -81,6 +81,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const P
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetUpRanks(PetscSF,MPI_Group);
 PETSC_EXTERN PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);
@@ -89,6 +90,11 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFBcastBegin(PetscSF,MPI_Datatype,const void*,void*)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 PETSC_EXTERN PetscErrorCode PetscSFBcastEnd(PetscSF,MPI_Datatype,const void*,void*)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+/* Reduce rootdata to leafdata using provided operation */
+PETSC_EXTERN PetscErrorCode PetscSFBcastAndOpBegin(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+PETSC_EXTERN PetscErrorCode PetscSFBcastAndOpEnd(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 /* Reduce leafdata into rootdata using provided operation */
 PETSC_EXTERN PetscErrorCode PetscSFReduceBegin(PetscSF,MPI_Datatype,const void*,void *,MPI_Op)

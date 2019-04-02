@@ -655,7 +655,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr     = MatCreateVecs(jac->pmat[i],&jac->x[i],&jac->y[i]);CHKERRQ(ierr);
       ilink->x = jac->x[i]; ilink->y = jac->y[i]; ilink->z = NULL;
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
-      ierr = VecScatterCreateWithData(xtmp,ilink->is,jac->x[i],NULL,&ilink->sctx);CHKERRQ(ierr);
+      ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],NULL,&ilink->sctx);CHKERRQ(ierr);
       ierr = PetscObjectQuery((PetscObject) ilink->is, "nearnullspace", (PetscObject*) &sp);CHKERRQ(ierr);
       if (sp) {
         ierr = MatSetNearNullSpace(jac->pmat[i], sp);CHKERRQ(ierr);
@@ -1095,8 +1095,8 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = KSPCheckSolve(jac->kspschur,pc,ilinkD->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = VecScale(ilinkD->y,jac->schurscale);CHKERRQ(ierr);
-    ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     break;
   case PC_FIELDSPLIT_SCHUR_FACT_LOWER:
@@ -1116,8 +1116,8 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
     ierr = KSPCheckSolve(jac->kspschur,pc,ilinkD->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
-    ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     break;
   case PC_FIELDSPLIT_SCHUR_FACT_UPPER:
@@ -1136,8 +1136,8 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
     ierr = KSPCheckSolve(kspA,pc,ilinkA->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(ilinkA->event,kspA,ilinkA->x,ilinkA->y,NULL);CHKERRQ(ierr);
-    ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     break;
   case PC_FIELDSPLIT_SCHUR_FACT_FULL:
@@ -1409,8 +1409,8 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
   }
 
   ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

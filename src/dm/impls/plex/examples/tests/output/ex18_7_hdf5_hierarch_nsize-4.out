@@ -1,0 +1,19 @@
+Graph Partitioner: 4 MPI Processes
+  type: matpartitioning
+  edge cut: 0
+  balance:  0
+MatPartitioning Graph Partitioner:
+  MatPartitioning Object: 4 MPI processes
+    type: hierarch
+     Number of coarse parts: 2
+     Coarse partitioner: ptscotch
+    MatPartitioning Object: (hierarch_coarse_) 4 MPI processes
+      type: ptscotch
+        Strategy=Default behavior
+        Load imbalance ratio=0.01
+     Number of fine parts: 2
+     Fine partitioner: ptscotch
+    MatPartitioning Object: (hierarch_fine_) 1 MPI processes
+      type: ptscotch
+        Strategy=Default behavior
+        Load imbalance ratio=0.01

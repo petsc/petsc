@@ -72,7 +72,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   /* generate the scatter context
      -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefule for some applications */
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
 
   sbaij->garray = garray;
@@ -111,7 +111,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(sbaij->slvec0,from,sbaij->slvec1,to,&sbaij->sMvctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(sbaij->slvec0,from,sbaij->slvec1,to,&sbaij->sMvctx);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(sbaij->slvec1,&nt);CHKERRQ(ierr);
   ierr = VecGetArray(sbaij->slvec1,&ptr);CHKERRQ(ierr);
@@ -249,7 +249,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 
   /* create temporary global vector to generate scatter context */
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->Mvctx);CHKERRQ(ierr);

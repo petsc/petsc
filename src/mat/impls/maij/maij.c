@@ -2857,8 +2857,8 @@ PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = (*b->OAIJ->ops->multtranspose)(b->OAIJ,xx,b->w);CHKERRQ(ierr);
-  ierr = VecScatterBegin(b->ctx,b->w,zz,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = (*b->AIJ->ops->multtransposeadd)(b->AIJ,xx,yy,zz);CHKERRQ(ierr);
+  ierr = VecScatterBegin(b->ctx,b->w,zz,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(b->ctx,b->w,zz,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3433,7 +3433,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),dof,dof*A->cmap->n,dof*A->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
       /* generate the scatter context */
-      ierr = VecScatterCreateWithData(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);
+      ierr = VecScatterCreate(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);
 
       ierr = ISDestroy(&from);CHKERRQ(ierr);
       ierr = ISDestroy(&to);CHKERRQ(ierr);

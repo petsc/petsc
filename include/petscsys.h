@@ -1195,7 +1195,8 @@ PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDRAM(void);
 PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
 
-#define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
+#define MPIU_PETSCLOGDOUBLE  MPI_DOUBLE
+#define MPIU_2PETSCLOGDOUBLE MPI_2DOUBLE_PRECISION
 
 /*
    Routines for tracing memory corruption/bleeding with default PETSc memory allocation
@@ -2202,6 +2203,7 @@ PETSC_EXTERN PetscErrorCode PetscSortIntWithArrayPair(PetscInt,PetscInt[],PetscI
 PETSC_EXTERN PetscErrorCode PetscSortMPIInt(PetscInt,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt*,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt,PetscMPIInt[],PetscMPIInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt,PetscMPIInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithScalarArray(PetscInt,PetscInt[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithDataArray(PetscInt,PetscInt[],void*,size_t,void*);
 PETSC_EXTERN PetscErrorCode PetscSortReal(PetscInt,PetscReal[]);

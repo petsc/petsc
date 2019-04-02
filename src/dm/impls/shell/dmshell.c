@@ -949,7 +949,7 @@ PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fie
 
   PetscFunctionBegin;
   if (subdm) {ierr = DMShellCreate(PetscObjectComm((PetscObject) dm), subdm);CHKERRQ(ierr);}
-  ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  ierr = DMCreateSectionSubDM(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

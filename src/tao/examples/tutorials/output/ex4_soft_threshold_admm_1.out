@@ -1,0 +1,29 @@
+Iter 0 : ||x-z||: 1.81923, mu*||z-zold||: 0.
+Iter 1 : ||x-z||: 1.33753, mu*||z-zold||: 0.
+Iter 2 : ||x-z||: 1.02082, mu*||z-zold||: 0.299966
+Iter 3 : ||x-z||: 0.812309, mu*||z-zold||: 0.356776
+Iter 4 : ||x-z||: 0.614515, mu*||z-zold||: 0.286523
+Iter 5 : ||x-z||: 0.460327, mu*||z-zold||: 0.25143
+Iter 6 : ||x-z||: 0.3454, mu*||z-zold||: 0.180397
+Iter 7 : ||x-z||: 0.262059, mu*||z-zold||: 0.115619
+Iter 8 : ||x-z||: 0.200806, mu*||z-zold||: 0.112218
+Iter 9 : ||x-z||: 0.151443, mu*||z-zold||: 0.0793162
+J(xhat): 113.626, predicted: 16.5257, diff 97.1007
+J(xhat): 42.3779, predicted: 13.8019, diff 28.576
+J(xhat): 21.7055, predicted: 12.44, diff 9.26546
+J(xhat): 15.1072, predicted: 11.759, diff 3.34818
+J(xhat): 12.7449, predicted: 11.4186, diff 1.32637
+J(xhat): 11.801, predicted: 11.2483, diff 0.55267
+J(xhat): 11.3905, predicted: 11.1632, diff 0.227268
+J(xhat): 11.2058, predicted: 11.1206, diff 0.0851946
+J(xhat): 11.1289, predicted: 11.0994, diff 0.0295115
+J(xhat): 11.1013, predicted: 11.0887, diff 0.0125992
+Convergence rate step 0: 1.76468
+Convergence rate step 1: 1.62487
+Convergence rate step 2: 1.46848
+Convergence rate step 3: 1.3359
+Convergence rate step 4: 1.26299
+Convergence rate step 5: 1.28202
+Convergence rate step 6: 1.41556
+Convergence rate step 7: 1.52948
+Convergence rate step 8: 1.22794

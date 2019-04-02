@@ -186,8 +186,7 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   if (!flg) PetscFunctionReturn(0);
   ierr = PetscOptionsGetInt(NULL, NULL, "-overlap", &overlap, NULL);CHKERRQ(ierr);
   ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm); CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);

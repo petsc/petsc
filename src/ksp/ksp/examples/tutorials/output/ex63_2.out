@@ -40,7 +40,6 @@ PC Object: 1 MPI processes
             SuperLU_DIST run parameters:
               Process grid nprow 1 x npcol 1 
               Equilibrate matrix TRUE 
-              Matrix input mode 0 
               Replace tiny pivots FALSE 
               Use iterative refinement FALSE 
               Processors in row 1 col partition 1 

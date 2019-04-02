@@ -147,7 +147,7 @@ int main(int argc,char **args)
        ISCreateStride(PETSC_COMM_WORLD,N1,indx,1,&indx1);
        indx = i*N1;
        ISCreateStride(PETSC_COMM_WORLD,N1,indx,1,&indx2);
-       VecScatterCreateWithData(fin,indx1,ini,indx2,&vecscat);
+       VecScatterCreate(fin,indx1,ini,indx2,&vecscat);
        VecScatterBegin(vecscat,fin,ini,INSERT_VALUES,SCATTER_FORWARD);
        VecScatterEnd(vecscat,fin,ini,INSERT_VALUES,SCATTER_FORWARD);
        VecScatterBegin(vecscat,fout1,final,INSERT_VALUES,SCATTER_FORWARD);

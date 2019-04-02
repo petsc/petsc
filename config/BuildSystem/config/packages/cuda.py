@@ -80,8 +80,6 @@ class Configure(config.package.Package):
 
   def configureTypes(self):
     import config.setCompilers
-    if not config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
-      raise RuntimeError('Must use GNU compilers with CUDA')
     if not self.getDefaultPrecision() in ['double', 'single']:
       raise RuntimeError('Must use either single or double precision with CUDA')
     self.checkSizeofVoidP()

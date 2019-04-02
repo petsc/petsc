@@ -66,7 +66,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by owlqn algorithm\n");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by owlqn algorithm\n");CHKERRQ(ierr);
   }
 
   /* Check convergence criteria */
@@ -99,9 +99,9 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
-    
+
     /* Compute direction */
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
     ierr = MatSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
@@ -199,7 +199,6 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
         break;
       }
       ierr = VecScale(lmP->D, -1.0);CHKERRQ(ierr);
-
 
       /* Perform the linesearch */
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, lmP->GV, lmP->D, &step, &ls_status);CHKERRQ(ierr);

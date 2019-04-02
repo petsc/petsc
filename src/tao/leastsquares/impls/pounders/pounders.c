@@ -824,7 +824,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     PetscReal gnm = 1e-4;
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     tao->niter++;
     /* Solve the subproblem min{Q(s): ||s|| <= 1.0} */
@@ -1097,8 +1097,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     ierr = ISCreateStride(MPI_COMM_SELF,mfqP->m,0,1,&isfglob);CHKERRQ(ierr);
 
 
-    ierr = VecScatterCreateWithData(tao->solution,isxglob,mfqP->localx,isxloc,&mfqP->scatterx);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(tao->ls_res,isfglob,mfqP->localf,isfloc,&mfqP->scatterf);CHKERRQ(ierr);
+    ierr = VecScatterCreate(tao->solution,isxglob,mfqP->localx,isxloc,&mfqP->scatterx);CHKERRQ(ierr);
+    ierr = VecScatterCreate(tao->ls_res,isfglob,mfqP->localf,isfloc,&mfqP->scatterf);CHKERRQ(ierr);
 
     ierr = ISDestroy(&isxloc);CHKERRQ(ierr);
     ierr = ISDestroy(&isxglob);CHKERRQ(ierr);

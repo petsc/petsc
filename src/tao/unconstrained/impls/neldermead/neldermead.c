@@ -145,7 +145,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   nm->nexpand =      0;
 
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by NelderMead algorithm\n");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by NelderMead algorithm\n");CHKERRQ(ierr);
   }
 
   ierr = VecCopy(tao->solution,nm->simplex[0]);CHKERRQ(ierr);
@@ -175,9 +175,9 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   while (1) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
-    
+    ++tao->niter;
     shrink = 0;
     ierr = VecCopy(nm->simplex[nm->indices[0]],tao->solution);CHKERRQ(ierr);
     ierr = TaoLogConvergenceHistory(tao, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, tao->ksp_its);CHKERRQ(ierr);

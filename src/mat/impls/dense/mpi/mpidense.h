@@ -12,7 +12,17 @@ typedef struct { /* used by MatTransposeMatMult_MPIDense_MPIDense() */
   PetscScalar    *sendbuf,*atbarray;
   PetscMPIInt    *recvcounts;
   PetscErrorCode (*destroy)(Mat);
+  PetscMPIInt    tag;
 } Mat_TransMatMultDense;
+
+typedef struct { /* used by MatMatTransposeMult_MPIDense_MPIDense() */
+  PetscScalar    *buf[2];
+  PetscMPIInt    tag;
+  PetscMPIInt    *recvcounts;
+  PetscMPIInt    *recvdispls;
+  PetscErrorCode (*destroy)(Mat);
+  PetscInt       alg; /* algorithm used */
+} Mat_MatTransMultDense;
 
 typedef struct {
   PetscInt    nvec;                     /* this is the n size for the vector one multiplies with */
@@ -36,6 +46,7 @@ typedef struct {
   Mat_MatTransMatMult   *atb;           /* used by MatTransposeMatMult_MPIAIJ_MPIDense */
   Mat_TransMatMultDense *atbdense;      /* used by MatTransposeMatMult_MPIDense_MPIDense */
   Mat_MatMultDense      *abdense;       /* used by MatMatMult_MPIDense_MPIDense */
+  Mat_MatTransMultDense *abtdense;      /* used by MatMatTransposeMult_MPIDense_MPIDense */
 } Mat_MPIDense;
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIDense(Mat,PetscViewer);

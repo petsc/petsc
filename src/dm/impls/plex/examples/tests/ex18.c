@@ -83,6 +83,28 @@ Four triangles partitioned across 3 ranks
     rank 1: 1
     rank 2: 2 3
 
+Test 2 (3 ranks):
+Four triangles partitioned across 3 ranks
+
+   1 _______ 3
+   | \     / |
+   |  \ 1 /  |
+   |   \ /   |
+   | 0  0  2 |
+   |   / \   |
+   |  / 3 \  |
+   | /     \ |
+   2 ------- 4
+
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3
+    rank 2: 4
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
+    rank 2: 2 3
+
 Tetrahedron
 -----------
 Test 0:
@@ -398,43 +420,46 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
       default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
+  case 2:
+    if (size != 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
+    switch (rank) {
+      case 0:
+      {
+        const PetscInt numCells  = 1, numVertices = 2, numCorners = 3;
+        const int      cells[3]  = {1, 2, 0};
+        PetscReal      coords[4] = {0.5, 0.5, 0.0, 1.0};
+        PetscInt       markerPoints[6] = {1, 1, 2, 1, 3, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      }
+      break;
+      case 1:
+      {
+        const PetscInt numCells  = 1, numVertices = 2, numCorners = 3;
+        const int      cells[3]  = {1, 0, 3};
+        PetscReal      coords[4] = {0.0, 0.0, 1.0, 1.0};
+        PetscInt       markerPoints[6] = {1, 1, 2, 1, 3, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      }
+      break;
+      case 2:
+      {
+        const PetscInt numCells  = 2, numVertices = 1, numCorners = 3;
+        const int      cells[6]  = {0, 4, 3, 0, 2, 4};
+        PetscReal      coords[2] = {1.0, 0.0};
+        PetscInt       markerPoints[10] = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      }
+      break;
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    }
+    break;
   default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
-  }
-  PetscFunctionReturn(0);
-}
-
-/* TODO this dirty hotfix can be removed once point SF is fixed systematically */
-static PetscErrorCode CreateSimplex_3D_HotfixSF(DM idm)
-{
-  PetscSF sf=NULL;
-  PetscInt nroots,nleaves;
-  const PetscInt *ilocal=NULL;
-  const PetscSFNode *iremote=NULL;
-  PetscInt idx=3;
-  PetscMPIInt rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)idm),&rank);CHKERRQ(ierr);
-  ierr = DMGetPointSF(idm, &sf);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, &iremote);CHKERRQ(ierr);
-  if (!rank) {
-    PetscInt *ilocal1=NULL;
-    PetscSFNode *iremote1=NULL;
-
-    /* insert 8 <- (1,6) as leave idx */
-    ierr = PetscMalloc1(nleaves+1, &ilocal1);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nleaves+1, &iremote1);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ilocal1, ilocal, idx*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(iremote1, iremote, idx*sizeof(PetscSFNode));CHKERRQ(ierr);
-    ilocal1[idx] = 8;
-    iremote1[idx].rank = 1;
-    iremote1[idx].index = 6;
-    ierr = PetscMemcpy(ilocal1+idx+1, ilocal+idx, (nleaves-idx)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(iremote1+idx+1, iremote+idx, (nleaves-idx)*sizeof(PetscSFNode));CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sf, nroots, nleaves+1, ilocal1, PETSC_OWN_POINTER, iremote1, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  } else {
-    ierr = PetscSFSetGraph(sf, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -448,10 +473,6 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (user->interpolate) {
-    /* TODO this dirty hotfix can be removed once point SF is fixed systematically */
-    ierr = PetscOptionsSetValue(NULL, "-dm_plex_interpolate_orient_interfaces", "0");CHKERRQ(ierr);  /* disable the fix in DMPlexInterpolate, will be done later */
-  }
   switch (testNum) {
   case 0:
     if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
@@ -483,10 +504,6 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
     break;
   default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
-  if (user->interpolate == SERIAL) {
-    /* TODO this dirty hotfix can be removed once point SF is fixed systematically */
-    ierr = CreateSimplex_3D_HotfixSF(*dm);CHKERRQ(ierr);
-  }
   if (user->testOrientIF) {
     PetscInt start;
     PetscBool reverse;
@@ -498,8 +515,6 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
     ierr = DMPlexFixFaceOrientations_Translate_Private(user->ornt[rank], &start, &reverse);CHKERRQ(ierr);
     ierr = DMPlexOrientCell_Internal(*dm, ifp[rank], start, reverse);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-  }
-  if (user->interpolate == SERIAL) {
     ierr = DMPlexOrientInterface(*dm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -598,7 +613,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      useGenerator   = user->useGenerator;
   PetscBool      interpSerial   = user->interpolate == SERIAL ? PETSC_TRUE : PETSC_FALSE;
   PetscBool      interpParallel = user->interpolate == PARALLEL ? PETSC_TRUE : PETSC_FALSE;
-  PetscBool      hotfix         = PETSC_FALSE;
   const char    *filename       = user->filename;
   size_t         len;
   PetscMPIInt    rank;
@@ -627,7 +641,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     case 3:
       if (cellSimplex) {
         ierr = CreateSimplex_3D(comm, interpSerial, user, dm);CHKERRQ(ierr);
-        hotfix = PETSC_TRUE;
       } else {
         ierr = CreateHex_3D(comm, interpSerial, user, dm);CHKERRQ(ierr);
       }
@@ -663,12 +676,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm = idm;
-      if (hotfix) {
-        /* TODO this dirty hotfix can be removed once point SF is fixed systematically */
-        /* CreateSimplex_3D didn't do the hotfix, do it now */
-        ierr = CreateSimplex_3D_HotfixSF(*dm);CHKERRQ(ierr);
-        ierr = DMPlexOrientInterface(*dm);CHKERRQ(ierr);
-      }
       ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Redistributed Mesh");CHKERRQ(ierr);
       ierr = DMViewFromOptions(*dm, NULL, "-intp_dm_view");CHKERRQ(ierr);
     }
@@ -711,6 +718,10 @@ int main(int argc, char **argv)
       suffix: 1_tri_dist1
       args: -distribute 1 -interpolate {{serial}separate output}
     test:
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 1_tri_dist1_ppu
+      args: -distribute 1 -interpolate {{none parallel}separate output}
+    test:
       suffix: 1_quad_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
@@ -718,11 +729,20 @@ int main(int argc, char **argv)
       suffix: 1_quad_dist1
       args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
     test:
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 1_quad_dist1_ppu
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none parallel}separate output}
+    test:
       suffix: 1_1d_dist1
       args: -dim 1 -distribute 1
 
   test:
     suffix: 2
+    nsize: 3
+    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+  test:
+    requires:
+    suffix: 2b
     nsize: 3
     args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
 
@@ -738,13 +758,20 @@ int main(int argc, char **argv)
       suffix: 4_tet_dist1
       args: -distribute 1 -interpolate {{serial}separate output}
     test:
-      TODO: fails due to wrong SF
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 4_tet_dist1_ppu
+      args: -distribute 1 -interpolate {{none parallel}separate output}
+    test:
       suffix: 4_hex_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
-      TODO: fails due to wrong SF
+      # Add back in 'none' and 'parallel'
       suffix: 4_hex_dist1
-      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
+    test:
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 4_hex_dist1_ppu
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none parallel}separate output}
 
   test:
     # the same as 4_tet_dist0 but test different initial orientations
@@ -778,25 +805,45 @@ int main(int argc, char **argv)
       suffix: 6_quad
       args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton tensor
     test:
+      TODO: this is failing due to DMPlexCheckPointSF() and should be fixed
       suffix: 6_tet
       requires: ctetgen
       args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton simplex
     test:
-      TODO: fails due to wrong SF
       suffix: 6_hex
       args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton tensor
 
   testset:
     nsize: {{1 2 4 5}}
-    args: -cell_simplex 0 -distribute -interpolate {{none serial parallel}} -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
     test:
-      TODO: fails due to wrong SF
       suffix: 7_exo
       requires: exodusii
+      args: -interpolate {{none serial parallel}}
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     test:
-      TODO: fails due to wrong SF
+      # Add back in 'none' and 'parallel'
       suffix: 7_hdf5
-      requires: hdf5
+      requires: hdf5 !complex
+      args: -interpolate serial
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    test:
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 7_hdf5_ppu
+      requires: hdf5 !complex
+      args: -interpolate {{none parallel}}
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+
+
+  test:
+    suffix: 7_hdf5_hierarch
+    requires: hdf5 ptscotch !complex
+    nsize: {{2 3 4}separate output}
+    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -interpolate serial
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    args: -petscpartitioner_type matpartitioning -petscpartitioner_view ::ascii_info
+    args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 2
+    args: -mat_partitioning_hierarchical_coarseparttype ptscotch -mat_partitioning_hierarchical_fineparttype ptscotch
+
 TEST*/

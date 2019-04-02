@@ -54,7 +54,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     
     tao->ksp_its=0;
@@ -330,7 +330,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
       }
       ierr = ISCreateGeneral(comm,counter,cind,PETSC_COPY_VALUES,&isuc);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,counter,cind,PETSC_COPY_VALUES,&isc);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(tao->constraints_inequality,isuc,ipmP->ci,isc,&ipmP->ci_scat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(tao->constraints_inequality,isuc,ipmP->ci,isc,&ipmP->ci_scat);CHKERRQ(ierr);
 
       ierr = ISDestroy(&isuc);CHKERRQ(ierr);
       ierr = ISDestroy(&isc);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
 
       ierr = ISCreateGeneral(comm,nloc,xind,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,nloc,cind,PETSC_COPY_VALUES,&isc);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(tao->XL,isx,ipmP->ci,isc,&ipmP->xl_scat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(tao->XL,isx,ipmP->ci,isc,&ipmP->xl_scat);CHKERRQ(ierr);
       ierr = ISDestroy(&isx);CHKERRQ(ierr);
       ierr = ISDestroy(&isc);CHKERRQ(ierr);
       ierr = ISDestroy(&bigxl);CHKERRQ(ierr);
@@ -385,7 +385,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
 
       ierr = ISCreateGeneral(comm,nloc,xind,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,nloc,cind,PETSC_COPY_VALUES,&isc);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(tao->XU,isx,ipmP->ci,isc,&ipmP->xu_scat);CHKERRQ(ierr);
+      ierr = VecScatterCreate(tao->XU,isx,ipmP->ci,isc,&ipmP->xu_scat);CHKERRQ(ierr);
       ierr = ISDestroy(&isx);CHKERRQ(ierr);
       ierr = ISDestroy(&isc);CHKERRQ(ierr);
       ierr = ISDestroy(&bigxu);CHKERRQ(ierr);
@@ -405,8 +405,8 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
   }
   ierr = ISCreateGeneral(comm,xend-xstart,stepind,PETSC_COPY_VALUES,&sis);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,xend-xstart,xind,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(ipmP->bigstep,sis,tao->solution,is1,&ipmP->step1);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(tao->solution,is1,ipmP->bigrhs,sis,&ipmP->rhs1);CHKERRQ(ierr);
+  ierr = VecScatterCreate(ipmP->bigstep,sis,tao->solution,is1,&ipmP->step1);CHKERRQ(ierr);
+  ierr = VecScatterCreate(tao->solution,is1,ipmP->bigrhs,sis,&ipmP->rhs1);CHKERRQ(ierr);
   ierr = ISDestroy(&sis);CHKERRQ(ierr);
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
 
@@ -417,7 +417,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
     }
     ierr = ISCreateGeneral(comm,send-sstart,stepind,PETSC_COPY_VALUES,&sis);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,send-sstart,cind,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(ipmP->bigstep,sis,ipmP->s,is1,&ipmP->step2);CHKERRQ(ierr);
+    ierr = VecScatterCreate(ipmP->bigstep,sis,ipmP->s,is1,&ipmP->step2);CHKERRQ(ierr);
     ierr = ISDestroy(&sis);CHKERRQ(ierr);
 
     for (i=sstart;i<send;i++) {
@@ -425,7 +425,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
       cind[i-sstart] = i;
     }
     ierr = ISCreateGeneral(comm,send-sstart,stepind,PETSC_COPY_VALUES,&sis);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(ipmP->s,is1,ipmP->bigrhs,sis,&ipmP->rhs3);CHKERRQ(ierr);
+    ierr = VecScatterCreate(ipmP->s,is1,ipmP->bigrhs,sis,&ipmP->rhs3);CHKERRQ(ierr);
     ierr = ISDestroy(&sis);CHKERRQ(ierr);
     ierr = ISDestroy(&is1);CHKERRQ(ierr);
   }
@@ -439,7 +439,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
 
     ierr = ISCreateGeneral(comm,uceend-ucestart,stepind,PETSC_COPY_VALUES,&sis);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,uceend-ucestart,uceind,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(ipmP->bigstep,sis,tao->constraints_equality,is1,&ipmP->step3);CHKERRQ(ierr);
+    ierr = VecScatterCreate(ipmP->bigstep,sis,tao->constraints_equality,is1,&ipmP->step3);CHKERRQ(ierr);
     ierr = ISDestroy(&sis);CHKERRQ(ierr);
 
     for (i=ucestart;i<uceend;i++) {
@@ -447,7 +447,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
     }
 
     ierr = ISCreateGeneral(comm,uceend-ucestart,stepind,PETSC_COPY_VALUES,&sis);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(tao->constraints_equality,is1,ipmP->bigrhs,sis,&ipmP->rhs2);CHKERRQ(ierr);
+    ierr = VecScatterCreate(tao->constraints_equality,is1,ipmP->bigrhs,sis,&ipmP->rhs2);CHKERRQ(ierr);
     ierr = ISDestroy(&sis);CHKERRQ(ierr);
     ierr = ISDestroy(&is1);CHKERRQ(ierr);
   }
@@ -459,8 +459,8 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
     }
     ierr = ISCreateGeneral(comm,send-sstart,cind,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,send-sstart,stepind,PETSC_COPY_VALUES,&sis);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(ipmP->bigstep,sis,ipmP->s,is1,&ipmP->step4);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(ipmP->s,is1,ipmP->bigrhs,sis,&ipmP->rhs4);CHKERRQ(ierr);
+    ierr = VecScatterCreate(ipmP->bigstep,sis,ipmP->s,is1,&ipmP->step4);CHKERRQ(ierr);
+    ierr = VecScatterCreate(ipmP->s,is1,ipmP->bigrhs,sis,&ipmP->rhs4);CHKERRQ(ierr);
     ierr = ISDestroy(&sis);CHKERRQ(ierr);
     ierr = ISDestroy(&is1);CHKERRQ(ierr);
   }

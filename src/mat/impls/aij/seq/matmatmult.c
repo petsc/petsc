@@ -10,13 +10,38 @@
  #include <petsc/private/isimpl.h>
  #include <../src/mat/impls/dense/seq/dense.h>
 
- static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,PetscReal,Mat*);
-
- #if defined(PETSC_HAVE_HYPRE)
- PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
- #endif
 
  PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+ {
+   PetscErrorCode ierr;
+
+   PetscFunctionBegin;
+   if (scall == MAT_INITIAL_MATRIX) {
+     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+   }
+
+   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+   ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+   ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+   PetscFunctionReturn(0);
+ }
+
+ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
+ {
+   PetscErrorCode ierr;
+
+   PetscFunctionBegin;
+   if (C->ops->matmultnumeric) {
+     ierr = (*C->ops->matmultnumeric)(A,B,C);CHKERRQ(ierr);
+   } else {
+     ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(A,B,C);CHKERRQ(ierr);
+   }
+   PetscFunctionReturn(0);
+ }
+
+ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
  {
    PetscErrorCode ierr;
  #if !defined(PETSC_HAVE_HYPRE)
@@ -27,58 +52,46 @@
    PetscInt       nalg = 9;
  #endif
    PetscInt       alg = 0; /* set default algorithm */
-   PetscBool      combined = PETSC_FALSE;  /* Indicates whether the symbolic stage already computed the numerical values. */
 
    PetscFunctionBegin;
-   if (scall == MAT_INITIAL_MATRIX) {
-     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatMatMult","Mat");CHKERRQ(ierr);
-     ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
-     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-     switch (alg) {
-     case 1:
-       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
-       break;
-     case 2:
-       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
-       break;
-     case 3:
-       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
-       break;
-     case 4:
-       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(A,B,fill,C);CHKERRQ(ierr);
-       break;
-     case 5:
-       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(A,B,fill,C);CHKERRQ(ierr);
-       break;
-     case 6:
-       ierr = MatMatMult_SeqAIJ_SeqAIJ_Combined(A,B,fill,C);CHKERRQ(ierr);
-       combined = PETSC_TRUE;
-       break;
-    case 7:
-       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(A,B,fill,C);CHKERRQ(ierr);
-       break;
+   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatMatMult","Mat");CHKERRQ(ierr);
+   ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+   switch (alg) {
+   case 1:
+     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
+     break;
+   case 2:
+     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
+     break;
+   case 3:
+     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
+     break;
+   case 4:
+     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(A,B,fill,C);CHKERRQ(ierr);
+     break;
+   case 5:
+     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(A,B,fill,C);CHKERRQ(ierr);
+     break;
+   case 6:
+     ierr = MatMatMult_SeqAIJ_SeqAIJ_Combined(A,B,fill,C);CHKERRQ(ierr);
+     break;
+   case 7:
+     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(A,B,fill,C);CHKERRQ(ierr);
+     break;
  #if defined(PETSC_HAVE_HYPRE)
-     case 8:
-       ierr = MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A,B,fill,C);CHKERRQ(ierr);
-       break;
+   case 8:
+     ierr = MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A,B,fill,C);CHKERRQ(ierr);
+     break;
  #endif
-     default:
-       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
-      break;
-     }
-     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+   default:
+     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(A,B,fill,C);CHKERRQ(ierr);
+     break;
    }
-
-   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-   if (!combined) {
-     ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
-   }
-   ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
    PetscFunctionReturn(0);
  }
 
- static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,PetscReal fill,Mat *C)
+ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,PetscReal fill,Mat *C)
  {
    PetscErrorCode     ierr;
    Mat_SeqAIJ         *a =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
@@ -159,7 +172,7 @@
   c->free_a                 = PETSC_FALSE;
   c->free_ij                = PETSC_TRUE;
   c->nonew                  = 0;
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ; /* fast, needs non-scalable O(bn) array 'abdense' */
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted; /* fast, needs non-scalable O(bn) array 'abdense' */
 
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -181,7 +194,7 @@
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
+PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
   PetscLogDouble flops=0.0;
@@ -595,7 +608,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
 
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted;
 
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -716,7 +729,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
 
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted;
 
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -976,7 +989,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
 
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted;
 
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -1004,7 +1017,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
 }
 
 /* concatenate unique entries and then sort */
-PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
@@ -1070,7 +1083,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
 
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted;
 
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -1282,8 +1295,10 @@ PetscErrorCode MatDestroy_SeqAIJ_MatTransMatMult(Mat A)
   Mat_MatTransMatMult *atb = a->atb;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&atb->At);CHKERRQ(ierr);
-  ierr = (atb->destroy)(A);CHKERRQ(ierr);
+  if (atb) {
+    ierr = MatDestroy(&atb->At);CHKERRQ(ierr);
+    ierr = (*atb->destroy)(A);CHKERRQ(ierr);
+  }
   ierr = PetscFree(atb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1809,6 +1824,14 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   PetscFunctionReturn(0);
 }
 
+/* The combine method has done the symbolic and numeric in the first phase, and so we just return here */
+PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,Mat C)
+{
+  PetscFunctionBegin;
+  /* Empty function */
+  PetscFunctionReturn(0);
+}
+
 /* This algorithm combines the symbolic and numeric phase of matrix-matrix multiplication. */
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat *C)
 {
@@ -1913,6 +1936,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat 
   (*C)->info.mallocs           = ndouble;
   (*C)->info.fill_ratio_given  = fill;
   (*C)->info.fill_ratio_needed = afill;
+  (*C)->ops->matmultnumeric    = MatMatMultNumeric_SeqAIJ_SeqAIJ_Combined;
 
   ierr = PetscFree(c_row_val_dense);CHKERRQ(ierr);
   ierr = PetscFree(c_row_idx_flags);CHKERRQ(ierr);

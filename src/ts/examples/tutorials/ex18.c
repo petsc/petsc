@@ -655,11 +655,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);
   }
   if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, PETSC_TRUE, maxCell, L, user->bd);CHKERRQ(ierr);}
-#if 0
-  /* Need FV adjacency */
-  ierr = DMPlexSetAdjacencyUseCone(*dm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(*dm, PETSC_FALSE);CHKERRQ(ierr);
-#endif
   /* Distribute mesh */
   ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
   if (distributedMesh) {
@@ -850,9 +845,7 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBeginUser;
   ierr = CreateMesh(comm, user, dm);CHKERRQ(ierr);
-  /* Setup BC */
-  ierr = SetupBC(*dm, user);CHKERRQ(ierr);
-  /* Handle refinement, BC ids, etc. */
+  /* Handle refinement, etc. */
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   /* Construct ghost cells */
   if (user->useFV) {
@@ -868,6 +861,8 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   /* Setup problem */
   ierr = SetupDiscretization(*dm, user);CHKERRQ(ierr);
+  /* Setup BC */
+  ierr = SetupBC(*dm, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

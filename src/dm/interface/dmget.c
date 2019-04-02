@@ -263,7 +263,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(g,2);
-  VecLocked(*g, 2);
+  ierr = VecSetErrorIfLocked(*g, 2);CHKERRQ(ierr);
   for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->globalout[j]) {
       dm->globalout[j] = NULL;

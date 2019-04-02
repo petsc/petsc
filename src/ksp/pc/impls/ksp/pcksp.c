@@ -1,4 +1,5 @@
 #include <petsc/private/pcimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <petscksp.h>            /*I "petscksp.h" I*/
 
 typedef struct {
@@ -29,7 +30,12 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   PC_KSP             *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  ierr = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
+  if (jac->ksp->presolve) {
+    ierr = VecCopy(x,y);CHKERRQ(ierr);
+    ierr = KSPSolve(jac->ksp,y,y);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
+  }
   ierr = KSPCheckSolve(jac->ksp,pc,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
@@ -43,7 +49,12 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
   PC_KSP             *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  ierr = KSPSolveTranspose(jac->ksp,x,y);CHKERRQ(ierr);
+  if (jac->ksp->presolve) {
+    ierr = VecCopy(x,y);CHKERRQ(ierr);
+    ierr = KSPSolve(jac->ksp,y,y);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolveTranspose(jac->ksp,x,y);CHKERRQ(ierr);
+  }
   ierr = KSPCheckSolve(jac->ksp,pc,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;

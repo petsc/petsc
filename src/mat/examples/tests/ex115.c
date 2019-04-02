@@ -94,6 +94,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(&C);CHKERRQ(ierr);
   } else {
     PetscViewer viewer;
+
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatLoad(A,viewer);CHKERRQ(ierr);
@@ -157,6 +158,10 @@ int main(int argc,char **args)
     ierr = MatPtAP(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
     ierr = MatPtAP(C,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
     ierr = MatAXPY(hP,-1.,pP,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatHasOperation(hP,MATOP_NORM,&flg);CHKERRQ(ierr);
+    if (!flg) { /* TODO add MatNorm_HYPRE */
+      ierr = MatConvert(hP,MATAIJ,MAT_INPLACE_MATRIX,&hP);CHKERRQ(ierr);
+    }
     ierr = MatNorm(hP,NORM_INFINITY,&err);CHKERRQ(ierr);
     if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatPtAP %g %g",err,norm);
     ierr = MatDestroy(&hP);CHKERRQ(ierr);
@@ -165,29 +170,21 @@ int main(int argc,char **args)
     ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
     ierr = MatPtAP(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
     ierr = MatAXPY(hP,-1.,pP,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatHasOperation(hP,MATOP_NORM,&flg);CHKERRQ(ierr);
+    if (!flg) { /* TODO add MatNorm_HYPRE */
+      ierr = MatConvert(hP,MATAIJ,MAT_INPLACE_MATRIX,&hP);CHKERRQ(ierr);
+    }
     ierr = MatNorm(hP,NORM_INFINITY,&err);CHKERRQ(ierr);
     if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatPtAP mixed %g %g",err,norm);
     ierr = MatDestroy(&hP);CHKERRQ(ierr);
 
     ierr = MatDestroy(&pP);CHKERRQ(ierr);
   }
-
-  /* check MatMatMult */
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer viewer;
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-      ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-      ierr = MatLoad(B,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    }
-  }
-  if (!B) {
-    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  }
+
+  /* check MatMatMult */
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = MatConvert(A,MATHYPRE,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatConvert(B,MATHYPRE,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
 
@@ -201,6 +198,10 @@ int main(int argc,char **args)
   ierr = MatMatMult(C,D,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
   ierr = MatMatMult(C,D,MAT_REUSE_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
   ierr = MatAXPY(CD,-1.,pAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatHasOperation(CD,MATOP_NORM,&flg);CHKERRQ(ierr);
+  if (!flg) { /* TODO add MatNorm_HYPRE */
+    ierr = MatConvert(CD,MATAIJ,MAT_INPLACE_MATRIX,&CD);CHKERRQ(ierr);
+  }
   ierr = MatNorm(CD,NORM_INFINITY,&err);CHKERRQ(ierr);
   if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -276,6 +277,10 @@ int main(int argc,char **args)
       ierr = MatCopy(A,D,str);CHKERRQ(ierr);
       /* AXPY with HYPRE and AIJ */
       ierr = MatAXPY(D,-1.0,C,str);CHKERRQ(ierr);
+      ierr = MatHasOperation(D,MATOP_NORM,&flg);CHKERRQ(ierr);
+      if (!flg) { /* TODO add MatNorm_HYPRE */
+        ierr = MatConvert(D,MATAIJ,MAT_INPLACE_MATRIX,&D);CHKERRQ(ierr);
+      }
       ierr = MatNorm(D,NORM_INFINITY,&err);CHKERRQ(ierr);
       if (err > PETSC_SMALL) {
         ierr = MatViewFromOptions(A,NULL,"-view_duplicate_diff");CHKERRQ(ierr);

@@ -328,7 +328,7 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
     ierr = VecRestoreArrayRead(state, &globalState);CHKERRQ(ierr);
 
     /* The looping over patches happens here */
-    ierr = PCApply(patch->pc, rhs, update);
+    ierr = PCApply(patch->pc, rhs, update);CHKERRQ(ierr);
 
     /* Apply a line search. This will often be basic with
        damping = 1/(max number of patches a dof can be in),

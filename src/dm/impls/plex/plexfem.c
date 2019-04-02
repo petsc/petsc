@@ -1912,9 +1912,9 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
   ierr = MatAssemblyBegin(In, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(In, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (mesh->printFEM) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "%s:\n", name);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)In), "%s:\n", name);CHKERRQ(ierr);
     ierr = MatChop(In, 1.0e-10);CHKERRQ(ierr);
-    ierr = MatView(In, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatView(In, NULL);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_InterpolatorFEM,dmc,dmf,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2575,7 +2575,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, m, cindices, PETSC_OWN_POINTER, &cis);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, m, findices, PETSC_OWN_POINTER, &fis);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(cv, cis, fv, fis, sc);CHKERRQ(ierr);
+  ierr = VecScatterCreate(cv, cis, fv, fis, sc);CHKERRQ(ierr);
   ierr = ISDestroy(&cis);CHKERRQ(ierr);
   ierr = ISDestroy(&fis);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmf, &fv);CHKERRQ(ierr);

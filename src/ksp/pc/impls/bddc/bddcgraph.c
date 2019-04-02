@@ -301,43 +301,47 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
 
   cornerp = NULL;
   if (graph->active_coords) { /* face based corner selection */
-    PetscReal      *wdist;
-    PetscInt       n_neigh,*neigh,*n_shared,**shared;
-    PetscInt       maxc, ns;
+    PetscBT   excluded;
+    PetscReal *wdist;
+    PetscInt  n_neigh,*neigh,*n_shared,**shared;
+    PetscInt  maxc, ns;
 
     ierr = PetscBTCreate(graph->nvtxs,&cornerp);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
     for (ns = 1, maxc = 0; ns < n_neigh; ns++) maxc = PetscMax(maxc,n_shared[ns]);
     ierr = PetscMalloc1(maxc*graph->cdim,&wdist);CHKERRQ(ierr);
+    ierr = PetscBTCreate(maxc,&excluded);CHKERRQ(ierr);
 
     for (ns = 1; ns < n_neigh; ns++) { /* first proc is self */
       PetscReal *anchor,mdist;
-      PetscInt  j,k,d,cdim = graph->cdim;
+      PetscInt  fst,j,k,d,cdim = graph->cdim,n = n_shared[ns];
       PetscInt  point1,point2,point3;
-/*
-      PetscBool isface = PETSC_FALSE;
 
-      for (i=0;i<n_shared[ns];i++) {
-        if (graph->count[shared[ns][i]] == 1) {
-          isface = PETSC_TRUE;
-          break;
-        }
-      }
-      if (!isface) continue;
-*/
       /* import coordinates on shared interface */
-      for (j=0,k=0;j<n_shared[ns];j++)
-        for (d=0;d<cdim;d++)
-          wdist[k++] = graph->coords[shared[ns][j]*cdim+d];
+      ierr = PetscBTMemzero(n,excluded);CHKERRQ(ierr);
+      for (j=0,fst=-1,k=0;j<n;j++) {
+        PetscBool skip = PETSC_FALSE;
+        for (d=0;d<cdim;d++) {
+          PetscReal c = graph->coords[shared[ns][j]*cdim+d];
+          skip = (PetscBool)(skip || c == PETSC_MAX_REAL);
+          wdist[k++] = c;
+        }
+        if (skip) {
+          ierr = PetscBTSet(excluded,j);CHKERRQ(ierr);
+        } else if (fst == -1) fst = j;
+      }
+      if (fst == -1) continue;
 
-      /* the dofs are sorted by global numbering, so each rank start from the same id and will detect the same corners */
-      anchor = wdist;
+      /* the dofs are sorted by global numbering, so each rank start from the same id and will detect the same corners from the given set */
+      anchor = wdist + fst*cdim;
 
       /* find the farthest point from the starting one */
-      mdist = -1.0;
-      for (j=0,point1=0;j<n_shared[ns];j++) {
+      mdist  = -1.0;
+      point1 = fst;
+      for (j=fst;j<n;j++) {
         PetscReal dist = 0.0;
 
+        if (PetscUnlikely(PetscBTLookup(excluded,j))) continue;
         for (d=0;d<cdim;d++) dist += (wdist[j*cdim+d]-anchor[d])*(wdist[j*cdim+d]-anchor[d]);
         if (dist > mdist) { mdist = dist; point1 = j; }
       }
@@ -345,12 +349,15 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       /* find the farthest point from point1 */
       anchor = wdist + point1*cdim;
       mdist  = -1.0;
-      for (j=0,point2=0;j<n_shared[ns];j++) {
+      point2 = point1;
+      for (j=fst;j<n;j++) {
         PetscReal dist = 0.0;
 
+        if (PetscUnlikely(PetscBTLookup(excluded,j))) continue;
         for (d=0;d<cdim;d++) dist += (wdist[j*cdim+d]-anchor[d])*(wdist[j*cdim+d]-anchor[d]);
         if (dist > mdist) { mdist = dist; point2 = j; }
       }
+
 
       /* find the third point maximizing the triangle area */
       point3 = point2;
@@ -358,23 +365,35 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         PetscReal a = 0.0;
 
         for (d=0;d<cdim;d++) a += (wdist[point1*cdim+d]-wdist[point2*cdim+d])*(wdist[point1*cdim+d]-wdist[point2*cdim+d]);
+        a = PetscSqrtReal(a);
         mdist = -1.0;
-        for (j=0,point3=0;j<n_shared[ns];j++) {
-          PetscReal area,b = 0.0, c = 0.0;
+        for (j=fst;j<n;j++) {
+          PetscReal area,b = 0.0, c = 0.0,s;
 
+          if (PetscUnlikely(PetscBTLookup(excluded,j))) continue;
           for (d=0;d<cdim;d++) {
             b += (wdist[point1*cdim+d]-wdist[j*cdim+d])*(wdist[point1*cdim+d]-wdist[j*cdim+d]);
             c += (wdist[point2*cdim+d]-wdist[j*cdim+d])*(wdist[point2*cdim+d]-wdist[j*cdim+d]);
           }
-          area = (a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c); /* Heron's formula without divisions by 2 */
+          b = PetscSqrtReal(b);
+          c = PetscSqrtReal(c);
+          s = 0.5*(a+b+c);
+
+          /* Heron's formula, area squared */
+          area = s*(s-a)*(s-b)*(s-c);
           if (area > mdist) { mdist = area; point3 = j; }
         }
       }
 
+      ierr = PetscBTSet(cornerp,shared[ns][point1]);CHKERRQ(ierr);
+      ierr = PetscBTSet(cornerp,shared[ns][point2]);CHKERRQ(ierr);
+      ierr = PetscBTSet(cornerp,shared[ns][point3]);CHKERRQ(ierr);
+
       /* all dofs having the same coordinates will be primal */
-      for (j=0;j<n_shared[ns];j++) {
+      for (j=fst;j<n;j++) {
         PetscBool same[3] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE};
 
+        if (PetscUnlikely(PetscBTLookup(excluded,j))) continue;
         for (d=0;d<cdim;d++) {
           same[0] = (PetscBool)(same[0] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point1*cdim+d]) < PETSC_SMALL));
           same[1] = (PetscBool)(same[1] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point2*cdim+d]) < PETSC_SMALL));
@@ -385,6 +404,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         }
       }
     }
+    ierr = PetscBTDestroy(&excluded);CHKERRQ(ierr);
     ierr = PetscFree(wdist);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
   }

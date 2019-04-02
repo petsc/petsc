@@ -31,7 +31,7 @@ PetscBool         VecScatterRegisterAllCalled = PETSC_FALSE;
   Level: intermediate
 
 .keywords: vector scatter, set, type
-.seealso: VecScatterGetType(), VecScatterCreateWithData()
+.seealso: VecScatterGetType(), VecScatterCreate()
 @*/
 PetscErrorCode VecScatterSetType(VecScatter vscat, VecScatterType type)
 {
@@ -70,7 +70,7 @@ PetscErrorCode VecScatterSetType(VecScatter vscat, VecScatterType type)
   Level: intermediate
 
 .keywords: vector scatter, get, type, name
-.seealso: VecScatterSetType(), VecScatterCreateWithData()
+.seealso: VecScatterSetType(), VecScatterCreate()
 @*/
 PetscErrorCode VecScatterGetType(VecScatter vscat, VecScatterType *type)
 {
@@ -102,7 +102,7 @@ PetscErrorCode VecScatterGetType(VecScatter vscat, VecScatterType *type)
   Concepts: vectorscatter^setting type
 
 .keywords: VecScatter, set, options, database
-.seealso: VecScatterCreateWithData(), VecScatterCreate(), VecScatterDestroy(), VecScatterSetUp()
+.seealso: VecScatterCreate(), VecScatterDestroy(), VecScatterSetUp()
 @*/
 PetscErrorCode VecScatterSetFromOptions(VecScatter vscat)
 {
@@ -163,7 +163,7 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter vscat)
 
   Then, your vector scatter type can be chosen with the procedural interface via
 .vb
-    VecScatterCreateWithData(MPI_Comm, VecScatter *);
+    VecScatterCreate(MPI_Comm, VecScatter *);
     VecScatterSetType(VecScatter,"my_vectorscatter_name");
 .ve
    or at runtime via the option
@@ -187,71 +187,9 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(0);
 }
 
-/*@
-   VecScatterSetData - provides the vector and index set data to the VecScatter object
-
-   Collective on VecScatter
-
-   Input Parameters:
-+  ctx - the vector scatter object
-.  xin - a vector that defines the shape (parallel data layout of the vector)
-         of vectors from which we scatter
-.  yin - a vector that defines the shape (parallel data layout of the vector)
-         of vectors to which we scatter
-.  ix - the indices of xin to scatter (if NULL scatters all values)
--  iy - the indices of yin to hold results (if NULL fills entire vector yin)
-
-   Options Database Keys: (uses regular MPI_Sends by default)
-.  -vecscatter_view         - Prints detail of communications
-.  -vecscatter_view ::ascii_info    - Print less details about communication
-.  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
-                              eliminates the chance for overlap of computation and communication
-.  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
-                              will make the results of scatters deterministic when otherwise they are not (it may be slower also).
-
-    Level: intermediate
-
-  Notes:
-   In calls to VecScatter() you can use different vectors than the xin and
-   yin you used above; BUT they must have the same parallel data layout, for example,
-   they could be obtained from VecDuplicate().
-   A VecScatter context CANNOT be used in two or more simultaneous scatters;
-   that is you cannot call a second VecScatterBegin() with the same scatter
-   context until the VecScatterEnd() has been called on the first VecScatterBegin().
-   In this case a separate VecScatter is needed for each concurrent scatter.
-
-   Currently the MPI_Send() use PERSISTENT versions.
-   (this unfortunately requires that the same in and out arrays be used for each use, this
-    is why  we always need to pack the input into the work array before sending
-    and unpack upon receiving instead of using MPI datatypes to avoid the packing/unpacking).
-
-   Both ix and iy cannot be NULL at the same time.
-
-   Concepts: scatter^between vectors
-   Concepts: gather^between vectors
-
-.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero(), VecScatterCreateWithData(), VecScatterCreate()
-@*/
-PetscErrorCode VecScatterSetData(VecScatter ctx,Vec xin,IS ix,Vec yin,IS iy)
-{
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (!ix && !iy) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
-
-  /* TODO: make sure communicator of ctx matches parallel communicator of input vectors */
-  ctx->from_v  = xin;
-  ctx->to_v    = yin;
-  ctx->from_is = ix;
-  ctx->to_is   = iy;
-  ierr = VecGetLocalSize(xin,&ctx->from_n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(yin,&ctx->to_n);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* ---------------------------------------------------------------- */
 /*@
-   VecScatterCreateWithData - Creates a vector scatter context.
+   VecScatterCreate - Creates a vector scatter context.
 
    Collective on Vec
 
@@ -299,7 +237,7 @@ PetscErrorCode VecScatterSetData(VecScatter ctx,Vec xin,IS ix,Vec yin,IS iy)
 
 .seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
 @*/
-PetscErrorCode VecScatterCreateWithData(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
+PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter        ctx;
   PetscErrorCode    ierr;
@@ -309,7 +247,8 @@ PetscErrorCode VecScatterCreateWithData(Vec xin,IS ix,Vec yin,IS iy,VecScatter *
   PetscFunctionBegin;
   PetscValidPointer(newctx,5);
   *newctx = NULL;
-  ierr = VecScatterInitializePackage();CHKERRQ(ierr);
+
+  if (!ix && !iy) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
 
   /* Get comm from xin and yin */
   ierr = PetscObjectGetComm((PetscObject)xin,&xcomm);CHKERRQ(ierr);
@@ -322,52 +261,26 @@ PetscErrorCode VecScatterCreateWithData(Vec xin,IS ix,Vec yin,IS iy,VecScatter *
     if (result == MPI_UNEQUAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"VecScatterCreate: parallel vectors xin and yin must have identical/congruent/similar communicators");
   }
 
-  comm = xsize > ysize ? xcomm : ycomm;
+  comm = xsize > ysize ? xcomm : ycomm; /* If xsize==ysize, we use ycomm as comm of ctx, which does affect correctness */
   size = xsize > ysize ? xsize : ysize;
 
-  ierr = VecScatterCreate(comm,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterSetData(ctx,xin,ix,yin,iy);CHKERRQ(ierr);
-  *newctx = ctx;
-
-  /* Set default scatter type */
-  if (size == 1) {
-    ierr = VecScatterSetType(ctx,VECSCATTERSEQ);CHKERRQ(ierr);
-  } else {
-    ierr = VecScatterSetType(ctx,VECSCATTERMPI1);CHKERRQ(ierr);
-  }
-  ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
-  ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-
-      VecScatterCreate - Create VecScatter context for scattering/gathering between two vectors
-
-      Collective on MPI_Comm
-
-      Input Parameter:
-.       comm - the MPI communicator where the scatter lives
-
-      Output Parameter:
-.       newctx - the vector scatter object
-
-      Level: intermediate
-
-.seealso: VecScatterCreateWithData(), VecScatterSetFromOptions(), VecScatterBegin(), VecScatterEnd()
-
-@*/
-PetscErrorCode  VecScatterCreate(MPI_Comm comm,VecScatter *newctx)
-{
-  VecScatter     ctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
   ierr = VecScatterInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","Vector Scatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
-  ctx->inuse               = PETSC_FALSE;
-  ctx->beginandendtogether = PETSC_FALSE;
-  ctx->is_duplicate        = PETSC_FALSE;
+
+  ctx->from_v  = xin;
+  ctx->to_v    = yin;
+  ctx->from_is = ix;
+  ctx->to_is   = iy;
+  ierr = VecGetLocalSize(xin,&ctx->from_n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(yin,&ctx->to_n);CHKERRQ(ierr);
+
+  /* Set default scatter type */
+  if (size == 1) {ierr = VecScatterSetType(ctx,VECSCATTERSEQ);CHKERRQ(ierr);}
+  else {ierr = VecScatterSetType(ctx,VECSCATTERMPI1);CHKERRQ(ierr);}
+
+  ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
+  ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
+
   *newctx = ctx;
   PetscFunctionReturn(0);
 }

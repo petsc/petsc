@@ -523,11 +523,11 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
   ierr = MatMFFDResetHHistory(J);CHKERRQ(ierr);
   if (!ctx->current_u) {
     ierr = VecDuplicate(U,&ctx->current_u);CHKERRQ(ierr);
-    ierr = VecLockPush(ctx->current_u);CHKERRQ(ierr);
+    ierr = VecLockReadPush(ctx->current_u);CHKERRQ(ierr);
   }
-  ierr = VecLockPop(ctx->current_u);CHKERRQ(ierr);
+  ierr = VecLockReadPop(ctx->current_u);CHKERRQ(ierr);
   ierr = VecCopy(U,ctx->current_u);CHKERRQ(ierr);
-  ierr = VecLockPush(ctx->current_u);CHKERRQ(ierr);
+  ierr = VecLockReadPush(ctx->current_u);CHKERRQ(ierr);
   if (F) {
     if (ctx->current_f_allocated) {ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);}
     ctx->current_f           = F;

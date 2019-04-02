@@ -35,7 +35,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  if (pc_gamg->data) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen, cleaned up in SetUp\n");
+  ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
   pc_gamg->data_sz = 0;
   ierr = PetscFree(pc_gamg->orig_data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -310,7 +310,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       Scatter the element vertex information (still in the original vertex ordering)
       to the correct processor
     */
-    ierr = VecScatterCreateWithData(src_crd, NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(src_crd, NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
     ierr = ISDestroy(&isscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

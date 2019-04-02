@@ -129,13 +129,12 @@ PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
 PetscErrorCode PetscLogNestedBegin(void)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (nestedEvents) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"nestedEvents already allocated");
 
   nNestedEventsAllocated = 10;
   ierr = PetscMalloc1(nNestedEventsAllocated,&nestedEvents);CHKERRQ(ierr);
-
-
   dftParentActive = DFT_ID_AWAKE;
   nNestedEvents =1;
 
@@ -156,6 +155,7 @@ PetscErrorCode PetscLogNestedEnd(void)
 {
   PetscErrorCode ierr;
   int            i;
+
   PetscFunctionBegin;
   if (!nestedEvents) PetscFunctionReturn(0);
   for (i=0; i<nNestedEvents; i++) {
@@ -170,15 +170,17 @@ PetscErrorCode PetscLogNestedEnd(void)
 
 
 /*
- * UTILITIES: FIND STUFF IN SORTED ARRAYS
- *
- * Utility: find a default timer in a sorted array */
-static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex, /* index to be found */
-                                                    const PetscLogEvent *dftArray,  /* sorted array of PetscLogEvent-ids */
-                                                    int narray,  /* dimension of dftArray */
-                                                    int *entry)  /* entry in the array where dftIndex may be found;
-                                                                  * if dftArray[entry] != dftIndex, then dftIndex is not part of dftArray
-                                                                  * In that case, the dftIndex can be inserted at this entry. */
+ UTILITIES: FIND STUFF IN SORTED ARRAYS
+
+    dftIndex - index to be found
+    dftArray - sorted array of PetscLogEvent-ids
+    narray - dimension of dftArray 
+    entry - entry in the array where dftIndex may be found;
+
+     if dftArray[entry] != dftIndex, then dftIndex is not part of dftArray
+     In that case, the dftIndex can be inserted at this entry. 
+*/
+static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex,const PetscLogEvent *dftArray,int narray,int *entry)
 {
   PetscFunctionBegin;
   if (narray==0 || dftIndex <= dftArray[0]) {
@@ -186,16 +188,16 @@ static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex, /* i
   } else if (dftIndex > dftArray[narray-1]) {
     *entry = narray;
   } else {
-    int ihigh=narray-1,  ilow=0;
+    int ihigh = narray-1, ilow=0;
     while (ihigh>ilow) {
       const int imiddle = (ihigh+ilow)/2;
       if (dftArray[imiddle] > dftIndex) {
-        ihigh=imiddle;
+        ihigh = imiddle;
       } else if (dftArray[imiddle]<dftIndex) {
-        ilow =imiddle+1;
+        ilow = imiddle+1;
       } else {
-        ihigh=imiddle;
-        ilow =imiddle;
+        ihigh = imiddle;
+        ilow  = imiddle;
       }
     }
     *entry = ihigh;
@@ -203,28 +205,32 @@ static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex, /* i
   PetscFunctionReturn(0);
 }
 
-/* Utility: find the nested event with given identification */
-static PetscErrorCode PetscLogEventFindNestedTimer(NestedEventId nstEvent, /* Nested event to be found */
-                                                   int *entry)  /* entry in the nestedEvents where nstEvent may be found;
-                                                                 * if nestedEvents[entry].nstEvent != nstEvent, then index is not part of iarray */
+/*
+    Utility: find the nested event with given identification
+
+    nstEvent - Nested event to be found
+    entry - entry in the nestedEvents where nstEvent may be found;
+
+    if nestedEvents[entry].nstEvent != nstEvent, then index is not part of iarray
+*/
+static PetscErrorCode PetscLogEventFindNestedTimer(NestedEventId nstEvent,int *entry)
 {
   PetscFunctionBegin;
-
   if (nNestedEvents==0 || nstEvent <= nestedEvents[0].nstEvent) {
     *entry = 0;
   } else if (nstEvent > nestedEvents[nNestedEvents-1].nstEvent) {
     *entry = nNestedEvents;
   } else {
-    int ihigh=nNestedEvents-1,  ilow=0;
+    int ihigh = nNestedEvents-1,  ilow = 0;
     while (ihigh>ilow) {
       const int imiddle = (ihigh+ilow)/2;
       if (nestedEvents[imiddle].nstEvent > nstEvent) {
-        ihigh=imiddle;
+        ihigh = imiddle;
       } else if (nestedEvents[imiddle].nstEvent<nstEvent) {
-        ilow =imiddle+1;
+        ilow = imiddle+1;
       } else {
-        ihigh=imiddle;
-        ilow =imiddle;
+        ihigh = imiddle;
+        ilow  = imiddle;
       }
     }
     *entry = ihigh;
@@ -500,18 +506,36 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer)
 /* Print the global performance: max, max/min, average and total of
  *      time, objects, flops, flops/sec, memory, MPI messages, MPI message lengths, MPI reductions.
  */
-static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, const char *name, const char *desc, PetscLogDouble max, PetscLogDouble ratio, PetscLogDouble avg, PetscLogDouble tot)
+static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, const char *name, const char *desc, PetscLogDouble local_val, const PetscBool print_average, const PetscBool print_total)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
+  PetscLogDouble  min, tot, ratio, avg;
+  MPI_Comm        comm;
+  PetscMPIInt     rank, size;
+  PetscLogDouble  valrank[2], max[2];
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+
+  valrank[0] = local_val;
+  valrank[1] = (PetscLogDouble) rank;
+  ierr = MPIU_Allreduce(&local_val, &min, 1, MPIU_PETSCLOGDOUBLE,  MPI_MIN,    comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(valrank,    &max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&local_val, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm);CHKERRQ(ierr);
+  avg  = tot/((PetscLogDouble) size);
+  if (min != 0.0) ratio = max[0]/min;
+  else ratio = 0.0;
+
   ierr = PetscViewerXMLStartSection(viewer, name, desc);CHKERRQ(ierr);
-  ierr = PetscViewerXMLPutDouble(viewer, "max", NULL, max, "%e");CHKERRQ(ierr);
+  ierr = PetscViewerXMLPutDouble(viewer, "max", NULL, max[0], "%e");CHKERRQ(ierr);
+  ierr = PetscViewerXMLPutInt(   viewer, "maxrank"  , "rank at which max was found" , (PetscMPIInt) max[1] );CHKERRQ(ierr);
   ierr = PetscViewerXMLPutDouble(viewer, "ratio", NULL, ratio, "%f");CHKERRQ(ierr);
-  if (avg>-1.0) {
+  if (print_average) {
     ierr = PetscViewerXMLPutDouble(viewer, "average", NULL, avg, "%e");CHKERRQ(ierr);
   }
-  if (tot>-1.0) {
+  if (print_total) {
     ierr = PetscViewerXMLPutDouble(viewer, "total", NULL, tot, "%e");CHKERRQ(ierr);
   }
   ierr = PetscViewerXMLEndSection(viewer, name);CHKERRQ(ierr);
@@ -523,16 +547,14 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
  */
 static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDouble locTotalTime)
 {
-  PetscErrorCode     ierr;
-  PetscLogDouble     min, max, tot, ratio, avg;
-  PetscLogDouble     flops, mem, red, mess;
-  PetscMPIInt        size;
-  MPI_Comm           comm;
+  PetscErrorCode  ierr;
+  PetscLogDouble  flops, mem, red, mess;
+  const PetscBool print_total_yes   = PETSC_TRUE, 
+                  print_total_no    = PETSC_FALSE, 
+                  print_average_no  = PETSC_FALSE, 
+                  print_average_yes = PETSC_TRUE; 
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-
   /* Must preserve reduction count before we go on */
   red = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
 
@@ -540,82 +562,34 @@ static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDo
   ierr = PetscViewerXMLStartSection(viewer, "globalperformance", "Global performance");CHKERRQ(ierr);
 
   /*   Time */
-  ierr = MPIU_Allreduce(&locTotalTime, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&locTotalTime, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&locTotalTime, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) size);
-  if (min != 0.0) ratio = max/min;
-  else ratio = 0.0;
-  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "time", "Time (sec)", max, ratio, avg, -1.0);CHKERRQ(ierr);
+  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "time", "Time (sec)", locTotalTime, print_average_yes, print_total_no);CHKERRQ(ierr);
 
   /*   Objects */
-  avg  = (PetscLogDouble) petsc_numObjects;
-  ierr = MPIU_Allreduce(&avg,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&avg,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&avg,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) size);
-  if (min != 0.0) ratio = max/min;
-  else ratio = 0.0;
-  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "objects", "Objects", max, ratio, avg, -1.0);CHKERRQ(ierr);
+  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "objects", "Objects", (PetscLogDouble) petsc_numObjects, print_average_yes, print_total_no);CHKERRQ(ierr);
 
   /*   Flop */
-  ierr = MPIU_Allreduce(&petsc_TotalFlops,  &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&petsc_TotalFlops,  &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&petsc_TotalFlops,  &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) size);
-  if (min != 0.0) ratio = max/min;
-  else ratio = 0.0;
-  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "mflop", "MFlop", max/1.0E6, ratio, avg/1.0E6, tot/1.0E6);CHKERRQ(ierr);
+  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "mflop", "MFlop", petsc_TotalFlops/1.0E6, print_average_yes, print_total_yes);CHKERRQ(ierr);
 
   /*   Flop/sec -- Must talk to Barry here */
   if (locTotalTime != 0.0) flops = petsc_TotalFlops/locTotalTime;
   else flops = 0.0;
-  ierr = MPIU_Allreduce(&flops,        &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&flops,        &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&flops,        &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) size);
-  if (min != 0.0) ratio = max/min;
-  else ratio = 0.0;
-  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "mflops", "MFlop/sec", max/1.0E6, ratio, avg/1.0E6, tot/1.0E6);CHKERRQ(ierr);
+  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "mflops", "MFlop/sec", flops/1.0E6, print_average_yes, print_total_yes);CHKERRQ(ierr);
 
   /*   Memory */
   ierr = PetscMallocGetMaximumUsage(&mem);CHKERRQ(ierr);
   if (mem > 0.0) {
-    ierr = MPIU_Allreduce(&mem,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&mem,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&mem,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-    avg  = (tot)/((PetscLogDouble) size);
-    if (min != 0.0) ratio = max/min;
-    else ratio = 0.0;
-    ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "memory", "Memory (MiB)", max/1024.0/1024.0, ratio, avg/1024.0/1024.0, tot/1024.0/1024.0);CHKERRQ(ierr);
+    ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "memory", "Memory (MiB)", mem/1024.0/1024.0, print_average_yes, print_total_yes);CHKERRQ(ierr); 
   }
   /*   Messages */
   mess = 0.5*(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
-  ierr = MPIU_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) size);
-  if (min != 0.0) ratio = max/min;
-  else ratio = 0.0;
-  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "messagetransfers", "MPI Message Transfers", max, ratio, avg, tot);CHKERRQ(ierr);
+  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "messagetransfers", "MPI Message Transfers", mess, print_average_yes, print_total_yes);CHKERRQ(ierr);
 
   /*   Message Volume */
   mess = 0.5*(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len);
-  ierr = MPIU_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-  avg = (tot)/((PetscLogDouble) size);
-  if (min != 0.0) ratio = max/min;
-  else ratio = 0.0;
-  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "messagevolume", "MPI Message Volume (MiB)", max/1024.0/1024.0, ratio, avg/1024.0/1024.0, tot/1024.0/1024.0);CHKERRQ(ierr);
+  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "messagevolume", "MPI Message Volume (MiB)", mess/1024.0/1024.0, print_average_yes, print_total_yes);CHKERRQ(ierr);
 
   /*   Reductions */
-  ierr = MPIU_Allreduce(&red,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&red,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&red,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-  if (min != 0.0) ratio = max/min;
-  else ratio = 0.0;
-  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "reductions", "MPI Reductions", max, ratio, -1, -1);CHKERRQ(ierr);
+  ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "reductions", "MPI Reductions", red , print_average_no, print_total_no);CHKERRQ(ierr);
   ierr = PetscViewerXMLEndSection(viewer, "globalperformance");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -636,6 +610,7 @@ static int compareTreeItems(const void *item1_, const void *item2_)
   int                  i;
   PetscNestedEventTree *item1 = (PetscNestedEventTree *) item1_;
   PetscNestedEventTree *item2 = (PetscNestedEventTree *) item2_;
+
   for (i=0; i<PetscMin(item1->depth,item2->depth); i++) {
     if (item1->nstPath[i]<item2->nstPath[i]) return -1;
     if (item1->nstPath[i]>item2->nstPath[i]) return +1;
@@ -876,19 +851,45 @@ static PetscErrorCode PetscLogNestedTreeDestroy(PetscNestedEventTree *tree, int 
 /* Print the global performance: max, max/min, average and total of
  *      time, objects, flops, flops/sec, memory, MPI messages, MPI message lengths, MPI reductions.
  */
-static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, const char *name, PetscLogDouble minvalue, PetscLogDouble maxvalue, PetscLogDouble minmaxtreshold)
+static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer,const char *name,PetscLogDouble value,PetscLogDouble minthreshold,PetscLogDouble maxthreshold,PetscLogDouble minmaxtreshold)
 {
+  MPI_Comm       comm;                          /* MPI communicator in reduction */
+  PetscMPIInt    rank;                          /* rank of this process */
+  PetscLogDouble val_in[2], max[2], min[2];
+  PetscLogDouble minvalue, maxvalue, tot;
+  PetscMPIInt    size;
+  PetscMPIInt    minLoc, maxLoc; 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerXMLStartSection(viewer, name, NULL);CHKERRQ(ierr);
-  if (maxvalue>minvalue*minmaxtreshold) {
-    ierr = PetscViewerXMLPutDouble(viewer, "minvalue", NULL, minvalue, "%f");CHKERRQ(ierr);
-    ierr = PetscViewerXMLPutDouble(viewer, "maxvalue", NULL, maxvalue, "%f");CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  val_in[0] = value;
+  val_in[1] = (PetscLogDouble) rank;
+  ierr = MPIU_Allreduce(val_in, max,  1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(val_in, min,  1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm);CHKERRQ(ierr);
+  maxvalue = max[0];
+  maxLoc   = (PetscMPIInt) max[1];
+  minvalue = min[0];
+  minLoc   = (PetscMPIInt) min[1];
+  ierr = MPIU_Allreduce(&value, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm);CHKERRQ(ierr);
+
+  if (maxvalue<maxthreshold && minvalue>minthreshold) {
+    /* One call per parent */
   } else {
-    ierr = PetscViewerXMLPutDouble(viewer, "value", NULL, (minvalue+maxvalue)/2.0, "%g");CHKERRQ(ierr);
-  };
-  ierr = PetscViewerXMLEndSection(viewer, name);CHKERRQ(ierr);
+     ierr = PetscViewerXMLStartSection(viewer, name, NULL);CHKERRQ(ierr);
+     if (maxvalue>minvalue*minmaxtreshold) {
+       ierr = PetscViewerXMLPutDouble(viewer, "avgvalue", NULL, tot/size, "%f");CHKERRQ(ierr);
+       ierr = PetscViewerXMLPutDouble(viewer, "minvalue", NULL, minvalue, "%f");CHKERRQ(ierr);
+       ierr = PetscViewerXMLPutDouble(viewer, "maxvalue", NULL, maxvalue, "%f");CHKERRQ(ierr);
+       ierr = PetscViewerXMLPutInt(   viewer, "minloc"  , NULL, minLoc);CHKERRQ(ierr);
+       ierr = PetscViewerXMLPutInt(   viewer, "maxloc"  , NULL, maxLoc);CHKERRQ(ierr);
+     } else {
+       ierr = PetscViewerXMLPutDouble(viewer, "value", NULL, tot/size, "%g");CHKERRQ(ierr);
+     };
+     ierr = PetscViewerXMLEndSection(viewer, name);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -896,75 +897,22 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, con
 static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer,PetscEventPerfInfo perfInfo,PetscLogDouble countsPerCall,int parentCount,int depth,const char *name,PetscLogDouble totalTime,PetscBool *isPrinted)
 {
   PetscLogDouble time = perfInfo.time;
-  PetscLogDouble timeMx,          timeMn;
-  PetscLogDouble countsPerCallMx, countsPerCallMn;
-  PetscLogDouble reductSpeedMx,   reductSpeedMn;
-  PetscLogDouble flopSpeedMx,     flopSpeedMn;
-  PetscLogDouble msgSpeedMx,      msgSpeedMn;
-  PetscLogDouble commarr_in[N_COMM], commarr_out[N_COMM];
+  PetscLogDouble timeMx;
   PetscErrorCode ierr;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-
-  commarr_in[0] =  time;
-  commarr_in[1] = -time;
-  ierr = MPIU_Allreduce(commarr_in, commarr_out,    2, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  timeMx =  commarr_out[0];
-  timeMn = -commarr_out[1];
-
-  commarr_in[0] = time>=timeMx*0.001 ?  perfInfo.flops/time         : 0;
-  commarr_in[1] = time>=timeMx*0.001 ?  perfInfo.numReductions/time : 0;
-  commarr_in[2] = time>=timeMx*0.001 ?  perfInfo.messageLength/time : 0;
-  commarr_in[3] = parentCount>0      ?  countsPerCall               : 0;
-
-  commarr_in[4] = time>=timeMx*0.001 ? -perfInfo.flops/time         : -1e30;
-  commarr_in[5] = time>=timeMx*0.001 ? -perfInfo.numReductions/time : -1e30;
-  commarr_in[6] = time>=timeMx*0.001 ? -perfInfo.messageLength/time : -1e30;
-  commarr_in[7] = parentCount>0      ? -countsPerCall               : -1e30;
-
-  ierr = MPIU_Allreduce(commarr_in, commarr_out,  N_COMM, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-
-  flopSpeedMx     =  commarr_out[0];
-  reductSpeedMx   =  commarr_out[1];
-  msgSpeedMx      =  commarr_out[2];
-  countsPerCallMx =  commarr_out[3];
-
-  flopSpeedMn     = -commarr_out[4];
-  reductSpeedMn   = -commarr_out[5];
-  msgSpeedMn      = -commarr_out[6];
-  countsPerCallMn = -commarr_out[7];
-
+  ierr = MPIU_Allreduce(&time, &timeMx, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
   *isPrinted = ((timeMx/totalTime) >= THRESHOLD) ? PETSC_TRUE : PETSC_FALSE;
   if (*isPrinted) {
     ierr = PetscViewerXMLStartSection(viewer, "event", NULL);CHKERRQ(ierr);
     ierr = PetscViewerXMLPutString(viewer, "name", NULL, name);CHKERRQ(ierr);
-    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "time", timeMn/totalTime*100.0, timeMx/totalTime*100.0, 1.02);CHKERRQ(ierr);
-
-    if (countsPerCallMx<1.01 && countsPerCallMn>0.99) {
-      /* One call per parent */
-    } else {
-      ierr = PetscPrintXMLNestedLinePerfResults(viewer, "ncalls", countsPerCallMn, countsPerCallMx, 1.02);CHKERRQ(ierr);
-    }
-
-    if (flopSpeedMx<0.01) {
-      /* NO flops: don't print */
-    } else {
-      ierr = PetscPrintXMLNestedLinePerfResults(viewer, "mflops", flopSpeedMn/1e6, flopSpeedMx/1e6, 1.05);CHKERRQ(ierr);
-    }
-
-    if (msgSpeedMx<0.01) {
-      /* NO msgs: don't print */
-    } else {
-      ierr = PetscPrintXMLNestedLinePerfResults(viewer, "mbps", msgSpeedMn/1024.0/1024.0, msgSpeedMx/1024.0/1024.0, 1.05);CHKERRQ(ierr);
-    }
-
-    if (reductSpeedMx<0.01) {
-      /* NO reductions: don't print */
-    } else {
-      ierr = PetscPrintXMLNestedLinePerfResults(viewer, "nreductsps", reductSpeedMn, reductSpeedMx, 1.05);CHKERRQ(ierr);
-    }
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "time", time/totalTime*100.0,0, totalTime*1.1, 1.02);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "ncalls", parentCount>0 ? countsPerCall : 0,0.99, 1.01, 1.02);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "mflops", time>=timeMx*0.001 ?  1e-6*perfInfo.flops/time : 0,0, 0.01, 1.05);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "mbps",time>=timeMx*0.001 ?  perfInfo.messageLength/(1024*1024*time) : 0,0, 0.01, 1.05);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "nreductsps", time>=timeMx*0.001 ?  perfInfo.numReductions/time : 0,0, 0.01, 1.05);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -973,23 +921,23 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer,PetscEventP
 
 static int countParents( const PetscNestedEventTree *tree, PetscEventPerfInfo *eventPerfInfo, int i)
 {
-   if (tree[i].depth<=1) {
-     return 1;  /* Main event: only once */
-   } else if (!tree[i].own) {
-     return 1;  /* This event didn't happen in this process, but did in another */
-   } else {
-     int iParent;
-     for (iParent=i-1; iParent>=0; iParent--) {
-       if (tree[iParent].depth == tree[i].depth-1) break;
-     }
-     if (tree[iParent].depth != tree[i].depth-1) {
-       printf("\n\n   *****  Internal error: cannot find parent ****\n\n");
-       return -2;
-     } else {
-       PetscLogEvent dftEvent  = tree[iParent].dftEvent;
-       return eventPerfInfo[dftEvent].count;
-     }
-   }
+  if (tree[i].depth<=1) {
+    return 1;  /* Main event: only once */
+  } else if (!tree[i].own) {
+    return 1;  /* This event didn't happen in this process, but did in another */
+  } else {
+    int iParent;
+    for (iParent=i-1; iParent>=0; iParent--) {
+      if (tree[iParent].depth == tree[i].depth-1) break;
+    }
+    if (tree[iParent].depth != tree[i].depth-1) {
+      /* *****  Internal error: cannot find parent */
+      return -2;
+    } else {
+      PetscLogEvent dftEvent  = tree[iParent].dftEvent;
+      return eventPerfInfo[dftEvent].count;
+    }
+  }
 }
 
 typedef struct {
@@ -1023,12 +971,12 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
   PetscBool          childWasPrinted;
   MPI_Comm           comm;
 
+  PetscFunctionBegin;
   /* Look up the name of the event and its PerfInfo */
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   eventRegInfo  = stageLog->eventLog->eventInfo;
   eventPerfInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
   name = eventRegInfo[(PetscLogEvent)tree[iStart].nstEvent].name;
-
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   /* Count the number of child processes */
@@ -1171,7 +1119,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
   if (wasPrinted) {
     ierr = PetscViewerXMLEndSection(viewer, "event");CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscLogNestedTreePrintTop(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, PetscLogDouble totalTime)
@@ -1295,7 +1243,6 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
   for (i=0; i<nNestedEvents; i++) nstMax_local = PetscMax(nestedEvents[i].nstEvent,nstMax_local);
   ierr = MPIU_Allreduce(&nstMax_local, &nstMax, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
 
-
   /* Initialize all total-times with zero */
   ierr = PetscMalloc1(nstMax+1,&selftimes);CHKERRQ(ierr);
   ierr = PetscMalloc1(nstMax+1,&totaltimes);CHKERRQ(ierr);
@@ -1416,12 +1363,12 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
 
 PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
 {
-  PetscErrorCode     ierr;
-  PetscLogDouble     locTotalTime, globTotalTime;
+  PetscErrorCode       ierr;
+  PetscLogDouble       locTotalTime, globTotalTime;
   PetscNestedEventTree *tree = NULL;
-  PetscSelfTimer     *selftimers = NULL;
-  int                nTimers = 0, nstMax = 0;
-  MPI_Comm           comm;
+  PetscSelfTimer       *selftimers = NULL;
+  int                  nTimers = 0, nstMax = 0;
+  MPI_Comm             comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);

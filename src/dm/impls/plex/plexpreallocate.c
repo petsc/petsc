@@ -768,14 +768,13 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
   /* There are 4 types of adjacency */
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   if (Nf < 1 || bs > 1) {
-    ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-    ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+    ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
     idx  = (useCone ? 1 : 0) + (useClosure ? 2 : 0);
     ierr = DMPlexCreateAdjacencySection_Static(dm, bs, sfDof, useCone, useClosure, PETSC_TRUE, &sectionAdj[idx], &cols[idx]);CHKERRQ(ierr);
     ierr = DMPlexUpdateAllocation_Static(dm, rLayout, bs, -1, sectionAdj[idx], cols[idx], dnz, onz, dnzu, onzu);CHKERRQ(ierr);
   } else {
     for (f = 0; f < Nf; ++f) {
-      ierr = PetscDSGetAdjacency(prob, f, &useCone, &useClosure);CHKERRQ(ierr);
+      ierr = DMGetAdjacency(dm, f, &useCone, &useClosure);CHKERRQ(ierr);
       idx  = (useCone ? 1 : 0) + (useClosure ? 2 : 0);
       if (!sectionAdj[idx]) {ierr = DMPlexCreateAdjacencySection_Static(dm, bs, sfDof, useCone, useClosure, PETSC_TRUE, &sectionAdj[idx], &cols[idx]);CHKERRQ(ierr);}
       ierr = DMPlexUpdateAllocation_Static(dm, rLayout, bs, f, sectionAdj[idx], cols[idx], dnz, onz, dnzu, onzu);CHKERRQ(ierr);
@@ -794,13 +793,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
   /* Fill matrix with zeros */
   if (fillMatrix) {
     if (Nf < 1 || bs > 1) {
-      ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-      ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+      ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
       idx  = (useCone ? 1 : 0) + (useClosure ? 2 : 0);
       ierr = DMPlexFillMatrix_Static(dm, rLayout, bs, -1, sectionAdj[idx], cols[idx], A);CHKERRQ(ierr);
     } else {
       for (f = 0; f < Nf; ++f) {
-        ierr = PetscDSGetAdjacency(prob, f, &useCone, &useClosure);CHKERRQ(ierr);
+        ierr = DMGetAdjacency(dm, f, &useCone, &useClosure);CHKERRQ(ierr);
         idx  = (useCone ? 1 : 0) + (useClosure ? 2 : 0);
         ierr = DMPlexFillMatrix_Static(dm, rLayout, bs, f, sectionAdj[idx], cols[idx], A);CHKERRQ(ierr);
       }

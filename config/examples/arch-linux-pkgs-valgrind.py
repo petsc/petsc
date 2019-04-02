@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 configure_options = [
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
   '--download-mpich=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',

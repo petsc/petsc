@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   }
 
   /* Create Vector scatter */
-  ierr = VecScatterCreateWithData(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
   ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"scatter type %s\n",type);CHKERRQ(ierr);

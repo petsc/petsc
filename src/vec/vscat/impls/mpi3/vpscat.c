@@ -2860,7 +2860,7 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt nx,const PetscInt *inidx
   }
 #endif
   if (duplicate) {
-    ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterSetData() or VecScatterCreateWithData(), they are ignored\n");CHKERRQ(ierr);
+    ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterCreate(), they are ignored\n");CHKERRQ(ierr);
   }
   ierr = VecScatterCreateLocal_StoP_MPI3(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);

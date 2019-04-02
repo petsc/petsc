@@ -453,16 +453,16 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
   if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);
   if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);
-  VecLocked(y,3);
+  ierr = VecSetErrorIfLocked(y,3);CHKERRQ(ierr);
 
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->apply) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply");
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -499,11 +499,11 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->applysymmetricleft) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -541,11 +541,11 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->applysymmetricright) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -586,11 +586,11 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->applytranspose) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -1859,15 +1859,17 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
    Input Parameters:
 +  pc - the solver context
 .  dim - the dimension of the coordinates 1, 2, or 3
--  coords - the coordinates
+.  nloc - the blocked size of the coordinates array
+-  coords - the coordinates array
 
    Level: intermediate
 
    Notes:
-    coords is an array of the 3D coordinates for the nodes on
-   the local processor.  So if there are 108 equation on a processor
+   coords is an array of the dim coordinates for the nodes on
+   the local processor, of size dim*nloc.
+   If there are 108 equation on a processor
    for a displacement finite element discretization of elasticity (so
-   that there are 36 = 108/3 nodes) then the array must have 108
+   that there are nloc = 36 = 108/3 nodes) then the array must have 108
    double precision values (ie, 3 * 36).  These x y z coordinates
    should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,
    ... , N-1.z ].

@@ -169,8 +169,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
         ierr   = PetscInfo(snes,"Direction is in Trust Region\n");CHKERRQ(ierr);
         ynorm  = nrm;
       }
+      ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
       ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);            /* Y <- X - Y */
-      ierr = VecCopy(X,snes->vec_sol_update);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes,Y,G);CHKERRQ(ierr); /*  F(X) */
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */
       if (fnorm == gpnorm) rho = 0.0;

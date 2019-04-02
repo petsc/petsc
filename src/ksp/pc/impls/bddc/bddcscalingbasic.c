@@ -524,7 +524,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
 
       /* scatters */
       ierr = ISCreateGeneral(PETSC_COMM_SELF,subset_size,idxs+cum,PETSC_COPY_VALUES,&sub);CHKERRQ(ierr);
-      ierr = VecScatterCreateWithData(pcbddc->work_scaling,sub,deluxe_ctx->seq_work1[i],NULL,&deluxe_ctx->seq_scctx[i]);CHKERRQ(ierr);
+      ierr = VecScatterCreate(pcbddc->work_scaling,sub,deluxe_ctx->seq_work1[i],NULL,&deluxe_ctx->seq_scctx[i]);CHKERRQ(ierr);
       ierr = ISDestroy(&sub);CHKERRQ(ierr);
     }
 

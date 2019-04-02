@@ -30,6 +30,7 @@ typedef struct {
 
   Mat A_II, A_IB,            /* local (sequential) submatrices */
       A_BI, A_BB;
+  Mat pA_II;
   Vec D;                     /* diagonal scaling "matrix" (stored as a vector, since it's diagonal) */
   KSP ksp_N,                /* linear solver contexts */
       ksp_D;

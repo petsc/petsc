@@ -288,6 +288,11 @@ PETSC_EXTERN PetscLogDouble petsc_wait_all_ct;
 PETSC_EXTERN PetscLogDouble petsc_sum_of_waits_ct;
 
 PETSC_EXTERN PetscBool PetscLogSyncOn;  /* true if logging synchronization is enabled */
+PETSC_EXTERN PetscErrorCode PetscLogEventSynchronize(PetscLogEvent, MPI_Comm);
+
+#define PetscLogEventSync(e,comm) \
+  (((PetscLogPLB && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+    PetscLogEventSynchronize((e),(comm)) : 0 ))
 
 #define PetscLogEventBegin(e,o1,o2,o3,o4) \
   (((PetscLogPLB && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
@@ -355,14 +360,14 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define MPI_Isend(buf,count,datatype,dest,tag,comm,request) \
   ((petsc_isend_ct++,0) || PetscMPITypeSize(&(petsc_isend_len),(count),(datatype)) || MPI_Isend((buf),(count),(datatype),(dest),(tag),(comm),(request)))
 
-#define MPI_Startall_irecv(count,number,requests) \
-  ((petsc_irecv_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&(petsc_irecv_len),(count),(MPIU_SCALAR)) || MPI_Startall((number),(requests)))
+#define MPI_Startall_irecv(count,datatype,number,requests) \
+  ((petsc_irecv_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&(petsc_irecv_len),(count),(datatype)) || ((number) && MPI_Startall((number),(requests))))
 
-#define MPI_Startall_isend(count,number,requests) \
-  ((petsc_isend_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&(petsc_isend_len),(count),(MPIU_SCALAR)) || MPI_Startall((number),(requests)))
+#define MPI_Startall_isend(count,datatype,number,requests) \
+  ((petsc_isend_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&(petsc_isend_len),(count),(datatype)) || ((number) && MPI_Startall((number),(requests))))
 
-#define MPI_Start_isend(count,requests) \
-  ((petsc_isend_ct++,0) || PetscMPITypeSize((&petsc_isend_len),(count),(MPIU_SCALAR)) || MPI_Start((requests)))
+#define MPI_Start_isend(count,datatype,requests) \
+  ((petsc_isend_ct++,0) || PetscMPITypeSize((&petsc_isend_len),(count),(datatype)) || MPI_Start((requests)))
 
 #define MPI_Recv(buf,count,datatype,source,tag,comm,status) \
   ((petsc_recv_ct++,0) || PetscMPITypeSize((&petsc_recv_len),(count),(datatype)) || MPI_Recv((buf),(count),(datatype),(source),(tag),(comm),(status)))
@@ -414,13 +419,13 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 
 #else
 
-#define MPI_Startall_irecv(count,number,requests) \
-  (MPI_Startall((number),(requests)))
+#define MPI_Startall_irecv(count,datatype,number,requests) \
+  ((number) && MPI_Startall((number),(requests)))
 
-#define MPI_Startall_isend(count,number,requests) \
-  (MPI_Startall((number),(requests)))
+#define MPI_Startall_isend(count,datatype,number,requests) \
+  ((number) && MPI_Startall((number),(requests)))
 
-#define MPI_Start_isend(count,requests) \
+#define MPI_Start_isend(count,datatype,requests) \
   (MPI_Start((requests)))
 
 #endif /* !__MPIUNI_H && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
@@ -476,13 +481,14 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...);
 #define PetscLogViewFromOptions()          0
 #define PetscLogDump(c)                    0
 
+#define PetscLogEventSync(e,comm)          0
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  0
 #define PetscLogEventEnd(e,o1,o2,o3,o4)    0
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
-#define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)
-#define MPI_Startall_isend(count,number,requests) MPI_Startall(number,requests)
-#define MPI_Start_isend(count,requests)           MPI_Start(requests)
+#define MPI_Startall_irecv(count,datatype,number,requests) ((number) && MPI_Startall(number,requests))
+#define MPI_Startall_isend(count,datatype,number,requests) ((number) && MPI_Startall(number,requests))
+#define MPI_Start_isend(count,datatype,requests)           MPI_Start(requests)
 
 #endif   /* PETSC_USE_LOG */
 

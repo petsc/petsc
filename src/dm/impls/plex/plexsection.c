@@ -521,11 +521,12 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     if (isFE[f]) {
       PetscFE         fe = (PetscFE) dm->fields[f].disc;
       const PetscInt *numFieldDof;
-      PetscInt        d;
+      PetscInt        fedim, d;
 
       ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
       ierr = PetscFEGetNumDof(fe, &numFieldDof);CHKERRQ(ierr);
-      for (d = 0; d < dim+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
+      ierr = PetscFEGetSpatialDimension(fe, &fedim);CHKERRQ(ierr);
+      for (d = 0; d < PetscMin(dim, fedim)+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
     } else {
       PetscFV fv = (PetscFV) dm->fields[f].disc;
 

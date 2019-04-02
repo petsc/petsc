@@ -158,7 +158,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
         len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
-        xv   = x+xplan->copy_starts[i];
+        xv   = x+xplan->copy_starts[j];
         for (k=0; k<len; k++) y[k] += xv[k];
         y   += len;
       }
@@ -172,7 +172,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
         len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
-        xv   = x+xplan->copy_starts[i];
+        xv   = x+xplan->copy_starts[j];
         for (k=0; k<len; k++) y[k] = PetscMax(y[k],xv[k]);
         y   += len;
       }
@@ -283,8 +283,11 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Scatter(PetscInt 
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode VecScatterGetTypes_Private(VecScatter,VecScatterFormat*,VecScatterFormat*);
-PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common*,PetscBool*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter,PetscBool,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
 
 typedef struct _VecScatterOps *VecScatterOps;
 struct _VecScatterOps {
@@ -295,26 +298,36 @@ struct _VecScatterOps {
   PetscErrorCode (*setup)(VecScatter);
   PetscErrorCode (*view)(VecScatter,PetscViewer);
   PetscErrorCode (*viewfromoptions)(VecScatter,const char prefix[],const char name[]);
-  PetscErrorCode (*remap)(VecScatter,PetscInt *,PetscInt*);
+  PetscErrorCode (*remap)(VecScatter,const PetscInt *,const PetscInt*);
   PetscErrorCode (*getmerged)(VecScatter,PetscBool *);
+  PetscErrorCode (*getremotecount)(VecScatter,PetscBool,PetscInt*,PetscInt*);
+  PetscErrorCode (*getremote)(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+  PetscErrorCode (*getremoteordered)(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+  PetscErrorCode (*restoreremote)(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+  PetscErrorCode (*restoreremoteordered)(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
 };
 
 struct _p_VecScatter {
   PETSCHEADER(struct _VecScatterOps);
-  PetscInt       to_n,from_n;
-  PetscBool      inuse;                /* prevents corruption from mixing two scatters */
-  PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
-  void           *fromdata,*todata;
-  void           *spptr;
-  PetscBool      is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */
-  Vec            to_v,from_v;          /* used in VecScatterCreateWithData() and VecScatterSetData() */
-  IS             to_is,from_is;        /* used in VecScatterCreateWithData() and VecScatterSetData() */
+  PetscInt          to_n,from_n;
+  PetscBool         inuse;                /* prevents corruption from mixing two scatters */
+  PetscBool         beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
+  void              *fromdata,*todata;
+  void              *spptr;
+  PetscBool         is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */
+  Vec               to_v,from_v;          /* used in VecScatterCreate() */
+  IS                to_is,from_is;        /* used in VecScatterCreate() */
+  const PetscScalar *xdata;               /* vector data to read from */
+  PetscScalar       *ydata;               /* vector data to write to */
+
+  void              *data;                /* implementation specific data */
 };
 
 PETSC_INTERN PetscErrorCode VecScatterCreate_Seq(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3Node(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterCreate_SF(VecScatter);
 
 PETSC_INTERN PetscErrorCode VecScatterSetUp_vectype_private(VecScatter,PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter));
 

@@ -220,9 +220,11 @@ int main(int argc,char **args)
   /* 3) Test MatPtAP() */
   /*-------------------*/
   if (Test_MatPtAP) {
-    PetscInt PN;
-    Mat      Cdup;
+    PetscInt  PN;
+    Mat       Cdup;
+    PetscBool view=PETSC_FALSE;
 
+    ierr = PetscOptionsGetBool(NULL,NULL,"-matptap_view",&view,NULL);CHKERRQ(ierr);
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -301,8 +303,11 @@ int main(int argc,char **args)
       ierr = MatDestroy(&Adense);CHKERRQ(ierr);
     }
 
-    /* Test MatDuplicate() of C=PtAP */
+    /* Test MatDuplicate() of C=PtAP and MatView(Cdup,...) */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
+    if (view) {
+      ierr = MatView(Cdup,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
     ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
 
     if (size>1 || !seqaij) Test_MatRARt = PETSC_FALSE;
@@ -460,5 +465,12 @@ int main(int argc,char **args)
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matptap_via scalable
       output_file: output/ex94_1.out
+
+   test:
+      suffix: view
+      nsize: 2
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f0 ${DATAFILESPATH}/matrices/tiny -f1 ${DATAFILESPATH}/matrices/tiny -viewer_binary_skip_info -matptap_view
+      output_file: output/ex94_2.out
 
 TEST*/

@@ -2,6 +2,9 @@
 
 configure_options = [
   'CFLAGS=-std=c89 -pedantic -Wno-long-long -Wno-overlength-strings',
+  #'COPTFLAGS=-g -O',
+  #'FOPTFLAGS=-g -O',
+  #'CXXOPTFLAGS=-g -O',
   '--with-shared-libraries=1'
   ]
 

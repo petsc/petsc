@@ -981,7 +981,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
     /* push XX back into X */
     ierr = DMDABCApplyCompression(elas_da,NULL,X);CHKERRQ(ierr);
 
-    ierr = VecScatterCreateWithData(XX,NULL,X,is,&scat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(XX,NULL,X,is,&scat);CHKERRQ(ierr);
     ierr = VecScatterBegin(scat,XX,X,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scat,XX,X,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
@@ -1247,7 +1247,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   /* get new vector */
   ierr = MatCreateVecs(*AA,NULL,ff);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(f,is,*ff,NULL,&scat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(f,is,*ff,NULL,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 

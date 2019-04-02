@@ -169,7 +169,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
             }
             ierr = ISCreateGeneral(PetscObjectComm((PetscObject)xlocal),totc*Nc,idxs,PETSC_USE_POINTER,&isfield);CHKERRQ(ierr);
           }
-          ierr = VecScatterCreateWithData(xlocal,isfield,xfield,NULL,&ctx->scctx[ctx->nf]);CHKERRQ(ierr);
+          ierr = VecScatterCreate(xlocal,isfield,xfield,NULL,&ctx->scctx[ctx->nf]);CHKERRQ(ierr);
           ierr = VecDestroy(&xfield);CHKERRQ(ierr);
           ierr = ISDestroy(&isfield);CHKERRQ(ierr);
           ctx->nf++;
@@ -195,7 +195,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
               idxs[cum++] = off + c;
             }
             ierr = ISCreateGeneral(PetscObjectComm((PetscObject)xlocal),totc,idxs,PETSC_USE_POINTER,&isfield);CHKERRQ(ierr);
-            ierr = VecScatterCreateWithData(xlocal,isfield,xfield,NULL,&ctx->scctx[ctx->nf]);CHKERRQ(ierr);
+            ierr = VecScatterCreate(xlocal,isfield,xfield,NULL,&ctx->scctx[ctx->nf]);CHKERRQ(ierr);
             ierr = VecDestroy(&xfield);CHKERRQ(ierr);
             ierr = ISDestroy(&isfield);CHKERRQ(ierr);
             ctx->nf++;
@@ -239,7 +239,7 @@ MFEM_cid mfem_table_cid_unint[4][9] = { {MFEM_POINT,MFEM_UNDEF,MFEM_UNDEF  ,MFEM
                                         {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_TRIANGLE,MFEM_SQUARE     ,MFEM_UNDEF,MFEM_PRISM,MFEM_UNDEF,MFEM_UNDEF},
                                         {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_UNDEF   ,MFEM_TETRAHEDRON,MFEM_UNDEF,MFEM_PRISM,MFEM_UNDEF,MFEM_CUBE } };
 
-static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, PetscInt p, PetscInt *mid, PetscInt *cid)
+static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, PetscInt minl, PetscInt p, PetscInt *mid, PetscInt *cid)
 {
   DMLabel        dlabel;
   PetscInt       depth,csize,pdepth,dim;
@@ -253,6 +253,7 @@ static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, Pe
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   if (label) {
     ierr = DMLabelGetValue(label,p,mid);CHKERRQ(ierr);
+    *mid = *mid - minl + 1; /* MFEM does not like negative markers */
   } else *mid = 1;
   if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
 #if defined PETSC_USE_DEBUG
@@ -336,7 +337,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscSection         coordSection,parentSection;
   Vec                  coordinates,hovec;
   const PetscScalar    *array;
-  PetscInt             bf,p,sdim,dim,depth,novl;
+  PetscInt             bf,p,sdim,dim,depth,novl,minl;
   PetscInt             cStart,cEnd,cEndInterior,vStart,vEnd,nvert;
   PetscMPIInt          size;
   PetscBool            localized,isascii;
@@ -345,6 +346,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscErrorCode       ierr;
   PetscContainer       glvis_container;
   PetscBool            cellvertex = PETSC_FALSE, periodic, enabled = PETSC_TRUE;
+  PetscBool            enable_emark,enable_bmark;
   const char           *fmt;
   char                 emark[64] = "",bmark[64] = "";
 
@@ -392,14 +394,18 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   enable_boundary = PETSC_FALSE;
   enable_ncmesh   = PETSC_FALSE;
   enable_mfem     = PETSC_FALSE;
+  enable_emark    = PETSC_FALSE;
+  enable_bmark    = PETSC_FALSE;
   /* I'm tired of problems with negative values in the markers, disable them */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"GLVis PetscViewer DMPlex Options","PetscViewer");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation",NULL,enable_boundary,&enable_boundary,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_ncmesh","Enable vertex_parents section in mesh representation (allows derefinement)",NULL,enable_ncmesh,&enable_ncmesh,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_mfem","Dump a mesh that can be used with MFEM's FiniteElementSpaces",NULL,enable_mfem,&enable_mfem,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-viewer_glvis_dm_plex_emarker","String for the material id label",NULL,emark,emark,sizeof(emark),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-viewer_glvis_dm_plex_bmarker","String for the boundary id label",NULL,bmark,bmark,sizeof(bmark),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-viewer_glvis_dm_plex_emarker","String for the material id label",NULL,emark,emark,sizeof(emark),&enable_emark);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-viewer_glvis_dm_plex_bmarker","String for the boundary id label",NULL,bmark,bmark,sizeof(bmark),&enable_bmark);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (enable_bmark) enable_boundary = PETSC_TRUE;
+
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   if (enable_ncmesh && size > 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not supported in parallel");
   ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
@@ -563,7 +569,25 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",dim);CHKERRQ(ierr);
 
   /* elements */
-  ierr = DMGetLabel(dm,emark,&label);CHKERRQ(ierr);
+  minl = 1;
+  label = NULL;
+  if (enable_emark) {
+    PetscInt lminl = PETSC_MAX_INT;
+
+    ierr = DMGetLabel(dm,emark,&label);CHKERRQ(ierr);
+    if (label) {
+      IS       vals;
+      PetscInt ldef;
+
+      ierr = DMLabelGetDefaultValue(label,&ldef);CHKERRQ(ierr);
+      ierr = DMLabelGetValueIS(label,&vals);CHKERRQ(ierr);
+      ierr = ISGetMinMax(vals,&lminl,NULL);CHKERRQ(ierr);
+      ierr = ISDestroy(&vals);CHKERRQ(ierr);
+      lminl = PetscMin(ldef,lminl);
+    }
+    ierr = MPIU_Allreduce(&lminl,&minl,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    if (minl == PETSC_MAX_INT) minl = 1;
+  }
   ierr = PetscViewerASCIIPrintf(viewer,"\nelements\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",cEnd-cStart-novl);CHKERRQ(ierr);
   for (p=cStart;p<cEnd;p++) {
@@ -571,7 +595,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     PetscInt i,nv = 0,cid = -1,mid = 1;
 
     if (PetscUnlikely(pown && !PetscBTLookup(pown,p-cStart))) continue;
-    ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,p,&mid,&cid);CHKERRQ(ierr);
+    ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,minl,p,&mid,&cid);CHKERRQ(ierr);
     ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
     ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
     if (p >= cEndInterior) {
@@ -850,7 +874,25 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         }
       }
     }
-    ierr = DMGetLabel(dm,bmark,&label);CHKERRQ(ierr);
+    minl = 1;
+    label = NULL;
+    if (enable_bmark) {
+      PetscInt lminl = PETSC_MAX_INT;
+
+      ierr = DMGetLabel(dm,bmark,&label);CHKERRQ(ierr);
+      if (label) {
+        IS       vals;
+        PetscInt ldef;
+
+        ierr = DMLabelGetDefaultValue(label,&ldef);CHKERRQ(ierr);
+        ierr = DMLabelGetValueIS(label,&vals);CHKERRQ(ierr);
+        ierr = ISGetMinMax(vals,&lminl,NULL);CHKERRQ(ierr);
+        ierr = ISDestroy(&vals);CHKERRQ(ierr);
+        lminl = PetscMin(ldef,lminl);
+      }
+      ierr = MPIU_Allreduce(&lminl,&minl,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+      if (minl == PETSC_MAX_INT) minl = 1;
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",bf);CHKERRQ(ierr);
     for (p=fStart;p<fEnd;p++) {
       if (PetscUnlikely(PetscBTLookup(bfaces,p-fStart))) {
@@ -880,7 +922,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           if (cl == coneSize) continue;
 
           /* face material id and type */
-          ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,p,&mid,&cid);CHKERRQ(ierr);
+          ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,minl,p,&mid,&cid);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
           /* vertex ids */
           ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,cell,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);

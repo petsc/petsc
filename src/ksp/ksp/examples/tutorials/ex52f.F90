@@ -193,7 +193,7 @@
 !   test:
 !      suffix: mumps
 !      nsize: 3
-!      requires: mumps
+!      requires: mumps double
 !      output_file: output/ex52f_1.out
 !
 !TEST*/

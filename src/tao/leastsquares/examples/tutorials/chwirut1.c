@@ -20,8 +20,6 @@ Reference:     Chwirut, D., NIST (197?).
                Ultrasonic Reference Block Study.
 */
 
-
-
 static char help[]="Finds the nonlinear least-squares solution to the model \n\
             y = exp[-b1*x]/(b2+b3*x)  +  e \n";
 
@@ -38,8 +36,6 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Routines: TaoView(); TaoDestroy();
    Processors: 1
 T*/
-
-
 
 #define NOBSERVATIONS 214
 #define NPARAMETERS 3
@@ -59,7 +55,6 @@ PetscErrorCode InitializeData(AppCtx *user);
 PetscErrorCode FormStartingPoint(Vec);
 PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
 PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
-
 
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
@@ -102,6 +97,9 @@ int main(int argc,char **argv)
   ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
+
+  /* View the vector; then destroy it.  */
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -407,19 +405,20 @@ PetscErrorCode InitializeData(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:
-      requires: !complex
+      requires: !complex !single
 
    test:
       args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-5
-      requires: !single
       
    test:
       suffix: 2
-      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_gatol 1.e-5
-      requires: !single
+      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type l2prox -tao_brgn_regularizer_weight 1e-4 -tao_gatol 1.e-5
 
+   test:
+      suffix: 3
+      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type l1dict -tao_brgn_regularizer_weight 1e-4 -tao_brgn_l1_smooth_epsilon 1e-6 -tao_gatol 1.e-5
+      
 TEST*/

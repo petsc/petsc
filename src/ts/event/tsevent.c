@@ -329,9 +329,9 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 
   /* Reset event residual functions as states might get changed by the postevent callback */
   if (event->postevent) {
-    ierr = VecLockPush(U);CHKERRQ(ierr);
+    ierr = VecLockReadPush(U);CHKERRQ(ierr);
     ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);
-    ierr = VecLockPop(U);CHKERRQ(ierr);
+    ierr = VecLockReadPop(U);CHKERRQ(ierr);
   }
 
   /* Cache current time and event residual functions */
@@ -408,9 +408,9 @@ PetscErrorCode TSEventHandler(TS ts)
     event->ptime_end = t;
   }
 
-  ierr = VecLockPush(U);CHKERRQ(ierr);
+  ierr = VecLockReadPush(U);CHKERRQ(ierr);
   ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);
-  ierr = VecLockPop(U);CHKERRQ(ierr);
+  ierr = VecLockReadPop(U);CHKERRQ(ierr);
 
   for (i=0; i < event->nevents; i++) {
     if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i]) {

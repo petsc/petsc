@@ -10,6 +10,10 @@ configure_options = [
   'CXXFLAGS=-fPIC',
   'FLAGS=-fPIC',
 
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
+
   '--download-mpich=1',
   '--download-cmake=1',
   '--download-make=1',

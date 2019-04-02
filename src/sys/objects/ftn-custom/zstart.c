@@ -416,7 +416,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU_2SCALAR);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
-#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
+#if defined(PETSC_USE_64BIT_INDICES)
   *ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU_2INT);

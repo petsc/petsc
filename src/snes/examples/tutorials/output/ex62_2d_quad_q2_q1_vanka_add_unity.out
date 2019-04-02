@@ -1,6 +1,6 @@
   0 SNES Function norm 9.088488010682e+00 
-  1 SNES Function norm 3.941414496025e-01 
-  2 SNES Function norm 2.256919160166e-05 
+  1 SNES Function norm 3.941414495875e-01 
+  2 SNES Function norm 1.058453393398e-05 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 1 MPI processes
   type: newtonls
@@ -30,6 +30,7 @@ SNES Object: 1 MPI processes
       Schwarz type: additive
       Weighting by partition of unity
       Not symmetrising sweep
+      Not precomputing element tensors (overlapping cells rebuilt in every patch assembly)
       Saving patch operators (rebuilt every PCSetUp)
       Patch construction operator: Vanka
       KSP on patches (all same):
@@ -66,4 +67,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node routines: found 37 nodes, limit used is 5
-L_2 Error: 1.68045e-05 [1.58158e-07, 1.68038e-05]
+L_2 Error: 7.68821e-06 [6.87625e-08, 7.6879e-06]

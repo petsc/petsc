@@ -4,6 +4,7 @@
 #include <petscdmlabel.h>
 #include <petscbt.h>
 #include <petscistypes.h>
+#include <petsc/private/hashmapi.h>
 #include <petsc/private/hashseti.h>
 
 /* This is an integer map, in addition it is also a container class
@@ -12,7 +13,7 @@
      - We want flexible insertion and deletion
      - We can live with O(log) query, but we need O(1) iteration over strata
 */
-struct _n_DMLabel {
+struct _p_DMLabel {
   PETSCHEADER(int);
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt    defaultValue;   /* Background value when no value explicitly given */
@@ -21,8 +22,9 @@ struct _n_DMLabel {
   PetscBool  *validIS;        /* The IS is valid (no additions need to be merged in) */
   PetscInt   *stratumSizes;   /* Size of each stratum */
   IS         *points;         /* Points for each stratum, always sorted */
-  /* Hashtable for fast insertion */
-  PetscHSetI *ht;             /* Hash table for fast insertion */
+  /* Hash tables for fast search and insertion */
+  PetscHMapI  hmap;           /* Hash map for fast strata search */
+  PetscHSetI *ht;             /* Hash set for fast insertion */
   /* Index for fast search */
   PetscInt    pStart, pEnd;   /* Bounds for index lookup */
   PetscBT     bt;             /* A bit-wise index */

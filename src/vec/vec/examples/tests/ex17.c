@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
   ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(y,is2,x,is1,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(y,is2,x,is1,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);

@@ -41,7 +41,7 @@ int main(int argc,char **argv)
 
   ierr = VecSet(y,zero);CHKERRQ(ierr);
 
-  ierr = VecScatterCreateWithData(x,is1,y,is2,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   for (i=0; i<100; i++) {
     PetscReal ynorm;
     PetscInt  j;

@@ -906,7 +906,7 @@ actually a combination of scatters and gathers.
 To copy selected components from one vector
 to another, one uses the following set of commands:
 \begin{lstlisting}
-VecScatterCreateWithData(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
+VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
 VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterDestroy(VecScatter *ctx);
@@ -918,7 +918,7 @@ number of entries in the index set of the first vector, \lstinline{ix},
 equals the number in the destination index set, \lstinline{iy}, and that the
 vectors be long enough to contain all the indices referred to in the
 index sets. If both \lstinline{x} and \lstinline{y} are parallel,
-their communicator must be on the same set of processes, but their process order can be different.
+their communicator must have the same set of processes, but their process order can be different.
 The argument \lstinline{INSERT_VALUES} specifies that the
 vector elements will be inserted into the specified locations of the
 destination vector, overwriting any existing values.  To add the
@@ -958,11 +958,11 @@ option is used.
 Once a \lstinline{VecScatter} object has been created it may be used with any vectors
 that have the appropriate parallel data layout. That is, one can call
 \lstinline{VecScatterBegin()} and \lstinline{VecScatterEnd()} with different vectors than
-used in the call to \lstinline{VecScatterCreateWithData()} so long as they have the same
+used in the call to \lstinline{VecScatterCreate()} as long as they have the same
 parallel layout (number of elements on each process are the same). Usually,
 these ``different'' vectors would have been obtained via calls to
 \lstinline{VecDuplicate()} from the original vectors used in the call to
-\lstinline{VecScatterCreateWithData()}.
+\lstinline{VecScatterCreate()}.
 
 \sindex{vector values, getting}
 There is a PETSc routine that is nearly the opposite of \lstinline{VecSetValues()}, that is, \lstinline{VecGetValues()}, but it can only get local values from the vector.
@@ -988,7 +988,7 @@ PetscInt    idx_from[] = {100,200}, idx_to[] = {0,1};
 VecCreateSeq(PETSC_COMM_SELF,2,&x);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,PETSC_COPY_VALUES,&from);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_to,PETSC_COPY_VALUES,&to);
-VecScatterCreateWithData(p,from,x,to,&scatter);
+VecScatterCreate(p,from,x,to,&scatter);
 VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecGetArray(x,&values);
@@ -6015,10 +6015,33 @@ DMGetGlobalVector(dm, &globalVec);
 
 \subsection{Partitioning and Ordering}
 
-In exactly the same way as in \lstinline{MatPartitioning} or with \lstinline{MatGetOrdering()}, the results of a partition or order are encoded in an
+In exactly the same way as in \lstinline{MatPartitioning} or with \lstinline{MatGetOrdering()}, the results of a
+partition using \lstinline{DMPlexPartition} or reordering using \lstinline{DMPlexPermute} are encoded in an
 \lstinline{IS}. However, the graph is not the adjacency graph of the problem Jacobian, but the mesh
 itself. Once the mesh is partitioned and reordered, the data layout from a \lstinline{PetscSection} can be used to automatically derive
 a problem partitioning/ordering.
+
+\subsection{Influence of Variables on One Another}
+
+The Jacobian of a problem is intended to represent the influence of some variable on other variables in the
+problem. Very often, this influence pattern is determined jointly by the computational mesh and
+discretization. \lstinline{DMCreateMatrix} must compute this pattern when it automatically creates the properly
+preallocated Jacobian matrix. In \lstinline{DMDA} the influence pattern, or what we will call
+variable \textit{adjacency}\sindex{adjacency}, depends only on the stencil since the topology is Cartesian and the
+discretization is implicitly finite difference. In lstinline{DMPlex}, we allow the user to specify the adjacency
+topologically, while maintaining good defaults.
+
+The pattern is controlled by two flags. The first flag, \lstinline{useCone}, indicates whether variables couple first to
+their boundary and then to neighboring entities, or the reverse. For example, in finite elements, the variables couple
+to the set of neighboring cells containing the mesh point, and we set the flag to \lstinline{useCone = PETSC_FALSE}. By
+constrast, in finite volumes, cell variables first couple to the cell boundary, and then to the neighbors, so we set the
+flag to \lstinline{useCone = PETSC_TRUE}. The second flag, \lstinline{useClosure}, indicates whether we consider the
+transitive closure of the neighbor relation above, or just a single level. For example, in finite elements, the entire
+boundary of any cell couples to the interior, and we set the flag to \lstinline{useClosure = PETSC_TRUE}. By contrast,
+in most finite volume methods, cells couple only across faces, and not through vertices, so we set the flag
+to \lstinline{useClosure = PETSC_FALSE}. However, the power of this method is its flexibility. If we wanted a finite
+volume method that coupled all cells around a vertex, we could easily prescribe that by changing
+to \lstinline{useClosure = PETSC_TRUE}.
 
 \section{Evaluating Residuals} \sindex{Residual Evaluation}
 

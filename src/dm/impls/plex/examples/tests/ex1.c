@@ -568,24 +568,79 @@ int main(int argc, char **argv)
     nsize : 4
     args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -simplex2tensor -dm_plex_check_symmetry -dm_plex_check_faces unknown -dm_plex_check_skeleton unknown -dm_view -interpolate -test_shape -petscpartitioner_type simple
 
-  # Gmsh2/Gmsh4 ascii/binary reader tests
-  test:
-    suffix: gmsh_3d_ascii_v2
-    output_file: output/ex1_gmsh_3d.out
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh2 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
-  test:
-    suffix: gmsh_3d_ascii_v4
-    output_file: output/ex1_gmsh_3d.out
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh4 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
-  test:
-    suffix: gmsh_3d_binary_v2
-    output_file: output/ex1_gmsh_3d.out
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh2 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
-  test:
-    suffix: gmsh_3d_binary_v4
-    requires: long64
-    output_file: output/ex1_gmsh_3d.out
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh4 -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+  # Legacy Gmsh v22/v40 ascii/binary reader tests
+  testset:
+    output_file: output/ex1_gmsh_3d_legacy.out
+    args: -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+    test:
+      suffix: gmsh_3d_ascii_v22
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh2
+    test:
+      suffix: gmsh_3d_ascii_v40
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh4
+    test:
+      suffix: gmsh_3d_binary_v22
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh2
+    test:
+      suffix: gmsh_3d_binary_v40
+      requires: long64
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh4
+
+  # Gmsh v41 ascii/binary reader tests
+  testset: # 32bit mesh, sequential
+    args: -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+    output_file: output/ex1_gmsh_3d_32.out
+    test:
+      suffix: gmsh_3d_ascii_v41_32
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii-32.msh
+    test:
+      suffix: gmsh_3d_binary_v41_32
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh
+    test:
+      suffix: gmsh_3d_binary_v41_32_mpiio
+      requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
+  testset:  # 32bit mesh, parallel
+    args:  -petscpartitioner_type simple -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+    nsize: 2
+    output_file: output/ex1_gmsh_3d_32_np2.out
+    test:
+      suffix: gmsh_3d_ascii_v41_32_np2
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii-32.msh
+    test:
+      suffix: gmsh_3d_binary_v41_32_np2
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh
+    test:
+      suffix: gmsh_3d_binary_v41_32_np2_mpiio
+      requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
+  testset: # 64bit mesh, sequential
+    args: -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+    output_file: output/ex1_gmsh_3d_64.out
+    test:
+      suffix: gmsh_3d_ascii_v41_64
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii-64.msh
+    test:
+      suffix: gmsh_3d_binary_v41_64
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh
+    test:
+      suffix: gmsh_3d_binary_v41_64_mpiio
+      requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh -viewer_binary_mpiio
+  testset:  # 64bit mesh, parallel
+    args:  -petscpartitioner_type simple -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces unknown -test_shape
+    nsize: 2
+    output_file: output/ex1_gmsh_3d_64_np2.out
+    test:
+      suffix: gmsh_3d_ascii_v41_64_np2
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii-64.msh
+    test:
+      suffix: gmsh_3d_binary_v41_64_np2
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh
+    test:
+      suffix: gmsh_3d_binary_v41_64_np2_mpiio
+      requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh -viewer_binary_mpiio
 
   # Fluent mesh reader tests
   test:

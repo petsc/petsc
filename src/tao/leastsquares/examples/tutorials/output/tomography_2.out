@@ -1,0 +1,8 @@
+  Iteration information for tao_brgn_subsolver_ solve.
+  0 TAO,  Function value: 0.00378251,  Residual: 0.00202357 
+  1 TAO,  Function value: 5.54159e-05,  Residual: 9.39448e-05 
+  2 TAO,  Function value: 6.34006e-06,  Residual: 2.86825e-05 
+  3 TAO,  Function value: 8.3634e-07,  Residual: 9.02352e-06 
+  4 TAO,  Function value: 8.20069e-08,  Residual: 2.18917e-06 
+  5 TAO,  Function value: 1.18202e-08,  Residual: 5.64354e-07 
+relative reconstruction error: ||x-xGT||/||xGT|| = 1.4786e-01.

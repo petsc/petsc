@@ -90,8 +90,9 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
   ierr = (*x->ops->setrandom)(x,rctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
 
-  x->assembled = PETSC_TRUE;
-  ierr         = PetscRandomDestroy(&randObj);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(x, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(x, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&randObj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1063,7 +1064,6 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   if (iascii) {
-    if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -1185,10 +1185,18 @@ $    save example.mat A b -v7.3
    Unless -nocompression flag is used to save the file in MATLAB,
    PETSc must be configured with ZLIB package.
 
-   Current HDF5 limitations:
+   See also examples src/mat/examples/tutorials/ex10.c and src/ksp/ksp/examples/tutorials/ex27.c
+
+   Current HDF5 (MAT-File) limitations:
    This reader currently supports only real MATSEQAIJ and MATMPIAIJ matrices.
 
-   MatView() is not yet implemented.
+   Corresponding MatView() is not yet implemented.
+
+   The loaded matrix is actually a transpose of the original one in MATLAB,
+   unless you push PETSC_VIEWER_HDF5_MAT format (see examples above).
+   With this format, matrix is automatically transposed by PETSc,
+   unless the matrix is marked as SPD or symmetric
+   (see MatSetOption(), MAT_SPD, MAT_SYMMETRIC).
 
    References:
 1. MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
@@ -2378,17 +2386,17 @@ PetscErrorCode MatMult(Mat mat,Vec x,Vec y)
   if (mat->rmap->N != y->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->rmap->N,y->map->N);
   if (mat->rmap->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %D %D",mat->rmap->n,y->map->n);
 #endif
-  VecLocked(y,3);
+  ierr = VecSetErrorIfLocked(y,3);CHKERRQ(ierr);
   if (mat->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   MatCheckPreallocated(mat,1);
 
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   if (!mat->ops->mult) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a multiply defined");
   ierr = PetscLogEventBegin(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->mult)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
   if (mat->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2439,9 +2447,9 @@ PetscErrorCode MatMultTranspose(Mat mat,Vec x,Vec y)
 
   if (!mat->ops->multtranspose) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a multiply transpose defined");
   ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   if (mat->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
@@ -2496,9 +2504,9 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
 
   ierr = PetscLogEventBegin(MAT_MultHermitianTranspose,mat,x,y,0);CHKERRQ(ierr);
   if (mat->ops->multhermitiantranspose) {
-    ierr = VecLockPush(x);CHKERRQ(ierr);
+    ierr = VecLockReadPush(x);CHKERRQ(ierr);
     ierr = (*mat->ops->multhermitiantranspose)(mat,x,y);CHKERRQ(ierr);
-    ierr = VecLockPop(x);CHKERRQ(ierr);
+    ierr = VecLockReadPop(x);CHKERRQ(ierr);
   } else {
     ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
     ierr = VecCopy(x,w);CHKERRQ(ierr);
@@ -2557,9 +2565,9 @@ PetscErrorCode MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
   if (!mat->ops->multadd) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No MatMultAdd() for matrix type '%s'",((PetscObject)mat)->type_name);
   ierr = PetscLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = VecLockPush(v1);CHKERRQ(ierr);
+  ierr = VecLockReadPush(v1);CHKERRQ(ierr);
   ierr = (*mat->ops->multadd)(mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = VecLockPop(v1);CHKERRQ(ierr);
+  ierr = VecLockReadPop(v1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2608,9 +2616,9 @@ PetscErrorCode MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = VecLockPush(v1);CHKERRQ(ierr);
+  ierr = VecLockReadPush(v1);CHKERRQ(ierr);
   ierr = (*mat->ops->multtransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = VecLockPop(v1);CHKERRQ(ierr);
+  ierr = VecLockReadPop(v1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2658,7 +2666,7 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_MultHermitianTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = VecLockPush(v1);CHKERRQ(ierr);
+  ierr = VecLockReadPush(v1);CHKERRQ(ierr);
   if (mat->ops->multhermitiantransposeadd) {
     ierr = (*mat->ops->multhermitiantransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
   } else {
@@ -2677,7 +2685,7 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
     }
     ierr = VecDestroy(&z);CHKERRQ(ierr);
   }
-  ierr = VecLockPop(v1);CHKERRQ(ierr);
+  ierr = VecLockReadPop(v1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultHermitianTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2721,9 +2729,9 @@ PetscErrorCode MatMultConstrained(Mat mat,Vec x,Vec y)
   if (mat->rmap->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %D %D",mat->rmap->n,y->map->n);
 
   ierr = PetscLogEventBegin(MAT_MultConstrained,mat,x,y,0);CHKERRQ(ierr);
-  ierr = VecLockPush(x);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
   ierr = (*mat->ops->multconstrained)(mat,x,y);CHKERRQ(ierr);
-  ierr = VecLockPop(x);CHKERRQ(ierr);
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultConstrained,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5224,30 +5232,6 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatNorm_Basic(Mat A,NormType type,PetscReal *nrm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (type == NORM_1 || type == NORM_INFINITY) {
-    Vec l,r;
-
-    ierr = MatCreateVecs(A,&r,&l);CHKERRQ(ierr);
-    if (type == NORM_INFINITY) {
-      ierr = VecSet(r,1.);CHKERRQ(ierr);
-      ierr = MatMult(A,r,l);CHKERRQ(ierr);
-      ierr = VecNorm(l,NORM_INFINITY,nrm);CHKERRQ(ierr);
-    } else {
-      ierr = VecSet(l,1.);CHKERRQ(ierr);
-      ierr = MatMultTranspose(A,l,r);CHKERRQ(ierr);
-      ierr = VecNorm(r,NORM_INFINITY,nrm);CHKERRQ(ierr);
-    }
-    ierr = VecDestroy(&l);CHKERRQ(ierr);
-    ierr = VecDestroy(&r);CHKERRQ(ierr);
-  } else SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix class %s, norm type %d",((PetscObject)A)->type_name,type);
-  PetscFunctionReturn(0);
-}
-
 /*@
    MatNorm - Calculates various norms of a matrix.
 
@@ -5272,18 +5256,14 @@ PetscErrorCode MatNorm(Mat mat,NormType type,PetscReal *nrm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidLogicalCollectiveEnum(mat,type,2);
   PetscValidScalarPointer(nrm,3);
 
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!mat->ops->norm) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
 
-  if (!mat->ops->norm) {
-    ierr = MatNorm_Basic(mat,type,nrm);CHKERRQ(ierr);
-  } else {
-    ierr = (*mat->ops->norm)(mat,type,nrm);CHKERRQ(ierr);
-  }
+  ierr = (*mat->ops->norm)(mat,type,nrm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5368,7 +5348,6 @@ PetscErrorCode MatAssembled(Mat mat,PetscBool  *assembled)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   PetscValidPointer(assembled,2);
   *assembled = mat->assembled;
   PetscFunctionReturn(0);
@@ -8087,14 +8066,12 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
   /* if original matrix is on just one processor then use submatrix generated */
   if (mat->ops->createsubmatrices && !mat->ops->createsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
     ierr = MatCreateSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
-    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
-    PetscFunctionReturn(0);
+    goto setproperties;
   } else if (mat->ops->createsubmatrices && !mat->ops->createsubmatrix && size == 1) {
     ierr    = MatCreateSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     ierr    = PetscFree(local);CHKERRQ(ierr);
-    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
-    PetscFunctionReturn(0);
+    goto setproperties;
   } else if (!mat->ops->createsubmatrix) {
     /* Create a new matrix type that implements the operation using the full matrix */
     ierr = PetscLogEventBegin(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
@@ -8108,8 +8085,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
     default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
     }
     ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
-    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
-    PetscFunctionReturn(0);
+    goto setproperties;
   }
 
   if (!mat->ops->createsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
@@ -8118,6 +8094,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
   ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
 
   /* Propagate symmetry information for diagonal blocks */
+setproperties:
   if (isrow == iscoltmp) {
     if (mat->symmetric_set && mat->symmetric) {
       ierr = MatSetOption(*newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -9956,7 +9933,13 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices and for the SeqDense class.
+   This routine is currently only implemented for pairs of SeqAIJ matrices, for the SeqDense class,
+   and for pairs of MPIDense matrices.
+
+   Options Database Keys:
++  -matmattransmult_mpidense_mpidense_via {allgatherv,cyclic} - Choose between algorthims for MPIDense matrices: the
+                                                                first redundantly copies the transposed B matrix on each process and requiers O(log P) communication complexity;
+                                                                the second never stores more than one portion of the B matrix at a time by requires O(P) communication complexity.
 
    Level: intermediate
 

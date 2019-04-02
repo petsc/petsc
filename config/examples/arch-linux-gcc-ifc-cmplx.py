@@ -17,6 +17,11 @@ configure_options = [
   '--with-mpi-dir='+mpich_install_dir,
 
   'LIBS=-L'+ifort_lib_dir+' -lifcore -ldl -limf -lirc -L'+mpich_lib_dir+' -lmpifort -lmpi',
+
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
+
   '--with-scalar-type=complex',
   '--download-hdf5',
   '--with-zlib=1',

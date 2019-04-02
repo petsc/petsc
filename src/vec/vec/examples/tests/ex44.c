@@ -97,25 +97,25 @@ int main(int argc, char * argv[]) {
     addv = ADD_VALUES;
 
     /* VecScatter : Seq Strided to Seq Strided */
-    ierr = VecScatterCreateWithData(X,fromISStrided,Y,toISStrided,&vscatSStoSS);CHKERRQ(ierr);
+    ierr = VecScatterCreate(X,fromISStrided,Y,toISStrided,&vscatSStoSS);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscatSStoSS,X,Y,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscatSStoSS,X,Y,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vscatSStoSS);CHKERRQ(ierr);
 
     /* VecScatter : Seq General to Seq Strided */
-    ierr = VecScatterCreateWithData(Y,fromISGeneral,X,toISStrided,&vscatSGtoSS);CHKERRQ(ierr);
+    ierr = VecScatterCreate(Y,fromISGeneral,X,toISStrided,&vscatSGtoSS);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscatSGtoSS,Y,X,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscatSGtoSS,Y,X,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vscatSGtoSS);CHKERRQ(ierr);
 
     /* VecScatter : Seq General to Seq General */
-    ierr = VecScatterCreateWithData(X,fromISGeneral,Y,toISGeneral,&vscatSGtoSG);CHKERRQ(ierr);
+    ierr = VecScatterCreate(X,fromISGeneral,Y,toISGeneral,&vscatSGtoSG);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscatSGtoSG,X,Y,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscatSGtoSG,X,Y,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vscatSGtoSG);CHKERRQ(ierr);
 
     /* VecScatter : Seq Strided to Seq General */
-    ierr = VecScatterCreateWithData(Y,fromISStrided,X,toISGeneral,&vscatSStoSG);CHKERRQ(ierr);
+    ierr = VecScatterCreate(Y,fromISStrided,X,toISGeneral,&vscatSStoSG);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscatSStoSG,Y,X,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscatSStoSG,Y,X,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vscatSStoSG);CHKERRQ(ierr);

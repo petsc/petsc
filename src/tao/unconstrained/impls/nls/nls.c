@@ -62,7 +62,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by nls algorithm\n");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by nls algorithm\n");CHKERRQ(ierr);
   }
 
   /* Initialized variables */
@@ -126,7 +126,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   /* Initialize trust-region radius.  The initialization is only performed
      when we are using Nash, Steihaug-Toint or the Generalized Lanczos method. */
   if (is_nash || is_stcg || is_gltr) {
-    switch(nlsP->init_type) {
+    switch (nlsP->init_type) {
     case NLS_INIT_CONSTANT:
       /* Use the initial radius specified */
       break;
@@ -256,7 +256,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     ++tao->niter;
     tao->ksp_its=0;

@@ -3,10 +3,10 @@
 
 #define PETSC_VERSION_RELEASE    0
 #define PETSC_VERSION_MAJOR      3
-#define PETSC_VERSION_MINOR      10
-#define PETSC_VERSION_SUBMINOR   4
+#define PETSC_VERSION_MINOR      11
+#define PETSC_VERSION_SUBMINOR   0
 #define PETSC_VERSION_PATCH      0
-#define PETSC_RELEASE_DATE       "Sep, 12, 2018"
+#define PETSC_RELEASE_DATE       "Mar, 29, 2019"
 #define PETSC_VERSION_DATE       "unknown"
 
 #if !defined (PETSC_VERSION_GIT)

@@ -1,0 +1,56 @@
+
+
+../ex63 : Warning, the 5th option '-ksp_monitor' was not recognized (use --help)!
+
+../ex63 : Warning, the 6th option '-pc_type' was not recognized (use --help)!
+
+../ex63 : Warning, the 7th option 'lu' was not recognized (use --help)!
+
+../ex63 : Warning, the 8th option '-pc_factor_mat_solver_type' was not recognized (use --help)!
+
+../ex63 : Warning, the 9th option 'superlu_dist' was not recognized (use --help)!
+
+../ex63 : Warning, the 10th option '-ksp_view' was not recognized (use --help)!
+
+../ex63 : Warning, the 11th option '-ksp_converged_reason' was not recognized (use --help)!
+Norm2 of Ax - b = {1.11022302462515654e-16}
+  0 KSP Residual norm 0.000000000000e+00 
+Linear solve converged due to CONVERGED_ATOL iterations 0
+KSP Object: 1 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: lu
+    out-of-place factorization
+    tolerance for zero pivot 2.22045e-14
+    matrix ordering: nd
+    factor fill ratio given 0., needed 0.
+      Factored matrix follows:
+        Mat Object: 1 MPI processes
+          type: superlu_dist
+          rows=12, cols=12
+          package used to perform factorization: superlu_dist
+          total: nonzeros=0, allocated nonzeros=0
+          total number of mallocs used during MatSetValues calls =0
+            SuperLU_DIST run parameters:
+              Process grid nprow 1 x npcol 1 
+              Equilibrate matrix TRUE 
+              Replace tiny pivots FALSE 
+              Use iterative refinement FALSE 
+              Processors in row 1 col partition 1 
+              Row permutation LargeDiag_MC64
+              Column permutation METIS_AT_PLUS_A
+              Parallel symbolic factorization FALSE 
+              Repeated factorization SamePattern
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=12, cols=12
+    total: nonzeros=46, allocated nonzeros=46
+    total number of mallocs used during MatSetValues calls =0
+      not using I-node routines

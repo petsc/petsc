@@ -3,7 +3,6 @@
         use petscdmdef
         use petscmatdef
 #include <../src/ksp/f90-mod/petscpc.h>
-#include <../src/ksp/f90-mod/petscksp.h>
         end module
 
         module petscpcdef
@@ -40,6 +39,7 @@
 
         module petsckspdefdummy
         use petscpcdef
+#include <../src/ksp/f90-mod/petscksp.h>
         end module
 
         module petsckspdef

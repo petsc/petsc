@@ -72,6 +72,26 @@ PetscErrorCode  PetscByteSwapInt(PetscInt *buff,PetscInt n)
   }
   PetscFunctionReturn(0);
 }
+
+/*
+  PetscByteSwapInt64 - Swap bytes in a  PETSc integer (64 bits)
+
+*/
+PetscErrorCode  PetscByteSwapInt64(PetscInt64 *buff,PetscInt n)
+{
+  PetscInt   i,j;
+  PetscInt64 tmp = 0;
+  char       *ptr1,*ptr2 = (char*)&tmp;
+
+  PetscFunctionBegin;
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff + j);
+    for (i=0; i<(PetscInt)sizeof(PetscInt64); i++) ptr2[i] = ptr1[sizeof(PetscInt64)-1-i];
+    for (i=0; i<(PetscInt)sizeof(PetscInt64); i++) ptr1[i] = ptr2[i];
+  }
+  PetscFunctionReturn(0);
+}
+
 /* --------------------------------------------------------- */
 /*
   PetscByteSwapShort - Swap bytes in a short
@@ -194,6 +214,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   else if (pdtype == PETSC_BOOL)   {ierr = PetscByteSwapBool((PetscBool*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_REAL)   {ierr = PetscByteSwapReal((PetscReal*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_INT64)  {ierr = PetscByteSwapInt64((PetscInt64*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_FLOAT)  {ierr = PetscByteSwapFloat((float*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)data,count);CHKERRQ(ierr);}
@@ -275,6 +296,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   else if (type == PETSC_CHAR)    m *= sizeof(char);
   else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
   else if (type == PETSC_BOOL)    m *= sizeof(PetscBool);
+  else if (type == PETSC_INT64)   m *= sizeof(PetscInt64);
   else if (type == PETSC_BIT_LOGICAL) m  = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
@@ -436,6 +458,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   else if (wtype == PETSC_CHAR)    m *= sizeof(char);
   else if (wtype == PETSC_ENUM)    m *= sizeof(PetscEnum);
   else if (wtype == PETSC_BOOL)    m *= sizeof(PetscBool);
+  else if (wtype == PETSC_INT64)   m *= sizeof(PetscInt64);
   else if (wtype == PETSC_BIT_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 

@@ -280,6 +280,7 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Dataty
 
   PetscFunctionBegin;
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
+  ierr = PetscLogEventSync(PETSC_BuildTwoSided,comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSC_BuildTwoSided,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
@@ -553,6 +554,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
   for (i=0; i<nto; i++) {
     if (toranks[i] < 0 || size <= toranks[i]) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"toranks[%d] %d not in comm size %d",i,toranks[i],size);
   }
+  ierr = PetscLogEventSync(PETSC_BuildTwoSidedF,comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSC_BuildTwoSidedF,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {

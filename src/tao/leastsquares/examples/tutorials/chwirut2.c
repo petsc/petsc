@@ -454,7 +454,6 @@ PetscErrorCode StopWorkers(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:

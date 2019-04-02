@@ -408,4 +408,11 @@ int main(int argc,char **args)
       args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT
       output_file: output/ex5_superlu_dist.out
 
+   test:
+      suffix: superlu_dist_0
+      nsize: 1
+      requires: superlu_dist
+      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -test_scaledMat
+      output_file: output/ex5_superlu_dist.out
+
 TEST*/

@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="311.html">3.11</a></li>
                 <li><a href="310.html">3.10</a></li>
                 <li><a href="39.html">3.9</a></li>
                 <li><a href="38.html">3.8</a></li>
@@ -102,68 +103,22 @@
 
       <h4>General:</h4>
       <h4>Configure/Build:</h4>
-      <ul>
-        <li>Configure now supports Python 3.4+ in addition to Python 2.6+.</li>
-      </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
       <h4>VecScatter:</h4>
-      <ul>
-        <li>Changed VecScatterCreate() to VecScatterCreateWithData().</li>
-        <li>Introduced VecScatterSetData().</li>
-        <li>Introduced VecScatterCreate() that creates empty scatter object that can be used with VecScatterSetData().</li>
-        <li>Introduced VecScatterSetUp().</li>
-        </ul>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
-      <ul>
-        <li>MatRegisterBaseName() changed to MatRegisterRootName()</li>
-        <li>Added -mat_mffd_complex to use complex number trick instead of differencing to evaluate product; requires real functions but complex configuration</li>        
-        </ul>
       <h4>PC:</h4>
-      <ul>
-        <li>        PCGetSetUpFailedReason is now PCGetFailedReason()</li>
-      </ul>
       <h4>KSP:</h4>
-      <ul>
-        <li>        KSP_DIVERGED_PCSETUP_FAILED replaced with KSP_DIVERGED_PC_FAILED</li>
-        <li>Previously the KSP Chebyshev implementation always did one more iteration than requested. For example -ksp_max_it 2 resulted
-          in 3 Chebyshev iterations. This has been corrected. Due to this correction your solver may seem to converge more slowely
-          than it previous has. Note that the multigrid solvers (PCMG, PCGAMG, PCML) used by default Chebyshev (with 3 actual steps) in their smoother,
-          thus the multigrid solvers will now have seemingly different convergence rates since they will now use only 2 actual steps.
-          To reproduce previous behavior change the number of smoother iterations to match the previous actual amount, this can be done
-          with for example -mg_levels_ksp_max_it 3 (or -prefix_mg_levels_ksp_max_it 3 if the KSP object has a prefix).</li>
-      </ul>
       <h4>SNES:</h4>
-      <ul>
-        <li>Added SNESKSPTRANSPOSEONLY: a linear solver only SNES that solves the transposed linear system.</li>
-      </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
-      <ul>
-        <li>Added TSADAPTHISTORY: a new TSAdapt implementation that follows a given time history, that can set with TSAdaptHistorySetHistory().</li>
-        <li>Added TSTrajectoryGetVecs() to reconstructs states and time derivative vectors from a TSTrajectory.</li>
-      </ul>
-      <h4>TAO:</h4>
       <h4>DM/DA:</h4>
-      <ul>
-        <li>Added DMStag and associated functions, for working with quantities on regular staggered grids, in a manner similar to the usage of DMDA for colocated quantities.</li>
-        <li>Added DMLocalToGlobal() and DMLocalToGlobal()
-      </ul>
       <h4>DMPlex:</h4>
-      <ul>
-        <li>Reorganized PetscDS handling completely in order to support multiple subdomains. DMSetDS() was removed in
-          favor of DMSetField()+DMCreateDS().</li>
-        <li>Added additional PetscSF* return argument to DMPlexGetGatherDM() (made public) and DMPlexGetRedundantDM().</li>
-      </ul>
       <h4>PetscViewer:</h4>
-      <ul>
-        <li>Added new command line options to GLVis viewer, see PetscViewerGLVisOpen() manual page for details.</li>
-      </ul>
       <h4>SYS:</h4>
-        <li>PetscOptionsGetViewer() takes a NULL or PetscOptions object as the second argument.</li>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>

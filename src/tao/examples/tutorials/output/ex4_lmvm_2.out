@@ -1,0 +1,35 @@
+  0 TAO,  Function value: 14.6462,  Residual: 14.2702 
+  1 TAO,  Function value: 5.96923,  Residual: 3.85466 
+  2 TAO,  Function value: 4.98847,  Residual: 2.23763 
+  3 TAO,  Function value: 4.31734,  Residual: 0.684198 
+  4 TAO,  Function value: 4.25087,  Residual: 0.47394 
+  5 TAO,  Function value: 4.2316,  Residual: 0.129766 
+  6 TAO,  Function value: 4.22888,  Residual: 0.0779271 
+  7 TAO,  Function value: 4.22753,  Residual: 0.0549692 
+  8 TAO,  Function value: 4.22736,  Residual: 0.0438067 
+  9 TAO,  Function value: 4.22726,  Residual: 0.00947796 
+ 10 TAO,  Function value: 4.22725,  Residual: 0.0047011 
+ 11 TAO,  Function value: 4.22724,  Residual: 0.00426747 
+ 12 TAO,  Function value: 4.22724,  Residual: 0.00223334 
+ 13 TAO,  Function value: 4.22724,  Residual: 0.000960893 
+ 14 TAO,  Function value: 4.22724,  Residual: 0.000463424 
+ 15 TAO,  Function value: 4.22724,  Residual: 0.000198511 
+J(xhat): 98.3927, predicted: 4.22739, diff 94.1653
+J(xhat): 27.7687, predicted: 4.22732, diff 23.5413
+J(xhat): 10.1126, predicted: 4.22728, diff 5.88533
+J(xhat): 5.6986, predicted: 4.22726, diff 1.47133
+J(xhat): 4.59509, predicted: 4.22725, diff 0.367833
+J(xhat): 4.31921, predicted: 4.22725, diff 0.0919583
+J(xhat): 4.25024, predicted: 4.22725, diff 0.0229896
+J(xhat): 4.23299, predicted: 4.22724, diff 0.0057474
+J(xhat): 4.22868, predicted: 4.22724, diff 0.00143685
+J(xhat): 4.2276, predicted: 4.22724, diff 0.000359212
+Convergence rate step 0: 2.
+Convergence rate step 1: 2.
+Convergence rate step 2: 2.
+Convergence rate step 3: 2.
+Convergence rate step 4: 2.
+Convergence rate step 5: 2.
+Convergence rate step 6: 2.
+Convergence rate step 7: 2.
+Convergence rate step 8: 2.

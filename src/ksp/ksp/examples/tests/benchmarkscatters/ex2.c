@@ -49,7 +49,7 @@ int main(int argc,char **args)
   ierr = VecSetBlockSize(y,2);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,6,0,1,&isstride);CHKERRQ(ierr);
   ierr = ISCreateBlock(PETSC_COMM_SELF,2,3,indices,PETSC_COPY_VALUES,&isblock);CHKERRQ(ierr);
-  ierr = VecScatterCreateWithData(x,isblock,y,isstride,&vscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isblock,y,isstride,&vscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);

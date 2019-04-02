@@ -111,7 +111,7 @@ int main(int argc,char **argv)
     ierr = VecCreate(PETSC_COMM_SELF,&smallvec);CHKERRQ(ierr);
     ierr = VecSetSizes(smallvec,info.dof*(upper.i - lower.i)*(upper.j - lower.j)*(upper.k - lower.k),PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(smallvec);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(smallvec,NULL,largevec,patchis,&patchscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(smallvec,NULL,largevec,patchis,&patchscat);CHKERRQ(ierr);
 
     ierr = FillLocalSubdomain(subda[0],smallvec);CHKERRQ(ierr);
     ierr = VecSet(largevec,0);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ int main(int argc,char **argv)
     ierr = DMGetGlobalVector(da,&v);CHKERRQ(ierr);
 
     /* test filling outer between the big DM and the small ones with the IS scatter*/
-    ierr = VecScatterCreateWithData(v,ois[0],sgvec,NULL,&oscata);CHKERRQ(ierr);
+    ierr = VecScatterCreate(v,ois[0],sgvec,NULL,&oscata);CHKERRQ(ierr);
 
     ierr = FillLocalSubdomain(subda[0],sgvec);CHKERRQ(ierr);
 

@@ -624,6 +624,7 @@ PetscErrorCode PetscLogEventSynchronize(PetscLogEvent event,MPI_Comm comm)
   if (!eventRegLog->eventInfo[event].collective) PetscFunctionReturn(0);
   ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
+  if (eventLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
 
   PetscTimeSubtract(&time);
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
@@ -643,11 +644,12 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event,int t,PetscObject o
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
+  /* Synchronization */
+  ierr = PetscLogEventSynchronize(event,PetscObjectComm(o1));CHKERRQ(ierr);
   /* Check for double counting */
   eventLog->eventInfo[event].depth++;
   if (eventLog->eventInfo[event].depth > 1) PetscFunctionReturn(0);
   /* Log the performance info */
-  ierr = PetscLogEventSynchronize(event,PetscObjectComm(o1));CHKERRQ(ierr);
   eventLog->eventInfo[event].count++;
   eventLog->eventInfo[event].timeTmp = 0.0;
   PetscTimeSubtract(&eventLog->eventInfo[event].timeTmp);

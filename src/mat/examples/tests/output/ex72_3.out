@@ -1,0 +1,5 @@
+%%MatrixMarket matrix coordinate real skew-symmetric
+M: 5, N: 5, nnz: 4
+Reading matrix completes.
+Writing matrix to binary file petscmat2.aij using PETSc AIJ format ...
+Writing matrix completes.

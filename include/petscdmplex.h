@@ -88,6 +88,7 @@ PETSC_EXTERN PetscErrorCode DMPlexOrientCell(DM,PetscInt,PetscInt,const PetscInt
 PETSC_EXTERN PetscErrorCode DMPlexOrient(DM);
 PETSC_EXTERN PetscErrorCode DMPlexInterpolate(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexUninterpolate(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexInterpolatePointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexPreallocateOperator(DM, PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscInt[], Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetPointLocal(DM,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMPlexPointLocalRead(DM,PetscInt,const PetscScalar*,void*);
@@ -216,6 +217,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetSubpointMap(DM, DMLabel*);
 PETSC_EXTERN PetscErrorCode DMPlexSetSubpointMap(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubpointIS(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetSubpoint(DM, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexGetAuxiliaryPoint(DM, DM, PetscInt, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscBool, DM);
