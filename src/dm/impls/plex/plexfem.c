@@ -6,6 +6,45 @@
 #include <petsc/private/petscfeimpl.h>
 #include <petsc/private/petscfvimpl.h>
 
+static PetscErrorCode DMPlexConvertPlex(DM dm, DM *plex, PetscBool copy)
+{
+  PetscBool      isPlex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
+  if (isPlex) {
+    *plex = dm;
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectQuery((PetscObject) dm, "dm_plex", (PetscObject *) plex);CHKERRQ(ierr);
+    if (!*plex) {
+      ierr = DMConvert(dm,DMPLEX,plex);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex);CHKERRQ(ierr);
+      if (copy) {
+        const char *comps[3] = {"A", "dmAux"};
+        PetscObject obj;
+        PetscInt    i;
+
+        {
+          /* Run the subdomain hook (this will copy the DMSNES/DMTS) */
+          DMSubDomainHookLink link;
+          for (link = dm->subdomainhook; link; link = link->next) {
+            if (link->ddhook) {ierr = (*link->ddhook)(dm, *plex, link->ctx);CHKERRQ(ierr);}
+          }
+        }
+        for (i = 0; i < 3; i++) {
+          ierr = PetscObjectQuery((PetscObject) dm, comps[i], &obj);CHKERRQ(ierr);
+          ierr = PetscObjectCompose((PetscObject) *plex, comps[i], obj);CHKERRQ(ierr);
+        }
+      }
+    } else {
+      ierr = PetscObjectReference((PetscObject) *plex);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom (void *ctx)
 {
   PetscFEGeom *geom = (PetscFEGeom *) ctx;
@@ -2581,6 +2620,411 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   ierr = DMRestoreGlobalVector(dmf, &fv);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmc, &cv);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_InjectorFEM,dmc,dmf,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexGetCellFields - Retrieve the field values values for a chunk of cells
+
+  Input Parameters:
++ dm     - The DM
+. cellIS - The cells to include
+. locX   - A local vector with the solution fields
+. locX_t - A local vector with solution field time derivatives, or NULL
+- locA   - A local vector with auxiliary fields, or NULL
+
+  Output Parameters:
++ u   - The field coefficients
+. u_t - The fields derivative coefficients
+- a   - The auxiliary field coefficients
+
+  Level: developer
+
+.seealso: DMPlexGetFaceFields()
+@*/
+PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
+{
+  DM              plex, plexA = NULL;
+  PetscSection    section, sectionAux;
+  PetscDS         prob;
+  const PetscInt *cells;
+  PetscInt        cStart, cEnd, numCells, totDim, totDimAux, c;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(locX, VEC_CLASSID, 4);
+  if (locX_t) {PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 5);}
+  if (locA)   {PetscValidHeaderSpecific(locA, VEC_CLASSID, 6);}
+  PetscValidPointer(u, 7);
+  PetscValidPointer(u_t, 8);
+  PetscValidPointer(a, 9);
+  ierr = DMPlexConvertPlex(dm, &plex, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetCellDS(dm, cStart, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  if (locA) {
+    DM      dmAux;
+    PetscDS probAux;
+
+    ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
+    ierr = DMPlexConvertPlex(dmAux, &plexA, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMGetSection(dmAux, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+  }
+  numCells = cEnd - cStart;
+  ierr = DMGetWorkArray(dm, numCells*totDim, MPIU_SCALAR, u);CHKERRQ(ierr);
+  if (locX_t) {ierr = DMGetWorkArray(dm, numCells*totDim, MPIU_SCALAR, u_t);CHKERRQ(ierr);} else {*u_t = NULL;}
+  if (locA)   {ierr = DMGetWorkArray(dm, numCells*totDimAux, MPIU_SCALAR, a);CHKERRQ(ierr);} else {*a = NULL;}
+  for (c = cStart; c < cEnd; ++c) {
+    const PetscInt cell = cells ? cells[c] : c;
+    const PetscInt cind = c - cStart;
+    PetscScalar   *x = NULL, *x_t = NULL, *ul = *u, *ul_t = *u_t, *al = *a;
+    PetscInt       i;
+
+    ierr = DMPlexVecGetClosure(plex, section, locX, cell, NULL, &x);CHKERRQ(ierr);
+    for (i = 0; i < totDim; ++i) ul[cind*totDim+i] = x[i];
+    ierr = DMPlexVecRestoreClosure(plex, section, locX, cell, NULL, &x);CHKERRQ(ierr);
+    if (locX_t) {
+      ierr = DMPlexVecGetClosure(plex, section, locX_t, cell, NULL, &x_t);CHKERRQ(ierr);
+      for (i = 0; i < totDim; ++i) ul_t[cind*totDim+i] = x_t[i];
+      ierr = DMPlexVecRestoreClosure(plex, section, locX_t, cell, NULL, &x_t);CHKERRQ(ierr);
+    }
+    if (locA) {
+      PetscInt subcell;
+      ierr = DMPlexGetAuxiliaryPoint(plex, plexA, cell, &subcell);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subcell, NULL, &x);CHKERRQ(ierr);
+      for (i = 0; i < totDimAux; ++i) al[cind*totDimAux+i] = x[i];
+      ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subcell, NULL, &x);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  if (locA) {ierr = DMDestroy(&plexA);CHKERRQ(ierr);}
+  ierr = ISRestorePointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexRestoreCellFields - Restore the field values values for a chunk of cells
+
+  Input Parameters:
++ dm     - The DM
+. cellIS - The cells to include
+. locX   - A local vector with the solution fields
+. locX_t - A local vector with solution field time derivatives, or NULL
+- locA   - A local vector with auxiliary fields, or NULL
+
+  Output Parameters:
++ u   - The field coefficients
+. u_t - The fields derivative coefficients
+- a   - The auxiliary field coefficients
+
+  Level: developer
+
+.seealso: DMPlexGetFaceFields()
+@*/
+PetscErrorCode DMPlexRestoreCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, u);CHKERRQ(ierr);
+  if (locX_t) {ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, u_t);CHKERRQ(ierr);}
+  if (locA)   {ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, a);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexGetFaceFields - Retrieve the field values values for a chunk of faces
+
+  Input Parameters:
++ dm     - The DM
+. fStart - The first face to include
+. fEnd   - The first face to exclude
+. locX   - A local vector with the solution fields
+. locX_t - A local vector with solution field time derivatives, or NULL
+. faceGeometry - A local vector with face geometry
+. cellGeometry - A local vector with cell geometry
+- locaGrad - A local vector with field gradients, or NULL
+
+  Output Parameters:
++ Nface - The number of faces with field values
+. uL - The field values at the left side of the face
+- uR - The field values at the right side of the face
+
+  Level: developer
+
+.seealso: DMPlexGetCellFields()
+@*/
+PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
+{
+  DM                 dmFace, dmCell, dmGrad = NULL;
+  PetscSection       section;
+  PetscDS            prob;
+  DMLabel            ghostLabel;
+  const PetscScalar *facegeom, *cellgeom, *x, *lgrad;
+  PetscBool         *isFE;
+  PetscInt           dim, Nf, f, Nc, numFaces = fEnd - fStart, iface, face;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(locX, VEC_CLASSID, 4);
+  if (locX_t) {PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 5);}
+  PetscValidHeaderSpecific(faceGeometry, VEC_CLASSID, 6);
+  PetscValidHeaderSpecific(cellGeometry, VEC_CLASSID, 7);
+  if (locGrad) {PetscValidHeaderSpecific(locGrad, VEC_CLASSID, 8);}
+  PetscValidPointer(uL, 9);
+  PetscValidPointer(uR, 10);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nf, &isFE);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
+    else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
+    else                            {isFE[f] = PETSC_FALSE;}
+  }
+  ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(locX, &x);CHKERRQ(ierr);
+  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  if (locGrad) {
+    ierr = VecGetDM(locGrad, &dmGrad);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(locGrad, &lgrad);CHKERRQ(ierr);
+  }
+  ierr = DMGetWorkArray(dm, numFaces*Nc, MPIU_SCALAR, uL);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numFaces*Nc, MPIU_SCALAR, uR);CHKERRQ(ierr);
+  /* Right now just eat the extra work for FE (could make a cell loop) */
+  for (face = fStart, iface = 0; face < fEnd; ++face) {
+    const PetscInt        *cells;
+    PetscFVFaceGeom       *fg;
+    PetscFVCellGeom       *cgL, *cgR;
+    PetscScalar           *xL, *xR, *gL, *gR;
+    PetscScalar           *uLl = *uL, *uRl = *uR;
+    PetscInt               ghost, nsupp, nchild;
+
+    ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
+    ierr = DMPlexGetTreeChildren(dm, face, &nchild, NULL);CHKERRQ(ierr);
+    if (ghost >= 0 || nsupp > 2 || nchild > 0) continue;
+    ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(dmCell, cells[0], cellgeom, &cgL);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(dmCell, cells[1], cellgeom, &cgR);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      PetscInt off;
+
+      ierr = PetscDSGetComponentOffset(prob, f, &off);CHKERRQ(ierr);
+      if (isFE[f]) {
+        const PetscInt *cone;
+        PetscInt        comp, coneSizeL, coneSizeR, faceLocL, faceLocR, ldof, rdof, d;
+
+        xL = xR = NULL;
+        ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr);
+        ierr = DMPlexVecGetClosure(dm, section, locX, cells[0], &ldof, (PetscScalar **) &xL);CHKERRQ(ierr);
+        ierr = DMPlexVecGetClosure(dm, section, locX, cells[1], &rdof, (PetscScalar **) &xR);CHKERRQ(ierr);
+        ierr = DMPlexGetCone(dm, cells[0], &cone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeSize(dm, cells[0], &coneSizeL);CHKERRQ(ierr);
+        for (faceLocL = 0; faceLocL < coneSizeL; ++faceLocL) if (cone[faceLocL] == face) break;
+        ierr = DMPlexGetCone(dm, cells[1], &cone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeSize(dm, cells[1], &coneSizeR);CHKERRQ(ierr);
+        for (faceLocR = 0; faceLocR < coneSizeR; ++faceLocR) if (cone[faceLocR] == face) break;
+        if (faceLocL == coneSizeL && faceLocR == coneSizeR) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d or cell %d", face, cells[0], cells[1]);
+        /* Check that FEM field has values in the right cell (sometimes its an FV ghost cell) */
+        /* TODO: this is a hack that might not be right for nonconforming */
+        if (faceLocL < coneSizeL) {
+          ierr = EvaluateFaceFields(prob, f, faceLocL, xL, &uLl[iface*Nc+off]);CHKERRQ(ierr);
+          if (rdof == ldof && faceLocR < coneSizeR) {ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);}
+          else              {for(d = 0; d < comp; ++d) uRl[iface*Nc+off+d] = uLl[iface*Nc+off+d];}
+        }
+        else {
+          ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr);
+          for(d = 0; d < comp; ++d) uLl[iface*Nc+off+d] = uRl[iface*Nc+off+d];
+        }
+        ierr = DMPlexVecRestoreClosure(dm, section, locX, cells[0], &ldof, (PetscScalar **) &xL);CHKERRQ(ierr);
+        ierr = DMPlexVecRestoreClosure(dm, section, locX, cells[1], &rdof, (PetscScalar **) &xR);CHKERRQ(ierr);
+      } else {
+        PetscFV  fv;
+        PetscInt numComp, c;
+
+        ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fv);CHKERRQ(ierr);
+        ierr = PetscFVGetNumComponents(fv, &numComp);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalFieldRead(dm, cells[0], f, x, &xL);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalFieldRead(dm, cells[1], f, x, &xR);CHKERRQ(ierr);
+        if (dmGrad) {
+          PetscReal dxL[3], dxR[3];
+
+          ierr = DMPlexPointLocalRead(dmGrad, cells[0], lgrad, &gL);CHKERRQ(ierr);
+          ierr = DMPlexPointLocalRead(dmGrad, cells[1], lgrad, &gR);CHKERRQ(ierr);
+          DMPlex_WaxpyD_Internal(dim, -1, cgL->centroid, fg->centroid, dxL);
+          DMPlex_WaxpyD_Internal(dim, -1, cgR->centroid, fg->centroid, dxR);
+          for (c = 0; c < numComp; ++c) {
+            uLl[iface*Nc+off+c] = xL[c] + DMPlex_DotD_Internal(dim, &gL[c*dim], dxL);
+            uRl[iface*Nc+off+c] = xR[c] + DMPlex_DotD_Internal(dim, &gR[c*dim], dxR);
+          }
+        } else {
+          for (c = 0; c < numComp; ++c) {
+            uLl[iface*Nc+off+c] = xL[c];
+            uRl[iface*Nc+off+c] = xR[c];
+          }
+        }
+      }
+    }
+    ++iface;
+  }
+  *Nface = iface;
+  ierr = VecRestoreArrayRead(locX, &x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  if (locGrad) {
+    ierr = VecRestoreArrayRead(locGrad, &lgrad);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(isFE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexRestoreFaceFields - Restore the field values values for a chunk of faces
+
+  Input Parameters:
++ dm     - The DM
+. fStart - The first face to include
+. fEnd   - The first face to exclude
+. locX   - A local vector with the solution fields
+. locX_t - A local vector with solution field time derivatives, or NULL
+. faceGeometry - A local vector with face geometry
+. cellGeometry - A local vector with cell geometry
+- locaGrad - A local vector with field gradients, or NULL
+
+  Output Parameters:
++ Nface - The number of faces with field values
+. uL - The field values at the left side of the face
+- uR - The field values at the right side of the face
+
+  Level: developer
+
+.seealso: DMPlexGetFaceFields()
+@*/
+PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, uL);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, uR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexGetFaceGeometry - Retrieve the geometric values for a chunk of faces
+
+  Input Parameters:
++ dm     - The DM
+. fStart - The first face to include
+. fEnd   - The first face to exclude
+. faceGeometry - A local vector with face geometry
+- cellGeometry - A local vector with cell geometry
+
+  Output Parameters:
++ Nface - The number of faces with field values
+. fgeom - The extract the face centroid and normal
+- vol   - The cell volume
+
+  Level: developer
+
+.seealso: DMPlexGetCellFields()
+@*/
+PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
+{
+  DM                 dmFace, dmCell;
+  DMLabel            ghostLabel;
+  const PetscScalar *facegeom, *cellgeom;
+  PetscInt           dim, numFaces = fEnd - fStart, iface, face;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(faceGeometry, VEC_CLASSID, 4);
+  PetscValidHeaderSpecific(cellGeometry, VEC_CLASSID, 5);
+  PetscValidPointer(fgeom, 6);
+  PetscValidPointer(vol, 7);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
+  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numFaces, fgeom);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numFaces*2, MPIU_SCALAR, vol);CHKERRQ(ierr);
+  for (face = fStart, iface = 0; face < fEnd; ++face) {
+    const PetscInt        *cells;
+    PetscFVFaceGeom       *fg;
+    PetscFVCellGeom       *cgL, *cgR;
+    PetscFVFaceGeom       *fgeoml = *fgeom;
+    PetscReal             *voll   = *vol;
+    PetscInt               ghost, d, nchild, nsupp;
+
+    ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
+    ierr = DMPlexGetTreeChildren(dm, face, &nchild, NULL);CHKERRQ(ierr);
+    if (ghost >= 0 || nsupp > 2 || nchild > 0) continue;
+    ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(dmCell, cells[0], cellgeom, &cgL);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(dmCell, cells[1], cellgeom, &cgR);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) {
+      fgeoml[iface].centroid[d] = fg->centroid[d];
+      fgeoml[iface].normal[d]   = fg->normal[d];
+    }
+    voll[iface*2+0] = cgL->volume;
+    voll[iface*2+1] = cgR->volume;
+    ++iface;
+  }
+  *Nface = iface;
+  ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexRestoreFaceGeometry - Restore the field values values for a chunk of faces
+
+  Input Parameters:
++ dm     - The DM
+. fStart - The first face to include
+. fEnd   - The first face to exclude
+. faceGeometry - A local vector with face geometry
+- cellGeometry - A local vector with cell geometry
+
+  Output Parameters:
++ Nface - The number of faces with field values
+. fgeom - The extract the face centroid and normal
+- vol   - The cell volume
+
+  Level: developer
+
+.seealso: DMPlexGetFaceFields()
+@*/
+PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(*fgeom);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, 0, MPIU_REAL, vol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

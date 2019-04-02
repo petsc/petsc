@@ -496,6 +496,7 @@ typedef int MPI_Fint;
      (MPIUNI_ARG(count),\
       MPIUNI_ARG(array_of_requests),\
       MPIUNI_ARG(status),\
+      (*(status)).MPI_SOURCE = 0,               \
       *(index) = 0,\
       MPI_SUCCESS)
 #define MPI_Testany(a,b,c,d,e) \

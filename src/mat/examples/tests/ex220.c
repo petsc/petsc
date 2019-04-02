@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 /*TEST
 
      test:
-       requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+       requires: double !complex !define(PETSC_USE_64BIT_INDICES) datafilespath
        args: -f ${DATAFILESPATH}/matrices/small
 
 TEST*/
