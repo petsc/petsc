@@ -24,6 +24,7 @@ const char *const PetscViewerFormats[] = {
   "ASCII_GLVIS",
   "DRAW_BASIC",
   "DRAW_LG",
+  "DRAW_LG_XRANGE",
   "DRAW_CONTOUR",
   "DRAW_PORTS",
   "VTK_VTS",

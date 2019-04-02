@@ -194,10 +194,10 @@ PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscR
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
-  *xmin = axis->xlow;
-  *xmax = axis->xhigh;
-  *ymin = axis->ylow;
-  *ymax = axis->yhigh;
+  if (xmin) *xmin = axis->xlow;
+  if (xmax) *xmax = axis->xhigh;
+  if (ymin) *ymin = axis->ylow;
+  if (ymax) *ymax = axis->yhigh;
   PetscFunctionReturn(0);
 }
 
