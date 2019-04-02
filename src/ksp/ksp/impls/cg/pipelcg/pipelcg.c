@@ -98,7 +98,7 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsOb
   if (!flag) plcg->lmin = 0.0;
   ierr = PetscOptionsReal("-ksp_pipelcg_lmax","Estimate for largest eigenvalue","",plcg->lmax,&plcg->lmax,&flag);CHKERRQ(ierr);
   if (!flag) plcg->lmax = 0.0;
-  ierr = PetscOptionsBool("-ksp_pipelcg_show_restarts","Output information on restarts when they occur? (default: 0)","",plcg->show_rstrt,&plcg->show_rstrt,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_pipelcg_monitor","Output information on restarts when they occur? (default: 0)","",plcg->show_rstrt,&plcg->show_rstrt,&flag);CHKERRQ(ierr);
   if (!flag) plcg->show_rstrt = PETSC_FALSE;
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -513,7 +513,11 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
     of the method.
 
     Options Database Keys:
-.   see KSPSolve()
++   -ksp_pipelcg_pipel - pipelined length
+.   -ksp_pipelcg_lmin - approximation to the smallest eigenvalue of the preconditioned operator (default: 0.0)
+.   -ksp_pipelcg_lmax - approximation to the largest eigenvalue of the preconditioned operator (default: 0.0)
+.   -ksp_pipelcg_monitor - output where/why the method restarts when a sqrt breakdown occurs
+-   see KSPSolve() for additional options
 
     Level: advanced
 
@@ -531,7 +535,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
         -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_summary
     [*] SNES ex48, bjacobi preconditioner, pipel = 3, lmin = 0.0, lmax = 2.0, show restart information :
         $mpirun -ppn 14 ./ex48 -M 150 -P 100 -ksp_type pipelcg -pc_type bjacobi -ksp_rtol 1e-10 -ksp_pipelcg_pipel 3 
-        -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_show_restarts -log_summary
+        -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_summary
 
     References:
     [*] J. Cornelis, S. Cools and W. Vanroose,
