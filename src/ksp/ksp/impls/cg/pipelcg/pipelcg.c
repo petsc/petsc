@@ -24,6 +24,7 @@ struct KSP_CG_PIPE_L_s {
   PetscReal   lmin,lmax;  /* min and max eigen values estimates to compute base shifts */
   PetscReal   *sigma;     /* base shifts */
   MPI_Request *req;       /* request array for asynchronous global collective */
+  PetscBool   show_rstrt; /* flag to show restart information in output (default: not shown) */
 };
 
 /**
@@ -97,6 +98,8 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsOb
   if (!flag) plcg->lmin = 0.0;
   ierr = PetscOptionsReal("-ksp_pipelcg_lmax","Estimate for largest eigenvalue","",plcg->lmax,&plcg->lmax,&flag);CHKERRQ(ierr);
   if (!flag) plcg->lmax = 0.0;
+  ierr = PetscOptionsBool("-ksp_pipelcg_show_restarts","Output information on restarts when they occur? (default: 0)","",plcg->show_rstrt,&plcg->show_rstrt,&flag);CHKERRQ(ierr);
+  if (!flag) plcg->show_rstrt = PETSC_FALSE;
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -126,12 +129,12 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Pipeline depth: %D\n", plcg->l);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Minimal eigen value estimate %g\n",plcg->lmin);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Maximal eigen value estimate %g\n",plcg->lmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Minimal eigenvalue estimate %g\n",plcg->lmin);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Maximal eigenvalue estimate %g\n",plcg->lmax);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"  Pipeline depth: %D\n", plcg->l);CHKERRQ(ierr);
-    ierr = PetscViewerStringSPrintf(viewer,"  Minimal eigen value estimate %g\n",plcg->lmin);CHKERRQ(ierr);
-    ierr = PetscViewerStringSPrintf(viewer,"  Maximal eigen value estimate %g\n",plcg->lmax);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer,"  Minimal eigenvalue estimate %g\n",plcg->lmin);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer,"  Maximal eigenvalue estimate %g\n",plcg->lmax);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -238,7 +241,9 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       tmp = PetscRealPart(G(it-l+1,it-l+1) - sum_dummy);
       /* Breakdown check */
       if (tmp < 0) {
-        ierr = PetscPrintf(comm,"sqrt breakdown in iteration %d: value is %e. Iteration was restarted.\n",ksp->its+1,tmp);CHKERRQ(ierr);
+        if (plcg->show_rstrt) {
+          ierr = PetscPrintf(comm,"Sqrt breakdown in iteration %D: sqrt argument is %e. Iteration was restarted.\n",ksp->its+1,(double)tmp);CHKERRQ(ierr);
+        }
         /* End hanging dot-products in the pipeline before exiting for-loop */
         start = it-l+2;
         end = PetscMin(it+1,max_it+1);  /* !warning! 'it' can actually be greater than 'max_it' */
@@ -336,7 +341,6 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       }
       ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,it+1),it+2,MPIU_SCALAR,MPIU_SUM,comm,&req(it+1));CHKERRQ(ierr);
     } else if ((it >= l) && (it < max_it)) {
-      start = PetscMax(0,it-2*l+1);
       middle = it-l+2;
       end = it+2;   
       ierr = (*U[0]->ops->dot_local)(U[0],V[0],&G(it-l+1,it+1));CHKERRQ(ierr); /* dot-product (U[0],V[0]) */
@@ -511,7 +515,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
     Options Database Keys:
 .   see KSPSolve()
 
-    Level: intermediate
+    Level: advanced
 
     Notes:
     MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
@@ -520,6 +524,14 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
     Contributed by:
     Siegfried Cools, University of Antwerp, Dept. Mathematics and Computer Science,
     funded by Flemish Research Foundation (FWO) grant number 12H4617N.
+
+    Example usage:
+    [*] KSP ex2, no preconditioner, pipel = 2, lmin = 0.0, lmax = 8.0 :
+	    $mpirun -ppn 14 ./ex2 -m 1000 -n 1000 -ksp_type pipelcg -pc_type none -ksp_norm_type UNPRECONDITIONED 
+        -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_summary
+    [*] SNES ex48, bjacobi preconditioner, pipel = 3, lmin = 0.0, lmax = 2.0, show restart information :
+        $mpirun -ppn 14 ./ex48 -M 150 -P 100 -ksp_type pipelcg -pc_type bjacobi -ksp_rtol 1e-10 -ksp_pipelcg_pipel 3 
+        -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_show_restarts -log_summary
 
     References:
     [*] J. Cornelis, S. Cools and W. Vanroose,
