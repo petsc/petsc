@@ -292,7 +292,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 
 /*@C
    TaoComputeResidualJacobian - Computes the least-squares residual Jacobian matrix that has been
-   set with TaoSetResidualJacobianRoutine().
+   set with TaoSetJacobianResidual().
 
    Collective on Tao
 
@@ -314,7 +314,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 
    Level: developer
 
-.seealso: TaoComputeResidual(), TaoSetResidualJacobianRoutine()
+.seealso: TaoComputeResidual(), TaoSetJacobianResidual()
 @*/
 PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
