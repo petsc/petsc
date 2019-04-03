@@ -17,10 +17,6 @@ class Configure(config.package.Package):
     self.hastestsdatafiles= 0
     return
 
-  def __str__(self):
-    output  = config.package.Package.__str__(self)
-    return output
-
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
