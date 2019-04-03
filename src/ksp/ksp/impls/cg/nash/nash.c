@@ -614,6 +614,9 @@ $  other KSP converged/diverged reasons
   Notes:
   The preconditioner supplied should be symmetric and positive definite.
 
+  Reference:
+   Nash, Stephen G. Newton-type minimization via the Lanczos method. SIAM Journal on Numerical Analysis 21, no. 4 (1984): 770-788.
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn()
 M*/
 

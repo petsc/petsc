@@ -1386,6 +1386,10 @@ $  other KSP converged/diverged reasons
   Notes:
   The preconditioner supplied should be symmetric and positive definite.
 
+  Reference:
+   Gould, N. and Lucidi, S. and Roma, M. and Toint, P., Solving the Trust-Region Subproblem using the Lanczos Method,
+   SIAM Journal on Optimization, volume 9, number 2, 1999, 504-525
+
    Level: developer
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn(), KSPCGGLTRGetMinEig(), KSPCGGLTRGetLambda()
