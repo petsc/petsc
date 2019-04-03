@@ -675,6 +675,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
       PetscBool dmhasrestrict, dmhasinject;
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (!needRestricts) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
+      if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
+        ierr = KSPSetDM(mglevels[i]->smoothu,dms[i]);CHKERRQ(ierr);
+        if (!needRestricts) {ierr = KSPSetDMActive(mglevels[i]->smoothu,PETSC_FALSE);CHKERRQ(ierr);}
+      }
       ierr = DMGetDMKSPWrite(dms[i],&kdm);CHKERRQ(ierr);
       /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
        * a bitwise OR of computing the matrix, RHS, and initial iterate. */
@@ -709,6 +713,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
     /* finest smoother also gets DM but it is not active, independent of whether galerkin==PC_MG_GALERKIN_EXTERNAL */
     ierr = KSPSetDM(mglevels[n-1]->smoothd,pc->dm);CHKERRQ(ierr);
     ierr = KSPSetDMActive(mglevels[n-1]->smoothd,PETSC_FALSE);CHKERRQ(ierr);
+    if (mglevels[n-1]->smoothd != mglevels[n-1]->smoothu) {
+      ierr = KSPSetDM(mglevels[n-1]->smoothu,pc->dm);CHKERRQ(ierr);
+      ierr = KSPSetDMActive(mglevels[n-1]->smoothu,PETSC_FALSE);CHKERRQ(ierr);
+    }
   }
 
   if (mg->galerkin < PC_MG_GALERKIN_NONE) {
