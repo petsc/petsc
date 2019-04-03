@@ -11,7 +11,6 @@ class Configure(config.package.Package):
     self.precisions       = ['single','double']
     self.cxx              = 0
     self.complex          = 1
-    self.cudaArch         = ''
     self.CUDAVersion      = 0
     self.CUDAMinVersion   = (7, 5)
     self.hastests         = 0
@@ -20,7 +19,6 @@ class Configure(config.package.Package):
 
   def __str__(self):
     output  = config.package.Package.__str__(self)
-    output += '  Arch:     '+self.cudaArch+'\n'
     return output
 
   def setupHelp(self, help):
