@@ -531,6 +531,15 @@ DEF_Block(int,5)
 DEF_Block(int,6)
 DEF_Block(int,7)
 DEF_Block(int,8)
+DEF_Block(char,1)
+DEF_Block(char,2)
+DEF_Block(char,3)
+#if PETSC_SIZEOF_INT == 8
+DEF_Block(char,4)
+DEF_Block(char,5)
+DEF_Block(char,6)
+DEF_Block(char,7)
+#endif
 
 static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 {
@@ -679,17 +688,30 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
     MPI_Aint lb,bytes;
     ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
     if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
-    if (bytes % sizeof(int)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for type size not divisible by %D",sizeof(int));
-    switch (bytes / sizeof(int)) {
-    case 1: PackInit_block_int_1(link); break;
-    case 2: PackInit_block_int_2(link); break;
-    case 3: PackInit_block_int_3(link); break;
-    case 4: PackInit_block_int_4(link); break;
-    case 5: PackInit_block_int_5(link); break;
-    case 6: PackInit_block_int_6(link); break;
-    case 7: PackInit_block_int_7(link); break;
-    case 8: PackInit_block_int_8(link); break;
-    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for arbitrary block sizes");
+    if (bytes % sizeof(int)) {
+      switch (bytes) {
+      case 1: PackInit_block_char_1(link); break;
+      case 2: PackInit_block_char_2(link); break;
+      case 3: PackInit_block_char_3(link); break;
+#if PETSC_SIZEOF_INT == 8
+      case 4: PackInit_block_char_4(link); break;
+      case 5: PackInit_block_char_5(link); break;
+      case 6: PackInit_block_char_6(link); break;
+      case 7: PackInit_block_char_7(link); break;
+#endif
+      }
+    } else {
+      switch (bytes / sizeof(int)) {
+      case 1: PackInit_block_int_1(link); break;
+      case 2: PackInit_block_int_2(link); break;
+      case 3: PackInit_block_int_3(link); break;
+      case 4: PackInit_block_int_4(link); break;
+      case 5: PackInit_block_int_5(link); break;
+      case 6: PackInit_block_int_6(link); break;
+      case 7: PackInit_block_int_7(link); break;
+      case 8: PackInit_block_int_8(link); break;
+      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for arbitrary block sizes");
+      }
     }
   }
   if (link->isbuiltin) link->unit = unit; /* builtin datatypes are common. Make it fast */
