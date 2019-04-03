@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 /*TEST
 
   testset:
-    args: -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown -dm_plex_check_geometry
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces -dm_plex_check_geometry
     # CGNS meshes 0-1
     test:
       suffix: 0

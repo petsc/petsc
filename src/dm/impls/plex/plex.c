@@ -6512,23 +6512,29 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 
   Input Parameters:
 + dm - The DMPlex object
-. isSimplex - Are the cells simplices or tensor products
 - cellHeight - Normally 0
 
   Note: This is a useful diagnostic when creating meshes programmatically.
+  Currently applicable only to homogeneous simplex or tensor meshes.
 
   Level: developer
 
 .seealso: DMCreate(), DMPlexCheckSymmetry(), DMPlexCheckFaces()
 @*/
-PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeight)
+PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 {
   PetscInt       dim, numCorners, numHybridCorners, vStart, vEnd, cStart, cEnd, cMax, c;
+  PetscBool      isSimplex = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  if (cStart < cEnd) {
+    ierr = DMPlexGetConeSize(dm, cStart, &c);CHKERRQ(ierr);
+    isSimplex = c == dim+1 ? PETSC_TRUE : PETSC_FALSE;
+  }
   switch (dim) {
   case 1: numCorners = isSimplex ? 2 : 2; numHybridCorners = isSimplex ? 2 : 2; break;
   case 2: numCorners = isSimplex ? 3 : 4; numHybridCorners = isSimplex ? 4 : 4; break;
@@ -6537,7 +6543,6 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %D", dim);
   }
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   cMax = cMax >= 0 ? cMax : cEnd;
   for (c = cStart; c < cMax; ++c) {
@@ -6570,7 +6575,6 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
 
   Input Parameters:
 + dm - The DMPlex object
-. isSimplex - Are the cells simplices or tensor products
 - cellHeight - Normally 0
 
   Note: This is a useful diagnostic when creating meshes programmatically.
@@ -6579,7 +6583,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
 
 .seealso: DMCreate(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton()
 @*/
-PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
+PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 {
   PetscInt       pMax[4];
   PetscInt       dim, depth, vStart, vEnd, cStart, cEnd, c, h;
