@@ -474,8 +474,9 @@ class Configure(config.package.Package):
               break
 
           if not found:
-            raise RuntimeError('Unable to find MKL include directory. Please source the mklvars-script to set up the MKL environment.\n')
-        self.logPrint('MKL include path set to ' + str(self.include))
+            self.logPrint('Unable to find MKL include directory!')
+          else:
+            self.logPrint('MKL include path set to ' + str(self.include))
     self.logWrite(self.libraries.restoreLog())
     return
 
