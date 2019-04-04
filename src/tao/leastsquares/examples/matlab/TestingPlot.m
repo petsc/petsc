@@ -16,7 +16,7 @@ nf_const = 10;
 
 % Produce the performance profile and save the plot for the two solvers
 SolverNumber = 2;
-H = inf(nf_const*(max(dfo(to_solve))+1),length(to_solve),SolverNumber);
+H = inf(nf_const*(max(dfo(to_solve,2))+1),length(to_solve),SolverNumber);
 for np = to_solve
     for s = 1:SolverNumber
         H(1:length(Results{s,np}.H),np,s) = Results{s,np}.H;
