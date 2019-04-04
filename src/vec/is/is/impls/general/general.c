@@ -264,7 +264,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   ierr = PetscHDF5IntCast(N/bs,dims + dim);CHKERRQ(ierr);
 
   maxDims[dim]   = dims[dim];
-  chunkDims[dim] = dims[dim];
+  chunkDims[dim] = PetscMax(1,dims[dim]);
   ++dim;
   if (bs >= 1) {
     dims[dim]      = bs;
