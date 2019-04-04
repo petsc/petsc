@@ -14,15 +14,9 @@ class Configure(config.package.Package):
     self.downloaddirnames       = ['petsc-petsc4py','petsc4py']
     return
 
-  def setupHelp(self, help):
-    config.package.Package.setupHelp(self,help)
-    import nargs
-    help.addArgument('PETSC4PY', '-download-petsc4py-python=<prog>',                            nargs.Arg(None, None, 'Use this python program to build petsc4py'))
-    return
-
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.numpy           = framework.require('config.packages.Numpy',self)
+    self.python           = framework.require('config.packages.python',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.installdir      = framework.require('PETSc.options.installDir',self)
@@ -56,22 +50,14 @@ class Configure(config.package.Package):
     else:
        newuser = ''
 
-    # determine python binary to use
-    if 'download-petsc4py-python' in self.argDB:
-      self.getExecutable(self.argDB['download-petsc4py-python'], getFullPath=1, resultName='pyexe', setMakeMacro = 0)
-    else:
-      import sys
-      self.pyexe = sys.executable
-
-    self.addDefine('PYTHON_EXE','"'+self.pyexe+'"')
     self.addDefine('HAVE_PETSC4PY',1)
     self.addMakeMacro('PETSC4PY','yes')
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+newdir+self.pyexe+' setup.py clean --all && \\\n\
-           '+newuser+newdir+archflags+self.pyexe+' setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
+           '+newuser+newdir+self.python.pyexe+' setup.py clean --all && \\\n\
+           '+newuser+newdir+archflags+self.python.pyexe+' setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
@@ -80,7 +66,7 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+self.pyexe+' setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
+           '+newdir+archflags+self.python.pyexe+' setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
@@ -101,17 +87,13 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
+    if not self.python.cython:
+        raise RuntimeError('petsc4py requires Python with Cython module installed')
+    if not self.python.numpy:
+        raise RuntimeError('petsc4py requires Python with numpy module installed')
     self.checkDownload()
 
   def alternateConfigureLibrary(self):
     self.addMakeRule('petsc4py-build','')
     self.addMakeRule('petsc4py-install','')
 
-  def gitPreReqCheck(self):
-    ''' petsc4py git download requires Cython'''
-    flg = True
-    try:
-      import Cython
-    except:
-      flg = False
-    return flg
