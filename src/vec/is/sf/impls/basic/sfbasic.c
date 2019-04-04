@@ -704,30 +704,29 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
     MPI_Aint lb,bytes;
     ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
     if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
-    if (bytes % sizeof(int)) {
-      switch (bytes) {
-      case 1: PackInit_block_char_1(link); break;
-      case 2: PackInit_block_char_2(link); break;
-      case 3: PackInit_block_char_3(link); break;
+    if (bytes % sizeof(int)) { /* If the type size is not multiple of int */
 #if PETSC_SIZEOF_INT == 8
-      case 4: PackInit_block_char_4(link); break;
-      case 5: PackInit_block_char_5(link); break;
-      case 6: PackInit_block_char_6(link); break;
-      case 7: PackInit_block_char_7(link); break;
+      if      (bytes%7 == 0) {PackInit_block_char_7(link); link->bs = bytes/7;} /* Note the basic type is char[7] */
+      else if (bytes%6 == 0) {PackInit_block_char_6(link); link->bs = bytes/6;}
+      else if (bytes%5 == 0) {PackInit_block_char_5(link); link->bs = bytes/5;}
+      else if (bytes%4 == 0) {PackInit_block_char_4(link); link->bs = bytes/4;}
+      else
 #endif
-      }
+      if      (bytes%3 == 0) {PackInit_block_char_3(link); link->bs = bytes/3;}
+      else if (bytes%2 == 0) {PackInit_block_char_2(link); link->bs = bytes/2;}
+      else                   {PackInit_block_char_1(link); link->bs = bytes/1;}
+      link->unitbytes = bytes;
     } else {
-      switch (bytes / sizeof(int)) {
-      case 1: PackInit_block_int_1(link); break;
-      case 2: PackInit_block_int_2(link); break;
-      case 3: PackInit_block_int_3(link); break;
-      case 4: PackInit_block_int_4(link); break;
-      case 5: PackInit_block_int_5(link); break;
-      case 6: PackInit_block_int_6(link); break;
-      case 7: PackInit_block_int_7(link); break;
-      case 8: PackInit_block_int_8(link); break;
-      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for arbitrary block sizes");
-      }
+      PetscInt nInt = bytes / sizeof(int);
+      if      (nInt%8 == 0)  {PackInit_block_int_8(link);  link->bs = nInt/8;} /* Note the basic type is int[8] */
+      else if (nInt%7 == 0)  {PackInit_block_int_7(link);  link->bs = nInt/7;}
+      else if (nInt%6 == 0)  {PackInit_block_int_6(link);  link->bs = nInt/6;}
+      else if (nInt%5 == 0)  {PackInit_block_int_5(link);  link->bs = nInt/5;}
+      else if (nInt%4 == 0)  {PackInit_block_int_4(link);  link->bs = nInt/4;}
+      else if (nInt%3 == 0)  {PackInit_block_int_3(link);  link->bs = nInt/3;}
+      else if (nInt%2 == 0)  {PackInit_block_int_2(link);  link->bs = nInt/2;}
+      else                   {PackInit_block_int_1(link);  link->bs = nInt/1;}
+      link->unitbytes = bytes;
     }
   }
   if (link->isbuiltin) link->unit = unit; /* builtin datatypes are common. Make it fast */
