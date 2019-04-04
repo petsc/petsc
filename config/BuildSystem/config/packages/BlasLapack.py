@@ -28,7 +28,12 @@ class Configure(config.package.Package):
     return
 
   def __str__(self):
-    return 'BLAS/LAPACK: '+self.libraries.toString(self.lib)+'\n'
+    output  = config.package.Package.__str__(self)
+    if self.has64bitindices:
+      output += '  uses 64 bit integers\n'
+    else:
+      output += '  uses 32 bit integers\n'
+    return output
 
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
