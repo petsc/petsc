@@ -786,8 +786,8 @@ int main(int argc, char **argv)
 
 /*TEST
   testset:
-    args: -orig_dm_plex_check_symmetry -orig_dm_plex_check_skeleton simplex -orig_dm_plex_check_faces simplex \
-          -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton simplex -dm_plex_check_faces simplex
+    args: -orig_dm_plex_check_symmetry -orig_dm_plex_check_skeleton -orig_dm_plex_check_faces \
+          -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     # 2D Simplex
     test:
       suffix: tri_0
@@ -812,8 +812,8 @@ int main(int argc, char **argv)
       args: -dim 3 -test_num 1
 
   testset:
-    args: -orig_dm_plex_check_symmetry -orig_dm_plex_check_skeleton tensor -orig_dm_plex_check_faces tensor \
-          -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton tensor -dm_plex_check_faces tensor
+    args: -orig_dm_plex_check_symmetry -orig_dm_plex_check_skeleton -orig_dm_plex_check_faces \
+          -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     # 2D Quads
     test:
       suffix: quad_0
@@ -825,7 +825,7 @@ int main(int argc, char **argv)
     test:
       suffix: quad_t1_0
       args: -dim 2 -cell_simplex 0 -test_num 1 \
-            -faulted_dm_plex_check_symmetry -faulted_dm_plex_check_skeleton tensor -faulted_dm_plex_check_faces tensor
+            -faulted_dm_plex_check_symmetry -faulted_dm_plex_check_skeleton -faulted_dm_plex_check_faces
       TODO: turn on test
     # 3D Hex
     test:

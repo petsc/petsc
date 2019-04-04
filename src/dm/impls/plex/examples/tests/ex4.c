@@ -831,8 +831,8 @@ int main(int argc, char **argv)
   # 1D Simplex 29-31
   testset:
     args: -dim 1 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 29
     test:
@@ -845,22 +845,22 @@ int main(int argc, char **argv)
   # 2D Simplex 0-3
   testset:
     args: -dim 2 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 0
-      args: -hyb_dm_plex_check_faces unknown
+      args: -hyb_dm_plex_check_faces
     test:
       suffix: 1
-      args: -dm_refine 1 -hyb_dm_plex_check_faces unknown
+      args: -dm_refine 1 -hyb_dm_plex_check_faces
     test:
       suffix: 2
       nsize: 2
-      args: -hyb_dm_plex_check_faces unknown
+      args: -hyb_dm_plex_check_faces
     test:
       suffix: 3
       nsize: 2
-      args: -dm_refine 1 -hyb_dm_plex_check_faces unknown
+      args: -dm_refine 1 -hyb_dm_plex_check_faces
     test:
       suffix: 32
       args: -dm_refine 1 -uninterpolate
@@ -876,8 +876,8 @@ int main(int argc, char **argv)
   # 2D Hybrid Simplex 4-7
   testset:
     args: -dim 2 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 4
     test:
@@ -897,8 +897,8 @@ int main(int argc, char **argv)
   # 2D Quad 12-13
   testset:
     args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 12
       args: -dm_refine 1
@@ -910,8 +910,8 @@ int main(int argc, char **argv)
   # 2D Hybrid Quad 27-28
   testset:
     args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 27
       args: -dm_refine 1
@@ -923,8 +923,8 @@ int main(int argc, char **argv)
   # 3D Simplex 8-11
   testset:
     args: -dim 3 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 8
       args: -dm_refine 1
@@ -946,8 +946,8 @@ int main(int argc, char **argv)
   # 3D Hybrid Simplex 16-19
   testset:
     args: -dim 3 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 16
       args: -dm_refine 1
@@ -966,8 +966,8 @@ int main(int argc, char **argv)
   # 3D Hex 14-15
   testset:
     args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 14
       args: -dm_refine 1
@@ -982,8 +982,8 @@ int main(int argc, char **argv)
   # 3D Hybrid Hex 20-23
   testset:
     args: -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: 20
       args: -dm_refine 1
@@ -1003,8 +1003,8 @@ int main(int argc, char **argv)
   testset:
     nsize: 2
     args: -test_partition 0 -petscpartitioner_type simple -dm_view -reinterpolate \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton unknown -hyb_dm_plex_check_faces unknown \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
+          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
     test:
       suffix: hybint_2d_0
       args: -dim 2 -dm_refine 2

@@ -144,8 +144,8 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell(PetscInt, PetscInt, int []);
 
 PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);
-PETSC_EXTERN PetscErrorCode DMPlexCheckSkeleton(DM, PetscBool, PetscInt);
-PETSC_EXTERN PetscErrorCode DMPlexCheckFaces(DM, PetscBool, PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexCheckSkeleton(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexCheckFaces(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckGeometry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM);

@@ -2252,19 +2252,6 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexIsSimplex_Static(DM dm, PetscBool *isSimplex)
-{
-  PetscInt       dim, cStart, coneSize;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
-  *isSimplex = coneSize == dim+1 ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -2287,26 +2274,14 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   ierr = PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL);CHKERRQ(ierr);
   /* Checking structure */
   {
-    const char *cellTypes[] = {"simplex", "tensor", "unknown", "DMPlexCellType", "DM_PLEX_CELLTYPE_", NULL};
-    PetscEnum   ct;
     PetscBool   flg = PETSC_FALSE, flg2 = PETSC_FALSE;
 
     ierr = PetscOptionsBool("-dm_plex_check_symmetry", "Check that the adjacency information in the mesh is symmetric", "DMPlexCheckSymmetry", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
     if (flg && flg2) {ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);}
-    ierr = PetscOptionsEnum("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices", "DMPlexCheckSkeleton", cellTypes, (PetscEnum) 0, &ct, &flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscBool isSimplex = ct ? PETSC_FALSE : PETSC_TRUE;
-
-      if (ct == (PetscEnum) DM_PLEX_CELLTYPE_UNKNOWN) {ierr = DMPlexIsSimplex_Static(dm, &isSimplex);CHKERRQ(ierr);}
-      ierr = DMPlexCheckSkeleton(dm, isSimplex, 0);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsEnum("-dm_plex_check_faces", "Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type", "DMPlexCheckFaces", cellTypes, (PetscEnum) 0, &ct, &flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscBool isSimplex = ct ? PETSC_FALSE : PETSC_TRUE;
-
-      if (ct == (PetscEnum) DM_PLEX_CELLTYPE_UNKNOWN) {ierr = DMPlexIsSimplex_Static(dm, &isSimplex);CHKERRQ(ierr);}
-      ierr = DMPlexCheckFaces(dm, isSimplex, 0);CHKERRQ(ierr);
-    }
+    ierr = PetscOptionsBool("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes)", "DMPlexCheckSkeleton", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
+    if (flg && flg2) {ierr = DMPlexCheckSkeleton(dm, 0);CHKERRQ(ierr);}
+    ierr = PetscOptionsBool("-dm_plex_check_faces", "Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type", "DMPlexCheckFaces", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
+    if (flg && flg2) {ierr = DMPlexCheckFaces(dm, 0);CHKERRQ(ierr);}
     ierr = PetscOptionsBool("-dm_plex_check_geometry", "Check that cells have positive volume", "DMPlexCheckGeometry", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
     if (flg && flg2) {ierr = DMPlexCheckGeometry(dm);CHKERRQ(ierr);}
   }

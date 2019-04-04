@@ -97,6 +97,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_faces unknown
+    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
 
 TEST*/
