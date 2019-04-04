@@ -495,6 +495,16 @@ PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype
     link->unitbytes = sizeof(BlockType(unit,count));                    \
   }
 
+/* The typedef is used to get a typename without space that CPPJoin can handle */
+typedef signed char SignedChar;
+typedef unsigned char UnsignedChar;
+
+DEF_PackCmp(SignedChar)
+DEF_PackBit(SignedChar)
+DEF_PackLog(SignedChar)
+DEF_PackCmp(UnsignedChar)
+DEF_PackBit(UnsignedChar)
+DEF_PackLog(UnsignedChar)
 DEF_PackCmp(int)
 DEF_PackBit(int)
 DEF_PackLog(int)
@@ -624,7 +634,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
-  PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt;
+  PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt,isSignedChar,isUnsignedChar;
   PetscInt       nPetscIntContig,nPetscRealContig;
   PetscMPIInt    ni,na,nd,combiner;
 #if defined(PETSC_HAVE_COMPLEX)
@@ -633,6 +643,9 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
 #endif
 
   PetscFunctionBegin;
+  ierr = MPIPetsc_Type_compare(unit,MPI_SIGNED_CHAR,&isSignedChar);CHKERRQ(ierr);
+  ierr = MPIPetsc_Type_compare(unit,MPI_UNSIGNED_CHAR,&isUnsignedChar);CHKERRQ(ierr);
+  /* MPI_CHAR is treated below as a dumb block type that does not support reduction according to MPI standard */
   ierr = MPIPetsc_Type_compare(unit,MPI_INT,&isInt);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare(unit,MPIU_INT,&isPetscInt);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare_contig(unit,MPIU_INT,&nPetscIntContig);CHKERRQ(ierr);
@@ -647,7 +660,10 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
   ierr = MPI_Type_get_envelope(unit,&ni,&na,&nd,&combiner);CHKERRQ(ierr);
   link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE;
   link->bs = 1;
-  if (isInt) {PackInit_int(link); PackInit_Logical_int(link); PackInit_Bitwise_int(link);}
+
+  if (isSignedChar) {PackInit_SignedChar(link); PackInit_Logical_SignedChar(link); PackInit_Bitwise_SignedChar(link);}
+  else if (isUnsignedChar) {PackInit_UnsignedChar(link); PackInit_Logical_UnsignedChar(link); PackInit_Bitwise_UnsignedChar(link);}
+  else if (isInt) {PackInit_int(link); PackInit_Logical_int(link); PackInit_Bitwise_int(link);}
   else if (isPetscInt) {PackInit_PetscInt(link); PackInit_Logical_PetscInt(link); PackInit_Bitwise_PetscInt(link);}
   else if (isPetscReal) {PackInit_PetscReal(link); PackInit_Logical_PetscReal(link);}
 #if defined(PETSC_HAVE_COMPLEX)
