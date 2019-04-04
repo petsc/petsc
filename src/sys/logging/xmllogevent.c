@@ -858,7 +858,7 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer,cons
   PetscLogDouble val_in[2], max[2], min[2];
   PetscLogDouble minvalue, maxvalue, tot;
   PetscMPIInt    size;
-  PetscMPIInt    minLoc, maxLoc; 
+  PetscMPIInt    minLoc, maxLoc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -875,19 +875,19 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer,cons
   minLoc   = (PetscMPIInt) min[1];
   ierr = MPIU_Allreduce(&value, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm);CHKERRQ(ierr);
 
-  if (maxvalue<maxthreshold && minvalue>minthreshold) {
-    /* One call per parent */
+  if (maxvalue<maxthreshold && minvalue>=minthreshold) {
+    /* One call per parent or NO value: don't print */
   } else {
      ierr = PetscViewerXMLStartSection(viewer, name, NULL);CHKERRQ(ierr);
      if (maxvalue>minvalue*minmaxtreshold) {
-       ierr = PetscViewerXMLPutDouble(viewer, "avgvalue", NULL, tot/size, "%f");CHKERRQ(ierr);
-       ierr = PetscViewerXMLPutDouble(viewer, "minvalue", NULL, minvalue, "%f");CHKERRQ(ierr);
-       ierr = PetscViewerXMLPutDouble(viewer, "maxvalue", NULL, maxvalue, "%f");CHKERRQ(ierr);
+       ierr = PetscViewerXMLPutDouble(viewer, "avgvalue", NULL, tot/size, "%g");CHKERRQ(ierr);
+       ierr = PetscViewerXMLPutDouble(viewer, "minvalue", NULL, minvalue, "%g");CHKERRQ(ierr);
+       ierr = PetscViewerXMLPutDouble(viewer, "maxvalue", NULL, maxvalue, "%g");CHKERRQ(ierr);
        ierr = PetscViewerXMLPutInt(   viewer, "minloc"  , NULL, minLoc);CHKERRQ(ierr);
        ierr = PetscViewerXMLPutInt(   viewer, "maxloc"  , NULL, maxLoc);CHKERRQ(ierr);
      } else {
        ierr = PetscViewerXMLPutDouble(viewer, "value", NULL, tot/size, "%g");CHKERRQ(ierr);
-     };
+     }
      ierr = PetscViewerXMLEndSection(viewer, name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -908,11 +908,11 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer,PetscEventP
   if (*isPrinted) {
     ierr = PetscViewerXMLStartSection(viewer, "event", NULL);CHKERRQ(ierr);
     ierr = PetscViewerXMLPutString(viewer, "name", NULL, name);CHKERRQ(ierr);
-    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "time", time/totalTime*100.0,0, totalTime*1.1, 1.02);CHKERRQ(ierr);
-    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "ncalls", parentCount>0 ? countsPerCall : 0,0.99, 1.01, 1.02);CHKERRQ(ierr);
-    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "mflops", time>=timeMx*0.001 ?  1e-6*perfInfo.flops/time : 0,0, 0.01, 1.05);CHKERRQ(ierr);
-    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "mbps",time>=timeMx*0.001 ?  perfInfo.messageLength/(1024*1024*time) : 0,0, 0.01, 1.05);CHKERRQ(ierr);
-    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "nreductsps", time>=timeMx*0.001 ?  perfInfo.numReductions/time : 0,0, 0.01, 1.05);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "time", time/totalTime*100.0, 0, 0, 1.02);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "ncalls", parentCount>0 ? countsPerCall : 0, 0.99, 1.01, 1.02);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "mflops", time>=timeMx*0.001 ? 1e-6*perfInfo.flops/time : 0, 0, 0.01, 1.05);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "mbps",time>=timeMx*0.001 ? perfInfo.messageLength/(1024*1024*time) : 0, 0, 0.01, 1.05);CHKERRQ(ierr);
+    ierr = PetscPrintXMLNestedLinePerfResults(viewer, "nreductsps", time>=timeMx*0.001 ? perfInfo.numReductions/time : 0, 0, 0.01, 1.05);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
