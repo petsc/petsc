@@ -2278,6 +2278,21 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt iro
     mat->was_assembled = PETSC_TRUE;
     mat->assembled     = PETSC_FALSE;
   }
+#if defined(PETSC_USE_DEBUG)
+  /* Condition on the mapping existing, because MatSetValuesBlockedLocal_IS does not require it to be set. */
+  if (mat->rmap->mapping) {
+    PetscInt irbs, rbs;
+    ierr = MatGetBlockSizes(mat, &rbs, NULL);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(mat->rmap->mapping,&irbs);CHKERRQ(ierr);
+    if (rbs != irbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Different row block sizes! mat %D, row l2g map %D",rbs,irbs);
+  }
+  if (mat->cmap->mapping) {
+    PetscInt icbs, cbs;
+    ierr = MatGetBlockSizes(mat,NULL,&cbs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(mat->cmap->mapping,&icbs);CHKERRQ(ierr);
+    if (cbs != icbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Different col block sizes! mat %D, col l2g map %D",cbs,icbs);
+  }
+#endif
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->setvaluesblockedlocal) {
     ierr = (*mat->ops->setvaluesblockedlocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
