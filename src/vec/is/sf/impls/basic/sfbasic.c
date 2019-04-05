@@ -495,6 +495,16 @@ PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype
     link->unitbytes = sizeof(BlockType(unit,count));                    \
   }
 
+/* The typedef is used to get a typename without space that CPPJoin can handle */
+typedef signed char SignedChar;
+typedef unsigned char UnsignedChar;
+
+DEF_PackCmp(SignedChar)
+DEF_PackBit(SignedChar)
+DEF_PackLog(SignedChar)
+DEF_PackCmp(UnsignedChar)
+DEF_PackBit(UnsignedChar)
+DEF_PackLog(UnsignedChar)
 DEF_PackCmp(int)
 DEF_PackBit(int)
 DEF_PackLog(int)
@@ -531,6 +541,15 @@ DEF_Block(int,5)
 DEF_Block(int,6)
 DEF_Block(int,7)
 DEF_Block(int,8)
+DEF_Block(char,1)
+DEF_Block(char,2)
+DEF_Block(char,3)
+#if PETSC_SIZEOF_INT == 8
+DEF_Block(char,4)
+DEF_Block(char,5)
+DEF_Block(char,6)
+DEF_Block(char,7)
+#endif
 
 static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 {
@@ -615,7 +634,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
-  PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt;
+  PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt,isSignedChar,isUnsignedChar;
   PetscInt       nPetscIntContig,nPetscRealContig;
   PetscMPIInt    ni,na,nd,combiner;
 #if defined(PETSC_HAVE_COMPLEX)
@@ -624,6 +643,9 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
 #endif
 
   PetscFunctionBegin;
+  ierr = MPIPetsc_Type_compare(unit,MPI_SIGNED_CHAR,&isSignedChar);CHKERRQ(ierr);
+  ierr = MPIPetsc_Type_compare(unit,MPI_UNSIGNED_CHAR,&isUnsignedChar);CHKERRQ(ierr);
+  /* MPI_CHAR is treated below as a dumb block type that does not support reduction according to MPI standard */
   ierr = MPIPetsc_Type_compare(unit,MPI_INT,&isInt);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare(unit,MPIU_INT,&isPetscInt);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare_contig(unit,MPIU_INT,&nPetscIntContig);CHKERRQ(ierr);
@@ -638,7 +660,10 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
   ierr = MPI_Type_get_envelope(unit,&ni,&na,&nd,&combiner);CHKERRQ(ierr);
   link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE;
   link->bs = 1;
-  if (isInt) {PackInit_int(link); PackInit_Logical_int(link); PackInit_Bitwise_int(link);}
+
+  if (isSignedChar) {PackInit_SignedChar(link); PackInit_Logical_SignedChar(link); PackInit_Bitwise_SignedChar(link);}
+  else if (isUnsignedChar) {PackInit_UnsignedChar(link); PackInit_Logical_UnsignedChar(link); PackInit_Bitwise_UnsignedChar(link);}
+  else if (isInt) {PackInit_int(link); PackInit_Logical_int(link); PackInit_Bitwise_int(link);}
   else if (isPetscInt) {PackInit_PetscInt(link); PackInit_Logical_PetscInt(link); PackInit_Bitwise_PetscInt(link);}
   else if (isPetscReal) {PackInit_PetscReal(link); PackInit_Logical_PetscReal(link);}
 #if defined(PETSC_HAVE_COMPLEX)
@@ -679,17 +704,29 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
     MPI_Aint lb,bytes;
     ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
     if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
-    if (bytes % sizeof(int)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for type size not divisible by %D",sizeof(int));
-    switch (bytes / sizeof(int)) {
-    case 1: PackInit_block_int_1(link); break;
-    case 2: PackInit_block_int_2(link); break;
-    case 3: PackInit_block_int_3(link); break;
-    case 4: PackInit_block_int_4(link); break;
-    case 5: PackInit_block_int_5(link); break;
-    case 6: PackInit_block_int_6(link); break;
-    case 7: PackInit_block_int_7(link); break;
-    case 8: PackInit_block_int_8(link); break;
-    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for arbitrary block sizes");
+    if (bytes % sizeof(int)) { /* If the type size is not multiple of int */
+#if PETSC_SIZEOF_INT == 8
+      if      (bytes%7 == 0) {PackInit_block_char_7(link); link->bs = bytes/7;} /* Note the basic type is char[7] */
+      else if (bytes%6 == 0) {PackInit_block_char_6(link); link->bs = bytes/6;}
+      else if (bytes%5 == 0) {PackInit_block_char_5(link); link->bs = bytes/5;}
+      else if (bytes%4 == 0) {PackInit_block_char_4(link); link->bs = bytes/4;}
+      else
+#endif
+      if      (bytes%3 == 0) {PackInit_block_char_3(link); link->bs = bytes/3;}
+      else if (bytes%2 == 0) {PackInit_block_char_2(link); link->bs = bytes/2;}
+      else                   {PackInit_block_char_1(link); link->bs = bytes/1;}
+      link->unitbytes = bytes;
+    } else {
+      PetscInt nInt = bytes / sizeof(int);
+      if      (nInt%8 == 0)  {PackInit_block_int_8(link);  link->bs = nInt/8;} /* Note the basic type is int[8] */
+      else if (nInt%7 == 0)  {PackInit_block_int_7(link);  link->bs = nInt/7;}
+      else if (nInt%6 == 0)  {PackInit_block_int_6(link);  link->bs = nInt/6;}
+      else if (nInt%5 == 0)  {PackInit_block_int_5(link);  link->bs = nInt/5;}
+      else if (nInt%4 == 0)  {PackInit_block_int_4(link);  link->bs = nInt/4;}
+      else if (nInt%3 == 0)  {PackInit_block_int_3(link);  link->bs = nInt/3;}
+      else if (nInt%2 == 0)  {PackInit_block_int_2(link);  link->bs = nInt/2;}
+      else                   {PackInit_block_int_1(link);  link->bs = nInt/1;}
+      link->unitbytes = bytes;
     }
   }
   if (link->isbuiltin) link->unit = unit; /* builtin datatypes are common. Make it fast */
