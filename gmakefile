@@ -54,6 +54,9 @@ all : $(generated) $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
+# Test framework includes rules and variables relevant to both build and test
+include ./gmakefile.test        # This must be below the all target because it includes rules
+
 $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
@@ -213,7 +216,3 @@ allobj.d := $(srcs.o:%.o=%.d)
 $(allobj.d) : ;
 
 -include $(allobj.d)
-
-# Handle test framework (also defines compilation lines for both lib and test)
-include ./gmakefile.test        # This must be below the all target
-
