@@ -481,14 +481,17 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
   PetscErrorCode    ierr;
   PetscInt          i,c,bs = PetscAbs(xin->map->bs),n = xin->map->n/bs;
   const PetscScalar *xv;
-  PetscReal         *xx,*yy;
+  PetscReal         *xx,*yy,xmin,xmax,h;
   int               colors[] = {PETSC_DRAW_RED};
+  PetscViewerFormat format;
+  PetscDrawAxis     axis;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
+  ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
   ierr = PetscMalloc2(n,&xx,n,&yy);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
   for (c=0; c<bs; c++) {
@@ -496,10 +499,16 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
     ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
     ierr = PetscDrawLGSetDimension(lg,1);CHKERRQ(ierr);
     ierr = PetscDrawLGSetColors(lg,colors);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      xx[i] = (PetscReal)i;
-      yy[i] = PetscRealPart(xv[c + i*bs]);
+    if (format == PETSC_VIEWER_DRAW_LG_XRANGE) {
+      ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
+      ierr = PetscDrawAxisGetLimits(axis,&xmin,&xmax,NULL,NULL);CHKERRQ(ierr);
+      h = (xmax - xmin)/n;
+      for (i=0; i<n; i++) xx[i] = i*h + 0.5*h; /* cell center */
+    } else {
+      for (i=0; i<n; i++) xx[i] = (PetscReal)i;
     }
+    for (i=0; i<n; i++) yy[i] = PetscRealPart(xv[c + i*bs]);
+
     ierr = PetscDrawLGAddPoints(lg,n,&xx,&yy);CHKERRQ(ierr);
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
     ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
@@ -519,9 +528,8 @@ PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  ierr = PetscViewerPushFormat(v,PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
+
   ierr = VecView_Seq_Draw_LG(xin,v);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
