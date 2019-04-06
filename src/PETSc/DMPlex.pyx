@@ -464,7 +464,7 @@ cdef class DMPlex(DM):
         PetscINCREF(part.obj)
         return part
 
-    def rebalanceSharedPoints(self, entityDepth, useInitialGuess=True, parallel=True):
+    def rebalanceSharedPoints(self, entityDepth=0, useInitialGuess=True, parallel=True):
         cdef PetscInt centityDepth = asInt(entityDepth)
         cdef PetscBool cuseInitialGuess = asBool(useInitialGuess)
         cdef PetscBool cparallel = asBool(parallel)
