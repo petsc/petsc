@@ -455,7 +455,7 @@ class Configure(script.Script):
     f = open(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.log, lineLimit = 100000)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.log, logOutputflg = False, lineLimit = 100000)
     if self.cleanup:
       for filename in [self.compilerDefines, self.compilerFixes, self.compilerSource]:
         if os.path.isfile(filename): os.remove(filename)
