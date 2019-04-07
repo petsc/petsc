@@ -168,21 +168,22 @@ class Script(logger.Logger):
   defaultCheckCommand = staticmethod(defaultCheckCommand)
 
   @staticmethod
-  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None):
+  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True):
     '''Execute a shell command returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
-    return Script.executeShellCommandSeq([command], checkCommand=checkCommand, timeout=timeout, log=log, lineLimit=lineLimit, cwd=cwd)
+    return Script.executeShellCommandSeq([command], checkCommand=checkCommand, timeout=timeout, log=log, lineLimit=lineLimit, cwd=cwd,logOutputflg = logOutputflg)
 
   @staticmethod
-  def executeShellCommandSeq(commandseq, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None):
+  def executeShellCommandSeq(commandseq, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True):
     '''Execute a sequence of shell commands (an && chain) returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
     if not checkCommand:
       checkCommand = Script.defaultCheckCommand
     if log is None:
       log = logger.Logger.defaultLog
-    def logOutput(log, output):
+    def logOutput(log, output, logOutputflg):
       import re
+      if not logOutputflg: return output
       # get rid of multiple blank lines
       output = re.sub('\n+','\n', output).strip()
       if output:
@@ -217,7 +218,7 @@ class Script(logger.Logger):
         return Script.runShellCommandSeq(commandseq, log, cwd)
 
     (output, error, status) = runInShell(commandseq, log, cwd)
-    output = logOutput(log, output)
+    output = logOutput(log, output,logOutputflg)
     checkCommand(commandseq, status, output, error)
     return (output, error, status)
 
