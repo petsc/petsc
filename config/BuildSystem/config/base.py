@@ -302,12 +302,10 @@ class Configure(script.Script):
   # Preprocessor, Compiler, and Linker Operations
   def pushLanguage(self, language):
     if language == 'C++': language = 'Cxx'
-    self.logPrint('Pushing language '+language)
     self.language.append(language)
     return self.language[-1]
 
   def popLanguage(self):
-    self.logPrint('Popping language '+self.language[-1])
     self.language.pop()
     return self.language[-1]
 
@@ -457,7 +455,7 @@ class Configure(script.Script):
     f = open(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.log, lineLimit = 100000)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.log, logOutputflg = False, lineLimit = 100000)
     if self.cleanup:
       for filename in [self.compilerDefines, self.compilerFixes, self.compilerSource]:
         if os.path.isfile(filename): os.remove(filename)
