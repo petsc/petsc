@@ -302,12 +302,10 @@ class Configure(script.Script):
   # Preprocessor, Compiler, and Linker Operations
   def pushLanguage(self, language):
     if language == 'C++': language = 'Cxx'
-    self.logPrint('Pushing language '+language)
     self.language.append(language)
     return self.language[-1]
 
   def popLanguage(self):
-    self.logPrint('Popping language '+self.language[-1])
     self.language.pop()
     return self.language[-1]
 
