@@ -1117,9 +1117,9 @@ PetscErrorCode PetscViewerBinarySetUseMPIIO(PetscViewer viewer,PetscBool flg)
   Input Parameters:
 +  viewer - the PetscViewer; must be a a PETSCVIEWERBINARY, PETSCVIEWERMATLAB, PETSCVIEWERHDF5, or PETSCVIEWERASCII  PetscViewer
 -  type - type of file
-$    FILE_MODE_WRITE - create new file for binary output
-$    FILE_MODE_READ - open existing file for binary input
-$    FILE_MODE_APPEND - open existing file for binary output
+$    FILE_MODE_WRITE - create new file for output
+$    FILE_MODE_READ - open existing file for input
+$    FILE_MODE_APPEND - open existing file for output
 
   Level: advanced
 
