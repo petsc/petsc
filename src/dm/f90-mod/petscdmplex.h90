@@ -334,7 +334,7 @@
           use petscdmdef
           DM, intent(in) :: m
           PetscInt, intent(in) :: o
-          PetscSF, intent(out) :: sf
+          PetscSF :: sf
           DM, intent(out) :: mp
           PetscErrorCode, intent(out):: ierr
         End Subroutine
