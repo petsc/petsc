@@ -53,6 +53,3 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *
   }
   PetscFunctionReturn(0);
 }
-
-
-

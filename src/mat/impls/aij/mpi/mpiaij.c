@@ -1429,6 +1429,10 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = MatView_MPIAIJ_Binary(mat,viewer);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
+  } else if (iascii && size == 1) {
+    ierr = PetscObjectSetName((PetscObject)aij->A,((PetscObject)mat)->name);CHKERRQ(ierr);
+    ierr = MatView(aij->A,viewer);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   } else if (isdraw) {
     PetscDraw draw;
     PetscBool isnull;
@@ -1437,61 +1441,41 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     if (isnull) PetscFunctionReturn(0);
   }
 
-  {
-    /* assemble the entire matrix onto first processor. */
-    Mat        A;
-    Mat_SeqAIJ *Aloc;
-    PetscInt   M = mat->rmap->N,N = mat->cmap->N,m,*ai,*aj,row,*cols,i,*ct;
-    MatScalar  *a;
+  { /* assemble the entire matrix onto first processor */
+    Mat A = NULL, Av;
+    IS  isrow,iscol;
 
-    ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),!rank ? mat->rmap->N : 0,0,1,&isrow);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),!rank ? mat->cmap->N : 0,0,1,&iscol);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(mat,isrow,iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatMPIAIJGetSeqAIJ(A,&Av,NULL,NULL);CHKERRQ(ierr);
+/*  The commented code uses MatCreateSubMatrices instead */
+/*
+    Mat *AA, A = NULL, Av;
+    IS  isrow,iscol;
+
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),!rank ? mat->rmap->N : 0,0,1,&isrow);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),!rank ? mat->cmap->N : 0,0,1,&iscol);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&AA);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
-    } else {
-      ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
+       ierr = PetscObjectReference((PetscObject)AA[0]);CHKERRQ(ierr);
+       A    = AA[0];
+       Av   = AA[0];
     }
-    /* This is just a temporary matrix, so explicitly using MATMPIAIJ is probably best */
-    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(A,0,NULL,0,NULL);CHKERRQ(ierr);
-    ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)A);CHKERRQ(ierr);
-
-    /* copy over the A part */
-    Aloc = (Mat_SeqAIJ*)aij->A->data;
-    m    = aij->A->rmap->n; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-    row  = mat->rmap->rstart;
-    for (i=0; i<ai[m]; i++) aj[i] += mat->cmap->rstart;
-    for (i=0; i<m; i++) {
-      ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],aj,a,INSERT_VALUES);CHKERRQ(ierr);
-      row++;
-      a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
-    }
-    aj = Aloc->j;
-    for (i=0; i<ai[m]; i++) aj[i] -= mat->cmap->rstart;
-
-    /* copy over the B part */
-    Aloc = (Mat_SeqAIJ*)aij->B->data;
-    m    = aij->B->rmap->n;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-    row  = mat->rmap->rstart;
-    ierr = PetscMalloc1(ai[m]+1,&cols);CHKERRQ(ierr);
-    ct   = cols;
-    for (i=0; i<ai[m]; i++) cols[i] = aij->garray[aj[i]];
-    for (i=0; i<m; i++) {
-      ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],cols,a,INSERT_VALUES);CHKERRQ(ierr);
-      row++;
-      a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
-    }
-    ierr = PetscFree(ct);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatDestroySubMatrices(1,&AA);CHKERRQ(ierr);
+*/
+    ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+    ierr = ISDestroy(&isrow);CHKERRQ(ierr);
     /*
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the PetscDraw object
     */
     ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscObjectSetName((PetscObject)((Mat_MPIAIJ*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
-      ierr = MatView_SeqAIJ(((Mat_MPIAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
+      if (((PetscObject)mat)->name) {
+        ierr = PetscObjectSetName((PetscObject)Av,((PetscObject)mat)->name);CHKERRQ(ierr);
+      }
+      ierr = MatView_SeqAIJ(Av,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
