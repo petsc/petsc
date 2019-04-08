@@ -145,7 +145,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
 #endif
   ierr = PetscSFComputeDegreeBegin(sf, &degree);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(sf, &degree);CHKERRQ(ierr);
-  ierr = PetscSFComputeMultiRootOriginalNumbering(sf, degree, &mRootsOrigNumbering);CHKERRQ(ierr);
+  ierr = PetscSFComputeMultiRootOriginalNumbering(sf, degree, NULL, &mRootsOrigNumbering);CHKERRQ(ierr);
   ierr = PetscMalloc1(nileaves, irmine1);CHKERRQ(ierr);
   for (r=0; r<niranks; r++) {
     o = iroffset[r];
