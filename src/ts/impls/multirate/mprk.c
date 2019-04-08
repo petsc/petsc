@@ -1,20 +1,20 @@
 /*
-  Code for time stepping with the Partitioned Runge-Kutta method
+  Code for time stepping with the Multirate Partitioned Runge-Kutta method
 
   Notes:
   1) The general system is written as
-     Udot = F(t,U) for nonsplit RHS multi-rate RK,
-     user should give the indexes for both slow and fast components;
+     Udot = F(t,U)
+     if one does not split the RHS function, but gives the indexes for both slow and fast components;
   2) The general system is written as
      Usdot = Fs(t,Us,Uf)
-     Ufdot = Ff(t,Us,Uf) for split RHS multi-rate RK,
-     user should partioned RHS by themselves and also provide the indexes for both slow and fast components.
+     Ufdot = Ff(t,Us,Uf)
+     for component-wise partitioned system,
+     users should split the RHS function themselves and also provide the indexes for both slow and fast components.
   3) To correct The confusing terminology in the paper, we use 'slow method', 'slow buffer method' and 'fast method' to denote the methods applied to 'slow region', 'slow buffer region' and 'fast region' respectively. The 'slow method' in the original paper actually means the 'slow buffer method'.
   4) Why does the buffer region have to be inside the slow region? The buffer region is treated with a slow method essentially. Applying the slow method to a region with a fast characteristic time scale is apparently not a good choice.
 
   Reference:
   Emil M. Constantinescu, Adrian Sandu, Multirate Timestepping Methods for Hyperbolic Conservation Laws, Journal of Scientific Computing 2007
-
 */
 
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
@@ -128,7 +128,7 @@ static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio,PetscInt s,const Pet
 }
 
 /*MC
-     TSMPRK2A22 - Second Order Partitioned Runge Kutta scheme based on RK2A.
+     TSMPRK2A22 - Second Order Multirate Partitioned Runge Kutta scheme based on RK2A.
 
      This method has four stages for slow and fast parts. The refinement factor of the stepsize is 2.
      r = 2, np = 2
@@ -140,7 +140,7 @@ static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio,PetscInt s,const Pet
 .seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
 M*/
 /*MC
-     TSMPRK2A23 - Second Order Partitioned Runge Kutta scheme based on RK2A.
+     TSMPRK2A23 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
 
      This method has eight stages for slow and medium and fast parts. The refinement factor of the stepsize is 2.
      r = 2, np = 3
@@ -152,7 +152,7 @@ M*/
 .seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
 M*/
 /*MC
-     TSMPRK2A32 - Second Order Partitioned Runge Kutta scheme based on RK2A.
+     TSMPRK2A32 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
 
      This method has four stages for slow and fast parts. The refinement factor of the stepsize is 3.
      r = 3, np = 2
@@ -164,7 +164,7 @@ M*/
 .seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
 M*/
 /*MC
-     TSMPRK2A33 - Second Order Partitioned Runge Kutta scheme based on RK2A.
+     TSMPRK2A33 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
 
      This method has eight stages for slow and medium and fast parts. The refinement factor of the stepsize is 3.
      r = 3, np = 3
@@ -176,7 +176,7 @@ M*/
 .seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
 M*/
 /*MC
-     TSMPRK3P2M - Third Order Partitioned Runge Kutta scheme.
+     TSMPRK3P2M - Third Order Multirate Partitioned Runge-Kutta scheme.
 
      This method has eight stages for both slow and fast parts.
 
@@ -188,7 +188,7 @@ M*/
 .seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
 M*/
 /*MC
-     TSMPRKP2 - Second Order Partitioned Runge Kutta scheme.
+     TSMPRKP2 - Second Order Multirate Partitioned Runge-Kutta scheme.
 
      This method has five stages for both slow and fast parts.
 
@@ -200,7 +200,7 @@ M*/
 .seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
 M*/
 /*MC
-     TSMPRKP3 - Third Order Partitioned Runge Kutta scheme.
+     TSMPRKP3 - Third Order Multirate Partitioned Runge-Kutta scheme.
 
      This method has ten stages for both slow and fast parts.
 
@@ -437,7 +437,7 @@ PetscErrorCode TSMPRKInitializePackage(void)
 }
 
 /*@C
-  TSRKFinalizePackage - This function destroys everything in the TSMPRK package. It is
+  TSMPRKFinalizePackage - This function destroys everything in the TSMPRK package. It is
   called from PetscFinalize().
 
   Level: developer
@@ -759,11 +759,9 @@ static PetscErrorCode TSStep_MPRK(TS ts)
 }
 
 /*
- This if for partitioned RHS MPRK
+ This if for the case when split RHS is used
  The step completion formula is
-
  x1 = x0 + h b^T YdotRHS
-
 */
 static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts,PetscInt order,Vec X,PetscBool *done)
 {
@@ -1327,13 +1325,13 @@ static PetscErrorCode TSDestroy_MPRK(TS ts)
 }
 
 /*MC
-      TSMPRK - ODE solver using Partitioned Runge-Kutta schemes
+      TSMPRK - ODE solver using Multirate Partitioned Runge-Kutta schemes
 
   The user should provide the right hand side of the equation
   using TSSetRHSFunction().
 
   Notes:
-  The default is TSMPRKPM2, it can be changed with TSRKSetType() or -ts_mprk_type
+  The default is TSMPRKPM2, it can be changed with TSMPRKSetType() or -ts_mprk_type
 
   Level: beginner
 
