@@ -457,7 +457,7 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
   if (order == tab->order) {
     if (rk->status == TS_STEP_INCOMPLETE) {
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
-      for (j=0; j<s; j++) w[j] = h*tab->b[j];
+      for (j=0; j<s; j++) w[j] = h*tab->b[j]/rk->dtratio;
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
     } else {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
@@ -767,8 +767,6 @@ static PetscErrorCode TSRKTableauReset(TS ts)
   ierr = VecDestroyVecs(tab->s,&rk->YdotRHS);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
-  ierr = PetscFree(rk->YdotRHS_fast);CHKERRQ(ierr);
-  ierr = PetscFree(rk->YdotRHS_slow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1099,6 +1097,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirateType_C",TSRKSetMultirateType);CHKERRQ(ierr);
 
   ierr = TSRKSetType(ts,TSRKDefault);CHKERRQ(ierr);
+  rk->dtratio = 1;
   PetscFunctionReturn(0);
 }
 
@@ -1147,6 +1146,8 @@ static PetscErrorCode TSReset_MRKSPLIT(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFree(rk->YdotRHS_fast);CHKERRQ(ierr);
+  ierr = PetscFree(rk->YdotRHS_slow);CHKERRQ(ierr);
   ierr = VecDestroy(&rk->X0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1258,77 +1259,24 @@ static PetscErrorCode TSInterpolate_MRKSPLIT(TS ts,PetscReal itime,Vec X)
   PetscFunctionReturn(0);
 }
 
-/*
- This is for the nonsplit version of multirate RK method
- The step completion formula is
-
- x1 = x0 + h b^T YdotRHS
-
-*/
-static PetscErrorCode TSEvaluateStep_MRKNONSPLIT(TS ts,PetscInt order,Vec X,PetscBool *done)
-{
-  TS_RK           *rk = (TS_RK*)ts->data;
-  RKTableau       tab = rk->tableau;
-  Vec             Xtemp;                          /* temporary work vector for X                                   */
-  PetscScalar     *w = rk->work;
-  PetscScalar     *x_ptr,*xtemp_ptr;              /* location to put the pointer to X and Xtemp respectively       */
-  PetscReal       h = ts->time_step;
-  PetscInt        s = tab->s,j;
-  PetscInt        len_slow,len_fast;              /* the number of slow components and fast components respectively */
-  const PetscInt  *is_slow,*is_fast;              /* the index for slow components and fast components respectively */
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&Xtemp);CHKERRQ(ierr);
-  ierr = VecCopy(ts->vec_sol,Xtemp);CHKERRQ(ierr);
-  if (rk->slow) {
-    for (j=0; j<s; j++) w[j] = h*tab->b[j];
-    /* update the value of slow components, and discard the updating value of fast components */
-    ierr = VecMAXPY(Xtemp,s,w,rk->YdotRHS_slow);CHKERRQ(ierr);
-    ierr = VecGetArray(X,&x_ptr);CHKERRQ(ierr);
-    ierr = VecGetArray(Xtemp,&xtemp_ptr);CHKERRQ(ierr);
-    ierr = ISGetSize(rk->is_slow,&len_slow);CHKERRQ(ierr);
-    ierr = ISGetIndices(rk->is_slow,&is_slow);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(rk->is_slow,&is_slow);CHKERRQ(ierr);
-    for (j=0; j<len_slow; j++) x_ptr[is_slow[j]] = xtemp_ptr[is_slow[j]];
-    ierr = VecRestoreArray(X,&x_ptr);CHKERRQ(ierr);
-    ierr = VecRestoreArray(Xtemp,&xtemp_ptr);CHKERRQ(ierr);
-  } else {
-    /* update the value of fast components, and discard the updating value of slow components */
-    for (j=0; j<s; j++) w[j] = h/rk->dtratio*tab->b[j];
-    ierr = VecMAXPY(Xtemp,s,w,rk->YdotRHS);CHKERRQ(ierr);
-    ierr = VecGetArray(X,&x_ptr);CHKERRQ(ierr);
-    ierr = VecGetArray(Xtemp,&xtemp_ptr);CHKERRQ(ierr);
-    ierr = ISGetSize(rk->is_fast,&len_fast);CHKERRQ(ierr);
-    ierr = ISGetIndices(rk->is_fast,&is_fast);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(rk->is_fast,&is_fast);CHKERRQ(ierr);
-    for (j=0; j<len_fast; j++) x_ptr[is_fast[j]] = xtemp_ptr[is_fast[j]];
-    ierr = VecRestoreArray(X,&x_ptr);CHKERRQ(ierr);
-    ierr = VecRestoreArray(Xtemp,&xtemp_ptr);CHKERRQ(ierr);
-  }
-  /* free temporary vector space */
-  ierr = VecDestroy(&Xtemp);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TSStep_MRKNONSPLIT(TS ts)
 {
   TS_RK             *rk = (TS_RK*)ts->data;
   RKTableau         tab  = rk->tableau;
   Vec               *Y = rk->Y,*YdotRHS = rk->YdotRHS,*YdotRHS_slow = rk->YdotRHS_slow;
-  Vec               stage_fast,stage_slow; /* vectors store the stage value of fast and slow components respectively */
-  Vec               Yslow,Sslow;           /* vectors store the previous and new time solution of slow components */
+  Vec               stage_slow,sol_slow;   /* vectors store the slow components */
+  Vec               subvec_slow;           /* sub vector to store the slow components */
   const PetscInt    s = tab->s;
   const PetscReal   *A = tab->A,*c = tab->c;
   PetscScalar       *w = rk->work;
-  PetscInt          i,j,k;
+  PetscInt          i,j,k,dtratio = rk->dtratio;
   PetscReal         next_time_step = ts->time_step,t = ts->ptime,h = ts->time_step;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   rk->status = TS_STEP_INCOMPLETE;
   ierr = VecDuplicate(ts->vec_sol,&stage_slow);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&sol_slow);CHKERRQ(ierr);
   ierr = VecCopy(ts->vec_sol,rk->X0);CHKERRQ(ierr);
   for (i=0; i<s; i++) {
     rk->stage_time = t + h*c[i];
@@ -1340,38 +1288,42 @@ static PetscErrorCode TSStep_MRKNONSPLIT(TS ts)
     /* compute the stage RHS */
     ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
   }
-  rk->slow = PETSC_TRUE;
-  ierr = TSEvaluateStep_MRKNONSPLIT(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
+  /* update the slow components in the solution */
+  rk->YdotRHS = YdotRHS_slow;
+  rk->dtratio = 1;
+  ierr = TSEvaluateStep(ts,tab->order,sol_slow,NULL);CHKERRQ(ierr);
+  rk->dtratio = dtratio;
+  rk->YdotRHS = YdotRHS;
   for (k=0; k<rk->dtratio; k++) {
     for (i=0; i<s; i++) {
       rk->stage_time = t + h/rk->dtratio*c[i];
       ierr = TSPreStage(ts,rk->stage_time);CHKERRQ(ierr);
-      ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr); /* Only need the values for fast components */
-      /* guarantee the stage RHS for slow components do not change while updating the stage RHS for fast components */
-      /* update the fast components stage value, slow components will be overwritten */
+      /* update the fast components in the stage value, the slow components will be overwritten, so it is ok to have garbage in the slow components */
+      ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
       for (j=0; j<i; j++) w[j] = h/rk->dtratio*A[i*s+j];
       ierr = VecMAXPY(Y[i],i,w,YdotRHS);CHKERRQ(ierr);
-      /* update the slow components stage value */
       ierr = TSInterpolate_MRKNONSPLIT(ts,t+k*h/rk->dtratio+h/rk->dtratio*c[i],stage_slow);CHKERRQ(ierr);
-      /* combine the update fast components stage value and slow components stage value to Y[i] */
-      ierr = VecGetSubVector(Y[i],rk->is_slow,&Yslow);CHKERRQ(ierr);
-      ierr = VecGetSubVector(stage_slow,rk->is_slow,&Sslow);CHKERRQ(ierr);
-      ierr = VecCopy(Sslow,Yslow);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(Y[i],rk->is_slow,&Yslow);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(stage_slow,rk->is_slow,&Sslow);CHKERRQ(ierr);
+      /* update the slow components in the stage value */
+      ierr = VecGetSubVector(stage_slow,rk->is_slow,&subvec_slow);CHKERRQ(ierr);
+      ierr = VecISCopy(Y[i],rk->is_slow,SCATTER_FORWARD,subvec_slow);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(stage_slow,rk->is_slow,&subvec_slow);CHKERRQ(ierr);
       ierr = TSPostStage(ts,rk->stage_time,i,Y);CHKERRQ(ierr);
       /* compute the stage RHS */
       ierr = TSComputeRHSFunction(ts,t+k*h/rk->dtratio+h/rk->dtratio*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
     }
-    rk->slow = PETSC_FALSE;
-    /* update the fast components */
-    ierr = TSEvaluateStep_MRKNONSPLIT(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
+    ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
   }
+  /* update the slow components in the solution */
+  ierr = VecGetSubVector(sol_slow,rk->is_slow,&subvec_slow);CHKERRQ(ierr);
+  ierr = VecISCopy(ts->vec_sol,rk->is_slow,SCATTER_FORWARD,subvec_slow);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(sol_slow,rk->is_slow,&subvec_slow);CHKERRQ(ierr);
+
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
   rk->status = TS_STEP_COMPLETE;
   /* free memory of work vectors */
-  ierr = VecDestroy(&stage_fast);CHKERRQ(ierr);
+  ierr = VecDestroy(&stage_slow);CHKERRQ(ierr);
+  ierr = VecDestroy(&sol_slow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1507,7 +1459,6 @@ PetscErrorCode TSRKSetMultirateType(TS ts, TSMRKType mrktype)
       break;
     case TSMRKNONSPLIT:
       ts->ops->step           = TSStep_MRKNONSPLIT;
-      ts->ops->evaluatestep   = TSEvaluateStep_MRKNONSPLIT;
       ts->ops->interpolate    = TSInterpolate_MRKNONSPLIT;
       rk->dtratio             = 2;
       ierr = TSRKSetType(ts,TSMRKDefault);CHKERRQ(ierr);
