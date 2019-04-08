@@ -438,6 +438,8 @@ PETSC_EXTERN PetscErrorCode TSRHSSplitGetIS(TS,const char[],IS*);
 PETSC_EXTERN PetscErrorCode TSRHSSplitSetRHSFunction(TS,const char[],Vec,TSRHSFunction,void*);
 PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTS(TS,const char[],TS*);
 PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTSs(TS,PetscInt*,TS*[]);
+PETSC_EXTERN PetscErrorCode TSSetUseSplitRHSFunction(TS, PetscBool);
+PETSC_EXTERN PetscErrorCode TSGetUseSplitRHSFunction(TS, PetscBool*);
 
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat,Mat,void*);
@@ -774,19 +776,10 @@ typedef const char* TSRKType;
 #define TSRK5DP   "5dp"
 #define TSRK5BS   "5bs"
 
-/*J
-    TSMRKType - String with the name of a Runge-Kutta Multirate method.
-
-   Level: beginner
-
-.seealso: TSRKSetMultirateType(), TS, TSRK
-J*/
-typedef enum {TSMRKNONE=0,TSMRKNONSPLIT=1,TSMRKSPLIT=2} TSMRKType;
-PETSC_EXTERN const char* const TSMRKTypes[];
-
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
-PETSC_EXTERN PetscErrorCode TSRKSetMultirateType(TS,TSMRKType);
+PETSC_EXTERN PetscErrorCode TSRKSetMultirate(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSRKGetMultirate(TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
@@ -808,19 +801,8 @@ typedef const char* TSMPRKType;
 #define TSMPRKP2    "p2"
 #define TSMPRKP3    "p3"
 
-/*J
-   TSMPRKMultirateType - String with the name of a Partitioned Runge-Kutta method.
-
-   Level: beginner
-
-.seealso: TSMPRKSetMultirateType(), TS, TSMPRK
-J*/
-typedef enum {TSMPRKNONSPLIT=0,TSMPRKSPLIT=1} TSMPRKMultirateType;
-PETSC_EXTERN const char* const TSMPRKMultirateTypes[];
-
 PETSC_EXTERN PetscErrorCode TSMPRKGetType(TS ts,TSMPRKType*);
 PETSC_EXTERN PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType);
-PETSC_EXTERN PetscErrorCode TSMPRKSetMultirateType(TS ts,TSMPRKMultirateType);
 PETSC_EXTERN PetscErrorCode TSMPRKRegister(TSMPRKType,PetscInt,PetscInt,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt [],const PetscReal[],const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSMPRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSMPRKFinalizePackage(void);

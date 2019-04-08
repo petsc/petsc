@@ -15,27 +15,6 @@
 #include <petscdm.h>
 #include <../src/ts/impls/explicit/rk/rk.h>
 
-static TSRKType TSMRKDefault = TSRK2A;
-
-static PetscErrorCode TSSetUp_MRKNONSPLIT(TS ts)
-{
-  TS_RK          *rk = (TS_RK*)ts->data;
-  RKTableau      tab = rk->tableau;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSRHSSplitGetIS(ts,"slow",&rk->is_slow);CHKERRQ(ierr);
-  ierr = TSRHSSplitGetIS(ts,"fast",&rk->is_fast);CHKERRQ(ierr);
-  if (!rk->is_slow || !rk->is_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use multirate RK");
-  ierr = TSRHSSplitGetSubTS(ts,"slow",&rk->subts_slow);CHKERRQ(ierr);
-  ierr = TSRHSSplitGetSubTS(ts,"fast",&rk->subts_fast);CHKERRQ(ierr);
-  if (!rk->subts_slow || !rk->subts_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
-  ierr = VecDuplicate(ts->vec_sol,&rk->X0);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&rk->YdotRHS_slow);CHKERRQ(ierr);
-  rk->subts_current = rk->subts_fast;
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TSReset_MRKNONSPLIT(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
@@ -197,6 +176,28 @@ static PetscErrorCode TSStep_MRKNONSPLIT(TS ts)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSSetUp_MRKNONSPLIT(TS ts)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+  RKTableau      tab = rk->tableau;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSRHSSplitGetIS(ts,"slow",&rk->is_slow);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetIS(ts,"fast",&rk->is_fast);CHKERRQ(ierr);
+  if (!rk->is_slow || !rk->is_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use multirate RK");
+  ierr = TSRHSSplitGetSubTS(ts,"slow",&rk->subts_slow);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetSubTS(ts,"fast",&rk->subts_fast);CHKERRQ(ierr);
+  if (!rk->subts_slow || !rk->subts_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
+  ierr = VecDuplicate(ts->vec_sol,&rk->X0);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&rk->YdotRHS_slow);CHKERRQ(ierr);
+  rk->subts_current = rk->subts_fast;
+
+  ts->ops->step        = TSStep_MRKNONSPLIT;
+  ts->ops->interpolate = TSInterpolate_MRKNONSPLIT;
+  PetscFunctionReturn(0);
+}
+
 /*
   Copy DM from tssrc to tsdest, while keeping the original DMTS and DMSNES in tsdest.
 */
@@ -213,64 +214,6 @@ static PetscErrorCode TSCopyDM(TS tssrc,TS tsdest)
   ierr = DMCopyDMSNES(dmdest,newdm);CHKERRQ(ierr);
   ierr = TSSetDM(tsdest,newdm);CHKERRQ(ierr);
   ierr = DMDestroy(&newdm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode TSSetUp_MRKSPLIT(TS ts)
-{
-  TS_RK          *rk = (TS_RK*)ts->data,*nextlevelrk,*currentlevelrk;
-  TS             nextlevelts;
-  Vec            X0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSRHSSplitGetIS(ts,"slow",&rk->is_slow);CHKERRQ(ierr);
-  ierr = TSRHSSplitGetIS(ts,"fast",&rk->is_fast);CHKERRQ(ierr);
-  if (!rk->is_slow || !rk->is_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use -ts_type bsi");
-  ierr = TSRHSSplitGetSubTS(ts,"slow",&rk->subts_slow);CHKERRQ(ierr);
-  ierr = TSRHSSplitGetSubTS(ts,"fast",&rk->subts_fast);CHKERRQ(ierr);
-  if (!rk->subts_slow || !rk->subts_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
-
-  ierr = VecDuplicate(ts->vec_sol,&X0);CHKERRQ(ierr);
-  /* The TS at each level share the same tableau, work array, solution vector, stage values and stage derivatives */
-  currentlevelrk = rk;
-  while (currentlevelrk->subts_fast) {
-    ierr = PetscMalloc1(rk->tableau->s,&currentlevelrk->YdotRHS_fast);CHKERRQ(ierr);
-    ierr = PetscMalloc1(rk->tableau->s,&currentlevelrk->YdotRHS_slow);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)X0);CHKERRQ(ierr);
-    currentlevelrk->X0 = X0;
-    currentlevelrk->ts_root = ts;
-
-    /* set up the ts for the slow part */
-    nextlevelts = currentlevelrk->subts_slow;
-    ierr = PetscNewLog(nextlevelts,&nextlevelrk);CHKERRQ(ierr);
-    nextlevelrk->tableau = rk->tableau;
-    nextlevelrk->work = rk->work;
-    nextlevelrk->Y = rk->Y;
-    nextlevelrk->YdotRHS = rk->YdotRHS;
-    nextlevelts->data = (void*)nextlevelrk;
-    ierr = TSCopyDM(ts,nextlevelts);CHKERRQ(ierr);
-    ierr = TSSetSolution(nextlevelts,ts->vec_sol);CHKERRQ(ierr);
-
-    /* set up the ts for the fast part */
-    nextlevelts = currentlevelrk->subts_fast;
-    ierr = PetscNewLog(nextlevelts,&nextlevelrk);CHKERRQ(ierr);
-    nextlevelrk->tableau = rk->tableau;
-    nextlevelrk->work = rk->work;
-    nextlevelrk->Y = rk->Y;
-    nextlevelrk->YdotRHS = rk->YdotRHS;
-    nextlevelrk->dtratio = rk->dtratio;
-    ierr = TSRHSSplitGetIS(nextlevelts,"slow",&nextlevelrk->is_slow);CHKERRQ(ierr);
-    ierr = TSRHSSplitGetSubTS(nextlevelts,"slow",&nextlevelrk->subts_slow);CHKERRQ(ierr);
-    ierr = TSRHSSplitGetIS(nextlevelts,"fast",&nextlevelrk->is_fast);CHKERRQ(ierr);
-    ierr = TSRHSSplitGetSubTS(nextlevelts,"fast",&nextlevelrk->subts_fast);CHKERRQ(ierr);
-    nextlevelts->data = (void*)nextlevelrk;
-    ierr = TSCopyDM(ts,nextlevelts);CHKERRQ(ierr);
-    ierr = TSSetSolution(nextlevelts,ts->vec_sol);CHKERRQ(ierr);
-
-    currentlevelrk = nextlevelrk;
-  }
-  ierr = VecDestroy(&X0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -492,50 +435,132 @@ static PetscErrorCode TSStep_MRKSPLIT(TS ts)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSSetUp_MRKSPLIT(TS ts)
+{
+  TS_RK          *rk = (TS_RK*)ts->data,*nextlevelrk,*currentlevelrk;
+  TS             nextlevelts;
+  Vec            X0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSRHSSplitGetIS(ts,"slow",&rk->is_slow);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetIS(ts,"fast",&rk->is_fast);CHKERRQ(ierr);
+  if (!rk->is_slow || !rk->is_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use -ts_type bsi");
+  ierr = TSRHSSplitGetSubTS(ts,"slow",&rk->subts_slow);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetSubTS(ts,"fast",&rk->subts_fast);CHKERRQ(ierr);
+  if (!rk->subts_slow || !rk->subts_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
+
+  ierr = VecDuplicate(ts->vec_sol,&X0);CHKERRQ(ierr);
+  /* The TS at each level share the same tableau, work array, solution vector, stage values and stage derivatives */
+  currentlevelrk = rk;
+  while (currentlevelrk->subts_fast) {
+    ierr = PetscMalloc1(rk->tableau->s,&currentlevelrk->YdotRHS_fast);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rk->tableau->s,&currentlevelrk->YdotRHS_slow);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)X0);CHKERRQ(ierr);
+    currentlevelrk->X0 = X0;
+    currentlevelrk->ts_root = ts;
+
+    /* set up the ts for the slow part */
+    nextlevelts = currentlevelrk->subts_slow;
+    ierr = PetscNewLog(nextlevelts,&nextlevelrk);CHKERRQ(ierr);
+    nextlevelrk->tableau = rk->tableau;
+    nextlevelrk->work = rk->work;
+    nextlevelrk->Y = rk->Y;
+    nextlevelrk->YdotRHS = rk->YdotRHS;
+    nextlevelts->data = (void*)nextlevelrk;
+    ierr = TSCopyDM(ts,nextlevelts);CHKERRQ(ierr);
+    ierr = TSSetSolution(nextlevelts,ts->vec_sol);CHKERRQ(ierr);
+
+    /* set up the ts for the fast part */
+    nextlevelts = currentlevelrk->subts_fast;
+    ierr = PetscNewLog(nextlevelts,&nextlevelrk);CHKERRQ(ierr);
+    nextlevelrk->tableau = rk->tableau;
+    nextlevelrk->work = rk->work;
+    nextlevelrk->Y = rk->Y;
+    nextlevelrk->YdotRHS = rk->YdotRHS;
+    nextlevelrk->dtratio = rk->dtratio;
+    ierr = TSRHSSplitGetIS(nextlevelts,"slow",&nextlevelrk->is_slow);CHKERRQ(ierr);
+    ierr = TSRHSSplitGetSubTS(nextlevelts,"slow",&nextlevelrk->subts_slow);CHKERRQ(ierr);
+    ierr = TSRHSSplitGetIS(nextlevelts,"fast",&nextlevelrk->is_fast);CHKERRQ(ierr);
+    ierr = TSRHSSplitGetSubTS(nextlevelts,"fast",&nextlevelrk->subts_fast);CHKERRQ(ierr);
+    nextlevelts->data = (void*)nextlevelrk;
+    ierr = TSCopyDM(ts,nextlevelts);CHKERRQ(ierr);
+    ierr = TSSetSolution(nextlevelts,ts->vec_sol);CHKERRQ(ierr);
+
+    currentlevelrk = nextlevelrk;
+  }
+  ierr = VecDestroy(&X0);CHKERRQ(ierr);
+
+  ts->ops->step         = TSStep_MRKSPLIT;
+  ts->ops->evaluatestep = TSEvaluateStep_MRKSPLIT;
+  ts->ops->interpolate  = TSInterpolate_MRKSPLIT;
+  PetscFunctionReturn(0);
+}
+
 /*@C
-  TSRKSetMultirateType - Set the type of RK Multirate scheme
+  TSRKSetMultirate - Use the interpolation-based multirate RK method
 
   Logically collective
 
   Input Parameter:
 +  ts - timestepping context
--  mrktype - type of MRK-scheme
+-  use_multirate - PETSC_TRUE enables the multirate RK method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
 
   Options Database:
-.   -ts_rk_multiarte_type - <none,nonsplit,split>
+.   -ts_rk_multirate - <true,false>
+
+  Notes:
+  The multirate method requires interpolation. The default interpolation works for 1st- and 2nd- order RK, but not for high-order RKs except TSRK5DP which comes with the interpolation coeffcients (binterp).
 
   Level: intermediate
+
+.seealso: TSRKGetMultirate()
 @*/
-PetscErrorCode TSRKSetMultirateType(TS ts, TSMRKType mrktype)
+PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  switch(mrktype){
-    case TSMRKNONE:
-      break;
-    case TSMRKNONSPLIT:
-      ts->ops->step           = TSStep_MRKNONSPLIT;
-      ts->ops->interpolate    = TSInterpolate_MRKNONSPLIT;
-      rk->dtratio             = 2;
-      ierr = TSRKSetType(ts,TSMRKDefault);CHKERRQ(ierr);
-      ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKNONSPLIT_C",TSSetUp_MRKNONSPLIT);CHKERRQ(ierr);
-      ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKNONSPLIT_C",TSReset_MRKNONSPLIT);CHKERRQ(ierr);
-      break;
-    case TSMRKSPLIT:
-      ts->ops->step           = TSStep_MRKSPLIT;
-      ts->ops->evaluatestep   = TSEvaluateStep_MRKSPLIT;
-      ts->ops->interpolate    = TSInterpolate_MRKSPLIT;
-      rk->dtratio             = 2;
-      ierr = TSRKSetType(ts,TSMRKDefault);CHKERRQ(ierr);
-      ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKSPLIT_C",TSSetUp_MRKSPLIT);CHKERRQ(ierr);
-      ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKSPLIT_C",TSReset_MRKSPLIT);CHKERRQ(ierr);
-      break;
-    default :
-      SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown type '%s'",mrktype);
+  rk->use_multirate = use_multirate;
+  if (use_multirate) {
+    rk->dtratio = 2;
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKSPLIT_C",TSSetUp_MRKSPLIT);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKSPLIT_C",TSReset_MRKSPLIT);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKNONSPLIT_C",TSSetUp_MRKNONSPLIT);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKNONSPLIT_C",TSReset_MRKNONSPLIT);CHKERRQ(ierr);
+  } else {
+    rk->dtratio = 0;
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKSPLIT_C",NULL);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKSPLIT_C",NULL);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKNONSPLIT_C",NULL);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKNONSPLIT_C",NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
+/*@C
+  TSRKGetMultirate - Gets whether to Use the interpolation-based multirate RK method
+
+  Not collective
+
+  Input Parameter:
+.  ts - timestepping context
+
+  Output Parameter:
+.  use_multirate - PETSC_TRUE if the multirate RK method is enabled, PETSC_FALSE otherwise
+
+  Level: intermediate
+
+.seealso: TSRKSetMultirate()
+@*/
+PetscErrorCode TSRKGetMultirate(TS ts,PetscBool *use_multirate)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  *use_multirate = rk->use_multirate;
+  PetscFunctionReturn(0);
+}

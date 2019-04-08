@@ -731,8 +731,11 @@ static PetscErrorCode TSReset_RK(TS ts)
   PetscFunctionBegin;
   ierr = TSRKTableauReset(ts);CHKERRQ(ierr);
   ierr = VecDestroy(&rk->VecCostIntegral0);CHKERRQ(ierr);
-  ierr = PetscTryMethod(ts,"TSReset_MRKSPLIT_C",(TS),(ts));CHKERRQ(ierr);
-  ierr = PetscTryMethod(ts,"TSReset_MRKNONSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+  if (ts->use_splitrhsfunction) {
+    ierr = PetscTryMethod(ts,"TSReset_MRKSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+  } else {
+    ierr = PetscTryMethod(ts,"TSReset_MRKNONSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -815,15 +818,13 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
   ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
-  ierr = PetscTryMethod(ts,"TSSetUp_MRKSPLIT_C",(TS),(ts));CHKERRQ(ierr);
-  ierr = PetscTryMethod(ts,"TSSetUp_MRKNONSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+  if (ts->use_splitrhsfunction) {
+    ierr = PetscTryMethod(ts,"TSSetUp_MRKSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+  } else {
+    ierr = PetscTryMethod(ts,"TSSetUp_MRKNONSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
-
-/*
-  construct a database to choose single-step RK, or nonsplit version of mutirate RK or multirate RK with RHS splits
-*/
-const char *const TSMRKTypes[] = {"NONE","NONSPLIT","SPLIT","TSMRKType","TSMRK",0};
 
 static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,TS ts)
 {
@@ -835,15 +836,16 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
   {
     RKTableauLink link;
     PetscInt      count,choice;
-    PetscBool     flg;
+    PetscBool     flg,use_multirate = PETSC_FALSE;
     const char    **namelist;
-    PetscInt      mrktype = 0;
 
     for (link=RKTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=RKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    ierr = PetscOptionsEList("-ts_rk_multirate_type","Use Multirate or partioned RHS Multirate or single rate RK method","TSRKSetMultirateType",TSMRKTypes,3,TSMRKTypes[0],&mrktype,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = TSRKSetMultirateType(ts,mrktype);CHKERRQ(ierr);}
+    ierr = PetscOptionsBool("-ts_rk_multirate","Use interpolation-based multirate RK method","TSRKSetMultirate",rk->use_multirate,&use_multirate,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = TSRKSetMultirate(ts,use_multirate);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rk->tableau->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSRKSetType(ts,namelist[choice]);CHKERRQ(ierr);}
     ierr = PetscFree(namelist);CHKERRQ(ierr);
@@ -998,7 +1000,8 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirateType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1014,7 +1017,7 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   Level: beginner
 
 .seealso:  TSCreate(), TS, TSSetType(), TSRKSetType(), TSRKGetType(), TSRKSetFullyImplicit(), TSRK2D, TTSRK2E, TSRK3,
-           TSRK4, TSRK5, TSRKPRSSP2, TSRKBPR3, TSRKType, TSRKRegister(), TSRKSetMultirateType()
+           TSRK4, TSRK5, TSRKPRSSP2, TSRKBPR3, TSRKType, TSRKRegister(), TSRKSetMultirate(), TSRKGetMultirate()
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
@@ -1047,7 +1050,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",TSRKSetType_RK);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirateType_C",TSRKSetMultirateType);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",TSRKSetMultirate);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",TSRKGetMultirate);CHKERRQ(ierr);
 
   ierr = TSRKSetType(ts,TSRKDefault);CHKERRQ(ierr);
   rk->dtratio = 1;

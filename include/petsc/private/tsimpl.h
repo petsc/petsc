@@ -268,6 +268,7 @@ struct _p_TS {
   /* ---------------------- RHS splitting support ---------------------------------*/
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
+  PetscBool       use_splitrhsfunction;
 };
 
 struct _TSAdaptOps {

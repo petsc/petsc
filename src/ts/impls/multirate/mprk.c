@@ -46,7 +46,6 @@ static MPRKTableauLink MPRKTableauList;
 
 typedef struct {
   MPRKTableau         tableau;
-  TSMPRKMultirateType mprkmtype;
   Vec                 *Y;                          /* States computed during the step                           */
   Vec                 *YdotRHS;
   Vec                 *YdotRHS_slow;               /* Function evaluations by slow tableau for slow components  */
@@ -967,7 +966,13 @@ static PetscErrorCode TSMPRKTableauReset(TS ts)
   ierr = PetscFree(mprk->work_medium);CHKERRQ(ierr);
   ierr = PetscFree(mprk->work_mediumbuffer);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s,&mprk->Y);CHKERRQ(ierr);
-  if (mprk->mprkmtype == TSMPRKNONSPLIT) {
+  if (ts->use_splitrhsfunction) {
+    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_fast);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_slow);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_slowbuffer);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_medium);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_mediumbuffer);CHKERRQ(ierr);
+  } else {
     ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS);CHKERRQ(ierr);
     if (mprk->is_slow) {
       ierr = PetscFree(mprk->YdotRHS_slow);CHKERRQ(ierr);
@@ -980,13 +985,6 @@ static PetscErrorCode TSMPRKTableauReset(TS ts)
       ierr = PetscFree(mprk->YdotRHS_mediumbuffer);CHKERRQ(ierr);
     }
     ierr = PetscFree(mprk->YdotRHS_fast);CHKERRQ(ierr);
-
-  } else {
-    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_fast);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_slow);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_slowbuffer);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_medium);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(tab->s,&mprk->YdotRHS_mediumbuffer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1045,20 +1043,7 @@ static PetscErrorCode TSMPRKTableauSetUp(TS ts)
   }
   ierr = PetscMalloc1(tab->s,&mprk->work_fast);CHKERRQ(ierr);
 
-  if (mprk->mprkmtype == TSMPRKNONSPLIT) {
-    ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->YdotRHS);CHKERRQ(ierr);
-    if (mprk->is_slow) {
-      ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_slow);CHKERRQ(ierr);
-    }
-    ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_slowbuffer);CHKERRQ(ierr);
-    if (tab->np == 3) {
-      if (mprk->is_medium) {
-        ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_medium);CHKERRQ(ierr);
-      }
-      ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_mediumbuffer);CHKERRQ(ierr);
-    }
-    ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_fast);CHKERRQ(ierr);
-  } else {
+  if (ts->use_splitrhsfunction) {
     if (mprk->is_slow) {
       ierr = VecGetSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(YdotRHS_slow,tab->s,&mprk->YdotRHS_slow);CHKERRQ(ierr);
@@ -1080,6 +1065,19 @@ static PetscErrorCode TSMPRKTableauSetUp(TS ts)
     ierr = VecGetSubVector(ts->vec_sol,mprk->is_fast,&YdotRHS_fast);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(YdotRHS_fast,tab->s,&mprk->YdotRHS_fast);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(ts->vec_sol,mprk->is_fast,&YdotRHS_fast);CHKERRQ(ierr);
+  } else {
+    ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->YdotRHS);CHKERRQ(ierr);
+    if (mprk->is_slow) {
+      ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_slow);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_slowbuffer);CHKERRQ(ierr);
+    if (tab->np == 3) {
+      if (mprk->is_medium) {
+        ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_medium);CHKERRQ(ierr);
+      }
+      ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_mediumbuffer);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc1(tab->s,&mprk->YdotRHS_fast);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1112,25 +1110,21 @@ static PetscErrorCode TSSetUp_MPRK(TS ts)
     mprk->is_slowbuffer = mprk->is_slow;
     mprk->is_slow = NULL;
   }
-/*
-  if (!mprk->is_medium) {
-    mprk->is_medium = mprk->is_fast;
-    mprk->is_fast = NULL;
-  } else {
-    ierr = TSRHSSplitGetIS(ts,"mediumbuffer",&mprk->is_mediumbuffer);CHKERRQ(ierr);
-  }
-*/
   ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
   ierr = TSMPRKTableauSetUp(ts);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSMPRK,DMRestrictHook_TSMPRK,ts);CHKERRQ(ierr);
   ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSMPRK,DMSubDomainRestrictHook_TSMPRK,ts);CHKERRQ(ierr);
-  ierr = PetscTryMethod(ts,"TSMPRKSetSplits_C",(TS),(ts));CHKERRQ(ierr);
+  if (ts->use_splitrhsfunction) {
+    ts->ops->step         = TSStep_MPRKSPLIT;
+    ts->ops->evaluatestep = TSEvaluateStep_MPRKSPLIT;
+    ierr = TSMPRKSetSplits(ts);CHKERRQ(ierr);
+  } else {
+    ts->ops->step         = TSStep_MPRK;
+    ts->ops->evaluatestep = TSEvaluateStep_MPRK;
+  }
   PetscFunctionReturn(0);
 }
-
-/* construct a database to chose nonsplit RHS mutirate mprk method or split RHS MPRK method */
-const char *const TSMPRKMultirateTypes[] = {"NONSPLIT","SPLIT","TSMPRKMultirateType","TSMPRK",0};
 
 static PetscErrorCode TSSetFromOptions_MPRK(PetscOptionItems *PetscOptionsObject,TS ts)
 {
@@ -1144,15 +1138,12 @@ static PetscErrorCode TSSetFromOptions_MPRK(PetscOptionItems *PetscOptionsObject
     PetscInt        count,choice;
     PetscBool       flg;
     const char      **namelist;
-    PetscInt        mprkmtype = 0;
     for (link=MPRKTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=MPRKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_mprk_type","Family of MPRK method","TSMPRKSetType",(const char*const*)namelist,count,mprk->tableau->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSMPRKSetType(ts,namelist[choice]);CHKERRQ(ierr);}
     ierr = PetscFree(namelist);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-ts_mprk_multirate_type","Use Combined RHS Multirate or Partioned RHS Multirat MPRK method","TSMPRKSetMultirateType",TSMPRKMultirateTypes,2,TSMPRKMultirateTypes[0],&mprkmtype,&flg);CHKERRQ(ierr);
-     if (flg) {ierr = TSMPRKSetMultirateType(ts,mprkmtype);CHKERRQ(ierr);}
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1226,7 +1217,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts,PetscViewer viewer)
 /*@C
   TSMPRKSetType - Set the type of MPRK scheme
 
-  Logically collective
+  Not collective
 
   Input Parameter:
 +  ts - timestepping context
@@ -1253,7 +1244,7 @@ PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType mprktype)
 /*@C
   TSMPRKGetType - Get the type of MPRK scheme
 
-  Logically collective
+  Not collective
 
   Input Parameter:
 .  ts - timestepping context
@@ -1272,44 +1263,6 @@ PetscErrorCode TSMPRKGetType(TS ts,TSMPRKType *mprktype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscUseMethod(ts,"TSMPRKGetType_C",(TS,TSMPRKType*),(ts,mprktype));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  TSMPRKSetMultirateType - Set the type of MPRK multirate scheme
-
-  Logically collective
-
-  Input Parameter:
-+  ts - timestepping context
--  mprkmtype - type of the multirate configuration
-
-  Options Database:
-.   -ts_mprk_multirate_type - <nonsplit,split>
-
-  Level: intermediate
-@*/
-PetscErrorCode TSMPRKSetMultirateType(TS ts, TSMPRKMultirateType mprkmtype)
-{
-  TS_MPRK        *mprk = (TS_MPRK*)ts->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  switch(mprkmtype){
-    case TSMPRKNONSPLIT:
-      ts->ops->step         = TSStep_MPRK;
-      ts->ops->evaluatestep = TSEvaluateStep_MPRK;
-      break;
-    case TSMPRKSPLIT:
-      ts->ops->step         = TSStep_MPRKSPLIT;
-      ts->ops->evaluatestep = TSEvaluateStep_MPRKSPLIT;
-      ierr = PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetSplits_C",TSMPRKSetSplits);CHKERRQ(ierr);
-      break;
-    default :
-      SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown type '%s'",mprkmtype);
-  }
-  mprk->mprkmtype = mprkmtype;
   PetscFunctionReturn(0);
 }
 
@@ -1370,7 +1323,6 @@ static PetscErrorCode TSDestroy_MPRK(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSMPRKGetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetMultirateType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1412,7 +1364,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSMPRKGetType_C",TSMPRKGetType_MPRK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetType_C",TSMPRKSetType_MPRK);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetMultirateType_C",TSMPRKSetMultirateType);CHKERRQ(ierr);
 
   ierr = TSMPRKSetType(ts,TSMPRKDefault);CHKERRQ(ierr);
   PetscFunctionReturn(0);
