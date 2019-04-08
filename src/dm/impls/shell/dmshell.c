@@ -682,6 +682,34 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM
 }
 
 /*@C
+   DMShellGetCoarsen - Get the routine used to coarsen the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
+.  dm - the shell DM
+
+   Output Arguments
+.  coarsen - the routine that coarsens the DM
+
+   Level: advanced
+
+.seealso: DMShellSetCoarsen(), DMCoarsen(), DMShellSetRefine(), DMRefine()
+@*/
+PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM,MPI_Comm,DM*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  *coarsen = dm->ops->coarsen;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    DMShellSetRefine - Set the routine used to refine the shell DM
 
    Logically Collective on DM
@@ -704,6 +732,34 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*)
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->refine = refine;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMShellGetRefine - Get the routine used to refine the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
+.  dm - the shell DM
+
+   Output Arguments
+.  refine - the routine that refines the DM
+
+   Level: advanced
+
+.seealso: DMShellSetCoarsen(), DMCoarsen(), DMShellSetRefine(), DMRefine()
+@*/
+PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM,MPI_Comm,DM*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  *refine = dm->ops->refine;
   PetscFunctionReturn(0);
 }
 
@@ -734,6 +790,32 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
 }
 
 /*@C
+   DMShellGetCreateInterpolation - Get the routine used to create the interpolation operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  interp - the routine to create the interpolation
+
+   Level: advanced
+
+.seealso: DMShellGetCreateInjection(), DMCreateInterpolation(), DMShellGetCreateRestriction(), DMShellSetContext(), DMShellGetContext()
+@*/
+PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM,DM,Mat*,Vec*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  *interp = dm->ops->createinterpolation;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    DMShellSetCreateRestriction - Set the routine used to create the restriction operator
 
    Logically Collective on DM
@@ -760,6 +842,32 @@ PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(
 }
 
 /*@C
+   DMShellGetCreateRestriction - Get the routine used to create the restriction operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  striction- the routine to create the restriction
+
+   Level: advanced
+
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation(), DMShellSetContext(), DMShellGetContext()
+@*/
+PetscErrorCode DMShellGetCreateRestriction(DM dm, PetscErrorCode (**restriction)(DM,DM,Mat*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  *restriction = dm->ops->createrestriction;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    DMShellSetCreateInjection - Set the routine used to create the injection operator
 
    Logically Collective on DM
@@ -782,6 +890,32 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->getinjection = inject;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMShellGetCreateInjection - Get the routine used to create the injection operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  inject - the routine to create the injection
+
+   Level: advanced
+
+.seealso: DMShellGetCreateInterpolation(), DMCreateInjection(), DMShellSetContext(), DMShellGetContext()
+@*/
+PetscErrorCode DMShellGetCreateInjection(DM dm, PetscErrorCode (**inject)(DM,DM,Mat*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  *inject = dm->ops->getinjection;
   PetscFunctionReturn(0);
 }
 
@@ -902,6 +1036,32 @@ PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createsubdm = subdm;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMShellGetCreateSubDM - Get the routine used to create a sub DM from the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  subdm - the routine to create the decomposition
+
+   Level: advanced
+
+.seealso: DMCreateSubDM(), DMShellSetCreateSubDM(), DMShellSetContext(), DMShellGetContext()
+@*/
+PetscErrorCode DMShellGetCreateSubDM(DM dm, PetscErrorCode (**subdm)(DM,PetscInt,const PetscInt[],IS*,DM*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  *subdm = dm->ops->createsubdm;
   PetscFunctionReturn(0);
 }
 
