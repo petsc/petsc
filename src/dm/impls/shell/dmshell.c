@@ -686,10 +686,10 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM
 
    Logically Collective on DM
 
-   Input Arguments
+   Input Argument:
 .  dm - the shell DM
 
-   Output Arguments
+   Output Argument:
 .  coarsen - the routine that coarsens the DM
 
    Level: advanced
@@ -740,10 +740,10 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*)
 
    Logically Collective on DM
 
-   Input Arguments
+   Input Argument:
 .  dm - the shell DM
 
-   Output Arguments
+   Output Argument:
 .  refine - the routine that refines the DM
 
    Level: advanced
@@ -794,8 +794,10 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
 
    Logically Collective on DM
 
-   Input Arguments
+   Input Argument:
 +  dm - the shell DM
+
+   Output Argument:
 -  interp - the routine to create the interpolation
 
    Level: advanced
@@ -846,9 +848,11 @@ PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(
 
    Logically Collective on DM
 
-   Input Arguments
+   Input Argument:
 +  dm - the shell DM
--  striction- the routine to create the restriction
+
+   Output Argument:
+-  restriction - the routine to create the restriction
 
    Level: advanced
 
@@ -898,8 +902,10 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
 
    Logically Collective on DM
 
-   Input Arguments
+   Input Argument:
 +  dm - the shell DM
+
+   Output Argument:
 -  inject - the routine to create the injection
 
    Level: advanced
@@ -1044,8 +1050,10 @@ PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,
 
    Logically Collective on DM
 
-   Input Arguments
+   Input Argument:
 +  dm - the shell DM
+
+   Output Argument:
 -  subdm - the routine to create the decomposition
 
    Level: advanced
@@ -1167,4 +1175,3 @@ PetscErrorCode  DMShellCreate(MPI_Comm comm,DM *dm)
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
