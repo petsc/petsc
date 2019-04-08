@@ -186,10 +186,15 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 /*@C
     PetscViewerASCIIGetPointer - Extracts the file pointer from an ASCII PetscViewer.
 
-    Not Collective
+    Not Collective, depending on the viewer the value may be meaningless except for process 0 of the viewer
 
-+   viewer - PetscViewer context, obtained from PetscViewerASCIIOpen()
--   fd - file pointer
+    Input Parameter:
+.    viewer - PetscViewer context, obtained from PetscViewerASCIIOpen()
+
+    Output Parameter:
+.    fd - file pointer
+
+    Notes: for the standard PETSCVIEWERASCII the value is valid only on process 0 of the viewer
 
     Level: intermediate
 
@@ -1007,9 +1012,9 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 }
 
 /*@C
-   PetscViewerASCIIRead - Reads from am ASCII file
+   PetscViewerASCIIRead - Reads from a ASCII file
 
-   Collective on MPI_Comm
+   Only process 0 in the PetscViewer may call this
 
    Input Parameters:
 +  viewer - the ascii viewer
@@ -1024,7 +1029,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 
    Concepts: ascii files
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetName()
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead()
 @*/
@@ -1034,9 +1039,13 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
   FILE              *fd = vascii->fd;
   PetscInt           i;
   int                ret = 0;
+  PetscMPIInt        rank;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+  if (rank) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Can only be called from process 0 in the PetscViewer");
   for (i=0; i<num; i++) {
     if (dtype == PETSC_CHAR)         ret = fscanf(fd, "%c",  &(((char*)data)[i]));
     else if (dtype == PETSC_STRING)  ret = fscanf(fd, "%s",  &(((char*)data)[i]));
