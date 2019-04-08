@@ -18,4 +18,8 @@ ex5: ex5.o $(OBJECTS_FV) chkopts
 	-${CLINKER} -o ex5 ex5.o $(OBJECTS_FV) ${PETSC_TS_LIB}
 	${RM} ex5.o $(OBJECTS_FV)
 
+ex6: ex6.o $(OBJECTS_FV) chkopts
+	-${CLINKER} -o ex6 ex6.o $(OBJECTS_FV) ${PETSC_TS_LIB}
+	${RM} ex6.o $(OBJECTS_FV)
+
 include ${PETSC_DIR}/lib/petsc/conf/test
