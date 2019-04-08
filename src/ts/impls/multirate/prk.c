@@ -14,9 +14,9 @@
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
-static TSPRKType  TSPRKDefault = TSPRKM2;
-static PetscBool  TSPRKRegisterAllCalled;
-static PetscBool  TSPRKPackageInitialized;
+static TSPRKType TSPRKDefault = TSPRKM2;
+static PetscBool TSPRKRegisterAllCalled;
+static PetscBool TSPRKPackageInitialized;
 
 typedef struct _PRKTableau *PRKTableau;
 struct _PRKTableau {
@@ -34,18 +34,21 @@ struct _PRKTableauLink {
 static PRKTableauLink PRKTableauList;
 
 typedef struct {
-  PRKTableau    tableau;
-  Vec           *Y;                          /* States computed during the step                           */
-  Vec           *YdotRHSfast_combine;        /* Function evaluations by fast tableau for all components   */
-  Vec           *YdotRHSslow_combine;        /* Function evaluations by slow tableau for all components   */
-  Vec           *YdotRHS_fast;               /* Function evaluations by fast tableau for fast components  */
-  Vec           *YdotRHS_slow;               /* Function evaluations by slow tableau for slow components  */
-  PetscScalar   *work_fast;                  /* Scalar work_fast by fast tableau                          */
-  PetscScalar   *work_slow;                  /* Scalar work_slow by slow tableau                          */
-  PetscReal     stage_time;
-  TSStepStatus  status;
-  PetscReal     ptime;
-  PetscReal     time_step;
+  PRKTableau         tableau;
+  TSPRKMultirateType prkmtype;
+  Vec                *Y;                          /* States computed during the step                           */
+//  Vec           *YdotRHS;
+  Vec                Ytmp;
+  Vec                *YdotRHS_fast;               /* Function evaluations by fast tableau for fast components  */
+  Vec                *YdotRHS_slow;               /* Function evaluations by slow tableau for slow components  */
+  PetscScalar        *work_fast;                  /* Scalar work_fast by fast tableau                          */
+  PetscScalar        *work_slow;                  /* Scalar work_slow by slow tableau                          */
+  PetscReal          stage_time;
+  TSStepStatus       status;
+  PetscReal          ptime;
+  PetscReal          time_step;
+  IS                 is_slow,is_fast;
+  TS                 subts_slow,subts_fast;
 } TS_PRK;
 
 /*MC
@@ -221,10 +224,10 @@ PetscErrorCode TSPRKRegisterDestroy(void)
   while ((link = PRKTableauList)) {
     PRKTableau t = &link->tab;
     PRKTableauList = link->next;
-    ierr = PetscFree3(t->Af,t->bf,t->cf);  CHKERRQ(ierr);
-    ierr = PetscFree3(t->As,t->bs,t->cs);  CHKERRQ(ierr);
-    ierr = PetscFree (t->name);            CHKERRQ(ierr);
-    ierr = PetscFree (link);               CHKERRQ(ierr);
+    ierr = PetscFree3(t->Af,t->bf,t->cf);CHKERRQ(ierr);
+    ierr = PetscFree3(t->As,t->bs,t->cs);CHKERRQ(ierr);
+    ierr = PetscFree (t->name);CHKERRQ(ierr);
+    ierr = PetscFree (link);CHKERRQ(ierr);
   }
   TSPRKRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -300,10 +303,10 @@ PetscErrorCode TSPRKRegister(TSPRKType name,PetscInt order,PetscInt s,
                             const PetscReal As[],const PetscReal bs[],const PetscReal cs[],
                             const PetscReal Af[],const PetscReal bf[],const PetscReal cf[])
 {
-  PetscErrorCode   ierr;
-  PRKTableauLink   link;
-  PRKTableau       t;
-  PetscInt         i,j;
+  PetscErrorCode ierr;
+  PRKTableauLink link;
+  PRKTableau     t;
+  PetscInt       i,j;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
@@ -322,19 +325,64 @@ PetscErrorCode TSPRKRegister(TSPRKType name,PetscInt order,PetscInt s,
   t->s = s;
   ierr = PetscMalloc3(s*s,&t->Af,s,&t->bf,s,&t->cf);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->Af,Af,s*s*sizeof(Af[0]));CHKERRQ(ierr);
-  if (bf)  { ierr = PetscMemcpy(t->bf,bf,s*sizeof(bf[0]));CHKERRQ(ierr); }
-  else for (i=0; i<s; i++) t->bf[i] = Af[(s-1)*s+i];
-  if (cf)  { ierr = PetscMemcpy(t->cf,cf,s*sizeof(cf[0]));CHKERRQ(ierr); }
-  else for (i=0; i<s; i++) for (j=0,t->cf[i]=0; j<s; j++) t->cf[i] += Af[i*s+j];
+  if (bf) {
+    ierr = PetscMemcpy(t->bf,bf,s*sizeof(bf[0]));CHKERRQ(ierr);
+  }
+  else
+    for (i=0; i<s; i++) t->bf[i] = Af[(s-1)*s+i];
+  if (cf) {
+    ierr = PetscMemcpy(t->cf,cf,s*sizeof(cf[0]));CHKERRQ(ierr);
+  }
+  else {
+    for (i=0; i<s; i++)
+      for (j=0,t->cf[i]=0; j<s; j++)
+        t->cf[i] += Af[i*s+j];
+  }
   ierr = PetscMalloc3(s*s,&t->As,s,&t->bs,s,&t->cs);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->As,As,s*s*sizeof(As[0]));CHKERRQ(ierr);
-  if (bs)  { ierr = PetscMemcpy(t->bs,bs,s*sizeof(bs[0]));CHKERRQ(ierr); }
-  else for (i=0; i<s; i++) t->bs[i] = As[(s-1)*s+i];
-  if (cs)  { ierr = PetscMemcpy(t->cs,cs,s*sizeof(cs[0]));CHKERRQ(ierr); }
-  else for (i=0; i<s; i++) for (j=0,t->cs[i]=0; j<s; j++) t->cs[i] += As[i*s+j];
-
+  if (bs) {
+    ierr = PetscMemcpy(t->bs,bs,s*sizeof(bs[0]));CHKERRQ(ierr);
+  }
+  else
+    for (i=0; i<s; i++) t->bs[i] = As[(s-1)*s+i];
+  if (cs) {
+    ierr = PetscMemcpy(t->cs,cs,s*sizeof(cs[0]));CHKERRQ(ierr);
+  }
+  else {
+    for (i=0; i<s; i++)
+      for (j=0,t->cs[i]=0; j<s; j++)
+        t->cs[i] += As[i*s+j];
+  }
   link->next = PRKTableauList;
   PRKTableauList = link;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSPRKSetSplits(TS ts)
+{
+  TS_PRK         *prk = (TS_PRK*)ts->data;
+  DM             dm,subdm,newdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSRHSSplitGetSubTS(ts,"slow",&prk->subts_slow);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetSubTS(ts,"fast",&prk->subts_fast);CHKERRQ(ierr);
+  if (!prk->subts_slow || !prk->subts_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
+
+  /* Only copy */
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMClone(dm,&newdm);CHKERRQ(ierr);
+  ierr = TSGetDM(prk->subts_fast,&subdm);CHKERRQ(ierr);
+  ierr = DMCopyDMTS(subdm,newdm);CHKERRQ(ierr);
+  ierr = DMCopyDMSNES(subdm,newdm);CHKERRQ(ierr);
+  ierr = TSSetDM(prk->subts_fast,newdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&newdm);CHKERRQ(ierr);
+  ierr = DMClone(dm,&newdm);CHKERRQ(ierr);
+  ierr = TSGetDM(prk->subts_slow,&subdm);CHKERRQ(ierr);
+  ierr = DMCopyDMTS(subdm,newdm);CHKERRQ(ierr);
+  ierr = DMCopyDMSNES(subdm,newdm);CHKERRQ(ierr);
+  ierr = TSSetDM(prk->subts_slow,newdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -347,103 +395,84 @@ PetscErrorCode TSPRKRegister(TSPRKType name,PetscInt order,PetscInt s,
 */
 static PetscErrorCode TSEvaluateStep_PRK(TS ts,PetscInt order,Vec X,PetscBool *done)
 {
-  TS_PRK          *prk = (TS_PRK*)ts->data;
-  PRKTableau      tab  = prk->tableau;
-  PetscScalar     *wf  = prk->work_fast, *ws = prk->work_slow;
-  PetscReal       h    = ts->time_step;
-  PetscInt        s    = tab->s,j,len_slow,len_fast;             /* len_slow: the number of slow components, len_fast: the number of fast components */
-  Vec             Xslow_combine,Xfast_combine;                   /* work vector for X by slow tableau and fast tableau repectively                   */
-  PetscScalar     *xslowcombine_ptr,*xfastcombine_ptr,*x_ptr;    /* location to put the pointer to Xslow_combine, Xfast_combine and X respectively   */
-  const PetscInt  *is_slow,*is_fast;                             /* index for slow and fast components respectively                                  */
-  PetscErrorCode  ierr;
+  TS_PRK         *prk = (TS_PRK*)ts->data;
+  PRKTableau     tab = prk->tableau;
+  Vec            Xtmp = prk->Ytmp,Xslow,Xfast,Xtmpslow,Xtmpfast;
+  PetscScalar    *wf = prk->work_fast,*ws = prk->work_slow;
+  PetscReal      h = ts->time_step;
+  PetscInt       s = tab->s,j;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* update Xslow_combine by slow tableau and Xfast_combine by fast tableau */
   ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
+
   for (j=0; j<s; j++) wf[j] = h*tab->bf[j];
+  ierr = VecCopy(X,Xtmp);CHKERRQ(ierr);
+  ierr = VecMAXPY(Xtmp,s,ws,prk->YdotRHS_slow);CHKERRQ(ierr);
+  ierr = VecGetSubVector(X,prk->is_slow,&Xslow);CHKERRQ(ierr);
+  ierr = VecGetSubVector(Xtmp,prk->is_slow,&Xtmpslow);CHKERRQ(ierr);
+  ierr = VecCopy(Xtmpslow,Xslow);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(X,prk->is_slow,&Xslow);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(Xtmp,prk->is_slow,&Xtmpslow);CHKERRQ(ierr);
+
+  /* Update fast part of X, note that the slow part has been changed but is simply discarded here */
   for (j=0; j<s; j++) ws[j] = h*tab->bs[j];
-  ierr = VecDuplicate(X,&Xslow_combine);CHKERRQ(ierr);
-  ierr = VecCopy(X,Xslow_combine);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Xfast_combine);CHKERRQ(ierr);
-  ierr = VecCopy(X,Xfast_combine);CHKERRQ(ierr);
-  ierr = VecMAXPY(Xslow_combine,s,ws,prk->YdotRHSslow_combine);CHKERRQ(ierr);
-  ierr = VecMAXPY(Xfast_combine,s,wf,prk->YdotRHSfast_combine);CHKERRQ(ierr);
-  /* combine slow coponents of Xslow_combine and fast components of Xfast_combine to update X */
-  ierr = ISGetSize(ts->iss,&len_slow);CHKERRQ(ierr);
-  ierr = ISGetSize(ts->isf,&len_fast);CHKERRQ(ierr);
-  ierr = ISGetIndices(ts->iss,&is_slow);CHKERRQ(ierr);
-  ierr = ISGetIndices(ts->isf,&is_fast);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(ts->isf,&is_fast);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(ts->iss,&is_slow);CHKERRQ(ierr);
-  ierr = VecGetArray(Xslow_combine,&xslowcombine_ptr);CHKERRQ(ierr);
-  ierr = VecGetArray(Xfast_combine,&xfastcombine_ptr);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x_ptr);CHKERRQ(ierr);
-  for (j=0; j<len_slow;j++) x_ptr[is_slow[j]] = xslowcombine_ptr[is_slow[j]];
-  for (j=0; j<len_fast;j++) x_ptr[is_fast[j]] = xfastcombine_ptr[is_fast[j]];
-  ierr = VecRestoreArray(X,&x_ptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xfast_combine,&xfastcombine_ptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xslow_combine,&xslowcombine_ptr);CHKERRQ(ierr);
-  /* free memory of work vectors */
-  ierr = VecDestroy(&Xslow_combine);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xfast_combine);CHKERRQ(ierr);
+  ierr = VecCopy(X,Xtmp);CHKERRQ(ierr);
+  ierr = VecMAXPY(Xtmp,s,wf,prk->YdotRHS_fast);CHKERRQ(ierr);
+  ierr = VecGetSubVector(X,prk->is_fast,&Xfast);CHKERRQ(ierr);
+  ierr = VecGetSubVector(Xtmp,prk->is_fast,&Xtmpfast);CHKERRQ(ierr);
+  ierr = VecCopy(Xtmpfast,Xfast);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(X,prk->is_fast,&Xfast);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(Xtmp,prk->is_fast,&Xtmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSStep_PRK(TS ts)
 {
-  TS_PRK            *prk = (TS_PRK*)ts->data;
-  Vec               *Y   = prk->Y,*YdotRHSfast_combine = prk->YdotRHSfast_combine;
-  Vec               *YdotRHSslow_combine = prk->YdotRHSslow_combine;
-  Vec               Yslow_combine,Yfast_combine;                                  /* work vectors for Y by slow and fast tableau respectively                       */
-  PRKTableau        tab = prk->tableau;
-  const PetscInt    s   = tab->s,*is_slow,*is_fast;                               /* is_slow: index of slow components, is_fast: index of fast components           */
-  const PetscReal   *Af = tab->Af,*cf = tab->cf,*As = tab->As,*cs = tab->cs;
-  PetscScalar       *wf = prk->work_fast, *ws = prk->work_slow;
-  PetscScalar       *y_ptr,*yslowcombine_ptr,*yfastcombine_ptr;                   /* location to put the pointer to Y, Yslow_combine, Yfast_combine respectively     */
-  PetscInt          i,j,len_slow,len_fast;                                        /* len_slow: the number of slow coponents, len_fast: the number of fast components */
-  PetscReal         next_time_step = ts->time_step,t = ts->ptime,h = ts->time_step;
-  PetscErrorCode    ierr;
+  TS_PRK          *prk = (TS_PRK*)ts->data;
+  Vec             *Y = prk->Y,Ytmp = prk->Ytmp,*YdotRHS_fast = prk->YdotRHS_fast,*YdotRHS_slow = prk->YdotRHS_slow;
+  Vec             Yfast,Yslow,Ytmpfast,Ytmpslow;
+  PRKTableau      tab = prk->tableau;
+  const PetscInt  s   = tab->s;
+  const PetscReal *Af = tab->Af,*cf = tab->cf,*As = tab->As,*cs = tab->cs;
+  PetscScalar     *wf = prk->work_fast, *ws = prk->work_slow;
+  PetscInt        i,j;
+  PetscReal       next_time_step = ts->time_step,t = ts->ptime,h = ts->time_step;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&Yslow_combine);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&Yfast_combine);CHKERRQ(ierr);
   for (i=0; i<s; i++) {
     prk->stage_time = t + h*cf[i];
     ierr = TSPreStage(ts,prk->stage_time);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
-    /* update the satge value for all components by fast and tableau respectively */
-    for (j=0; j<i; j++) wf[j] = h*Af[i*s+j];
+
+    /* update the satge value for all components by slow and fast tableau respectively */
     for (j=0; j<i; j++) ws[j] = h*As[i*s+j];
-    ierr = VecCopy(ts->vec_sol,Yslow_combine);CHKERRQ(ierr);
-    ierr = VecCopy(ts->vec_sol,Yfast_combine);CHKERRQ(ierr);
-    ierr = VecMAXPY(Yslow_combine,i,ws,YdotRHSslow_combine);CHKERRQ(ierr);
-    ierr = VecMAXPY(Yfast_combine,i,wf,YdotRHSfast_combine);CHKERRQ(ierr);
-    /* combine the value of slow components in Yslow_combine and the value of fast components in Yfast_combine to update Y[i] */
-    ierr = ISGetSize(ts->iss,&len_slow);CHKERRQ(ierr);
-    ierr = ISGetSize(ts->isf,&len_fast);CHKERRQ(ierr);
-    ierr = ISGetIndices(ts->iss,&is_slow);CHKERRQ(ierr);
-    ierr = ISGetIndices(ts->isf,&is_fast);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(ts->isf,&is_fast);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(ts->iss,&is_slow);CHKERRQ(ierr);
-    ierr = VecGetArray(Yslow_combine,&yslowcombine_ptr);CHKERRQ(ierr);
-    ierr = VecGetArray(Yfast_combine,&yfastcombine_ptr);CHKERRQ(ierr);
-    ierr = VecGetArray(Y[i],&y_ptr);CHKERRQ(ierr);
-    for (j=0; j<len_slow;j++) y_ptr[is_slow[j]] = yslowcombine_ptr[is_slow[j]];
-    for (j=0; j<len_fast;j++) y_ptr[is_fast[j]] = yfastcombine_ptr[is_fast[j]];
-    ierr = VecRestoreArray(Y[i],&y_ptr);CHKERRQ(ierr);
-    ierr = VecRestoreArray(Yfast_combine,&yfastcombine_ptr);CHKERRQ(ierr);
-    ierr = VecRestoreArray(Yslow_combine,&yslowcombine_ptr);CHKERRQ(ierr);
+    ierr = VecCopy(ts->vec_sol,Ytmp);CHKERRQ(ierr);
+    ierr = VecMAXPY(Ytmp,i,ws,YdotRHS_slow);CHKERRQ(ierr);
+    ierr = VecGetSubVector(Y[i],prk->is_slow,&Yslow);CHKERRQ(ierr);
+    ierr = VecGetSubVector(Ytmp,prk->is_slow,&Ytmpslow);CHKERRQ(ierr);
+    ierr = VecCopy(Ytmp,Yslow);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(Y[i],prk->is_slow,&Yslow);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(Ytmp,prk->is_slow,&Ytmpslow);CHKERRQ(ierr);
+
+    for (j=0; j<i; j++) wf[j] = h*Af[i*s+j];
+    ierr = VecCopy(ts->vec_sol,Ytmp);CHKERRQ(ierr);
+    ierr = VecMAXPY(Ytmp,i,wf,YdotRHS_fast);CHKERRQ(ierr);
+    ierr = VecGetSubVector(Y[i],prk->is_fast,&Yfast);CHKERRQ(ierr);
+    ierr = VecGetSubVector(Ytmp,prk->is_fast,&Ytmpfast);CHKERRQ(ierr);
+    ierr = VecCopy(Ytmpfast,Yfast);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(Y[i],prk->is_fast,&Yfast);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(Ytmp,prk->is_fast,&Ytmpfast);CHKERRQ(ierr);
+
     ierr = TSPostStage(ts,prk->stage_time,i,Y); CHKERRQ(ierr);
     /* compute the stage RHS by fast and slow tableau respectively */
-    ierr = TSComputeRHSFunction(ts,t+h*cf[i],Y[i],YdotRHSfast_combine[i]);CHKERRQ(ierr);
-    ierr = TSComputeRHSFunction(ts,t+h*cs[i],Y[i],YdotRHSslow_combine[i]);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,t+h*cf[i],Y[i],YdotRHS_fast[i]);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,t+h*cs[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
   }
   ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
-  /* free memory of work vectors*/
-  ierr = VecDestroy(&Yslow_combine);CHKERRQ(ierr);
-  ierr = VecDestroy(&Yfast_combine);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -458,7 +487,7 @@ static PetscErrorCode TSEvaluateStep_PRKPARTITIONED(TS ts,PetscInt order,Vec X,P
 {
   TS_PRK          *prk = (TS_PRK*)ts->data;
   PRKTableau      tab  = prk->tableau;
-  Vec             Xslow,Xfast;                                  /* subvectors for slow and fast componets in X respectively */
+  Vec             Xslow,Xfast; /* subvectors for slow and fast componets in X respectively */
   PetscScalar     *wf = prk->work_fast,*ws = prk->work_slow;
   PetscReal       h = ts->time_step;
   PetscInt        s = tab->s,j;
@@ -480,9 +509,9 @@ static PetscErrorCode TSEvaluateStep_PRKPARTITIONED(TS ts,PetscInt order,Vec X,P
 static PetscErrorCode TSStep_PRKPARTITIONED(TS ts)
 {
   TS_PRK            *prk = (TS_PRK*)ts->data;
-  PRKTableau        tab  = prk->tableau;
+  PRKTableau        tab = prk->tableau;
   Vec               *Y = prk->Y,*YdotRHS_fast = prk->YdotRHS_fast, *YdotRHS_slow = prk->YdotRHS_slow;
-  Vec               Yslow,Yfast;           /* subvectors for slow and fast components in Y[i] respectively */
+  Vec               Yslow,Yfast; /* subvectors for slow and fast components in Y[i] respectively */
   const PetscInt    s = tab->s;
   const PetscReal   *Af = tab->Af,*cf = tab->cf,*As = tab->As,*cs = tab->cs;
   PetscScalar       *wf = prk->work_fast, *ws = prk->work_slow;
@@ -502,12 +531,12 @@ static PetscErrorCode TSStep_PRKPARTITIONED(TS ts)
     ierr = VecGetSubVector(Y[i],ts->isf,&Yfast);CHKERRQ(ierr);
     ierr = VecMAXPY(Yslow,i,ws,YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecMAXPY(Yfast,i,wf,YdotRHS_fast);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(Y[i],ts->isf,&Yfast);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(Y[i],ts->iss,&Yslow);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(Y[i],prk->is_fast,&Yfast);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(Y[i],prk->is_slow,&Yslow);CHKERRQ(ierr);
     ierr = TSPostStage(ts,prk->stage_time,i,Y); CHKERRQ(ierr);
     /* calculate the stage RHS for slow and fast components respectively */
-    ierr = TSComputeRHSFunctionslow(ts,t+h*cs[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
-    ierr = TSComputeRHSFunctionfast(ts,t+h*cf[i],Y[i],YdotRHS_fast[i]);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunctionslow(prk->subts_slow,t+h*cs[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunctionfast(prk->subts_fast,t+h*cf[i],Y[i],YdotRHS_fast[i]);CHKERRQ(ierr);
   }
   ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
@@ -526,8 +555,9 @@ static PetscErrorCode TSPRKTableauReset(TS ts)
   ierr = PetscFree(prk->work_fast);CHKERRQ(ierr);
   ierr = PetscFree(prk->work_slow);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s,&prk->Y);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(tab->s,&prk->YdotRHSfast_combine);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(tab->s,&prk->YdotRHSslow_combine);CHKERRQ(ierr);
+  if (prk->prkmtype == PRKM_COMBINED) {
+    ierr = VecDestroy(&prk->Ytmp);CHKERRQ(ierr);
+  }
   ierr = VecDestroyVecs(tab->s,&prk->YdotRHS_fast);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s,&prk->YdotRHS_slow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -554,7 +584,6 @@ static PetscErrorCode DMRestrictHook_TSPRK(DM fine,Mat restrct,Vec rscale,Mat in
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode DMSubDomainHook_TSPRK(DM dm,DM subdm,void *ctx)
 {
   PetscFunctionBegin;
@@ -563,7 +592,6 @@ static PetscErrorCode DMSubDomainHook_TSPRK(DM dm,DM subdm,void *ctx)
 
 static PetscErrorCode DMSubDomainRestrictHook_TSPRK(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -579,22 +607,27 @@ static PetscErrorCode TSPRKTableauSetUp(TS ts)
   ierr = PetscMalloc1(tab->s,&prk->work_fast);CHKERRQ(ierr);
   ierr = PetscMalloc1(tab->s,&prk->work_slow);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&prk->Y);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&prk->YdotRHSfast_combine);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&prk->YdotRHSslow_combine);CHKERRQ(ierr);
-  ierr = VecGetSubVector(ts->vec_sol,ts->iss,&YdotRHS_slow);CHKERRQ(ierr);
-  ierr = VecGetSubVector(ts->vec_sol,ts->isf,&YdotRHS_fast);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(YdotRHS_slow,tab->s,&prk->YdotRHS_slow);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(YdotRHS_fast,tab->s,&prk->YdotRHS_fast);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(ts->vec_sol,ts->iss,&YdotRHS_slow);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(ts->vec_sol,ts->isf,&YdotRHS_fast);CHKERRQ(ierr);
+  if (prk->prkmtype == PRKM_COMBINED) {
+    ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&prk->YdotRHS_slow);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&prk->YdotRHS_fast);CHKERRQ(ierr);
+    ierr = VecDuplicate(ts->vec_sol,&prk->Ytmp);CHKERRQ(ierr);
+  }
+  if (prk->prkmtype == PRKM_PARTITIONED) {
+    ierr = VecGetSubVector(ts->vec_sol,prk->is_slow,&YdotRHS_slow);CHKERRQ(ierr);
+    ierr = VecGetSubVector(ts->vec_sol,prk->is_fast,&YdotRHS_fast);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(YdotRHS_slow,tab->s,&prk->YdotRHS_slow);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(YdotRHS_fast,tab->s,&prk->YdotRHS_fast);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(ts->vec_sol,prk->is_slow,&YdotRHS_slow);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(ts->vec_sol,prk->is_fast,&YdotRHS_fast);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode TSSetUp_PRK(TS ts)
 {
-  PetscErrorCode ierr;
+  TS_PRK         *prk = (TS_PRK*)ts->data;
   DM             dm;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
@@ -602,6 +635,10 @@ static PetscErrorCode TSSetUp_PRK(TS ts)
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSPRK,DMRestrictHook_TSPRK,ts);CHKERRQ(ierr);
   ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSPRK,DMSubDomainRestrictHook_TSPRK,ts);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetIS(ts,"slow",&prk->is_slow);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetIS(ts,"fast",&prk->is_fast);CHKERRQ(ierr);
+  if (!prk->is_slow || !prk->is_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use -ts_type bsi");
+  ierr = PetscTryMethod(ts,"TSPRKSetSplits_C",(TS),(ts));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -737,18 +774,25 @@ PetscErrorCode TSPRKGetType(TS ts,TSPRKType *prktype)
 @*/
 PetscErrorCode TSPRKSetMultirateType(TS ts, TSPRKMultirateType prkmtype)
 {
+  TS_PRK         *prk = (TS_PRK*)ts->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   switch(prkmtype){
     case PRKM_COMBINED:
+      ts->ops->step         = TSStep_PRK;
+      ts->ops->evaluatestep = TSEvaluateStep_PRK;
       break;
     case PRKM_PARTITIONED:
-      ts->ops->step           = TSStep_PRKPARTITIONED;
-      ts->ops->evaluatestep   = TSEvaluateStep_PRKPARTITIONED;
+      ts->ops->step         = TSStep_PRKPARTITIONED;
+      ts->ops->evaluatestep = TSEvaluateStep_PRKPARTITIONED;
+      ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPRKSetSplits_C",TSPRKSetSplits);CHKERRQ(ierr);
       break;
     default :
       SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown type '%s'",prkmtype);
   }
+  prk->prkmtype = prkmtype;
   PetscFunctionReturn(0);
 }
 
@@ -760,6 +804,7 @@ static PetscErrorCode TSPRKGetType_PRK(TS ts,TSPRKType *prktype)
   *prktype = prk->tableau->name;
   PetscFunctionReturn(0);
 }
+
 static PetscErrorCode TSPRKSetType_PRK(TS ts,TSPRKType prktype)
 {
   TS_PRK          *prk = (TS_PRK*)ts->data;
@@ -829,8 +874,8 @@ static PetscErrorCode TSDestroy_PRK(TS ts)
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_PRK(TS ts)
 {
-  TS_PRK          *prk;
-  PetscErrorCode   ierr;
+  TS_PRK         *prk;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSPRKInitializePackage();CHKERRQ(ierr);
@@ -844,7 +889,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_PRK(TS ts)
   ts->ops->evaluatestep   = TSEvaluateStep_PRK;
   ts->ops->setfromoptions = TSSetFromOptions_PRK;
   ts->ops->getstages      = TSGetStages_PRK;
-
 
   ierr = PetscNewLog(ts,&prk);CHKERRQ(ierr);
   ts->data = (void*)prk;

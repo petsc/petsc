@@ -790,18 +790,18 @@ typedef const char* TSRKType;
 #define TSRK5BS   "5bs"
 
 /*J
-    TSRKMultirateType - String with the name of a Runge-Kutta Multirate method.
+    TSMRKType - String with the name of a Runge-Kutta Multirate method.
 
    Level: beginner
 
 .seealso: TSRKSetMultirateType(), TS, TSRK
 J*/
-typedef enum {RKM_NONE=0,RKM_COMBINED=1,RKM_PARTITIONED=2} TSRKMultirateType;
-PETSC_EXTERN const char* const TSRKMultirateTypes[];
+typedef enum {TSMRKNONE=0,TSMRKNONSPLIT=1,TSMRKSPLIT=2} TSMRKType;
+PETSC_EXTERN const char* const TSMRKTypes[];
 
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
-PETSC_EXTERN PetscErrorCode TSRKSetMultirateType(TS,TSRKMultirateType);
+PETSC_EXTERN PetscErrorCode TSRKSetMultirateType(TS,TSMRKType);
 PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
