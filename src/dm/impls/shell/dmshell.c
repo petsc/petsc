@@ -292,7 +292,7 @@ PetscErrorCode DMShellSetContext(DM dm,void *ctx)
 }
 
 /*@
-   DMShellGetContext - set some data to be usable by this DM
+   DMShellGetContext - Returns the user-provided context associated to the DM
 
    Collective
 
@@ -666,7 +666,7 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
 
    Level: advanced
 
-.seealso: DMShellSetRefine(), DMCoarsen(), DMShellSetContext(), DMShellGetContext()
+.seealso: DMShellSetRefine(), DMCoarsen(), DMShellGetCoarsen(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*))
 {
@@ -720,7 +720,7 @@ PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM,MPI_Comm,D
 
    Level: advanced
 
-.seealso: DMShellSetCoarsen(), DMRefine(), DMShellSetContext(), DMShellGetContext()
+.seealso: DMShellSetCoarsen(), DMRefine(), DMShellGetRefine(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*))
 {
@@ -774,7 +774,7 @@ PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM,MPI_Comm,DM*
 
    Level: advanced
 
-.seealso: DMShellSetCreateInjection(), DMCreateInterpolation(), DMShellSetCreateRestriction(), DMShellSetContext(), DMShellGetContext()
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation(), DMShellGetCreateInterpolation(), DMShellSetCreateRestriction(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,DM,Mat*,Vec*))
 {
@@ -826,7 +826,7 @@ PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM
 
    Level: advanced
 
-.seealso: DMShellSetCreateInjection(), DMCreateInterpolation(), DMShellSetContext(), DMShellGetContext()
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation(), DMShellGetCreateRestriction(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(DM,DM,Mat*))
 {
@@ -878,7 +878,7 @@ PetscErrorCode DMShellGetCreateRestriction(DM dm, PetscErrorCode (**restriction)
 
    Level: advanced
 
-.seealso: DMShellSetCreateInterpolation(), DMCreateInjection(), DMShellSetContext(), DMShellGetContext()
+.seealso: DMShellSetCreateInterpolation(), DMCreateInjection(), DMShellGetCreateInjection(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,Mat*))
 {
@@ -1024,7 +1024,7 @@ PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode
 
    Level: advanced
 
-.seealso: DMCreateSubDM(), DMShellSetContext(), DMShellGetContext()
+.seealso: DMCreateSubDM(), DMShellGetCreateSubDM(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,const PetscInt[],IS*,DM*))
 {
