@@ -502,6 +502,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
     (*labelnew)->points[v]         = label->points[v];
     (*labelnew)->validIS[v]        = PETSC_TRUE;
   }
+  ierr = PetscHMapIDestroy(&(*labelnew)->hmap);CHKERRQ(ierr);
   ierr = PetscHMapIDuplicate(label->hmap,&(*labelnew)->hmap);CHKERRQ(ierr);
   (*labelnew)->pStart = -1;
   (*labelnew)->pEnd   = -1;
