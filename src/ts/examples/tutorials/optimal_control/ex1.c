@@ -509,7 +509,7 @@ PetscErrorCode FormObjHessian(Tao tao,Vec P,Mat H,Mat Hpre,void *ctx)
 {
   Aircraft          actx = (Aircraft)ctx;
   const PetscScalar *p;
-  PetscScalar       harr[1],*v,*w,one = 1.0;
+  PetscScalar       *harr,*v,*w,one = 1.0;
   PetscInt          ind[1];
   PetscInt          *cols,i;
   Vec               Dir;
@@ -528,6 +528,7 @@ PetscErrorCode FormObjHessian(Tao tao,Vec P,Mat H,Mat Hpre,void *ctx)
   ierr = VecRestoreArray(actx->V,&v);CHKERRQ(ierr);
   ierr = VecRestoreArray(actx->W,&w);CHKERRQ(ierr);
 
+  ierr = PetscMalloc1(2*actx->nsteps,&harr);CHKERRQ(ierr);
   ierr = PetscMalloc1(2*actx->nsteps,&cols);CHKERRQ(ierr);
   for (i=0; i<2*actx->nsteps; i++) cols[i] = i;
   ierr = VecDuplicate(P,&Dir);CHKERRQ(ierr);
@@ -547,6 +548,7 @@ PetscErrorCode FormObjHessian(Tao tao,Vec P,Mat H,Mat Hpre,void *ctx)
     }
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = PetscFree(harr);CHKERRQ(ierr);
   ierr = VecDestroy(&Dir);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -620,7 +622,7 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir,PetscScalar arr[],Aircraft actx)
   ierr = MatZeroEntries(actx->Jacp);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(actx->Jacp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(actx->Jacp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = TSAdjointInitializeForward(ts,actx->Jacp);CHKERRQ(ierr);
+  ierr = TSAdjointSetForward(ts,actx->Jacp);CHKERRQ(ierr);
 
   ierr = TSSolve(ts,actx->U);CHKERRQ(ierr);
 
@@ -643,6 +645,7 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir,PetscScalar arr[],Aircraft actx)
 
   /* Disable second-order adjoint mode */
   ierr = TSAdjointReset(ts);CHKERRQ(ierr);
+  ierr = TSAdjointResetForward(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

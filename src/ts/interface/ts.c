@@ -2592,6 +2592,7 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (ts->quadraturets) {
     ierr = TSSetUp(ts->quadraturets);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
     ierr = VecDuplicate(ts->quadraturets->vec_sol,&ts->vec_costintegrand);CHKERRQ(ierr);
   }
 
@@ -2695,6 +2696,9 @@ PetscErrorCode  TSReset(TS ts)
 
   ierr = MatDestroy(&ts->Jacprhs);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
+  if (ts->forward_solve) {
+    ierr = TSForwardReset(ts);CHKERRQ(ierr);
+  }
   if (ts->quadraturets) {
     ierr = TSReset(ts->quadraturets);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
@@ -2733,13 +2737,14 @@ PetscErrorCode  TSDestroy(TS *ts)
 
   PetscFunctionBegin;
   if (!*ts) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*ts),TS_CLASSID,1);
+  PetscValidHeaderSpecific(*ts,TS_CLASSID,1);
   if (--((PetscObject)(*ts))->refct > 0) {*ts = 0; PetscFunctionReturn(0);}
 
-  ierr = TSReset((*ts));CHKERRQ(ierr);
-  ierr = TSAdjointReset((*ts));CHKERRQ(ierr);
-  ierr = TSForwardReset((*ts));CHKERRQ(ierr);
-
+  ierr = TSReset(*ts);CHKERRQ(ierr);
+  ierr = TSAdjointReset(*ts);CHKERRQ(ierr);
+  if ((*ts)->forward_solve) {
+    ierr = TSForwardReset(*ts);CHKERRQ(ierr);
+  }
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*ts);CHKERRQ(ierr);
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}

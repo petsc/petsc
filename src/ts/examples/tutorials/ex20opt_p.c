@@ -655,7 +655,7 @@ PetscErrorCode Adjoint2(Vec P,PetscScalar arr[],User ctx)
   ierr = MatAssemblyBegin(ctx->Jacp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(ctx->Jacp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = TSAdjointInitializeForward(ts,ctx->Jacp);CHKERRQ(ierr);
+  ierr = TSAdjointSetForward(ts,ctx->Jacp);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->U,&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 2.0;
   y_ptr[1] = -2.0/3.0 + 10.0/(81.0*ctx->mu) - 292.0/(2187.0*ctx->mu*ctx->mu);
@@ -702,6 +702,7 @@ PetscErrorCode Adjoint2(Vec P,PetscScalar arr[],User ctx)
 
   /* Disable second-order adjoint mode */
   ierr = TSAdjointReset(ts);CHKERRQ(ierr);
+  ierr = TSAdjointResetForward(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -364,7 +364,8 @@ PETSC_EXTERN PetscErrorCode TSAdjointStep(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointReset(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointCostIntegral(TS);
-PETSC_EXTERN PetscErrorCode TSAdjointInitializeForward(TS,Mat);
+PETSC_EXTERN PetscErrorCode TSAdjointSetForward(TS,Mat);
+PETSC_EXTERN PetscErrorCode TSAdjointResetForward(TS);
 
 PETSC_EXTERN PetscErrorCode TSForwardSetSensitivities(TS,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode TSForwardGetSensitivities(TS,PetscInt*,Mat*);

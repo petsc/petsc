@@ -319,7 +319,7 @@ PetscErrorCode Adjoint2(Vec U,PetscScalar arr[],User ctx)
   ierr = TSSetTimeStep(ts,0.001);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetCostHessianProducts(ts,1,ctx->Lambda2,NULL,ctx->Dir);CHKERRQ(ierr);
-  ierr = TSAdjointInitializeForward(ts,NULL);CHKERRQ(ierr);
+  ierr = TSAdjointSetForward(ts,NULL);CHKERRQ(ierr);
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
   /* Set terminal conditions for first- and second-order adjonts */
@@ -351,6 +351,7 @@ PetscErrorCode Adjoint2(Vec U,PetscScalar arr[],User ctx)
   ierr   = VecRestoreArray(ctx->Lambda2[0],&x_ptr);CHKERRQ(ierr);
 
   ierr = TSAdjointReset(ts);CHKERRQ(ierr);
+  ierr = TSAdjointResetForward(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
