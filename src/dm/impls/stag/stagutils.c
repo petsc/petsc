@@ -501,24 +501,29 @@ PetscErrorCode DMStagGetGhostType(DM dm,DMStagStencilType *stencilType)
 }
 
 /*@C
-      DMStagGetOwnershipRanges - get elements per rank in each direction
+  DMStagGetOwnershipRanges - get elements per rank in each direction
 
-    Not Collective
+  Not Collective
 
-   Input Parameter:
+  Input Parameter:
 .     dm - the DMStag object
 
-   Output Parameter:
+  Output Parameters:
 +     lx - ownership along x direction (optional)
 .     ly - ownership along y direction (optional)
 -     lz - ownership along z direction (optional)
 
   Notes:
+  These correspond to the optional final arguments passed to DMStagCreate1d(), DMStagCreate2d(), and DMStagCreate3d().
+
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+
+  In C you should not free these arrays, nor change the values in them.
+  They will only have valid values while the DMStag they came from still exists (has not been destroyed).
 
   Level: intermediate
 
-.seealso: DMSTAG, DMStagSetGlobalSizes, DMStagSetOwnershipRanges
+.seealso: DMSTAG, DMStagSetGlobalSizes, DMStagSetOwnershipRanges, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d()
 @*/
 PetscErrorCode DMStagGetOwnershipRanges(DM dm,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
@@ -778,7 +783,7 @@ PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *arrX,void *arr
 /*@C
   DMStagSetBoundaryTypes - set DMStag boundary types
 
-  Logically Collective; all processes must set the same values
+  Logically Collective; boundaryType0, boundaryType1, and boundaryType2 must contain common values
 
   Input Parameters:
 + dm - the DMStag object
@@ -813,7 +818,7 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm,DMBoundaryType boundaryType0,DMBound
 /*@C
   DMStagSetCoordinateDMType - set DM type to store coordinates
 
-  Logically Collective; all processes must set the same value
+  Logically Collective; dmtype must contain common value
 
   Input Parameters:
 + dm - the DMStag object
@@ -836,7 +841,7 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm,DMType dmtype)
 /*@C
   DMStagSetDOF - set dof/stratum
 
-  Logically Collective; all processes must set the same value
+  Logically Collective; dof0, dof1, dof2, and dof3 must contain common values
 
   Input Parameters:
 + dm - the DMStag object
@@ -877,7 +882,7 @@ PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,Pet
 /*@C
   DMStagSetNumRanks - set ranks in each direction in the global rank grid
 
-  Logically Collective; all processes must set the same values
+  Logically Collective; nRanks0, nRanks1, and nRanks2 must contain common values
 
   Input Parameters:
 + dm - the DMStag object
@@ -915,7 +920,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
 /*@C
   DMStagSetGhostType - set elementwise ghost/halo stencil type
 
-  Logically Collective; all processes must set the same value
+  Logically Collective; stencilType must contain common value
 
   Input Parameters:
 + dm - the DMStag object
@@ -940,12 +945,12 @@ PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType stencilType)
 /*@C
   DMStagSetStencilWidth - set elementwise stencil width
 
-  Logically Collective; all processes must set the same value
+  Logically Collective; stencilWidth must contain common value
 
   Input Parameter:
 . dm - the DMStag object
 
-  Output Parameters:
+  Output Parameter:
 . stencilWidth - stencil/halo/ghost width in elements
 
   Level: beginner
@@ -958,16 +963,17 @@ PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  PetscValidLogicalCollectiveInt(dm,stencilWidth,2);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
-  if (stencilWidth < 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"stencilWidth cannot be negative");
+  if (stencilWidth < 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Stencil width must be non-negative");
   stag->stencilWidth = stencilWidth;
   PetscFunctionReturn(0);
 }
 
 /*@C
-  DMStagSetGlobalSizes -
+  DMStagSetGlobalSizes - set global element counts in each direction
 
-  Logically Collective; all processes must set the same values
+  Logically Collective; N0, N1, and N2 must contain common values
 
   Input Parameters:
 + dm - the DMStag object
@@ -1002,7 +1008,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
 /*@C
   DMStagSetOwnershipRanges - set elements per rank in each direction
 
-  Logically Collective; all processes must set the same values
+  Logically Collective; lx, ly, and lz must contain common values
 
   Input Parameters:
 + dm - the DMStag object
@@ -1059,8 +1065,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,P
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
-  PetscBool       flg_stag;
-  PetscBool       flg_product;
+  PetscBool       flg_stag,flg_product;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
@@ -1071,7 +1076,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,P
   if (flg_stag) {
     ierr = DMStagSetUniformCoordinatesExplicit(dm,xmin,xmax,ymin,ymax,zmin,zmax);CHKERRQ(ierr);
   } else if (flg_product) {
-        ierr = DMStagSetUniformCoordinatesProduct(dm,xmin,xmax,ymin,ymax,zmin,zmax);CHKERRQ(ierr);
+    ierr = DMStagSetUniformCoordinatesProduct(dm,xmin,xmax,ymin,ymax,zmin,zmax);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported DM Type %s",stag->coordinateDMType);
   PetscFunctionReturn(0);
 }
