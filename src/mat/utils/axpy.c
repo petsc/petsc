@@ -21,10 +21,12 @@
  @*/
 PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode ierr,(*f)(Mat,Mat*);
   PetscInt       M1,M2,N1,N2;
   PetscInt       m1,m2,n1,n2;
-  PetscBool      sametype;
+  MatType        t1,t2;
+  Mat            T,F;
+  PetscBool      sametype,transpose;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
@@ -38,19 +40,49 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   if (M1 != M2 || N1 != N2) SETERRQ4(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_SIZ,"Non conforming matrix add: global sizes %D x %D, %D x %D",M1,M2,N1,N2);
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes %D x %D, %D x %D",m1,m2,n1,n2);
 
-  ierr = PetscStrcmp(((PetscObject)X)->type_name,((PetscObject)Y)->type_name,&sametype);CHKERRQ(ierr);
+  ierr = MatGetType(X,&t1);CHKERRQ(ierr);
+  ierr = MatGetType(Y,&t2);CHKERRQ(ierr);
+  ierr = PetscStrcmp(t1,t2,&sametype);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
   if (Y->ops->axpy && sametype) {
     ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
   } else {
-    if (str != DIFFERENT_NONZERO_PATTERN) {
-      ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    ierr = PetscStrcmp(t1,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
+    if (transpose) {
+        PetscObjectQueryFunction((PetscObject)X,"MatTransposeGetMat_C",&f);
+        if (f) {
+          ierr = f(X,&T);CHKERRQ(ierr);
+          ierr = MatTranspose(T,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+        } else {
+          ierr = MatHermitianTransposeGetMat(X,&T);CHKERRQ(ierr);
+          ierr = MatHermitianTranspose(T,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+        }
+        ierr = MatAXPY(Y,a,F,str);CHKERRQ(ierr);
+        ierr = MatDestroy(&F);CHKERRQ(ierr);
     } else {
-      Mat B;
+      ierr = PetscStrcmp(t2,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
+      if (transpose) {
+        PetscObjectQueryFunction((PetscObject)Y,"MatTransposeGetMat_C",&f);
+        if (f) {
+          ierr = f(Y,&T);CHKERRQ(ierr);
+          ierr = MatTranspose(T,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+        } else {
+          ierr = MatHermitianTransposeGetMat(Y,&T);CHKERRQ(ierr);
+          ierr = MatHermitianTranspose(T,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+        }
+        ierr = MatAXPY(F,a,X,str);CHKERRQ(ierr);
+        ierr = MatDestroy(&F);CHKERRQ(ierr);
+      } else {
+        if (str != DIFFERENT_NONZERO_PATTERN) {
+          ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+        } else {
+          Mat B;
 
-      ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
-      ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-      ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
+          ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
+          ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+          ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
+        }
+      }
     }
   }
   ierr = PetscLogEventEnd(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
