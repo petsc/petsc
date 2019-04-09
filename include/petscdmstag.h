@@ -87,7 +87,6 @@ PETSC_EXTERN PetscErrorCode DMStagGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,Pe
 PETSC_EXTERN PetscErrorCode DMStagGetDOF(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetEntriesPerElement(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMStagGetGhostType(DM,DMStagStencilType*);
 PETSC_EXTERN PetscErrorCode DMStagGetGlobalSizes(DM,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetIsFirstRank(DM,PetscBool*,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMStagGetIsLastRank(DM,PetscBool*,PetscBool*,PetscBool*);
@@ -96,6 +95,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetLocationDOF(DM,DMStagStencilLocation,PetscI
 PETSC_EXTERN PetscErrorCode DMStagGetLocationSlot(DM,DMStagStencilLocation,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetNumRanks(DM,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetOwnershipRanges(DM,const PetscInt**,const PetscInt**,const PetscInt**);
+PETSC_EXTERN PetscErrorCode DMStagGetStencilType(DM,DMStagStencilType*);
 PETSC_EXTERN PetscErrorCode DMStagGetStencilWidth(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagMatSetValuesStencil(DM,Mat,PetscInt,const DMStagStencil*,PetscInt,const DMStagStencil*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagMigrateVec(DM,Vec,DM,Vec);
@@ -103,10 +103,10 @@ PETSC_EXTERN PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM,void*,void
 PETSC_EXTERN PetscErrorCode DMStagSetBoundaryTypes(DM,DMBoundaryType,DMBoundaryType,DMBoundaryType);
 PETSC_EXTERN PetscErrorCode DMStagSetCoordinateDMType(DM,DMType);
 PETSC_EXTERN PetscErrorCode DMStagSetDOF(DM,PetscInt,PetscInt,PetscInt,PetscInt);
-PETSC_EXTERN PetscErrorCode DMStagSetGhostType(DM,DMStagStencilType);
 PETSC_EXTERN PetscErrorCode DMStagSetGlobalSizes(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMStagSetNumRanks(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMStagSetOwnershipRanges(DM,PetscInt const *,PetscInt const *,PetscInt const *);
+PETSC_EXTERN PetscErrorCode DMStagSetStencilType(DM,DMStagStencilType);
 PETSC_EXTERN PetscErrorCode DMStagSetStencilWidth(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
@@ -118,5 +118,8 @@ PETSC_EXTERN PetscErrorCode DMStagVecRestoreArrayDOF(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMStagVecRestoreArrayDOFRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMStagVecSetValuesStencil(DM,Vec,PetscInt,const DMStagStencil*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagVecSplitToDMDA(DM,Vec,DMStagStencilLocation,PetscInt,DM*,Vec*);
+
+PETSC_EXTERN PETSC_DEPRECATED("Use DMStagGetStencilType") PetscErrorCode DMStagGetGhostType(DM,DMStagStencilType*);
+PETSC_EXTERN PETSC_DEPRECATED("Use DMStagSetStencilType") PetscErrorCode DMStagSetGhostType(DM,DMStagStencilType);
 
 #endif

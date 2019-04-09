@@ -453,6 +453,29 @@ PetscErrorCode DMStagGetEntriesPerElement(DM dm,PetscInt *entriesPerElement)
 }
 
 /*@C
+  DMStagGetStencilType - get elementwise ghost/halo stencil type
+
+  Not Collective
+
+  Input Parameters:
++ dm - the DMStag object
+- stencilType - the elementwise ghost stencil type: DMSTAG_STENCIL_BOX, DMSTAG_STENCIL_STAR, or DMSTAG_STENCIL_NONE
+
+  Level: beginner
+
+.seealso: DMSTAG
+@*/
+PetscErrorCode DMStagGetStencilType(DM dm,DMStagStencilType *stencilType)
+{
+  DM_Stag * const stag = (DM_Stag*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  *stencilType = stag->stencilType;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   DMStagGetStencilWidth - get elementwise stencil width
 
   Not Collective
@@ -478,25 +501,16 @@ PetscErrorCode DMStagGetStencilWidth(DM dm,PetscInt *stencilWidth)
 }
 
 /*@C
-  DMStagGetGhostType - get elementwise ghost/halo stencil type
+  DMStagGetGhostType - deprecated; use DMStagGetStencilType()
 
-  Not Collective
-
-  Input Parameters:
-+ dm - the DMStag object
-- stencilType - the elementwise ghost stencil type: DMSTAG_STENCIL_BOX, DMSTAG_STENCIL_STAR, or DMSTAG_STENCIL_NONE
-
-  Level: beginner
-
-.seealso: DMSTAG
+  Level: deprecated
 @*/
 PetscErrorCode DMStagGetGhostType(DM dm,DMStagStencilType *stencilType)
 {
-  DM_Stag * const stag = (DM_Stag*)dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  *stencilType = stag->stencilType;
+  ierr = DMStagGetStencilType(dm,stencilType);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -918,7 +932,21 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
 }
 
 /*@C
-  DMStagSetGhostType - set elementwise ghost/halo stencil type
+  DMStagSetGhostType - deprecated; use DMStagSetStencilType()
+
+  Level: deprecated
+@*/
+PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType stencilType)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMStagSetStencilType(dm,stencilType);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMStagSetStencilType - set elementwise ghost/halo stencil type
 
   Logically Collective; stencilType must contain common value
 
@@ -930,7 +958,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
 
 .seealso: DMSTAG
 @*/
-PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType stencilType)
+PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 {
   DM_Stag * const stag = (DM_Stag*)dm->data;
 
