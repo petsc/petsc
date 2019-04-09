@@ -457,13 +457,15 @@ PetscErrorCode DMStagGetEntriesPerElement(DM dm,PetscInt *entriesPerElement)
 
   Not Collective
 
-  Input Parameters:
-+ dm - the DMStag object
-- stencilType - the elementwise ghost stencil type: DMSTAG_STENCIL_BOX, DMSTAG_STENCIL_STAR, or DMSTAG_STENCIL_NONE
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameter:
+. stencilType - the elementwise ghost stencil type: DMSTAG_STENCIL_BOX, DMSTAG_STENCIL_STAR, or DMSTAG_STENCIL_NONE
 
   Level: beginner
 
-.seealso: DMSTAG
+.seealso: DMSTAG, DMStagSetStencilType(), DMStagStencilType
 @*/
 PetscErrorCode DMStagGetStencilType(DM dm,DMStagStencilType *stencilType)
 {
@@ -537,7 +539,7 @@ PetscErrorCode DMStagGetGhostType(DM dm,DMStagStencilType *stencilType)
 
   Level: intermediate
 
-.seealso: DMSTAG, DMStagSetGlobalSizes, DMStagSetOwnershipRanges, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d()
+.seealso: DMSTAG, DMStagSetGlobalSizes(), DMStagSetOwnershipRanges(), DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d()
 @*/
 PetscErrorCode DMStagGetOwnershipRanges(DM dm,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
@@ -956,7 +958,7 @@ PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType stencilType)
 
   Level: beginner
 
-.seealso: DMSTAG
+.seealso: DMSTAG, DMStagGetStencilType(), DMStagStencilType
 @*/
 PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 {
@@ -975,11 +977,9 @@ PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 
   Logically Collective; stencilWidth must contain common value
 
-  Input Parameter:
-. dm - the DMStag object
-
-  Output Parameter:
-. stencilWidth - stencil/halo/ghost width in elements
+  Input Parameters:
++ dm - the DMStag object
+- stencilWidth - stencil/halo/ghost width in elements
 
   Level: beginner
 
@@ -1047,7 +1047,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
 
   Level: developer
 
-.seealso: DMSTAG, DMStagSetGlobalSizes, DMStagGetOwnershipRanges
+.seealso: DMSTAG, DMStagSetGlobalSizes(), DMStagGetOwnershipRanges()
 @*/
 PetscErrorCode DMStagSetOwnershipRanges(DM dm,PetscInt const *lx,PetscInt const *ly,PetscInt const *lz)
 {
