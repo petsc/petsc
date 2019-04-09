@@ -369,10 +369,15 @@ For example,
 \item all functions, such as \lstinline{KSPCreate()}, included in the public headers (\trl{include/petsc*.h}) should be marked \lstinline{PETSC_EXTERN};
 \item \lstinline{MatHeaderReplace()} is not intended for users (it is in \trl{include/petsc/private/matimpl.h}) but is marked \lstinline{PETSC_EXTERN} since it is used both by implementations of the \lstinline{Mat} class (which could be defined in plugin implementations) and by functions in the \lstinline{DM} and \lstinline{KSP} packages.
 \end{itemize}
-\item Before removing or renaming an API function or type, \lstinline{PETSC_DEPRECATED()} should be used in the relevant header file to indicate the new, correct usage and the version number where the deprecation will first appear. For example,
+\item Before removing or renaming an API function, type, or enumerator,
+\lstinline{PETSC_DEPRECATED()} should be used in the relevant header file to indicate the new, correct usage and the version number where the deprecation will first appear. For example,
 \begin{lstlisting}
 typedef NewType OldType PETSC_DEPRECATED("Use NewType (since v3.9)");
 PETSC_DEPRECATED("Use NewFunction (since v3.9)") PetscErrorCode OldFunction();
+typedef enum {
+  OLD_ENUMERATOR PETSC_DEPRECATED("Use NEW_ENUMERATOR (since v3.9)") = 3,
+  NEW_ENUMERATOR = 3
+} MyEnum;
 \end{lstlisting}
 The old function or type, with the deprecation warning, should remain for at least one major release. The function or type's manual page should be updated (see \ref{sec:manpageformat}, item \ref{item:manpagelevel}).
 \item Before removing or renaming an options database key, \lstinline{PetscOptionsDeprecated()} should be used for at least one major release.
