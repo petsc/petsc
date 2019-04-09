@@ -480,7 +480,7 @@ PetscErrorCode DMStagGetStencilWidth(DM dm,PetscInt *stencilWidth)
 /*@C
   DMStagGetGhostType - get elementwise ghost/halo stencil type
 
-  Logically Collective
+  Not Collective
 
   Input Parameters:
 + dm - the DMStag object
@@ -496,7 +496,6 @@ PetscErrorCode DMStagGetGhostType(DM dm,DMStagStencilType *stencilType)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  PetscValidLogicalCollectiveEnum(dm,stencilType,2);
   *stencilType = stag->stencilType;
   PetscFunctionReturn(0);
 }
@@ -779,7 +778,7 @@ PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *arrX,void *arr
 /*@C
   DMStagSetBoundaryTypes - set DMStag boundary types
 
-  Logically Collective
+  Logically Collective; all processes must set the same values
 
   Input Parameters:
 + dm - the DMStag object
@@ -814,7 +813,7 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm,DMBoundaryType boundaryType0,DMBound
 /*@C
   DMStagSetCoordinateDMType - set DM type to store coordinates
 
-  Logically Collective
+  Logically Collective; all processes must set the same value
 
   Input Parameters:
 + dm - the DMStag object
@@ -837,7 +836,7 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm,DMType dmtype)
 /*@C
   DMStagSetDOF - set dof/stratum
 
-  Logically Collective
+  Logically Collective; all processes must set the same value
 
   Input Parameters:
 + dm - the DMStag object
@@ -878,7 +877,7 @@ PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,Pet
 /*@C
   DMStagSetNumRanks - set ranks in each direction in the global rank grid
 
-  Logically Collective
+  Logically Collective; all processes must set the same values
 
   Input Parameters:
 + dm - the DMStag object
@@ -893,7 +892,9 @@ PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,Pet
 @*/
 PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscInt nRanks2)
 {
+  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
+  PetscInt        dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
@@ -901,6 +902,10 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
   PetscValidLogicalCollectiveInt(dm,nRanks1,3);
   PetscValidLogicalCollectiveInt(dm,nRanks2,4);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (nRanks0 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in X direction cannot be less than 1");
+  if (dim > 1 && nRanks1 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Y direction cannot be less than 1");
+  if (dim > 2 && nRanks2 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Z direction cannot be less than 1");
   if (nRanks0) stag->nRanks[0] = nRanks0;
   if (nRanks1) stag->nRanks[1] = nRanks1;
   if (nRanks2) stag->nRanks[2] = nRanks2;
@@ -910,7 +915,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
 /*@C
   DMStagSetGhostType - set elementwise ghost/halo stencil type
 
-  Logically Collective
+  Logically Collective; all processes must set the same value
 
   Input Parameters:
 + dm - the DMStag object
@@ -935,7 +940,7 @@ PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType stencilType)
 /*@C
   DMStagSetStencilWidth - set elementwise stencil width
 
-  Not Collective
+  Logically Collective; all processes must set the same value
 
   Input Parameter:
 . dm - the DMStag object
@@ -954,6 +959,7 @@ PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  if (stencilWidth < 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"stencilWidth cannot be negative");
   stag->stencilWidth = stencilWidth;
   PetscFunctionReturn(0);
 }
@@ -961,7 +967,7 @@ PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
 /*@C
   DMStagSetGlobalSizes -
 
-  Logically Collective
+  Logically Collective; all processes must set the same values
 
   Input Parameters:
 + dm - the DMStag object
@@ -976,11 +982,17 @@ PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
 @*/
 PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
 {
+  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
+  PetscInt        dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (N0 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in X direction must be positive");
+  if (dim > 1 && N1 < 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Y direction must be positive");
+  if (dim > 2 && N2 < 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Z direction must be positive");
   if (N0) stag->N[0] = N0;
   if (N1) stag->N[1] = N1;
   if (N2) stag->N[2] = N2;
@@ -990,7 +1002,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
 /*@C
   DMStagSetOwnershipRanges - set elements per rank in each direction
 
-  Logically Collective
+  Logically Collective; all processes must set the same values
 
   Input Parameters:
 + dm - the DMStag object
@@ -1058,11 +1070,9 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,P
   ierr = PetscStrcmp(stag->coordinateDMType,DMPRODUCT,&flg_product);CHKERRQ(ierr);
   if (flg_stag) {
     ierr = DMStagSetUniformCoordinatesExplicit(dm,xmin,xmax,ymin,ymax,zmin,zmax);CHKERRQ(ierr);
-  } 
-  else if (flg_product) {
+  } else if (flg_product) {
         ierr = DMStagSetUniformCoordinatesProduct(dm,xmin,xmax,ymin,ymax,zmin,zmax);CHKERRQ(ierr);
-  }
-  else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported DM Type %s",stag->coordinateDMType);
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported DM Type %s",stag->coordinateDMType);
   PetscFunctionReturn(0);
 }
 
