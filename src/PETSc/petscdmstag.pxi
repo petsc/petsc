@@ -53,7 +53,7 @@ cdef extern from * nogil:
     int DMStagGetGlobalSizes(PetscDM,PetscInt*,PetscInt*,PetscInt*)
     int DMStagGetBoundaryTypes(PetscDM,PetscDMBoundaryType*,PetscDMBoundaryType*,PetscDMBoundaryType*)
     int DMStagGetStencilWidth(PetscDM,PetscInt*)
-    int DMStagGetGhostType(PetscDM,PetscDMStagStencilType*)
+    int DMStagGetStencilType(PetscDM,PetscDMStagStencilType*)
     int DMStagGetOwnershipRanges(PetscDM,const_PetscInt*[],const_PetscInt*[],const_PetscInt*[])
 
     int DMStagSetDOF(PetscDM,PetscInt,PetscInt,PetscInt,PetscInt)
@@ -61,7 +61,7 @@ cdef extern from * nogil:
     int DMStagSetGlobalSizes(PetscDM,PetscInt,PetscInt,PetscInt)
     int DMStagSetBoundaryTypes(PetscDM,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType)
     int DMStagSetStencilWidth(PetscDM,PetscInt)
-    int DMStagSetGhostType(PetscDM,PetscDMStagStencilType)
+    int DMStagSetStencilType(PetscDM,PetscDMStagStencilType)
     int DMStagSetOwnershipRanges(PetscDM,const_PetscInt[],const_PetscInt[],const_PetscInt[])
 
     int DMStagGetLocationSlot(PetscDM,PetscDMStagStencilLocation,PetscInt,PetscInt*)
