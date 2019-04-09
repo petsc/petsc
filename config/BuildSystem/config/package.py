@@ -216,7 +216,7 @@ class Package(config.base.Configure):
   def getDebugFlags(self,cflags):
     outflags = []
     for flag in cflags.split():
-      if flag in ['-g']:
+      if flag in ['-g','-g3','-Z7']:
         outflags.append(flag)
     return ' '.join(outflags)
 
