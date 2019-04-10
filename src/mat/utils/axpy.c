@@ -51,9 +51,11 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
     if (transpose) {
         PetscObjectQueryFunction((PetscObject)X,"MatTransposeGetMat_C",&f);
         if (f) {
+          ierr = PetscInfo(NULL,"Explicitly transposing X of type MATTRANSPOSEMAT matrix to perform MatAXPY()\n");CHKERRQ(ierr);
           ierr = f(X,&T);CHKERRQ(ierr);
           ierr = MatTranspose(T,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
         } else {
+          ierr = PetscInfo(NULL,"Explicitly Hermitian transposing X of type MATTRANSPOSEMAT matrix to perform MatAXPY()\n");CHKERRQ(ierr);
           ierr = MatHermitianTransposeGetMat(X,&T);CHKERRQ(ierr);
           ierr = MatHermitianTranspose(T,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
         }
@@ -64,9 +66,11 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
       if (transpose) {
         PetscObjectQueryFunction((PetscObject)Y,"MatTransposeGetMat_C",&f);
         if (f) {
+          ierr = PetscInfo(NULL,"Explicitly transposing Y of type MATTRANSPOSEMAT matrix to perform MatAXPY()\n");CHKERRQ(ierr);
           ierr = f(Y,&T);CHKERRQ(ierr);
           ierr = MatTranspose(T,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
         } else {
+          ierr = PetscInfo(NULL,"Explicitly Hermitian transposing Y of type MATTRANSPOSEMAT matrix to perform MatAXPY()\n");CHKERRQ(ierr);
           ierr = MatHermitianTransposeGetMat(Y,&T);CHKERRQ(ierr);
           ierr = MatHermitianTranspose(T,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
         }
