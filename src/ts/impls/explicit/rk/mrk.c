@@ -14,6 +14,7 @@
 #include <petsc/private/tsimpl.h>
 #include <petscdm.h>
 #include <../src/ts/impls/explicit/rk/rk.h>
+#include <../src/ts/impls/explicit/rk/mrk.h>
 
 static PetscErrorCode TSReset_MRKNONSPLIT(TS ts)
 {
@@ -497,26 +498,7 @@ static PetscErrorCode TSSetUp_MRKSPLIT(TS ts)
   PetscFunctionReturn(0);
 }
 
-/*@C
-  TSRKSetMultirate - Use the interpolation-based multirate RK method
-
-  Logically collective
-
-  Input Parameter:
-+  ts - timestepping context
--  use_multirate - PETSC_TRUE enables the multirate RK method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
-
-  Options Database:
-.   -ts_rk_multirate - <true,false>
-
-  Notes:
-  The multirate method requires interpolation. The default interpolation works for 1st- and 2nd- order RK, but not for high-order RKs except TSRK5DP which comes with the interpolation coeffcients (binterp).
-
-  Level: intermediate
-
-.seealso: TSRKGetMultirate()
-@*/
-PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
+PetscErrorCode TSRKSetMultirate_RK(TS ts,PetscBool use_multirate)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
@@ -540,24 +522,9 @@ PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
   PetscFunctionReturn(0);
 }
 
-/*@C
-  TSRKGetMultirate - Gets whether to Use the interpolation-based multirate RK method
-
-  Not collective
-
-  Input Parameter:
-.  ts - timestepping context
-
-  Output Parameter:
-.  use_multirate - PETSC_TRUE if the multirate RK method is enabled, PETSC_FALSE otherwise
-
-  Level: intermediate
-
-.seealso: TSRKSetMultirate()
-@*/
-PetscErrorCode TSRKGetMultirate(TS ts,PetscBool *use_multirate)
+PetscErrorCode TSRKGetMultirate_RK(TS ts,PetscBool *use_multirate)
 {
-  TS_RK          *rk = (TS_RK*)ts->data;
+  TS_RK *rk = (TS_RK*)ts->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
