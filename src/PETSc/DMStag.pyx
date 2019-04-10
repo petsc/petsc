@@ -105,7 +105,7 @@ cdef class DMStag(DM):
         if setUp:
             CHKERR( DMSetUp(self.dm) )
         return self
-            
+
     # Setters
 
     def setStencilWidth(self,swidth):
@@ -149,16 +149,8 @@ cdef class DMStag(DM):
         ownership_ranges = asStagOwnershipRanges(ranges, dim, &m, &n, &p, &lx, &ly, &lz)
         CHKERR( DMStagSetOwnershipRanges(self.dm, lx, ly, lz) )
 
-
-
-
-
-    
-    
-      
-    
-    
     # Getters
+
     def getDim(self):
         return self.getDimension()
         
@@ -243,13 +235,7 @@ cdef class DMStag(DM):
         CHKERR( DMGetDimension(self.dm, &dim) )
         CHKERR( DMStagGetIsLastRank(self.dm, &rank0, &rank1, &rank2) )
         return toStagDims(dim, rank0, rank1, rank2)
-        
-        
-    
-    
-    
-    
-    
+
     # Coordinate-related functions
 
     def setUniformCoordinatesExplicit(self, xmin=0, xmax=1, ymin=0, ymax=1, zmin=0, zmax=1):
@@ -263,7 +249,6 @@ cdef class DMStag(DM):
         cdef PetscReal _ymin = asReal(ymin), _ymax = asReal(ymax)
         cdef PetscReal _zmin = asReal(zmin), _zmax = asReal(zmax)
         CHKERR( DMStagSetUniformCoordinatesProduct(self.dm, _xmin, _xmax, _ymin, _ymax, _zmin, _zmax) )        
-
         
     def setUniformCoordinates(self, xmin=0, xmax=1, ymin=0, ymax=1, zmin=0, zmax=1):
         cdef PetscReal _xmin = asReal(xmin), _xmax = asReal(xmax)
@@ -276,8 +261,6 @@ cdef class DMStag(DM):
         dmtype = str2bytes(dmtype, &cval)
         CHKERR( DMStagSetCoordinateDMType(self.dm, cval) )
 
-    
-    
     # Location slot related functions
 
     def getLocationSlot(self, loc, c):
@@ -298,26 +281,9 @@ cdef class DMStag(DM):
         cdef PetscDMStagStencilLocation sloc = asStagStencilLocation(loc)
         CHKERR( DMStagGetLocationDOF(self.dm, sloc, &dof) ) 
         return toInt(dof)
-        
 
-        
-
-
-        
-        
-        
-
-    
-
-
-
-    
- 
-    
-    
-    
     # Random other functions
-    
+
     def migrateVec(self, Vec vec, DM dmTo, Vec vecTo):
         CHKERR( DMStagMigrateVec(self.dm, vec.vec, dmTo.dm, vecTo.vec ) )
         
