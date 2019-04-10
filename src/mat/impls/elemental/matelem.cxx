@@ -1084,11 +1084,26 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   PetscErrorCode ierr;
+  MPI_Comm       comm;
   PetscMPIInt    rsize,csize;
+  PetscInt       n;
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+
+  /* Check if local row and clomun sizes are equally distributed.
+     Jed: Elemental uses "element" cyclic ordering so the sizes need to match that
+     exactly.  The strategy in MatElemental is for PETSc to implicitly permute to block ordering (like would be returned by
+     PetscSplitOwnership(comm,&n,&N)), at which point Elemental matrices can act on PETSc vectors without redistributing the vectors. */
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  n = PETSC_DECIDE;
+  ierr = PetscSplitOwnership(comm,&n,&A->rmap->N);CHKERRQ(ierr);
+  if (n != A->rmap->n) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %D of ELEMENTAL matrix must be equally distributed",A->rmap->n);
+
+  n = PETSC_DECIDE;
+  ierr = PetscSplitOwnership(comm,&n,&A->cmap->N);CHKERRQ(ierr);
+  if (n != A->cmap->n) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D of ELEMENTAL matrix must be equally distributed",A->cmap->n);
 
   a->emat->Resize(A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   El::Zero(*a->emat);
