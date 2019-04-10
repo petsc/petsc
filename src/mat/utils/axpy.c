@@ -49,7 +49,7 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   } else {
     ierr = PetscStrcmp(t1,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
     if (transpose) {
-        PetscObjectQueryFunction((PetscObject)X,"MatTransposeGetMat_C",&f);
+        ierr = PetscObjectQueryFunction((PetscObject)X,"MatTransposeGetMat_C",&f);CHKERRQ(ierr);
         if (f) {
           ierr = PetscInfo(NULL,"Explicitly transposing X of type MATTRANSPOSEMAT matrix to perform MatAXPY()\n");CHKERRQ(ierr);
           ierr = f(X,&T);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
     } else {
       ierr = PetscStrcmp(t2,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
       if (transpose) {
-        PetscObjectQueryFunction((PetscObject)Y,"MatTransposeGetMat_C",&f);
+        ierr = PetscObjectQueryFunction((PetscObject)Y,"MatTransposeGetMat_C",&f);CHKERRQ(ierr);
         if (f) {
           ierr = PetscInfo(NULL,"Explicitly transposing Y of type MATTRANSPOSEMAT matrix to perform MatAXPY()\n");CHKERRQ(ierr);
           ierr = f(Y,&T);CHKERRQ(ierr);
