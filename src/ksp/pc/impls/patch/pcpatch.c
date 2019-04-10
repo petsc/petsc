@@ -2443,7 +2443,9 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
     }
   }
   if (patch->save_operators) {
-    if (patch->precomputeElementTensors) {
+    PetscInt ncell;
+    ierr = ISGetSize(patch->cells, &ncell);CHKERRQ(ierr);
+    if (patch->precomputeElementTensors && ncell > 0) {
       ierr = PCPatchPrecomputePatchTensors_Private(pc);CHKERRQ(ierr);
     }
     for (i = 0; i < patch->npatch; ++i) {
