@@ -143,7 +143,9 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   ierr = DMGetType(dm2,&type2);CHKERRQ(ierr);
   ierr = PetscStrcmp(DMSTAG,type2,&sameType);CHKERRQ(ierr);
   if (!sameType) {
+    ierr = PetscInfo1((PetscObject)dm,"DMStag compatibility check not implemented with DM of type %s\n",type2);CHKERRQ(ierr);
     *set = PETSC_FALSE;
+    PetscFunctionReturn(0);
   }
 
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
