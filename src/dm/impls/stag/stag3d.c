@@ -8,7 +8,7 @@
 
   Input Parameters:
 + comm - MPI communicator
-. bndx,bndy - boundary type: DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, or DM_BOUNDARY_GHOSTED
+. bndx,bndy,bndz - boundary type: DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, or DM_BOUNDARY_GHOSTED
 . M,N,P - global number of grid points in x,y directions
 . m,n,p - number of ranks in the x,y directions (may be PETSC_DECIDE)
 . dof0 - number of degrees of freedom per vertex/point/node/0-cell
@@ -42,7 +42,7 @@
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagCreate2d(), DMStagCreate3d(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateLocalVector(), DMLocalToGlobalBegin()
+.seealso: DMSTAG, DMStagCreate1d(), DMStagCreate2d(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateLocalVector(), DMLocalToGlobalBegin()
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate3d(MPI_Comm comm,DMBoundaryType bndx,DMBoundaryType bndy,DMBoundaryType bndz,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof0,PetscInt dof1,PetscInt dof2,PetscInt dof3,DMStagStencilType stencilType,PetscInt stencilWidth,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM* dm)
 {
