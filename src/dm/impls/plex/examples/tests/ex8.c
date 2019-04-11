@@ -17,19 +17,10 @@ typedef struct {
 
 static PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *dm)
 {
-  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
-  if (user->interpolate) {
-    DM idm;
-
-    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = idm;
-  }
+  ierr = DMPlexCreateFromFile(comm, filename, user->interpolate, dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Input Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
