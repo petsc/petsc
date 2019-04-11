@@ -2241,6 +2241,11 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   DM              dm, plex;
 
 
+  ierr = ISGetSize(patch->cells, &ncell);CHKERRQ(ierr);
+  if (!ncell) { /* No cells to assemble over -> skip */
+    PetscFunctionReturn(0);
+  }
+
   ierr = PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
 
   if (!patch->allCells) {
