@@ -15,7 +15,7 @@ typedef struct {
   PetscReal *centroid, *normal, *vol;     /* FVM data */
 } AppCtx;
 
-PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *dm)
+static PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *dm)
 {
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -35,7 +35,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *runTypes[2] = {"reference", "file"};
   PetscInt       run;
@@ -93,7 +93,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoords[])
+static PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoords[])
 {
   PetscSection   coordSection;
   Vec            coordinates;
@@ -136,7 +136,7 @@ PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoo
 
 #define RelativeError(a,b) PetscAbs(a-b)/(1.0+PetscMax(PetscAbs(a),PetscAbs(b)))
 
-PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal v0Ex[], PetscReal JEx[], PetscReal invJEx[], PetscReal detJEx)
+static PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal v0Ex[], PetscReal JEx[], PetscReal invJEx[], PetscReal detJEx)
 {
   PetscReal      v0[3], J[9], invJ[9], detJ;
   PetscInt       d, i, j;
@@ -163,7 +163,7 @@ PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscRe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal centroidEx[], PetscReal normalEx[], PetscReal volEx)
+static PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal centroidEx[], PetscReal normalEx[], PetscReal volEx)
 {
   PetscReal      centroid[3], normal[3], vol;
   PetscInt       d;
@@ -179,7 +179,7 @@ PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscRe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+static PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
   PetscRandom    r, ang, ang2;
@@ -441,7 +441,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+static PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
   PetscRandom    r, ang, ang2;
@@ -688,7 +688,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+static PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
   PetscRandom    r, ang, ang2;
@@ -827,7 +827,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+static PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
   PetscRandom    r, ang, ang2;
