@@ -2241,6 +2241,11 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   DM              dm, plex;
 
 
+  ierr = ISGetSize(patch->cells, &ncell);CHKERRQ(ierr);
+  if (!ncell) { /* No cells to assemble over -> skip */
+    PetscFunctionReturn(0);
+  }
+
   ierr = PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
 
   if (!patch->allCells) {
@@ -2443,9 +2448,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
     }
   }
   if (patch->save_operators) {
-    PetscInt ncell;
-    ierr = ISGetSize(patch->cells, &ncell);CHKERRQ(ierr);
-    if (patch->precomputeElementTensors && ncell > 0) {
+    if (patch->precomputeElementTensors) {
       ierr = PCPatchPrecomputePatchTensors_Private(pc);CHKERRQ(ierr);
     }
     for (i = 0; i < patch->npatch; ++i) {
