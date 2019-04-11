@@ -143,7 +143,9 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   ierr = DMGetType(dm2,&type2);CHKERRQ(ierr);
   ierr = PetscStrcmp(DMSTAG,type2,&sameType);CHKERRQ(ierr);
   if (!sameType) {
+    ierr = PetscInfo1((PetscObject)dm,"DMStag compatibility check not implemented with DM of type %s\n",type2);CHKERRQ(ierr);
     *set = PETSC_FALSE;
+    PetscFunctionReturn(0);
   }
 
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
@@ -164,19 +166,19 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   for (i=0; i<dim; ++i) {
     if (stag->N[i] != stag2->N[i]) {
       ierr = PetscInfo3((PetscObject)dm,"DMStag objects have different global numbers of elements in dimension %D: %D != %D\n",i,stag->n[i],stag2->n[i]);CHKERRQ(ierr);
-    *set = PETSC_TRUE;
+      *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
     if (stag->n[i] != stag2->n[i]) {
       ierr = PetscInfo3((PetscObject)dm,"DMStag objects have different local numbers of elements in dimension %D: %D != %D\n",i,stag->n[i],stag2->n[i]);CHKERRQ(ierr);
-    *set = PETSC_TRUE;
+      *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
     if (stag->boundaryType[i] != stag2->boundaryType[i]) {
       ierr = PetscInfo3((PetscObject)dm,"DMStag objects have different boundary types in dimension %d: %s != %s\n",i,stag->boundaryType[i],stag2->boundaryType[i]);CHKERRQ(ierr);
-    *set = PETSC_TRUE;
+      *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
