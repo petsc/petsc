@@ -968,6 +968,212 @@ static PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, Petsc
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TestWedge(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+{
+  DM             dm;
+  PetscRandom    r, ang, ang2;
+  PetscInt       dim, t;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Create reference wedge */
+  dim  = 3;
+  ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) dm, "Triangular Prism");CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
+  {
+    PetscInt    numPoints[2]        = {6, 1};
+    PetscInt    coneSize[7]         = {6, 0, 0, 0, 0, 0, 0};
+    PetscInt    cones[6]            = {1, 2, 3, 4, 5, 6};
+    PetscInt    coneOrientations[6] = {0, 0, 0, 0, 0, 0};
+    PetscScalar vertexCoords[18]    = {-1.0, -1.0, -1.0,   1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,
+                                       -1.0, -1.0,  1.0,   1.0, -1.0,  1.0,  -1.0, 1.0,  1.0};
+
+    ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    ierr = DMPlexSetHybridBounds(dm, 0, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+    if (interpolate) {
+      DM idm;
+
+      ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = idm;
+    }
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  }
+  /* Check reference geometry: determinant is scaled by reference volume 4.0 */
+  {
+#if 0
+    /* FEM geometry is not functional for wedges */
+    PetscReal v0Ex[3]   = {-1.0, -1.0, -1.0};
+    PetscReal JEx[9]    = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal invJEx[9] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal detJEx    = 1.0;
+#endif
+
+    if (interpolate) {
+      PetscReal       centroidEx[3]      = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
+      PetscReal       normalEx[3]        = {0.0, 0.0, 0.0};
+      PetscReal       volEx              = 4.0;
+      PetscReal       faceVolEx[5]       = {2.0, 2.0, 4.0, PETSC_SQRT2*4.0, 4.0};
+      PetscReal       faceNormalEx[15]   = {0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, -1.0, 0.0,  PETSC_SQRT2/2.0, PETSC_SQRT2/2.0, 0.0,  -1.0, 0.0, 0.0};
+      PetscReal       faceCentroidEx[15] = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), -1.0,
+                                            -((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.),  1.0,
+                                            0.0, -1.0, 0.0,  0.0, 0.0, 0.0,  -1.0, 0.0, 0.0};
+      const PetscInt *cone;
+      PetscInt        coneSize, c;
+
+      ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);
+      /* Check face geometry */
+      ierr = DMPlexGetConeSize(dm, 0, &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, 0, &cone);CHKERRQ(ierr);
+      for (c = 0; c < coneSize; ++c) {
+        ierr = CheckFVMGeometry(dm, cone[c], dim, &faceCentroidEx[c*dim], &faceNormalEx[c*dim], faceVolEx[c]);CHKERRQ(ierr);
+      }
+    }
+  }
+  /* Check random wedges: rotate, scale, then translate */
+  if (transform) {
+    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(r, 0.0, 10.0);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(ang);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(ang, 0.0, 2*PETSC_PI);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang2);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(ang2);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(ang2, 0.0, PETSC_PI);CHKERRQ(ierr);
+    for (t = 0; t < 100; ++t) {
+      PetscScalar vertexCoords[18]    = {-1.0, -1.0, -1.0,   1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,
+                                         -1.0, -1.0,  1.0,   1.0, -1.0,  1.0,  -1.0, 1.0,  1.0}, trans[3];
+#if 1
+      /* FEM geometry is not functional for wedges */
+      PetscReal v0Ex[3]          = {-1.0, -1.0, -1.0};
+      PetscReal JEx[9]           = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+      PetscReal invJEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+      PetscReal detJEx           = 1.0;
+#endif
+      PetscReal R[9], rot[3], rotM[9];
+      PetscReal scale, phi, theta, psi = 0.0;
+      PetscInt  d, e, f, p;
+
+      ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
+      ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
+      ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
+      for (d = 0; d < dim; ++d) {
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
+        for (p = 0; p < 8; ++p) {
+          vertexCoords[p*dim+d] *= scale;
+          vertexCoords[p*dim+d] += trans[d];
+        }
+        for (e = 0; e < dim; ++e) {
+          JEx[d*dim+e]    *= scale;
+          invJEx[d*dim+e] /= scale;
+        }
+        detJEx *= scale;
+      }
+      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
+      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
+      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
+      for (p = 0; p < 8; ++p) {
+        for (d = 0; d < dim; ++d) {
+          for (e = 0, rot[d] = 0.0; e < dim; ++e) {
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
+          }
+        }
+        for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
+      }
+      for (d = 0; d < dim; ++d) {
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
+        for (e = 0; e < dim; ++e) {
+          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
+            rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
+          }
+        }
+      }
+      for (d = 0; d < dim; ++d) {
+        for (e = 0; e < dim; ++e) {
+          JEx[d*dim+e] = rotM[d*dim+e];
+        }
+      }
+      for (d = 0; d < dim; ++d) {
+        for (e = 0; e < dim; ++e) {
+          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
+            rotM[d*dim+e] += invJEx[d*dim+f] * R[e*dim+f];
+          }
+        }
+      }
+      for (d = 0; d < dim; ++d) {
+        for (e = 0; e < dim; ++e) {
+          invJEx[d*dim+e] = rotM[d*dim+e];
+        }
+      }
+      ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
+      if (interpolate) {
+        PetscReal       centroidEx[3]      = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
+        PetscReal       normalEx[3]        = {0.0, 0.0, 0.0};
+        PetscReal       volEx              = 4.0;
+        PetscReal       faceVolEx[5]       = {2.0, 2.0, 4.0, PETSC_SQRT2*4.0, 4.0};
+        PetscReal       faceNormalEx[15]   = {0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, -1.0, 0.0,  PETSC_SQRT2/2.0, PETSC_SQRT2/2.0, 0.0,  -1.0, 0.0, 0.0}, norm;
+        PetscReal       faceCentroidEx[15] = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), -1.0,
+                                            -((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.),  1.0,
+                                            0.0, -1.0, 0.0,  0.0, 0.0, 0.0,  -1.0, 0.0, 0.0};
+        const PetscInt *cone;
+        PetscInt        coneSize, c;
+
+        for (d = 0; d < dim; ++d) {
+          centroidEx[d] *= scale;
+          centroidEx[d] += PetscRealPart(trans[d]);
+          volEx         *= scale;
+        }
+        for (d = 0; d < dim; ++d) {
+          for (e = 0, rot[d] = 0.0; e < dim; ++e) {
+            rot[d] += R[d*dim+e] * centroidEx[e];
+          }
+        }
+        for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
+        ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);
+        /* Check face geometry */
+        ierr = DMPlexGetConeSize(dm, 0, &coneSize);CHKERRQ(ierr);
+        ierr = DMPlexGetCone(dm, 0, &cone);CHKERRQ(ierr);
+        for (c = 0; c < coneSize; ++c) {
+          for (d = 0; d < dim; ++d) {
+            faceCentroidEx[c*dim+d] *= scale;
+            faceCentroidEx[c*dim+d] += PetscRealPart(trans[d]);
+            faceNormalEx[c*dim+d] /= scale;
+          }
+          for (d = 0; d < dim-1; ++d) {
+            faceVolEx[c]  *= scale;
+          }
+          for (d = 0; d < dim; ++d) {
+            for (e = 0, rot[d] = 0.0; e < dim; ++e) {
+              rot[d] += R[d*dim+e] * faceCentroidEx[c*dim+e];
+            }
+          }
+          for (d = 0; d < dim; ++d) faceCentroidEx[c*dim+d] = rot[d];
+          for (d = 0; d < dim; ++d) {
+            for (e = 0, rot[d] = 0.0; e < dim; ++e) {
+              rot[d] += R[d*dim+e] * faceNormalEx[c*dim+e];
+            }
+          }
+          for (d = 0; d < dim; ++d) faceNormalEx[c*dim+d] = rot[d];
+          for (d = 0, norm = 0.0; d < dim; ++d) norm += PetscSqr(faceNormalEx[c*dim+d]);
+          norm = PetscSqrtReal(norm);
+          for (d = 0; d < dim; ++d) faceNormalEx[c*dim+d] /= norm;
+
+          ierr = CheckFVMGeometry(dm, cone[c], dim, &faceCentroidEx[c*dim], &faceNormalEx[c*dim], faceVolEx[c]);CHKERRQ(ierr);
+        }
+      }
+    }
+    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&ang);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&ang2);CHKERRQ(ierr);
+  }
+  /* Cleanup */
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv)
 {
   AppCtx         user;
@@ -980,6 +1186,7 @@ int main(int argc, char **argv)
     ierr = TestQuadrilateral(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
     ierr = TestTetrahedron(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
     ierr = TestHexahedron(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
+    ierr = TestWedge(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
   } else if (user.runType == RUN_FILE) {
     PetscInt dim, cStart, cEnd, c;
 
