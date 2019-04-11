@@ -7684,10 +7684,10 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
 
     Notes:
     Two DMs are deemed compatible if they represent the same parallel decomposition
-    of the same topology. This implies that the the section (field data) on one
+    of the same topology. This implies that the section (field data) on one
     "makes sense" with respect to the topology and parallel decomposition of the other.
-    Loosely speaking, compatibile DMs represent the same domain, with the same parallel
-    decomposition, with different data.
+    Loosely speaking, compatible DMs represent the same domain and parallel
+    decomposition, but hold different data.
 
     Typically, one would confirm compatibility if intending to simultaneously iterate
     over a pair of vectors obtained from different DMs.
@@ -7705,7 +7705,7 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
   if (set && compatible)  {
     ierr = DMDAVecGetArrayDOF(da1,vec1,&arr1);CHKERRQ(ierr);
     ierr = DMDAVecGetArrayDOF(da2,vec2,&arr2);CHKERRQ(ierr);
-    ierr = DMDAGetCorners(da1,&x,&y,NULL,&m,&n);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da1,&x,&y,NULL,&m,&n,NULL);CHKERRQ(ierr);
     for (j=y; j<y+n; ++j) {
       for (i=x; i<x+m, ++i) {
         arr1[j][i][0] = arr2[j][i][0] + arr2[j][i][1];
@@ -7735,18 +7735,17 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
     information locally, this function may be merely "Logically Collective".
 
     Developer Notes:
-    Compatibility is assumed to be a symmetric concept; if DM A is compatible with DM B,
-    the DM B is compatible with DM A. Thus, this function checks the implementations
+    Compatibility is assumed to be a symmetric concept; DM A is compatible with DM B
+    iff B is compatible with A. Thus, this function checks the implementations
     of both dm and dm2 (if they are of different types), attempting to determine
     compatibility. It is left to DM implementers to ensure that symmetry is
     preserved. The simplest way to do this is, when implementing type-specific
-    logic for this function, to check for existing logic in the implementation
-    of other DM types and let *set = PETSC_FALSE if found; the logic of this
-    function will then call that logic.
+    logic for this function, is to check for existing logic in the implementation
+    of other DM types and let *set = PETSC_FALSE if found.
 
     Level: advanced
 
-.seealso: DM, DMDACreateCompatibleDMDA()
+.seealso: DM, DMDACreateCompatibleDMDA(), DMStagCreateCompatibleDMStag()
 @*/
 
 PetscErrorCode DMGetCompatibility(DM dm,DM dm2,PetscBool *compatible,PetscBool *set)

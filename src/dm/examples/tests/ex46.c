@@ -2,6 +2,7 @@ static char help[] = "Tests DMGetCompatibility() with a 3D DMDA.\n\n";
 
 #include <petscdm.h>
 #include <petscdmda.h>
+#include <petscdmstag.h>
 
 int main(int argc,char **argv) {
   PetscInt         M = 3,N = 5,P=3,s=1,w=2,i,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
@@ -182,6 +183,17 @@ int main(int argc,char **argv) {
       ierr = DMDestroy(&da2);CHKERRQ(ierr);
       ierr = PetscFree(lz2);CHKERRQ(ierr);
     }
+  }
+
+  /* Check compatibility with a DM of different type (DMStag) */
+  {
+    DM        dm2;
+    PetscBool compatible,set;
+    ierr = DMStagCreate3d(PETSC_COMM_WORLD,bx,by,bz,M,N,P,m,n,p,1,1,1,1,DMSTAG_STENCIL_STAR,w,lx,ly,lz,&dm2);CHKERRQ(ierr);
+    ierr = DMSetUp(dm2);CHKERRQ(ierr);
+    ierr = DMGetCompatibility(da,dm2,&compatible,&set);CHKERRQ(ierr);
+    /* Don't interpret the result, but note that one can run with -info */
+    ierr = DMDestroy(&dm2);CHKERRQ(ierr);
   }
 
   /* Free memory */
