@@ -45,11 +45,17 @@ class BaseTestDMStag(object):
         cda.destroy()
         
         c = self.da.getCoordinatesLocal()
-        self.da.setCoordinates(c)
-        c.destroy()
+        self.da.setCoordinatesLocal(c)
         gc = self.da.getCoordinatesLocal()
-        gc.destroy()
+        self.assertEqual(c.max()[1], gc.max()[1])
+        self.assertEqual(c.min()[1], gc.min()[1])
 
+        c = self.da.getCoordinates()
+        self.da.setCoordinates(c)
+        gc = self.da.getCoordinates()
+        self.assertEqual(c.max()[1], gc.max()[1])
+        self.assertEqual(c.min()[1], gc.min()[1])
+        
         self.directda.setCoordinateDMType('product')
         self.directda.setUniformCoordinates(0,1,0,1,0,1)
         self.directda.setUniformCoordinatesProduct(0,1,0,1,0,1)
