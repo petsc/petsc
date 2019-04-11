@@ -16,7 +16,7 @@
 #include <../src/ts/impls/explicit/rk/rk.h>
 #include <../src/ts/impls/explicit/rk/mrk.h>
 
-static PetscErrorCode TSReset_MRKNONSPLIT(TS ts)
+static PetscErrorCode TSReset_RK_MultirateNonsplit(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
   RKTableau      tab = rk->tableau;
@@ -28,7 +28,7 @@ static PetscErrorCode TSReset_MRKNONSPLIT(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_MRKNONSPLIT(TS ts,PetscReal itime,Vec X)
+static PetscErrorCode TSInterpolate_RK_MultirateNonsplit(TS ts,PetscReal itime,Vec X)
 {
   TS_RK            *rk = (TS_RK*)ts->data;
   PetscInt         s = rk->tableau->s,p = rk->tableau->p,i,j;
@@ -54,7 +54,7 @@ static PetscErrorCode TSInterpolate_MRKNONSPLIT(TS ts,PetscReal itime,Vec X)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStepRefine_MRKNONSPLIT(TS ts)
+static PetscErrorCode TSStepRefine_RK_MultirateNonsplit(TS ts)
 {
   TS              previousts,subts;
   TS_RK           *rk = (TS_RK*)ts->data;
@@ -74,7 +74,7 @@ static PetscErrorCode TSStepRefine_MRKNONSPLIT(TS ts)
   ierr = TSRHSSplitGetSubTS(subts,"fast",&subts);CHKERRQ(ierr);
   for (k=0; k<rk->dtratio; k++) {
     for (i=0; i<s; i++) {
-      ierr = TSInterpolate_MRKNONSPLIT(ts,t+k*h/rk->dtratio+h/rk->dtratio*c[i],Y[i]);CHKERRQ(ierr);
+      ierr = TSInterpolate_RK_MultirateNonsplit(ts,t+k*h/rk->dtratio+h/rk->dtratio*c[i],Y[i]);CHKERRQ(ierr);
       for (j=0; j<i; j++) w[j] = h/rk->dtratio*A[i*s+j];
       /* update the fast components in the stage value, the slow components will be ignored, so we do not care the slow part in vec_fast */
       ierr = VecCopy(ts->vec_sol,vec_fast);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ static PetscErrorCode TSStepRefine_MRKNONSPLIT(TS ts)
         ierr = VecCopy(YdotRHS[i],rk->YdotRHS_slow[i]);CHKERRQ(ierr);
       }
 
-      ierr = TSStepRefine_MRKNONSPLIT(ts);CHKERRQ(ierr);
+      ierr = TSStepRefine_RK_MultirateNonsplit(ts);CHKERRQ(ierr);
 
       rk->subts_current = previousts;
       ts->ptime = t;
@@ -121,7 +121,7 @@ static PetscErrorCode TSStepRefine_MRKNONSPLIT(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_MRKNONSPLIT(TS ts)
+static PetscErrorCode TSStep_RK_MultirateNonsplit(TS ts)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
   RKTableau       tab = rk->tableau;
@@ -165,7 +165,7 @@ static PetscErrorCode TSStep_MRKNONSPLIT(TS ts)
   rk->subts_current = ts;
   rk->ptime = t;
   rk->time_step = h;
-  ierr = TSStepRefine_MRKNONSPLIT(ts);CHKERRQ(ierr);
+  ierr = TSStepRefine_RK_MultirateNonsplit(ts);CHKERRQ(ierr);
 
   ts->ptime = t + ts->time_step;
   ts->time_step = next_time_step;
@@ -177,7 +177,7 @@ static PetscErrorCode TSStep_MRKNONSPLIT(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_MRKNONSPLIT(TS ts)
+static PetscErrorCode TSSetUp_RK_MultirateNonsplit(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
   RKTableau      tab = rk->tableau;
@@ -194,8 +194,8 @@ static PetscErrorCode TSSetUp_MRKNONSPLIT(TS ts)
   ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&rk->YdotRHS_slow);CHKERRQ(ierr);
   rk->subts_current = rk->subts_fast;
 
-  ts->ops->step        = TSStep_MRKNONSPLIT;
-  ts->ops->interpolate = TSInterpolate_MRKNONSPLIT;
+  ts->ops->step        = TSStep_RK_MultirateNonsplit;
+  ts->ops->interpolate = TSInterpolate_RK_MultirateNonsplit;
   PetscFunctionReturn(0);
 }
 
@@ -218,7 +218,7 @@ static PetscErrorCode TSCopyDM(TS tssrc,TS tsdest)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_MRKSPLIT(TS ts)
+static PetscErrorCode TSReset_RK_MultirateSplit(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
@@ -232,14 +232,14 @@ static PetscErrorCode TSReset_MRKSPLIT(TS ts)
     ierr = PetscFree(rk->YdotRHS_fast);CHKERRQ(ierr);
     ierr = PetscFree(rk->YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecDestroy(&rk->X0);CHKERRQ(ierr);
-    ierr = TSReset_MRKSPLIT(rk->subts_fast);
+    ierr = TSReset_RK_MultirateSplit(rk->subts_fast);
     ierr = PetscFree(rk->subts_fast->data);CHKERRQ(ierr);
     rk->subts_fast = NULL;
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_MRKSPLIT(TS ts,PetscReal itime,Vec X)
+static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts,PetscReal itime,Vec X)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
   Vec             Xslow;
@@ -293,7 +293,7 @@ static PetscErrorCode TSInterpolate_MRKSPLIT(TS ts,PetscReal itime,Vec X)
  x1 = x0 + h b^T YdotRHS
 
 */
-static PetscErrorCode TSEvaluateStep_MRKSPLIT(TS ts,PetscInt order,Vec X,PetscBool *done)
+static PetscErrorCode TSEvaluateStep_RK_MultirateSplit(TS ts,PetscInt order,Vec X,PetscBool *done)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
   RKTableau      tab = rk->tableau;
@@ -319,7 +319,7 @@ static PetscErrorCode TSEvaluateStep_MRKSPLIT(TS ts,PetscInt order,Vec X,PetscBo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStepRefine_MRKSPLIT(TS ts)
+static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
   TS              subts_fast = rk->subts_fast,currentlevelts;
@@ -343,11 +343,11 @@ static PetscErrorCode TSStepRefine_MRKSPLIT(TS ts)
     /* propogate fast component using small time steps */
     for (i=0; i<s; i++) {
       /* stage value for slow components */
-      ierr = TSInterpolate_MRKSPLIT(rk->ts_root,t+k*h/rk->dtratio+h/rk->dtratio*c[i],Y[i]);CHKERRQ(ierr);
+      ierr = TSInterpolate_RK_MultirateSplit(rk->ts_root,t+k*h/rk->dtratio+h/rk->dtratio*c[i],Y[i]);CHKERRQ(ierr);
       currentlevelts = rk->ts_root;
       while (currentlevelts != ts) { /* all the slow parts need to be interpolated separated */
         currentlevelts = ((TS_RK*)currentlevelts->data)->subts_fast;
-        ierr = TSInterpolate_MRKSPLIT(currentlevelts,t+k*h/rk->dtratio+h/rk->dtratio*c[i],Y[i]);CHKERRQ(ierr);
+        ierr = TSInterpolate_RK_MultirateSplit(currentlevelts,t+k*h/rk->dtratio+h/rk->dtratio*c[i],Y[i]);CHKERRQ(ierr);
       }
       for (j=0; j<i; j++) w[j] = h/rk->dtratio*A[i*s+j];
       subrk_fast->stage_time = t + h/rk->dtratio*c[i];
@@ -364,7 +364,7 @@ static PetscErrorCode TSStepRefine_MRKSPLIT(TS ts)
     ierr = VecRestoreSubVector(ts->vec_sol,rk->is_fast,&Xfast);CHKERRQ(ierr);
     /* update the value of fast components using fast time step */
     rk->slow = PETSC_FALSE;
-    ierr = TSEvaluateStep_MRKSPLIT(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
+    ierr = TSEvaluateStep_RK_MultirateSplit(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     for (i=0; i<s; i++) {
       ierr = VecRestoreSubVector(YdotRHS[i],rk->is_fast,&YdotRHS_fast[i]);CHKERRQ(ierr);
     }
@@ -372,7 +372,7 @@ static PetscErrorCode TSStepRefine_MRKSPLIT(TS ts)
     if (subrk_fast->subts_fast) {
       subts_fast->ptime = t+k*h/rk->dtratio;
       subts_fast->time_step = h/rk->dtratio;
-      ierr = TSStepRefine_MRKSPLIT(subts_fast);CHKERRQ(ierr);
+      ierr = TSStepRefine_RK_MultirateSplit(subts_fast);CHKERRQ(ierr);
     }
     /* update the fast components of the solution */
     ierr = VecGetSubVector(ts->vec_sol,rk->is_fast,&Xfast);CHKERRQ(ierr);
@@ -382,7 +382,7 @@ static PetscErrorCode TSStepRefine_MRKSPLIT(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_MRKSPLIT(TS ts)
+static PetscErrorCode TSStep_RK_MultirateSplit(TS ts)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
   RKTableau       tab = rk->tableau;
@@ -421,14 +421,14 @@ static PetscErrorCode TSStep_MRKSPLIT(TS ts)
   }
   rk->slow = PETSC_TRUE;
   /* update the slow components of the solution using slow time step */
-  ierr = TSEvaluateStep_MRKSPLIT(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
+  ierr = TSEvaluateStep_RK_MultirateSplit(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
   /* YdotRHS will be used for interpolation during refinement */
   for (i=0; i<s; i++) {
     ierr = VecRestoreSubVector(YdotRHS[i],rk->is_slow,&YdotRHS_slow[i]);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(YdotRHS[i],rk->is_fast,&YdotRHS_fast[i]);CHKERRQ(ierr);
   }
 
-  ierr = TSStepRefine_MRKSPLIT(ts);CHKERRQ(ierr);
+  ierr = TSStepRefine_RK_MultirateSplit(ts);CHKERRQ(ierr);
 
   ts->ptime = t + ts->time_step;
   ts->time_step = next_time_step;
@@ -436,7 +436,7 @@ static PetscErrorCode TSStep_MRKSPLIT(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_MRKSPLIT(TS ts)
+static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data,*nextlevelrk,*currentlevelrk;
   TS             nextlevelts;
@@ -492,9 +492,9 @@ static PetscErrorCode TSSetUp_MRKSPLIT(TS ts)
   }
   ierr = VecDestroy(&X0);CHKERRQ(ierr);
 
-  ts->ops->step         = TSStep_MRKSPLIT;
-  ts->ops->evaluatestep = TSEvaluateStep_MRKSPLIT;
-  ts->ops->interpolate  = TSInterpolate_MRKSPLIT;
+  ts->ops->step         = TSStep_RK_MultirateSplit;
+  ts->ops->evaluatestep = TSEvaluateStep_RK_MultirateSplit;
+  ts->ops->interpolate  = TSInterpolate_RK_MultirateSplit;
   PetscFunctionReturn(0);
 }
 
@@ -508,16 +508,16 @@ PetscErrorCode TSRKSetMultirate_RK(TS ts,PetscBool use_multirate)
   rk->use_multirate = use_multirate;
   if (use_multirate) {
     rk->dtratio = 2;
-    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKSPLIT_C",TSSetUp_MRKSPLIT);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKSPLIT_C",TSReset_MRKSPLIT);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKNONSPLIT_C",TSSetUp_MRKNONSPLIT);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKNONSPLIT_C",TSReset_MRKNONSPLIT);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_RK_MultirateSplit_C",TSSetUp_RK_MultirateSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_RK_MultirateSplit_C",TSReset_RK_MultirateSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_RK_MultirateNonsplit_C",TSSetUp_RK_MultirateNonsplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_RK_MultirateNonsplit_C",TSReset_RK_MultirateNonsplit);CHKERRQ(ierr);
   } else {
     rk->dtratio = 0;
-    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKSPLIT_C",NULL);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKSPLIT_C",NULL);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_MRKNONSPLIT_C",NULL);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_MRKNONSPLIT_C",NULL);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_RK_MultirateSplit_C",NULL);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_RK_MultirateSplit_C",NULL);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_RK_MultirateNonsplit_C",NULL);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)ts,"TSReset_RK_MultirateNonsplit_C",NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

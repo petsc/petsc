@@ -733,9 +733,9 @@ static PetscErrorCode TSReset_RK(TS ts)
   ierr = TSRKTableauReset(ts);CHKERRQ(ierr);
   ierr = VecDestroy(&rk->VecCostIntegral0);CHKERRQ(ierr);
   if (ts->use_splitrhsfunction) {
-    ierr = PetscTryMethod(ts,"TSReset_MRKSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+    ierr = PetscTryMethod(ts,"TSReset_RK_MultirateSplit_C",(TS),(ts));CHKERRQ(ierr);
   } else {
-    ierr = PetscTryMethod(ts,"TSReset_MRKNONSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+    ierr = PetscTryMethod(ts,"TSReset_RK_MultirateNonsplit_C",(TS),(ts));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -820,9 +820,9 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
   ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
   if (ts->use_splitrhsfunction) {
-    ierr = PetscTryMethod(ts,"TSSetUp_MRKSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+    ierr = PetscTryMethod(ts,"TSSetUp_RK_MultirateSplit_C",(TS),(ts));CHKERRQ(ierr);
   } else {
-    ierr = PetscTryMethod(ts,"TSSetUp_MRKNONSPLIT_C",(TS),(ts));CHKERRQ(ierr);
+    ierr = PetscTryMethod(ts,"TSSetUp_RK_MultirateNonsplit_C",(TS),(ts));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
