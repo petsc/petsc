@@ -1,4 +1,4 @@
 Solution range [-1.00000, 1.00000] with extrema at 30 and 0, mean  0.00000, ||x||_TV  0.06667
-Final time  0.60000, steps 24
-mass difference -0.00766605
+Final time 0.6, steps 24
+Mass difference -0.00766605
 Solution range [-2.04879, 1.00000] with extrema at 5 and 20, mean -0.00383, ||x||_TV  0.11153

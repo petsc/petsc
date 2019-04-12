@@ -721,14 +721,14 @@ int main(int argc,char *argv[])
     ierr = TSSolve(ts,X);CHKERRQ(ierr);
     ierr = TSGetSolveTime(ts,&ptime);CHKERRQ(ierr);
     ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Final time %8.5f, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Final time %g, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
     /* calculate the total mass at initial time and final time */
     mass_initial = 0.0;
     mass_final   = 0.0;
     ierr = VecSum(X0,&mass_initial);CHKERRQ(ierr);
     ierr = VecSum(X,&mass_final);CHKERRQ(ierr);
     mass_difference = (ctx.xmax-ctx.xmin)/(PetscScalar)Mx*(mass_final - mass_initial);
-    ierr = PetscPrintf(comm,"mass difference %.6g\n",mass_difference);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Mass difference %g\n",(double)mass_difference);CHKERRQ(ierr);
     if (ctx.simulation) {
       PetscViewer  fd;
       char         filename[PETSC_MAX_PATH_LEN] = "binaryoutput";
@@ -745,7 +745,7 @@ int main(int argc,char *argv[])
       ierr = VecNorm(XR,NORM_1,&nrm1);CHKERRQ(ierr);
       ierr = VecNorm(XR,NORM_INFINITY,&nrmsup);CHKERRQ(ierr);
       nrm1 /= Mx;
-      ierr = PetscPrintf(comm,"Error ||x-x_e||_1 %8.4e  ||x-x_e||_sup %8.4e\n",(double)nrm1,(double)nrmsup);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Error ||x-x_e||_1 %g  ||x-x_e||_sup %g\n",(double)nrm1,(double)nrmsup);CHKERRQ(ierr);
       ierr = VecDestroy(&XR);CHKERRQ(ierr);
     }
   }

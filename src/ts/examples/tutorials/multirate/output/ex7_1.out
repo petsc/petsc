@@ -1,4 +1,4 @@
-Solution range [ 0.00000, 0.98981] with extrema at 29 and 49, mean  0.24609, ||x||_TV  0.06599
-mass difference 0.000515961
-Final time  0.60000, steps 24
-Solution range [ 0.00000, 0.93392] with extrema at 45 and 33, mean  0.24635, ||x||_TV  0.05891
+Solution range [8.05058e-13,0.989807] with extrema at 29 and 49, mean 0.246094, ||x||_TV 0.0659872
+Mass difference 0.000515961
+Final time 0.6, steps 24
+Solution range [6.28546e-11,0.933922] with extrema at 45 and 33, mean 0.246352, ||x||_TV 0.0589101

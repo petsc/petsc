@@ -1,5 +1,5 @@
 Solution range [ 0.00000, 0.97211] with extrema at 30 and 11, mean  0.19755, ||x||_TV  0.06481
-mass difference 1.11022e-16
-Final time  0.60000, steps 24
-Maximum allowable stepsize according to CFL  0.04167
+Mass difference 1.11022e-16
+Final time 0.6, steps 24
+Maximum allowable stepsize according to CFL 0.0416667
 Solution range [ 0.00000, 0.89704] with extrema at 8 and 33, mean  0.28943, ||x||_TV  0.05810
