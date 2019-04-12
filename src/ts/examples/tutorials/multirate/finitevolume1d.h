@@ -31,7 +31,7 @@ void Limit_CadaTorrilhon3R100(LimitInfo,const PetscScalar*,const PetscScalar*,Pe
 /* --------------------------------- Finite Volume data structures ----------------------------------- */
 
 typedef enum {FVBC_PERIODIC, FVBC_OUTFLOW} FVBCType;
-static const char *FVBCTypes[] = {"PERIODIC","OUTFLOW","FVBCType","FVBC_",0};
+extern const char *FVBCTypes[];
 /* we add three new variables at the end of input parameters of function to be position of cell center, left bounday of domain, right boundary fo domain */
 typedef PetscErrorCode (*RiemannFunction)(void*,PetscInt,const PetscScalar*,const PetscScalar*,PetscScalar*,PetscReal*,PetscReal,PetscReal,PetscReal);
 typedef PetscErrorCode (*ReconstructFunction)(void*,PetscInt,const PetscScalar*,PetscScalar*,PetscScalar*,PetscReal*,PetscReal);

@@ -4,6 +4,7 @@
 #include <petsc/private/tsimpl.h>
 
 #include <petsc/private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
+const char *FVBCTypes[] = {"PERIODIC","OUTFLOW","FVBCType","FVBC_",0};
 
 PETSC_STATIC_INLINE PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
 PETSC_STATIC_INLINE PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
