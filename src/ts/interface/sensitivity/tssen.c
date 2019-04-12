@@ -484,9 +484,19 @@ PetscErrorCode TSComputeIHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscStackPush("TS user IHessianProduct function 1 for sensitivity analysis");
-  ierr = (*ts->ihessianproduct_fuu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
-  PetscStackPop;
+  if (ts->ihessianproduct_fuu) {
+    PetscStackPush("TS user IHessianProduct function 1 for sensitivity analysis");
+    ierr = (*ts->ihessianproduct_fuu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
+    PetscStackPop;
+  }
+  /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
+  if (ts->rhshessianproduct_guu) {
+    PetscInt nadj;
+    ierr = TSComputeRHSHessianProductFunction1(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
+    for (nadj=0; nadj<ts->numcost; nadj++) {
+      ierr = VecScale(VHV[nadj],-1);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -517,9 +527,19 @@ PetscErrorCode TSComputeIHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscStackPush("TS user IHessianProduct function 2 for sensitivity analysis");
-  ierr = (*ts->ihessianproduct_fup)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
-  PetscStackPop;
+  if (ts->ihessianproduct_fup) {
+    PetscStackPush("TS user IHessianProduct function 2 for sensitivity analysis");
+    ierr = (*ts->ihessianproduct_fup)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
+    PetscStackPop;
+  }
+  /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
+  if (ts->rhshessianproduct_gup) {
+    PetscInt nadj;
+    ierr = TSComputeRHSHessianProductFunction2(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
+    for (nadj=0; nadj<ts->numcost; nadj++) {
+      ierr = VecScale(VHV[nadj],-1);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -550,9 +570,19 @@ PetscErrorCode TSComputeIHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscStackPush("TS user IHessianProduct function 3 for sensitivity analysis");
-  ierr = (*ts->ihessianproduct_fpu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
-  PetscStackPop;
+  if (ts->ihessianproduct_fpu) {
+    PetscStackPush("TS user IHessianProduct function 3 for sensitivity analysis");
+    ierr = (*ts->ihessianproduct_fpu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
+    PetscStackPop;
+  }
+  /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
+  if (ts->rhshessianproduct_gpu) {
+    PetscInt nadj;
+    ierr = TSComputeRHSHessianProductFunction3(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
+    for (nadj=0; nadj<ts->numcost; nadj++) {
+      ierr = VecScale(VHV[nadj],-1);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -583,9 +613,19 @@ PetscErrorCode TSComputeIHessianProductFunction4(TS ts,PetscReal t,Vec U,Vec *Vl
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscStackPush("TS user IHessianProduct function 3 for sensitivity analysis");
-  ierr = (*ts->ihessianproduct_fpp)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
-  PetscStackPop;
+  if (ts->ihessianproduct_fpp) {
+    PetscStackPush("TS user IHessianProduct function 3 for sensitivity analysis");
+    ierr = (*ts->ihessianproduct_fpp)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
+    PetscStackPop;
+  }
+  /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
+  if (ts->rhshessianproduct_gpp) {
+    PetscInt nadj;
+    ierr = TSComputeRHSHessianProductFunction4(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
+    for (nadj=0; nadj<ts->numcost; nadj++) {
+      ierr = VecScale(VHV[nadj],-1);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

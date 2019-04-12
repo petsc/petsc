@@ -1015,9 +1015,15 @@ static PetscErrorCode TSAdjointSetUp_Theta(TS ts)
   if (ts->vecs_sensi2) {
     ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecsDeltaLam2);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(ts->vecs_sensi2[0],ts->numcost,&th->VecsSensi2Temp);CHKERRQ(ierr);
+    /* hack ts to make implicit TS solver work when users provide only explicit versions of callbacks (RHSFunction,RHSJacobian,RHSHessian etc.) */
+    if (!ts->ihessianproduct_fuu) ts->vecs_fuu = ts->vecs_guu;
+    if (!ts->ihessianproduct_fup) ts->vecs_fup = ts->vecs_gup;
   }
   if (ts->vecs_sensi2p) {
     ierr = VecDuplicateVecs(ts->vecs_sensi2p[0],ts->numcost,&th->VecsDeltaMu2);CHKERRQ(ierr);
+    /* hack ts to make implicit TS solver work when users provide only explicit versions of callbacks (RHSFunction,RHSJacobian,RHSHessian etc.) */
+    if (!ts->ihessianproduct_fpu) ts->vecs_fpu = ts->vecs_gpu;
+    if (!ts->ihessianproduct_fpp) ts->vecs_fpp = ts->vecs_gpp;
   }
   PetscFunctionReturn(0);
 }
