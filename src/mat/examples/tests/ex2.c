@@ -84,6 +84,41 @@ int main(int argc,char **argv)
     ierr  = MatAXPY(C,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr  = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr  = MatDestroy(&C);CHKERRQ(ierr);
+#if 0
+    Mat D,E,F,G;
+    ierr  = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  (C^T)^T = (C^T)^T + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
+    ierr  = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+    ierr  = MatCreateTranspose(C,&D);CHKERRQ(ierr);
+    ierr  = MatCreateTranspose(D,&E);CHKERRQ(ierr);
+    ierr  = MatAXPY(E,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr  = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr  = MatDestroy(&E);CHKERRQ(ierr);
+    ierr  = MatDestroy(&D);CHKERRQ(ierr);
+    ierr  = MatDestroy(&C);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * (A^T)^T, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
+    ierr  = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+    /* MATTRANSPOSE should have a MatTranspose_Transpose or MatTranspose_HT implementation */
+    ierr  = MatTranspose(mat,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
+    ierr  = MatCreateTranspose(D,&E);CHKERRQ(ierr);
+    ierr  = MatAXPY(C,alpha,E,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr  = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr  = MatDestroy(&E);CHKERRQ(ierr);
+    ierr  = MatDestroy(&D);CHKERRQ(ierr);
+    ierr  = MatDestroy(&C);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  (C^T)^T = (C^T)^T + alpha * (A^T)^T, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
+    ierr  = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+    ierr  = MatCreateTranspose(C,&D);CHKERRQ(ierr);
+    ierr  = MatCreateTranspose(D,&E);CHKERRQ(ierr);
+    ierr  = MatCreateTranspose(mat,&F);CHKERRQ(ierr);
+    ierr  = MatCreateTranspose(F,&G);CHKERRQ(ierr);
+    ierr  = MatAXPY(E,alpha,G,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr  = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr  = MatDestroy(&G);CHKERRQ(ierr);
+    ierr  = MatDestroy(&F);CHKERRQ(ierr);
+    ierr  = MatDestroy(&E);CHKERRQ(ierr);
+    ierr  = MatDestroy(&D);CHKERRQ(ierr);
+    ierr  = MatDestroy(&C);CHKERRQ(ierr);
+#endif
   }
 
   {
