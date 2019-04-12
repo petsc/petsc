@@ -15,7 +15,6 @@ struct _RKTableauLink {
   struct _RKTableau tab;
   RKTableauLink     next;
 };
-static RKTableauLink RKTableauList;
 
 typedef struct {
   RKTableau    tableau;

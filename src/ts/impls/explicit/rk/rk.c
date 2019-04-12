@@ -17,6 +17,8 @@ static TSRKType  TSRKDefault = TSRK3BS;
 static PetscBool TSRKRegisterAllCalled;
 static PetscBool TSRKPackageInitialized;
 
+static RKTableauLink RKTableauList;
+
 /*MC
      TSRK1FE - First order forward Euler scheme.
 
