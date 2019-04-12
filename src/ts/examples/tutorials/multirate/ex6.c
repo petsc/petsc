@@ -279,7 +279,6 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
       }
       ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
-      cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxf)); /* Max allowable value of 1/Delta t */
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxf;
       }
@@ -304,6 +303,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
       ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxs)); /* Max allowable value of 1/Delta t */
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxs;
       }

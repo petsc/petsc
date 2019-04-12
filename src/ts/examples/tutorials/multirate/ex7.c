@@ -832,6 +832,8 @@ int main(int argc,char *argv[])
   ierr = (*ctx.physics.destroy)(ctx.physics.user);CHKERRQ(ierr);
   for (i=0; i<ctx.physics.dof; i++) {ierr = PetscFree(ctx.physics.fieldname[i]);CHKERRQ(ierr);}
   ierr = PetscFree3(ctx.u,ctx.flux,ctx.speeds);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx.iss);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx.isf);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&X0);CHKERRQ(ierr);
   ierr = VecDestroy(&R);CHKERRQ(ierr);
