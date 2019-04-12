@@ -232,7 +232,7 @@ static PetscErrorCode TSReset_RK_MultirateSplit(TS ts)
     ierr = PetscFree(rk->YdotRHS_fast);CHKERRQ(ierr);
     ierr = PetscFree(rk->YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecDestroy(&rk->X0);CHKERRQ(ierr);
-    ierr = TSReset_RK_MultirateSplit(rk->subts_fast);
+    ierr = TSReset_RK_MultirateSplit(rk->subts_fast);CHKERRQ(ierr);
     ierr = PetscFree(rk->subts_fast->data);CHKERRQ(ierr);
     rk->subts_fast = NULL;
   }
