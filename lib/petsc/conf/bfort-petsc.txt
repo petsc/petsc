@@ -154,7 +154,6 @@ nativeptr TSMonitorDrawCtx
 nativeptr TSMonitorLGCtx
 nativeptr TSMonitorSPEigCtx
 nativeptr PetscSFNode
-nativeptr PetscGLL
 
 # the following are old PETSc types - they might be requird for older versions
 # of PETSc

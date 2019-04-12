@@ -1298,12 +1298,10 @@ PetscErrorCode  DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
   PetscFunctionReturn(0);
 }
 
-#include <petscgll.h>
-
-PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscGLL *gll)
+PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscInt n,PetscReal *nodes)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,n = gll->n,xs,xn,q;
+  PetscInt       i,j,xs,xn,q;
   PetscScalar    *xx;
   PetscReal      h;
   Vec            x;
@@ -1327,7 +1325,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscGLL *gll)
        Except for the first process, each process starts on the second GLL point of the first element on that process
        */
       for (i= (j == xs && xs > 0)? 1 : 0; i<n; i++) {
-        xx[j*(n-1) + i] = -1.0 + h*j + h*(gll->nodes[i]+1.0)/2.;
+        xx[j*(n-1) + i] = -1.0 + h*j + h*(nodes[i]+1.0)/2.;
       }
     }
     ierr = DMDAVecRestoreArray(dm,x,&xx);CHKERRQ(ierr);
@@ -1343,7 +1341,8 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscGLL *gll)
 
    Input Parameters:
 +   da - the DMDA object
--   gll - the GLL object
+-   n - the number of GLL nodes
+-   nodes - the GLL nodes
 
    Notes:
     the parallel decomposition of grid points must correspond to the degree of the GLL. That is, the number of grid points
@@ -1352,15 +1351,15 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscGLL *gll)
 
    Level: advanced
 
-.seealso:   DMDACreate(), PetscGLLCreate(), DMGetCoordinates()
+.seealso:   DMDACreate(), PetscDTGaussLobattoLegendreQuadrature(), DMGetCoordinates()
 @*/
-PetscErrorCode DMDASetGLLCoordinates(DM da,PetscGLL *gll)
+PetscErrorCode DMDASetGLLCoordinates(DM da,PetscInt n,PetscReal *nodes)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (da->dim == 1) {
-    ierr = DMDASetGLLCoordinates_1d(da,gll);CHKERRQ(ierr);
+    ierr = DMDASetGLLCoordinates_1d(da,n,nodes);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented for 2 or 3d");
   PetscFunctionReturn(0);
 }
