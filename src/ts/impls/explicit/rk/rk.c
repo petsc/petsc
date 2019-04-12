@@ -1030,6 +1030,8 @@ static PetscErrorCode TSDestroy_RK(TS ts)
 PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 {
   PetscErrorCode ierr;
+
+  PetscFunctionBegin
   ierr = PetscTryMethod(ts,"TSRKSetMultirate_C",(TS,PetscBool),(ts,use_multirate));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1052,6 +1054,8 @@ PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 PetscErrorCode TSRKGetMultirate(TS ts,PetscBool *use_multirate)
 {
   PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   ierr = PetscUseMethod(ts,"TSRKGetMultirate_C",(TS,PetscBool*),(ts,use_multirate));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
