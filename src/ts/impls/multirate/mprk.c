@@ -406,9 +406,10 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
     ierr = PetscFree3(t->Asb,t->bsb,t->csb);CHKERRQ(ierr);
     ierr = PetscFree3(t->Amb,t->bmb,t->cmb);CHKERRQ(ierr);
     ierr = PetscFree3(t->Af,t->bf,t->cf);CHKERRQ(ierr);
-    ierr = PetscFree2(t->rsb,t->rmb);CHKERRQ(ierr);
-    ierr = PetscFree (t->name);CHKERRQ(ierr);
-    ierr = PetscFree (link);CHKERRQ(ierr);
+    ierr = PetscFree(t->rsb);CHKERRQ(ierr);
+    ierr = PetscFree(t->rmb);CHKERRQ(ierr);
+    ierr = PetscFree(t->name);CHKERRQ(ierr);
+    ierr = PetscFree(link);CHKERRQ(ierr);
   }
   TSMPRKRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
