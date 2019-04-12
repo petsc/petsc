@@ -81,6 +81,19 @@ PetscErrorCode MatCreateVecs_HT(Mat N,Vec *r, Vec *l)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatAXPY_HT(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  Mat_HT         *Ya = (Mat_HT*)Y->data;
+  Mat_HT         *Xa = (Mat_HT*)X->data;
+  Mat              M = Ya->A;
+  Mat              N = Xa->A;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatAXPY(M,a,N,str);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N,Mat *M)
 {
   Mat_HT         *Na = (Mat_HT*)N->data;
@@ -165,6 +178,7 @@ PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
   (*N)->ops->multhermitiantransposeadd  = MatMultHermitianTransposeAdd_HT;
   (*N)->ops->duplicate                  = MatDuplicate_HT;
   (*N)->ops->getvecs                    = MatCreateVecs_HT;
+  (*N)->ops->axpy                       = MatAXPY_HT;
   (*N)->assembled                       = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatHermitianTransposeGetMat_C",MatHermitianTransposeGetMat_HT);CHKERRQ(ierr);
