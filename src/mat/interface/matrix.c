@@ -952,6 +952,9 @@ PetscErrorCode MatSetUp(Mat A)
    Level: beginner
 
    Notes:
+    The ASCII viewers are only recommended for small matrices on at most a moderate number of processes,
+    the program will seemingly hang and take hours for larger matrices, for larger matrices one should use the binary format.
+
     See the manual page for MatLoad() for the exact format of the binary file when the binary
       viewer is used.
 
