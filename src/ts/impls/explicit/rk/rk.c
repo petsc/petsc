@@ -1031,7 +1031,7 @@ PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin
+  PetscFunctionBegin;
   ierr = PetscTryMethod(ts,"TSRKSetMultirate_C",(TS,PetscBool),(ts,use_multirate));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
