@@ -947,12 +947,16 @@ cdef class Mat(Object):
         cdef PetscInsertMode im = insertmode(addv)
         matsetvaluestencil(self.mat, r, c, value, im, 0)
 
+    def setValueStagStencil(self, row, col, value, addv=None):
+        raise NotImplementedError('setValueStagStencil not yet implemented in petsc4py')
+
     def setValueBlockedStencil(self, row, col, value, addv=None):
         cdef _Mat_Stencil r = row, c = col
         cdef PetscInsertMode im = insertmode(addv)
         matsetvaluestencil(self.mat, r, c, value, im, 1)
 
-    #
+    def setValueBlockedStagStencil(self, row, col, value, addv=None):
+        raise NotImplementedError('setValueBlockedStagStencil not yet implemented in petsc4py')
 
     def zeroRows(self, rows, diag=1, Vec x=None, Vec b=None):
         cdef PetscInt ni=0, *i=NULL

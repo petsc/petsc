@@ -664,6 +664,9 @@ cdef class Vec(Object):
     def getValues(self, indices, values=None):
         return vecgetvalues(self.vec, indices, values)
 
+    def getValuesStagStencil(self, indices, values=None):
+        raise NotImplementedError('getValuesStagStencil not yet implemented in petsc4py')
+
     def setValue(self, index, value, addv=None):
         cdef PetscInt    ival = asInt(index)
         cdef PetscScalar sval = asScalar(value)
@@ -676,6 +679,9 @@ cdef class Vec(Object):
     def setValuesBlocked(self, indices, values, addv=None):
         vecsetvalues(self.vec, indices, values, addv, 1, 0)
 
+    def setValuesStagStencil(self, indices, values, addv=None):
+        raise NotImplementedError('setValuesStagStencil not yet implemented in petsc4py')
+        
     def setLGMap(self, LGMap lgmap):
         CHKERR( VecSetLocalToGlobalMapping(self.vec, lgmap.lgm) )
 
