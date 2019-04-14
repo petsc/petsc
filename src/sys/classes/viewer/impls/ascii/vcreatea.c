@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h>  /*I     "petscsys.h"   I*/
+#include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h>  /*I     "petscviewer.h"   I*/
 
 /* ---------------------------------------------------------------------*/
 
@@ -9,7 +9,7 @@
 */
 PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PetscViewerASCIIGetStdout - Creates a ASCII PetscViewer shared by all processors
                     in a communicator. Error returning version of PETSC_VIEWER_STDOUT_()
 
@@ -89,7 +89,7 @@ PetscViewer  PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 */
 PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PetscViewerASCIIGetStderr - Creates a ASCII PetscViewer shared by all processors
                     in a communicator. Error returning version of PETSC_VIEWER_STDERR_()
 

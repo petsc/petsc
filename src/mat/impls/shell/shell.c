@@ -759,6 +759,14 @@ $
 
           A is the user provided function.
 
+   KSP/PC uses changes in the Mat's "state" to decide if preconditioners need to be rebuilt: PCSetUp() only calls the setup() for
+   for the PC implementation if the Mat state has increased from the previous call. Thus to get changes in a MATSHELL to trigger
+   an update in the preconditioner you must call MatAssemblyBegin()/MatAssemblyEnd() or PetscObjectStateIncrease((PetscObject)mat);
+   each time the MATSHELL matrix has changed.
+
+   Calling MatAssemblyBegin()/MatAssemblyEnd() on a MATSHELL removes any previously supplied shift and scales that were provided
+   with MatDiagonalSet(), MatShift(), MatScale(), or MatDiagonalScale().
+
 .keywords: matrix, shell, create
 
 .seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext(), MatShellSetContext(), MATSHELL, MatShellSetManageScalingShifts()

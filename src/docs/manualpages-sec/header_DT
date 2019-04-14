@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> DT <A HREF="PETSC_DIRsrc/dm/dt/examples/tutorials/index.html">Examples</A></H2>
+<H2> DT</H2>
 
 DT objects are discretization technology, for instance quadrature, finite element, or finite volume support.
 <P>
