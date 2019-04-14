@@ -22,12 +22,14 @@ mechanisms needed within parallel application codes, such as simple
 parallel matrix and vector assembly routines that allow the overlap of
 communication and computation.
 
-.. [petsc-user-ref] S. Balay, S. Abhyankar, M. Adams, J. Brown,
-   P. Brune, K. Buschelman, L. Dalcin, V. Eijkhout, W. Gropp,
-   D. Karpeyev, D. Kaushik, M. Knepley, D. May, L. Curfman McInnes,
-   R. Mills, T. Munson, K. Rupp, P. Sanan, B. Smith, S. Zampini,
-   H. Zhang, and H. Zhang,
-   *PETSc Users Manual*, ANL-95/11 - Revision 3.10, 2018.
+.. [petsc-user-ref]  S. Balay, S. Abhyankar, M. Adams,
+   J. Brown, P. Brune, K. Buschelman,
+   L. Dalcin, A. Dener, V. Eijkhout, W. Gropp,
+   D. Karpeyev, D. Kaushik, M. Knepley,
+   D. May, L. Curfman McInnes, R. Mills, T. Munson,
+   K. Rupp, P. Sanan, B. Smith,
+   S. Zampini, H. Zhang, and H. Zhang,
+   *PETSc Users Manual*, ANL-95/11 - Revision 3.11, 2019.
    http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf
 
 .. [petsc-efficient] Satish Balay, Victor Eijkhout, William D. Gropp,
