@@ -484,7 +484,7 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, PetscViewe
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   cMax = cMax >= 0 ? cMax : cEnd;
   ierr = CreateConesIS_Private(dm, cStart, cMax, &numCorners,  &cellIS);CHKERRQ(ierr);
-  if (cMax >= 0) {ierr = CreateConesIS_Private(dm, cMax,   cEnd, &numHCorners, &hcellIS);CHKERRQ(ierr);}
+  if (cMax < cEnd) {ierr = CreateConesIS_Private(dm, cMax,   cEnd, &numHCorners, &hcellIS);CHKERRQ(ierr);}
 
   ierr = PetscViewerHDF5PushGroup(viewer, "/viz");CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
