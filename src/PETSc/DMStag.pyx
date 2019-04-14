@@ -34,8 +34,6 @@ class DMStagStencilLocation(object):
     FRONT_UP_LEFT    = DMSTAG_FRONT_UP_LEFT
     FRONT_UP         = DMSTAG_FRONT_UP
     FRONT_UP_RIGHT   = DMSTAG_FRONT_UP_RIGHT
-    
-
 
 # --------------------------------------------------------------------
 
@@ -291,10 +289,8 @@ cdef class DMStag(DM):
         cdef tuple gdofs = tuple(dofs)
         cdef PetscInt gdim=PETSC_DECIDE, dof0=1, dof1=0, dof2=0, dof3=0
         gdim = asDofs(gdofs, &dof0, &dof1, &dof2, &dof3)
-
         cdef PetscDM newda = NULL
         CHKERR( DMStagCreateCompatibleDMStag(self.dm, dof0, dof1, dof2, dof3, &newda) )
-        
         cdef DM newdm = type(self)()
         PetscCLEAR(newdm.obj); newdm.dm = newda
         return newdm
@@ -302,16 +298,13 @@ cdef class DMStag(DM):
     def VecSplitToDMDA(self, Vec vec, loc, c):
         cdef PetscInt pc = asInt(c)
         cdef PetscDMStagStencilLocation sloc = asStagStencilLocation(loc)
-
         cdef PetscDM pda = NULL
         cdef PetscVec pdavec = NULL
         CHKERR( DMStagVecSplitToDMDA(self.dm, vec.vec, sloc, pc, &pda, &pdavec) )
-        
         cdef DM da = DMDA()
         PetscCLEAR(da.obj); da.dm = pda
         cdef Vec davec = Vec()
         PetscCLEAR(davec.obj); davec.vec = pdavec
-
         return (da,davec)
 
     def getVecArray(self, Vec vec):

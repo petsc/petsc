@@ -35,7 +35,6 @@ class BaseTestDMStag(object):
         self.directda = None
 
     def testCoordinates(self):
-
         self.da.setCoordinateDMType('stag')
         self.da.setUniformCoordinates(0,1,0,1,0,1)
         self.da.setUniformCoordinatesExplicit(0,1,0,1,0,1)
@@ -63,7 +62,6 @@ class BaseTestDMStag(object):
         datype = cda.getType()
         self.assertEqual(datype,'product')
         cda.destroy()
-
 
     def testGetVec(self):
         vg = self.da.getGlobalVec()
@@ -256,6 +254,7 @@ for dim in DIM:
                                 if stencil in ['star','box'] and width == 0: continue
                                 kargs = dict(dim=dim, dofs=dofs, boundary_type=boundary, 
                                 stencil_type=stencil, stencil_width=width)
+
                                 def testCreate(self,kargs=kargs):
                                     kargs = dict(kargs)
                                     cda = PETSc.DMStag().create(kargs['dim'],
@@ -350,13 +349,14 @@ for dim in DIM:
                                         self.assertEqual(m, len(cownershipranges[i]))    
                                     dda.destroy()
                                     cda.destroy()
-                                    
 
                                 setattr(TestDMStagCreate,
                                         "testCreate%05d"%counter,
                                         testCreate)
+
                                 del testCreate
                                 counter += 1
+
 del counter, dim, dofs, dof0, dof1, dof2, dof3, boundary, stencil, width
 
 # --------------------------------------------------------------------
