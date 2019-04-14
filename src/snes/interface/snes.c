@@ -1083,9 +1083,11 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   }
   ierr = SNESLineSearchSetFromOptions(snes->linesearch);CHKERRQ(ierr);
 
-  if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
-  ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
+  if (snes->usesksp) {
+    if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
+  }
 
   /* if someone has set the SNES NPC type, create it. */
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
