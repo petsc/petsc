@@ -1238,8 +1238,8 @@ int main(int argc,char *argv[])
     /* calculate the total mass at initial time and final time */
     mass_initial = 0.0;
     mass_final   = 0.0;
-    ierr = DMDAVecGetArrayRead(da,X0,&ptr_X0);CHKERRQ(ierr);
-    ierr = DMDAVecGetArrayRead(da,X,&ptr_X);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayRead(da,X0,(void*)&ptr_X0);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayRead(da,X,(void*)&ptr_X);CHKERRQ(ierr);
     for (i=xs;i<xs+xm;i++) {
       if (i < ctx.sm || i > ctx.ms-1)
         for (k=0; k<dof; k++) {
@@ -1258,8 +1258,8 @@ int main(int argc,char *argv[])
         }
       }
     }
-    ierr = DMDAVecRestoreArrayRead(da,X0,&ptr_X0);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArrayRead(da,X,&ptr_X);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayRead(da,X0,(void*)&ptr_X0);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayRead(da,X,(void*)&ptr_X);CHKERRQ(ierr);
     mass_difference = mass_final - mass_initial;
     ierr = MPI_Allreduce(&mass_difference,&mass_differenceg,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Mass difference %g\n",(double)mass_differenceg);CHKERRQ(ierr);
