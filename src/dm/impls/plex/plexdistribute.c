@@ -724,7 +724,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   for (p = 0; p < nleaves; ++p) remoteDepths[p] = -1;
   ierr = PetscSFBcastBegin(sf, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
-  /* Count recevied points in each stratum and compute the internal strata shift */
+  /* Count received points in each stratum and compute the internal strata shift */
   ierr = PetscMalloc3(2*(depth+1), &depthRecv, 2*(depth+1), &depthShift, 2*(depth+1), &depthIdx);CHKERRQ(ierr);
   for (d = 0; d < 2*(depth+1); ++d) depthRecv[d] = 0;
   for (p = 0; p < nleaves; ++p) depthRecv[remoteDepths[p]]++;
