@@ -891,7 +891,7 @@ int main(int argc,char *argv[])
     ierr = MPI_Allreduce(&mass_difference,&mass_differenceg,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Mass difference %g\n",(double)mass_differenceg);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Final time %g, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Maximum allowable stepsize according to CFL %g\n",(double)1.0/ctx.cfl_idt);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Maximum allowable stepsize according to CFL %g\n",(double)(1.0/ctx.cfl_idt));CHKERRQ(ierr);
     if (ctx.exact) {
       PetscReal nrm1=0;
       ierr = SolutionErrorNorms_2WaySplit(&ctx,da,ptime,X,&nrm1);CHKERRQ(ierr);
