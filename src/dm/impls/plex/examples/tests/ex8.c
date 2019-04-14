@@ -198,7 +198,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
     Vec          coordinates;
     PetscSection coordSection;
     PetscScalar *coords = NULL, *origCoords, *newCoords;
-    PetscReal   *v0ExT, *JExT, *invJExT, detJExT, *centroidExT, *normalExT, volExT;
+    PetscReal   *v0ExT, *JExT, *invJExT, detJExT=0, *centroidExT, *normalExT, volExT=0;
     PetscReal   *faceCentroidExT, *faceNormalExT, faceVolExT;
     PetscRandom  r, ang, ang2;
     PetscInt     coordSize, numCorners, t;
