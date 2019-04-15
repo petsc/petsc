@@ -360,7 +360,6 @@ static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt
 
 static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
-  PetscBool      isPlex;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -421,18 +420,6 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, NULL, (PetscObject) user->fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (!isPlex) {
-    PetscSection    section;
-    const PetscInt *numDof;
-    PetscInt        numComp;
-
-    ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
-    ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
-    ierr = DMDACreateSection(dm, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-    ierr = DMSetSection(dm, section);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  }
   if (!user->simplex && user->constraints) {
     /* test getting local constraint matrix that matches section */
     PetscSection aSec;
@@ -502,36 +489,6 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       ierr = MatView(mass,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatDestroy(&mass);CHKERRQ(ierr);
       ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
-#if 0
-      {
-        /* compare this to periodicity with DMDA: this is broken right now
-         * because DMCreateMatrix() doesn't respect the default section that I
-         * set */
-        DM              dmda;
-        PetscSection    section;
-        const PetscInt *numDof;
-        PetscInt        numComp;
-
-                                                              /* periodic x */
-        ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm), DM_BOUNDARY_PERIODIC, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dmda);CHKERRQ(ierr);
-        ierr = DMSetFromOptions(dmda);CHKERRQ(ierr);
-        ierr = DMSetUp(dmda);CHKERRQ(ierr);
-        ierr = DMDASetVertexCoordinates(dmda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-
-
-        ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
-        ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
-        ierr = DMDACreateSection(dmda, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-        ierr = DMSetSection(dmda, section);CHKERRQ(ierr);
-        ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-        ierr = DMCreateMatrix(dmda,&mass);CHKERRQ(ierr);
-        /* there isn't a DMDA equivalent of DMPlexSNESComputeJacobianFEM()
-         * right now, but we can at least verify the nonzero structure */
-        ierr = MatView(mass,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = MatDestroy(&mass);CHKERRQ(ierr);
-        ierr = DMDestroy(&dmda);CHKERRQ(ierr);
-      }
-#endif
     }
   }
   PetscFunctionReturn(0);
@@ -818,7 +775,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   MPI_Comm        comm;
   PetscInt        dim  = user->dim;
   PetscReal       error, errorDer, tol = PETSC_SMALL;
-  PetscBool       isPlex, isDA;
+  PetscBool       isPlex;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
@@ -830,7 +787,6 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
   ierr = DMSetCoarseDM(rdm, dm);CHKERRQ(ierr);
   ierr = DMPlexSetRegularRefinement(rdm, user->convRefine);CHKERRQ(ierr);
