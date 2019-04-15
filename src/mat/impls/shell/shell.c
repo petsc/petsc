@@ -308,6 +308,12 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleRight(A,y);CHKERRQ(ierr);
+
+  if (shell->axpy) {
+    if (!shell->right_work) {ierr = MatCreateVecs(A,NULL,&shell->right_work);CHKERRQ(ierr);}
+    ierr = MatMultTranspose(shell->axpy,x,shell->right_work);CHKERRQ(ierr);
+    ierr = VecAXPY(y,shell->axpy_vscale,shell->right_work);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
