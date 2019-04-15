@@ -2238,7 +2238,7 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
 }
 
 /*@C
-  PetscDSSetExactSolution - Get the pointwise exact solution function for a given test field
+  PetscDSSetExactSolution - Set the pointwise exact solution function for a given test field
 
   Not collective
 

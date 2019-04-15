@@ -159,12 +159,21 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelLookupStratum(DMLabel label, PetscInt 
       if (label->stratumValues[v] == value) {*index = v; break;}
   } else {
     ierr = PetscHMapIGet(label->hmap, value, index);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-    v = *index;
-    if (v >= 0 && v >= label->numStrata) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent lookup using strata hash map");
-    if (v >= 0 && label->stratumValues[v] != value) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent lookup using strata hash map");
-#endif
   }
+#if defined(PETSC_USE_DEBUG)
+  { /* Check strata hash map consistency */
+    PetscInt len, loc = -1;
+    ierr = PetscHMapIGetSize(label->hmap, &len);CHKERRQ(ierr);
+    if (len != label->numStrata) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent strata hash map size");
+    if (label->numStrata <= DMLABEL_LOOKUP_THRESHOLD) {
+      ierr = PetscHMapIGet(label->hmap, value, &loc);CHKERRQ(ierr);
+    } else {
+      for (v = 0; v < label->numStrata; ++v)
+        if (label->stratumValues[v] == value) {loc = v; break;}
+    }
+    if (loc != *index) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent strata hash map lookup");
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -502,6 +511,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
     (*labelnew)->points[v]         = label->points[v];
     (*labelnew)->validIS[v]        = PETSC_TRUE;
   }
+  ierr = PetscHMapIDestroy(&(*labelnew)->hmap);CHKERRQ(ierr);
   ierr = PetscHMapIDuplicate(label->hmap,&(*labelnew)->hmap);CHKERRQ(ierr);
   (*labelnew)->pStart = -1;
   (*labelnew)->pEnd   = -1;
@@ -1419,6 +1429,9 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   offset = 0;
   ierr = PetscHSetIGetElems(stratumHash, &offset, (*labelNew)->stratumValues);CHKERRQ(ierr);
   ierr = PetscSortInt((*labelNew)->numStrata,(*labelNew)->stratumValues);CHKERRQ(ierr);
+  for (s = 0; s < (*labelNew)->numStrata; ++s) {
+    ierr = PetscHMapISet((*labelNew)->hmap, (*labelNew)->stratumValues[s], s);CHKERRQ(ierr);
+  }
   for (p = 0; p < size; ++p) {
     for (s = 0; s < (*labelNew)->numStrata; ++s) {
       if (leafStrata[p] == (*labelNew)->stratumValues[s]) {leafStrata[p] = s; break;}

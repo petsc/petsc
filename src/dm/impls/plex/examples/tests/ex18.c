@@ -514,7 +514,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
     /* rotate interface face ifp[rank] by given orientation ornt[rank] */
     ierr = DMPlexFixFaceOrientations_Translate_Private(user->ornt[rank], &start, &reverse);CHKERRQ(ierr);
     ierr = DMPlexOrientCell_Internal(*dm, ifp[rank], start, reverse);CHKERRQ(ierr);
-    ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+    ierr = DMPlexCheckFaces(*dm, 0);CHKERRQ(ierr);
     ierr = DMPlexOrientInterface(*dm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -697,7 +697,7 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   if (user.interpolate != NONE) {
     ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);
-    ierr = DMPlexCheckFaces(dm, user.cellSimplex, 0);CHKERRQ(ierr);
+    ierr = DMPlexCheckFaces(dm, 0);CHKERRQ(ierr);
   }
   ierr = DMPlexCheckConesConformOnInterfaces(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -709,7 +709,7 @@ int main(int argc, char **argv)
 
   testset:
     nsize: 2
-    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
       suffix: 1_tri_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
@@ -739,12 +739,12 @@ int main(int argc, char **argv)
   test:
     suffix: 2
     nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
   test:
     requires:
     suffix: 2b
     nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
 
   testset:
     # the same as 1% for 3D
@@ -777,7 +777,7 @@ int main(int argc, char **argv)
     # the same as 4_tet_dist0 but test different initial orientations
     suffix: 4_tet_test_orient
     nsize: 2
-    args: -dim 3 -distribute 0 -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -dim 3 -distribute 0 -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -rotate_interface_0 {{0 1 2 11 12 13}}
     args: -rotate_interface_1 {{0 1 2 11 12 13}}
 
@@ -785,7 +785,7 @@ int main(int argc, char **argv)
     requires: exodusii
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo
-    args: -cell_simplex 0 -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton tensor -dm_plex_check_geometry
+    args: -cell_simplex 0 -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
       suffix: 5_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
@@ -800,22 +800,22 @@ int main(int argc, char **argv)
     test:
       suffix: 6_tri
       requires: triangle
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton simplex
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton
     test:
       suffix: 6_quad
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton tensor
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton
     test:
       TODO: this is failing due to DMPlexCheckPointSF() and should be fixed
       suffix: 6_tet
       requires: ctetgen
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton simplex
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton
     test:
       suffix: 6_hex
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton tensor
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton
 
   testset:
     nsize: {{1 2 4 5}}
-    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
       suffix: 7_exo
       requires: exodusii
@@ -839,7 +839,7 @@ int main(int argc, char **argv)
     suffix: 7_hdf5_hierarch
     requires: hdf5 ptscotch !complex
     nsize: {{2 3 4}separate output}
-    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -interpolate serial
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     args: -petscpartitioner_type matpartitioning -petscpartitioner_view ::ascii_info

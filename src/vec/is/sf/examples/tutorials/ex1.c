@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   PetscSFNode    *remote;
   PetscMPIInt    rank,size;
   PetscSF        sf;
-  PetscBool      test_bcast,test_bcastop,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert,test_sf_distribute;
+  PetscBool      test_bcast,test_bcastop,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert,test_sf_distribute,test_char;
   MPI_Op         mop=MPI_OP_NULL; /* initialize to prevent compiler warnings with cxx_quad build */
   char           opstring[256];
   PetscBool      strflg;
@@ -61,6 +61,8 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsBool("-test_bcastop","Test broadcast and reduce","",test_bcastop,&test_bcastop,NULL);CHKERRQ(ierr);
   test_reduce     = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL);CHKERRQ(ierr);
+  test_char       = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_char","Test signed char, unsigned char, and char","",test_char,&test_char,NULL);CHKERRQ(ierr);
   mop             = MPI_SUM;
   ierr            = PetscStrcpy(opstring,"sum");CHKERRQ(ierr);
   ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,256,NULL);CHKERRQ(ierr);
@@ -192,6 +194,35 @@ int main(int argc,char **argv)
     ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   }
 
+  if (test_bcast && test_char) { /* Bcast with char */
+    PetscInt len;
+    char buf[256];
+    char *rootdata,*leafdata;
+    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    /* Set rootdata buffer to be broadcast */
+    for (i=0; i<nrootsalloc; i++) rootdata[i] = '*';
+    for (i=0; i<nroots; i++) rootdata[i*stride] = 'A' + rank*3 + i; /* rank is very small, so it is fine to compute a char */
+    /* Initialize local buffer, these values are never used. */
+    for (i=0; i<nleavesalloc; i++) leafdata[i] = '?';
+
+    ierr = PetscSFBcastBegin(sf,MPI_CHAR,rootdata,leafdata);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPI_CHAR,rootdata,leafdata);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata in type of char\n");CHKERRQ(ierr);
+    len  = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
+    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5c",rootdata[i]);CHKERRQ(ierr); len += 5;}
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata in type of char\n");CHKERRQ(ierr);
+    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
+    for (i=0; i<nleavesalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5c",leafdata[i]);CHKERRQ(ierr); len += 5;}
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
+    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  }
+
   if (test_bcastop) {         /* Reduce rootdata into leafdata */
     PetscInt *rootdata,*leafdata;
     /* Allocate space for send and recieve buffers. This example communicates PetscInt, but other types, including
@@ -233,6 +264,84 @@ int main(int argc,char **argv)
     ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata\n");CHKERRQ(ierr);
     ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  }
+
+  if (test_reduce && test_char) { /* Reduce with signed char */
+    PetscInt len;
+    char buf[256];
+    signed char *rootdata,*leafdata;
+    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    /* Initialize rootdata buffer in which the result of the reduction will appear. */
+    for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
+    for (i=0; i<nroots; i++) rootdata[i*stride] = 10*(rank+1) + i;
+    /* Set leaf values to reduce. */
+    for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
+    for (i=0; i<nleaves; i++) leafdata[i*stride] = 50*(rank+1) + 10*i;
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata in type of signed char\n");CHKERRQ(ierr);
+
+    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
+    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5d",rootdata[i]);CHKERRQ(ierr); len += 5;}
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
+    /* Using MPI_CHAR should trigger an error since MPI standard does not support reduction on MPI_CHAR.
+       Testing with -test_op max, one can see the sign does take effect in MPI_MAX.
+     */
+    ierr = PetscSFReduceBegin(sf,MPI_SIGNED_CHAR,leafdata,rootdata,mop);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPI_SIGNED_CHAR,leafdata,rootdata,mop);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata in type of signed char\n");CHKERRQ(ierr);
+    len  = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
+    for (i=0; i<nleavesalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5d",leafdata[i]);CHKERRQ(ierr); len += 5;}
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata in type of signed char\n");CHKERRQ(ierr);
+    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
+    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5d",rootdata[i]);CHKERRQ(ierr); len += 5;}
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
+    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  }
+
+  if (test_reduce && test_char) { /* Reduce with unsigned char */
+    PetscInt len;
+    char buf[256];
+    unsigned char *rootdata,*leafdata;
+    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    /* Initialize rootdata buffer in which the result of the reduction will appear. */
+    for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
+    for (i=0; i<nroots; i++) rootdata[i*stride] = 10*(rank+1) + i;
+    /* Set leaf values to reduce. */
+    for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
+    for (i=0; i<nleaves; i++) leafdata[i*stride] = 50*(rank+1) + 10*i;
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata in type of unsigned char\n");CHKERRQ(ierr);
+
+    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
+    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5u",rootdata[i]);CHKERRQ(ierr); len += 5;}
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
+    /* Using MPI_CHAR should trigger an error since MPI standard does not support reduction on MPI_CHAR.
+       Testing with -test_op max, one can see the sign does take effect in MPI_MAX.
+     */
+    ierr = PetscSFReduceBegin(sf,MPI_UNSIGNED_CHAR,leafdata,rootdata,mop);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPI_UNSIGNED_CHAR,leafdata,rootdata,mop);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata in type of unsigned char\n");CHKERRQ(ierr);
+    len  = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
+    for (i=0; i<nleavesalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5u",leafdata[i]);CHKERRQ(ierr); len += 5;}
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata in type of unsigned char\n");CHKERRQ(ierr);
+    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
+    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5u",rootdata[i]);CHKERRQ(ierr); len += 5;}
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
     ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   }
 
@@ -455,4 +564,8 @@ int main(int argc,char **argv)
       nsize: 3
       args: -test_bcast -test_sf_distribute -sf_type basic
 
+   test:
+      suffix: 9_char
+      nsize: 4
+      args: -sf_type basic -test_bcast -test_reduce -test_op max -test_char
 TEST*/

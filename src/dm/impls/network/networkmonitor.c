@@ -105,6 +105,8 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 . nodes - number of nodes
 . start - variable starting offset
 . blocksize - variable blocksize
+. xmin - xmin (or PETSC_DECIDE) for viewer
+. xmax - xmax (or PETSC_DECIDE) for viewer
 . ymin - ymin for viewer
 . ymax - ymax for viewer
 - hold - determines if plot limits should be held
@@ -118,15 +120,15 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   Precisely, the parameters nodes, start and blocksize allow you to select a general
   strided subarray of the variables to monitor.
 
-.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy() 
+.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy()
 @*/
-PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,PetscInt element,PetscInt nodes,PetscInt start,PetscInt blocksize,PetscReal ymin,PetscReal ymax,PetscBool hold)
+PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,PetscInt element,PetscInt nodes,PetscInt start,PetscInt blocksize,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscBool hold)
 {
   PetscErrorCode       ierr;
   PetscDrawLG          drawlg;
   PetscDrawAxis        axis;
   PetscMPIInt          rank, size;
-  DMNetworkMonitorList node; 
+  DMNetworkMonitorList node;
   char                 titleBuffer[64];
   PetscInt             vStart,vEnd,eStart,eEnd;
 
@@ -144,17 +146,21 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
     ierr = PetscSNPrintf(titleBuffer, 64, "%s @ edge %d [%d / %d]", name, element - eStart, rank, size-1);CHKERRQ(ierr);
   } else {
     /* vertex / edge is not on local machine, so skip! */
-    PetscFunctionReturn(0); 
+    PetscFunctionReturn(0);
   }
 
   ierr = PetscMalloc1(1, &node);CHKERRQ(ierr);
 
   /* Setup viewer. */
   ierr = PetscViewerDrawOpen(monitor->comm, NULL, titleBuffer, PETSC_DECIDE, PETSC_DECIDE, PETSC_DRAW_QUARTER_SIZE, PETSC_DRAW_QUARTER_SIZE, &(node->viewer));CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(node->viewer, PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(node->viewer, PETSC_VIEWER_DRAW_LG_XRANGE);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDrawLG(node->viewer, 0, &drawlg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(drawlg, &axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLimits(axis, 0, nodes-1, ymin, ymax);CHKERRQ(ierr);
+  if (xmin != PETSC_DECIDE && xmax != PETSC_DECIDE) {
+    ierr = PetscDrawAxisSetLimits(axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDrawAxisSetLimits(axis, 0, nodes-1, ymin, ymax);CHKERRQ(ierr);
+  }
   ierr = PetscDrawAxisSetHoldLimits(axis, hold);CHKERRQ(ierr);
 
   /* Setup vector storage for drawing. */
@@ -183,6 +189,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
 
 .seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy(), DMNetworkMonitorAdd()
 @*/
+
 PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor,Vec x)
 {
   PetscErrorCode      ierr;

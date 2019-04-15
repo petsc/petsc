@@ -36,7 +36,7 @@ class Configure(config.package.Package):
       raise RuntimeError('Cannot request OpenBLAS without Fortran compiler, use --download-f2cblaslapack intead')
 
     cmdline = 'CC='+self.compilers.CC+' FC='+self.compilers.FC
-    if self.argDB['download-openblas-64-bit-blas-indices']:
+    if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']:
       cmdline += " INTERFACE64=1 "
     if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
       cmdline+=" "+self.argDB['download-openblas-make-options']

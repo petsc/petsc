@@ -289,6 +289,9 @@ getincludedirs:
 getcflags:
 	-@echo ${CC_FLAGS}
 
+getcxxflags:
+	-@echo ${CXX_FLAGS}
+
 getfortranflags:
 	-@echo ${FC_FLAGS}
 

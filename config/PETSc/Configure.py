@@ -757,6 +757,10 @@ prepend-path PATH "%s"
       self.addDefine('DEPRECATED(why)', '__attribute((deprecated))')
     else:
       self.addDefine('DEPRECATED(why)', ' ')
+    if self.checkCompile("""enum E {oldval __attribute((deprecated)), newval };""", ''):
+      self.addDefine('DEPRECATED_ENUM(why)', '__attribute((deprecated))')
+    else:
+      self.addDefine('DEPRECATED_ENUM(why)', ' ')
     self.popLanguage()
 
   def configureAlign(self):

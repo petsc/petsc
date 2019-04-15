@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Preconditioners - PC: <A HREF="PETSC_DIRsrc/ksp/pc/examples/tutorials/index.html">Examples</A></H2>
+<H2> Preconditioners - PC:</H2>
 
 The
 <A HREF="PETSC_DIRdocs/manualpages/KSP/index.html">Scalable Linear Equations Solvers (KSP)</A>

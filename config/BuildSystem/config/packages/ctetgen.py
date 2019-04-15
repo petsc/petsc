@@ -50,7 +50,11 @@ class Configure(config.package.GNUPackage):
     try:
       self.logPrintBox('Compiling Ctetgen; this may take several minutes')
       # uses the regular PETSc library builder and then moves result 
-      output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib',timeout=1000, log = self.log, cwd=self.packageDir)
+      # turn off any compiler optimizations as they may break CTETGEN
+      self.setCompilers.pushLanguage('C')
+      cflags = self.checkNoOptFlag()+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+' '+self.getDebugFlags(self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
+      output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib PCC_FLAGS="'+cflags+'"',timeout=1000, log = self.log, cwd=self.packageDir)
       self.log.write(output+err)
       self.logPrintBox('Installing Ctetgen; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)

@@ -4,6 +4,6 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Star Forest Communication: <A HREF="PETSC_DIRsrc/sys/sf/examples/tutorials/index.html">Examples</A> </H2>
+<H2> Star Forest Communication: </H2>
 
 PetscSF provides a simple interface to "star forest" communication patterns.

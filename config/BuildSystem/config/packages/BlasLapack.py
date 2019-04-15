@@ -28,7 +28,12 @@ class Configure(config.package.Package):
     return
 
   def __str__(self):
-    return 'BLAS/LAPACK: '+self.libraries.toString(self.lib)+'\n'
+    output  = config.package.Package.__str__(self)
+    if self.has64bitindices:
+      output += '  uses 64 bit integers\n'
+    else:
+      output += '  uses 32 bit integers\n'
+    return output
 
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
@@ -36,6 +41,7 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.ArgLibrary(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
+    help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64 bit integers for BLAS/LAPACK; will error if not available'))
 #    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
     return
 
@@ -208,10 +214,8 @@ class Configure(config.package.Package):
       self.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
       self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
 
-      # If using 64 bit indices then look for 64 bit integer MKL
-      if self.defaultIndexSize == 64: ILP64 = '_ilp64'
+      if self.argDB['with-64-bit-blas-indices']: ILP64 = '_ilp64'
       else: ILP64 = '_lp64'
-      ILP64 = '_lp64'
 
       # Look for Multi-Threaded MKL for MKL_C/Pardiso
       useCPardiso=0
@@ -251,6 +255,7 @@ class Configure(config.package.Package):
       self.setCompilers.LDFLAGS += '-Wl,-rpath,'+os.path.join(dir,'bin','maci64')
       yield ('User specified MATLAB [ILP64] MKL MacOS lib dir', None, [os.path.join(dir,'bin','maci64','mkl.dylib'), os.path.join(dir,'sys','os','maci64','libiomp5.dylib'), 'pthread'])
       self.setCompilers.LDFLAGS = oldFlags
+      yield ('User specified MKL11/12 and later', None, [os.path.join(dir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','pthread'])
       # Some new MKL 11/12 variations
       for libdir in [os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
         if not os.path.exists(os.path.join(dir,libdir)):
@@ -261,7 +266,8 @@ class Configure(config.package.Package):
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
-          yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','pthread'])
+          yield ('User specified MKL11+ Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','mkl_def','pthread'])
+          yield ('User specified MKL11+ Mac-64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','pthread'])
       # Older Linux MKL checks
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'])
       for libdir in ['32','64','em64t']:
@@ -431,6 +437,8 @@ class Configure(config.package.Package):
     self.executeTest(self.checkRuntimeIssues)
     if self.mkl and self.has64bitindices:
       self.addDefine('HAVE_LIBMKL_INTEL_ILP64',1)
+    if self.argDB['with-64-bit-blas-indices'] and not self.has64bitindices:
+      raise RuntimeError('You requested 64 bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
 
   def checkESSL(self):
     '''Check for the IBM ESSL library'''
@@ -467,8 +475,9 @@ class Configure(config.package.Package):
               break
 
           if not found:
-            raise RuntimeError('Unable to find MKL include directory. Please source the mklvars-script to set up the MKL environment.\n')
-        self.logPrint('MKL include path set to ' + str(self.include))
+            self.logPrint('Unable to find MKL include directory!')
+          else:
+            self.logPrint('MKL include path set to ' + str(self.include))
     self.logWrite(self.libraries.restoreLog())
     return
 

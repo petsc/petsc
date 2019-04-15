@@ -38,7 +38,19 @@ def check_for_unsupported_combinations(opts):
 
 def check_for_option_changed(opts):
 # Document changes in command line options here.
-  optMap = [('with-64bit-indices','with-64-bit-indices'),('c-blas-lapack','f2cblaslapack'),('cholmod','suitesparse'),('umfpack','suitesparse'),('f-blas-lapack','fblaslapack'),('with-cuda-arch','CUDAFLAGS=-arch'),('with-packages-dir','with-packages-download-dir'),('with-external-packages-dir','with-packages-build-dir'),('package-dirs','with-packages-search-path'),('search-dirs','with-executables-search-path')]
+  optMap = [('with-64bit-indices','with-64-bit-indices'),
+            ('with-mpi-exec','with-mpiexec'),
+            ('c-blas-lapack','f2cblaslapack'),
+            ('cholmod','suitesparse'),
+            ('umfpack','suitesparse'),
+            ('f-blas-lapack','fblaslapack'),
+            ('with-cuda-arch',
+             'CUDAFLAGS=-arch'),
+            ('with-packages-dir','with-packages-download-dir'),
+            ('with-external-packages-dir','with-packages-build-dir'),
+            ('package-dirs','with-packages-search-path'),
+            ('download-petsc4py-python','with-python-exec'),
+            ('search-dirs','with-executables-search-path')]
   for opt in opts[1:]:
     optname = opt.split('=')[0].strip('-')
     for oldname,newname in optMap:

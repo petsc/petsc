@@ -26,6 +26,14 @@ all message-passing communication.
     $ pip install --no-deps https://bitbucket.org/petsc/petsc/get/master.tar.gz
     $ pip install --no-deps https://bitbucket.org/petsc/petsc4py/get/master.tar.gz
 
+  To set the MPI compilers use the environmental variables ``MPICC``, ``MPICXX``, ``MPIF90``.
+
+  Provide any ``PETSc`` ./configure options using the environmental variable ``PETSC_CONFIGURE_OPTIONS``.
+
+  Do not use the ``PETSc`` ``./configure`` options ``--with-cc``, ``--with-cxx``, ``--with-fc``, or ``--with-mpi-dir``.
+
+  If ``mpi4py`` is installed the compilers will obtained from that installation and ``MPICC``, ``MPICXX``, ``MPIF90`` will be ignored.
+
 """
 
 import sys, os
@@ -75,6 +83,16 @@ def bootstrap():
     # Configure options
     options = os.environ.get('PETSC_CONFIGURE_OPTIONS', '')
     CONFIGURE_OPTIONS.extend(split_quoted(options))
+    for i in CONFIGURE_OPTIONS:
+        if i.startswith('--with-mpi-dir'):
+            raise RuntimeError("Do not use --with-mpi-dir, use the environmental variables MPICC, MPICXX, MPIF90")
+        if i.startswith('--with-cc'):
+            raise RuntimeError("Do not use --with-cc, use the environmental variable MPICC")
+        if i.startswith('--with-cxx') and not i == "--with-cxx=0":
+            raise RuntimeError("Do not use --with-cxx, use the environmental variable MPICXX")
+        if i.startswith('--with-fc') and not i == "--with-fc=0":
+            raise RuntimeError("Do not use --with-fc, use the environmental variable MPIF90")
+
     if '--with-mpi=0' not in CONFIGURE_OPTIONS:
         # Simple-minded lookup for MPI and mpi4py
         mpi4py = mpicc = None

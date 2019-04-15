@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h>  /*I     "petscsys.h"   I*/
+#include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h>  /*I     "petscviewer.h"   I*/
 
 /* ---------------------------------------------------------------------*/
 
@@ -9,7 +9,7 @@
 */
 PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PetscViewerASCIIGetStdout - Creates a ASCII PetscViewer shared by all processors
                     in a communicator. Error returning version of PETSC_VIEWER_STDOUT_()
 
@@ -89,7 +89,7 @@ PetscViewer  PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 */
 PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PetscViewerASCIIGetStderr - Creates a ASCII PetscViewer shared by all processors
                     in a communicator. Error returning version of PETSC_VIEWER_STDERR_()
 
@@ -179,7 +179,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval
 }
 
 /*@C
-   PetscViewerASCIIOpen - Opens an ASCII file as a PetscViewer.
+   PetscViewerASCIIOpen - Opens an ASCII file for writing as a PetscViewer.
 
    Collective on MPI_Comm
 
@@ -193,6 +193,12 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval
    Level: beginner
 
    Notes:
+   To open a ASCII file as a viewer for reading one must use the sequence
+$     PetscViewerCreate(comm,&lab);
+$     PetscViewerSetType(lab,PETSCVIEWERASCII);
+$     PetscViewerFileSetMode(lab,FILE_MODE_READ);
+$     PetscViewerFileSetName(lab,name);
+
    This PetscViewer can be destroyed with PetscViewerDestroy().
 
    The MPI communicator used here must match that used by the object one is viewing. For example if the 
@@ -211,7 +217,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval
   Concepts: accessing remote file
   Concepts: remote file
 
-.seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerBinaryOpen(),
+.seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerBinaryOpen(), PetscViewerASCIIRead()
           PetscViewerASCIIGetPointer(), PetscViewerPushFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
           PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF,
 @*/

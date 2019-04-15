@@ -213,6 +213,13 @@ class Package(config.base.Configure):
       if cflags.find(flag) >=0: return flag
     return ''
 
+  def getDebugFlags(self,cflags):
+    outflags = []
+    for flag in cflags.split():
+      if flag in ['-g','-g3','-Z7']:
+        outflags.append(flag)
+    return ' '.join(outflags)
+
   def getWindowsNonOptFlags(self,cflags):
     outflags = []
     for flag in cflags.split():

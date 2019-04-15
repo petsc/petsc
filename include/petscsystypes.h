@@ -108,28 +108,26 @@ M*/
    Notes:
     Usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
            standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit
-           (except on very rare BLAS/LAPACK implementations that support 64 bit integers see the note below).
+           (except on very rare BLAS/LAPACK implementations that support 64 bit integers see the notes below).
 
     PetscErrorCode PetscBLASIntCast(a,&b) checks if the given PetscInt a will fit in a PetscBLASInt, if not it
       generates a PETSC_ERR_ARG_OUTOFRANGE error
 
    Installation Notes:
-    The 64bit versions of MATLAB ship with BLAS and LAPACK that use 64 bit integers for sizes etc,
-     if you run ./configure with the option
+    ./configure automatically determines the size of the integers used by BLAS/LAPACK except when --with-batch is used
+    in that situation one must know (by some other means) if the integers used by BLAS/LAPACK are 64 bit and if so pass the flag --known-64-bit-blas-indice
+
+    MATLAB ships with BLAS and LAPACK that use 64 bit integers, for example if you run ./configure with, the option
      --with-blaslapack-lib=[/Applications/MATLAB_R2010b.app/bin/maci64/libmwblas.dylib,/Applications/MATLAB_R2010b.app/bin/maci64/libmwlapack.dylib]
-     but you need to also use --known-64-bit-blas-indices.
 
-        MKL also ships with 64 bit integer versions of the BLAS and LAPACK, if you select those you must also ./configure with
-        --known-64-bit-blas-indices
+    MKL ships with both 32 and 64 bit integer versions of the BLAS and LAPACK. If you pass the flag -with-64-bit-blas-indices PETSc will link
+    against the 64 bit version, otherwise it use the 32 bit version
 
-        OpenBLAS can also be built to use 64 bit integers. The ./configure options --download-openblas -download-openblas-64-bit-blas-indices
-        will build a 64 bit integer version
+    OpenBLAS can be built to use 64 bit integers. The ./configure options --download-openblas -with-64-bit-blas-indices will build a 64 bit integer version
 
-    Developer Notes:
-     Eventually ./configure should automatically determine the size of the integers used by BLAS/LAPACK.
-
-     External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64 bit integers to BLAS/LAPACK so cannot
-     be used with PETSc if you have set PetscBLASInt to long int.
+    External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64 bit integers to BLAS/LAPACK so cannot
+    be used with PETSc when PETSc links against 64 bit integer BLAS/LAPACK. ./configure will generate an error if you attempt to link PETSc against any of
+    these external libraries while using 64 bit integer BLAS/LAPACK.
 
    Level: intermediate
 
