@@ -2117,6 +2117,46 @@ PetscErrorCode PCFieldSplitGetIS(PC pc,const char splitname[],IS *is)
   PetscFunctionReturn(0);
 }
 
+/*@C
+    PCFieldSplitGetISByIndex - Retrieves the elements for a given index field as an IS
+
+    Logically Collective on PC
+
+    Input Parameters:
++   pc  - the preconditioner context
+-   index - index of this split
+
+    Output Parameter:
+-   is - the index set that defines the vector elements in this field
+
+    Level: intermediate
+
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitGetIS(), PCFieldSplitSetIS()
+
+@*/
+PetscErrorCode PCFieldSplitGetISByIndex(PC pc,PetscInt index,IS *is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (index < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative field %D requested",index);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(is,3);
+  {
+    PC_FieldSplit     *jac  = (PC_FieldSplit*) pc->data;
+    PC_FieldSplitLink ilink = jac->head;
+    PetscInt          i     = 0;
+    if (index >= jac->nsplits) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Field %D requested but only %D exist",index,jac->nsplits);
+
+    while (i < index) {
+      ilink = ilink->next;
+      ++i;
+    }
+    ierr = PCFieldSplitGetIS(pc,ilink->splitname,is);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
     PCFieldSplitSetBlockSize - Sets the block size for defining where fields start in the
       fieldsplit preconditioner. If not set the matrix block size is used.
