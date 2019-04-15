@@ -1,6 +1,39 @@
 
 #include <petsc/private/matimpl.h>  /*I   "petscmat.h"  I*/
 
+static PetscErrorCode MatTransposeAXPY_Private(Mat Y,PetscScalar a,Mat X,MatStructure str,Mat T)
+{
+  PetscErrorCode ierr,(*f)(Mat,Mat*);
+  Mat            A,F;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)T,"MatTransposeGetMat_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = MatTransposeGetMat(T,&A);CHKERRQ(ierr);
+    if (T == X) {
+      ierr = PetscInfo(NULL,"Explicitly transposing X of type MATTRANSPOSEMAT to perform MatAXPY()\n");CHKERRQ(ierr);
+      ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+      A = Y;
+    } else {
+      ierr = PetscInfo(NULL,"Transposing X because Y of type MATTRANSPOSEMAT to perform MatAXPY()\n");CHKERRQ(ierr);
+      ierr = MatTranspose(X,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MatHermitianTransposeGetMat(T,&A);CHKERRQ(ierr);
+    if (T == X) {
+      ierr = PetscInfo(NULL,"Explicitly Hermitian transposing X of type MATTRANSPOSEMAT to perform MatAXPY()\n");CHKERRQ(ierr);
+      ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+      A = Y;
+    } else {
+      ierr = PetscInfo(NULL,"Hermitian transposing X because Y of type MATTRANSPOSEMAT to perform MatAXPY()\n");CHKERRQ(ierr);
+      ierr = MatHermitianTranspose(X,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAXPY(A,a,F,str);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
@@ -24,7 +57,8 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscErrorCode ierr;
   PetscInt       M1,M2,N1,N2;
   PetscInt       m1,m2,n1,n2;
-  PetscBool      sametype;
+  MatType        t1,t2;
+  PetscBool      sametype,transpose;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
@@ -38,19 +72,31 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   if (M1 != M2 || N1 != N2) SETERRQ4(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_SIZ,"Non conforming matrix add: global sizes %D x %D, %D x %D",M1,M2,N1,N2);
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes %D x %D, %D x %D",m1,m2,n1,n2);
 
-  ierr = PetscStrcmp(((PetscObject)X)->type_name,((PetscObject)Y)->type_name,&sametype);CHKERRQ(ierr);
+  ierr = MatGetType(X,&t1);CHKERRQ(ierr);
+  ierr = MatGetType(Y,&t2);CHKERRQ(ierr);
+  ierr = PetscStrcmp(t1,t2,&sametype);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
   if (Y->ops->axpy && sametype) {
     ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
   } else {
-    if (str != DIFFERENT_NONZERO_PATTERN) {
-      ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    ierr = PetscStrcmp(t1,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
+    if (transpose) {
+        ierr = MatTransposeAXPY_Private(Y,a,X,str,X);CHKERRQ(ierr);
     } else {
-      Mat B;
+      ierr = PetscStrcmp(t2,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
+      if (transpose) {
+        ierr = MatTransposeAXPY_Private(Y,a,X,str,Y);CHKERRQ(ierr);
+      } else {
+        if (str != DIFFERENT_NONZERO_PATTERN) {
+          ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+        } else {
+          Mat B;
 
-      ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
-      ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-      ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
+          ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
+          ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+          ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
+        }
+      }
     }
   }
   ierr = PetscLogEventEnd(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
