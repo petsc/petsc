@@ -162,6 +162,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
   ierr = PetscOptionsBool("-ts_rhs_jacobian_test_mult","Test the RHS Jacobian for consistency with RHS at each solve ","None",ts->testjacobian,&ts->testjacobian,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_rhs_jacobian_test_mult_transpose","Test the RHS Jacobian transpose for consistency with RHS at each solve ","None",ts->testjacobiantranspose,&ts->testjacobiantranspose,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_use_splitrhsfunction","Use the split RHS function for multirate solvers ","TSSetUseSplitRHSFunction",ts->use_splitrhsfunction,&ts->use_splitrhsfunction,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   {
   PetscBool set;
@@ -7694,5 +7695,55 @@ PetscErrorCode  TSRHSJacobianTestTranspose(TS ts,PetscBool *flg)
   ierr = TSGetRHSJacobian(ts,&J,&B,&func,&ctx);CHKERRQ(ierr);
   ierr = (*func)(ts,0.0,ts->vec_sol,J,B,ctx);CHKERRQ(ierr);
   ierr = MatShellTestMultTranspose(J,RHSWrapperFunction_TSRHSJacobianTest,ts->vec_sol,ts,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSSetUseSplitRHSFunction - Use the split RHSFunction when a multirate method is used.
+
+  Logically collective
+
+  Input Parameter:
++  ts - timestepping context
+-  use_splitrhsfunction - PETSC_TRUE indicates that the split RHSFunction will be used
+
+  Options Database:
+.   -ts_use_splitrhsfunction - <true,false>
+
+  Notes:
+    This is only useful for multirate methods
+
+  Level: intermediate
+
+.seealso: TSGetUseSplitRHSFunction()
+@*/
+PetscErrorCode TSSetUseSplitRHSFunction(TS ts, PetscBool use_splitrhsfunction)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->use_splitrhsfunction = use_splitrhsfunction;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSGetUseSplitRHSFunction - Gets whether to use the split RHSFunction when a multirate method is used.
+
+  Not collective
+
+  Input Parameter:
+.  ts - timestepping context
+
+  Output Parameter:
+.  use_splitrhsfunction - PETSC_TRUE indicates that the split RHSFunction will be used
+
+  Level: intermediate
+
+.seealso: TSSetUseSplitRHSFunction()
+@*/
+PetscErrorCode TSGetUseSplitRHSFunction(TS ts, PetscBool *use_splitrhsfunction)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  *use_splitrhsfunction = ts->use_splitrhsfunction;
   PetscFunctionReturn(0);
 }

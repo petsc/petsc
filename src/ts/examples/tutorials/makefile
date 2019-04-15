@@ -13,7 +13,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex40.c ex41.c ex42.c ex48.c ex49.c ex50.c
 EXAMPLESF       = ex1f.F ex22f.F ex22f_mf.F90
 MANSEC          = TS
-DIRS            = phasefield advection-diffusion-reaction eimex power_grid network
+DIRS            = phasefield advection-diffusion-reaction eimex power_grid network multirate
 CLEANFILES      = SA-data/*
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

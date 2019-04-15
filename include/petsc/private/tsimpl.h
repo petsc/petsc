@@ -22,6 +22,7 @@ PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSMPRKRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLLERegisterAll(void);
@@ -267,6 +268,7 @@ struct _p_TS {
   /* ---------------------- RHS splitting support ---------------------------------*/
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
+  PetscBool       use_splitrhsfunction;
 };
 
 struct _TSAdaptOps {

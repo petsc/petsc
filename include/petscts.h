@@ -45,6 +45,7 @@ typedef const char* TSType;
 #define TSMIMEX           "mimex"
 #define TSBDF             "bdf"
 #define TSRADAU5          "radau5"
+#define TSMPRK            "mprk"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -437,6 +438,8 @@ PETSC_EXTERN PetscErrorCode TSRHSSplitGetIS(TS,const char[],IS*);
 PETSC_EXTERN PetscErrorCode TSRHSSplitSetRHSFunction(TS,const char[],Vec,TSRHSFunction,void*);
 PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTS(TS,const char[],TS*);
 PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTSs(TS,PetscInt*,TS*[]);
+PETSC_EXTERN PetscErrorCode TSSetUseSplitRHSFunction(TS, PetscBool);
+PETSC_EXTERN PetscErrorCode TSGetUseSplitRHSFunction(TS, PetscBool*);
 
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat,Mat,void*);
@@ -775,11 +778,35 @@ typedef const char* TSRKType;
 
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
+PETSC_EXTERN PetscErrorCode TSRKSetMultirate(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSRKGetMultirate(TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
+
+/*J
+   TSMPRKType - String with the name of a Partitioned Runge-Kutta method
+
+   Level: beginner
+
+.seealso: TSMPRKSetType(), TS, TSMPRK, TSMPRKRegister()
+J*/
+typedef const char* TSMPRKType;
+#define TSMPRK2A22   "2a22"
+#define TSMPRK2A23   "2a23"
+#define TSMPRK2A32   "2a32"
+#define TSMPRK2A33   "2a33"
+#define TSMPRKP2    "p2"
+#define TSMPRKP3    "p3"
+
+PETSC_EXTERN PetscErrorCode TSMPRKGetType(TS ts,TSMPRKType*);
+PETSC_EXTERN PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType);
+PETSC_EXTERN PetscErrorCode TSMPRKRegister(TSMPRKType,PetscInt,PetscInt,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscInt [],const PetscReal[],const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSMPRKInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSMPRKFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSMPRKRegisterDestroy(void);
 
 /*J
     TSGLEEType - String with the name of a General Linear with Error Estimation method.

@@ -1,16 +1,14 @@
-
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = rk.c mrk.c
+SOURCEC  = mprk.c
 SOURCEF  =
-SOURCEH  = rk.h
+SOURCEH  =
 LIBBASE  = libpetscts
 MANSEC   = TS
-LOCDIR   = src/ts/impls/explicit/rk/
+LOCDIR   = src/ts/impls/multirate
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-
