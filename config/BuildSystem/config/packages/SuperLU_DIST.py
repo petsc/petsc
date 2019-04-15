@@ -46,6 +46,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE')
     args.append('-DUSE_XSDK_DEFAULTS=YES')
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DTPL_LAPACK_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     if self.parmetis.found:
       args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+';'.join(self.parmetis.dinclude)+'"')
       args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.dlib)+'"')
