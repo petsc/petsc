@@ -2017,12 +2017,12 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
   for (i=0; i<A->rmap->n; i++) {
     if (!zeroed[i]) {
       for (j=a->i[i]; j<a->i[i+1]; j++) {
-        if (zeroed[a->j[j]]) {
+        if (a->j[j] < A->rmap->n && zeroed[a->j[j]]) {
           if (vecs) bb[i] -= a->a[j]*xx[a->j[j]];
           a->a[j] = 0.0;
         }
       }
-    } else if (vecs) bb[i] = diag*xx[i];
+    } else if (vecs && i < A->cmap->N) bb[i] = diag*xx[i];
   }
   if (x && b) {
     ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
@@ -2032,11 +2032,10 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
   if (diag != 0.0) {
     ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
     if (missing) {
-      if (a->nonew) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
-      else {
-        for (i=0; i<N; i++) {
-          ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],&diag,INSERT_VALUES);CHKERRQ(ierr);
-        }
+      for (i=0; i<N; i++) {
+        if (rows[i] >= A->cmap->N) continue;
+        if (a->nonew && rows[i] >= d) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D (%D)",d,rows[i]);
+        ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],&diag,INSERT_VALUES);CHKERRQ(ierr);
       }
     } else {
       for (i=0; i<N; i++) {
