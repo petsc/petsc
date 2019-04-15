@@ -862,50 +862,76 @@ PetscErrorCode MatZeroEntries_MPIAIJ(Mat A)
 
 PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  Mat_MPIAIJ    *mat    = (Mat_MPIAIJ *) A->data;
-  PetscInt      *lrows;
-  PetscInt       r, len;
-  PetscBool      cong;
-  PetscErrorCode ierr;
+  Mat_MPIAIJ      *mat = (Mat_MPIAIJ *) A->data;
+  PetscObjectState sA, sB;
+  PetscInt        *lrows;
+  PetscInt         r, len;
+  PetscBool        cong, lch, gch;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   /* get locally owned rows */
   ierr = MatZeroRowsMapLocal_Private(A,N,rows,&len,&lrows);CHKERRQ(ierr);
+  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
   /* fix right hand side if needed */
   if (x && b) {
     const PetscScalar *xx;
     PetscScalar       *bb;
 
+    if (!cong) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need matching row/col layout");
     ierr = VecGetArrayRead(x, &xx);CHKERRQ(ierr);
     ierr = VecGetArray(b, &bb);CHKERRQ(ierr);
     for (r = 0; r < len; ++r) bb[lrows[r]] = diag*xx[lrows[r]];
     ierr = VecRestoreArrayRead(x, &xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(b, &bb);CHKERRQ(ierr);
   }
-  /* Must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows(mat->B, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
-  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
-  if ((diag != 0.0) && cong) {
+
+  sA = mat->A->nonzerostate;
+  sB = mat->B->nonzerostate;
+
+  if (diag != 0.0 && cong) {
     ierr = MatZeroRows(mat->A, len, lrows, diag, NULL, NULL);CHKERRQ(ierr);
-  } else if (diag != 0.0) {
+    ierr = MatZeroRows(mat->B, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
+  } else if (diag != 0.0) { /* non-square or non congruent layouts -> if keepnonzeropattern is false, we allow for new insertion */
+    Mat_SeqAIJ *aijA = (Mat_SeqAIJ*)mat->A->data;
+    Mat_SeqAIJ *aijB = (Mat_SeqAIJ*)mat->B->data;
+    PetscInt   nnwA, nnwB;
+    PetscBool  nnzA, nnzB;
+
+    nnwA = aijA->nonew;
+    nnwB = aijB->nonew;
+    nnzA = aijA->keepnonzeropattern;
+    nnzB = aijB->keepnonzeropattern;
+    if (!nnzA) {
+      ierr = PetscInfo(mat->A,"Requested to not keep the pattern and add a nonzero diagonal; may encounter reallocations on diagonal block.\n");CHKERRQ(ierr);
+      aijA->nonew = 0;
+    }
+    if (!nnzB) {
+      ierr = PetscInfo(mat->B,"Requested to not keep the pattern and add a nonzero diagonal; may encounter reallocations on off-diagonal block.\n");CHKERRQ(ierr);
+      aijB->nonew = 0;
+    }
+    /* Must zero here before the next loop */
     ierr = MatZeroRows(mat->A, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
-    if (((Mat_SeqAIJ *) mat->A->data)->nonew) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MatZeroRows() on rectangular matrices cannot be used with the Mat options\nMAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
+    ierr = MatZeroRows(mat->B, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
     for (r = 0; r < len; ++r) {
       const PetscInt row = lrows[r] + A->rmap->rstart;
+      if (row >= A->cmap->N) continue;
       ierr = MatSetValues(A, 1, &row, 1, &row, &diag, INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    aijA->nonew = nnwA;
+    aijB->nonew = nnwB;
   } else {
     ierr = MatZeroRows(mat->A, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
+    ierr = MatZeroRows(mat->B, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
   }
   ierr = PetscFree(lrows);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* only change matrix nonzero state if pattern was allowed to be changed */
-  if (!((Mat_SeqAIJ*)(mat->A->data))->keepnonzeropattern) {
-    PetscObjectState state = mat->A->nonzerostate + mat->B->nonzerostate;
-    ierr = MPIU_Allreduce(&state,&A->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
-  }
+  /* reduce nonzerostate */
+  lch = (PetscBool)(sA != mat->A->nonzerostate || sB != mat->B->nonzerostate);
+  ierr = MPIU_Allreduce(&lch,&gch,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  if (gch) A->nonzerostate++;
   PetscFunctionReturn(0);
 }
 
@@ -958,7 +984,11 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = VecScatterBegin(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(&xmask);CHKERRQ(ierr);
-  if (x) {
+  if (x && b) { /* this code is buggy when the row and column layout don't match */
+    PetscBool cong;
+
+    ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
+    if (!cong) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need matching row/col layout");
     ierr = VecScatterBegin(l->Mvctx,x,l->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(l->Mvctx,x,l->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArrayRead(l->lvec,&xx);CHKERRQ(ierr);
@@ -1006,7 +1036,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
       }
     }
   }
-  if (x) {
+  if (x && b) {
     ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(l->lvec,&xx);CHKERRQ(ierr);
   }
