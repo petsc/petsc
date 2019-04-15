@@ -74,7 +74,7 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
 
     ierr = PetscMalloc1(dof,&nodes);CHKERRQ(ierr);
     ierr = PetscMalloc1(dof,&weights);CHKERRQ(ierr);
-    ierr = PetscDTGaussLobattoLegendreQuadrature(dof,PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA,nodes,weights);CHKERRQ(ierr);
+    ierr = PetscDTGaussLobattoLegendreQuadrature(dof,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA,nodes,weights);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm,&cv);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
     if (plex) {

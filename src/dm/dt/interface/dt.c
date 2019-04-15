@@ -587,7 +587,7 @@ static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp
 
    Input Parameter:
 +  n - number of grid nodes
--  type - PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA or PETSCGaussLobattoLegendre_VIA_NEWTON
+-  type - PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA or PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON
 
    Output Arguments:
 +  x - quadrature points
@@ -613,7 +613,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
   PetscFunctionBegin;
   if (npoints < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
 
-  if (type == PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA) {
+  if (type == PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA) {
     PetscReal      *M,si;
     PetscBLASInt   bn,lierr;
     PetscReal      x0,z0,z1,z2;
@@ -659,7 +659,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
     PetscReal *pt;
     ierr = PetscMalloc1(npoints,&pt);CHKERRQ(ierr);
 
-    if (npoints > 30) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PETSCGaussLobattoLegendre_VIA_NEWTON produces incorrect answers for n > 30");
+    if (npoints > 30) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON produces incorrect answers for n > 30");
     x[0]     = -1.0;
     x[npoints-1]   = 1.0;
     w[0]   = w[npoints-1] = 2./(((PetscReal)npoints)*(((PetscReal)npoints)-1.0));;

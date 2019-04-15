@@ -20,11 +20,11 @@ typedef struct _p_PetscQuadrature *PetscQuadrature;
 
   Level: intermediate
 
-$  PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA - compute the nodes via linear algebra
-$  PETSCGaussLobattoLegendre_VIA_NEWTON - compute the nodes by solving a nonlinear equation with Newton's method
+$  PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA - compute the nodes via linear algebra
+$  PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON - compute the nodes by solving a nonlinear equation with Newton's method
 
 E*/
-typedef enum {PETSCGaussLobattoLegendre_VIA_LINEARALGEBRA,PETSCGaussLobattoLegendre_VIA_NEWTON} PetscGaussLobattoLegendreCreateType;
+typedef enum {PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA,PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON} PetscGaussLobattoLegendreCreateType;
 
 PETSC_EXTERN PetscErrorCode PetscQuadratureCreate(MPI_Comm, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature, PetscQuadrature *);
