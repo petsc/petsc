@@ -1415,41 +1415,6 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n,PetscReal *nodes,Pe
   PetscFunctionReturn(0);
 }
 
-static void gllqAndLEvaluation(PetscInt n,PetscReal x,PetscReal *q,PetscReal *qp,PetscReal *Ln)
-/*
-  Compute the polynomial q(x) = L_{N+1}(x) - L_{n-1}(x) and its derivative in
-  addition to L_N(x) as these are needed for computing the GLL points via Newton's method.
-  Reference: "Implementing Spectral Methods for Partial Differential Equations: Algorithms
-  for Scientists and Engineers" by David A. Kopriva.
-*/
-{
-  PetscInt k;
-
-  PetscReal Lnp;
-  PetscReal Lnp1, Lnp1p;
-  PetscReal Lnm1, Lnm1p;
-  PetscReal Lnm2, Lnm2p;
-
-  Lnm1  = 1.0;
-  *Ln   = x;
-  Lnm1p = 0.0;
-  Lnp   = 1.0;
-
-  for (k=2; k<=n; ++k) {
-    Lnm2  = Lnm1;
-    Lnm1  = *Ln;
-    Lnm2p = Lnm1p;
-    Lnm1p = Lnp;
-    *Ln   = (2.*((PetscReal)k)-1.)/(1.0*((PetscReal)k))*x*Lnm1 - (((PetscReal)k)-1.)/((PetscReal)k)*Lnm2;
-    Lnp   = Lnm2p + (2.0*((PetscReal)k)-1.)*Lnm1;
-  }
-  k     = n+1;
-  Lnp1  = (2.*((PetscReal)k)-1.)/(((PetscReal)k))*x*(*Ln) - (((PetscReal)k)-1.)/((PetscReal)k)*Lnm1;
-  Lnp1p = Lnm1p + (2.0*((PetscReal)k)-1.)*(*Ln);
-  *q    = Lnp1 - Lnm1;
-  *qp   = Lnp1p - Lnm1p;
-}
-
 /*@C
    PetscGaussLobattoLegendreElementLaplacianCreate - computes the Laplacian for a single 1d GLL element
 
@@ -1623,8 +1588,8 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n,PetscRe
   for  (i=0; i<n; i++) {
     for  (j=0; j<n; j++) {
       A[i][j] = 0.;
-      gllqAndLEvaluation(p,gllnodes[i],&q,&qp,&Li);
-      gllqAndLEvaluation(p,gllnodes[j],&q,&qp,&Lj);
+      qAndLEvaluation(p,gllnodes[i],&q,&qp,&Li);
+      qAndLEvaluation(p,gllnodes[j],&q,&qp,&Lj);
       if (i!=j)             A[i][j] = Li/(Lj*(gllnodes[i]-gllnodes[j]));
       if ((j==i) && (i==0)) A[i][j] = -d0;
       if (j==i && i==p)     A[i][j] = d0;
