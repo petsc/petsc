@@ -610,6 +610,10 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   rk->status = TS_STEP_INCOMPLETE;
 
   for (i=s-1; i>=0; i--) {
+    if (tab->FSAL && i == s-1) {
+      /* VecsDeltaLam[nadj*s+s-1] are initialized with zeros and the values never change.*/
+      continue;
+    }
     stage_time = t + h*(1.0-c[i]);
     zero = PETSC_FALSE;
     ierr = TSGetRHSJacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
@@ -636,7 +640,11 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
         ierr = VecMAXPY(VecsSensiTemp[nadj],s-i-1,w,&VecsDeltaLam[nadj*s+i+1]);CHKERRQ(ierr);
         ierr = MatMultTranspose(J,VecsSensiTemp[nadj],VecsDeltaLam[nadj*s+i]);CHKERRQ(ierr);
       } else {
-        ierr = VecSet(VecsDeltaLam[nadj*s+i],0);CHKERRQ(ierr);
+        /* \sum_{j=i+1}^s a_{ji}*lambda_{s,j} */
+        ierr = VecSet(VecsSensiTemp[nadj],0);CHKERRQ(ierr);
+        ierr = VecMAXPY(VecsSensiTemp[nadj],s-i-1,w,&VecsDeltaLam[nadj*s+i+1]);CHKERRQ(ierr);
+        ierr = MatMultTranspose(J,VecsSensiTemp[nadj],VecsDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+        ierr = VecScale(VecsDeltaLam[nadj*s+i],-h);CHKERRQ(ierr);
       }
       if (ts->vec_costintegral) {
         ierr = VecAXPY(VecsDeltaLam[nadj*s+i],-h*b[i],ts->vecs_drdu[nadj]);CHKERRQ(ierr);
