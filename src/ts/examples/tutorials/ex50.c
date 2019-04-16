@@ -273,8 +273,6 @@ PetscErrorCode TrueSolution(TS ts, PetscReal t, Vec u,AppCtx *appctx)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   PetscErrorCode ierr;
@@ -288,8 +286,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 /*
 
       K is the discretiziation of the Laplacian
@@ -483,9 +479,6 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
   }
   return 0;
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "RHSMatrixAdvectiongllDM"
 
 /*
    RHSMatrixAdvection - User-provided routine to compute the right-hand-side

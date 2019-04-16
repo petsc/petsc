@@ -5,8 +5,6 @@
 #define NOTLIKELY -1.234567890123
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PFApply_String"
 int PETSCVEC_DLLEXPORT PFApply_String(void *value,int n,Scalar *in,Scalar *out)
 {
   int       i;
