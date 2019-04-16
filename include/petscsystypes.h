@@ -318,6 +318,9 @@ typedef double PetscLogDouble;
    Developer comment:
    It would be nice if we could always just use MPI Datatypes, why can we not?
 
+   If you change any values in PetscDatatype make sure you update their usage in
+   share/petsc/matlab/PetscBagRead.m
+
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
           PetscDataTypeGetSize()
 
