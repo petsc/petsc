@@ -970,12 +970,12 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 
    test:
       suffix: ngs
-      args: -ksp_monitor_short -snes_type ngs -snes_view -snes_monitor -snes_rtol 1e-4
+      args: -snes_type ngs -snes_view -snes_monitor -snes_rtol 1e-4
       requires: !single
 
    test:
       suffix: ngs_fd
-      args: -ksp_monitor_short -snes_type ngs -snes_ngs_secant -snes_view -snes_monitor -snes_rtol 1e-4
+      args: -snes_type ngs -snes_ngs_secant -snes_view -snes_monitor -snes_rtol 1e-4
       requires: !single
 
    test:
