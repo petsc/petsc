@@ -282,7 +282,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
     PetscScalar    val[2];
     const PetscInt row[]={0,1},col[]={0};
 
-    ierr = TSGetQuadratureTS(ctx->ts,&quadts);CHKERRQ(ierr);
+    ierr = TSGetQuadratureTS(ctx->ts,NULL,&quadts);CHKERRQ(ierr);
     ierr = TSForwardGetSensitivities(quadts,NULL,&qgrad);CHKERRQ(ierr);
     ierr = MatZeroEntries(qgrad);CHKERRQ(ierr);
     ierr = TSForwardGetSensitivities(ctx->ts,NULL,&sp);CHKERRQ(ierr);

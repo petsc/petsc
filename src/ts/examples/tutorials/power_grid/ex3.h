@@ -31,6 +31,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *c
 PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec X,PetscBool forwardsolve,void* ctx)
 {
   AppCtx *user=(AppCtx*)ctx;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (event_list[0] == 0) {
@@ -40,6 +41,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
     if (forwardsolve) user->Pmax = user->Pmax_ini; /* Remove the fault  - this is done by setting Pmax = Pmax_ini */
     else user->Pmax = 0.0; /* Going backward, reversal of event */
   }
+  ierr = TSRestartStep(ts);CHKERRQ(ierr); /* Must set restart flag to ture, otherwise methods with FSAL will fail */
   PetscFunctionReturn(0);
 }
 
