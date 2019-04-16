@@ -713,13 +713,13 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
 -  prefix - The string to append to the existing prefix
 
    Options Database Keys:
- +   -prefix_push <some_prefix_> - push the given prefix
- -   -prefix_pop - pop the last prefix
++   -prefix_push <some_prefix_> - push the given prefix
+-   -prefix_pop - pop the last prefix
 
    Notes:
    It is common to use this in conjunction with -options_file as in
 
- $ -prefix_push system1_ -options_file system1rc -prefix_pop -prefix_push system2_ -options_file system2rc -prefix_pop
+$ -prefix_push system1_ -options_file system1rc -prefix_pop -prefix_push system2_ -options_file system2rc -prefix_pop
 
    where the files no longer require all options to be prefixed with -system2_.
 
