@@ -188,7 +188,7 @@ int main(int argc,char **args)
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     ierr = MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     if (view) {
-      if (!rank) PetscPrintf(PETSC_COMM_SELF,"C = P^T * B:\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"C = P^T * B:\n");CHKERRQ(ierr);
       ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
