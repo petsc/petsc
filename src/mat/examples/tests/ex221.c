@@ -311,12 +311,14 @@ int main(int argc,char **args)
 
    testset:
      suffix: rect
+     requires: !single
      output_file: output/ex221_1.out
      nsize: {{1 3}}
      args: -keep {{0 1}} -M {{12 19}} -N {{19 12}}
 
    testset:
      suffix: square
+     requires: !single
      output_file: output/ex221_1.out
      nsize: {{1 3}}
      args: -M 21 -N 21 -loop 4 -rows_only {{0 1}} -keep {{0 1}}
