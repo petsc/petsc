@@ -264,8 +264,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "f_n"
 static void f_n(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -275,8 +273,6 @@ static void f_n(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   *f0 = *pn;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostStep"
 static PetscErrorCode PostStep(TS ts)
 {
   PetscErrorCode    ierr;

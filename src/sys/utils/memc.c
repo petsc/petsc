@@ -99,8 +99,6 @@ PetscErrorCode  PetscMemmove(void *a,void *b,size_t n)
 #include <petsc/private/petscimpl.h>
 #include <hwloc.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscProcessPlacementView"
 /*@C
      PetscProcessPlacementView - display the MPI process placement by core
 

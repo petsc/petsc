@@ -1559,13 +1559,16 @@ PetscErrorCode MatShift_SeqAIJ(Mat A,PetscScalar v)
     /* increase the values in imax for each row where a diagonal is being inserted then reallocate the matrix data structures */
     for (i=0; i<A->rmap->n; i++) {
       a->imax[i] += mdiag[i];
+      a->imax[i] = PetscMin(a->imax[i],A->cmap->n);
     }
     ierr = MatSeqAIJSetPreallocation_SeqAIJ(A,0,a->imax);CHKERRQ(ierr);
 
     /* copy old values into new matrix data structure */
     for (i=0; i<A->rmap->n; i++) {
       ierr = MatSetValues(A,1,&i,a->imax[i] - mdiag[i],&oldj[oldi[i]],&olda[oldi[i]],ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValue(A,i,i,v,ADD_VALUES);CHKERRQ(ierr);
+      if (i < A->cmap->n) {
+        ierr = MatSetValue(A,i,i,v,ADD_VALUES);CHKERRQ(ierr);
+      }
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1948,6 +1951,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
+      if (rows[i] >= A->cmap->n) continue;
       bb[rows[i]] = diag*xx[rows[i]];
     }
     ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
@@ -1962,9 +1966,11 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     if (diag != 0.0) {
       for (i=0; i<N; i++) {
         d = rows[i];
+        if (rows[i] >= A->cmap->n) continue;
         if (a->diag[d] >= a->i[d+1]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in the zeroed row %D",d);
       }
       for (i=0; i<N; i++) {
+        if (rows[i] >= A->cmap->n) continue;
         a->a[a->diag[rows[i]]] = diag;
       }
     }
@@ -1973,10 +1979,14 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
       for (i=0; i<N; i++) {
         if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
         if (a->ilen[rows[i]] > 0) {
-          a->ilen[rows[i]]    = 1;
-          a->a[a->i[rows[i]]] = diag;
-          a->j[a->i[rows[i]]] = rows[i];
-        } else { /* in case row was completely empty */
+	  if (rows[i] >= A->cmap->n) {
+            a->ilen[rows[i]] = 0;
+          } else {
+            a->ilen[rows[i]]    = 1;
+            a->a[a->i[rows[i]]] = diag;
+            a->j[a->i[rows[i]]] = rows[i];
+          }
+        } else if (rows[i] < A->cmap->n) { /* in case row was completely empty */
           ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],&diag,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
@@ -2017,12 +2027,12 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
   for (i=0; i<A->rmap->n; i++) {
     if (!zeroed[i]) {
       for (j=a->i[i]; j<a->i[i+1]; j++) {
-        if (zeroed[a->j[j]]) {
+        if (a->j[j] < A->rmap->n && zeroed[a->j[j]]) {
           if (vecs) bb[i] -= a->a[j]*xx[a->j[j]];
           a->a[j] = 0.0;
         }
       }
-    } else if (vecs) bb[i] = diag*xx[i];
+    } else if (vecs && i < A->cmap->N) bb[i] = diag*xx[i];
   }
   if (x && b) {
     ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
@@ -2032,11 +2042,10 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
   if (diag != 0.0) {
     ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
     if (missing) {
-      if (a->nonew) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
-      else {
-        for (i=0; i<N; i++) {
-          ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],&diag,INSERT_VALUES);CHKERRQ(ierr);
-        }
+      for (i=0; i<N; i++) {
+        if (rows[i] >= A->cmap->N) continue;
+        if (a->nonew && rows[i] >= d) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D (%D)",d,rows[i]);
+        ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],&diag,INSERT_VALUES);CHKERRQ(ierr);
       }
     } else {
       for (i=0; i<N; i++) {
