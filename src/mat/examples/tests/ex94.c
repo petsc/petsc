@@ -37,7 +37,7 @@ int main(int argc,char **args)
   PetscBool      flg,preload = PETSC_TRUE;
   PetscScalar    *a,rval,alpha,none = -1.0;
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_TRUE,Test_MatMatMatMult=PETSC_TRUE;
-  PetscBool      Test_MatAXPY=PETSC_FALSE;
+  PetscBool      Test_MatAXPY=PETSC_FALSE,view=PETSC_FALSE;
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
   PetscBool      seqaij;
@@ -48,6 +48,10 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetReal(NULL,NULL,"-fill",&fill,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matops_view",&view,NULL);CHKERRQ(ierr);
+  if (view) {
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+  }
 
   /*  Load the matrices A_save and B */
   ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
@@ -183,7 +187,15 @@ int main(int argc,char **args)
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     ierr = MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+    if (view) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"C = P^T * B:\n");CHKERRQ(ierr);
+      ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+    if (view) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * B after MatFreeIntermediateDataStructures():\n");CHKERRQ(ierr);
+      ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
 
     /* Compare P^T*B and R*B */
     ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
@@ -222,9 +234,7 @@ int main(int argc,char **args)
   if (Test_MatPtAP) {
     PetscInt  PN;
     Mat       Cdup;
-    PetscBool view=PETSC_FALSE;
 
-    ierr = PetscOptionsGetBool(NULL,NULL,"-matptap_view",&view,NULL);CHKERRQ(ierr);
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -306,6 +316,14 @@ int main(int argc,char **args)
     /* Test MatDuplicate() of C=PtAP and MatView(Cdup,...) */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
     if (view) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * A * P:\n");CHKERRQ(ierr);
+      ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+      ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * A * P after MatFreeIntermediateDataStructures():\n");CHKERRQ(ierr);
+      ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nCdup:\n");CHKERRQ(ierr);
       ierr = MatView(Cdup,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
@@ -470,7 +488,7 @@ int main(int argc,char **args)
       suffix: view
       nsize: 2
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/tiny -f1 ${DATAFILESPATH}/matrices/tiny -viewer_binary_skip_info -matptap_view
+      args: -f0 ${DATAFILESPATH}/matrices/tiny -f1 ${DATAFILESPATH}/matrices/tiny -viewer_binary_skip_info -matops_view
       output_file: output/ex94_2.out
 
 TEST*/

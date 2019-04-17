@@ -93,19 +93,19 @@ PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat A)
     ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
   }
   ierr = ISLocalToGlobalMappingDestroy(&ptap->ltog);CHKERRQ(ierr);
-
-  A->ops->destroy = ptap->destroy;
-  ierr = PetscFree(a->ap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 {
   PetscErrorCode ierr;
+  Mat_MPIAIJ     *a=(Mat_MPIAIJ*)A->data;
+  Mat_APMPI      *ptap=a->ap;
 
   PetscFunctionBegin;
   ierr = (*A->ops->freeintermediatedatastructures)(A);CHKERRQ(ierr);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = (*ptap->destroy)(A);CHKERRQ(ierr); /* MatDestroy_MPIAIJ(A) */
+  ierr = PetscFree(ptap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
