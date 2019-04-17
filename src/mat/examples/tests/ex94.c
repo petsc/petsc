@@ -193,7 +193,7 @@ int main(int argc,char **args)
     }
     ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
     if (view) {
-      if (!rank) PetscPrintf(PETSC_COMM_SELF,"\nC = P^T * B after MatFreeIntermediateDataStructures():\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * B after MatFreeIntermediateDataStructures():\n");CHKERRQ(ierr);
       ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 
@@ -316,14 +316,14 @@ int main(int argc,char **args)
     /* Test MatDuplicate() of C=PtAP and MatView(Cdup,...) */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
     if (view) {
-      if (!rank) PetscPrintf(PETSC_COMM_SELF,"\nC = P^T * A * P:\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * A * P:\n");CHKERRQ(ierr);
       ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
       ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
-      if (!rank) printf("\nC = P^T * A * P after MatFreeIntermediateDataStructures():\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * A * P after MatFreeIntermediateDataStructures():\n");CHKERRQ(ierr);
       ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-      if (!rank) printf("\nCdup:\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nCdup:\n");CHKERRQ(ierr);
       ierr = MatView(Cdup,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
