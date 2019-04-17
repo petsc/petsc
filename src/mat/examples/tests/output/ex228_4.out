@@ -1,0 +1,12 @@
+
+ 1 dimensions: FFTW on vector of size 10 
+  Error norm of |x - z1| 7.23451
+
+ 2 dimensions: FFTW on vector of size 100 
+  Error norm of |x - z1| 74.7894
+
+ 3 dimensions: FFTW on vector of size 1000 
+  Error norm of |x - z1| 739.169
+
+ 4 dimensions: FFTW on vector of size 10000 
+  Error norm of |x - z1| 7661.66

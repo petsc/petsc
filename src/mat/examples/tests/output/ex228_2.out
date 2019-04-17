@@ -1,0 +1,8 @@
+
+ 1 dimensions: FFTW on vector of size 16 
+
+ 2 dimensions: FFTW on vector of size 256 
+
+ 3 dimensions: FFTW on vector of size 4096 
+
+ 4 dimensions: FFTW on vector of size 65536 
