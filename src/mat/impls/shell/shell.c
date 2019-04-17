@@ -6,6 +6,7 @@
 */
 
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/vecimpl.h>
 
 struct _MatShellOps {
   /*  3 */ PetscErrorCode (*mult)(Mat,Vec,Vec);
@@ -26,8 +27,104 @@ typedef struct {
   Mat         axpy;
   PetscScalar axpy_vscale;
   PetscBool   managescalingshifts;                   /* The user will manage the scaling and shifts for the MATSHELL, not the default */
+  /* support for ZeroRows/Columns operations */
+  IS          zrows;
+  IS          zcols;
+  Vec         zvals;
+  Vec         zvals_w;
+  VecScatter  zvals_sct_r;
+  VecScatter  zvals_sct_c;
   void        *ctx;
 } Mat_Shell;
+
+
+/*
+     Store and scale values on zeroed rows
+     xx = [x_1, 0], 0 on zeroed columns
+*/
+static PetscErrorCode MatShellPreZeroRight(Mat A,Vec x,Vec *xx)
+{
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *xx = x;
+  if (shell->zrows) {
+    ierr = VecSet(shell->zvals_w,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(shell->zvals_sct_c,x,shell->zvals_w,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(shell->zvals_sct_c,x,shell->zvals_w,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(shell->zvals_w,shell->zvals_w,shell->zvals);CHKERRQ(ierr);
+  }
+  if (shell->zcols) {
+    if (!shell->right_work) {
+      ierr = MatCreateVecs(A,&shell->right_work,NULL);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(x,shell->right_work);CHKERRQ(ierr);
+    ierr = VecISSet(shell->right_work,shell->zcols,0.0);CHKERRQ(ierr);
+    *xx  = shell->right_work;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Insert properly diagonally scaled values stored in MatShellPreZeroRight */
+static PetscErrorCode MatShellPostZeroLeft(Mat A,Vec x)
+{
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (shell->zrows) {
+    ierr = VecScatterBegin(shell->zvals_sct_r,shell->zvals_w,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(shell->zvals_sct_r,shell->zvals_w,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+     Store and scale values on zeroed rows
+     xx = [x_1, 0], 0 on zeroed rows
+*/
+static PetscErrorCode MatShellPreZeroLeft(Mat A,Vec x,Vec *xx)
+{
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *xx = NULL;
+  if (!shell->zrows) {
+    *xx = x;
+  } else {
+    if (!shell->left_work) {
+      ierr = MatCreateVecs(A,NULL,&shell->left_work);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(x,shell->left_work);CHKERRQ(ierr);
+    ierr = VecSet(shell->zvals_w,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(shell->zvals_sct_r,shell->zvals_w,shell->left_work,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(shell->zvals_sct_r,shell->zvals_w,shell->left_work,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(shell->zvals_sct_r,x,shell->zvals_w,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(shell->zvals_sct_r,x,shell->zvals_w,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(shell->zvals_w,shell->zvals_w,shell->zvals);CHKERRQ(ierr);
+    *xx  = shell->left_work;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Zero zero-columns contributions, sum contributions from properly scaled values stored in MatShellPreZeroLeft */
+static PetscErrorCode MatShellPostZeroRight(Mat A,Vec x)
+{
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (shell->zcols) {
+    ierr = VecISSet(x,shell->zcols,0.0);CHKERRQ(ierr);
+  }
+  if (shell->zrows) {
+    ierr = VecScatterBegin(shell->zvals_sct_c,shell->zvals_w,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(shell->zvals_sct_c,shell->zvals_w,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
       xx = diag(left)*x
@@ -160,6 +257,194 @@ PetscErrorCode  MatShellGetContext(Mat mat,void *ctx)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatZeroRowsColumns_Local_Shell(Mat mat,PetscInt nr,PetscInt rows[],PetscInt nc,PetscInt cols[],PetscScalar diag,PetscBool rc)
+{
+  PetscErrorCode ierr;
+  Mat_Shell      *shell = (Mat_Shell*)mat->data;
+  Vec            x = NULL,b = NULL;
+  IS             is1, is2;
+  const PetscInt *ridxs;
+  PetscInt       *idxs,*gidxs;
+  PetscInt       cum,rst,cst,i;
+
+  PetscFunctionBegin;
+  if (shell->axpy) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot diagonal scale MATSHELL after MatAXPY operation");
+  if (!shell->zvals) {
+    ierr = MatCreateVecs(mat,NULL,&shell->zvals);CHKERRQ(ierr);
+  }
+  if (!shell->zvals_w) {
+    ierr = VecDuplicate(shell->zvals,&shell->zvals_w);CHKERRQ(ierr);
+  }
+  ierr = MatGetOwnershipRange(mat,&rst,NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(mat,&cst,NULL);CHKERRQ(ierr);
+
+  /* Expand/create index set of zeroed rows */
+  ierr = PetscMalloc1(nr,&idxs);CHKERRQ(ierr);
+  for (i = 0; i < nr; i++) idxs[i] = rows[i] + rst;
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nr,idxs,PETSC_OWN_POINTER,&is1);CHKERRQ(ierr);
+  ierr = ISSort(is1);CHKERRQ(ierr);
+  ierr = VecISSet(shell->zvals,is1,diag);CHKERRQ(ierr);
+  if (shell->zrows) {
+    ierr = ISSum(shell->zrows,is1,&is2);CHKERRQ(ierr);
+    ierr = ISDestroy(&shell->zrows);CHKERRQ(ierr);
+    ierr = ISDestroy(&is1);CHKERRQ(ierr);
+    shell->zrows = is2;
+  } else shell->zrows = is1;
+
+  /* Create scatters for diagonal values communications */
+  ierr = VecScatterDestroy(&shell->zvals_sct_c);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&shell->zvals_sct_r);CHKERRQ(ierr);
+
+  /* row scatter: from/to left vector */
+  ierr = MatCreateVecs(mat,&x,&b);CHKERRQ(ierr);
+  ierr = VecScatterCreate(b,shell->zrows,shell->zvals_w,shell->zrows,&shell->zvals_sct_r);CHKERRQ(ierr);
+
+  /* col scatter: from right vector to left vector */
+  ierr = ISGetIndices(shell->zrows,&ridxs);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(shell->zrows,&nr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nr,&gidxs);CHKERRQ(ierr);
+  for (i = 0, cum  = 0; i < nr; i++) {
+    if (ridxs[i] >= mat->cmap->N) continue;
+    gidxs[cum] = ridxs[i];
+    cum++;
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),cum,gidxs,PETSC_OWN_POINTER,&is1);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,is1,shell->zvals_w,is1,&shell->zvals_sct_c);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+
+  /* Expand/create index set of zeroed columns */
+  if (rc) {
+    ierr = PetscMalloc1(nc,&idxs);CHKERRQ(ierr);
+    for (i = 0; i < nc; i++) idxs[i] = cols[i] + cst;
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,nc,idxs,PETSC_OWN_POINTER,&is1);CHKERRQ(ierr);
+    ierr = ISSort(is1);CHKERRQ(ierr);
+    if (shell->zcols) {
+      ierr = ISSum(shell->zcols,is1,&is2);CHKERRQ(ierr);
+      ierr = ISDestroy(&shell->zcols);CHKERRQ(ierr);
+      ierr = ISDestroy(&is1);CHKERRQ(ierr);
+      shell->zcols = is2;
+    } else shell->zcols = is1;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatZeroRows_Shell(Mat mat,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+{
+  PetscInt       nr, *lrows;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x && b) {
+    Vec          xt;
+    PetscScalar *vals;
+    PetscInt    *gcols,i,st,nl,nc;
+
+    ierr = PetscMalloc1(n,&gcols);CHKERRQ(ierr);
+    for (i = 0, nc = 0; i < n; i++) if (rows[i] < mat->cmap->N) gcols[nc++] = rows[i];
+
+    ierr = MatCreateVecs(mat,&xt,NULL);CHKERRQ(ierr);
+    ierr = VecCopy(x,xt);CHKERRQ(ierr);
+    ierr = PetscCalloc1(nc,&vals);CHKERRQ(ierr);
+    ierr = VecSetValues(xt,nc,gcols,vals,INSERT_VALUES);CHKERRQ(ierr); /* xt = [x1, 0] */
+    ierr = PetscFree(vals);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(xt);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(xt);CHKERRQ(ierr);
+    ierr = VecAYPX(xt,-1.0,x);CHKERRQ(ierr);                           /* xt = [0, x2] */
+
+    ierr = VecGetOwnershipRange(xt,&st,NULL);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(xt,&nl);CHKERRQ(ierr);
+    ierr = VecGetArray(xt,&vals);CHKERRQ(ierr);
+    for (i = 0; i < nl; i++) {
+      PetscInt g = i + st;
+      if (g > mat->rmap->N) continue;
+      if (PetscAbsScalar(vals[i]) == 0.0) continue;
+      ierr = VecSetValue(b,g,diag*vals[i],INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(xt,&vals);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(b);CHKERRQ(ierr);                            /* b  = [b1, x2 * diag] */
+    ierr = VecDestroy(&xt);CHKERRQ(ierr);
+    ierr = PetscFree(gcols);CHKERRQ(ierr);
+  }
+  ierr = PetscLayoutMapLocal(mat->rmap,n,rows,&nr,&lrows,NULL);CHKERRQ(ierr);
+  ierr = MatZeroRowsColumns_Local_Shell(mat,nr,lrows,0,NULL,diag,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscFree(lrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatZeroRowsColumns_Shell(Mat mat,PetscInt n,const PetscInt rowscols[],PetscScalar diag,Vec x,Vec b)
+{
+  PetscInt       *lrows, *lcols;
+  PetscInt       nr, nc;
+  PetscBool      congruent;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x && b) {
+    Vec          xt, bt;
+    PetscScalar *vals;
+    PetscInt    *grows,*gcols,i,st,nl;
+
+    ierr = PetscMalloc2(n,&grows,n,&gcols);CHKERRQ(ierr);
+    for (i = 0, nr = 0; i < n; i++) if (rowscols[i] < mat->rmap->N) grows[nr++] = rowscols[i];
+    for (i = 0, nc = 0; i < n; i++) if (rowscols[i] < mat->cmap->N) gcols[nc++] = rowscols[i];
+    ierr = PetscCalloc1(n,&vals);CHKERRQ(ierr);
+
+    ierr = MatCreateVecs(mat,&xt,&bt);CHKERRQ(ierr);
+    ierr = VecCopy(x,xt);CHKERRQ(ierr);
+    ierr = VecSetValues(xt,nc,gcols,vals,INSERT_VALUES);CHKERRQ(ierr); /* xt = [x1, 0] */
+    ierr = VecAssemblyBegin(xt);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(xt);CHKERRQ(ierr);
+    ierr = VecAXPY(xt,-1.0,x);CHKERRQ(ierr);                           /* xt = [0, -x2] */
+    ierr = MatMult(mat,xt,bt);CHKERRQ(ierr);                           /* bt = [-A12*x2,-A22*x2] */
+    ierr = VecSetValues(bt,nr,grows,vals,INSERT_VALUES);CHKERRQ(ierr); /* bt = [-A12*x2,0] */
+    ierr = VecAssemblyBegin(bt);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(bt);CHKERRQ(ierr);
+    ierr = VecAXPY(b,1.0,bt);CHKERRQ(ierr);                            /* b  = [b1 - A12*x2, b2] */
+    ierr = VecSetValues(bt,nr,grows,vals,INSERT_VALUES);CHKERRQ(ierr); /* b  = [b1 - A12*x2, 0] */
+    ierr = VecAssemblyBegin(bt);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(bt);CHKERRQ(ierr);
+    ierr = PetscFree(vals);CHKERRQ(ierr);
+
+    ierr = VecGetOwnershipRange(xt,&st,NULL);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(xt,&nl);CHKERRQ(ierr);
+    ierr = VecGetArray(xt,&vals);CHKERRQ(ierr);
+    for (i = 0; i < nl; i++) {
+      PetscInt g = i + st;
+      if (g > mat->rmap->N) continue;
+      if (PetscAbsScalar(vals[i]) == 0.0) continue;
+      ierr = VecSetValue(b,g,-diag*vals[i],INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(xt,&vals);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(b);CHKERRQ(ierr);                            /* b  = [b1 - A12*x2, x2 * diag] */
+    ierr = VecDestroy(&xt);CHKERRQ(ierr);
+    ierr = VecDestroy(&bt);CHKERRQ(ierr);
+    ierr = PetscFree2(grows,gcols);CHKERRQ(ierr);
+  }
+  ierr = PetscLayoutMapLocal(mat->rmap,n,rowscols,&nr,&lrows,NULL);CHKERRQ(ierr);
+  ierr = MatHasCongruentLayouts(mat,&congruent);CHKERRQ(ierr);
+  if (congruent) {
+    nc    = nr;
+    lcols = lrows;
+  } else { /* MatZeroRowsColumns implicitly assumes the rowscols indices are for a square matrix, here we handle a more general case */
+    PetscInt i,nt,*t;
+
+    ierr = PetscMalloc1(n,&t);CHKERRQ(ierr);
+    for (i = 0, nt = 0; i < n; i++) if (rowscols[i] < mat->cmap->N) t[nt++] = rowscols[i];
+    ierr = PetscLayoutMapLocal(mat->cmap,nt,t,&nc,&lcols,NULL);CHKERRQ(ierr);
+    ierr = PetscFree(t);CHKERRQ(ierr);
+  }
+  ierr = MatZeroRowsColumns_Local_Shell(mat,nr,lrows,nc,lcols,diag,PETSC_TRUE);CHKERRQ(ierr);
+  if (!congruent) {
+    ierr = PetscFree(lcols);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(lrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatDestroy_Shell(Mat mat)
 {
   PetscErrorCode ierr;
@@ -177,6 +462,12 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   ierr = VecDestroy(&shell->left_add_work);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->right_add_work);CHKERRQ(ierr);
   ierr = MatDestroy(&shell->axpy);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->zvals_w);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->zvals);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&shell->zvals_sct_c);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&shell->zvals_sct_r);CHKERRQ(ierr);
+  ierr = ISDestroy(&shell->zrows);CHKERRQ(ierr);
+  ierr = ISDestroy(&shell->zcols);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -225,9 +516,22 @@ PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
   }
   ierr = MatDestroy(&shellB->axpy);CHKERRQ(ierr);
   if (shellA->axpy) {
-    ierr                 = PetscObjectReference((PetscObject)shellA->axpy);CHKERRQ(ierr);
+    ierr                = PetscObjectReference((PetscObject)shellA->axpy);CHKERRQ(ierr);
     shellB->axpy        = shellA->axpy;
     shellB->axpy_vscale = shellA->axpy_vscale;
+  }
+  if (shellA->zrows) {
+    ierr = ISDuplicate(shellA->zrows,&shellB->zrows);CHKERRQ(ierr);
+    if (shellA->zcols) {
+      ierr = ISDuplicate(shellA->zcols,&shellB->zcols);CHKERRQ(ierr);
+    }
+    ierr = VecDuplicate(shellA->zvals,&shellB->zvals);CHKERRQ(ierr);
+    ierr = VecCopy(shellA->zvals,shellB->zvals);CHKERRQ(ierr);
+    ierr = VecDuplicate(shellA->zvals_w,&shellB->zvals_w);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)shellA->zvals_sct_r);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)shellA->zvals_sct_c);CHKERRQ(ierr);
+    shellB->zvals_sct_r = shellA->zvals_sct_r;
+    shellB->zvals_sct_c = shellA->zvals_sct_c;
   }
   PetscFunctionReturn(0);
 }
@@ -254,9 +558,10 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  ierr = MatShellPreScaleRight(A,x,&xx);CHKERRQ(ierr);
-  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   if (!shell->ops->mult) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMult() for this MATSHELL");
+  ierr = MatShellPreZeroRight(A,x,&xx);CHKERRQ(ierr);
+  ierr = MatShellPreScaleRight(A,xx,&xx);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   ierr = (*shell->ops->mult)(A,xx,y);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
   if (instate == outstate) {
@@ -265,6 +570,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleLeft(A,y);CHKERRQ(ierr);
+  ierr = MatShellPostZeroLeft(A,y);CHKERRQ(ierr);
 
   if (shell->axpy) {
     if (!shell->left_work) {ierr = MatCreateVecs(A,&shell->left_work,NULL);CHKERRQ(ierr);}
@@ -299,7 +605,8 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  ierr = MatShellPreScaleLeft(A,x,&xx);CHKERRQ(ierr);
+  ierr = MatShellPreZeroLeft(A,x,&xx);CHKERRQ(ierr);
+  ierr = MatShellPreScaleLeft(A,xx,&xx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   if (!shell->ops->multtranspose) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMultTranspose() for this MATSHELL");
   ierr = (*shell->ops->multtranspose)(A,xx,y);CHKERRQ(ierr);
@@ -310,6 +617,7 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleRight(A,y);CHKERRQ(ierr);
+  ierr = MatShellPostZeroRight(A,y);CHKERRQ(ierr);
 
   if (shell->axpy) {
     if (!shell->right_work) {ierr = MatCreateVecs(A,NULL,&shell->right_work);CHKERRQ(ierr);}
@@ -355,6 +663,10 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
   ierr = VecShift(v,shell->vshift);CHKERRQ(ierr);
   if (shell->left)  {ierr = VecPointwiseMult(v,v,shell->left);CHKERRQ(ierr);}
   if (shell->right) {ierr = VecPointwiseMult(v,v,shell->right);CHKERRQ(ierr);}
+  if (shell->zrows) {
+    ierr = VecScatterBegin(shell->zvals_sct_r,shell->zvals,v,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(shell->zvals_sct_r,shell->zvals,v,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
   if (shell->axpy) {
     if (!shell->left_work) {ierr = VecDuplicate(v,&shell->left_work);CHKERRQ(ierr);}
     ierr = MatGetDiagonal(shell->axpy,shell->left_work);CHKERRQ(ierr);
@@ -381,6 +693,9 @@ PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
     if (shell->left)  {ierr = VecPointwiseDivide(shell->dshift,shell->dshift,shell->left);CHKERRQ(ierr);}
     if (shell->right) {ierr = VecPointwiseDivide(shell->dshift,shell->dshift,shell->right);CHKERRQ(ierr);}
   } else shell->vshift += a;
+  if (shell->zrows) {
+    ierr = VecShift(shell->zvals,a);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -401,12 +716,7 @@ PetscErrorCode MatDiagonalSet_Shell_Private(Mat A,Vec D,PetscScalar s)
     } else {
       ierr = VecPointwiseDivide(shell->right_work,D,shell->right);CHKERRQ(ierr);
     }
-    if (!shell->dshift) {
-      ierr = VecDuplicate(shell->left ? shell->left : shell->right, &shell->dshift);CHKERRQ(ierr);
-      ierr = VecCopy(shell->dshift,shell->right_work);CHKERRQ(ierr);
-    } else {
-      ierr = VecAXPY(shell->dshift,s,shell->right_work);CHKERRQ(ierr);
-    }
+    ierr = VecAXPY(shell->dshift,s,shell->right_work);CHKERRQ(ierr);
   } else {
     ierr = VecAXPY(shell->dshift,s,D);CHKERRQ(ierr);
   }
@@ -415,6 +725,7 @@ PetscErrorCode MatDiagonalSet_Shell_Private(Mat A,Vec D,PetscScalar s)
 
 PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
 {
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
   Vec            d;
   PetscErrorCode ierr;
 
@@ -426,8 +737,14 @@ PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
     ierr = MatDiagonalSet_Shell_Private(A,d,-1.);CHKERRQ(ierr);
     ierr = MatDiagonalSet_Shell_Private(A,D,1.);CHKERRQ(ierr);
     ierr = VecDestroy(&d);CHKERRQ(ierr);
+    if (shell->zrows) {
+      ierr = VecCopy(D,shell->zvals);CHKERRQ(ierr);
+    }
   } else {
     ierr = MatDiagonalSet_Shell_Private(A,D,1.);CHKERRQ(ierr);
+    if (shell->zrows) {
+      ierr = VecAXPY(shell->zvals,1.0,D);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -444,6 +761,9 @@ PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
     ierr = VecScale(shell->dshift,a);CHKERRQ(ierr);
   }
   shell->axpy_vscale *= a;
+  if (shell->zrows) {
+    ierr = VecScale(shell->zvals,a);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -461,6 +781,9 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
     } else {
       ierr = VecPointwiseMult(shell->left,shell->left,left);CHKERRQ(ierr);
     }
+    if (shell->zrows) {
+      ierr = VecPointwiseMult(shell->zvals,shell->zvals,left);CHKERRQ(ierr);
+    }
   }
   if (right) {
     if (!shell->right) {
@@ -468,6 +791,15 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
       ierr = VecCopy(right,shell->right);CHKERRQ(ierr);
     } else {
       ierr = VecPointwiseMult(shell->right,shell->right,right);CHKERRQ(ierr);
+    }
+    if (shell->zrows) {
+      if (!shell->left_work) {
+        ierr = MatCreateVecs(Y,NULL,&shell->left_work);CHKERRQ(ierr);
+      }
+      ierr = VecSet(shell->zvals_w,1.0);CHKERRQ(ierr);
+      ierr = VecScatterBegin(shell->zvals_sct_c,right,shell->zvals_w,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(shell->zvals_sct_c,right,shell->zvals_w,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(shell->zvals,shell->zvals,shell->zvals_w);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -486,6 +818,10 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
     ierr = VecDestroy(&shell->left);CHKERRQ(ierr);
     ierr = VecDestroy(&shell->right);CHKERRQ(ierr);
     ierr = MatDestroy(&shell->axpy);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&shell->zvals_sct_c);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&shell->zvals_sct_r);CHKERRQ(ierr);
+    ierr = ISDestroy(&shell->zrows);CHKERRQ(ierr);
+    ierr = ISDestroy(&shell->zcols);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -534,7 +870,7 @@ static struct _MatOps MatOps_Values = {0,
                                        MatAssemblyEnd_Shell,
                                        0,
                                        0,
-                                /*24*/ 0,
+                                /*24*/ MatZeroRows_Shell,
                                        0,
                                        0,
                                        0,
@@ -558,7 +894,7 @@ static struct _MatOps MatOps_Values = {0,
                                        MatScale_Shell,
                                        MatShift_Shell,
                                        MatDiagonalSet_Shell,
-                                       0,
+                                       MatZeroRowsColumns_Shell,
                                 /*49*/ 0,
                                        0,
                                        0,
@@ -572,7 +908,7 @@ static struct _MatOps MatOps_Values = {0,
                                 /*59*/ 0,
                                        MatDestroy_Shell,
                                        0,
-                                       0,
+                                       MatConvertFrom_Shell,
                                        0,
                                 /*64*/ 0,
                                        0,
@@ -745,12 +1081,13 @@ $     VecGetLocalSize(x,&n);
 $     MatCreateShell(comm,m,n,M,N,ctx,&A);
 $     MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
 $     MatMult(A,x,y);
-$     MatDestroy(A);
-$     VecDestroy(y); VecDestroy(x);
+$     MatDestroy(&A);
+$     VecDestroy(&y);
+$     VecDestroy(&x);
 $
 
 
-   MATSHELL handles MatShift(), MatDiagonalSet(), MatDiagonalScale(), MatAXPY(), and MatScale() internally so these
+   MATSHELL handles MatShift(), MatDiagonalSet(), MatDiagonalScale(), MatAXPY(), MatScale(), MatZeroRows() and MatZeroRowsColumns() internally, so these
    operations cannot be overwritten unless MatShellSetManageScalingShifts() is called.
 
 
@@ -1072,6 +1409,8 @@ PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
   case MATOP_SHIFT:
   case MATOP_SCALE:
   case MATOP_AXPY:
+  case MATOP_ZERO_ROWS:
+  case MATOP_ZERO_ROWS_COLUMNS:
     if (shell->managescalingshifts) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MATSHELL is managing scalings and shifts, see MatShellSetManageScalingShifts()");
     (((void(**)(void))mat->ops)[op]) = f;
     break;
@@ -1170,6 +1509,8 @@ PetscErrorCode MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
   case MATOP_SHIFT:
   case MATOP_SCALE:
   case MATOP_AXPY:
+  case MATOP_ZERO_ROWS:
+  case MATOP_ZERO_ROWS_COLUMNS:
     *f = (((void (**)(void))mat->ops)[op]);
     break;
   case MATOP_GET_DIAGONAL:
