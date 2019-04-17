@@ -709,7 +709,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hsize_t           maxDims[4], dims[4], chunkDims[4], count[4],offset[4];
   PetscInt          timestep;
   PetscInt          low;
-  PetscInt          chunksize;
+  PetscInt64        chunksize;
   const PetscScalar *x;
   const char        *vecname;
   PetscErrorCode    ierr;
