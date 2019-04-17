@@ -4902,7 +4902,11 @@ PetscErrorCode DMCreateDS(DM dm)
     for (f = 0, nf = 0; f < Nf; ++f) if (!dm->fields[f].label) ++nf;
     ierr = PetscMalloc1(nf, &fld);CHKERRQ(ierr);
     for (f = 0, nf = 0; f < Nf; ++f) if (!dm->fields[f].label) fld[nf++] = f;
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, nf, fld, PETSC_OWN_POINTER, &fields);CHKERRQ(ierr);
+    ierr = ISCreate(PETSC_COMM_SELF, &fields);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) fields, "dm_fields_");CHKERRQ(ierr);
+    ierr = ISSetType(fields, ISGENERAL);CHKERRQ(ierr);
+    ierr = ISGeneralSetIndices(fields, nf, fld, PETSC_OWN_POINTER);CHKERRQ(ierr);
+
     ierr = PetscDSCreate(comm, &prob);CHKERRQ(ierr);
     ierr = DMSetRegionDS(dm, NULL, fields, prob);CHKERRQ(ierr);
     ierr = PetscDSDestroy(&prob);CHKERRQ(ierr);
