@@ -1,9 +1,9 @@
 L_2 Error: [0.0523783, < 1.0e-11]
 L_2 Residual: 4.70619e-16
-Taylor approximation converging at order 2
+Taylor approximation converging at order 1.98
 0 TS dt 0.01 time 0.
 1 TS dt 0.01 time 0.01
 L_2 Error: [0.0523783, < 1.0e-11]
 L_2 Residual: 4.70619e-16
-Taylor approximation converging at order 2
+Taylor approximation converging at order 2.00
 CONVERGED_ITS at time 0.01 after 1 steps
