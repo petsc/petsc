@@ -4045,11 +4045,15 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
   if (B->assembled) {
     ierr = MatZeroEntries(B);CHKERRQ(ierr);
   }
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
-    ierr = MatSetValues(B,1,&i,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+  if (str == SAME_NONZERO_PATTERN) {
+    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) {
+      ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+      ierr = MatSetValues(B,1,&i,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MatAYPX(B,0.0,A,str);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -4057,7 +4061,7 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
 }
 
 /*@
-   MatCopy - Copys a matrix to another matrix.
+   MatCopy - Copies a matrix to another matrix.
 
    Collective on Mat
 

@@ -113,6 +113,14 @@ PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A,PetscInt N,const PetscInt rows[
 
   /* fix right hand side if needed */
   if (x && b) {
+    Vec xt;
+
+    if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only coded for square matrices");
+    ierr = VecDuplicate(x,&xt);CHKERRQ(ierr);
+    ierr = VecCopy(x,xt);CHKERRQ(ierr);
+    ierr = VecScale(xt,-1.0);CHKERRQ(ierr);
+    ierr = MatMultAdd(A,xt,b,b);CHKERRQ(ierr);
+    ierr = VecDestroy(&xt);CHKERRQ(ierr);
     ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
     for (i=0; i<N; i++) bb[rows[i]] = diag*xx[rows[i]];

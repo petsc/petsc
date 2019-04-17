@@ -137,7 +137,10 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
 
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
-  if (!n2) PetscFunctionReturn(0);
+  if (!n2) {
+    ierr = ISDuplicate(is1,is3);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
 

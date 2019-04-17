@@ -8,8 +8,6 @@ static char help[] = "Tests shared memory subcommunicators\n\n";
   having two nodes that do not share common memory
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode  ierr;

@@ -446,9 +446,13 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
   Output Parameters:
 . vfull    - the sum of the full-space vector and reduced-space vector
 
+  Notes:
+    The index set identifies entries in the global vector.
+    Negative indices are skipped; indices outside the ownership range of vfull will raise an error.
+
   Level: advanced
 
-.seealso:  VecAXPY()
+.seealso:  VecAXPY(), VecGetOwnershipRange()
 @*/
 PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 {
@@ -467,7 +471,7 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
   } else {
     PetscScalar      *y;
     const PetscScalar *x;
-    PetscInt          i,n,m,rstart;
+    PetscInt          i,n,m,rstart,rend;
     const PetscInt    *id;
 
     ierr = VecGetArray(vfull,&y);CHKERRQ(ierr);
@@ -476,14 +480,18 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
     ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vreduced,&m);CHKERRQ(ierr);
     if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS local length not equal to Vec local length");
-    ierr = VecGetOwnershipRange(vfull,&rstart,NULL);CHKERRQ(ierr);
-    y -= rstart;
+    ierr = VecGetOwnershipRange(vfull,&rstart,&rend);CHKERRQ(ierr);
+    y   -= rstart;
     if (alpha == 1.0) {
       for (i=0; i<n; ++i) {
+        if (id[i] < 0) continue;
+        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] += x[i];
       }
     } else {
       for (i=0; i<n; ++i) {
+        if (id[i] < 0) continue;
+        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] += alpha*x[i];
       }
     }
@@ -497,7 +505,6 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 
 /*@
   VecISCopy - Copies between a reduced vector and the appropriate elements of a full-space vector.
-              vfull[is[i]] = vreduced[i]
 
   Input Parameters:
 + vfull    - the full-space vector
@@ -508,9 +515,16 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
   Output Parameters:
 . vfull    - the sum of the full-space vector and reduced-space vector
 
+  Notes:
+    The index set identifies entries in the global vector.
+    Negative indices are skipped; indices outside the ownership range of vfull will raise an error.
+
+    mode == SCATTER_FORWARD: vfull[is[i]] = vreduced[i]
+    mode == SCATTER_REVERSE: vreduced[i] = vfull[is[i]]
+
   Level: advanced
 
-.seealso:  VecAXPY()
+.seealso:  VecAXPY(), VecGetOwnershipRange()
 @*/
 PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 {
@@ -525,15 +539,19 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
   ierr = VecGetSize(vreduced, &nreduced);CHKERRQ(ierr);
 
   if (nfull == nreduced) { /* Also takes care of masked vectors */
-    ierr = VecCopy(vreduced, vfull);CHKERRQ(ierr);
+    if (mode == SCATTER_FORWARD) {
+      ierr = VecCopy(vreduced, vfull);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(vfull, vreduced);CHKERRQ(ierr);
+    }
   } else {
     const PetscInt *id;
-    PetscInt        i, n, m, rstart;
+    PetscInt        i, n, m, rstart, rend;
 
     ierr = ISGetIndices(is, &id);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vreduced, &m);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(vfull, &rstart, NULL);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(vfull, &rstart, &rend);CHKERRQ(ierr);
     if (m != n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %D not equal to Vec local length %D", n, m);
     if (mode == SCATTER_FORWARD) {
       PetscScalar       *y;
@@ -543,6 +561,8 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
       ierr = VecGetArrayRead(vreduced, &x);CHKERRQ(ierr);
       y   -= rstart;
       for (i = 0; i < n; ++i) {
+        if (id[i] < 0) continue;
+        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] = x[i];
       }
       y   += rstart;
@@ -555,6 +575,8 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
       ierr = VecGetArrayRead(vfull, &y);CHKERRQ(ierr);
       ierr = VecGetArray(vreduced, &x);CHKERRQ(ierr);
       for (i = 0; i < n; ++i) {
+        if (id[i] < 0) continue;
+        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         x[i] = y[id[i]-rstart];
       }
       ierr = VecRestoreArray(vreduced, &x);CHKERRQ(ierr);
@@ -577,9 +599,9 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
    Output Parameter:
 .  T -  the complement of S
 
-.seealso ISCreateGeneral()
-
    Level: advanced
+
+.seealso: ISCreateGeneral()
 @*/
 PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
 {
@@ -597,12 +619,16 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
 
    Input Parameter:
 +  V - the vector
-.  S -  the locations in the vector
+.  S - index set for the locations in the vector
 -  c - the constant
 
-.seealso VecSet()
+  Notes:
+    The index set identifies entries in the global vector.
+    Negative indices are skipped; indices outside the ownership range of V will raise an error.
 
    Level: advanced
+
+.seealso: VecSet(), VecGetOwnershipRange()
 @*/
 PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
 {
@@ -616,13 +642,14 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   PetscValidHeaderSpecific(V,VEC_CLASSID,1);
   PetscValidHeaderSpecific(S,IS_CLASSID,2);
   PetscValidType(V,3);
-  PetscCheckSameComm(V,3,S,1);
 
   ierr = VecGetOwnershipRange(V,&low,&high);CHKERRQ(ierr);
   ierr = ISGetLocalSize(S,&nloc);CHKERRQ(ierr);
   ierr = ISGetIndices(S,&s);CHKERRQ(ierr);
   ierr = VecGetArray(V,&v);CHKERRQ(ierr);
   for (i=0; i<nloc; ++i){
+    if (s[i] < 0) continue;
+    if (s[i] < low || s[i] >= high) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
     v[s[i]-low] = c;
   }
   ierr = ISRestoreIndices(S,&s);CHKERRQ(ierr);

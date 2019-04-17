@@ -473,10 +473,6 @@ PetscErrorCode  PetscStrlcat(char s[],const char t[],size_t n)
   PetscFunctionReturn(0);
 }
 
-/*
-   Only to be used with PetscCheck__FUNCT__()!
-
-*/
 void  PetscStrcmpNoError(const char a[],const char b[],PetscBool  *flg)
 {
   int c;

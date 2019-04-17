@@ -945,8 +945,6 @@ static void Merge3SortedArrays(PetscInt  size1, PetscInt *in1,
 /* This matrix-matrix multiplication algorithm divides the multiplication into three multiplications and  */
 /* adds up the products. Two of these three multiplications are performed with existing (sequential)      */
 /* matrix-matrix multiplications.  */
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal fill, Mat *C)
 {
   PetscErrorCode     ierr;

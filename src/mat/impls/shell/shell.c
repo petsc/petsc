@@ -240,7 +240,9 @@ PetscErrorCode MatDuplicate_Shell(Mat mat,MatDuplicateOption op,Mat *M)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatCreateShell(PetscObjectComm((PetscObject)mat),mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N,ctx,M);CHKERRQ(ierr);
-  ierr = MatCopy(mat,*M,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  if (op != MAT_DO_NOT_COPY_VALUES) {
+    ierr = MatCopy(mat,*M,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -308,6 +310,12 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleRight(A,y);CHKERRQ(ierr);
+
+  if (shell->axpy) {
+    if (!shell->right_work) {ierr = MatCreateVecs(A,NULL,&shell->right_work);CHKERRQ(ierr);}
+    ierr = MatMultTranspose(shell->axpy,x,shell->right_work);CHKERRQ(ierr);
+    ierr = VecAXPY(y,shell->axpy_vscale,shell->right_work);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
