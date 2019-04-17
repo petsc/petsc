@@ -434,7 +434,7 @@ int main(int argc, char **argv)
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   test:
     suffix: 2d_quad_q1_p0_conv_gmg_vanka
-    requires: !single
+    requires: !single long_runtime
     args: -simplex 0 -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
       -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
       -snes_convergence_estimate -convest_num_refine 1 -snes_error_if_not_converged \
