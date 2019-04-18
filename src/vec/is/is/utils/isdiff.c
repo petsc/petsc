@@ -306,8 +306,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 }
 
 /*@
-   ISIntersect - Computes the union of two index sets, by concatenating 2 lists, sorting,
-   and finding duplicates.
+   ISIntersect - Computes the intersection of two index sets, by sorting and comparing.
 
    Collective on IS
 

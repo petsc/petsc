@@ -169,8 +169,9 @@ typedef struct _n_Field {
 } RegionField;
 
 typedef struct _n_Space {
-  PetscDS ds;
-  DMLabel label;
+  PetscDS ds;     /* Approximation space in this domain */
+  DMLabel label;  /* Label defining the domain of definition of the discretization */
+  IS      fields; /* Map from DS field numbers to original field numbers in the DM */
 } DMSpace;
 
 PETSC_EXTERN PetscErrorCode DMDestroyLabelLinkList(DM);
