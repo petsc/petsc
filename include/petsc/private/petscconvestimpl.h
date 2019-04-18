@@ -22,6 +22,7 @@ struct _p_PetscConvEst
   PetscInt          Nf;   /* The number of fields in the DM */
   PetscErrorCode (**initGuess)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+  void            **ctxs;
   /* Outputs */
   PetscBool  monitor;
   PetscReal *errors;

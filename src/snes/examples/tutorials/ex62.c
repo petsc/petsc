@@ -526,8 +526,8 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
 
   ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? DM_BC_ESSENTIAL : DM_BC_NATURAL, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 1, user->exactFuncs[1]);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0], user);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 1, user->exactFuncs[1], user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

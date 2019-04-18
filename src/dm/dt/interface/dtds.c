@@ -431,6 +431,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscBdPointJac  *tmpgbd;
   PetscRiemannFunc *tmpr;
   PetscSimplePointFunc *tmpexactSol;
+  void                **tmpexactCtx;
   void            **tmpctx;
   PetscInt          Nf = prob->Nf, f;
   PetscErrorCode    ierr;
@@ -473,17 +474,20 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   prob->r   = tmpr;
   prob->update = tmpup;
   prob->ctx = tmpctx;
-  ierr = PetscCalloc3(NfNew*2, &tmpfbd, NfNew*NfNew*4, &tmpgbd, NfNew, &tmpexactSol);CHKERRQ(ierr);
+  ierr = PetscCalloc4(NfNew*2, &tmpfbd, NfNew*NfNew*4, &tmpgbd, NfNew, &tmpexactSol, NfNew, &tmpexactCtx);CHKERRQ(ierr);
   for (f = 0; f < Nf*2; ++f) tmpfbd[f] = prob->fBd[f];
   for (f = 0; f < Nf*Nf*4; ++f) tmpgbd[f] = prob->gBd[f];
   for (f = 0; f < Nf; ++f) tmpexactSol[f] = prob->exactSol[f];
+  for (f = 0; f < Nf; ++f) tmpexactCtx[f] = prob->exactCtx[f];
   for (f = Nf*2; f < NfNew*2; ++f) tmpfbd[f] = NULL;
   for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpgbd[f] = NULL;
   for (f = Nf; f < NfNew; ++f) tmpexactSol[f] = NULL;
-  ierr = PetscFree3(prob->fBd, prob->gBd, prob->exactSol);CHKERRQ(ierr);
+  for (f = Nf; f < NfNew; ++f) tmpexactCtx[f] = NULL;
+  ierr = PetscFree4(prob->fBd, prob->gBd, prob->exactSol, prob->exactCtx);CHKERRQ(ierr);
   prob->fBd = tmpfbd;
   prob->gBd = tmpgbd;
   prob->exactSol = tmpexactSol;
+  prob->exactCtx = tmpexactCtx;
   PetscFunctionReturn(0);
 }
 
@@ -525,7 +529,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   ierr = PetscFree2((*prob)->disc, (*prob)->implicit);CHKERRQ(ierr);
   ierr = PetscFree7((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->gp,(*prob)->gt,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
   ierr = PetscFree((*prob)->update);CHKERRQ(ierr);
-  ierr = PetscFree3((*prob)->fBd,(*prob)->gBd,(*prob)->exactSol);CHKERRQ(ierr);
+  ierr = PetscFree4((*prob)->fBd,(*prob)->gBd,(*prob)->exactSol,(*prob)->exactCtx);CHKERRQ(ierr);
   if ((*prob)->ops->destroy) {ierr = (*(*prob)->ops->destroy)(*prob);CHKERRQ(ierr);}
   next = (*prob)->boundary;
   while (next) {
@@ -2211,7 +2215,8 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
 - f    - The test field number
 
   Output Parameter:
-. exactSol - exact solution for the test field
++ exactSol - exact solution for the test field
+- exactCtx - exact solution context
 
   Note: The calling sequence for the solution functions is given by:
 
@@ -2228,12 +2233,13 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
 .seealso: PetscDSSetExactSolution()
 @*/
-PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx))
+PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   if (sol) {PetscValidPointer(sol, 3); *sol = prob->exactSol[f];}
+  if (ctx) {PetscValidPointer(ctx, 4); *ctx = prob->exactCtx[f];}
   PetscFunctionReturn(0);
 }
 
@@ -2245,7 +2251,8 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
   Input Parameters:
 + prob - The PetscDS
 . f    - The test field number
-- sol  - solution function for the test fields
+. sol  - solution function for the test fields
+- ctx  - solution context or NULL
 
   Note: The calling sequence for solution functions is given by:
 
@@ -2262,7 +2269,7 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
 .seealso: PetscDSGetExactSolution()
 @*/
-PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx))
+PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -2271,6 +2278,7 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   if (sol) {PetscValidFunction(sol, 3); prob->exactSol[f] = sol;}
+  if (ctx) {PetscValidFunction(ctx, 4); prob->exactCtx[f] = ctx;}
   PetscFunctionReturn(0);
 }
 

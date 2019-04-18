@@ -4347,17 +4347,18 @@ PetscErrorCode  SNESReasonView(SNES snes,PetscViewer viewer)
       Vec               u;
       PetscDS           prob;
       PetscInt          Nf, f;
-      PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+      PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+      void            **exactCtx;
       PetscReal         error;
 
       ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
       ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
       ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
       ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-      ierr = PetscMalloc1(Nf, &exactFuncs);CHKERRQ(ierr);
-      for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exactFuncs[f]);CHKERRQ(ierr);}
-      ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, NULL, u, &error);CHKERRQ(ierr);
-      ierr = PetscFree(exactFuncs);CHKERRQ(ierr);
+      ierr = PetscMalloc2(Nf, &exactSol, Nf, &exactCtx);CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exactSol[f], &exactCtx[f]);CHKERRQ(ierr);}
+      ierr = DMComputeL2Diff(dm, 0.0, exactSol, exactCtx, u, &error);CHKERRQ(ierr);
+      ierr = PetscFree2(exactSol, exactCtx);CHKERRQ(ierr);
       if (error < 1.0e-11) {ierr = PetscViewerASCIIPrintf(viewer, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
       else                 {ierr = PetscViewerASCIIPrintf(viewer, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
     }

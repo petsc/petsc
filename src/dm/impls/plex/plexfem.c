@@ -574,7 +574,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
   ierr = PetscDSGetNumBoundary(prob, &numBd);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     DMBoundaryConditionType type;
-    const char             *labelname;
+    const char             *name, *labelname;
     DMLabel                 label;
     PetscInt                field, Nc;
     const PetscInt         *comps;
@@ -585,9 +585,10 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
     const PetscInt         *ids;
     void                   *ctx;
 
-    ierr = DMGetBoundary(dm, b, &type, NULL, &labelname, &field, &Nc, &comps, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    ierr = DMGetBoundary(dm, b, &type, &name, &labelname, &field, &Nc, &comps, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
     if (insertEssential != (type & DM_BC_ESSENTIAL)) continue;
     ierr = DMGetLabel(dm, labelname, &label);CHKERRQ(ierr);
+    if (!label) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "Label %s for boundary condition %s does not exist in the DM", labelname, name);
     ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {

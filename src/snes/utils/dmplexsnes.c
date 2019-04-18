@@ -2469,7 +2469,6 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx
 
 PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
 {
-  PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   PetscDS        prob;
   Mat            J, M;
   Vec            r, b;
@@ -2477,25 +2476,21 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErr
   PetscReal     *error, res = 0.0;
   PetscInt       numFields;
   PetscBool      hasJac, hasPrec;
-  PetscInt       Nf, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Nf, &exacts);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exacts[f]);CHKERRQ(ierr);}
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   /* TODO Null space for J */
   /* Check discretization error */
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
   ierr = PetscMalloc1(PetscMax(1, numFields), &error);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (numFields > 1) {
     PetscInt f;
 
-    ierr = DMComputeL2FieldDiff(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs, u, error);CHKERRQ(ierr);
+    ierr = DMComputeL2FieldDiff(dm, 0.0, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: [");CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       if (f) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
@@ -2504,7 +2499,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErr
     }
     ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
   } else {
-    ierr = DMComputeL2Diff(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs, u, &error[0]);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
     if (error[0] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", (double)error[0]);CHKERRQ(ierr);}
     else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
   }
@@ -2552,7 +2547,6 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErr
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = PetscFree(exacts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2570,6 +2564,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErr
 PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   PetscErrorCode (**exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = NULL;
+  void            **ectxs = NULL;
   DM             dm;
   PetscDS        prob;
   Vec            sol;
@@ -2584,13 +2579,13 @@ PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactF
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   if (!exactFuncs) {
     ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-    ierr = PetscMalloc1(Nf, &exact);CHKERRQ(ierr);
-    for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exact[f]);CHKERRQ(ierr);}
+    ierr = PetscMalloc2(Nf, &exact, Nf, &ectxs);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exact[f], &ectxs[f]);CHKERRQ(ierr);}
   }
   ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
   ierr = SNESSetSolution(snes, sol);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions_Internal(snes, dm, sol, exactFuncs ? exactFuncs : exact, ctxs);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions_Internal(snes, dm, sol, exactFuncs ? exactFuncs : exact, ctxs ? ctxs : ectxs);CHKERRQ(ierr);
   ierr = VecDestroy(&sol);CHKERRQ(ierr);
-  ierr = PetscFree(exact);CHKERRQ(ierr);
+  ierr = PetscFree2(exact, ectxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -349,7 +349,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     break;
   default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
-  ierr = PetscDSSetExactSolution(prob, 0, exact);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 0, exact, user);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exact, 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
