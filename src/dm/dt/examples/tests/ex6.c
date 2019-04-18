@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc1(n,&la_weights);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&n_nodes);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&n_weights);CHKERRQ(ierr);
-  ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA,la_nodes,la_weights);CHKERRQ(ierr);
+  ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,la_nodes,la_weights);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via linear algebra: \n");CHKERRQ(ierr);
   ierr = PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

@@ -135,7 +135,7 @@ int main(int argc,char **args)
        gll simply contains the GLL node and weight values
     */
     ierr = PetscMalloc2(n,&gll.nodes,n,&gll.weights);CHKERRQ(ierr);
-    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA,gll.nodes,gll.weights);CHKERRQ(ierr);
+    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,gll.nodes,gll.weights);CHKERRQ(ierr);
     gll.n = n;
     ierr = DMDASetGLLCoordinates(da,gll.n,gll.nodes);CHKERRQ(ierr);
 

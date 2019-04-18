@@ -587,7 +587,7 @@ static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp
 
    Input Parameter:
 +  n - number of grid nodes
--  type - PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA or PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON
+-  type - PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA or PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON
 
    Output Arguments:
 +  x - quadrature points
@@ -613,7 +613,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
   PetscFunctionBegin;
   if (npoints < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
 
-  if (type == PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEARALGEBRA) {
+  if (type == PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA) {
     PetscReal      *M,si;
     PetscBLASInt   bn,lierr;
     PetscReal      x0,z0,z1,z2;
