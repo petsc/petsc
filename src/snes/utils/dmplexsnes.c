@@ -2509,8 +2509,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, Vec u, PetscErrorCode
       ierr = PetscPrintf(comm, "L_2 Error: [");CHKERRQ(ierr);
       for (f = 0; f < Nf; ++f) {
         if (f) {ierr = PetscPrintf(comm, ", ");CHKERRQ(ierr);}
-        if (error[f] >= 1.0e-11) {ierr = PetscPrintf(comm, "%g", (double)error[f]);CHKERRQ(ierr);}
-        else                     {ierr = PetscPrintf(comm, "< 1.0e-11");CHKERRQ(ierr);}
+        ierr = PetscPrintf(comm, "%g", (double)error[f]);CHKERRQ(ierr);
       }
       ierr = PetscPrintf(comm, "]\n");CHKERRQ(ierr);
     }
@@ -2519,8 +2518,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, Vec u, PetscErrorCode
     if (tol >= 0.0) {
       if (error[0] > tol) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g exceeds tolerance %g", (double) error[0], (double) tol);
     } else {
-      if (error[0] >= 1.0e-11) {ierr = PetscPrintf(comm, "L_2 Error: %g\n", (double)error[0]);CHKERRQ(ierr);}
-      else                     {ierr = PetscPrintf(comm, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
+      ierr = PetscPrintf(comm, "L_2 Error: %g\n", (double)error[0]);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree3(exacts, ectxs, error);CHKERRQ(ierr);
