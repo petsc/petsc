@@ -355,6 +355,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = VecCopy(F,D);CHKERRQ(ierr);
   }
 
+  /* general purpose update */
+  if (snes->ops->update) {
+    ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+  }
+
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
@@ -388,7 +393,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       ierr = SNESQNApply_Broyden(snes,i_r,Y,X,Xold,D);CHKERRQ(ierr);
       break;
     case SNES_QN_LBFGS:
-      SNESQNApply_LBFGS(snes,i_r,Y,X,Xold,D,Dold);CHKERRQ(ierr);
+      ierr = SNESQNApply_LBFGS(snes,i_r,Y,X,Xold,D,Dold);CHKERRQ(ierr);
       break;
     }
     /* line search for lambda */
@@ -444,6 +449,12 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     } else {
       ierr = VecCopy(F, D);CHKERRQ(ierr);
     }
+
+    /* general purpose update */
+    if (snes->ops->update) {
+      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
+
     powell = PETSC_FALSE;
     if (qn->restart_type == SNES_QN_RESTART_POWELL && i_r > 1) {
       /* check restart by Powell's Criterion: |F^T H_0 Fold| > powell_gamma * |Fold^T H_0 Fold| */
@@ -470,22 +481,14 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
           ierr = PetscViewerASCIIPrintf(qn->monitor, "Powell restart! |%14.12e| > %6.4f*|%14.12e| i_r = %D\n", (double)PetscRealPart(DolddotD), (double)qn->powell_gamma, (double)PetscRealPart(DolddotDold),i_r);CHKERRQ(ierr);
         } else {
           ierr = PetscViewerASCIIPrintf(qn->monitor, "Periodic restart! i_r = %D\n", i_r);CHKERRQ(ierr);
-        }  
+        }
         ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
       }
       i_r = -1;
-      /* general purpose update */
-      if (snes->ops->update) {
-        ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
-      }
       if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
         ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
         SNESCheckJacobianDomainerror(snes);
       }
-    }
-    /* general purpose update */
-    if (snes->ops->update) {
-      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
   }
   if (i == snes->max_its) {
@@ -504,8 +507,8 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   PetscFunctionBegin;
 
   if (!snes->vec_sol) {
-    ierr             = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-    ierr             = DMCreateGlobalVector(dm,&snes->vec_sol);CHKERRQ(ierr);
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(dm,&snes->vec_sol);CHKERRQ(ierr);
   }
 
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->U);CHKERRQ(ierr);
@@ -682,7 +685,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 +   SNES_QN_SCALE_NONE - don't scale the problem
 .   SNES_QN_SCALE_SHANNO - use shanno scaling
 .   SNES_QN_SCALE_LINESEARCH - scale based upon line search lambda
--   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration 
+-   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration
                              of QN and at ever restart.
 
 .keywords: scaling type
@@ -792,7 +795,7 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       Technical Report, Northwestern University, June 1992.
 .   3. -   Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
       Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
--   4. -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
+-   4. -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
        SIAM Review, 57(4), 2015
 
       Level: beginner
