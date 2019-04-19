@@ -54,15 +54,10 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 static PetscErrorCode SNESSetFromOptions_NRichardson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
-  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES Richardson options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (!snes->linesearch) {
-    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -256,6 +251,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 {
   PetscErrorCode   ierr;
   SNES_NRichardson *neP;
+  SNESLineSearch   linesearch;
 
   PetscFunctionBegin;
   snes->ops->destroy        = SNESDestroy_NRichardson;
@@ -269,6 +265,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
   snes->usesnpc = PETSC_TRUE;
 
   snes->npcside= PC_LEFT;
+
+  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

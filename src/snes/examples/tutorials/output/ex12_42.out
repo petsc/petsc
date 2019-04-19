@@ -172,8 +172,3 @@ SNES Object: 1 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of function evaluations=1
   norm schedule ALWAYS
-  SNESLineSearch Object: 1 MPI processes
-    type: basic
-    maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=1

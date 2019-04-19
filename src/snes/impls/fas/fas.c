@@ -145,13 +145,15 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
     }
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)fas->smoothd);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(fas->smoothd);CHKERRQ(ierr);
-    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetLineSearch(fas->smoothd,&slinesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(slinesearch,postcheck,lspostctx);CHKERRQ(ierr);
-    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch);CHKERRQ(ierr);
+    if (snes->linesearch) {
+      ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+      ierr = SNESGetLineSearch(fas->smoothd,&slinesearch);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPostCheck(slinesearch,postcheck,lspostctx);CHKERRQ(ierr);
+      ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch);CHKERRQ(ierr);
+    }
 
     fas->smoothd->vec_sol        = snes->vec_sol;
     ierr                         = PetscObjectReference((PetscObject)snes->vec_sol);CHKERRQ(ierr);
@@ -174,13 +176,15 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
     }
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)fas->smoothu);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(fas->smoothu);CHKERRQ(ierr);
-    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetLineSearch(fas->smoothu,&slinesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(slinesearch,postcheck,lspostctx);CHKERRQ(ierr);
-    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch);CHKERRQ(ierr);
+    if (snes->linesearch) {
+      ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+      ierr = SNESGetLineSearch(fas->smoothu,&slinesearch);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPostCheck(slinesearch,postcheck,lspostctx);CHKERRQ(ierr);
+      ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch);CHKERRQ(ierr);
+    }
 
     fas->smoothu->vec_sol        = snes->vec_sol;
     ierr                         = PetscObjectReference((PetscObject)snes->vec_sol);CHKERRQ(ierr);
@@ -200,13 +204,15 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (!next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_sol);CHKERRQ(ierr);}
     if (!next->vec_rhs) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_rhs);CHKERRQ(ierr);}
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)next);CHKERRQ(ierr);
-    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetLineSearch(fas->next,&slinesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(slinesearch,postcheck,lspostctx);CHKERRQ(ierr);
-    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch);CHKERRQ(ierr);
+    if (snes->linesearch) {
+      ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+      ierr = SNESGetLineSearch(fas->next,&slinesearch);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPostCheck(slinesearch,postcheck,lspostctx);CHKERRQ(ierr);
+      ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch);CHKERRQ(ierr);
+    }
     ierr = SNESSetUp(next);CHKERRQ(ierr);
   }
   /* setup FAS work vectors */

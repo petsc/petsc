@@ -810,7 +810,7 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
 . -snes_linesearch_damping - The linesearch damping parameter
 . -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
 . -snes_linesearch_precheck_picard - Use precheck that speeds up convergence of picard method
-- -snes_linesearch_precheck_picard_angle - Angle used in picard precheck method
+- -snes_linesearch_precheck_picard_angle - Angle used in Picard precheck method
 
    Logically Collective on SNESLineSearch
 

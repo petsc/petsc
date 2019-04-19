@@ -237,11 +237,6 @@ SNES Object: 4 MPI processes
     maximum iterations=1, maximum function evaluations=10000
     tolerances: relative=0., absolute=0., solution=0.
     total number of function evaluations=4
-    SNESLineSearch Object: (npc_) 4 MPI processes
-      type: basic
-      maxstep=1.000000e+08, minlambda=1.000000e-12
-      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-      maximum iterations=1
   KSP Object: 4 MPI processes
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

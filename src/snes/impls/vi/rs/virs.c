@@ -768,6 +768,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
 {
   PetscErrorCode    ierr;
   SNES_VINEWTONRSLS *vi;
+  SNESLineSearch    linesearch;
 
   PetscFunctionBegin;
   snes->ops->reset          = SNESReset_VINEWTONRSLS;
@@ -780,6 +781,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
 
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_FALSE;
+
+  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
+  ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

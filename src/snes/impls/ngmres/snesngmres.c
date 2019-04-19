@@ -100,7 +100,6 @@ PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptionItems *PetscOptionsObject,SN
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
   PetscBool      debug = PETSC_FALSE;
-  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES NGMRES options");CHKERRQ(ierr);
@@ -125,12 +124,6 @@ PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptionItems *PetscOptionsObject,SN
   ierr = PetscOptionsBool("-snes_ngmres_restart_fm_rise", "Restart on F_M residual rise",  "SNESNGMRESSetRestartFmRise",ngmres->restart_fm_rise,&ngmres->restart_fm_rise,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if ((ngmres->gammaA > ngmres->gammaC) && (ngmres->gammaC > 2.)) ngmres->gammaC = ngmres->gammaA;
-
-  /* set the default type of the line search if the user hasn't already. */
-  if (!snes->linesearch) {
-    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -529,6 +522,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
 {
   SNES_NGMRES    *ngmres;
   PetscErrorCode ierr;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   snes->ops->destroy        = SNESDestroy_NGMRES;
@@ -554,6 +548,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   }
 
   ngmres->candidate = PETSC_FALSE;
+
+ ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+ ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
   ngmres->additive_linesearch = NULL;
   ngmres->approxfunc          = PETSC_FALSE;

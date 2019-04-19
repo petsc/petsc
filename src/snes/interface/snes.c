@@ -1078,10 +1078,10 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)snes);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  if (!snes->linesearch) {
+  if (snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetFromOptions(snes->linesearch);CHKERRQ(ierr);
   }
-  ierr = SNESLineSearchSetFromOptions(snes->linesearch);CHKERRQ(ierr);
 
   if (snes->usesksp) {
     if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
@@ -3085,10 +3085,10 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);
   }
 
-  if (!snes->linesearch) {
+  if (snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunction);CHKERRQ(ierr);
   }
-  ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunction);CHKERRQ(ierr);
 
   if (snes->npc && (snes->npcside== PC_LEFT)) {
     snes->mf          = PETSC_TRUE;
@@ -3122,13 +3122,15 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESSetFromOptions(snes->npc);CHKERRQ(ierr);
 
     /* copy the line search context over */
-    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetLineSearch(snes->npc,&pclinesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPreCheck(pclinesearch,precheck,lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(pclinesearch,postcheck,lspostctx);CHKERRQ(ierr);
-    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)pclinesearch);CHKERRQ(ierr);
+    if (snes->linesearch && snes->npc->linesearch) {
+      ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+      ierr = SNESGetLineSearch(snes->npc,&pclinesearch);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPreCheck(pclinesearch,precheck,lsprectx);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPostCheck(pclinesearch,postcheck,lspostctx);CHKERRQ(ierr);
+      ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)pclinesearch);CHKERRQ(ierr);
+    }
   }
   if (snes->mf) {
     ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr);
@@ -3146,8 +3148,10 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   if (snes->npc && (snes->npcside== PC_LEFT)) {
     if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-      ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-      ierr = SNESLineSearchSetFunction(linesearch,SNESComputeFunctionDefaultNPC);CHKERRQ(ierr);
+      if (snes->linesearch){
+        ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+        ierr = SNESLineSearchSetFunction(linesearch,SNESComputeFunctionDefaultNPC);CHKERRQ(ierr);
+      }
     }
   }
 
@@ -4672,6 +4676,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   snes->ops->view           = 0;
   snes->ops->setfromoptions = 0;
   snes->ops->destroy        = 0;
+  ierr = SNESLineSearchDestroy(&snes->linesearch);CHKERRQ(ierr);
   /* Call the SNESCreate_XXX routine for this particular Nonlinear solver */
   snes->setupcalled = PETSC_FALSE;
 

@@ -359,14 +359,7 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
 */
 static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
-  PetscErrorCode ierr;
-  SNESLineSearch linesearch;
-
   PetscFunctionBegin;
-  if (!snes->linesearch) {
-    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -397,6 +390,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_NEWTONLS  *neP;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   snes->ops->setup          = SNESSetUp_NEWTONLS;
@@ -409,6 +403,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   snes->npcside = PC_RIGHT;
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_TRUE;
+
+  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
