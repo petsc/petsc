@@ -162,7 +162,7 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
     juncf[1] =  juncx[0].q;
 
     if (junction->type == RESERVOIR) { /* upstream reservoir */
-      juncf[0] = juncx[0].h - wash->H0; //junction->reservoir.hres;
+      juncf[0] = juncx[0].h - wash->H0;
     }
   }
 
@@ -733,11 +733,11 @@ int main(int argc,char ** argv)
     ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
     /* vfrom */
     ierr = DMNetworkGetComponent(networkdm,cone[0],0,&vkey,(void**)&junction);CHKERRQ(ierr);
-    junction->type = vtype[2*e];
+    junction->type = (int)vtype[2*e];
 
     /* vto */
     ierr = DMNetworkGetComponent(networkdm,cone[1],0,&vkey,(void**)&junction);CHKERRQ(ierr);
-    junction->type = vtype[2*e+1];
+    junction->type = (int)vtype[2*e+1];
   }
 
   ierr = WashNetworkCleanUp(wash);CHKERRQ(ierr);
