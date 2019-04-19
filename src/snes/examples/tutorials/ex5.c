@@ -862,7 +862,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
    test:
      suffix: 5_aspin
      nsize: 4
-     args: -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 -snes_type aspin
+     args: -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 -snes_type aspin -snes_view
 
    test:
      suffix: 5_broyden
