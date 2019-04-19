@@ -20,8 +20,13 @@ int main(int argc,char **args)
   n    = 2*size;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                      m*n,m*n,5,NULL,5,NULL,&C);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(C,5,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(C,5,NULL,5,NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
+
   for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
@@ -56,5 +61,10 @@ int main(int argc,char **args)
    test:
       nsize: 3
       args: -col 7
+
+   test:
+      suffix: dense
+      nsize: 3
+      args: -col 7 -mat_type dense
 
 TEST*/
