@@ -3,7 +3,7 @@ static char help[] = "Test GLVis high-order support with DMDAs\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmplex.h>
-#include <petscgll.h>
+#include <petscdt.h>
 
 static PetscErrorCode MapPoint(PetscScalar xyz[],PetscScalar mxyz[])
 {
@@ -61,17 +61,20 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
   if (ho) { /* each element mapped to a sphere */
     DM           cdm;
     Vec          cv;
-    PetscGLL     gll;
     PetscSection cSec;
     DMDACoor3d   ***_coords;
     PetscScalar  shift[3],*cptr;
     PetscInt     nel,dof = 3,nex,ney,nez,gx = 0,gy = 0,gz = 0;
     PetscInt     i,j,k,pi,pj,pk;
+    PetscReal    *nodes,*weights;
     char         name[256];
 
     ierr = PetscOptionsGetInt(NULL,NULL,"-order",&dof,NULL);CHKERRQ(ierr);
     dof += 1;
-    ierr = PetscGLLCreate(dof,PETSCGLL_VIA_LINEARALGEBRA,&gll);CHKERRQ(ierr);
+
+    ierr = PetscMalloc1(dof,&nodes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof,&weights);CHKERRQ(ierr);
+    ierr = PetscDTGaussLobattoLegendreQuadrature(dof,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm,&cv);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
     if (plex) {
@@ -113,11 +116,11 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
           for (pk=0;pk<dof;pk++) {
             PetscScalar xyz[3];
 
-            xyz[2] = gll.nodes[pk];
+            xyz[2] = nodes[pk];
             for (pj=0;pj<dof;pj++) {
-              xyz[1] = gll.nodes[pj];
+              xyz[1] = nodes[pj];
               for (pi=0;pi<dof;pi++) {
-                xyz[0] = gll.nodes[pi];
+                xyz[0] = nodes[pi];
                 ierr = MapPoint(xyz,cptr);CHKERRQ(ierr);
                 cptr[0] += shift[0];
                 cptr[1] += shift[1];
@@ -129,7 +132,6 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
         }
       }
     }
-    ierr = PetscGLLDestroy(&gll);CHKERRQ(ierr);
     if (!plex) {
       ierr = DMDAVecRestoreArray(cdm,cv,&_coords);CHKERRQ(ierr);
     }
@@ -138,6 +140,8 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
     ierr = PetscObjectSetName((PetscObject)v,name);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"_glvis_mesh_coords",(PetscObject)v);CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
+    ierr = PetscFree(nodes);CHKERRQ(ierr);
+    ierr = PetscFree(weights);CHKERRQ(ierr);
     ierr = DMViewFromOptions(dm,NULL,"-view");CHKERRQ(ierr);
   } else { /* map the whole domain to a sphere */
     ierr = DMGetCoordinates(dm,&v);CHKERRQ(ierr);

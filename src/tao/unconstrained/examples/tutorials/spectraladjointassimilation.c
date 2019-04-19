@@ -39,7 +39,7 @@ static char help[] ="Solves a simple data assimilation problem with one dimensio
 
 #include <petsctao.h>
 #include <petscts.h>
-#include <petscgll.h>
+#include <petscdt.h>
 #include <petscdraw.h>
 #include <petscdmda.h>
 
@@ -47,6 +47,12 @@ static char help[] ="Solves a simple data assimilation problem with one dimensio
    User-defined application context - contains data needed by the
    application-provided call-back routines.
 */
+
+typedef struct {
+  PetscInt  n;                /* number of nodes */
+  PetscReal *nodes;           /* GLL nodes */
+  PetscReal *weights;         /* GLL weights */
+} PetscGLL;
 
 typedef struct {
   PetscInt    N;             /* grid points per elements*/
@@ -145,7 +151,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create GLL data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscGLLCreate(appctx.param.N,PETSCGLL_VIA_LINEARALGEBRA,&appctx.SEMop.gll);CHKERRQ(ierr);
+  ierr = PetscMalloc2(appctx.param.N,&appctx.SEMop.gll.nodes,appctx.param.N,&appctx.SEMop.gll.weights);CHKERRQ(ierr);
+  ierr = PetscDTGaussLobattoLegendreQuadrature(appctx.param.N,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,appctx.SEMop.gll.nodes,appctx.SEMop.gll.weights);CHKERRQ(ierr);
+  appctx.SEMop.gll.n = appctx.param.N;
   lenglob  = appctx.param.E*(appctx.param.N-1);
 
   /*
@@ -274,7 +282,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&appctx.SEMop.grid);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.SEMop.mass);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.dat.curr_sol);CHKERRQ(ierr);
-  ierr = PetscGLLDestroy(&appctx.SEMop.gll);CHKERRQ(ierr);
+  ierr = PetscFree2(appctx.SEMop.gll.nodes,appctx.SEMop.gll.weights);CHKERRQ(ierr);
   ierr = DMDestroy(&appctx.da);CHKERRQ(ierr);
   ierr = TSDestroy(&appctx.ts);CHKERRQ(ierr);
 
@@ -473,7 +481,7 @@ PetscErrorCode RHSLaplacian(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   /*
    Creates the element stiffness matrix for the given gll
    */
-  ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscGaussLobattoLegendreElementLaplacianCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
 
   /* scale by the size of the element */
   for (i=0; i<appctx->param.N; i++) {
@@ -505,7 +513,7 @@ PetscErrorCode RHSLaplacian(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
   ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
 
-  ierr = PetscGLLElementLaplacianDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +535,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   /*
    Creates the element stiffness matrix for the given gll
    */
-  ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscGaussLobattoLegendreElementAdvectionCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
 
   /* scale by the size of the element */
   for (i=0; i<appctx->param.N; i++) {
@@ -559,7 +567,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
   ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
 
-  ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

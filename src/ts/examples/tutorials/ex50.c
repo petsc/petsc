@@ -29,7 +29,7 @@ static char help[] ="Solves one dimensional Burger's equation compares with exac
   ------------------------------------------------------------------------- */
 
 #include <petscts.h>
-#include <petscgll.h>
+#include <petscdt.h>
 #include <petscdraw.h>
 #include <petscdmda.h>
 
@@ -37,6 +37,12 @@ static char help[] ="Solves one dimensional Burger's equation compares with exac
    User-defined application context - contains data needed by the
    application-provided call-back routines.
 */
+
+typedef struct {
+  PetscInt  n;                /* number of nodes */
+  PetscReal *nodes;           /* GLL nodes */
+  PetscReal *weights;         /* GLL weights */
+} PetscGLL;
 
 typedef struct {
   PetscInt    N;             /* grid points per elements*/
@@ -119,7 +125,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create GLL data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscGLLCreate(appctx.param.N,PETSCGLL_VIA_LINEARALGEBRA,&appctx.SEMop.gll);CHKERRQ(ierr);
+  ierr = PetscMalloc2(appctx.param.N,&appctx.SEMop.gll.nodes,appctx.param.N,&appctx.SEMop.gll.weights);CHKERRQ(ierr);
+  ierr = PetscDTGaussLobattoLegendreQuadrature(appctx.param.N,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,appctx.SEMop.gll.nodes,appctx.SEMop.gll.weights);CHKERRQ(ierr);
+  appctx.SEMop.gll.n = appctx.param.N;
   lenglob  = appctx.param.E*(appctx.param.N-1);
 
   /*
@@ -231,7 +239,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&appctx.SEMop.grid);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.SEMop.mass);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.dat.curr_sol);CHKERRQ(ierr);
-  ierr = PetscGLLDestroy(&appctx.SEMop.gll);CHKERRQ(ierr);
+  ierr = PetscFree2(appctx.SEMop.gll.nodes,appctx.SEMop.gll.weights);CHKERRQ(ierr);
   ierr = DMDestroy(&appctx.da);CHKERRQ(ierr);
   ierr = TSDestroy(&appctx.ts);CHKERRQ(ierr);
 
@@ -342,7 +350,7 @@ PetscErrorCode MatMult_Laplacian(Mat A,Vec x,Vec y)
   ierr = DMGlobalToLocalEnd(appctx->da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(appctx->da,&ylocal);CHKERRQ(ierr);
   ierr = VecSet(ylocal,0.0);CHKERRQ(ierr);
-  ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscGaussLobattoLegendreElementLaplacianCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   for (i=0; i<appctx->param.N; i++) {
     vv =-appctx->param.mu*2.0/appctx->param.Le;
     for (j=0; j<appctx->param.N; j++) temp[i][j]=temp[i][j]*vv;
@@ -356,7 +364,7 @@ PetscErrorCode MatMult_Laplacian(Mat A,Vec x,Vec y)
   }
   ierr = DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
-  ierr = PetscGLLElementLaplacianDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(appctx->da,ylocal,ADD_VALUES,y);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(appctx->da,ylocal,ADD_VALUES,y);CHKERRQ(ierr);
@@ -384,7 +392,7 @@ PetscErrorCode MatMult_Advection(Mat A,Vec x,Vec y)
   ierr = DMGlobalToLocalEnd(appctx->da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(appctx->da,&ylocal);CHKERRQ(ierr);
   ierr = VecSet(ylocal,0.0);CHKERRQ(ierr);
-  ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscGaussLobattoLegendreElementAdvectionCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayRead(appctx->da,xlocal,(void*)&xl);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
@@ -394,7 +402,7 @@ PetscErrorCode MatMult_Advection(Mat A,Vec x,Vec y)
   }
   ierr = DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
-  ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(appctx->da,ylocal,ADD_VALUES,y);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(appctx->da,ylocal,ADD_VALUES,y);CHKERRQ(ierr);
@@ -437,7 +445,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
     /*
      Creates the element stiffness matrix for the given gll
      */
-    ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+    ierr = PetscGaussLobattoLegendreElementLaplacianCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
     /* workarround for clang analyzer warning: Division by zero */
     if (appctx->param.N <= 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Spectral element order should be > 1");
 
@@ -470,7 +478,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
     ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
     ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
 
-    ierr = PetscGLLElementLaplacianDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+    ierr = PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(A,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(A);CHKERRQ(ierr);
@@ -511,7 +519,7 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
     /*
      Creates the advection matrix for the given gll
      */
-    ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+    ierr = PetscGaussLobattoLegendreElementAdvectionCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
     ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
     xs   = xs/(appctx->param.N-1);
@@ -532,7 +540,7 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
     ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
     ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
 
-    ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+    ierr = PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(A,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(A);CHKERRQ(ierr);
