@@ -5490,7 +5490,7 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
 /*@
   SNESGetNPC - Creates a nonlinear preconditioning solver (SNES) to be used to precondition the nonlinear solver.
 
-  Not Collective
+  Not Collective; but any changes to the obtained SNES object must be applied collectively
 
   Input Parameter:
 . snes - iterative context obtained from SNESCreate()
@@ -5501,10 +5501,13 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
   Notes:
     If a SNES was previously set with SNESSetNPC() then that SNES is returned.
 
+    The (preconditioner) SNES returned automatically inherits the same nonlinear function and Jacobian supplied to the original
+    SNES during SNESSetUp()
+
   Level: developer
 
 .keywords: SNES, get, preconditioner
-.seealso: SNESSetNPC(), SNESHasNPC()
+.seealso: SNESSetNPC(), SNESHasNPC(), SNES, SNESCreate()
 @*/
 PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
 {

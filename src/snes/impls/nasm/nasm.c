@@ -555,7 +555,6 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes,PetscBool f
 
   PetscFunctionBegin;
   nasm->finaljacobian = flg;
-  if (flg) snes->usesksp = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -882,6 +881,13 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 -  -sub_pc_ - options prefix of the subdomain preconditioner
 
    Level: advanced
+
+   Developer Note: This is a non-Newton based nonlinear solver that does not directly require a Jacobian; hence the flag snes->usesksp is set to
+       false and SNESView() and -snes_view do not display a KSP object. However the flag nasm->finaljacobian is set (for example if
+       NASM is used as a nonlinear preconditioner for  KSPASPIN) then SNESSetUpMatrices() is called to generate the Jacobian (needed by KSPASPIN)
+       and this utilizes the KSP for storing the matrices, but the KSP is never used for solving a linear system. Note that when SNESNASM is
+       used by SNESASPIN they share the same Jacobian matrices because SNESSetUp() (called on the outer SNES KSPASPIN) causes the inner SNES
+       object (in this case SNESNASM) to inherit the outer Jacobian matrices.
 
    References:
 .  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
