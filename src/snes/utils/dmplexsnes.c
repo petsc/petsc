@@ -2625,7 +2625,6 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol)
 
     /* Choose a perturbation direction */
     ierr = PetscRandomCreate(comm, &rand);CHKERRQ(ierr);
-    ierr = PetscRandomSetType(rand, PETSCRAND48);CHKERRQ(ierr);
     ierr = VecDuplicate(u, &du);CHKERRQ(ierr);
     ierr = VecSetRandom(du, rand); CHKERRQ(ierr);
     ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);

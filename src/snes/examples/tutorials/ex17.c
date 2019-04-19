@@ -446,6 +446,7 @@ int main(int argc, char **argv)
     args: -simplex 0 -displacement_petscspace_degree 2 -dm_refine 2 -dmsnes_check
   test:
     suffix: 2d_q3_quad_vlap
+    requires: !single
     args: -simplex 0 -displacement_petscspace_degree 3 -dm_refine 2 -dmsnes_check
   test:
     suffix: 2d_p1_quad_elas
@@ -510,6 +511,7 @@ int main(int argc, char **argv)
     args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check
   test:
     suffix: 3d_q3_quad_elas
+    requires: !single
     args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check
 
   test:
