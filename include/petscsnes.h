@@ -886,6 +886,9 @@ PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode DMSNESCheckDiscretization(SNES,DM,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**,PetscReal);
+PETSC_EXTERN PetscErrorCode DMSNESCheckResidual(SNES,DM,Vec,PetscReal);
+PETSC_EXTERN PetscErrorCode DMSNESCheckJacobian(SNES,DM,Vec,PetscReal);
 PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #endif

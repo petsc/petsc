@@ -2467,86 +2467,219 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
+/*@C
+  DMSNESCheckDiscretization - Check the discretization error of the exact solution
+
+  Input Parameters:
++ snes - the SNES object
+. dm   - the DM
+. u    - a DM vector
+. exactFuncs - pointwise functions of the exact solution for each field
+. ctxs - contexts for the functions
+. tol  - A tolerance for the check, or -1 to print the results instead
+
+  Level: developer
+
+.seealso: DNSNESCheckFromOptions(), DMSNESCheckResidual(), DMSNESCheckJacobian()
+@*/
+PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, Vec u, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs, PetscReal tol)
 {
-  PetscDS        prob;
+  PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
+  void            **ectxs;
+  MPI_Comm          comm;
+  PetscDS           ds;
+  PetscReal        *error;
+  PetscInt          Nf, f;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc3(Nf, &exacts, Nf, &ectxs, PetscMax(1, Nf), &error);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(ds, f, &exacts[f], &ectxs[f]);CHKERRQ(ierr);}
+  ierr = DMProjectFunction(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs ? ctxs : ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  if (Nf > 1) {
+    ierr = DMComputeL2FieldDiff(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs ? ctxs : ectxs, u, error);CHKERRQ(ierr);
+    if (tol >= 0.0) {
+      for (f = 0; f < Nf; ++f) {
+        if (error[f] > tol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g for field %D exceeds tolerance %g", (double) error[0], f, (double) tol);
+      }
+    } else {
+      ierr = PetscPrintf(comm, "L_2 Error: [");CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {
+        if (f) {ierr = PetscPrintf(comm, ", ");CHKERRQ(ierr);}
+        ierr = PetscPrintf(comm, "%g", (double)error[f]);CHKERRQ(ierr);
+      }
+      ierr = PetscPrintf(comm, "]\n");CHKERRQ(ierr);
+    }
+  } else {
+    ierr = DMComputeL2Diff(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs ? ctxs : ectxs , u, &error[0]);CHKERRQ(ierr);
+    if (tol >= 0.0) {
+      if (error[0] > tol) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g exceeds tolerance %g", (double) error[0], (double) tol);
+    } else {
+      ierr = PetscPrintf(comm, "L_2 Error: %g\n", (double)error[0]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree3(exacts, ectxs, error);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMSNESCheckResidual - Check the residual of the exact solution
+
+  Input Parameters:
++ snes - the SNES object
+. dm   - the DM
+. u    - a DM vector
+. tol  - A tolerance for the check, or -1 to print the results instead
+
+  Level: developer
+
+.seealso: DNSNESCheckFromOptions(), DMSNESCheckDiscretization(), DMSNESCheckJacobian()
+@*/
+PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol)
+{
+  MPI_Comm       comm;
+  Vec            r;
+  PetscReal      res;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
+  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
+  ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
+  if (tol >= 0.0) {
+    if (res > tol) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
+  } else {
+    ierr = PetscPrintf(comm, "L_2 Residual: %g\n", (double)res);CHKERRQ(ierr);
+    ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) r, "Initial Residual");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)r,"res_");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMSNESCheckJacobian - Check the Jacobian of the exact solution against the residual, and using the Taylor Test
+
+  Input Parameters:
++ snes - the SNES object
+. dm   - the DM
+. u    - a DM vector
+. tol  - A tolerance for the check, or -1 to print the results instead
+
+  Level: developer
+
+.seealso: DNSNESCheckFromOptions(), DMSNESCheckDiscretization(), DMSNESCheckResidual()
+@*/
+PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol)
+{
+  MPI_Comm       comm;
+  PetscDS        ds;
   Mat            J, M;
-  Vec            r, b;
-  MatNullSpace   nullSpace;
-  PetscReal     *error, res = 0.0;
-  PetscInt       numFields;
+  MatNullSpace   nullspace;
   PetscBool      hasJac, hasPrec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  /* Create and view matrices */
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-  /* TODO Null space for J */
-  /* Check discretization error */
-  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
-  ierr = PetscMalloc1(PetscMax(1, numFields), &error);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  if (numFields > 1) {
-    PetscInt f;
-
-    ierr = DMComputeL2FieldDiff(dm, 0.0, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: [");CHKERRQ(ierr);
-    for (f = 0; f < numFields; ++f) {
-      if (f) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
-      if (error[f] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "%g", (double)error[f]);CHKERRQ(ierr);}
-      else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "< 1.0e-11");CHKERRQ(ierr);}
-    }
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
-  } else {
-    ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
-    if (error[0] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", (double)error[0]);CHKERRQ(ierr);}
-    else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
-  }
-  ierr = PetscFree(error);CHKERRQ(ierr);
-  /* Check residual */
-  ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
-  ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res);CHKERRQ(ierr);
-  ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) r, "Initial Residual");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)r,"res_");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
-  /* Check Jacobian */
-  ierr = PetscDSHasJacobian(prob, &hasJac);CHKERRQ(ierr);
-  ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobian(ds, &hasJac);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobianPreconditioner(ds, &hasPrec);CHKERRQ(ierr);
   if (hasJac && hasPrec) {
     ierr = DMCreateMatrix(dm, &M);CHKERRQ(ierr);
     ierr = SNESComputeJacobian(snes, u, J, M);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) M, "Preconditioning Matrix");CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) M, "jacpre_");CHKERRQ(ierr);
     ierr = MatViewFromOptions(M, NULL, "-mat_view");CHKERRQ(ierr);
     ierr = MatDestroy(&M);CHKERRQ(ierr);
   } else {
     ierr = SNESComputeJacobian(snes, u, J, J);CHKERRQ(ierr);
   }
+  ierr = PetscObjectSetName((PetscObject) J, "Jacobian");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) J, "jac_");CHKERRQ(ierr);
   ierr = MatViewFromOptions(J, NULL, "-mat_view");CHKERRQ(ierr);
-  ierr = MatGetNullSpace(J, &nullSpace);CHKERRQ(ierr);
-  if (nullSpace) {
+  /* Check nullspace */
+  ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
+  if (nullspace) {
     PetscBool isNull;
-    ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
-    if (!isNull) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
+    ierr = MatNullSpaceTest(nullspace, J, &isNull);CHKERRQ(ierr);
+    if (!isNull) SETERRQ(comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
   }
-  ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
-  ierr = VecSet(r, 0.0);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
-  ierr = MatMult(J, u, r);CHKERRQ(ierr);
-  ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", (double)res);CHKERRQ(ierr);
-  ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) r, "Au - b = Au + F(0)");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)r,"linear_res_");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+  /* Taylor test */
+  {
+    PetscRandom rand;
+    Vec         du, uhat, r, rhat, df;
+    PetscReal   h, slope, intercept;
+    PetscReal  *es, *hs, *errors;
+    PetscReal   hMax = 1.0, hMin = 1e-6, hMult = 0.1;
+    PetscInt    Nv, v;
+    PetscBool   isLinear = PETSC_FALSE;
+
+    /* Choose a perturbation direction */
+    ierr = PetscRandomCreate(comm, &rand);CHKERRQ(ierr);
+    ierr = VecDuplicate(u, &du);CHKERRQ(ierr);
+    ierr = VecSetRandom(du, rand); CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+    ierr = VecDuplicate(u, &df);CHKERRQ(ierr);
+    ierr = MatMult(J, du, df);CHKERRQ(ierr);
+    /* Evaluate residual at u, F(u), save in vector r */
+    ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
+    /* Look at the convergence of our Taylor approximation as we approach u */
+    for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv);
+    ierr = PetscCalloc3(Nv, &es, Nv, &hs, Nv, &errors);CHKERRQ(ierr);
+    ierr = VecDuplicate(u, &uhat);CHKERRQ(ierr);
+    ierr = VecDuplicate(u, &rhat);CHKERRQ(ierr);
+    for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv) {
+      ierr = VecWAXPY(uhat, h, du, u);CHKERRQ(ierr);
+      /* F(\hat u) \approx F(u) + J(u) (uhat - u) = F(u) + h * J(u) du */
+      ierr = SNESComputeFunction(snes, uhat, rhat);CHKERRQ(ierr);
+      ierr = VecAXPBYPCZ(rhat, -1.0, -h, 1.0, r, df);CHKERRQ(ierr);
+      ierr = VecNorm(rhat, NORM_2, &errors[Nv]);CHKERRQ(ierr);
+
+      es[Nv] = PetscLog10Real(errors[Nv]);
+      hs[Nv] = PetscLog10Real(h);
+    }
+    ierr = VecDestroy(&uhat);CHKERRQ(ierr);
+    ierr = VecDestroy(&rhat);CHKERRQ(ierr);
+    ierr = VecDestroy(&df);CHKERRQ(ierr);
+    ierr = VecDestroy(&r);CHKERRQ(ierr);
+    ierr = VecDestroy(&du);CHKERRQ(ierr);
+    for (v = 0; v < Nv; ++v) {
+      if ((tol >= 0) && (errors[v] > tol)) break;
+      else if (errors[v] > PETSC_SMALL)    break;
+    }
+    if (v == Nv) isLinear = PETSC_TRUE;
+    ierr = PetscLinearRegression(Nv, hs, es, &slope, &intercept);CHKERRQ(ierr);
+    ierr = PetscFree3(es, hs, errors);CHKERRQ(ierr);
+    /* Slope should be about 2 */
+    if (tol >= 0) {
+      if (!isLinear && PetscAbsReal(2.0 - slope) > tol) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
+    } else {
+      if (!isLinear) {ierr = PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double) slope);CHKERRQ(ierr);}
+      else           {ierr = PetscPrintf(comm, "Function appears to be linear\n");CHKERRQ(ierr);}
+    }
+  }
   ierr = MatDestroy(&J);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMSNESCheck_Internal(SNES snes, DM dm, Vec u, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSNESCheckDiscretization(snes, dm, u, exactFuncs, ctxs, -1.0);CHKERRQ(ierr);
+  ierr = DMSNESCheckResidual(snes, dm, u, -1.0);CHKERRQ(ierr);
+  ierr = DMSNESCheckJacobian(snes, dm, u, -1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2563,29 +2696,18 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErr
 @*/
 PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
-  PetscErrorCode (**exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = NULL;
-  void            **ectxs = NULL;
   DM             dm;
-  PetscDS        prob;
   Vec            sol;
   PetscBool      check;
-  PetscInt       Nf, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(((PetscObject)snes)->options,((PetscObject)snes)->prefix, "-dmsnes_check", &check);CHKERRQ(ierr);
   if (!check) PetscFunctionReturn(0);
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  if (!exactFuncs) {
-    ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-    ierr = PetscMalloc2(Nf, &exact, Nf, &ectxs);CHKERRQ(ierr);
-    for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exact[f], &ectxs[f]);CHKERRQ(ierr);}
-  }
   ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
   ierr = SNESSetSolution(snes, sol);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions_Internal(snes, dm, sol, exactFuncs ? exactFuncs : exact, ctxs ? ctxs : ectxs);CHKERRQ(ierr);
+  ierr = DMSNESCheck_Internal(snes, dm, sol, exactFuncs, ctxs);CHKERRQ(ierr);
   ierr = VecDestroy(&sol);CHKERRQ(ierr);
-  ierr = PetscFree2(exact, ectxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

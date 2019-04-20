@@ -762,4 +762,6 @@ PETSC_STATIC_INLINE PetscReal PetscLog2Real(PetscReal n)
   return PetscLogReal(n)/PetscLogReal(2.0);
 }
 #endif
+
+PETSC_EXTERN PetscErrorCode PetscLinearRegression(PetscInt,const PetscReal[],const PetscReal[],PetscReal*,PetscReal*);
 #endif
