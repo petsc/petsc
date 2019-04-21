@@ -610,9 +610,7 @@ static PetscErrorCode TSForwardReset_RK(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (rk->MatFwdSensip0) { /* Unlike VecDestroy, MatDestroy does not check if the pointer is NULL */
-    ierr = MatDestroy(&rk->MatFwdSensip0);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&rk->MatFwdSensip0);CHKERRQ(ierr);
   if (rk->MatsFwdStageSensip) {
     for (i=0; i<tab->s; i++) {
       ierr = MatDestroy(&rk->MatsFwdStageSensip[i]);CHKERRQ(ierr);
