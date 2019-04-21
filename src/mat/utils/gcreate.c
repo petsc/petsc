@@ -264,10 +264,10 @@ PetscErrorCode  MatSetFromOptions(Mat B)
    Input Arguments:
 +  A - matrix being preallocated
 .  bs - block size
-.  dnnz - number of nonzero blocks per block row of diagonal part of parallel matrix
-.  onnz - number of nonzero blocks per block row of off-diagonal part of parallel matrix
-.  dnnzu - number of nonzero blocks per block row of upper-triangular part of diagonal part of parallel matrix
--  onnzu - number of nonzero blocks per block row of upper-triangular part of off-diagonal part of parallel matrix
+.  dnnz - number of nonzero column blocks per block row of diagonal part of parallel matrix
+.  onnz - number of nonzero column blocks per block row of off-diagonal part of parallel matrix
+.  dnnzu - number of nonzero column blocks per block row of upper-triangular part of diagonal part of parallel matrix
+-  onnzu - number of nonzero column blocks per block row of upper-triangular part of off-diagonal part of parallel matrix
 
    Level: beginner
 
@@ -277,15 +277,19 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],const PetscInt onnz[],const PetscInt dnnzu[],const PetscInt onnzu[])
 {
   PetscErrorCode ierr;
+  PetscInt       cbs;
   void           (*aij)(void);
   void           (*is)(void);
   void           (*hyp)(void) = NULL;
 
   PetscFunctionBegin;
-  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  if (bs != PETSC_DECIDE) { /* don't mess with an already set block size */
+    ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
+  }
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  ierr = MatGetBlockSizes(A,&bs,&cbs);CHKERRQ(ierr);
+  /* these routines assumes bs == cbs, this should be checked somehow */
   ierr = MatSeqBAIJSetPreallocation(A,bs,0,dnnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A,bs,0,dnnz,0,onnz);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(A,bs,0,dnnzu);CHKERRQ(ierr);
@@ -303,20 +307,20 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
     ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
   }
   if (aij || is || hyp) {
-    if (bs == 1) {
+    if (bs == cbs && bs == 1) {
       ierr = MatSeqAIJSetPreallocation(A,0,dnnz);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
       ierr = MatISSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HYPRE)
       ierr = MatHYPRESetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
 #endif
-    } else {                    /* Convert block-row precallocation to scalar-row */
+    } else { /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
       ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
       ierr = PetscMalloc2((!!dnnz)*m,&sdnnz,(!!onnz)*m,&sonnz);CHKERRQ(ierr);
       for (i=0; i<m; i++) {
-        if (dnnz) sdnnz[i] = dnnz[i/bs] * bs;
-        if (onnz) sonnz[i] = onnz[i/bs] * bs;
+        if (dnnz) sdnnz[i] = dnnz[i/bs] * cbs;
+        if (onnz) sonnz[i] = onnz[i/bs] * cbs;
       }
       ierr = MatSeqAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
