@@ -940,7 +940,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
     rmax = imax[brow];  /* maximum space allocated for this row */
     nrow = ailen[brow]; /* actual length of this row */
     low  = 0;
-
+    high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -962,7 +962,8 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
 
         /* move pointer bap to a(k,l) quickly and add/insert value */
         if (col <= lastcol) low = 0;
-        high = nrow;
+        else high = nrow;
+
         lastcol = col;
         while (high-low > 7) {
           t = (low+high)/2;
@@ -1000,6 +1001,10 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         }
         rp[i]                      = bcol;
         ap[bs2*i + bs*cidx + ridx] = value;
+        /* for diag block, add/insert its symmetric element a(cidx,ridx) */
+        if (brow == bcol && ridx < cidx) {
+          ap[bs2*i + bs*ridx + cidx] = value;
+        }
         A->nonzerostate++;
 noinsert1:;
         low = i;
