@@ -1110,15 +1110,20 @@ PetscErrorCode  MatSeqSBAIJSetColumnIndices(Mat mat,PetscInt *indices)
 PetscErrorCode MatCopy_SeqSBAIJ(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
+  PetscBool      isbaij;
 
   PetscFunctionBegin;
-  /* If the two matrices have the same copy implementation, use fast copy. */
-  if (str == SAME_NONZERO_PATTERN && (A->ops->copy == B->ops->copy)) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&isbaij,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
+  if (!isbaij) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)B)->type_name);
+  /* If the two matrices have the same copy implementation and nonzero pattern, use fast copy. */
+  if (str == SAME_NONZERO_PATTERN && A->ops->copy == B->ops->copy) {
     Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
     Mat_SeqSBAIJ *b = (Mat_SeqSBAIJ*)B->data;
 
-    if (a->i[A->rmap->N] != b->i[B->rmap->N]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
-    ierr = PetscMemcpy(b->a,a->a,(a->i[A->rmap->N])*sizeof(PetscScalar));CHKERRQ(ierr);
+    if (a->i[a->mbs] != b->i[b->mbs]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
+    if (a->mbs != b->mbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of rows in two matrices are different");
+    if (a->bs2 != b->bs2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Different block size");
+    ierr = PetscMemcpy(b->a,a->a,a->bs2*a->i[a->mbs]*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   } else {
     ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
@@ -1194,7 +1199,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
     ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
     ierr = MatSetBlockSizesFromMats(B,Y,Y);CHKERRQ(ierr);
-    ierr = MatSetType(B,(MatType) ((PetscObject)Y)->type_name);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)Y)->type_name);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_SeqSBAIJ(Y,X,nnz);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
 
@@ -2130,6 +2135,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   *B   = 0;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,A->rmap->N,A->cmap->n,A->rmap->N,A->cmap->n);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(C,A,A);CHKERRQ(ierr);
   ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
   c    = (Mat_SeqSBAIJ*)C->data;
 
@@ -2147,7 +2153,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->mbs = a->mbs;
   c->nbs = a->nbs;
 
-  if  (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
+  if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
     c->imax           = a->imax;
     c->ilen           = a->ilen;
     c->free_imax_ilen = PETSC_FALSE;

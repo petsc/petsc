@@ -1745,16 +1745,20 @@ PetscErrorCode MatEqual_MPISBAIJ(Mat A,Mat B,PetscBool  *flag)
 PetscErrorCode MatCopy_MPISBAIJ(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
-  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
-  Mat_MPISBAIJ   *b = (Mat_MPISBAIJ*)B->data;
+  PetscBool      isbaij;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&isbaij,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
+  if (!isbaij) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)B)->type_name);
   /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
   if ((str != SAME_NONZERO_PATTERN) || (A->ops->copy != B->ops->copy)) {
     ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
     ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
   } else {
+    Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
+    Mat_MPISBAIJ *b = (Mat_MPISBAIJ*)B->data;
+
     ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
     ierr = MatCopy(a->B,b->B,str);CHKERRQ(ierr);
   }
