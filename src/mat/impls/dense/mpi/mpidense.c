@@ -847,6 +847,7 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscBool flg)
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_IGNORE_LOWER_TRIANGULAR:
+  case MAT_IGNORE_ZERO_ENTRIES:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
