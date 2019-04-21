@@ -834,14 +834,14 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     Mat A, B;
 
     ierr = PCGetOperators(ksp->pc, &A, NULL);CHKERRQ(ierr);
-    ierr = MatComputeExplicitOperator(A, &B);CHKERRQ(ierr);
+    ierr = MatComputeExplicitOperator(A, MATAIJ, &B);CHKERRQ(ierr);
     ierr = ObjectView((PetscObject) B, ksp->viewerMatExp, ksp->formatMatExp);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   if (ksp->viewPOpExp)   {
     Mat B;
 
-    ierr = KSPComputeExplicitOperator(ksp, &B);CHKERRQ(ierr);
+    ierr = KSPComputeExplicitOperator(ksp, MATAIJ, &B);CHKERRQ(ierr);
     ierr = ObjectView((PetscObject) B, ksp->viewerPOpExp, ksp->formatPOpExp);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }

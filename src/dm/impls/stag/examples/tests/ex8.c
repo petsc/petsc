@@ -79,15 +79,6 @@ int main(int argc,char **argv)
   ierr = DMCreateMatrix(dmSol,&A);CHKERRQ(ierr);
   ierr = MatShellSetOperation(A,MATOP_MULT,(void(*) (void)) ApplyOperator);CHKERRQ(ierr);
 
-#if 0
-  {
-    Mat Aex;
-    ierr = MatComputeExplicitOperator(A,&Aex);
-    MatView(Aex,0);
-    MatDestroy(&Aex);
-  }
-#endif
-
   /* Solve */
   ierr = DMCreateGlobalVector(dmSol,&sol);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

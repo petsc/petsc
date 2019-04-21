@@ -84,7 +84,7 @@ PETSC_EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCGetOptionsPrefix(PC,const char*[]);
 
-PETSC_EXTERN PetscErrorCode PCComputeExplicitOperator(PC,Mat*);
+PETSC_EXTERN PetscErrorCode PCComputeExplicitOperator(PC,MatType,Mat*);
 
 /*
       These are used to provide extra scaling of preconditioned

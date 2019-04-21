@@ -615,7 +615,7 @@ PETSC_DEPRECATED("Use KSPConvergedDefaultSetUMIRNorm()") PETSC_STATIC_INLINE voi
 PETSC_DEPRECATED("Use KSPConvergedSkip()") PETSC_STATIC_INLINE void KSPSkipConverged(void) { /* never called */ }
 #define KSPSkipConverged (KSPSkipConverged, KSPConvergedSkip)
 
-PETSC_EXTERN PetscErrorCode KSPComputeExplicitOperator(KSP,Mat*);
+PETSC_EXTERN PetscErrorCode KSPComputeExplicitOperator(KSP,MatType,Mat*);
 
 /*E
     KSPCGType - Determines what type of CG to use

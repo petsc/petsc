@@ -18,15 +18,15 @@ Number of indices in (stride) set 2
 
 Explicit Schur complement of (0,0) in (1,1)
 Mat Object: 1 MPI processes
-  type: seqdense
-1.5111111111111111e+01 -6.0000000000000009e+00 
--1.0111111111111111e+01 1.5000000000000000e+01 
+  type: seqaij
+row 0: (0, 15.1111)  (1, -6.) 
+row 1: (0, -10.1111)  (1, 15.) 
 
 Explicit Schur complement of (1,1) in (0,0)
 Mat Object: 1 MPI processes
-  type: seqdense
-5.0000000000000000e+00 -6.0000000000000009e-01 
--5.8333333333333330e+00 9.0000000000000000e+00 
+  type: seqaij
+row 0: (0, 5.)  (1, -0.6) 
+row 1: (0, -5.83333)  (1, 9.) 
 
 Preconditioning Schur complement of (0,0) in (1,1)
 Mat Object: 1 MPI processes

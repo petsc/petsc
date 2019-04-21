@@ -2539,7 +2539,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       A    = jacobian;
       ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     } else {
-      ierr = MatComputeExplicitOperator(jacobian,&A);CHKERRQ(ierr);
+      ierr = MatComputeExplicitOperator(jacobian,MATAIJ,&A);CHKERRQ(ierr);
     }
 
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
@@ -2584,7 +2584,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 
       for (row = Istart; row < Iend; row++) {
         ierr = MatGetRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
-        ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
+        ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr);
         for (j = 0, cncols = 0; j < bncols; j++) {
           if (PetscAbsScalar(bvals[j]) > threshold) {
             ccols[cncols] = bcols[j];
@@ -2596,7 +2596,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
           ierr = MatSetValues(C,1,&row,cncols,ccols,cvals,INSERT_VALUES);CHKERRQ(ierr);
         }
         ierr = MatRestoreRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
-        ierr = PetscFree2(ccols,cvals);CHKERRQ(ierr); 
+        ierr = PetscFree2(ccols,cvals);CHKERRQ(ierr);
       }
       ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2658,7 +2658,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
    is used internally within the nonlinear solvers.
 
    Developer Notes:
-    This has duplicative ways of checking the accuracy of the user provided Jacobian (see the options above). This is for historical reasons, the routine SNESTestJacobian() use to used 
+    This has duplicative ways of checking the accuracy of the user provided Jacobian (see the options above). This is for historical reasons, the routine SNESTestJacobian() use to used
       for with the SNESType of test that has been removed.
 
    Level: developer
@@ -2754,7 +2754,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
       PetscViewer  vdraw,vstdout;
       PetscBool    flg;
       if (flag_operator) {
-        ierr = MatComputeExplicitOperator(A,&Bexp_mine);CHKERRQ(ierr);
+        ierr = MatComputeExplicitOperator(A,MATAIJ,&Bexp_mine);CHKERRQ(ierr);
         Bexp = Bexp_mine;
       } else {
         /* See if the preconditioning matrix can be viewed and added directly */
@@ -2762,7 +2762,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
         if (flg) Bexp = B;
         else {
           /* If the "preconditioning" matrix is itself MATSHELL or some other type without direct support */
-          ierr = MatComputeExplicitOperator(B,&Bexp_mine);CHKERRQ(ierr);
+          ierr = MatComputeExplicitOperator(B,MATAIJ,&Bexp_mine);CHKERRQ(ierr);
           Bexp = Bexp_mine;
         }
       }
