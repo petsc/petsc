@@ -1178,6 +1178,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
 
   ierr = PetscCalloc1(pon,&iremote);CHKERRQ(ierr);
   for (i=0; i<pon; i++) {
+    owner = 0; lidx = 0;
     ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
     iremote[i].index = lidx;
     iremote[i].rank  = owner;
@@ -1229,6 +1230,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   ierr = PetscCalloc1(ptap->c_rmti[pon],&iremote);CHKERRQ(ierr);
   nleaves = 0;
   for (i = 0; i<pon; i++) {
+    owner = 0; lidx = 0;
     ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
     sendncols = ptap->c_rmti[i+1] - ptap->c_rmti[i];
     for (j=0; j<sendncols; j++) {
@@ -1452,6 +1454,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
 
   ierr = PetscCalloc1(pon,&iremote);CHKERRQ(ierr);
   for (i=0; i<pon; i++) {
+    owner = 0; lidx = 0;
     ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
     iremote[i].index = lidx;
     iremote[i].rank  = owner;
@@ -1503,6 +1506,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   ierr = PetscCalloc1(ptap->c_rmti[pon],&iremote);CHKERRQ(ierr);
   nleaves = 0;
   for (i = 0; i<pon; i++) {
+    owner = 0; lidx = 0;
     ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
     sendncols = ptap->c_rmti[i+1] - ptap->c_rmti[i];
     for (j=0; j<sendncols; j++) {
