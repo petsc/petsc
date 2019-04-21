@@ -199,7 +199,6 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_elemental_C",NULL);CHKERRQ(ierr);
 #endif
@@ -303,6 +302,7 @@ PetscErrorCode MatGetRowUpperTriangular_SeqSBAIJ(Mat A)
   a->getrow_utriangular = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode MatRestoreRowUpperTriangular_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -1883,9 +1883,6 @@ PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
 
   .seealso: MatCreateSeqSBAIJ
 M*/
-
-PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat, MatType,MatReuse,Mat*);
-
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 {
   Mat_SeqSBAIJ   *b;
@@ -2029,7 +2026,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
 
    Input Parameters:
 +  B - the matrix
-.  bs - size of block, the blocks are ALWAYS square. 
+.  bs - size of block, the blocks are ALWAYS square.
 .  i - the indices into j for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
@@ -2476,7 +2473,3 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ(MPI_Comm comm,Mat inmat
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
