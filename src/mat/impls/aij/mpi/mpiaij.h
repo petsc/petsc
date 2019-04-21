@@ -29,6 +29,8 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   PetscBool               freestruct;              /* flag for MatFreeIntermediateDataStructures() */
   Mat                     Rd,Ro,AP_loc,C_loc,C_oth;
   PetscInt                algType;                 /* implementation algorithm */
+  PetscSF                 sf;                      /* use it to communicate remote part of C */
+  PetscInt                *c_othi,*c_rmti;
 
   Mat_Merge_SeqsToMPI *merge;
   PetscErrorCode (*destroy)(Mat);
@@ -124,7 +126,11 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat);
 PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_BC(Mat);
 
