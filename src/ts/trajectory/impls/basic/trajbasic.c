@@ -119,9 +119,7 @@ static PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
       ierr = PetscTestFile(dir,'r',&flg);CHKERRQ(ierr);
       if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified path is a file - not a dir: %s",dir);
       ierr = PetscMkdir(dir);CHKERRQ(ierr);
-    } else {
-      ierr = PetscRMTree(tj->dirname);CHKERRQ(ierr); /* avoid having to delete the folder manually */
-    }
+    } else SETERRQ1(comm,PETSC_ERR_SUP,"Directory %s not empty",tj->dirname);
   }
   ierr = PetscBarrier((PetscObject)tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
