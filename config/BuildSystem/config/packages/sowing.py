@@ -8,7 +8,8 @@ def noCheck(command, status, output, error):
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'v1.1.25-p1'
+    self.minversion        = '1.1.25'
+    self.gitcommit         = 'v'+self.minversion+'-p1'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
     self.complex           = 1
@@ -51,19 +52,19 @@ class Configure(config.package.GNUPackage):
   def alternateConfigureLibrary(self):
     self.checkDownload()
 
-  def checkBfortVersion(self,mmajor,mminor,msubminor):
+  def checkBfortVersion(self):
     try:
       import re
       (output, error, status) = config.base.Configure.executeShellCommand(self.bfort+' -version', checkCommand=noCheck, log = self.log)
       ver = re.compile('bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
-      major    = int(ver.group(1))
-      minor    = int(ver.group(2))
-      subminor = int(ver.group(3))
+      foundversion = tuple(map(int,ver.groups()))
+      self.foundversion = ".".join(map(str,foundversion))
     except RuntimeError as e:
       self.log.write(self.bfort+' version check failed: '+str(e)+'\n')
       return
-    if (major < mmajor) or (major == mmajor and minor < mminor) or (major == mmajor and minor == mminor and subminor < msubminor):
-      raise RuntimeError(self.bfort+' version '+str(major)+'.'+str(minor)+'.'+str(subminor)+' is older than required '+str(mmajor)+'.'+str(mminor)+'.'+str(msubminor)+'. Perhaps a stale install of sowing?')
+    version = tuple(map(int, self.minversion.split('.')))
+    if foundversion < version:
+      raise RuntimeError(self.bfort+' version '+".".join(map(str,foundversion))+' is older than required '+self.minversion+'. Perhaps a stale install of sowing?')
     return
 
   def configure(self):
@@ -116,7 +117,7 @@ class Configure(config.package.GNUPackage):
           self.getExecutable('mapnames', path=installDir, getFullPath = 1)
           self.getExecutable('bib2html', path=installDir, getFullPath = 1)
 
-      self.checkBfortVersion(1,1,25)
+      self.checkBfortVersion()
       self.buildFortranStubs()
     else:
       self.logPrint("Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled, don't need Sowing\n")
