@@ -733,11 +733,11 @@ int main(int argc,char ** argv)
     ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
     /* vfrom */
     ierr = DMNetworkGetComponent(networkdm,cone[0],0,&vkey,(void**)&junction);CHKERRQ(ierr);
-    junction->type = (int)vtype[2*e];
+    junction->type = (VertexType)vtype[2*e];
 
     /* vto */
     ierr = DMNetworkGetComponent(networkdm,cone[1],0,&vkey,(void**)&junction);CHKERRQ(ierr);
-    junction->type = (int)vtype[2*e+1];
+    junction->type = (VertexType)vtype[2*e+1];
   }
 
   ierr = WashNetworkCleanUp(wash);CHKERRQ(ierr);
