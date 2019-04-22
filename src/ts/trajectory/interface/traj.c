@@ -73,7 +73,9 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
   ierr = PetscLogEventBegin(TSTrajectory_Set,tj,ts,0,0);CHKERRQ(ierr);
   ierr = (*tj->ops->set)(tj,ts,stepnum,time,X);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_Set,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = TSHistoryUpdate(tj->tsh,stepnum,time);CHKERRQ(ierr);
+  if (tj->usehistory) {
+    ierr = TSHistoryUpdate(tj->tsh,stepnum,time);CHKERRQ(ierr);
+  }
   if (tj->lag.caching) tj->lag.Udotcached.time = PETSC_MIN_REAL;
   PetscFunctionReturn(0);
 }
@@ -443,6 +445,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   t->adjoint_solve_mode   = PETSC_TRUE;
   t->solution_only        = PETSC_FALSE;
   t->keepfiles            = PETSC_FALSE;
+  t->usehistory           = PETSC_TRUE;
   *tj  = t;
   ierr = TSTrajectorySetDirname(t,"SA-data");CHKERRQ(ierr);
   ierr = TSTrajectorySetFiletemplate(t,"SA-%06D.bin");CHKERRQ(ierr);
@@ -820,6 +823,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
   if (ts) PetscValidHeaderSpecific(ts,TS_CLASSID,2);
   ierr = PetscObjectOptionsBegin((PetscObject)tj);CHKERRQ(ierr);
   ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,tj,ts);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_trajectory_use_history","Turn on/off usage of TSHistory",NULL,tj->usehistory,&tj->usehistory,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_trajectory_monitor","Print checkpointing schedules","TSTrajectorySetMonitor",tj->monitor ? PETSC_TRUE:PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSTrajectorySetMonitor(tj,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ts_trajectory_reconstruction_order","Interpolation order for reconstruction",NULL,tj->lag.order,&tj->lag.order,NULL);CHKERRQ(ierr);

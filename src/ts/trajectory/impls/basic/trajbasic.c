@@ -13,7 +13,7 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
 
   PetscFunctionBegin;
   ierr = PetscSNPrintf(filename,sizeof(filename),tj->dirfiletemplate,stepnum);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(tjbasic->viewer,filename);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(tjbasic->viewer,filename);CHKERRQ(ierr); /* this triggers PetscViewer to be set up again */
   ierr = PetscViewerSetUp(tjbasic->viewer);CHKERRQ(ierr);
   ierr = VecView(X,tjbasic->viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryWrite(tjbasic->viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
@@ -56,13 +56,13 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,t,1,NULL,PETSC_REAL);CHKERRQ(ierr);
-  if (stepnum != 0 && !tj->solution_only) {
-    Vec         *Y;
-    PetscInt    Nr,i;
-    PetscReal   timepre;
+  if (stepnum && !tj->solution_only) {
+    Vec       *Y;
+    PetscInt  Nr,i;
+    PetscReal timepre;
 
     ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
-    for (i=0;i<Nr ;i++) {
+    for (i=0; i<Nr; i++) {
       ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerBinaryRead(viewer,&timepre,1,NULL,PETSC_REAL);CHKERRQ(ierr);
@@ -93,7 +93,9 @@ static PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
       ierr = PetscTestFile(dir,'r',&flg);CHKERRQ(ierr);
       if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified path is a file - not a dir: %s",dir);
       ierr = PetscMkdir(dir);CHKERRQ(ierr);
-    } else SETERRQ1(comm,PETSC_ERR_SUP,"Directory %s not empty",tj->dirname);
+    } else {
+      ierr = PetscRMTree(tj->dirname);CHKERRQ(ierr); /* avoid having to delete the folder manually */
+    }
   }
   ierr = PetscBarrier((PetscObject)tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
