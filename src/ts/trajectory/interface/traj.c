@@ -469,7 +469,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 
 .keywords: TS, trajectory, timestep, set, type
 
-.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy()
+.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy(), TSTrajectoryGetType()
 
 @*/
 PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,TSTrajectoryType type)
@@ -494,6 +494,33 @@ PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,TSTrajectoryType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)tj,type);CHKERRQ(ierr);
   ierr = (*r)(tj,ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSTrajectoryGetType - Gets the trajectory type
+
+  Collective on TS
+
+  Input Parameters:
++ tj   - the TSTrajectory context
+- ts   - the TS context
+
+  Output Parameters:
+. type - a known method
+
+  Level: developer
+
+.keywords: TS, trajectory, timestep, get, type
+
+.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy(), TSTrajectorySetType()
+
+@*/
+PetscErrorCode TSTrajectoryGetType(TSTrajectory tj,TS ts,TSTrajectoryType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+  if (type) *type = ((PetscObject)tj)->type_name;
   PetscFunctionReturn(0);
 }
 

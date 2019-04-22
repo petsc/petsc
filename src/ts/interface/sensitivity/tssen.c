@@ -1087,13 +1087,24 @@ PetscErrorCode TSAdjointResetForward(TS ts)
 @*/
 PetscErrorCode TSAdjointSetUp(TS ts)
 {
-  PetscErrorCode ierr;
+  TSTrajectory     tj;
+  TSTrajectoryType tjtype;
+  PetscBool        match;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
   if (!ts->vecs_sensi) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
   if (ts->vecs_sensip && !ts->Jacp && !ts->Jacprhs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetRHSJacobianP() or TSSetIJacobianP() first");
+  ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
+  ierr = TSTrajectoryGetType(tj,ts,&tjtype);CHKERRQ(ierr);
+  ierr = PetscStrcmp(TSTRAJECTORYBASIC,tjtype,&match);CHKERRQ(ierr);
+  if (match) {
+    PetscBool solution_only;
+    ierr = TSTrajectoryGetSolutionOnly(tj,&solution_only);CHKERRQ(ierr);
+    if (solution_only) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"TSAdjoint cannot use the solution-only mode when choosing the Basic TSTrajectory type. Turn it off with -ts_trajectory_solution_only 0");
+  }
 
   if (!ts->Jacp && ts->Jacprhs) ts->Jacp = ts->Jacprhs;
 

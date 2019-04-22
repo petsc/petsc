@@ -319,6 +319,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryReset(TSTrajectory);
 PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy(TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryView(TSTrajectory,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,TS,TSTrajectoryType);
+PETSC_EXTERN PetscErrorCode TSTrajectoryGetType(TSTrajectory,TS,TSTrajectoryType*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySet(TSTrajectory,TS,PetscInt,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryGetVecs(TSTrajectory,TS,PetscInt,PetscReal*,Vec,Vec);
