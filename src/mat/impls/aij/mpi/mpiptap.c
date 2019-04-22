@@ -9,9 +9,43 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscbt.h>
 #include <petsctime.h>
-#include <petsc/private/hashmapiv.h>
+#include <petsc/private/hashmap.h>
 #include <petsc/private/hashseti.h>
 #include <petscsf.h>
+
+PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
+
+PETSC_STATIC_INLINE
+PetscErrorCode PetscHMapIVAdd(PetscHMapIV ht,PetscInt key,PetscScalar val)
+{
+  int      ret;
+  khiter_t iter;
+  PetscFunctionBeginHot;
+  PetscValidPointer(ht,1);
+  iter = kh_put(HMapIV,ht,key,&ret);
+  PetscHashAssert(ret>=0);
+  if (ret) kh_val(ht,iter) = val;
+  else  kh_val(ht,iter) += val;
+  PetscFunctionReturn(0);
+}
+
+
+PETSC_STATIC_INLINE PETSC_UNUSED
+PetscErrorCode PetscHMapIVAddAndScale(PetscHMapIV ht,PetscHMapIV hd,PetscScalar scale)
+{
+  int         ret;
+  PetscInt    key;
+  PetscScalar val;
+  PetscFunctionBegin;
+  PetscValidPointer(ht,1);
+  PetscValidPointer(hd,2);
+  kh_foreach(hd,key,val,{ khiter_t i;
+      i = kh_put(HMapIV,ht,key,&ret);
+      PetscHashAssert(ret>=0);
+      if (ret)  kh_val(ht,i) = val*scale;
+      else kh_val(ht,i) += val*scale;})
+  PetscFunctionReturn(0);
+}
 
 /* #define PTAP_PROFILE */
 

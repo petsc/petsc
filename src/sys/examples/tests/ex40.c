@@ -3,6 +3,14 @@ static char help[] = "Test PETSc integer hash map.\n\n";
 #include <petsc/private/hashmapi.h>
 #include <petscsys.h>
 
+/* Unused, keep it for testing purposes */
+PETSC_HASH_MAP(HMapIP, PetscInt, void*, PetscHashInt, PetscHashEqual, NULL)
+
+/* Unused, keep it for testing purposes */
+typedef struct { double x; double y; double z; } Point;
+static Point origin = {0.0, 0.0, 0.0};
+PETSC_HASH_MAP(HMapIS, PetscInt, Point, PetscHashInt, PetscHashEqual, origin)
+
 #define PetscAssert(expr) do {            \
 if (PetscUnlikely(!(expr)))               \
   SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, \
