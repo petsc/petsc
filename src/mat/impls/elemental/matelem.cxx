@@ -856,7 +856,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  
+
   if (reuse == MAT_REUSE_MATRIX) {
     Bmpi = *B;
   } else {
@@ -873,7 +873,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
 
-  if (a->roworiented) {  
+  if (a->roworiented) {
     for (i=0; i<nrows; i++) {
       P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
       RO2E(A,0,rrank,ridx,&erow);
@@ -927,13 +927,18 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat A, MatType newtype,M
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    mat_elemental = *newmat;
+    ierr = MatZeroEntries(mat_elemental);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+    ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+    ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  }
   for (row=0; row<M; row++) {
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+    /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
     ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
   }
@@ -957,14 +962,19 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,M
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    mat_elemental = *newmat;
+    ierr = MatZeroEntries(mat_elemental);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+    ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+    ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  }
   for (row=rstart; row<rend; row++) {
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
     for (j=0; j<ncols; j++) {
-      /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+      /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
       ierr = MatSetValues(mat_elemental,1,&row,1,&cols[j],&vals[j],ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
@@ -989,14 +999,19 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    mat_elemental = *newmat;
+    ierr = MatZeroEntries(mat_elemental);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+    ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+    ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  }
   ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
   for (row=0; row<M; row++) {
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+    /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
     ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     for (j=0; j<ncols; j++) { /* lower triangular part */
       if (cols[j] == row) continue;
@@ -1025,14 +1040,19 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    mat_elemental = *newmat;
+    ierr = MatZeroEntries(mat_elemental);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+    ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+    ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  }
   ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
   for (row=rstart; row<rend; row++) {
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+    /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
     ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     for (j=0; j<ncols; j++) { /* lower triangular part */
       if (cols[j] == row) continue;
@@ -1146,7 +1166,7 @@ PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)newMat,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&Adense);CHKERRQ(ierr);
-  ierr = MatSetType(Adense,MATDENSE);CHKERRQ(ierr); 
+  ierr = MatSetType(Adense,MATDENSE);CHKERRQ(ierr);
   ierr = MatLoad(Adense,viewer);CHKERRQ(ierr);
   ierr = MatConvert(Adense, MATELEMENTAL, MAT_INITIAL_MATRIX,&Ae);CHKERRQ(ierr);
   ierr = MatDestroy(&Adense);CHKERRQ(ierr);
@@ -1165,8 +1185,8 @@ static struct _MatOps MatOps_Values = {
        MatMultTransposeAdd_Elemental,
        MatSolve_Elemental,
        MatSolveAdd_Elemental,
-       0, 
-/*10*/ 0, 
+       0,
+/*10*/ 0,
        MatLUFactor_Elemental,
        MatCholeskyFactor_Elemental,
        0,
@@ -1357,7 +1377,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
     commgrid->grid_refct = 1;
     ierr = MPI_Comm_set_attr(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
 
-    a->pivoting    = 1; 
+    a->pivoting    = 1;
     ierr = PetscOptionsInt("-mat_elemental_pivoting","Pivoting","None",a->pivoting,&a->pivoting,NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
