@@ -1,4 +1,4 @@
-original matrix nonzeros = 24, allocated nonzeros = 40
+original matrix nonzeros = 24, allocated nonzeros = 32
 original: Frobenious norm = 102.078, one norm = 80., infinity norm = 195.
 Mat Object: 2 MPI processes
   type: mpiaij
