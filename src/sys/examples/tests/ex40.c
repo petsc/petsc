@@ -4,12 +4,12 @@ static char help[] = "Test PETSc integer hash map.\n\n";
 #include <petscsys.h>
 
 /* Unused, keep it for testing purposes */
-PETSC_HASH_MAP(HMapIP, PetscInt, void*, PetscHashInt, PetscHashEqual, NULL);
+PETSC_HASH_MAP(HMapIP, PetscInt, void*, PetscHashInt, PetscHashEqual, NULL)
 
 /* Unused, keep it for testing purposes */
 typedef struct { double x; double y; double z; } Point;
-static const Point origin = {0.0, 0.0, 0.0};
-PETSC_HASH_MAP(HMapIS, PetscInt, Point, PetscHashInt, PetscHashEqual, origin);
+static Point origin = {0.0, 0.0, 0.0};
+PETSC_HASH_MAP(HMapIS, PetscInt, Point, PetscHashInt, PetscHashEqual, origin)
 
 #define PetscAssert(expr) do {            \
 if (PetscUnlikely(!(expr)))               \
