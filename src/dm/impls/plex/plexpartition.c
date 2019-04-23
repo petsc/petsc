@@ -27,6 +27,8 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
                                "  pages   = {71--85},\n"
                                "  year    = {1998}\n}\n";
 
+PETSC_STATIC_INLINE PetscInt DMPlex_GlobalID(PetscInt point) { return point >= 0 ? point : -(point+1); }
+
 /*@C
   DMPlexCreatePartitionerGraph - Create a CSR graph of point connections for the partitioner
 
@@ -81,9 +83,8 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     if (rank && *numVertices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
     PetscFunctionReturn(0);
   }
-  ierr = DMPlexGetHeightStratum(dm, height, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, height, &pStart, &pEnd);CHKERRQ(ierr);
   /* Build adjacency graph via a section/segbuffer */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
@@ -91,7 +92,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   /* Always use FVM adjacency to create partitioner graph */
   ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
   ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &cellNumbering);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Internal(dm, pStart, pEnd, 0, NULL, sfPoint, &cellNumbering);CHKERRQ(ierr);
   if (globalNumbering) {
     ierr = PetscObjectReference((PetscObject)cellNumbering);CHKERRQ(ierr);
     *globalNumbering = cellNumbering;
@@ -100,12 +101,12 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   /* For all boundary faces (including faces adjacent to a ghost cell), record the local cell in adjCells
      Broadcast adjCells to remoteCells (to get cells from roots) and Reduce adjCells to remoteCells (to get cells from leaves)
    */
-  ierr = PetscSFGetGraph(dm->sf, &nroots, &nleaves, &local, NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, &nroots, &nleaves, &local, NULL);CHKERRQ(ierr);
   if (nroots >= 0) {
     PetscInt fStart, fEnd, f;
 
     ierr = PetscCalloc2(nroots, &adjCells, nroots, &remoteCells);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm, height+1, &fStart, &fEnd);CHKERRQ(ierr);
     for (l = 0; l < nroots; ++l) adjCells[l] = -3;
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt *support;
@@ -113,12 +114,33 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 
       ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
-      if (supportSize == 1) adjCells[f] = cellNum[support[0]];
+      if (supportSize == 1) adjCells[f] = DMPlex_GlobalID(cellNum[support[0]]);
       else if (supportSize == 2) {
         ierr = PetscFindInt(support[0], nleaves, local, &p);CHKERRQ(ierr);
-        if (p >= 0) adjCells[f] = cellNum[support[1]];
+        if (p >= 0) adjCells[f] = DMPlex_GlobalID(cellNum[support[1]]);
         ierr = PetscFindInt(support[1], nleaves, local, &p);CHKERRQ(ierr);
-        if (p >= 0) adjCells[f] = cellNum[support[0]];
+        if (p >= 0) adjCells[f] = DMPlex_GlobalID(cellNum[support[0]]);
+      }
+      /* Handle non-conforming meshes */
+      if (supportSize > 2) {
+        PetscInt        numChildren, i;
+        const PetscInt *children;
+
+        ierr = DMPlexGetTreeChildren(dm, f, &numChildren, &children);CHKERRQ(ierr);
+        for (i = 0; i < numChildren; ++i) {
+          const PetscInt child = children[i];
+          if (fStart <= child && child < fEnd) {
+            ierr = DMPlexGetSupport(dm, child, &support);CHKERRQ(ierr);
+            ierr = DMPlexGetSupportSize(dm, child, &supportSize);CHKERRQ(ierr);
+            if (supportSize == 1) adjCells[child] = DMPlex_GlobalID(cellNum[support[0]]);
+            else if (supportSize == 2) {
+              ierr = PetscFindInt(support[0], nleaves, local, &p);CHKERRQ(ierr);
+              if (p >= 0) adjCells[child] = DMPlex_GlobalID(cellNum[support[1]]);
+              ierr = PetscFindInt(support[1], nleaves, local, &p);CHKERRQ(ierr);
+              if (p >= 0) adjCells[child] = DMPlex_GlobalID(cellNum[support[0]]);
+            }
+          }
+        }
       }
     }
     for (l = 0; l < nroots; ++l) remoteCells[l] = -1;
@@ -129,22 +151,34 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   }
   /* Combine local and global adjacencies */
   for (*numVertices = 0, p = pStart; p < pEnd; p++) {
-    const PetscInt *cone;
-    PetscInt        coneSize, c;
-
     /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
     if (nroots > 0) {if (cellNum[p] < 0) continue;}
     /* Add remote cells */
     if (remoteCells) {
+      const PetscInt gp = DMPlex_GlobalID(cellNum[p]);
+      PetscInt       coneSize, numChildren, c, i;
+      const PetscInt *cone, *children;
+
       ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
       for (c = 0; c < coneSize; ++c) {
-        if (remoteCells[cone[c]] != -1) {
+        const PetscInt point = cone[c];
+        if (remoteCells[point] >= 0 && remoteCells[point] != gp) {
           PetscInt *PETSC_RESTRICT pBuf;
-
           ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
           ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
-          *pBuf = remoteCells[cone[c]];
+          *pBuf = remoteCells[point];
+        }
+        /* Handle non-conforming meshes */
+        ierr = DMPlexGetTreeChildren(dm, point, &numChildren, &children);CHKERRQ(ierr);
+        for (i = 0; i < numChildren; ++i) {
+          const PetscInt child = children[i];
+          if (remoteCells[child] >= 0 && remoteCells[child] != gp) {
+            PetscInt *PETSC_RESTRICT pBuf;
+            ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
+            ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
+            *pBuf = remoteCells[child];
+          }
         }
       }
     }
@@ -157,7 +191,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
         PetscInt *PETSC_RESTRICT pBuf;
         ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
         ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
-        *pBuf = cellNum[point];
+        *pBuf = DMPlex_GlobalID(cellNum[point]);
       }
     }
     (*numVertices)++;
