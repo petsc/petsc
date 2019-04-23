@@ -323,7 +323,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
       if (ex) {
         Mat Ainvd;
 
-        ierr = PCComputeExplicitOperator(pc, MATDENSE, &Ainvd);CHKERRQ(ierr);
+        ierr = PCComputeOperator(pc, MATDENSE, &Ainvd);CHKERRQ(ierr);
         ierr = MatMatMult(Ainvd, Bd, MAT_INITIAL_MATRIX, fill, &AinvBd);CHKERRQ(ierr);
         ierr = MatDestroy(&Ainvd);CHKERRQ(ierr);
       } else {

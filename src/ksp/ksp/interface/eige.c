@@ -20,7 +20,7 @@ static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
 }
 
 /*@
-    KSPComputeExplicitOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
+    KSPComputeOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
     space removal if applicable.
 
     Collective on KSP
@@ -43,9 +43,9 @@ static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
 
 .keywords: KSP, compute, explicit, operator
 
-.seealso: KSPComputeEigenvaluesExplicitly(), PCComputeExplicitOperator(), KSPSetDiagonalScale(), KSPSetNullSpace(), MatType
+.seealso: KSPComputeEigenvaluesExplicitly(), PCComputeOperator(), KSPSetDiagonalScale(), KSPSetNullSpace(), MatType
 @*/
-PetscErrorCode  KSPComputeExplicitOperator(KSP ksp, MatType mattype, Mat *mat)
+PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       N,M,m,n;
@@ -59,7 +59,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp, MatType mattype, Mat *mat)
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatCreateShell(PetscObjectComm((PetscObject)ksp),m,n,M,N,ksp,&Aksp);CHKERRQ(ierr);
   ierr = MatShellSetOperation(Aksp,MATOP_MULT,(void (*)(void))MatMult_KSP);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(Aksp,mattype,mat);CHKERRQ(ierr);
+  ierr = MatComputeOperator(Aksp,mattype,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&Aksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -112,7 +112,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-  ierr = KSPComputeExplicitOperator(ksp,MATDENSE,&BA);CHKERRQ(ierr);
+  ierr = KSPComputeOperator(ksp,MATDENSE,&BA);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 

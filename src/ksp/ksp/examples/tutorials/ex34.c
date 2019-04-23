@@ -248,7 +248,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
   if (dump_mat) {
     Mat JJ;
 
-    ierr = MatComputeExplicitOperator(jac,MATAIJ,&JJ);CHKERRQ(ierr);
+    ierr = MatComputeOperator(jac,MATAIJ,&JJ);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(JJ,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&JJ);CHKERRQ(ierr);

@@ -204,7 +204,7 @@ int main(int argc,char **args)
       ierr = MatConvert(S,MATDENSE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
       ierr = MatCreateTranspose(S,&ST);CHKERRQ(ierr);
-      ierr = MatComputeExplicitOperator(ST,MATDENSE,&BT);CHKERRQ(ierr);
+      ierr = MatComputeOperator(ST,MATDENSE,&BT);CHKERRQ(ierr);
       ierr = MatTranspose(BT,MAT_INITIAL_MATRIX,&BTT);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)B,"S");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)BTT,"STT");CHKERRQ(ierr);

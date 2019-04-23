@@ -1778,7 +1778,7 @@ static PetscErrorCode MatMult_PC(Mat A,Vec X,Vec Y)
 }
 
 /*@
-    PCComputeExplicitOperator - Computes the explicit preconditioned operator.
+    PCComputeOperator - Computes the explicit preconditioned operator.
 
     Collective on PC
 
@@ -1798,10 +1798,10 @@ static PetscErrorCode MatMult_PC(Mat A,Vec X,Vec Y)
 
 .keywords: PC, compute, explicit, operator
 
-.seealso: KSPComputeExplicitOperator(), MatType
+.seealso: KSPComputeOperator(), MatType
 
 @*/
-PetscErrorCode  PCComputeExplicitOperator(PC pc,MatType mattype,Mat *mat)
+PetscErrorCode  PCComputeOperator(PC pc,MatType mattype,Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       N,M,m,n;
@@ -1815,7 +1815,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,MatType mattype,Mat *mat)
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatCreateShell(PetscObjectComm((PetscObject)pc),m,n,M,N,pc,&Apc);CHKERRQ(ierr);
   ierr = MatShellSetOperation(Apc,MATOP_MULT,(void (*)(void))MatMult_PC);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(Apc,mattype,mat);CHKERRQ(ierr);
+  ierr = MatComputeOperator(Apc,mattype,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&Apc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

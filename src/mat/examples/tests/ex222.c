@@ -1,4 +1,4 @@
-static char help[] = "Tests MatComputeExplicitOperator() and MatComputeExplicitOperatorTranspose()\n\n";
+static char help[] = "Tests MatComputeOperator() and MatComputeOperatorTranspose()\n\n";
 
 #include <petscmat.h>
 
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)A,"Matrix");CHKERRQ(ierr);
   ierr = MatViewFromOptions(A,NULL,"-view_expl");CHKERRQ(ierr);
 
-  ierr = MatComputeExplicitOperator(A,etype,&Ae);CHKERRQ(ierr);
+  ierr = MatComputeOperator(A,etype,&Ae);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)Ae,"Explicit matrix");CHKERRQ(ierr);
   ierr = MatViewFromOptions(Ae,NULL,"-view_expl");CHKERRQ(ierr);
 
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&A2);CHKERRQ(ierr);
   }
 
-  ierr = MatComputeExplicitOperatorTranspose(A,etype,&Aet);CHKERRQ(ierr);
+  ierr = MatComputeOperatorTranspose(A,etype,&Aet);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)Aet,"Explicit matrix tranpose");CHKERRQ(ierr);
   ierr = MatViewFromOptions(Aet,NULL,"-view_expl");CHKERRQ(ierr);
 

@@ -1654,8 +1654,11 @@ PETSC_EXTERN PetscErrorCode MatCreateMAIJ(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMAIJRedimension(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMAIJGetAIJ(Mat,Mat*);
 
-PETSC_EXTERN PetscErrorCode MatComputeExplicitOperator(Mat,MatType,Mat*);
-PETSC_EXTERN PetscErrorCode MatComputeExplicitOperatorTranspose(Mat,MatType,Mat*);
+PETSC_EXTERN PetscErrorCode MatComputeOperator(Mat,MatType,Mat*);
+PETSC_EXTERN PetscErrorCode MatComputeOperatorTranspose(Mat,MatType,Mat*);
+
+PETSC_DEPRECATED("Use MatComputeOperator()") PETSC_STATIC_INLINE PetscErrorCode MatComputeExplicitOperator(Mat A,Mat* B) { return MatComputeOperator(A,NULL,B); }
+PETSC_DEPRECATED("Use MatComputeOperatorTranspose()") PETSC_STATIC_INLINE PetscErrorCode MatComputeExplicitOperatorTranspose(Mat A,Mat* B) { return MatComputeOperatorTranspose(A,NULL,B); }
 
 PETSC_EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat,Vec);
 

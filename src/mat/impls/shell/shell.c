@@ -1234,8 +1234,8 @@ PetscErrorCode  MatShellTestMult(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec 
   ierr = MatMFFDSetFunction(mf,f,ctx);CHKERRQ(ierr);
   ierr = MatMFFDSetBase(mf,base,NULL);CHKERRQ(ierr);
 
-  ierr = MatComputeExplicitOperator(mf,MATAIJ,&Dmf);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(mat,MATAIJ,&Dmat);CHKERRQ(ierr);
+  ierr = MatComputeOperator(mf,MATAIJ,&Dmf);CHKERRQ(ierr);
+  ierr = MatComputeOperator(mat,MATAIJ,&Dmat);CHKERRQ(ierr);
 
   ierr = MatDuplicate(Dmat,MAT_COPY_VALUES,&Ddiff);CHKERRQ(ierr);
   ierr = MatAXPY(Ddiff,-1.0,Dmf,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -1303,9 +1303,9 @@ PetscErrorCode  MatShellTestMultTranspose(Mat mat,PetscErrorCode (*f)(void*,Vec,
   ierr = MatCreateMFFD(PetscObjectComm((PetscObject)mat),m,n,M,N,&mf);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(mf,f,ctx);CHKERRQ(ierr);
   ierr = MatMFFDSetBase(mf,base,NULL);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(mf,MATAIJ,&Dmf);CHKERRQ(ierr);
+  ierr = MatComputeOperator(mf,MATAIJ,&Dmf);CHKERRQ(ierr);
   ierr = MatTranspose(Dmf,MAT_INPLACE_MATRIX,&Dmf);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperatorTranspose(mat,MATAIJ,&Dmat);CHKERRQ(ierr);
+  ierr = MatComputeOperatorTranspose(mat,MATAIJ,&Dmat);CHKERRQ(ierr);
 
   ierr = MatDuplicate(Dmat,MAT_COPY_VALUES,&Ddiff);CHKERRQ(ierr);
   ierr = MatAXPY(Ddiff,-1.0,Dmf,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
