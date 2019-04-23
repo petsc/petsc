@@ -144,6 +144,16 @@ PetscErrorCode MatGetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatDenseGetLDA_MPIDense(Mat A,PetscInt *lda)
+{
+  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDenseGetLDA(a->A,lda);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDenseGetArray_MPIDense(Mat A,PetscScalar *array[])
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -575,6 +585,7 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetLDA_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArrayRead_C",NULL);CHKERRQ(ierr);
@@ -1035,6 +1046,24 @@ PetscErrorCode MatImaginaryPart_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatGetColumnVector_MPIDense(Mat A,Vec v,PetscInt col)
+{
+  PetscErrorCode    ierr;
+  PetscScalar       *x;
+  const PetscScalar *a;
+  PetscInt          lda;
+
+  PetscFunctionBegin;
+  if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  ierr = MatDenseGetLDA(A,&lda);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(A,&a);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = PetscMemcpy(x,a+col*lda,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(A,&a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 extern PetscErrorCode MatGetColumnNorms_SeqDense(Mat,NormType,PetscReal*);
 PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
 {
@@ -1210,7 +1239,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                 /*109*/ 0,
                                         0,
                                         0,
-                                        0,
+                                        MatGetColumnVector_MPIDense,
                                         MatMissingDiagonal_MPIDense,
                                 /*114*/ 0,
                                         0,
@@ -1384,6 +1413,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   a->Mvctx       = 0;
   a->roworiented = PETSC_TRUE;
 
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetLDA_C",MatDenseGetLDA_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",MatDenseGetArray_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArray_C",MatDenseRestoreArray_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArrayRead_C",MatDenseGetArrayRead_MPIDense);CHKERRQ(ierr);
