@@ -1459,6 +1459,7 @@ static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, Petsc
 static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
 {
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
+  PetscInt                  p_randomSeed = -1; /* TODO: Add this to PetscPartitioner_ParMetis */
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
@@ -1466,6 +1467,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *
   ierr = PetscOptionsEList("-petscpartitioner_parmetis_type", "Partitioning method", "", ptypes, 2, ptypes[p->ptype], &p->ptype, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-petscpartitioner_parmetis_imbalance_ratio", "Load imbalance ratio limit", "", p->imbalanceRatio, &p->imbalanceRatio, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscpartitioner_parmetis_seed", "Random seed", "", p_randomSeed, &p_randomSeed, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1496,9 +1498,11 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   /* Outputs */
   PetscInt       v, i, *assignment, *points;
   PetscMPIInt    size, rank, p;
+  PetscInt       pm_randomSeed = -1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetInt(((PetscObject)part)->options,((PetscObject)part)->prefix,"-petscpartitioner_parmetis_seed", &pm_randomSeed, NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -1538,6 +1542,8 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     if (vtxdist[p+1] == vtxdist[size]) {
       if (rank == p) {
         ierr = METIS_SetDefaultOptions(options); /* initialize all defaults */
+        options[METIS_OPTION_DBGLVL] = pm->debugFlag;
+        options[METIS_OPTION_SEED]   = pm_randomSeed;
         if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
         if (metis_ptype == 1) {
           PetscStackPush("METIS_PartGraphRecursive");
@@ -1559,8 +1565,9 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
         }
       }
     } else {
-      options[0] = 1;
+      options[0] = 1; /*use options */
       options[1] = pm->debugFlag;
+      options[2] = (pm_randomSeed == -1) ? 15 : pm_randomSeed; /* default is GLOBAL_SEED=15 from `libparmetis/defs.h` */
       PetscStackPush("ParMETIS_V3_PartKway");
       ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &comm);
       PetscStackPop;
