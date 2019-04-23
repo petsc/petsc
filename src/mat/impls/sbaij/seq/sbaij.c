@@ -199,7 +199,6 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_elemental_C",NULL);CHKERRQ(ierr);
 #endif
@@ -303,6 +302,7 @@ PetscErrorCode MatGetRowUpperTriangular_SeqSBAIJ(Mat A)
   a->getrow_utriangular = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode MatRestoreRowUpperTriangular_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -940,7 +940,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
     rmax = imax[brow];  /* maximum space allocated for this row */
     nrow = ailen[brow]; /* actual length of this row */
     low  = 0;
-
+    high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -962,7 +962,8 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
 
         /* move pointer bap to a(k,l) quickly and add/insert value */
         if (col <= lastcol) low = 0;
-        high = nrow;
+        else high = nrow;
+
         lastcol = col;
         while (high-low > 7) {
           t = (low+high)/2;
@@ -1000,6 +1001,10 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         }
         rp[i]                      = bcol;
         ap[bs2*i + bs*cidx + ridx] = value;
+        /* for diag block, add/insert its symmetric element a(cidx,ridx) */
+        if (brow == bcol && ridx < cidx) {
+          ap[bs2*i + bs*ridx + cidx] = value;
+        }
         A->nonzerostate++;
 noinsert1:;
         low = i;
@@ -1105,15 +1110,20 @@ PetscErrorCode  MatSeqSBAIJSetColumnIndices(Mat mat,PetscInt *indices)
 PetscErrorCode MatCopy_SeqSBAIJ(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
+  PetscBool      isbaij;
 
   PetscFunctionBegin;
-  /* If the two matrices have the same copy implementation, use fast copy. */
-  if (str == SAME_NONZERO_PATTERN && (A->ops->copy == B->ops->copy)) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&isbaij,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
+  if (!isbaij) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)B)->type_name);
+  /* If the two matrices have the same copy implementation and nonzero pattern, use fast copy. */
+  if (str == SAME_NONZERO_PATTERN && A->ops->copy == B->ops->copy) {
     Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
     Mat_SeqSBAIJ *b = (Mat_SeqSBAIJ*)B->data;
 
-    if (a->i[A->rmap->N] != b->i[B->rmap->N]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
-    ierr = PetscMemcpy(b->a,a->a,(a->i[A->rmap->N])*sizeof(PetscScalar));CHKERRQ(ierr);
+    if (a->i[a->mbs] != b->i[b->mbs]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
+    if (a->mbs != b->mbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of rows in two matrices are different");
+    if (a->bs2 != b->bs2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Different block size");
+    ierr = PetscMemcpy(b->a,a->a,a->bs2*a->i[a->mbs]*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   } else {
     ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
@@ -1189,7 +1199,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
     ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
     ierr = MatSetBlockSizesFromMats(B,Y,Y);CHKERRQ(ierr);
-    ierr = MatSetType(B,(MatType) ((PetscObject)Y)->type_name);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)Y)->type_name);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_SeqSBAIJ(Y,X,nnz);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
 
@@ -1623,6 +1633,7 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
     if (!nnz) {
       if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
       else if (nz <= 0) nz = 1;
+      nz = PetscMin(nbs,nz);
       for (i=0; i<mbs; i++) b->imax[i] = nz;
       nz = nz*mbs; /* total nz */
     } else {
@@ -1883,9 +1894,6 @@ PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
 
   .seealso: MatCreateSeqSBAIJ
 M*/
-
-PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat, MatType,MatReuse,Mat*);
-
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 {
   Mat_SeqSBAIJ   *b;
@@ -2029,7 +2037,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
 
    Input Parameters:
 +  B - the matrix
-.  bs - size of block, the blocks are ALWAYS square. 
+.  bs - size of block, the blocks are ALWAYS square.
 .  i - the indices into j for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
@@ -2128,6 +2136,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   *B   = 0;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,A->rmap->N,A->cmap->n,A->rmap->N,A->cmap->n);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(C,A,A);CHKERRQ(ierr);
   ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
   c    = (Mat_SeqSBAIJ*)C->data;
 
@@ -2145,7 +2154,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->mbs = a->mbs;
   c->nbs = a->nbs;
 
-  if  (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
+  if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
     c->imax           = a->imax;
     c->ilen           = a->ilen;
     c->free_imax_ilen = PETSC_FALSE;
@@ -2476,7 +2485,3 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ(MPI_Comm comm,Mat inmat
   }
   PetscFunctionReturn(0);
 }
-
-
-
-

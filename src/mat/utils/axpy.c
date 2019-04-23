@@ -77,6 +77,8 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
     PetscInt r,rstart,rend;
     PetscInt m,n,M,N;
 
+    ierr = MatGetRowUpperTriangular(Y);CHKERRQ(ierr);
+    ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
     ierr = MatGetSize(Y,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(Y,&m,&n);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)Y),&preallocator);CHKERRQ(ierr);
@@ -98,6 +100,8 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
     }
     ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(Y);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
 
     ierr = MatCreate(PetscObjectComm((PetscObject)Y),B);CHKERRQ(ierr);
     ierr = MatSetType(*B,((PetscObject)Y)->type_name);CHKERRQ(ierr);
@@ -119,6 +123,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionBegin;
   ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
+  ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
   if (a == 1.0) {
     for (i = start; i < end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
@@ -141,6 +146,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
     }
     ierr = PetscFree(val);CHKERRQ(ierr);
   }
+  ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -157,6 +163,8 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
   PetscFunctionBegin;
   ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
+  ierr = MatGetRowUpperTriangular(Y);CHKERRQ(ierr);
+  ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
   if (a == 1.0) {
     for (i = start; i < end; i++) {
       ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
@@ -187,6 +195,8 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
     }
     ierr = PetscFree(val);CHKERRQ(ierr);
   }
+  ierr = MatRestoreRowUpperTriangular(Y);CHKERRQ(ierr);
+  ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

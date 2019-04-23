@@ -18,6 +18,6 @@ PC Object: 3 MPI processes
   Mat Object: 3 MPI processes
     type: mpiaij
     rows=10, cols=10
-    total: nonzeros=28, allocated nonzeros=100
+    total: nonzeros=28, allocated nonzeros=84
     total number of mallocs used during MatSetValues calls =0
       not using I-node (on process 0) routines
