@@ -323,14 +323,14 @@ int main(int argc,char **argv)
   derp = y_ptr[1]*(-10.0/(81.0*user.mu*user.mu)+2.0*292.0/(2187.0*user.mu*user.mu*user.mu))+x_ptr[0];
   ierr = VecRestoreArray(user.mup[0],&x_ptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameters: d[y(tf)]/d[mu]\n%g\n",(double)derp);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameters: d[y(tf)]/d[mu]\n%g\n",(double)PetscRealPart(derp));CHKERRQ(ierr);
 
   ierr = VecGetArray(user.mup[1],&x_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
   derp = y_ptr[1]*(-10.0/(81.0*user.mu*user.mu)+2.0*292.0/(2187.0*user.mu*user.mu*user.mu))+x_ptr[0];
   ierr = VecRestoreArray(user.mup[1],&x_ptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensivitity wrt parameters: d[z(tf)]/d[mu]\n%g\n",(double)derp);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensivitity wrt parameters: d[z(tf)]/d[mu]\n%g\n",(double)PetscRealPart(derp));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
