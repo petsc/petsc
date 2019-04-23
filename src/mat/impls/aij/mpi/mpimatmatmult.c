@@ -1480,7 +1480,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* local sizes and preallocation */
   ierr = MatSetSizes(Cmpi,pn,an,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(P->cmap->bs));CHKERRQ(ierr);
+  if (P->cmap->bs > 0) {ierr = PetscLayoutSetBlockSize(Cmpi->rmap,P->cmap->bs);CHKERRQ(ierr);}
+  if (A->cmap->bs > 0) {ierr = PetscLayoutSetBlockSize(Cmpi->cmap,A->cmap->bs);CHKERRQ(ierr);}
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 

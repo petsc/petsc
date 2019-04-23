@@ -690,8 +690,8 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
   PetscValidType(mat,1);
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!mat->ops->getrowuppertriangular) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
+  if (!mat->ops->getrowuppertriangular) PetscFunctionReturn(0);
   ierr = (*mat->ops->getrowuppertriangular)(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -718,7 +718,10 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  MatCheckPreallocated(mat,1);
   if (!mat->ops->restorerowuppertriangular) PetscFunctionReturn(0);
   ierr = (*mat->ops->restorerowuppertriangular)(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4205,6 +4208,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
       ierr = PetscStrncpy(convname,prefix[i],sizeof(convname));CHKERRQ(ierr);
       ierr = PetscStrlcat(convname,newtype,sizeof(convname));CHKERRQ(ierr);
       ierr = PetscStrcmp(convname,((PetscObject)mat)->type_name,&flg);CHKERRQ(ierr);
+      ierr = PetscInfo3(mat,"Check superclass %s %s -> %d\n",convname,((PetscObject)mat)->type_name,flg);
       if (flg) {
         if (reuse == MAT_INPLACE_MATRIX) {
           PetscFunctionReturn(0);
@@ -4226,6 +4230,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
       ierr = PetscStrlcat(convname,issame ? ((PetscObject)mat)->type_name : newtype,sizeof(convname));CHKERRQ(ierr);
       ierr = PetscStrlcat(convname,"_C",sizeof(convname));CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)mat,convname,&conv);CHKERRQ(ierr);
+      ierr = PetscInfo3(mat,"Check specialized (1) %s (%s) -> %d\n",convname,((PetscObject)mat)->type_name,!!conv);
       if (conv) goto foundconv;
     }
 
@@ -4241,6 +4246,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
       ierr = PetscStrlcat(convname,newtype,sizeof(convname));CHKERRQ(ierr);
       ierr = PetscStrlcat(convname,"_C",sizeof(convname));CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,convname,&conv);CHKERRQ(ierr);
+      ierr = PetscInfo3(mat,"Check specialized (2) %s (%s) -> %d\n",convname,((PetscObject)B)->type_name,!!conv);
       if (conv) {
         ierr = MatDestroy(&B);CHKERRQ(ierr);
         goto foundconv;
@@ -4249,6 +4255,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
 
     /* 3) See if a good general converter is registered for the desired class */
     conv = B->ops->convertfrom;
+    ierr = PetscInfo2(mat,"Check convertfrom (%s) -> %d\n",((PetscObject)B)->type_name,!!conv);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
@@ -4256,9 +4263,11 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
     if (mat->ops->convert) {
       conv = mat->ops->convert;
     }
+    ierr = PetscInfo2(mat,"Check general convert (%s) -> %d\n",((PetscObject)mat)->type_name,!!conv);
     if (conv) goto foundconv;
 
     /* 5) Use a really basic converter. */
+    ierr = PetscInfo(mat,"Using MatConvert_Basic\n");
     conv = MatConvert_Basic;
 
 foundconv:
