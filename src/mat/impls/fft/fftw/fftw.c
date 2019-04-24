@@ -29,6 +29,7 @@ extern PetscErrorCode MatMult_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatDestroy_FFTW(Mat);
 extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
+extern PetscErrorCode MatCreateVecsFFTW_FFTW(Mat,Vec*,Vec*,Vec*);
 
 /* MatMult_SeqFFTW performs forward DFT in parallel
    Input parameter:
@@ -46,7 +47,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   const PetscScalar *x_array;
   PetscScalar    *y_array;
 #if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_64BIT_INDICES) 
+#if defined(PETSC_USE_64BIT_INDICES)
   fftw_iodim64   *iodims;
 #else
   fftw_iodim     *iodims;
@@ -156,7 +157,7 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   fftw_iodim     *iodims=fftw->iodims;
 #endif
 #endif
- 
+
   PetscFunctionBegin;
   ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
@@ -384,6 +385,41 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
   PetscFunctionReturn(0);
 }
 
+
+static PetscErrorCode VecDuplicate_FFTW_fin(Vec fin,Vec *fin_new)
+{
+  PetscErrorCode ierr;
+  Mat            A;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)fin,"FFTmatrix",(PetscObject*)&A);CHKERRQ(ierr);
+  ierr = MatCreateVecsFFTW_FFTW(A,fin_new,NULL,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecDuplicate_FFTW_fout(Vec fout,Vec *fout_new)
+{
+  PetscErrorCode ierr;
+  Mat            A;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)fout,"FFTmatrix",(PetscObject*)&A);CHKERRQ(ierr);
+  ierr = MatCreateVecsFFTW_FFTW(A,NULL,fout_new,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
+{
+  PetscErrorCode ierr;
+  Mat            A;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)bout,"FFTmatrix",(PetscObject*)&A);CHKERRQ(ierr);
+  ierr = MatCreateVecsFFTW_FFTW(A,NULL,NULL,bout_new);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*@
    MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
      parallel layout determined by FFTW
@@ -443,7 +479,7 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (size == 1) { /* sequential case */
 #if defined(PETSC_USE_COMPLEX)
-    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,N,fin);CHKERRQ(ierr);}
+    if (fin)  {ierr = VecCreateSeq(PETSC_COMM_SELF,N,fin);CHKERRQ(ierr);}
     if (fout) {ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
     if (bout) {ierr = VecCreateSeq(PETSC_COMM_SELF,N,bout);CHKERRQ(ierr);}
 #else
@@ -473,21 +509,24 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr      = VecCreateMPIWithArray(comm,1,local_n0,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-
-        (*fin)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr      = PetscObjectCompose((PetscObject)*fin,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fin)->ops->duplicate = VecDuplicate_FFTW_fin;
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (fout) {
         data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr      = VecCreateMPIWithArray(comm,1,local_n1,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-
-        (*fout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr      = PetscObjectCompose((PetscObject)*fout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fout)->ops->duplicate = VecDuplicate_FFTW_fout;
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_BACKWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_start);
       if (bout) {
         data_bout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr      = VecCreateMPIWithArray(comm,1,local_n1,N,(const PetscScalar*)data_bout,bout);CHKERRQ(ierr);
-
-        (*bout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr      = PetscObjectCompose((PetscObject)*bout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*bout)->ops->duplicate = VecDuplicate_FFTW_fout;
+        (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       break;
 #endif
@@ -498,20 +537,23 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
       if (fin) {
         data_finr = (double*)fftw_malloc(sizeof(double)*alloc_local*2);
         ierr      = VecCreateMPIWithArray(comm,1,(PetscInt)n1,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
-
-        (*fin)->ops->destroy = VecDestroy_MPIFFTW;
-      }
-      if (bout) {
-        data_boutr = (double*)fftw_malloc(sizeof(double)*alloc_local*2);
-        ierr       = VecCreateMPIWithArray(comm,1,(PetscInt)n1,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
-
-        (*bout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr      = PetscObjectCompose((PetscObject)*fin,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fin)->ops->duplicate = VecDuplicate_FFTW_fin;
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (fout) {
         data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr      = VecCreateMPIWithArray(comm,1,(PetscInt)n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-
-        (*fout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr      = PetscObjectCompose((PetscObject)*fout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fout)->ops->duplicate = VecDuplicate_FFTW_fout;
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
+      if (bout) {
+        data_boutr = (double*)fftw_malloc(sizeof(double)*alloc_local*2);
+        ierr       = VecCreateMPIWithArray(comm,1,(PetscInt)n1,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
+        ierr       = PetscObjectCompose((PetscObject)*bout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*bout)->ops->duplicate = VecDuplicate_FFTW_bout;
+        (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
 #else
       /* Get local size */
@@ -519,20 +561,23 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
       if (fin) {
         data_fin = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr     = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-
-        (*fin)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr     = PetscObjectCompose((PetscObject)*fin,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fin)->ops->duplicate = VecDuplicate_FFTW_fin;
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (fout) {
         data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr      = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-
-        (*fout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr      = PetscObjectCompose((PetscObject)*fout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fout)->ops->duplicate = VecDuplicate_FFTW_fout;
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (bout) {
         data_bout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr      = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_bout,bout);CHKERRQ(ierr);
-
-        (*bout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr      = PetscObjectCompose((PetscObject)*bout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*bout)->ops->duplicate = VecDuplicate_FFTW_bout;
+        (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
 #endif
       break;
@@ -543,40 +588,45 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
       if (fin) {
         data_finr = (double*)fftw_malloc(sizeof(double)*alloc_local*2);
         ierr      = VecCreateMPIWithArray(comm,1,(PetscInt)n1,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
-
-        (*fin)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr      = PetscObjectCompose((PetscObject)*fin,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fin)->ops->duplicate = VecDuplicate_FFTW_fin;
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
+      if (fout) {
+        data_fout=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(comm,1,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        ierr = PetscObjectCompose((PetscObject)*fout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fout)->ops->duplicate = VecDuplicate_FFTW_fout;
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (bout) {
         data_boutr=(double*)fftw_malloc(sizeof(double)*alloc_local*2);
         ierr = VecCreateMPIWithArray(comm,1,(PetscInt)n1,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
-
+        ierr = PetscObjectCompose((PetscObject)*bout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*bout)->ops->duplicate = VecDuplicate_FFTW_bout;
         (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-
-      if (fout) {
-        data_fout=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,1,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-
-        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
 #else
       alloc_local = fftw_mpi_local_size_3d(dim[0],dim[1],dim[2],comm,&local_n0,&local_0_start);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-
+        ierr = PetscObjectCompose((PetscObject)*fin,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fin)->ops->duplicate = VecDuplicate_FFTW_fin;
         (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (fout) {
         data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-
+        ierr = PetscObjectCompose((PetscObject)*fout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fout)->ops->duplicate = VecDuplicate_FFTW_fout;
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (bout) {
         data_bout  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_bout,bout);CHKERRQ(ierr);
-
+        ierr = PetscObjectCompose((PetscObject)*bout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*bout)->ops->duplicate = VecDuplicate_FFTW_bout;
         (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
 #endif
@@ -595,41 +645,46 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
       if (fin) {
         data_finr=(double*)fftw_malloc(sizeof(double)*alloc_local*2);
         ierr = VecCreateMPIWithArray(comm,1,(PetscInt)n,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
-
-        (*fin)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr = PetscObjectCompose((PetscObject)*fin,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fin)->ops->duplicate = VecDuplicate_FFTW_fin;
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
+      if (fout) {
+        data_fout=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(comm,1,n,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        ierr = PetscObjectCompose((PetscObject)*fout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fout)->ops->duplicate = VecDuplicate_FFTW_fout;
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (bout) {
         data_boutr=(double*)fftw_malloc(sizeof(double)*alloc_local*2);
         ierr = VecCreateMPIWithArray(comm,1,(PetscInt)n,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
-
-        (*bout)->ops->destroy = VecDestroy_MPIFFTW;
-      }
-
-      if (fout) {
-        data_fout=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,1,n,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-
-        (*fout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr = PetscObjectCompose((PetscObject)*bout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*bout)->ops->duplicate = VecDuplicate_FFTW_bout;
+        (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
 #else
       alloc_local = fftw_mpi_local_size(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-
-        (*fin)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr = PetscObjectCompose((PetscObject)*fin,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fin)->ops->duplicate = VecDuplicate_FFTW_fin;
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (fout) {
         data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-
-        (*fout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr = PetscObjectCompose((PetscObject)*fout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*fout)->ops->duplicate = VecDuplicate_FFTW_fout;
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (bout) {
         data_bout  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,1,n,N,(const PetscScalar*)data_bout,bout);CHKERRQ(ierr);
-
-        (*bout)->ops->destroy = VecDestroy_MPIFFTW;
+        ierr = PetscObjectCompose((PetscObject)*bout,"FFTmatrix",(PetscObject)A);CHKERRQ(ierr);
+        (*bout)->ops->duplicate = VecDuplicate_FFTW_bout;
+        (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
 #endif
       break;
