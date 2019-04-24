@@ -874,12 +874,12 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   Mat_MUMPS      *mumps=(Mat_MUMPS*)A->data;
   PetscInt       i,nrhs,M;
   PetscScalar    *array,*bray;
-  PetscInt       lsol_loc,nlsol_loc,*isol_loc,*idx,*iidx,*idxx,*isol_loc_save;
+  PetscInt       lsol_loc,nlsol_loc,*isol_loc,*idxx,*isol_loc_save,iidx;
   MumpsScalar    *sol_loc,*sol_loc_save;
   IS             is_to,is_from;
-  PetscInt       k,proc,j,m;
+  PetscInt       k,proc,j,m,myrstart;
   const PetscInt *rstart;
-  Vec            v_mpi,b_seq,x_seq;
+  Vec            v_mpi,b_seq,msol_loc;
   VecScatter     scat_rhs,scat_sol;
   PetscScalar    *aa;
   PetscInt       spnr,*ia,*ja;
@@ -957,7 +957,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   /*--------- parallel case: MUMPS requires rhs B to be centralized on the host! --------*/
   if (mumps->petsc_size > 1 && mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
 
-  /* create x_seq to hold mumps local solution */
+  /* create msol_loc to hold mumps local solution */
   isol_loc_save = mumps->id.isol_loc; /* save it for MatSovle() */
   sol_loc_save  = mumps->id.sol_loc;
 
@@ -967,14 +967,10 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   mumps->id.sol_loc  = (MumpsScalar*)sol_loc;
   mumps->id.isol_loc = isol_loc;
 
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nlsol_loc,(PetscScalar*)sol_loc,&x_seq);CHKERRQ(ierr);
-
-  /* scatter v_mpi to b_seq because MUMPS only supports centralized rhs */
-  /* idx: maps from k-th index of v_mpi to (i,j)-th global entry of B;
-     iidx: inverse of idx, will be used by scattering mumps x_seq -> petsc X */
-  ierr = PetscMalloc1(nrhs*M,&idx);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nlsol_loc,(PetscScalar*)sol_loc,&msol_loc);CHKERRQ(ierr);
 
   if (!Bt) { /* dense B */
+    /* scatter v_mpi to b_seq because MUMPS only supports centralized rhs */
     /* wrap dense rhs matrix B into a vector v_mpi */
     ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
     ierr = MatDenseGetArray(B,&bray);CHKERRQ(ierr);
@@ -983,18 +979,19 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 
     /* scatter v_mpi to b_seq in proc[0]. MUMPS requires rhs to be centralized on the host! */
     if (!mumps->myid) {
+      PetscInt *idx;
+      /* idx: maps from k-th index of v_mpi to (i,j)-th global entry of B */
+      ierr = PetscMalloc1(nrhs*M,&idx);CHKERRQ(ierr);
       ierr = MatGetOwnershipRanges(B,&rstart);CHKERRQ(ierr);
       k = 0;
       for (proc=0; proc<mumps->petsc_size; proc++){
         for (j=0; j<nrhs; j++){
-          for (i=rstart[proc]; i<rstart[proc+1]; i++){
-            idx[k++]      = j*M + i;
-          }
+          for (i=rstart[proc]; i<rstart[proc+1]; i++) idx[k++] = j*M + i;
         }
       }
 
       ierr = VecCreateSeq(PETSC_COMM_SELF,nrhs*M,&b_seq);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,nrhs*M,idx,PETSC_COPY_VALUES,&is_to);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,nrhs*M,idx,PETSC_OWN_POINTER,&is_to);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,nrhs*M,0,1,&is_from);CHKERRQ(ierr);
     } else {
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&b_seq);CHKERRQ(ierr);
@@ -1051,30 +1048,31 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 
   /* create scatter scat_sol */
   ierr = MatGetOwnershipRanges(X,&rstart);CHKERRQ(ierr);
-  /* iidx: inverse of idx computed above, used for scattering mumps x_seq to petsc X */
-  iidx = idx;
-  k    = 0;
-  for (proc=0; proc<mumps->petsc_size; proc++){
-    for (j=0; j<nrhs; j++){
-      for (i=rstart[proc]; i<rstart[proc+1]; i++) iidx[j*M + i] = k++;
-    }
-  }
+  /* iidx: index for scatter mumps solution to petsc X */
 
-  ierr = PetscMalloc1(nlsol_loc,&idxx);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,nlsol_loc,0,1,&is_from);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlsol_loc,&idxx);CHKERRQ(ierr);
   for (i=0; i<lsol_loc; i++) {
-    isol_loc[i] -= 1; /* change Fortran style to C style */
-    idxx[i] = iidx[isol_loc[i]];
-    for (j=1; j<nrhs; j++){
-      idxx[j*lsol_loc+i] = iidx[isol_loc[i]+j*M];
+    isol_loc[i] -= 1; /* change Fortran style to C style. isol_loc[i+j*lsol_loc] contains x[isol_loc[i]] in j-th vector */
+
+    for (proc=0; proc<mumps->petsc_size; proc++){
+      if (isol_loc[i] >= rstart[proc] && isol_loc[i] < rstart[proc+1]) {
+        myrstart = rstart[proc];
+        k        = isol_loc[i] - myrstart;        /* local index on 1st column of petsc vector X */
+        iidx     = k + myrstart*nrhs;             /* maps mumps isol_loc[i] to petsc index in X */
+        m        = rstart[proc+1] - rstart[proc]; /* rows of X for this proc */
+        break;
+      }
     }
+
+    for (j=0; j<nrhs; j++) idxx[i+j*lsol_loc] = iidx + j*m;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nlsol_loc,idxx,PETSC_COPY_VALUES,&is_to);CHKERRQ(ierr);
-  ierr = VecScatterCreate(x_seq,is_from,v_mpi,is_to,&scat_sol);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scat_sol,x_seq,v_mpi,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterCreate(msol_loc,is_from,v_mpi,is_to,&scat_sol);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scat_sol,msol_loc,v_mpi,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = ISDestroy(&is_from);CHKERRQ(ierr);
   ierr = ISDestroy(&is_to);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scat_sol,x_seq,v_mpi,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scat_sol,msol_loc,v_mpi,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
 
   /* free spaces */
@@ -1082,9 +1080,8 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   mumps->id.isol_loc = isol_loc_save;
 
   ierr = PetscFree2(sol_loc,isol_loc);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
   ierr = PetscFree(idxx);CHKERRQ(ierr);
-  ierr = VecDestroy(&x_seq);CHKERRQ(ierr);
+  ierr = VecDestroy(&msol_loc);CHKERRQ(ierr);
   ierr = VecDestroy(&v_mpi);CHKERRQ(ierr);
   if (Bt) {
     if (!mumps->myid) {
