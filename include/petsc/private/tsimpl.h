@@ -298,6 +298,8 @@ struct _p_TSAdapt {
   PetscReal   reject_safety;      /* extra safety factor if the last step was rejected */
   PetscReal   clip[2];            /* admissible time step decrease/increase factors */
   PetscReal   dt_min,dt_max;      /* admissible minimum and maximum time step */
+  PetscReal   ignore_max;         /* minimum value of the solution to be considered by the adaptor */
+  PetscBool   glee_use_local;     /* GLEE adaptor uses global or local error */
   PetscReal   scale_solve_failed; /* scale step by this factor if solver (linear or nonlinear) fails. */
   PetscReal   matchstepfac[2];    /* factors to control the behaviour of matchstep */
   NormType    wnormtype;
