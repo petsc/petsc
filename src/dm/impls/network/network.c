@@ -183,7 +183,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
   PetscInt       numCorners=2,spacedim=2,dim = 1; /* One dimensional network */
-  double         *vertexcoords=NULL;
+  PetscReal      *vertexcoords=NULL;
   PetscInt       i,j,ctr,nsubnet,*eowners,np,*edges,*subnetvtx,vStart;
   PetscInt       k,netid,vid, *vidxlTog,*edgelist_couple=NULL;
   const PetscInt *cone;
@@ -244,7 +244,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     if (size == 1) {
       ierr = DMPlexCreateFromCellList(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges64,spacedim,(const double*)vertexcoords,&network->plex);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexCreateFromCellListParallel(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges64,spacedim,(const double*)vertexcoords,NULL,&network->plex);CHKERRQ(ierr);
+      ierr = DMPlexCreateFromCellListParallel(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges64,spacedim,(const PetscReal*)vertexcoords,NULL,&network->plex);CHKERRQ(ierr);
     }
     ierr = PetscFree(edges64);CHKERRQ(ierr);
   }
@@ -252,7 +252,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   if (size == 1) {
     ierr = DMPlexCreateFromCellList(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges,spacedim,(const double*)vertexcoords,&network->plex);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexCreateFromCellListParallel(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges,spacedim,(const double*)vertexcoords,NULL,&network->plex);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListParallel(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges,spacedim,(const PetscReal*)vertexcoords,NULL,&network->plex);CHKERRQ(ierr);
   }
 #endif
 
