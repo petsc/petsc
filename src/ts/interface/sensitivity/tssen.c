@@ -1088,7 +1088,6 @@ PetscErrorCode TSAdjointResetForward(TS ts)
 PetscErrorCode TSAdjointSetUp(TS ts)
 {
   TSTrajectory     tj;
-  TSTrajectoryType tjtype;
   PetscBool        match;
   PetscErrorCode   ierr;
 
@@ -1098,8 +1097,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
   if (!ts->vecs_sensi) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
   if (ts->vecs_sensip && !ts->Jacp && !ts->Jacprhs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetRHSJacobianP() or TSSetIJacobianP() first");
   ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
-  ierr = TSTrajectoryGetType(tj,ts,&tjtype);CHKERRQ(ierr);
-  ierr = PetscStrcmp(TSTRAJECTORYBASIC,tjtype,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)tj,TSTRAJECTORYBASIC,&match);CHKERRQ(ierr);
   if (match) {
     PetscBool solution_only;
     ierr = TSTrajectoryGetSolutionOnly(tj,&solution_only);CHKERRQ(ierr);
