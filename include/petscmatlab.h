@@ -12,6 +12,9 @@ PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 
    Level: intermediate
 
+   Note: Mats transfered between PETSc and MATLAB and vis versa are transposed in the other space
+         (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
+
 .seealso:  PetscMatlabEngineCreate(), PetscMatlabEngineDestroy(), PetscMatlabEngineEvaluate(),
            PetscMatlabEngineGetOutput(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
            PetscMatlabEnginePrintOutput(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(),
