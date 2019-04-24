@@ -2397,6 +2397,8 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, Vec u, PetscErrorCode
       for (f = 0; f < Nf; ++f) {
         if (err[f] > tol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g for field %D exceeds tolerance %g", (double) err[f], f, (double) tol);
       }
+    } else if (error) {
+      for (f = 0; f < Nf; ++f) error[f] = err[f];
     } else {
       ierr = PetscPrintf(comm, "L_2 Error: [");CHKERRQ(ierr);
       for (f = 0; f < Nf; ++f) {
@@ -2409,13 +2411,11 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, Vec u, PetscErrorCode
     ierr = DMComputeL2Diff(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs ? ctxs : ectxs , u, &err[0]);CHKERRQ(ierr);
     if (tol >= 0.0) {
       if (err[0] > tol) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g exceeds tolerance %g", (double) err[0], (double) tol);
+    } else if (error) {
+      error[0] = err[0];
     } else {
       ierr = PetscPrintf(comm, "L_2 Error: %g\n", (double)err[0]);CHKERRQ(ierr);
     }
-  }
-  if (error) {
-    if (Nf > 1) for (f = 0; f < Nf; ++f) error[f] = err[f];
-    else        error[0] = err[0];
   }
   ierr = PetscFree3(exacts, ectxs, err);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2470,6 +2470,8 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
   if (tol >= 0.0) {
     if (res > tol) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
+  } else if (residual) {
+    *residual = res;
   } else {
     ierr = PetscPrintf(comm, "L_2 Residual: %g\n", (double)res);CHKERRQ(ierr);
     ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
@@ -2478,7 +2480,6 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
     ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
   }
   ierr = VecDestroy(&r);CHKERRQ(ierr);
-  if (residual) *residual = res;
   PetscFunctionReturn(0);
 }
 
@@ -2602,14 +2603,15 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
     ierr = PetscFree3(es, hs, errors);CHKERRQ(ierr);
     /* Slope should be about 2 */
     if (tol >= 0) {
-      if (!isLinear && PetscAbsReal(2 - slope) > tol) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
+      if (!isLin && PetscAbsReal(2 - slope) > tol) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
+    } else if (isLinear || convRate) {
+      if (isLinear) *isLinear = isLin;
+      if (convRate) *convRate = slope;
     } else {
       if (!isLin) {ierr = PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double) slope);CHKERRQ(ierr);}
       else        {ierr = PetscPrintf(comm, "Function appears to be linear\n");CHKERRQ(ierr);}
     }
   }
-  if (isLinear) *isLinear = isLin;
-  if (convRate) *convRate = slope;
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
