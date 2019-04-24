@@ -9845,8 +9845,6 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 .  C - the product matrix
 
    Notes:
-   Unless scall is MAT_REUSE_MATRIX C will be created.
-
    To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
 
