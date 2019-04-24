@@ -679,7 +679,7 @@ PetscErrorCode MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
 
    Concepts: matrices^row access
 
-.seealso: MatRestoreRowRowUpperTriangular()
+.seealso: MatRestoreRowUpperTriangular()
 @*/
 PetscErrorCode MatGetRowUpperTriangular(Mat mat)
 {
