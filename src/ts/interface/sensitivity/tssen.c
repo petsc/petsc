@@ -337,7 +337,7 @@ PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
    Output Parameter:
 .  Q - vector of size numcost to hold the outputs
 
-   Note:
+   Notes:
    Most users should not need to explicitly call this routine, as it
    is used internally within the sensitivity analysis context.
 
@@ -460,17 +460,26 @@ PetscErrorCode TSComputeDRDPFunction(TS ts,PetscReal t,Vec U,Vec *DRDP)
 . hessianproductfunc4 - vector-Hessian-vector product function for F_PP
 
   Calling sequence of ihessianproductfunc:
-$ ihessianproductfunc (TS ts,PetscReal t,Vec U,Vec Vl,Vec Vr,Vec VHV,void *ctx);
+$ ihessianproductfunc (TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV,void *ctx);
 +   t - current timestep
 .   U - input vector (current ODE solution)
-.   Vl - input vector to be left-multiplied with the Hessian
+.   Vl - an array of input vectors to be left-multiplied with the Hessian
 .   Vr - input vector to be right-multiplied with the Hessian
-.   VHV - output vector for vector-Hessian-vector product
+.   VHV - an array of output vectors for vector-Hessian-vector product
 -   ctx - [optional] user-defined function context
 
   Level: intermediate
 
-Note: The first Hessian function and the working array are required.
+  Notes:
+  The first Hessian function and the working array are required.
+  As an example to implement the callback functions, the second callback function calculates the vector-Hessian-vector product
+  $ Vl_n^T*F_UP*Vr
+  where the vector Vl_n (n-th element in the array Vl) and Vr are of size N and M respectively, and the Hessian F_UP is of size N x N x M.
+  Each entry of F_UP corresponds to the derivative
+  $ F_UP[i][j][k] = \frac{\partial^2 F[i]}{\partial U[j] \partial P[k]}.
+  The result of the vector-Hessian-vector product for Vl_n needs to be stored in vector VHV_n with the j-th entry being
+  $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * F_UP[i][j][k] * Vr[k]}
+  If the cost function is a scalar, there will be only one vector in Vl and VHV.
 
 .keywords: TS, sensitivity
 
@@ -687,17 +696,26 @@ PetscErrorCode TSComputeIHessianProductFunction4(TS ts,PetscReal t,Vec U,Vec *Vl
 . hessianproductfunc4 - vector-Hessian-vector product function for G_PP
 
   Calling sequence of ihessianproductfunc:
-$ rhshessianproductfunc (TS ts,PetscReal t,Vec U,Vec Vl,Vec Vr,Vec VHV,void *ctx);
+$ rhshessianproductfunc (TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV,void *ctx);
 +   t - current timestep
 .   U - input vector (current ODE solution)
-.   Vl - input vector to be left-multiplied with the Hessian
+.   Vl - an array of input vectors to be left-multiplied with the Hessian
 .   Vr - input vector to be right-multiplied with the Hessian
-.   VHV - output vector for vector-Hessian-vector product
+.   VHV - an array of output vectors for vector-Hessian-vector product
 -   ctx - [optional] user-defined function context
 
   Level: intermediate
 
-Note: The first Hessian function and the working array are required.
+  Notes:
+  The first Hessian function and the working array are required.
+  As an example to implement the callback functions, the second callback function calculates the vector-Hessian-vector product
+  $ Vl_n^T*G_UP*Vr
+  where the vector Vl_n (n-th element in the array Vl) and Vr are of size N and M respectively, and the Hessian G_UP is of size N x N x M.
+  Each entry of G_UP corresponds to the derivative
+  $ G_UP[i][j][k] = \frac{\partial^2 G[i]}{\partial U[j] \partial P[k]}.
+  The result of the vector-Hessian-vector product for Vl_n needs to be stored in vector VHV_n with j-th entry being
+  $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * G_UP[i][j][k] * Vr[k]}
+  If the cost function is a scalar, there will be only one vector in Vl and VHV.
 
 .keywords: TS, sensitivity
 
