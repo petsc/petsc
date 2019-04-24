@@ -201,7 +201,15 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
     signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGHUP)
-    signal(SIGHUP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    {
+      struct  sigaction action;
+      sigaction(SIGHUP,NULL,&action);
+      if (action.sa_handler == SIG_IGN) {
+        ierr = PetscInfo(NULL,"SIGHUP previously set to ignore, therefor not changing its signal handler\n");CHKERRQ(ierr);
+      } else {
+        signal(SIGHUP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+      }
+    }
 #endif
 #if !defined(PETSC_MISSING_SIGILL)
     signal(SIGILL,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
