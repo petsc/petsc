@@ -3327,6 +3327,11 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 + start - The first point at this depth
 - end   - One beyond the last point at this depth
 
+  Notes:
+  Depth indexing is related to topological dimension.  Depth stratum 0 contains the lowest topological dimension points,
+  often "vertices".  If the mesh is "interpolated" (see DMPlexInterpolate()), then depth stratum 1 contains the next
+  higher dimension, e.g., "edges".
+
   Level: developer
 
 .keywords: mesh, points
@@ -3367,6 +3372,11 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
   Output Parameters:
 + start - The first point at this height
 - end   - One beyond the last point at this height
+
+  Notes:
+  Height indexing is related to topological codimension.  Height stratum 0 contains the highest topological dimension
+  points, often called "cells" or "elements".  If the mesh is "interpolated" (see DMPlexInterpolate()), then height
+  stratum 1 contains the boundary of these "cells", often called "faces" or "facets".
 
   Level: developer
 
