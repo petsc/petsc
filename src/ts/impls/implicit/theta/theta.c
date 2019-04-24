@@ -321,9 +321,9 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     ierr = MatDenseGetColumn(ts->mat_sensip,0,&xarr);CHKERRQ(ierr);
     ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
     /* lambda_s^T F_UU w_1 */
-    ierr = TSComputeIHessianProductFunction1(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu);CHKERRQ(ierr);
+    ierr = TSComputeIHessianProductFunctionUU(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu);CHKERRQ(ierr);
     /* lambda_s^T F_UP w_2 */
-    ierr = TSComputeIHessianProductFunction2(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_dir,ts->vecs_fup);CHKERRQ(ierr);
+    ierr = TSComputeIHessianProductFunctionUP(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_dir,ts->vecs_fup);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) { /* compute the residual */
       ierr = VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]);CHKERRQ(ierr);
       ierr = VecScale(VecsSensi2Temp[nadj],shift);CHKERRQ(ierr);
@@ -366,9 +366,9 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     }
     if (ts->vecs_sensi2p) {
       /* lambda_s^T F_PU w_1 */
-      ierr = TSComputeIHessianProductFunction3(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu);CHKERRQ(ierr);
+      ierr = TSComputeIHessianProductFunctionPU(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu);CHKERRQ(ierr);
       /* lambda_s^T F_PP w_2 */
-      ierr = TSComputeIHessianProductFunction4(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp);CHKERRQ(ierr);
+      ierr = TSComputeIHessianProductFunctionPP(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp);CHKERRQ(ierr);
     }
 
     for (nadj=0; nadj<ts->numcost; nadj++) {
@@ -481,11 +481,11 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr = MatDenseGetColumn(ts->mat_sensip,0,&xarr);CHKERRQ(ierr);
     ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
     /* lambda_s^T F_UU w_1 */
-    ierr = TSComputeIHessianProductFunction1(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu);CHKERRQ(ierr);
+    ierr = TSComputeIHessianProductFunctionUU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu);CHKERRQ(ierr);
     ierr = VecResetArray(ts->vec_sensip_col);CHKERRQ(ierr);
     ierr = MatDenseRestoreColumn(ts->mat_sensip,&xarr);CHKERRQ(ierr);
     /* lambda_s^T F_UP w_2 */
-    ierr = TSComputeIHessianProductFunction2(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fup);CHKERRQ(ierr);
+    ierr = TSComputeIHessianProductFunctionUP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fup);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) { /* compute the residual */
       ierr = VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]);CHKERRQ(ierr);
       ierr = VecScale(VecsSensi2Temp[nadj],shift);CHKERRQ(ierr);
@@ -532,11 +532,11 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       ierr = MatDenseGetColumn(th->MatFwdSensip0,0,&xarr);CHKERRQ(ierr);
       ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
       /* lambda_s^T F_UU w_1 */
-      ierr = TSComputeIHessianProductFunction1(ts,th->ptime,th->X0,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu);CHKERRQ(ierr);
+      ierr = TSComputeIHessianProductFunctionUU(ts,th->ptime,th->X0,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu);CHKERRQ(ierr);
       ierr = VecResetArray(ts->vec_sensip_col);CHKERRQ(ierr);
       ierr = MatDenseRestoreColumn(th->MatFwdSensip0,&xarr);CHKERRQ(ierr);
       /* lambda_s^T F_UU w_2 */
-      ierr = TSComputeIHessianProductFunction2(ts,th->ptime,th->X0,VecsDeltaLam,ts->vec_dir,ts->vecs_fup);CHKERRQ(ierr);
+      ierr = TSComputeIHessianProductFunctionUP(ts,th->ptime,th->X0,VecsDeltaLam,ts->vec_dir,ts->vecs_fup);CHKERRQ(ierr);
       for (nadj=0; nadj<ts->numcost; nadj++) {
         /* M^T Lambda_s + h(1-theta) F_U^T Lambda_s + h(1-theta) lambda_s^T F_UU w_1 + lambda_s^T F_UP w_2  */
         ierr = MatMultTranspose(J,VecsDeltaLam2[nadj],ts->vecs_sensi2[nadj]);CHKERRQ(ierr);
@@ -564,12 +564,12 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
         ierr = MatDenseGetColumn(ts->mat_sensip,0,&xarr);CHKERRQ(ierr);
         ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
         /* lambda_s^T F_PU w_1 */
-        ierr = TSComputeIHessianProductFunction3(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu);CHKERRQ(ierr);
+        ierr = TSComputeIHessianProductFunctionPU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu);CHKERRQ(ierr);
         ierr = VecResetArray(ts->vec_sensip_col);CHKERRQ(ierr);
         ierr = MatDenseRestoreColumn(ts->mat_sensip,&xarr);CHKERRQ(ierr);
 
         /* lambda_s^T F_PP w_2 */
-        ierr = TSComputeIHessianProductFunction4(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp);CHKERRQ(ierr);
+        ierr = TSComputeIHessianProductFunctionPP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp);CHKERRQ(ierr);
         for (nadj=0; nadj<ts->numcost; nadj++) {
           /* Mu2 <- Mu2 + h theta F_P^T Lambda_s + h theta (lambda_s^T F_UU w_1 + lambda_s^T F_UP w_2)  */
           ierr = MatMultTranspose(ts->Jacp,VecsDeltaLam2[nadj],VecsDeltaMu2[nadj]);CHKERRQ(ierr);
@@ -597,11 +597,11 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
           ierr = MatDenseGetColumn(th->MatFwdSensip0,0,&xarr);CHKERRQ(ierr);
           ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
           /* lambda_s^T F_PU w_1 */
-          ierr = TSComputeIHessianProductFunction3(ts,th->ptime,th->X0,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu);CHKERRQ(ierr);
+          ierr = TSComputeIHessianProductFunctionPU(ts,th->ptime,th->X0,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu);CHKERRQ(ierr);
           ierr = VecResetArray(ts->vec_sensip_col);CHKERRQ(ierr);
           ierr = MatDenseRestoreColumn(th->MatFwdSensip0,&xarr);CHKERRQ(ierr);
           /* lambda_s^T F_PP w_2 */
-          ierr = TSComputeIHessianProductFunction4(ts,th->ptime,th->X0,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp);CHKERRQ(ierr);
+          ierr = TSComputeIHessianProductFunctionPP(ts,th->ptime,th->X0,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp);CHKERRQ(ierr);
           for (nadj=0; nadj<ts->numcost; nadj++) {
             /* Mu2 <- Mu2 + h(1-theta) F_P^T Lambda_s + h(1-theta) (lambda_s^T F_UU w_1 + lambda_s^T F_UP w_2) */
             ierr = MatMultTranspose(ts->Jacp,VecsDeltaLam2[nadj],VecsDeltaMu2[nadj]);CHKERRQ(ierr);

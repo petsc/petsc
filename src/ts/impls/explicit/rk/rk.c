@@ -820,29 +820,29 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
       ierr = MatDenseGetColumn(rk->MatsFwdStageSensip[i],0,&xarr);CHKERRQ(ierr);
       ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
       /* lambda_s^T F_UU w_1 */
-      ierr = TSComputeRHSHessianProductFunction1(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_guu);CHKERRQ(ierr);
+      ierr = TSComputeRHSHessianProductFunctionUU(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_guu);CHKERRQ(ierr);
       if (quadts)  {
         /* R_UU w_1 */
-        ierr = TSComputeRHSHessianProductFunction1(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_guu);CHKERRQ(ierr);
+        ierr = TSComputeRHSHessianProductFunctionUU(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_guu);CHKERRQ(ierr);
       }
       if (ts->vecs_sensip) {
         /* lambda_s^T F_UP w_2 */
-        ierr = TSComputeRHSHessianProductFunction2(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gup);CHKERRQ(ierr);
+        ierr = TSComputeRHSHessianProductFunctionUP(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gup);CHKERRQ(ierr);
         if (quadts)  {
           /* R_UP w_2 */
-          ierr = TSComputeRHSHessianProductFunction2(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gup);CHKERRQ(ierr);
+          ierr = TSComputeRHSHessianProductFunctionUP(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gup);CHKERRQ(ierr);
         }
       }
       if (ts->vecs_sensi2p) {
         /* lambda_s^T F_PU w_1 */
-        ierr = TSComputeRHSHessianProductFunction3(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_gpu);CHKERRQ(ierr);
+        ierr = TSComputeRHSHessianProductFunctionPU(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_gpu);CHKERRQ(ierr);
         /* lambda_s^T F_PP w_2 */
-        ierr = TSComputeRHSHessianProductFunction4(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gpp);CHKERRQ(ierr);
+        ierr = TSComputeRHSHessianProductFunctionPP(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gpp);CHKERRQ(ierr);
         if (b[i] && quadts) {
           /* R_PU w_1 */
-          ierr = TSComputeRHSHessianProductFunction3(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gpu);CHKERRQ(ierr);
+          ierr = TSComputeRHSHessianProductFunctionPU(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gpu);CHKERRQ(ierr);
           /* R_PP w_2 */
-          ierr = TSComputeRHSHessianProductFunction4(quadts,stage_time,Y[i],NULL,ts->vec_dir,ts->vecs_gpp);CHKERRQ(ierr);
+          ierr = TSComputeRHSHessianProductFunctionPP(quadts,stage_time,Y[i],NULL,ts->vec_dir,ts->vecs_gpp);CHKERRQ(ierr);
         }
       }
       ierr = VecResetArray(ts->vec_sensip_col);CHKERRQ(ierr);

@@ -508,7 +508,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts,Vec *ihp1,PetscErrorCode (*ihessianpro
 }
 
 /*@C
-  TSComputeIHessianProductFunction1 - Runs the user-defined vector-Hessian-vector product function for Fuu.
+  TSComputeIHessianProductFunctionUU - Runs the user-defined vector-Hessian-vector product function for Fuu.
 
   Collective on TS
 
@@ -516,7 +516,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts,Vec *ihp1,PetscErrorCode (*ihessianpro
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeIHessianProductFunction1() is typically used for sensitivity implementation,
+  TSComputeIHessianProductFunctionUU() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -525,7 +525,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts,Vec *ihp1,PetscErrorCode (*ihessianpro
 
 .seealso: TSSetIHessianProduct()
 @*/
-PetscErrorCode TSComputeIHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
   PetscErrorCode ierr;
 
@@ -542,7 +542,7 @@ PetscErrorCode TSComputeIHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_guu) {
     PetscInt nadj;
-    ierr = TSComputeRHSHessianProductFunction1(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
+    ierr = TSComputeRHSHessianProductFunctionUU(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = VecScale(VHV[nadj],-1);CHKERRQ(ierr);
     }
@@ -551,7 +551,7 @@ PetscErrorCode TSComputeIHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl
 }
 
 /*@C
-  TSComputeIHessianProductFunction2 - Runs the user-defined vector-Hessian-vector product function for Fup.
+  TSComputeIHessianProductFunctionUP - Runs the user-defined vector-Hessian-vector product function for Fup.
 
   Collective on TS
 
@@ -559,7 +559,7 @@ PetscErrorCode TSComputeIHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeIHessianProductFunction2() is typically used for sensitivity implementation,
+  TSComputeIHessianProductFunctionUP() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -568,7 +568,7 @@ PetscErrorCode TSComputeIHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl
 
 .seealso: TSSetIHessianProduct()
 @*/
-PetscErrorCode TSComputeIHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
   PetscErrorCode ierr;
 
@@ -585,7 +585,7 @@ PetscErrorCode TSComputeIHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gup) {
     PetscInt nadj;
-    ierr = TSComputeRHSHessianProductFunction2(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
+    ierr = TSComputeRHSHessianProductFunctionUP(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = VecScale(VHV[nadj],-1);CHKERRQ(ierr);
     }
@@ -594,7 +594,7 @@ PetscErrorCode TSComputeIHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl
 }
 
 /*@C
-  TSComputeIHessianProductFunction3 - Runs the user-defined vector-Hessian-vector product function for Fpu.
+  TSComputeIHessianProductFunctionPU - Runs the user-defined vector-Hessian-vector product function for Fpu.
 
   Collective on TS
 
@@ -602,7 +602,7 @@ PetscErrorCode TSComputeIHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeIHessianProductFunction3() is typically used for sensitivity implementation,
+  TSComputeIHessianProductFunctionPU() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -611,7 +611,7 @@ PetscErrorCode TSComputeIHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl
 
 .seealso: TSSetIHessianProduct()
 @*/
-PetscErrorCode TSComputeIHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
   PetscErrorCode ierr;
 
@@ -628,7 +628,7 @@ PetscErrorCode TSComputeIHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gpu) {
     PetscInt nadj;
-    ierr = TSComputeRHSHessianProductFunction3(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
+    ierr = TSComputeRHSHessianProductFunctionPU(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = VecScale(VHV[nadj],-1);CHKERRQ(ierr);
     }
@@ -637,7 +637,7 @@ PetscErrorCode TSComputeIHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl
 }
 
 /*@C
-  TSComputeIHessianProductFunction4 - Runs the user-defined vector-Hessian-vector product function for Fpp.
+  TSComputeIHessianProductFunctionPP - Runs the user-defined vector-Hessian-vector product function for Fpp.
 
   Collective on TS
 
@@ -645,7 +645,7 @@ PetscErrorCode TSComputeIHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeIHessianProductFunction4() is typically used for sensitivity implementation,
+  TSComputeIHessianProductFunctionPP() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -654,7 +654,7 @@ PetscErrorCode TSComputeIHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl
 
 .seealso: TSSetIHessianProduct()
 @*/
-PetscErrorCode TSComputeIHessianProductFunction4(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
   PetscErrorCode ierr;
 
@@ -671,7 +671,7 @@ PetscErrorCode TSComputeIHessianProductFunction4(TS ts,PetscReal t,Vec U,Vec *Vl
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gpp) {
     PetscInt nadj;
-    ierr = TSComputeRHSHessianProductFunction4(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
+    ierr = TSComputeRHSHessianProductFunctionPP(ts,t,U,Vl,Vr,VHV);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = VecScale(VHV[nadj],-1);CHKERRQ(ierr);
     }
@@ -744,7 +744,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts,Vec *rhshp1,PetscErrorCode (*rhshess
 }
 
 /*@C
-  TSComputeRHSHessianProductFunction1 - Runs the user-defined vector-Hessian-vector product function for Guu.
+  TSComputeRHSHessianProductFunctionUU - Runs the user-defined vector-Hessian-vector product function for Guu.
 
   Collective on TS
 
@@ -752,7 +752,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts,Vec *rhshp1,PetscErrorCode (*rhshess
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeRHSHessianProductFunction1() is typically used for sensitivity implementation,
+  TSComputeRHSHessianProductFunctionUU() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -761,7 +761,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts,Vec *rhshp1,PetscErrorCode (*rhshess
 
 .seealso: TSSetRHSHessianProduct()
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
   PetscErrorCode ierr;
 
@@ -777,7 +777,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *
 }
 
 /*@C
-  TSComputeRHSHessianProductFunction2 - Runs the user-defined vector-Hessian-vector product function for Gup.
+  TSComputeRHSHessianProductFunctionUP - Runs the user-defined vector-Hessian-vector product function for Gup.
 
   Collective on TS
 
@@ -785,7 +785,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeRHSHessianProductFunction2() is typically used for sensitivity implementation,
+  TSComputeRHSHessianProductFunctionUP() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -794,7 +794,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *
 
 .seealso: TSSetRHSHessianProduct()
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
   PetscErrorCode ierr;
 
@@ -810,7 +810,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *
 }
 
 /*@C
-  TSComputeRHSHessianProductFunction3 - Runs the user-defined vector-Hessian-vector product function for Gpu.
+  TSComputeRHSHessianProductFunctionPU - Runs the user-defined vector-Hessian-vector product function for Gpu.
 
   Collective on TS
 
@@ -818,7 +818,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeRHSHessianProductFunction3() is typically used for sensitivity implementation,
+  TSComputeRHSHessianProductFunctionPU() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -827,7 +827,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *
 
 .seealso: TSSetRHSHessianProduct()
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
   PetscErrorCode ierr;
 
@@ -843,7 +843,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *
 }
 
 /*@C
-  TSComputeRHSHessianProductFunction4 - Runs the user-defined vector-Hessian-vector product function for Gpp.
+  TSComputeRHSHessianProductFunctionPP - Runs the user-defined vector-Hessian-vector product function for Gpp.
 
   Collective on TS
 
@@ -851,7 +851,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeRHSHessianProductFunction4() is typically used for sensitivity implementation,
+  TSComputeRHSHessianProductFunctionPP() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -860,7 +860,7 @@ PetscErrorCode TSComputeRHSHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *
 
 .seealso: TSSetRHSHessianProduct()
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunction4(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
   PetscErrorCode ierr;
 
