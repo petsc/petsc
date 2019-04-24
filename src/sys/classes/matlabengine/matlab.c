@@ -198,6 +198,9 @@ PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
 
    Level: advanced
 
+   Note: Mats transfered between PETSc and MATLAB and vis versa are transposed in the other space
+         (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
+
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEngineCreate(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), MatlabEngineGetArray(), PetscMatlabEngine
@@ -225,6 +228,9 @@ PetscErrorCode  PetscMatlabEnginePut(PetscMatlabEngine mengine,PetscObject obj)
 -    object - the PETSc object, for example Vec
 
    Level: advanced
+
+   Note: Mats transfered between PETSc and MATLAB and vis versa are transposed in the other space
+         (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineCreate(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),

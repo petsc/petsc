@@ -39,18 +39,6 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine
   PetscFunctionReturn(0);
 }
 
-/*@C
-    MatSeqAIJFromMatlab - Given a MATLAB sparse matrix, fills a SeqAIJ matrix with its transpose.
-
-   Not Collective
-
-   Input Parameters:
-+     mmat - a MATLAB sparse matris
--     mat - an already created MATSEQAIJ
-
-  Level: intermediate
-
-@*/
 PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 {
   PetscErrorCode ierr;
