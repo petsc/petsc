@@ -108,7 +108,7 @@ typedef const char* MatType;
 
    Level: beginner
 
-.seealso: MatGetFactor(), Mat, MatSetType(), MatType
+.seealso: MatGetFactor(), PCFactorSetMatSolverType(), PCFactorGetMatSolverType()
 J*/
 typedef const char* MatSolverType;
 #define MATSOLVERSUPERLU          "superlu"
