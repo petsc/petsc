@@ -92,7 +92,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatMult() */
-  ierr = MatComputeExplicitOperator(C,&Caij);CHKERRQ(ierr);
+  ierr = MatComputeOperator(C,MATAIJ,&Caij);CHKERRQ(ierr);
   ierr = MatMultEqual(C,Caij,5,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultEqual() fails");
   ierr = MatMultTransposeEqual(C,Caij,5,&flg);CHKERRQ(ierr);

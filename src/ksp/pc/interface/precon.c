@@ -1766,88 +1766,57 @@ PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatMult_PC(Mat A,Vec X,Vec Y)
+{
+  PC             pc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&pc);CHKERRQ(ierr);
+  ierr = PCApply(pc,X,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
-    PCComputeExplicitOperator - Computes the explicit preconditioned operator.
+    PCComputeOperator - Computes the explicit preconditioned operator.
 
     Collective on PC
 
     Input Parameter:
-.   pc - the preconditioner object
++   pc - the preconditioner object
+-   mattype - the matrix type to be used for the operator
 
     Output Parameter:
 .   mat - the explict preconditioned operator
 
     Notes:
-    This computation is done by applying the operators to columns of the
-    identity matrix.
-
-    Currently, this routine uses a dense matrix format when 1 processor
-    is used and a sparse format otherwise.  This routine is costly in general,
-    and is recommended for use only with relatively small systems.
+    This computation is done by applying the operators to columns of the identity matrix.
+    This routine is costly in general, and is recommended for use only with relatively small systems.
+    Currently, this routine uses a dense matrix format when mattype == NULL
 
     Level: advanced
 
 .keywords: PC, compute, explicit, operator
 
-.seealso: KSPComputeExplicitOperator()
+.seealso: KSPComputeOperator(), MatType
 
 @*/
-PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
+PetscErrorCode  PCComputeOperator(PC pc,MatType mattype,Mat *mat)
 {
-  Vec            in,out;
   PetscErrorCode ierr;
-  PetscInt       i,M,m,*rows,start,end;
-  PetscMPIInt    size;
-  MPI_Comm       comm;
-  PetscScalar    *array,one = 1.0;
+  PetscInt       N,M,m,n;
+  Mat            A,Apc;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(mat,2);
-
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  if (!pc->pmat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
-  ierr = MatCreateVecs(pc->pmat,&in,0);CHKERRQ(ierr);
-  ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
-  ierr = VecGetSize(in,&M);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m+1,&rows);CHKERRQ(ierr);
-  for (i=0; i<m; i++) rows[i] = start + i;
-
-  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat,m,m,M,M);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*mat,0,NULL,0,NULL);CHKERRQ(ierr);
-  }
-  ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-
-  for (i=0; i<M; i++) {
-
-    ierr = VecSet(in,0.0);CHKERRQ(ierr);
-    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
-
-    /* should fix, allowing user to choose side */
-    ierr = PCApply(pc,in,out);CHKERRQ(ierr);
-
-    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
-
-  }
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecDestroy(&out);CHKERRQ(ierr);
-  ierr = VecDestroy(&in);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscValidPointer(mat,3);
+  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatCreateShell(PetscObjectComm((PetscObject)pc),m,n,M,N,pc,&Apc);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(Apc,MATOP_MULT,(void (*)(void))MatMult_PC);CHKERRQ(ierr);
+  ierr = MatComputeOperator(Apc,mattype,mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&Apc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

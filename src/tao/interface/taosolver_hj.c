@@ -109,7 +109,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
       A    = hessian;
       ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     } else {
-      ierr = MatComputeExplicitOperator(hessian,&A);CHKERRQ(ierr);
+      ierr = MatComputeOperator(hessian,MATAIJ,&A);CHKERRQ(ierr);
     }
 
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);

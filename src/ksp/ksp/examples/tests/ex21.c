@@ -113,7 +113,7 @@ int main(int argc,char *argv[])
   ierr = ISView(is0,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(is1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_INITIAL_MATRIX,&S,ainv_type,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
+  ierr = MatComputeOperator(S,MATAIJ,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int main(int argc,char *argv[])
   /* And the other */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatGetSchurComplement(A,is1,is1,is0,is0,MAT_INITIAL_MATRIX,&S,ainv_type,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
+  ierr = MatComputeOperator(S,MATAIJ,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (1,1) in (0,0)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);

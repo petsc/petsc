@@ -113,8 +113,17 @@
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
+        <ul>
+          <li>Renamed MatComputeExplicitOperator() into MatComputeOperator() and MatComputeExplicitOperatorTranpose() into MatComputeOperatorTranspose(). Added extra argument to select the desired matrix type</li>
+        </ul>
       <h4>PC:</h4>
+        <ul>
+          <li>Renamed PCComputeExplicitOperator() into PCComputeOperator(). Added extra argument to select the desired matrix type</li>
+        </ul>
       <h4>KSP:</h4>
+        <ul>
+          <li>Renamed KSPComputeExplicitOperator() into KSPComputeOperator(). Added extra argument to select the desired matrix type</li>
+        </ul>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>

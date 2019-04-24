@@ -1,15 +1,33 @@
 
 #include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petscdm.h>
 #include <petscblaslapack.h>
 
+static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
+{
+  KSP            ksp;
+  DM             dm;
+  Vec            work;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm,&work);CHKERRQ(ierr);
+  ierr = KSP_PCApplyBAorAB(ksp,X,Y,work);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm,&work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
-    KSPComputeExplicitOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
+    KSPComputeOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
     space removal if applicable.
 
     Collective on KSP
 
     Input Parameter:
-.   ksp - the Krylov subspace context
++   ksp - the Krylov subspace context
+-   mattype - the matrix type to be used
 
     Output Parameter:
 .   mat - the explict preconditioned operator
@@ -18,74 +36,31 @@
     This computation is done by applying the operators to columns of the
     identity matrix.
 
-    Currently, this routine uses a dense matrix format when 1 processor
-    is used and a sparse format otherwise.  This routine is costly in general,
-    and is recommended for use only with relatively small systems.
+    Currently, this routine uses a dense matrix format for the output operator if mattype == NULL.
+    This routine is costly in general, and is recommended for use only with relatively small systems.
 
     Level: advanced
 
 .keywords: KSP, compute, explicit, operator
 
-.seealso: KSPComputeEigenvaluesExplicitly(), PCComputeExplicitOperator(), KSPSetDiagonalScale(), KSPSetNullSpace()
+.seealso: KSPComputeEigenvaluesExplicitly(), PCComputeOperator(), KSPSetDiagonalScale(), KSPSetNullSpace(), MatType
 @*/
-PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
+PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 {
-  Vec            in,out,work;
   PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscInt       i,M,m,*rows,start,end;
-  Mat            A;
-  MPI_Comm       comm;
-  PetscScalar    *array,one = 1.0;
+  PetscInt       N,M,m,n;
+  Mat            A,Aksp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(mat,2);
-  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  ierr = VecDuplicate(ksp->vec_sol,&in);CHKERRQ(ierr);
-  ierr = VecDuplicate(ksp->vec_sol,&out);CHKERRQ(ierr);
-  ierr = VecDuplicate(ksp->vec_sol,&work);CHKERRQ(ierr);
-  ierr = VecGetSize(in,&M);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m,&rows);CHKERRQ(ierr);
-  for (i=0; i<m; i++) rows[i] = start + i;
-
-  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat,m,m,M,M);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*mat,0,NULL,0,NULL);CHKERRQ(ierr);
-  }
-  ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
-
-  for (i=0; i<M; i++) {
-
-    ierr = VecSet(in,0.0);CHKERRQ(ierr);
-    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
-
-    ierr = KSP_PCApplyBAorAB(ksp,in,out,work);CHKERRQ(ierr);
-
-    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
-
-  }
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecDestroy(&in);CHKERRQ(ierr);
-  ierr = VecDestroy(&out);CHKERRQ(ierr);
-  ierr = VecDestroy(&work);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscValidPointer(mat,3);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatCreateShell(PetscObjectComm((PetscObject)ksp),m,n,M,N,ksp,&Aksp);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(Aksp,MATOP_MULT,(void (*)(void))MatMult_KSP);CHKERRQ(ierr);
+  ierr = MatComputeOperator(Aksp,mattype,mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&Aksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -137,7 +112,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-  ierr = KSPComputeExplicitOperator(ksp,&BA);CHKERRQ(ierr);
+  ierr = KSPComputeOperator(ksp,MATDENSE,&BA);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 

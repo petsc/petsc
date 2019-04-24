@@ -505,11 +505,9 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
     ierr = MatMatMult(C, AinvB, MAT_INITIAL_MATRIX, fill, S);CHKERRQ(ierr);
     ierr = MatDestroy(&AinvB);CHKERRQ(ierr);
   } else {
-    Mat Ainvd, Ainv;
+    Mat Ainv;
 
-    ierr = PCComputeExplicitOperator(pc, &Ainvd);CHKERRQ(ierr);
-    ierr = MatConvert(Ainvd, MATAIJ, MAT_INITIAL_MATRIX, &Ainv);CHKERRQ(ierr);
-    ierr = MatDestroy(&Ainvd);CHKERRQ(ierr);
+    ierr = PCComputeOperator(pc, MATAIJ, &Ainv);CHKERRQ(ierr);
 #if 0
     /* Symmetric version */
     ierr = MatPtAP(Ainv, B, MAT_INITIAL_MATRIX, fill, S);CHKERRQ(ierr);
