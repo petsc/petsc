@@ -3540,6 +3540,22 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 
 /******************************** FEM Support **********************************/
 
+/*@
+  DMPlexCreateSpectralClosurePermutation - Create a permutation from the default (BFS) point ordering in the closure, to
+  a lexicographic ordering over the cell, and set this permutation in the section provided.
+
+  Input Parameters:
++ dm      - The DM
+. point   - Either a cell (highest dim point) or an edge (dim 1 point), or PETSC_DETERMINE
+- section - The PetscSection to reorder, or NULL for the default section
+
+  Note: The point is used to determine the number of dofs/field on an edge. For SEM, this is related to the polynomial
+  degree of the basis.
+
+  Level: developer
+
+.seealso: DMGetSection(), PetscSectionSetClosurePermutation()
+@*/
 PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscInt point, PetscSection section)
 {
   DMLabel        label;
