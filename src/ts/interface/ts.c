@@ -2590,6 +2590,11 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
+  if (!ts->Jacp && ts->Jacprhs) { /* IJacobianP shares the same matrix with RHSJacobianP if only RHSJacobianP is provided */
+    ierr = PetscObjectReference((PetscObject)ts->Jacprhs);CHKERRQ(ierr);
+    ts->Jacp = ts->Jacprhs;
+  }
+
   if (ts->quadraturets) {
     ierr = TSSetUp(ts->quadraturets);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);

@@ -1122,8 +1122,6 @@ PetscErrorCode TSAdjointSetUp(TS ts)
     if (solution_only) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"TSAdjoint cannot use the solution-only mode when choosing the Basic TSTrajectory type. Turn it off with -ts_trajectory_solution_only 0");
   }
 
-  if (!ts->Jacp && ts->Jacprhs) ts->Jacp = ts->Jacprhs;
-
   if (ts->quadraturets) { /* if there is integral in the cost function */
     ierr = VecDuplicate(ts->vecs_sensi[0],&ts->vec_drdu_col);CHKERRQ(ierr);
     if (ts->vecs_sensip){
@@ -1755,8 +1753,6 @@ PetscErrorCode TSForwardSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->forwardsetupcalled) PetscFunctionReturn(0);
-  if (!ts->Jacp && ts->Jacprhs) ts->Jacp = ts->Jacprhs;
-
   if (ts->ops->forwardsetup) {
     ierr = (*ts->ops->forwardsetup)(ts);CHKERRQ(ierr);
   }

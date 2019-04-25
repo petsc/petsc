@@ -255,6 +255,7 @@ int main(int argc,char **argv)
     ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
     ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   }
+  ierr = TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,user.ftime);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.001);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
@@ -308,8 +309,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.mup[1],&x_ptr);CHKERRQ(ierr);
 
   ierr = TSSetCostGradients(ts,2,user.lambda,user.mup);CHKERRQ(ierr);
-
-  ierr = TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
