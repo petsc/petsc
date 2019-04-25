@@ -398,7 +398,6 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   PetscScalar       *x, *work, *workt, *w, *y, *arr, *t, *arrt;
   PetscInt          i, j, k, i2, bs, bs2, nz;
 
-
   PetscFunctionBegin;
   its = its*lits;
   if (flag & SOR_EISENSTAT) SETERRQ (PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
