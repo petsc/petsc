@@ -1190,7 +1190,8 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   Mat             Jac = NULL;       /* Jacobian matrix                        */
   Vec             Yerr;             /* Auxiliary solution vector              */
   PetscReal       err_norm;         /* Estimated error norm                   */
-
+  PetscReal       final_time;       /* Actual final time from the integrator  */
+  
   PetscFunctionBegin;
   N = GetSize((const char *)&ptype[0]);
   if (N < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Illegal problem specification.\n");
@@ -1238,6 +1239,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Solve */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&final_time);CHKERRQ(ierr);
 
   /* Get the estimated error, if available */
   ierr = VecDuplicate(Y,&Yerr);CHKERRQ(ierr);
@@ -1249,7 +1251,10 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Exact solution */
   ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);
-  ierr = ExactSolution(Yex,&ptype[0],tfinal,exact_flag);CHKERRQ(ierr);
+  if(PetscAbsScalar(final_time-tfinal)>1e-14) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Note: There is a difference between the prescribed final time %g and the actual final time, %g.\n",(double)tfinal,(double)final_time);CHKERRQ(ierr);
+  }
+  ierr = ExactSolution(Yex,&ptype[0],final_time,exact_flag);CHKERRQ(ierr);
 
   /* Calculate Error */
   ierr = VecAYPX(Yex,-1.0,Y);CHKERRQ(ierr);
