@@ -925,7 +925,7 @@ class Package(config.base.Configure):
       self.log.write('For '+self.package+' unable to find version information: output below\n')
       self.log.write(output)
       return
-    version = version.strip('\"').replace(' ','')
+    version = version.strip().strip('\"')
     self.foundversion = self.versionToStandardForm(version)
 
     # check for consistency of version numbering
