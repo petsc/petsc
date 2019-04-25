@@ -77,11 +77,13 @@ PetscErrorCode  MatKAIJGetAIJ(Mat A,Mat *B)
    Output Parameter:
 .  S - the S matrix, in form of a scalar array in column-major format
 
+   Notes:
+   The dimensions of the output array can be determined by calling MatGetBlockSizes() on the KAIJ matrix.
+   The row block and column block sizes returned will correspond to the number of rows and columns, respectively, in S.
+
    Level: advanced
 
-   Notes: The reference count on the S matrix is not increased so you should not destroy it.
-
-.seealso: MatCreateKAIJ()
+.seealso: MatCreateKAIJ(), MatGetBlockSizes()
 @*/
 PetscErrorCode  MatKAIJGetS(Mat A,const PetscScalar **S)
 {
@@ -92,7 +94,7 @@ PetscErrorCode  MatKAIJGetS(Mat A,const PetscScalar **S)
 }
 
 /*@C
-   MatKAIJGetT - Get the T matrix describing the shift action of the KAIJ matrix
+   MatKAIJGetT - Get the transformation matrix T associated with the KAIJ matrix
 
    Not Collective, the entire T is stored and returned independently on all processes
 
@@ -102,11 +104,13 @@ PetscErrorCode  MatKAIJGetS(Mat A,const PetscScalar **S)
    Output Parameter:
 .  T - the T matrix, in form of a scalar array in column-major format
 
+   Notes:
+   The dimensions of the output array can be determined by calling MatGetBlockSizes() on the KAIJ matrix.
+   The row block and column block sizes returned will correspond to the number of rows and columns, respectively, in T.
+
    Level: advanced
 
-   Notes: The reference count on the T matrix is not increased so you should not destroy it.
-
-.seealso: MatCreateKAIJ()
+.seealso: MatCreateKAIJ(), MatGetBlockSizes()
 @*/
 PetscErrorCode  MatKAIJGetT(Mat A,const PetscScalar **T)
 {
@@ -173,7 +177,6 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   ierr = VecDestroy(&b->w);CHKERRQ(ierr);
   ierr = PetscFree3(b->S,b->T,b->ibdiag);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -241,7 +244,6 @@ PetscErrorCode KAIJMultAdd_Seq(Mat A,Vec xx,Vec yy,Vec zz)
   PetscInt          n,i,jrow,j,l,p=b->p,q=b->q,k;
 
   PetscFunctionBegin;
-
   if (!yy) {
     ierr = VecSet(zz,0.0);CHKERRQ(ierr); 
   } else {
@@ -335,9 +337,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ_N(Mat A,const PetscScalar **values
 
   PetscFunctionBegin;
   if (p != q) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATKAIJ: Block size must be square to calculate inverse.");
-  if ((!S) && (!T) && (!b->isTI)) {
-    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATKAIJ: Cannot invert a zero matrix.");
-  }
+  if ((!S) && (!T) && (!b->isTI)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATKAIJ: Cannot invert a zero matrix.");
 
   dof  = p;
   dof2 = dof*dof;
@@ -404,8 +404,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   if (flag & SOR_EISENSTAT) SETERRQ (PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
   if (its <= 0)             SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
   if (fshift)               SETERRQ (PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for diagonal shift");
-  if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
+  if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (p != q) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatSOR for KAIJ: Sorry, no support for non-square dense blocks");
   else        {bs = p; bs2 = bs*bs; }
 
@@ -675,7 +674,6 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 
   ierr = VecRestoreArray(xx,&x);    CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1023,12 +1021,6 @@ PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],
     B->ops->getrow              = MatGetRow_SeqKAIJ;
     B->ops->restorerow          = MatRestoreRow_SeqKAIJ;
     B->ops->sor                 = MatSOR_SeqKAIJ;
-
-    /*
-    This is commented out since MATKAIJ will use the basic MatConvert (which uses MatGetRow()).
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqkaij_seqaij_C",MatConvert_SeqKAIJ_SeqAIJ);CHKERRQ(ierr);
-    */
-
   } else {
     Mat_MPIAIJ  *mpiaij = (Mat_MPIAIJ*)A->data;
     Mat_MPIKAIJ *b;

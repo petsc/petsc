@@ -1,5 +1,5 @@
 
-static char help[] = "Tests vatious routines in MatKAIJ format.\n";
+static char help[] = "Tests various routines in MatKAIJ format.\n";
 
 #include <petscmat.h>
 #define IMAX 15
@@ -15,13 +15,9 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
-#else
 
   /* Load aij matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -52,11 +48,7 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 
-  if (size == 1) {
-    ierr = MatConvert(TA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert(TA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  }
+  ierr = MatConvert(TA,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
   /* Test MatMult() */
   ierr = MatMultEqual(TA,B,10,&flg);CHKERRQ(ierr);
@@ -75,11 +67,7 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 
-  if (size == 1) {
-    ierr = MatConvert(TA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert(TA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  }
+  ierr = MatConvert(TA,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
   /* Test MatMult() */
   ierr = MatMultEqual(TA,B,10,&flg);CHKERRQ(ierr);
@@ -98,11 +86,7 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 
-  if (size == 1) {
-    ierr = MatConvert(TA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert(TA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  }
+  ierr = MatConvert(TA,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
   /* Test MatMult() */
   ierr = MatMultEqual(TA,B,10,&flg);CHKERRQ(ierr);
@@ -130,11 +114,7 @@ int main(int argc,char **args)
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 
-    if (size == 1) {
-      ierr = MatConvert(TA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    } else {
-      ierr = MatConvert(TA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    }
+    ierr = MatConvert(TA,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
     /* Test MatMult() */
     ierr = MatMultEqual(TA,B,10,&flg);CHKERRQ(ierr);
@@ -152,14 +132,18 @@ int main(int argc,char **args)
   ierr = PetscFree2(S,T);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-#endif
-  return 0;
+  return ierr;
 }
 
 /*TEST
+
+  build:
+    requires: !complex
+
   test:
     requires: datafilespath
     output_file: output/ex176.out
     nsize: {{1 2 3 4}}
     args: -f ${DATAFILESPATH}/matrices/small -p {{2 3 7}} -q {{3 7}} -viewer_binary_skip_info
+
 TEST*/
