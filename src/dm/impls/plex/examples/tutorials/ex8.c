@@ -2,6 +2,20 @@ static char help[] = "Spectral/tensor element restrictions using Plex\n\n";
 
 #include <petscdmplex.h>
 
+/*
+ Standard ordering for a Q3 quad is
+
+    6  10  11 7
+    13 2   3  15
+    12 0   1  14
+    4  8   9  5
+
+ With DMPlexCreateSpectralClosurePermutation(), the closure will be ordered lexicographically,
+
+   4 8 9 5 12 0 1 14 13 2 3 15 6 10 11 7
+
+ */
+
 int main(int argc, char **argv)
 {
   DM             dm;
@@ -42,13 +56,19 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
-    suffix: 0
+    suffix: 1d_q2
     args: -dim 1 -petscspace_degree 2
   test:
-    suffix: 1
+    suffix: 2d_q1
     args: -dim 2 -petscspace_degree 1
   test:
-    suffix: 2
+    suffix: 2d_q2
     args: -dim 2 -petscspace_degree 2
+  test:
+    suffix: 2d_q3
+    args: -dim 2 -petscspace_degree 3 -cells 1,1
+  test:
+    suffix: 3d_q1
+    args: -dim 3 -petscspace_degree 1 -cells 1,1,1
 
 TEST*/
