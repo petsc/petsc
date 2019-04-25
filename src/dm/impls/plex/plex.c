@@ -3576,7 +3576,7 @@ PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscInt point, Pet
   } else SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D of depth %D cannot be used to bootstrap spectral ordering for dim %D", point, depth, dim);
   if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  if (dim <= 1) PetscFunctionReturn(0);
+  if (dim < 1) PetscFunctionReturn(0);
   for (f = 0; f < Nf; ++f) {
     /* An order k SEM disc has k-1 dofs on an edge */
     ierr = PetscSectionGetFieldDof(section, eStart, f, &k);CHKERRQ(ierr);
@@ -3587,6 +3587,19 @@ PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscInt point, Pet
   ierr = PetscMalloc1(size, &perm);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     switch (dim) {
+    case 1:
+      ierr = PetscSectionGetFieldDof(section, eStart, f, &k);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
+      k = k/Nc + 1;
+      /*
+        Original ordering is [ edge of length k-1; vtx0; vtx1 ]
+        We want              [ vtx0; edge of length k-1; vtx1 ]
+      */
+      for (c=0; c<Nc; c++,offset++) perm[offset] = (k-1)*Nc + c + foffset;
+      for (i=0; i<k-1; i++) for (c=0; c<Nc; c++,offset++) perm[offset] = i*Nc + c + foffset;
+      for (c=0; c<Nc; c++,offset++) perm[offset] = k*Nc + c + foffset;
+      foffset = offset;
+      break;
     case 2:
       /* The original quad closure is oriented clockwise, {f, e_b, e_r, e_t, e_l, v_lb, v_rb, v_tr, v_tl} */
       ierr = PetscSectionGetFieldDof(section, eStart, f, &k);CHKERRQ(ierr);
