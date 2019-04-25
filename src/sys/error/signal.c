@@ -200,7 +200,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
 #if !defined(PETSC_MISSING_SIGFPE)
     signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGHUP)
+#if !defined(PETSC_MISSING_SIGHUP) && defined(PETSC_HAVE_STRUCT_SIGACTION)
     {
       struct  sigaction action;
       sigaction(SIGHUP,NULL,&action);
