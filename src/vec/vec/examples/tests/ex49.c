@@ -13,11 +13,13 @@ static const char help[] = "Test VEC_SUBSET_OFF_PROC_ENTRIES when some processes
    when we save the communication pattern via
 
      VecSetOption(vec, VEC_SUBSET_OFF_PROC_ENTRIES, PETSC_TRUE).
+
+   Contributed-by: David Wells <drwells@email.unc.edu>
 */
 int main(int argc, char **argv)
 {
   Vec            v;
-  PetscInt      *ln, n;
+  PetscInt       i, j, k, *ln, n, rstart;
   PetscBool      saveCommunicationPattern = PETSC_FALSE;
   PetscMPIInt    size, rank, p;
   PetscErrorCode ierr;
@@ -29,39 +31,33 @@ int main(int argc, char **argv)
 
   ierr = PetscMalloc1(size, &ln);CHKERRQ(ierr);
   /* This bug is triggered when one of the local lengths is small. Sometimes in IBAMR this value is actually zero. */
-  for (p = 0; p < size; ++p) ln[p] = 10;
+  for (p=0; p<size; ++p) ln[p] = 10;
   ln[0] = 2;
-  if (!rank) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "local lengths are ");CHKERRQ(ierr);
-    for (p = 0; p < size; ++p) {
-      if (p > 0) {ierr = PetscPrintf(PETSC_COMM_WORLD, " ");CHKERRQ(ierr);}
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "%D", ln[p]);CHKERRQ(ierr);
-    }
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");CHKERRQ(ierr);
-  }
-  n = ln[rank];
-  ierr = VecCreateMPI(MPI_COMM_WORLD, n, PETSC_DECIDE, &v);CHKERRQ(ierr);
+  ierr  = PetscPrintf(PETSC_COMM_WORLD, "local lengths are:\n");CHKERRQ(ierr);
+  ierr  = PetscIntView(1, &ln[rank], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  n     = ln[rank];
+  ierr  = VecCreateMPI(MPI_COMM_WORLD, n, PETSC_DECIDE, &v);CHKERRQ(ierr);
+  ierr  = VecGetOwnershipRange(v, &rstart, NULL);
 
-  for (int assembly_n = 0; assembly_n < 4; ++assembly_n) {
-    PetscReal norm   = 0.0;
-    PetscInt  rstart = 0, i;
+  for (k=0; k<4; ++k) {
+    PetscReal norm = 0.0;
 
     if (saveCommunicationPattern) {ierr = VecSetOption(v, VEC_SUBSET_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);}
     ierr = VecSet(v, 0.0);CHKERRQ(ierr);
-    for (p = 0; p < rank; ++p) rstart += ln[p];
-    for (i = 0; i < n; ++i) {
+
+    for (i=0; i<n; ++i) {
       PetscScalar val = 1.0;
-      PetscInt    r     = rstart + i;
+      PetscInt    r   = rstart + i;
 
       ierr = VecSetValue(v, r, val, ADD_VALUES);CHKERRQ(ierr);
       /* do assembly on all other processors too (the 'neighbors') */
       {
         const PetscMPIInt neighbor = i % size;
         const PetscInt    nn       = ln[neighbor];
-        PetscInt          nrstart  = 0, j;
+        PetscInt          nrstart  = 0;
 
-        for (p = 0; p < neighbor; ++p) nrstart += ln[p];
-        for (j = 0; j < nn/4; j+= 3) {
+        for (p=0; p<neighbor; ++p) nrstart += ln[p];
+        for (j=0; j<nn/4; j+= 3) {
           PetscScalar val = 0.01;
           PetscInt    nr  = nrstart + j;
 
@@ -72,7 +68,7 @@ int main(int argc, char **argv)
     ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
     ierr = VecNorm(v, NORM_1, &norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "norm is %g\n", (double) norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "norm is %g\n", (double)norm);CHKERRQ(ierr);
   }
   ierr = PetscFree(ln);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
@@ -85,11 +81,9 @@ int main(int argc, char **argv)
    test:
       suffix: 1
       nsize: 4
-      requires: !complex
    test:
       suffix: 1_save
       args: -save_comm
       nsize: 4
-      requires: !complex
       output_file: output/ex49_1.out
 TEST*/
