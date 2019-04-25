@@ -1251,7 +1251,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Exact solution */
   ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);
-  if(PetscAbsScalar(final_time-tfinal)>1e-14) {
+  if(PetscAbsScalar(final_time-tfinal)>2.*PETSC_MACHINE_EPSILON) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Note: There is a difference between the prescribed final time %g and the actual final time, %g.\n",(double)tfinal,(double)final_time);CHKERRQ(ierr);
   }
   ierr = ExactSolution(Yex,&ptype[0],final_time,exact_flag);CHKERRQ(ierr);
@@ -1325,10 +1325,20 @@ int main(int argc, char **argv)
 /*TEST
 
     test:
-
-    test:
       suffix: 2
       args: -ts_type glee -final_time 5 -ts_adapt_type none
+      timeoutfactor: 3
+      requires: !single
+
+    test:
+      suffix: 3
+      args: -ts_type glee -final_time 5 -ts_adapt_type glee -ts_adapt_monitor  -ts_max_steps 50  -problem hull1972a3 -ts_adapt_glee_use_local 1
+      timeoutfactor: 3
+      requires: !single
+
+    test:
+      suffix: 4
+      args: -ts_type glee -final_time 5 -ts_adapt_type glee -ts_adapt_monitor  -ts_max_steps 50  -problem hull1972a3  -ts_max_reject 100 -ts_adapt_glee_use_local 0
       timeoutfactor: 3
       requires: !single
 

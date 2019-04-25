@@ -24,10 +24,17 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
 
   if (bGTEMethod){/* the method is of GLEE type */
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
+    if (!glee->Y && adapt->glee_use_local) {
+      ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);/*create vector to store previous step global error*/ 
+      ierr = VecZeroEntries(glee->Y);CHKERRQ(ierr); /*set error to zero on the first step - may not work if error is not zero initially*/
+    }
     if (!glee->E) {ierr = VecDuplicate(X,&glee->E);CHKERRQ(ierr);}
     E    = glee->E;
     ierr = TSGetTimeError(ts,0,&E);CHKERRQ(ierr);
-    /* this should be called with Y (the solution at the beginning of the step)*/
+
+    if (adapt->glee_use_local) {ierr = VecAXPY(E,-1.0,glee->Y);CHKERRQ(ierr);} /* local error = current error - previous step error */
+
+    /* this should be called with the solution at the beginning of the step too*/
     ierr = TSErrorWeightedENorm(ts,E,X,X,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   } else {
     /* the method is NOT of GLEE type; use the stantard basic augmented by separate atol and rtol */
@@ -65,12 +72,18 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   }
 
   if (bGTEMethod){
+    if (*accept == PETSC_TRUE && adapt->glee_use_local) {
+      /* If step is accepted, then overwrite previous step error with the current error to be used on the next step */
+      /* WARNING: if the adapters are composable, then the accept test will not be reliable*/
+      ierr = TSGetTimeError(ts,0,&(glee->Y));CHKERRQ(ierr);
+    }
+
     /* The optimal new step based on the current global truncation error. */
     if (enorm > 0) {
       /* factor based on the absolute tolerance */
-      hfac_ltea = safety * PetscPowReal(1./enorma,((PetscReal)1)/order);
+      hfac_ltea = safety * PetscPowReal(1./enorma,((PetscReal)1)/(order+1));
       /* factor based on the relative tolerance */
-      hfac_lter = safety * PetscPowReal(1./enormr,((PetscReal)1)/order);
+      hfac_lter = safety * PetscPowReal(1./enormr,((PetscReal)1)/(order+1));
       /* pick the minimum time step among the relative and absolute tolerances */
       hfac_lte  = PetscMin(hfac_ltea,hfac_lter);
     } else {

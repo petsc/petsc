@@ -4,11 +4,14 @@
 #include <petscviewer.h>
 #include <petscdraw.h>
 
+#define SkipSmallValue(a,b,tol) if(PetscAbsScalar(a)< tol || PetscAbsScalar(b)< tol) continue;
+
 /* Logging support */
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
 PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 const char *const TSExactFinalTimeOptions[] = {"UNSPECIFIED","STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
+
 
 /*@C
    TSMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
@@ -5519,9 +5522,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      if(PetscAbsScalar(y[i])< ts->adapt->ignore_max  || PetscAbsScalar(u[i])< ts->adapt->ignore_max){
-        continue;
-      }
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = PetscRealPart(atol[i]);
       if(tola>0.){
@@ -5545,9 +5546,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
     const PetscScalar *atol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      if(PetscAbsScalar(y[i])< ts->adapt->ignore_max  || PetscAbsScalar(u[i])< ts->adapt->ignore_max){
-        continue;
-      }
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = PetscRealPart(atol[i]);
       if(tola>0.){
@@ -5570,9 +5569,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
     const PetscScalar *rtol;
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      if(PetscAbsScalar(y[i])< ts->adapt->ignore_max  || PetscAbsScalar(u[i])< ts->adapt->ignore_max){
-        continue;
-      }
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = ts->atol;
       if(tola>0.){
@@ -5593,11 +5590,9 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else {                      /* scalar atol, scalar rtol */
     for (i=0; i<n; i++) {
-      if(PetscAbsScalar(y[i])< ts->adapt->ignore_max  || PetscAbsScalar(u[i])< ts->adapt->ignore_max){
-        continue;
-      }
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
-     tola = ts->atol;
+      tola = ts->atol;
       if(tola>0.){
         suma  += PetscSqr(diff/tola);
         na_loc++;
@@ -5702,9 +5697,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
 
     for (i=0; i<n; i++) {
-      if(PetscAbsScalar(y[i])< ts->adapt->ignore_max  || PetscAbsScalar(u[i])< ts->adapt->ignore_max){
-        continue;
-      }
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = PetscRealPart(atol[i]);
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
@@ -5725,9 +5718,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
     const PetscScalar *atol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      if(PetscAbsScalar(y[i])< ts->adapt->ignore_max  || PetscAbsScalar(u[i])< ts->adapt->ignore_max){
-        continue;
-      }
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = PetscRealPart(atol[i]);
       tolr = ts->rtol  * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
@@ -5748,9 +5739,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
 
     for (i=0; i<n; i++) {
-      if(PetscAbsScalar(y[i])< ts->adapt->ignore_max  || PetscAbsScalar(u[i])< ts->adapt->ignore_max){
-        continue;
-      }
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = ts->atol;
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
@@ -5769,9 +5758,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
   } else {                      /* scalar atol, scalar rtol */
 
     for (i=0; i<n; i++) {
-      if(PetscAbsScalar(y[i])< ts->adapt->ignore_max  || PetscAbsScalar(u[i])< ts->adapt->ignore_max){
-        continue;
-      }
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = ts->atol;
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
@@ -5902,6 +5889,7 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = PetscRealPart(atol[i]);
       if(tola>0.){
@@ -5925,6 +5913,7 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
     const PetscScalar *atol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = PetscRealPart(atol[i]);
       if(tola>0.){
@@ -5947,6 +5936,7 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
     const PetscScalar *rtol;
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = ts->atol;
       if(tola>0.){
@@ -5967,8 +5957,9 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else {                      /* scalar atol, scalar rtol */
     for (i=0; i<n; i++) {
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
-     tola = ts->atol;
+      tola = ts->atol;
       if(tola>0.){
         suma  += PetscSqr(err/tola);
         na_loc++;
@@ -6077,6 +6068,7 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
 
     for (i=0; i<n; i++) {
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = PetscRealPart(atol[i]);
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
@@ -6097,6 +6089,7 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
     const PetscScalar *atol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = PetscRealPart(atol[i]);
       tolr = ts->rtol  * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
@@ -6117,6 +6110,7 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
 
     for (i=0; i<n; i++) {
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = ts->atol;
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
@@ -6135,6 +6129,7 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
   } else {                      /* scalar atol, scalar rtol */
 
     for (i=0; i<n; i++) {
+      SkipSmallValue(PetscAbsScalar(y[i]),PetscAbsScalar(u[i]),ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = ts->atol;
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));

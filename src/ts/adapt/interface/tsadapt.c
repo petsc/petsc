@@ -243,7 +243,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
 PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      iascii,isbinary,isnone;
+  PetscBool      iascii,isbinary,isnone,isglee;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
@@ -255,6 +255,7 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTGLEE,&isglee);CHKERRQ(ierr);
     if (!isnone) {
       if (adapt->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  always accepting steps\n");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer,"  safety factor %g\n",(double)adapt->safety);CHKERRQ(ierr);
@@ -263,6 +264,14 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  clip fastest decrease %g\n",(double)adapt->clip[0]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  maximum allowed timestep %g\n",(double)adapt->dt_max);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  minimum allowed timestep %g\n",(double)adapt->dt_min);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum solution absolute value to be ignored %g\n",(double)adapt->ignore_max);CHKERRQ(ierr);
+    }
+    if (isglee) {
+      if (adapt->glee_use_local) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  GLEE uses local error control\n");CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"  GLEE uses global error control\n");CHKERRQ(ierr);
+      }
     }
     if (adapt->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -977,7 +986,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->clip[1]            = 10.;
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e+20;
-  adapt->ignore_max         = -PETSC_INFINITY;
+  adapt->ignore_max         = -1.0;
   adapt->glee_use_local     = PETSC_TRUE;
   adapt->scale_solve_failed = 0.25;
   /* these two safety factors are not public, and they are used only in the TS_EXACTFINALTIME_MATCHSTEP case
