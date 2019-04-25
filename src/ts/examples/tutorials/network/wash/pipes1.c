@@ -898,6 +898,7 @@ int main(int argc,char ** argv)
    test:
       suffix: 2
       nsize: 2
+      requires: mumps
       args: -ts_monitor -case 1 -ts_max_steps 1 -petscpartitioner_type simple -options_left no -viewX -test
       localrunfiles: pOption
       output_file: output/pipes1_2.out
@@ -905,6 +906,7 @@ int main(int argc,char ** argv)
    test:
       suffix: 3
       nsize: 2
+      requires: mumps
       args: -ts_monitor -case 0 -ts_max_steps 1 -petscpartitioner_type simple -options_left no -viewX -test
       localrunfiles: pOption
       output_file: output/pipes1_3.out
@@ -918,6 +920,7 @@ int main(int argc,char ** argv)
    test:
       suffix: 5
       nsize: 3
+      requires: mumps
       args: -ts_monitor -case 2 -ts_max_steps 10 -petscpartitioner_type simple -options_left no -viewX -test
       localrunfiles: pOption
       output_file: output/pipes1_5.out
@@ -925,6 +928,7 @@ int main(int argc,char ** argv)
    test:
       suffix: 6
       nsize: 2
+      requires: mumps
       args: -ts_monitor -case 1 -ts_max_steps 1 -petscpartitioner_type simple -options_left no -wash_distribute 0 -viewX -test
       localrunfiles: pOption
       output_file: output/pipes1_6.out
@@ -932,6 +936,7 @@ int main(int argc,char ** argv)
    test:
       suffix: 7
       nsize: 2
+      requires: mumps
       args: -ts_monitor -case 2 -ts_max_steps 1 -petscpartitioner_type simple -options_left no -wash_distribute 0 -viewX -test
       localrunfiles: pOption
       output_file: output/pipes1_7.out
