@@ -47,5 +47,8 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     args: -dim 2 -petscspace_degree 1
+  test:
+    suffix: 2
+    args: -dim 2 -petscspace_degree 2
 
 TEST*/
