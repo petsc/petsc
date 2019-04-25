@@ -1,5 +1,6 @@
 
-static char help[] = "Solves a linear system in parallel with KSP.\n\
+static char help[] = "Solves a linear system in parallel with KSP,\n\
+demonstrating how to register a new preconditioner (PC) type.\n\
 Input parameters include:\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
