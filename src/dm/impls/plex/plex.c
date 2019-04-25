@@ -3551,8 +3551,10 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 /******************************** FEM Support **********************************/
 
 /*@
-  DMPlexCreateSpectralClosurePermutation - Create a permutation from the default (BFS) point ordering in the closure, to
-  a lexicographic ordering over the cell, and set this permutation in the section provided.
+
+  DMPlexSetClosurePermutationTensor - Create a permutation from the default (BFS) point ordering in the closure, to a
+  lexicographic ordering over the tensor product cell (i.e., line, quad, hex, etc.), and set this permutation in the
+  section provided (or default section of the DM).
 
   Input Parameters:
 + dm      - The DM
@@ -3562,11 +3564,50 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
   Note: The point is used to determine the number of dofs/field on an edge. For SEM, this is related to the polynomial
   degree of the basis.
 
+  Example:
+  A typical interpolated single-quad mesh might order points as
+.vb
+  [c0, v1, v2, v3, v4, e5, e6, e7, e8]
+
+  v4 -- e6 -- v3
+  |           |
+  e7    c0    e8
+  |           |
+  v1 -- e5 -- v2
+.ve
+
+  (There is no significance to the ordering described here.)  The default section for a Q3 quad might typically assign
+  dofs in the order of points, e.g.,
+.vb
+    c0 -> [0,1,2,3]
+    v1 -> [4]
+    ...
+    e5 -> [8, 9]
+.ve
+
+  which corresponds to the dofs
+.vb
+    6   10  11  7
+    13  2   3   15
+    12  0   1   14
+    4   8   9   5
+.ve
+
+  The closure in BFS ordering works through height strata (cells, edges, vertices) to produce the ordering
+.vb
+  0 1 2 3 8 9 14 15 11 10 13 12 4 5 7 6
+.ve
+
+  After calling DMPlexSetClosurePermutationTensor(), the closure will be ordered lexicographically,
+.vb
+   4 8 9 5 12 0 1 14 13 2 3 15 6 10 11 7
+.ve
+
   Level: developer
 
 .seealso: DMGetSection(), PetscSectionSetClosurePermutation()
 @*/
-PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscInt point, PetscSection section)
+PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSection section)
 {
   DMLabel        label;
   PetscInt      *perm;

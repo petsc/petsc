@@ -362,7 +362,7 @@ int main(int argc, char **argv)
   }
   ierr = DMSetSection(dm, s);CHKERRQ(ierr);
   /* Create spectral ordering and load in data */
-  ierr = DMPlexCreateSpectralClosurePermutation(dm, PETSC_DETERMINE, NULL);CHKERRQ(ierr);
+  ierr = DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &u);CHKERRQ(ierr);
   switch (user.dim) {
   case 2: ierr = LoadData2D(dm, 2, 2, size, u, &user);CHKERRQ(ierr);break;
@@ -385,7 +385,7 @@ int main(int argc, char **argv)
     break;
   }
   /* Recreate spectral ordering and read out data */
-  ierr = DMPlexCreateSpectralClosurePermutation(dm, PETSC_DETERMINE, s);CHKERRQ(ierr);
+  ierr = DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, s);CHKERRQ(ierr);
   switch (user.dim) {
   case 2: ierr = ReadData2D(dm, u, &user);CHKERRQ(ierr);break;
   case 3: ierr = ReadData3D(dm, u, &user);CHKERRQ(ierr);break;
