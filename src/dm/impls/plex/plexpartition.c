@@ -583,6 +583,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   if (part->ops->setfromoptions) {
     ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
   }
+  ierr = PetscViewerDestroy(&part->viewerGraph);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, &part->formatGraph, &part->viewGraph);CHKERRQ(ierr);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part);CHKERRQ(ierr);
