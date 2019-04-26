@@ -2057,7 +2057,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .keywords: set, convergence, test, context
 
-.seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances(), KSP
+.seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances(), KSP, KSPGetConvergenceTest(), KSPGetAndClearConvergenceTest()
 @*/
 PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
@@ -2071,6 +2071,90 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
   ksp->converged        = converge;
   ksp->convergeddestroy = destroy;
   ksp->cnvP             = (void*)cctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   KSPGetConvergenceTest - Gets the function to be used to determine
+   convergence.
+
+   Logically Collective on KSP
+
+   Input Parameter:
+.   ksp - iterative context obtained from KSPCreate()
+
+   Output Parameter:
++  converge - pointer to convergence test function
+.  cctx    - context for private data for the convergence routine (may be null)
+-  destroy - a routine for destroying the context (may be null)
+
+   Calling sequence of converge:
+$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
+
++  ksp - iterative context obtained from KSPCreate()
+.  it - iteration number
+.  rnorm - (estimated) 2-norm of (preconditioned) residual
+.  reason - the reason why it has converged or diverged
+-  cctx  - optional convergence context, as set by KSPSetConvergenceTest()
+
+   Level: advanced
+
+.keywords: set, convergence, test, context
+
+.seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances(), KSP, KSPSetConvergenceTest(), KSPGetAndClearConvergenceTest()
+@*/
+PetscErrorCode  KSPGetConvergenceTest(KSP ksp,PetscErrorCode (**converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void **cctx,PetscErrorCode (**destroy)(void*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (converge) *converge = ksp->converged;
+  if (destroy)  *destroy  = ksp->convergeddestroy;
+  if (cctx)     *cctx     = ksp->cnvP;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   KSPGetAndClearConvergenceTest - Gets the function to be used to determine convergence. Removes the current test without calling destroy on the test context
+
+   Logically Collective on KSP
+
+   Input Parameter:
+.   ksp - iterative context obtained from KSPCreate()
+
+   Output Parameter:
++  converge - pointer to convergence test function
+.  cctx    - context for private data for the convergence routine
+-  destroy - a routine for destroying the context
+
+   Calling sequence of converge:
+$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
+
++  ksp - iterative context obtained from KSPCreate()
+.  it - iteration number
+.  rnorm - (estimated) 2-norm of (preconditioned) residual
+.  reason - the reason why it has converged or diverged
+-  cctx  - optional convergence context, as set by KSPSetConvergenceTest()
+
+   Level: advanced
+
+   Notes: This is intended to be used to allow transfering the convergence test (and its context) to another testing object (for example another KSP) and then calling
+          KSPSetConvergenceTest() on this original KSP. If you just called KSPGetConvergenceTest() followed by KSPSetConvergenceTest() the original context information
+          would be destroyed and hence the transfered context would be invalid and trigger a crash on use
+
+.keywords: set, convergence, test, context
+
+.seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances(), KSP, KSPSetConvergenceTest(), KSPGetConvergenceTest()
+@*/
+PetscErrorCode  KSPGetAndClearConvergenceTest(KSP ksp,PetscErrorCode (**converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void **cctx,PetscErrorCode (**destroy)(void*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  *converge             = ksp->converged;
+  *destroy              = ksp->convergeddestroy;
+  *cctx                 = ksp->cnvP;
+  ksp->converged        = NULL;
+  ksp->cnvP             = NULL;
+  ksp->convergeddestroy = NULL;
   PetscFunctionReturn(0);
 }
 

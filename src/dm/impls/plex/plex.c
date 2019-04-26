@@ -414,24 +414,26 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_NATIVE) {
-    const char *vecname;
-    PetscInt    n, nroots;
+    /* Natural ordering is the common case for DMDA, NATIVE means plain vector, for PLEX is the opposite */
+    /* this need a better fix */
+    if (dm->useNatural) {
+      if (dm->sfNatural) {
+        const char *vecname;
+        PetscInt    n, nroots;
 
-    if (dm->sfNatural) {
-      ierr = VecGetLocalSize(originalv, &n);CHKERRQ(ierr);
-      ierr = PetscSFGetGraph(dm->sfNatural, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
-      if (n == nroots) {
-        ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
-        ierr = DMPlexGlobalToNaturalBegin(dm, originalv, v);CHKERRQ(ierr);
-        ierr = DMPlexGlobalToNaturalEnd(dm, originalv, v);CHKERRQ(ierr);
-        ierr = PetscObjectGetName((PetscObject) originalv, &vecname);CHKERRQ(ierr);
-        ierr = PetscObjectSetName((PetscObject) v, vecname);CHKERRQ(ierr);
-      } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "DM global to natural SF only handles global vectors");
-    } else SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created");
-  } else {
-    /* we are viewing a natural DMPlex vec. */
-    v = originalv;
-  }
+        ierr = VecGetLocalSize(originalv, &n);CHKERRQ(ierr);
+        ierr = PetscSFGetGraph(dm->sfNatural, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+        if (n == nroots) {
+          ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
+          ierr = DMPlexGlobalToNaturalBegin(dm, originalv, v);CHKERRQ(ierr);
+          ierr = DMPlexGlobalToNaturalEnd(dm, originalv, v);CHKERRQ(ierr);
+          ierr = PetscObjectGetName((PetscObject) originalv, &vecname);CHKERRQ(ierr);
+          ierr = PetscObjectSetName((PetscObject) v, vecname);CHKERRQ(ierr);
+        } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "DM global to natural SF only handles global vectors");
+      } else SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created");
+    } else v = originalv;
+  } else v = originalv;
+
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     ierr = VecView_Plex_HDF5_Native_Internal(v, viewer);CHKERRQ(ierr);
@@ -447,7 +449,7 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
     if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
     else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
   }
-  if (format == PETSC_VIEWER_NATIVE) {ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);}
+  if (v != originalv) {ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -515,23 +517,27 @@ PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_NATIVE) {
-    if (dm->sfNatural) {
-      if (ishdf5) {
+    if (dm->useNatural) {
+      if (dm->sfNatural) {
+        if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-        Vec         v;
-        const char *vecname;
+          Vec         v;
+          const char *vecname;
 
-        ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
-        ierr = PetscObjectGetName((PetscObject) originalv, &vecname);CHKERRQ(ierr);
-        ierr = PetscObjectSetName((PetscObject) v, vecname);CHKERRQ(ierr);
-        ierr = VecLoad_Plex_HDF5_Native_Internal(v, viewer);CHKERRQ(ierr);
-        ierr = DMPlexNaturalToGlobalBegin(dm, v, originalv);CHKERRQ(ierr);
-        ierr = DMPlexNaturalToGlobalEnd(dm, v, originalv);CHKERRQ(ierr);
-        ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
+          ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
+          ierr = PetscObjectGetName((PetscObject) originalv, &vecname);CHKERRQ(ierr);
+          ierr = PetscObjectSetName((PetscObject) v, vecname);CHKERRQ(ierr);
+          ierr = VecLoad_Plex_HDF5_Native_Internal(v, viewer);CHKERRQ(ierr);
+          ierr = DMPlexNaturalToGlobalBegin(dm, v, originalv);CHKERRQ(ierr);
+          ierr = DMPlexNaturalToGlobalEnd(dm, v, originalv);CHKERRQ(ierr);
+          ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
 #else
-        SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+          SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
-      } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Reading in natural order is not supported for anything but HDF5.");
+        } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Reading in natural order is not supported for anything but HDF5.");
+      }
+    } else {
+      ierr = VecLoad_Default(originalv, viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
