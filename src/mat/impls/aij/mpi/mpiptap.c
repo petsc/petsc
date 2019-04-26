@@ -9,45 +9,10 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscbt.h>
 #include <petsctime.h>
-#include <petsc/private/hashmap.h>
+#include <petsc/private/hashmapiv.h>
 #include <petsc/private/hashseti.h>
 #include <petscsf.h>
 
-PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
-
-PETSC_STATIC_INLINE
-PetscErrorCode PetscHMapIVAdd(PetscHMapIV ht,PetscInt key,PetscScalar val)
-{
-  int      ret;
-  khiter_t iter;
-  PetscFunctionBeginHot;
-  PetscValidPointer(ht,1);
-  iter = kh_put(HMapIV,ht,key,&ret);
-  PetscHashAssert(ret>=0);
-  if (ret) kh_val(ht,iter) = val;
-  else  kh_val(ht,iter) += val;
-  PetscFunctionReturn(0);
-}
-
-
-PETSC_STATIC_INLINE PETSC_UNUSED
-PetscErrorCode PetscHMapIVAddAndScale(PetscHMapIV ht,PetscHMapIV hd,PetscScalar scale)
-{
-  int         ret;
-  PetscInt    key;
-  PetscScalar val;
-  PetscFunctionBegin;
-  PetscValidPointer(ht,1);
-  PetscValidPointer(hd,2);
-  kh_foreach(hd,key,val,{ khiter_t i;
-      i = kh_put(HMapIV,ht,key,&ret);
-      PetscHashAssert(ret>=0);
-      if (ret)  kh_val(ht,i) = val*scale;
-      else kh_val(ht,i) += val*scale;})
-  PetscFunctionReturn(0);
-}
-
-/* #define PTAP_PROFILE */
 
 PetscErrorCode MatView_MPIAIJ_PtAP(Mat A,PetscViewer viewer)
 {
@@ -814,7 +779,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
     pj = pd->j + pd->i[row];
     pa = pd->a + pd->i[row];
     for (k=0; k<nzpi; k++) {
-      ierr = PetscHMapIVAdd(hmap,pj[k]+pcstart,ra*pa[k]);CHKERRQ(ierr);
+      ierr = PetscHMapIVAddValue(hmap,pj[k]+pcstart,ra*pa[k]);CHKERRQ(ierr);
     }
   }
   for (j=0; j<nzi; j++) {
@@ -824,7 +789,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
     pj = po->j + po->i[row];
     pa = po->a + po->i[row];
     for (k=0; k<nzpi; k++) {
-      ierr = PetscHMapIVAdd(hmap,p->garray[pj[k]],ra*pa[k]);CHKERRQ(ierr);
+      ierr = PetscHMapIVAddValue(hmap,p->garray[pj[k]],ra*pa[k]);CHKERRQ(ierr);
     }
   }
 
@@ -843,7 +808,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
       p_othcols = p_oth->j + pi[row];
       pa   = p_oth->a + pi[row];
       for (col=0; col<pnz; col++) {
-        ierr = PetscHMapIVAdd(hmap,p_othcols[col],ra*pa[col]);CHKERRQ(ierr);
+        ierr = PetscHMapIVAddValue(hmap,p_othcols[col],ra*pa[col]);CHKERRQ(ierr);
       }
     }
   } /* end if (ao) */
@@ -1194,7 +1159,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
     /* Form C(ii, :) */
     poj = po->j + po->i[i];
     for (j=0; j<nzi; j++) {
-      ierr = PetscHSetIAppend(hta[poj[j]],ht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hta[poj[j]],ht);CHKERRQ(ierr);
     }
   }
 
@@ -1307,8 +1272,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
     /* Form C(ii, :) */
     pdj = pd->j + pd->i[i];
     for (j=0; j<nzi; j++) {
-      ierr = PetscHSetIAppend(hta[pdj[j]],ht);CHKERRQ(ierr);
-      ierr = PetscHSetIAppend(hto[pdj[j]],oht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hta[pdj[j]],ht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hto[pdj[j]],oht);CHKERRQ(ierr);
     }
   }
 
@@ -1459,15 +1424,15 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
     /* Form remote C(ii, :) */
     poj = po->j + po->i[i];
     for (j=0; j<nzi; j++) {
-      ierr = PetscHSetIAppend(hta[poj[j]],ht);CHKERRQ(ierr);
-      ierr = PetscHSetIAppend(hta[poj[j]],oht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hta[poj[j]],ht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hta[poj[j]],oht);CHKERRQ(ierr);
     }
 
     /* Form local C(ii, :) */
     pdj = pd->j + pd->i[i];
     for (j=0; j<dnzi; j++) {
-      ierr = PetscHSetIAppend(htd[pdj[j]],ht);CHKERRQ(ierr);
-      ierr = PetscHSetIAppend(hto[pdj[j]],oht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(htd[pdj[j]],ht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hto[pdj[j]],oht);CHKERRQ(ierr);
     }
   }
 

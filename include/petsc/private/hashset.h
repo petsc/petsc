@@ -114,6 +114,28 @@ M*/
 M*/
 
 /*MC
+  PetscHSetTUpdate - Add entries from a hash table to another
+
+  Synopsis:
+  #include <petsc/private/hashset.h>
+  PetscErrorCode PetscHSetTUpdate(PetscHSetT ht,PetscHSetT hda)
+
+  Input Parameter:
+. ht - The hash table to which elements are added
+. hta - The hash table from which the elements are retrieved
+
+  Output Parameter:
+. ht - The hash table filled with the elements from the other hash table
+
+  Level: developer
+
+  Concepts: hash table, set
+
+.keywords: hash table, set, duplicate
+.seealso: PetscHSetTCreate(), PetscHSetTDuplicate()
+M*/
+
+/*MC
   PetscHSetTClear - Clear a hash table
 
   Synopsis:
@@ -168,6 +190,27 @@ M*/
 
 .keywords: hash table, set, resize
 .seealso: PetscHSetTResize()
+M*/
+
+/*MC
+  PetscHSetTGetCapacity - Get the current size of the array in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashset.h>
+  PetscErrorCode PetscHSetTGetCapacity(PetscHSetT ht,PetscInt *n)
+
+  Input Parameter:
+. ht - The hash table
+
+  Output Parameter:
+. n - The capacity
+
+  Level: developer
+
+  Concepts: hash table, set
+
+.keywords: hash table, set, resize
+.seealso: PetscHSetTResize(), PetscHSetTGetSize()
 M*/
 
 /*MC
@@ -350,7 +393,7 @@ PetscErrorCode Petsc##HashT##Duplicate(Petsc##HashT ht,Petsc##HashT *hd)        
 }                                                                                                    \
                                                                                                      \
 PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
-PetscErrorCode Petsc##HashT##Append(Petsc##HashT ht,Petsc##HashT hta)                                \
+PetscErrorCode Petsc##HashT##Update(Petsc##HashT ht,Petsc##HashT hta)                                \
 {                                                                                                    \
   int     ret;                                                                                       \
   KeyType key;                                                                                       \

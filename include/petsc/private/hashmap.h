@@ -173,6 +173,27 @@ M*/
 M*/
 
 /*MC
+  PetscHMapTGetCapacity - Get the current size of the array in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap.h>
+  PetscErrorCode PetscHMapTGetCapacity(PetscHMapT ht,PetscInt *n)
+
+  Input Parameter:
+. ht - The hash table
+
+  Output Parameter:
+. n - The capacity
+
+  Level: developer
+
+  Concepts: hash table, map
+
+.keywords: hash table, map, resize
+.seealso: PetscHMapTResize(), PetscHMapTGetSize()
+M*/
+
+/*MC
   PetscHMapTHas - Query for a key in the hash table
 
   Synopsis:
@@ -453,6 +474,32 @@ M*/
 
 .keywords: hash table, map, array
 .seealso: PetscHSetTGetSize(), PetscHMapTGetKeys()
+M*/
+
+/*MC
+  PetscHMapTGetPairs - Get all (key,value) pairs from a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap.h>
+  PetscErrorCode PetscHMapTGetPairs(PetscHMapT ht,PetscInt *off,KeyType karray[],ValType varray[])
+
+  Input Parameters:
++ ht    - The hash table
+. off   - Input offset in array (usually zero)
+- karray - Array where to put hash table keys into
+- varray - Array where to put hash table values into
+
+  Output Parameter:
++ off   - Output offset in array (output offset = input offset + hash table size)
+- karray - Array filled with the hash table keys
+- varray - Array filled with the hash table values
+
+  Level: developer
+
+  Concepts: hash table, map
+
+.keywords: hash table, map, array
+.seealso: PetscHSetTGetSize(), PetscHMapTGetKeys(), PetscHMapTGetVals()
 M*/
 
 #define PETSC_HASH_MAP(HashT, KeyType, ValType, HashFunc, EqualFunc, DefaultValue)                   \
