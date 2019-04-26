@@ -476,6 +476,56 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt,PetscReal *safety,PetscReal *rejec
 }
 
 /*@
+   TSAdaptSetMaxIgnore - Set error estimation threshold. Solution components below this threshold value will not be considered when computing error norms for time step adaptivity (in absolute value). A negative value (default) of the threshold leads to considering all solution components.
+
+   Logically collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+-  max_ignore - threshold for solution components that are ignored during error estimation
+
+   Options Database Keys:
+.  -ts_adapt_max_ignore <max_ignore> - to set the threshold
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptGetMaxIgnore(), TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt,PetscReal max_ignore)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveReal(adapt,max_ignore,2);
+  adapt->ignore_max = max_ignore;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptGetMaxIgnore - Get error estimation threshold. Solution components below this threshold value will not be considered when computing error norms for time step adaptivity (in absolute value).
+
+   Not Collective
+
+   Input Arguments:
+.  adapt - adaptive controller context
+
+   Ouput Arguments:
+.  max_ignore - threshold for solution components that are ignored during error estimation
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptSetMaxIgnore(), TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt,PetscReal *max_ignore)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidRealPointer(max_ignore,2);
+  *max_ignore = adapt->ignore_max;
+  PetscFunctionReturn(0);
+}
+
+
+/*@
    TSAdaptSetClip - Sets the admissible decrease/increase factor in step size
 
    Logically collective on TSAdapt

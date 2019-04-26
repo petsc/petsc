@@ -669,6 +669,8 @@ PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetSafety(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetSafety(TSAdapt,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetClip(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetClip(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);

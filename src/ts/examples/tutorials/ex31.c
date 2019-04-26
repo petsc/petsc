@@ -1217,7 +1217,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = TSSetSolution(ts,Y);CHKERRQ(ierr);
   /* Specify left/right-hand side functions                               */
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
-
+  
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP) || (!strcmp(time_scheme,TSGLEE)))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
@@ -1340,6 +1340,6 @@ int main(int argc, char **argv)
       suffix: 4
       args: -ts_type glee -final_time 5 -ts_adapt_type glee -ts_adapt_monitor  -ts_max_steps 50  -problem hull1972a3  -ts_max_reject 100 -ts_adapt_glee_use_local 0
       timeoutfactor: 3
-      requires: !single
+      requires: !single !__float128
 
 TEST*/
