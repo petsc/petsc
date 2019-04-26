@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.minversion     = '1.8.18'
+    self.minversion     = '1.8.0'
     self.versionname    = 'H5_VERSION'
     #hdf5-1.10.0-patch1 breaks with default MPI on ubuntu 12.04 [and freebsd/opensolaris]. So use hdf5-1.8.18 for now.
     self.download  = ['https://support.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8/hdf5-1.8.18/src/hdf5-1.8.18.tar.gz',
