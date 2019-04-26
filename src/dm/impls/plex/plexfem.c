@@ -417,7 +417,7 @@ static PetscErrorCode DMPlexBasisTransformGetMatrix_Rotation_Internal(DM dm, con
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexBasisTransformApply_Internal(DM dm, const PetscReal x[], PetscBool l2g, PetscInt dim, const PetscScalar *y, PetscScalar *z, void *ctx)
+PetscErrorCode DMPlexBasisTransformApply_Internal(DM dm, const PetscReal x[], PetscBool l2g, PetscInt dim, const PetscReal *y, PetscReal *z, void *ctx)
 {
   const PetscScalar *A;
   PetscErrorCode     ierr;
@@ -425,8 +425,27 @@ PetscErrorCode DMPlexBasisTransformApply_Internal(DM dm, const PetscReal x[], Pe
   PetscFunctionBeginHot;
   ierr = (*dm->transformGetMatrix)(dm, x, l2g, &A, ctx);CHKERRQ(ierr);
   switch (dim) {
+#if defined(PETSC_USE_COMPLEX)
+  case 2:
+  {
+    PetscScalar yt[2], zt[2];
+
+    yt[0] = y[0]; yt[1] = y[1];
+    DMPlex_Mult2D_Internal(A, yt, zt);break;
+    z[0] = PetscRealPart(zt[0]); z[1] = PetscRealPart(zt[1]);
+  }
+  case 3:
+  {
+    PetscScalar yt[3], zt[3];
+
+    yt[0] = y[0]; yt[1] = y[1]; yt[2] = y[2];
+    DMPlex_Mult3D_Internal(A, yt, zt);break;
+    z[0] = PetscRealPart(zt[0]); z[1] = PetscRealPart(zt[1]); z[2] = PetscRealPart(zt[2]);
+  }
+#else
   case 2: DMPlex_Mult2D_Internal(A, y, z);break;
   case 3: DMPlex_Mult3D_Internal(A, y, z);break;
+#endif
   }
   PetscFunctionReturn(0);
 }
