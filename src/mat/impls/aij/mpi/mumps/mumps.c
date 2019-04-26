@@ -874,7 +874,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   Mat_MUMPS      *mumps=(Mat_MUMPS*)A->data;
   PetscInt       i,nrhs,M;
   PetscScalar    *array,*bray;
-  PetscInt       lsol_loc,nlsol_loc,*isol_loc,*idxx,*isol_loc_save,iidx;
+  PetscInt       lsol_loc,nlsol_loc,*isol_loc,*idxx,*isol_loc_save,iidx = 0;
   MumpsScalar    *sol_loc,*sol_loc_save;
   IS             is_to,is_from;
   PetscInt       k,proc,j,m,myrstart;
