@@ -99,7 +99,7 @@ static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
   case VEC_IGNORE_NEGATIVE_INDICES: V->stash.ignorenegidx = flag;
     break;
   case VEC_SUBSET_OFF_PROC_ENTRIES:
-    v->assembly_subset = flag;
+    v->assembly_subset = flag; /* See the same logic in MatAssembly wrt MAT_SUBSET_OFF_PROC_ENTRIES */
     if (!v->assembly_subset) { /* User indicates "do not reuse the communication pattern" */
       ierr = VecAssemblyReset_MPI(V);CHKERRQ(ierr); /* Reset existing pattern to free memory */
       v->first_assembly_done = PETSC_FALSE; /* Mark the first assembly is not done */

@@ -5600,7 +5600,11 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
     PetscFunctionReturn(0);
     break;
   case MAT_SUBSET_OFF_PROC_ENTRIES:
-    mat->subsetoffprocentries = flg;
+    mat->assembly_subset = flg;
+    if (!mat->assembly_subset) { /* See the same logic in VecAssembly wrt VEC_SUBSET_OFF_PROC_ENTRIES */
+      ierr = MatStashScatterDestroy_BTS(&mat->stash);CHKERRQ(ierr);
+      mat->stash.first_assembly_done = PETSC_FALSE;
+    }
     PetscFunctionReturn(0);
   case MAT_NO_OFF_PROC_ZERO_ROWS:
     mat->nooffproczerorows = flg;
