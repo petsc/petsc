@@ -46,7 +46,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS prob, PetscReal
           } else {
             v0 = &fegeom->v[tp*coordDim];
           }
-          if (transform) {ierr = DMPlexBasisTransformApply_Internal(dm, v0, PETSC_TRUE, coordDim, v0, x, dm->transformCtx);CHKERRQ(ierr); v0 = x;}
+          if (transform) {ierr = DMPlexBasisTransformApplyReal_Internal(dm, v0, PETSC_TRUE, coordDim, v0, x, dm->transformCtx);CHKERRQ(ierr); v0 = x;}
           ierr = (*funcs[f])(coordDim, time, v0, Nc[f], &pointEval[Nc[f]*q], ctx);CHKERRQ(ierr);
         }
         ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
       }
       EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, invJ, coefficients, coefficients_t, u, u_x, u_t);
       if (probAux) EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);
-      if (transform) {ierr = DMPlexBasisTransformApply_Internal(dm, v0, PETSC_TRUE, dE, v0, x, dm->transformCtx);CHKERRQ(ierr); v0 = x;}
+      if (transform) {ierr = DMPlexBasisTransformApplyReal_Internal(dm, v0, PETSC_TRUE, dE, v0, x, dm->transformCtx);CHKERRQ(ierr); v0 = x;}
       (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, v0, numConstants, constants, &pointEval[Nc[f]*q]);
     }
     ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
