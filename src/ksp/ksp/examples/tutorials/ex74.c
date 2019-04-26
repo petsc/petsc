@@ -104,7 +104,7 @@ int main(int argc, char **argv)
   PetscFunctionList IRKList = NULL;
   char              irktype[256] = IRKGAUSS;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscFunctionListAdd(&IRKList,IRKGAUSS24,RKCreate_Gauss24);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&IRKList,IRKGAUSS,RKCreate_Gauss);CHKERRQ(ierr);
 
@@ -118,25 +118,16 @@ int main(int argc, char **argv)
   ctxt.physics_type = PHYSICS_DIFFUSION;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"IRK options","");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-a","diffusion coefficient","<1.0>",ctxt.a,
-                          &ctxt.a,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt ("-imax","grid size","<20>",ctxt.imax,
-                          &ctxt.imax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmin","xmin","<0.0>",ctxt.xmin,
-                          &ctxt.xmin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmax","xmax","<1.0>",ctxt.xmax,
-                          &ctxt.xmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt ("-niter","number of time steps","<0>",ctxt.niter,
-                          &ctxt.niter,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-dt","time step size","<0.0>",ctxt.dt,
-                          &ctxt.dt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-irk_type","IRK method family","",
-                          IRKList,irktype,irktype,sizeof(irktype),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-a","diffusion coefficient","<1.0>",ctxt.a,&ctxt.a,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt ("-imax","grid size","<20>",ctxt.imax,&ctxt.imax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-xmin","xmin","<0.0>",ctxt.xmin,&ctxt.xmin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-xmax","xmax","<1.0>",ctxt.xmax,&ctxt.xmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt ("-niter","number of time steps","<0>",ctxt.niter,&ctxt.niter,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dt","time step size","<0.0>",ctxt.dt,&ctxt.dt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-irk_type","IRK method family","",IRKList,irktype,irktype,sizeof(irktype),NULL);CHKERRQ(ierr);
   nstages = 2;
-  ierr = PetscOptionsInt ("-irk_nstages","Number of stages in IRK method","",
-                          nstages,&nstages,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-physics_type","Type of process to discretize","",
-                          PhysicsTypes,(PetscEnum)ctxt.physics_type,(PetscEnum*)&ctxt.physics_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt ("-irk_nstages","Number of stages in IRK method","",nstages,&nstages,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-physics_type","Type of process to discretize","",PhysicsTypes,(PetscEnum)ctxt.physics_type,(PetscEnum*)&ctxt.physics_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* allocate and initialize solution vector and exact solution */
@@ -155,11 +146,20 @@ int main(int argc, char **argv)
     ierr = (*irkcreate)(nstages,&A,&b,&c);CHKERRQ(ierr);
   }
   {                             /* Invert A */
-    PetscInt *pivots;
-    PetscScalar *work;
-    ierr = PetscMalloc2(nstages,&pivots,nstages,&work);CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A(nstages,A,pivots,work,PETSC_FALSE,NULL);CHKERRQ(ierr);
-    ierr = PetscFree2(pivots,work);CHKERRQ(ierr);
+    /* PETSc does not provide a routine to calculate the inverse of a general matrix.
+     * To get the inverse of A, we form a sequential BAIJ matrix from it, consisting of a single block with block size
+     * equal to the dimension of A, and then use MatInvertBlockDiagonal(). */
+    Mat               A_baij;
+    PetscInt          idxm[1]={0},idxn[1]={0};
+    const PetscScalar *A_inv;
+    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,nstages,nstages,nstages,1,NULL,&A_baij);CHKERRQ(ierr);
+    ierr = MatSetOption(A_baij,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(A_baij,1,idxm,1,idxn,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A_baij,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A_baij,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatInvertBlockDiagonal(A_baij,&A_inv);CHKERRQ(ierr);
+    ierr = PetscMemcpy(A,A_inv,nstages*nstages*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = MatDestroy(&A_baij);CHKERRQ(ierr);
   }
   /* Scale (1/dt)*A^{-1} and (1/dt)*b */
   for (s=0; s<nstages*nstages; s++) A[s] *= 1.0/ctxt.dt;
@@ -258,8 +258,8 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&u);        CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&IRKList);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
