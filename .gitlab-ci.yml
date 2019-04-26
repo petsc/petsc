@@ -6,39 +6,45 @@ variables:
   GIT_STRATEGY: fetch
   GIT_DEPTH: 1
 
-mpich:
+.test:
   stage: test
   image: jedbrown/mpich
   before_script:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
   script:
-    - python3 ./configure --with-mpi-dir=/usr/local --with-debugging=0 --with-fc=0
-    - make
-    - make -j$(nproc) -l$(nproc) -f gmakefile test search=snes_tutorials-ex48%
+    - python3 ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
+    - make -j$(nproc) -l$(nproc)
+    - make -j$(nproc) -l$(nproc) -f gmakefile test search="${TEST_SEARCH}"
+
+mpich:
+  extends: .test
+  variables:
+    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-fc=0
+    TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
-  stage: test
-  image: jedbrown/mpich
-  before_script:
-    - echo nproc=$(nproc)
-    - cat /proc/cpuinfo
-  script:
-    - python3 ./configure --with-mpi=0 --with-debugging=0 --with-fc=0
+  extends: .test
+  variables:
+    CONFIG_OPTS: <
+      --with-mpi=0
       --with-scalar-type=complex --with-precision=single --with-64-bit-indices
-    - make
-    - make -j$(nproc) -l$(nproc) -f gmakefile test search=ts_tutorials-ex11_adv_2d_quad_%
+    TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
-success:
+.status:
   stage: ci-status
   image: jedbrown/alpine-curl
   script:
-    - BUILD_STATUS=passed BUILD_KEY=push BITBUCKET_NAMESPACE=petsc ./.gitlab-build-status.sh
+    - BUILD_KEY=push BITBUCKET_NAMESPACE=petsc ./.gitlab-build-status.sh
+
+success:
+  extends: .status
+  variables:
+    BUILD_STATUS: passed
   when: on_success
 
 failure:
-  stage: ci-status
-  image: jedbrown/alpine-curl
-  script:
-    - BUILD_STATUS=failed BUILD_KEY=push BITBUCKET_NAMESPACE=petsc ./.gitlab-build-status.sh
+  extends: .status
+  variables:
+    BUILD_STATUS: failed
   when: on_failure
