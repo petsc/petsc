@@ -1,4 +1,4 @@
-static const char help[] = "Test VEC_SUBSET_OFF_PROC_ENTRIES when some processes have almost no entries\n\n";
+static const char help[] = "Test VEC_SUBSET_OFF_PROC_ENTRIES\n\n";
 
 #include <petsc.h>
 #include <petscvec.h>
@@ -15,6 +15,10 @@ static const char help[] = "Test VEC_SUBSET_OFF_PROC_ENTRIES when some processes
      VecSetOption(vec, VEC_SUBSET_OFF_PROC_ENTRIES, PETSC_TRUE).
 
    Contributed-by: David Wells <drwells@email.unc.edu>
+
+  Petsc developers' notes: this test tests how Petsc knows it can reuse existing communication
+  pattern. All processes must come to the same conclusion, otherwise deadlock may happen due
+  to mismatched MPI_Send/Recv. It also tests changing VEC_SUBSET_OFF_PROC_ENTRIES back and forth.
 */
 int main(int argc, char **argv)
 {
@@ -39,10 +43,25 @@ int main(int argc, char **argv)
   ierr  = VecCreateMPI(MPI_COMM_WORLD, n, PETSC_DECIDE, &v);CHKERRQ(ierr);
   ierr  = VecGetOwnershipRange(v, &rstart, NULL);
 
-  for (k=0; k<4; ++k) {
+  for (k=0; k<5; ++k) { /* 5 iterations of VecAssembly */
     PetscReal norm = 0.0;
+    PetscBool flag  = (k == 2) ?  PETSC_FALSE : PETSC_TRUE;
+    PetscInt  shift = (k < 2) ? 0 : (k == 2) ? 1 : 0; /* Used to change patterns */
 
-    if (saveCommunicationPattern) {ierr = VecSetOption(v, VEC_SUBSET_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);}
+    /* If saveCommunicationPattern, let's see what should happen in the 5 iterations:
+      iter 0: flag is true, and this is the first assebmly, so petsc should keep the
+              communication pattern built during this assembly.
+      iter 1: flag is true, reuse the pattern.
+      iter 2: flag is false, discard/free the pattern built in iter 0; rebuild a new
+              pattern, but do not keep it after VecAssemblyEnd since the flag is false.
+      iter 3: flag is true again, this is the new first assembly with a true flag. So
+              petsc should keep the communication pattern built during this assembly.
+      iter 4: flag is true, reuse the pattern built in iter 3.
+
+      When the vector is destroyed, memory used by the pattern is freed. One can also do it early with a call
+          VecSetOption(v, VEC_SUBSET_OFF_PROC_ENTRIES, PETSC_FALSE);
+     */
+    if (saveCommunicationPattern) {ierr = VecSetOption(v, VEC_SUBSET_OFF_PROC_ENTRIES, flag);CHKERRQ(ierr);}
     ierr = VecSet(v, 0.0);CHKERRQ(ierr);
 
     for (i=0; i<n; ++i) {
@@ -52,7 +71,7 @@ int main(int argc, char **argv)
       ierr = VecSetValue(v, r, val, ADD_VALUES);CHKERRQ(ierr);
       /* do assembly on all other processors too (the 'neighbors') */
       {
-        const PetscMPIInt neighbor = i % size;
+        const PetscMPIInt neighbor = (i+shift) % size; /* Adjust communication patterns between iterations */
         const PetscInt    nn       = ln[neighbor];
         PetscInt          nrstart  = 0;
 
