@@ -43,10 +43,10 @@ class Configure(config.base.Configure):
       self.log.write(typeName+' found\n')
     return found
 
-  def check_siginfo_t(self):
-    '''Checks if siginfo_t exists in signal.h. This check is for windows, and C89 check.'''
-    if self.check('siginfo_t', includes = ['signal.h']):
-      self.addDefine('HAVE_SIGINFO_T',1)
+  def check_struct_sigaction(self):
+    '''Checks if "struct sigaction" exists in signal.h. This check is for C89 check.'''
+    if self.check('struct sigaction', includes = ['signal.h']):
+      self.addDefine('HAVE_STRUCT_SIGACTION',1)
     return
 
   def check__int64(self):
@@ -377,7 +377,7 @@ void (*signal())();
 
 
   def configure(self):
-    self.executeTest(self.check_siginfo_t)
+    self.executeTest(self.check_struct_sigaction)
     self.executeTest(self.check__int64)
     self.executeTest(self.checkSizeTypes)
     self.executeTest(self.checkFileTypes)
