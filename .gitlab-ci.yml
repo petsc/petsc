@@ -1,0 +1,44 @@
+stages:
+  - test
+  - ci-status
+
+variables:
+  GIT_STRATEGY: fetch
+  GIT_DEPTH: 1
+
+mpich:
+  stage: test
+  image: jedbrown/mpich
+  before_script:
+    - echo nproc=$(nproc)
+    - cat /proc/cpuinfo
+  script:
+    - python3 ./configure --with-mpi-dir=/usr/local --with-debugging=0 --with-fc=0
+    - make
+    - make -j$(nproc) -l$(nproc) -f gmakefile test search=snes_tutorials-ex48%
+
+uni-complex-float-int64:
+  stage: test
+  image: jedbrown/mpich
+  before_script:
+    - echo nproc=$(nproc)
+    - cat /proc/cpuinfo
+  script:
+    - python3 ./configure --with-mpi=0 --with-debugging=0 --with-fc=0
+      --with-scalar-type=complex --with-precision=single --with-64-bit-indices
+    - make
+    - make -j$(nproc) -l$(nproc) -f gmakefile test search=ts_tutorials-ex11_adv_2d_quad_%
+
+success:
+  stage: ci-status
+  image: jedbrown/alpine-curl
+  script:
+    - BUILD_STATUS=passed BUILD_KEY=push BITBUCKET_NAMESPACE=petsc ./.gitlab-build-status.sh
+  when: on_success
+
+failure:
+  stage: ci-status
+  image: jedbrown/alpine-curl
+  script:
+    - BUILD_STATUS=failed BUILD_KEY=push BITBUCKET_NAMESPACE=petsc ./.gitlab-build-status.sh
+  when: on_failure
