@@ -772,9 +772,11 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
           ignored.
 -     VEC_SUBSET_OFF_PROC_ENTRIES, which causes VecAssemblyBegin() to assume that the off-process
           entries will always be a subset (possibly equal) of the off-process entries set on the
-          first assembly.  This reuses the communication pattern, thus avoiding a global reduction.
-          Subsequent assemblies setting off-process values should use the same InsertMode as the
-          first assembly.
+          first assembly which had a true VEC_SUBSET_OFF_PROC_ENTRIES and the vector has not
+          changed this flag afterwards. If this assembly is not such first assembly, then this
+          assembly can reuse the communication pattern setup in that first assembly, thus avoiding
+          a global reduction. Subsequent assemblies setting off-process values should use the same
+          InsertMode as the first assembly.
 
    Developer Note:
    The InsertMode restriction could be removed by packing the stash messages out of place.
