@@ -3,7 +3,9 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v4.0.3-p4'
+    self.version          = '4.0.3'
+    self.versionname      = 'PARMETIS_MAJOR_VERSION.PARMETIS_MINOR_VERSION.PARMETIS_SUBMINOR_VERSION'
+    self.gitcommit         = 'v'+self.version+'-p4'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-parmetis.git','https://bitbucket.org/petsc/pkg-parmetis/get/'+self.gitcommit+'.tar.gz']
     self.functions         = ['ParMETIS_V3_PartKway']
     self.includes          = ['parmetis.h']

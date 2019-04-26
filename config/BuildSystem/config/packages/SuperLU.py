@@ -4,6 +4,9 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
+    self.version          = '5.2.1'
+    self.minversion       = '5.2.1' # bugs in 5.2.0 prevent it from functioning
+    self.versionname      = 'SUPERLU_MAJOR_VERSION.SUPERLU_MINOR_VERSION.SUPERLU_PATCH_VERSION'
     self.gitcommit        = '52fc55d' #master/v5.2.1+ from jul-30-2018
     self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['SuperLU','superlu']

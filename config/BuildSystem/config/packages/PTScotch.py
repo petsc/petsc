@@ -3,15 +3,17 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit       = '6.0.6-p1'
-    self.download        = ['git://https://bitbucket.org/petsc/pkg-scotch.git',
+    self.version          = '6.0.6'
+    self.versionname      = 'SCOTCH_VERSION.SCOTCH_RELEASE.SCOTCH_PATCHLEVEL'
+    self.gitcommit        = self.version+'-p1'
+    self.download         = ['git://https://bitbucket.org/petsc/pkg-scotch.git',
                             'https://bitbucket.org/petsc/pkg-scotch/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['scotch','petsc-pkg-scotch']
-    self.liblist         = [['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
-    self.functions       = ['SCOTCH_archBuild']
-    self.functionsDefine = ['SCOTCH_ParMETIS_V3_NodeND']
-    self.includes        = ['ptscotch.h']
-    self.hastests        = 1
+    self.liblist          = [['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
+    self.functions        = ['SCOTCH_archBuild']
+    self.functionsDefine  = ['SCOTCH_ParMETIS_V3_NodeND']
+    self.includes         = ['ptscotch.h']
+    self.hastests         = 1
     return
 
   def setupDependencies(self, framework):

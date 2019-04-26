@@ -65,5 +65,14 @@ class Configure(config.package.GNUPackage):
       self.executeTest(self.locateCMake)
     else:
       self.log.write('Not checking for CMake\n')
-    if hasattr(self, 'cmake'): self.found = 1
+    if hasattr(self, 'cmake'):
+      self.found = 1
+      try:
+        import re
+        (output, error, status) = config.base.Configure.executeShellCommand(self.cmake+' --version', log = self.log)
+        gver = re.compile('cmake version ([0-9]+).([0-9]+).([0-9]+)').match(output)
+        if not status and gver:
+          self.foundversion = ".".join(gver.groups())
+      except RuntimeError as e:
+        self.log.write('cmake version check failed: '+str(e)+'\n')
     return

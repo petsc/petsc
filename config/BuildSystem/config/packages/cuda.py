@@ -4,6 +4,9 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
+    self.minversion       = '7.5'
+    self.versionname      = 'CUDA_VERSION'
+    self.versioninclude   = 'cuda.h'
     self.functions        = ['cublasInit', 'cufftDestroy']
     self.includes         = ['cublas.h','cufft.h','cusparse.h','thrust/version.h']
     self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a'],
@@ -11,8 +14,6 @@ class Configure(config.package.Package):
     self.precisions       = ['single','double']
     self.cxx              = 0
     self.complex          = 1
-    self.CUDAVersion      = 0
-    self.CUDAMinVersion   = (7, 5)
     self.hastests         = 0
     self.hastestsdatafiles= 0
     return
@@ -79,30 +80,9 @@ class Configure(config.package.Package):
     self.checkSizeofVoidP()
     return
 
-  def verToTuple(self,ver):
-    return (int(ver)/1000, int(ver)/10%10)
-
-  def verToStr(self,vertuple):
-    return '.'.join(str(x) for x in vertuple)
-
-  def checkCUDAVersion(self):
-    import re
-    HASHLINESPACE = ' *(?:\n#.*\n *)*'
-    self.pushLanguage('CUDA')
-    oldFlags = self.compilers.CUDAPPFLAGS
-    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
-    cuda_test = '#include <cuda.h>\nint cuda_ver = CUDA_VERSION;\n'
-    if self.checkCompile(cuda_test):
-      buf = self.outputPreprocess(cuda_test)
-      try:
-        self.CUDAVersion = self.verToTuple(re.compile('\nint cuda_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1))
-      except:
-        self.logPrint('Unable to parse CUDA version from header. Probably a buggy preprocessor')
-    self.compilers.CUDAPPFLAGS = oldFlags
-    self.popLanguage()
-    if self.CUDAVersion and self.CUDAVersion < self.CUDAMinVersion:
-      raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.verToStr(self.CUDAMinVersion)+' or higher. Found version '+self.verToStr(self.CUDAVersion))
-    return
+  def versionToStandardForm(self,ver):
+    '''Converts from CUDA 7050 notation to standard notation 7.5'''
+    return ".".join(map(str,[int(ver)/1000, int(ver)/10%10]))
 
   def checkNVCCDoubleAlign(self):
     if 'known-cuda-align-double' in self.argDB:
@@ -137,7 +117,6 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
-    self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
     self.configureTypes()
     self.addDefine('HAVE_CUDA','1')

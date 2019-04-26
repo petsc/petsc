@@ -3,8 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['https://gforge.inria.fr/frs/download.php/file/36212/pastix_5.2.3.tar.bz2',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_5.2.3.tar.bz2']
+    self.version          = '5.2.3'
+    self.versionname      = 'PASTIX_MAJOR_VERSION.PASTIX_MEDIUM_VERSION.PASTIX_MINOR_VERSION'
+    self.download         = ['https://gforge.inria.fr/frs/download.php/file/36212/pastix_'+self.version+'.tar.bz2',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_'+self.version+'.tar.bz2']
     self.liblist          = [['libpastix.a'],
                             ['libpastix.a','libpthread.a','librt.a']]
     self.functions        = ['pastix']
