@@ -24,7 +24,7 @@ DMField Object: field 1 MPI processes
         Polynomial space of degree 2
       PetscDualSpace Object: MyPetscFE 1 MPI processes
         type: lagrange
-        Dual space of order 2 with 2 components
+        Dual space with 2 components, size 12
         Continuous Lagrange dual space
       PetscQuadrature Object: 1 MPI processes
         type: GaussJacobi

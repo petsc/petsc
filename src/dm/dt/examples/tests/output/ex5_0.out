@@ -19,7 +19,7 @@ PetscFE Object: solution 1 MPI processes
         Polynomial space of degree 1
   PetscDualSpace Object: solution 1 MPI processes
     type: lagrange
-    Dual space of order 1 with 3 components
+    Dual space with 3 components, size 6
     Continuous Lagrange dual space
   PetscQuadrature Object: 1 MPI processes
     type: GaussTensor
