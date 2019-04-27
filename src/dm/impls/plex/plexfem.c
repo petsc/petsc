@@ -432,6 +432,7 @@ PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM dm, const PetscReal x[]
       ierr = DMPlexBasisTransformApply_Internal(dm, x, l2g, dim, yt, zt, ctx);CHKERRQ(ierr);
       z[0] = PetscRealPart(zt[0]); z[1] = PetscRealPart(zt[1]);
     }
+    break;
     case 3:
     {
       PetscScalar yt[3], zt[3];
@@ -440,6 +441,7 @@ PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM dm, const PetscReal x[]
       ierr = DMPlexBasisTransformApply_Internal(dm, x, l2g, dim, yt, zt, ctx);CHKERRQ(ierr);
       z[0] = PetscRealPart(zt[0]); z[1] = PetscRealPart(zt[1]); z[2] = PetscRealPart(zt[2]);
     }
+    break;
   }
   #else
   ierr = DMPlexBasisTransformApply_Internal(dm, x, l2g, dim, y, z, ctx);CHKERRQ(ierr);
