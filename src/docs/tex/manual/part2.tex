@@ -2972,6 +2972,15 @@ Run a code that uses GAMG with \trl{-help} to get full listing of GAMG parameter
 {\bf Trouble shooting algebraic multigrid methods:}  
 If {\it GAMG}, {\it ML}, or {\it hypre} does not perform well the first thing to try is one of 
 the other methods. Often the default parameters or just the strengths of different algorithms can fix performance problems or provide useful information to guide further debugging.
+The rate of coarsening is criticle in AMG performance -- too slow of coarsening will result in an overly expensive solver per iteration and too fast coarsening will result in decrease in the convergence rate. \trl{-pc_gamg_threshold <x>} and  \trl{-pc_gamg_square_graph <N>,} are the primary parameters that control coarsening rates.
+The GAMG framework provides for reducing the number of active processes on coarse grids to reduce communication costs when there is not enough parallelism to keep relative communication costs down.
+Most AMG solver reduce to just one active process on the coarsest grid (the PETSc MG framework also supports redundantly solving the coarse grid on all processes to potentially reduce communication  costs), although this forcing to one process can be overridden if one wishes to use a parallel coarse grid solver.
+GAMG generalizes this by reducing the active number of processes on other coarse grids as well.
+GAMG will select the number of active processors by fitting the desired number of equation per process (set with \trl{-pc_gamg_process_eq_limit <50>,}) at each level given that size of each level.
+If $P_i < P$ processors are desired on a level $i$ then the first $P_i$ ranks are populated with the grid and the remaining are empty on that grid.
+One can, and probably should, repartition the coarse grids with \trl{-pc_gamg_repartition <true>,}, otherwise an integer process reduction factor ($q$) is selected and the equations on the first $q$ processes are move to process 0, and so on.
+As mentioned multigrid generally coarsens the problem until it is small enough to be solved with an exact solver (eg, LU or SVD) in a relatively small time.
+GAMG will stop coarsening when the number of equation on a grid falls below at threshold give by \trl{-pc_gamg_coarse_eq_limit <50>,}.
 
 There are several sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
