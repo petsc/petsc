@@ -2981,7 +2981,7 @@ The rate of coarsening is critical in AMG performance -- too slow of coarsening 
 A greedy maximal independent set (MIS) algorithm is used in coarsening.
 Squaring the graph implements so called MIS-2, the root vertex in an aggregate is more than two edges away from another root vertex, instead of more than one in MIS.
 The threshold parameter sets a normalized threshold for which edges are removed from the MIS graph, thereby coarsening slower.
-Zero will keep all non-zero edges, a negative number will keep zero edges, a positive number will drop small edge values.
+Zero will keep all non-zero edges, a negative number will keep zero edges, a positive number will drop small edges.
 Typical finite threshold values are in the range of $0.01 - 0.05$.
 There are additional parameters for changing the weights on coarse grids.
 Note, the parallel algorithm requires symmetric weights/matrix.
