@@ -2981,7 +2981,7 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
     PetscBdPointFunc f0Bd, f1Bd;
     PetscRiemannFunc r;
 
-    if (f >= Nf) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Field %D must be in [0, %D)", f, Nf);
+    if (f >= Nf) continue;
     ierr = PetscDSGetObjective(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscDSGetResidual(prob, f, &f0, &f1);CHKERRQ(ierr);
     ierr = PetscDSGetBdResidual(prob, f, &f0Bd, &f1Bd);CHKERRQ(ierr);
@@ -2996,7 +2996,7 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
       PetscPointJac   g0p, g1p, g2p, g3p;
       PetscBdPointJac g0Bd, g1Bd, g2Bd, g3Bd;
 
-      if (g >= Nf) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Field %D must be in [0, %D)", g, Nf);
+      if (g >= Nf) continue;
       ierr = PetscDSGetJacobian(prob, f, g, &g0, &g1, &g2, &g3);CHKERRQ(ierr);
       ierr = PetscDSGetJacobianPreconditioner(prob, f, g, &g0p, &g1p, &g2p, &g3p);CHKERRQ(ierr);
       ierr = PetscDSGetBdJacobian(prob, f, g, &g0Bd, &g1Bd, &g2Bd, &g3Bd);CHKERRQ(ierr);
