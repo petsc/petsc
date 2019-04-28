@@ -2985,7 +2985,7 @@ Zero will keep all non-zero edges, a negative number will keep zero edges, a pos
 Typical finite threshold values are in the range of $0.01 - 0.05$.
 There are additional parameters for changing the weights on coarse grids.
 Note, the parallel algorithm requires symmetric weights/matrix.
-Use \trl{-pc_gamg_sym_graph <true>} to symmetrize the graph if your problem is not numerically symmetric (it must be structurally symmetric).
+You must use \trl{-pc_gamg_sym_graph <true>} to symmetrize the graph if your problem is not symmetric.
 
 {\bf Trouble shooting algebraic multigrid methods:}  
 If {\it GAMG}, {\it ML}, or {\it hypre} does not perform well the first thing to try is one of 
