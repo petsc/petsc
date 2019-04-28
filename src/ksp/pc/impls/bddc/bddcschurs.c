@@ -830,14 +830,15 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatDestroy(&AE_II);CHKERRQ(ierr);
     ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
   } else {
-    Mat         A,cs_AIB_mat = NULL,benign_AIIm1_ones_mat = NULL;
-    Vec         Dall = NULL;
-    IS          is_A_all,*is_p_r = NULL;
-    PetscScalar *work,*S_data,*schur_factor,infty = PETSC_MAX_REAL;
-    PetscInt    n,n_I,*dummy_idx,size_schur,size_active_schur,cum,cum2;
-    PetscBool   economic,solver_S,S_lower_triangular = PETSC_FALSE;
-    PetscBool   schur_has_vertices,factor_workaround;
-    PetscBool   use_cholesky;
+    Mat               A,cs_AIB_mat = NULL,benign_AIIm1_ones_mat = NULL;
+    Vec               Dall = NULL;
+    IS                is_A_all,*is_p_r = NULL;
+    PetscScalar       *work,*S_data,*schur_factor,infty = PETSC_MAX_REAL;
+    const PetscScalar *rS_data;
+    PetscInt          n,n_I,*dummy_idx,size_schur,size_active_schur,cum,cum2;
+    PetscBool         economic,solver_S,S_lower_triangular = PETSC_FALSE;
+    PetscBool         schur_has_vertices,factor_workaround;
+    PetscBool         use_cholesky;
 
     /* get sizes */
     n_I = 0;
@@ -1309,7 +1310,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     /* S_Ej_all */
     cum = cum2 = 0;
-    ierr = MatDenseGetArray(S_all,&S_data);CHKERRQ(ierr);
+    ierr = MatDenseGetArrayRead(S_all,&rS_data);CHKERRQ(ierr);
     for (i=0;i<sub_schurs->n_subs;i++) {
       PetscInt j;
 
@@ -1319,15 +1320,15 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         PetscInt k;
         for (k=0;k<subset_size;k++) {
           for (j=k;j<subset_size;j++) {
-            work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
-            work[j*subset_size+k] = PetscConj(S_data[cum2+k*size_schur+j]);
+            work[k*subset_size+j] = rS_data[cum2+k*size_schur+j];
+            work[j*subset_size+k] = PetscConj(rS_data[cum2+k*size_schur+j]);
           }
         }
       } else { /* just copy to workspace */
         PetscInt k;
         for (k=0;k<subset_size;k++) {
           for (j=0;j<subset_size;j++) {
-            work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
+            work[k*subset_size+j] = rS_data[cum2+k*size_schur+j];
           }
         }
       }
@@ -1409,7 +1410,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       cum += subset_size;
       cum2 += subset_size*(size_schur + 1);
     }
-    ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArrayRead(S_all,&rS_data);CHKERRQ(ierr);
 
     if (solver_S) {
       ierr = MatFactorRestoreSchurComplement(F,&S_all,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
@@ -1531,7 +1532,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         }
         /* S_Ej_tilda_all */
         cum = cum2 = 0;
-        ierr = MatDenseGetArray(S_all_inv,&S_data);CHKERRQ(ierr);
+        ierr = MatDenseGetArrayRead(S_all_inv,&rS_data);CHKERRQ(ierr);
         for (i=0;i<sub_schurs->n_subs;i++) {
           PetscInt j;
 
@@ -1544,14 +1545,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             if (sub_schurs->change) {
               for (k=0;k<subset_size;k++) {
                 for (j=k;j<subset_size;j++) {
-                  work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
+                  work[k*subset_size+j] = rS_data[cum2+k*size_schur+j];
                   work[j*subset_size+k] = work[k*subset_size+j];
                 }
               }
             } else {
               for (k=0;k<subset_size;k++) {
                 for (j=k;j<subset_size;j++) {
-                  work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
+                  work[k*subset_size+j] = rS_data[cum2+k*size_schur+j];
                 }
               }
             }
@@ -1559,7 +1560,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             PetscInt k;
             for (k=0;k<subset_size;k++) {
               for (j=0;j<subset_size;j++) {
-                work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
+                work[k*subset_size+j] = rS_data[cum2+k*size_schur+j];
               }
             }
           }
@@ -1589,7 +1590,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           cum += subset_size;
           cum2 += subset_size*(size_schur + 1);
         }
-        ierr = MatDenseRestoreArray(S_all_inv,&S_data);CHKERRQ(ierr);
+        ierr = MatDenseRestoreArrayRead(S_all_inv,&rS_data);CHKERRQ(ierr);
         if (solver_S) {
           if (schur_has_vertices) {
             ierr = MatFactorRestoreSchurComplement(F,&S_all_inv,MAT_FACTOR_SCHUR_FACTORED);CHKERRQ(ierr);

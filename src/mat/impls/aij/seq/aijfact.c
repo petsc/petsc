@@ -1010,15 +1010,16 @@ PetscErrorCode MatSolve_SeqAIJ_inplace(Mat A,Vec bb,Vec xx)
 
 PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
 {
-  Mat_SeqAIJ      *a    = (Mat_SeqAIJ*)A->data;
-  IS              iscol = a->col,isrow = a->row;
-  PetscErrorCode  ierr;
-  PetscInt        i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt        nz,neq;
-  const PetscInt  *rout,*cout,*r,*c;
-  PetscScalar     *x,*b,*tmp,*tmps,sum;
-  const MatScalar *aa = a->a,*v;
-  PetscBool       bisdense,xisdense;
+  Mat_SeqAIJ        *a    = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  PetscInt          i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt          nz,neq;
+  const PetscInt    *rout,*cout,*r,*c;
+  PetscScalar       *x,*tmp,*tmps,sum;
+  const PetscScalar *aa = a->a,*v;
+  const PetscScalar *b;
+  PetscBool         bisdense,xisdense;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -1028,7 +1029,7 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
   ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
   if (!xisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
 
-  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
 
   tmp  = a->solve_work;
@@ -1062,7 +1063,7 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(B->cmap->n*(2.0*a->nz - n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1070,15 +1071,16 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
 
 PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
 {
-  Mat_SeqAIJ      *a    = (Mat_SeqAIJ*)A->data;
-  IS              iscol = a->col,isrow = a->row;
-  PetscErrorCode  ierr;
-  PetscInt        i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j,*adiag = a->diag;
-  PetscInt        nz,neq;
-  const PetscInt  *rout,*cout,*r,*c;
-  PetscScalar     *x,*b,*tmp,sum;
-  const MatScalar *aa = a->a,*v;
-  PetscBool       bisdense,xisdense;
+  Mat_SeqAIJ        *a    = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  PetscInt          i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j,*adiag = a->diag;
+  PetscInt          nz,neq;
+  const PetscInt    *rout,*cout,*r,*c;
+  PetscScalar       *x,*tmp,sum;
+  const PetscScalar *b;
+  const PetscScalar *aa = a->a,*v;
+  PetscBool         bisdense,xisdense;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -1088,7 +1090,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
   if (!xisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
 
-  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
 
   tmp  = a->solve_work;
@@ -1123,7 +1125,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(B->cmap->n*(2.0*a->nz - n));CHKERRQ(ierr);
   PetscFunctionReturn(0);

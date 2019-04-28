@@ -1887,17 +1887,17 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
 
 PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse reuse, Mat *M)
 {
-  Mat_IS         *matis = (Mat_IS*)(mat->data);
-  Mat            local_mat,MT;
-  PetscInt       rbs,cbs,rows,cols,lrows,lcols;
-  PetscInt       local_rows,local_cols;
-  PetscBool      isseqdense,isseqsbaij,isseqaij,isseqbaij;
+  Mat_IS            *matis = (Mat_IS*)(mat->data);
+  Mat               local_mat,MT;
+  PetscInt          rbs,cbs,rows,cols,lrows,lcols;
+  PetscInt          local_rows,local_cols;
+  PetscBool         isseqdense,isseqsbaij,isseqaij,isseqbaij;
 #if defined (PETSC_USE_DEBUG)
-  PetscBool      lb[4],bb[4];
+  PetscBool         lb[4],bb[4];
 #endif
-  PetscMPIInt    size;
-  PetscScalar    *array;
-  PetscErrorCode ierr;
+  PetscMPIInt       size;
+  const PetscScalar *array;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
@@ -2027,23 +2027,24 @@ general_assembly:
   /* Set values */
   ierr = MatSetLocalToGlobalMapping(MT,mat->rmap->mapping,mat->cmap->mapping);CHKERRQ(ierr);
   if (isseqdense) { /* special case for dense local matrices */
-    PetscInt i,*dummy;
+    PetscInt          i,*dummy;
 
     ierr = PetscMalloc1(PetscMax(local_rows,local_cols),&dummy);CHKERRQ(ierr);
     for (i=0;i<PetscMax(local_rows,local_cols);i++) dummy[i] = i;
     ierr = MatSetOption(MT,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(local_mat,&array);CHKERRQ(ierr);
+    ierr = MatDenseGetArrayRead(local_mat,&array);CHKERRQ(ierr);
     ierr = MatSetValuesLocal(MT,local_rows,dummy,local_cols,dummy,array,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(local_mat,&array);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArrayRead(local_mat,&array);CHKERRQ(ierr);
     ierr = PetscFree(dummy);CHKERRQ(ierr);
   } else if (isseqaij) {
     const PetscInt *blocks;
     PetscInt       i,nvtxs,*xadj,*adjncy, nb;
     PetscBool      done;
+    PetscScalar    *sarray;
 
     ierr = MatGetRowIJ(local_mat,0,PETSC_FALSE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&done);CHKERRQ(ierr);
     if (!done) SETERRQ(PetscObjectComm((PetscObject)local_mat),PETSC_ERR_PLIB,"Error in MatGetRowIJ");
-    ierr = MatSeqAIJGetArray(local_mat,&array);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArray(local_mat,&sarray);CHKERRQ(ierr);
     ierr = MatGetVariableBlockSizes(local_mat,&nb,&blocks);CHKERRQ(ierr);
     if (nb) { /* speed up assembly for special blocked matrices (used by BDDC) */
       PetscInt sum;
@@ -2054,22 +2055,22 @@ general_assembly:
 
         for (i=0,r=0;i<nb;i++) {
           if (blocks[i] != xadj[r+1] - xadj[r]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid block sizes prescribed for block %D: expected %D, got %D",i,blocks[i],xadj[r+1] - xadj[r]);
-          ierr = MatSetValuesLocal(MT,blocks[i],adjncy+xadj[r],blocks[i],adjncy+xadj[r],array+xadj[r],ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesLocal(MT,blocks[i],adjncy+xadj[r],blocks[i],adjncy+xadj[r],sarray+xadj[r],ADD_VALUES);CHKERRQ(ierr);
           r   += blocks[i];
         }
       } else {
         for (i=0;i<nvtxs;i++) {
-          ierr = MatSetValuesLocal(MT,1,&i,xadj[i+1]-xadj[i],adjncy+xadj[i],array+xadj[i],ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesLocal(MT,1,&i,xadj[i+1]-xadj[i],adjncy+xadj[i],sarray+xadj[i],ADD_VALUES);CHKERRQ(ierr);
         }
       }
     } else {
       for (i=0;i<nvtxs;i++) {
-        ierr = MatSetValuesLocal(MT,1,&i,xadj[i+1]-xadj[i],adjncy+xadj[i],array+xadj[i],ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(MT,1,&i,xadj[i+1]-xadj[i],adjncy+xadj[i],sarray+xadj[i],ADD_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatRestoreRowIJ(local_mat,0,PETSC_FALSE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&done);CHKERRQ(ierr);
     if (!done) SETERRQ(PetscObjectComm((PetscObject)local_mat),PETSC_ERR_PLIB,"Error in MatRestoreRowIJ");
-    ierr = MatSeqAIJRestoreArray(local_mat,&array);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArray(local_mat,&sarray);CHKERRQ(ierr);
   } else { /* very basic values insertion for all other matrix types */
     PetscInt i;
 
@@ -2077,9 +2078,9 @@ general_assembly:
       PetscInt       j;
       const PetscInt *local_indices_cols;
 
-      ierr = MatGetRow(local_mat,i,&j,&local_indices_cols,(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = MatGetRow(local_mat,i,&j,&local_indices_cols,&array);CHKERRQ(ierr);
       ierr = MatSetValuesLocal(MT,1,&i,j,local_indices_cols,array,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(local_mat,i,&j,&local_indices_cols,(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = MatRestoreRow(local_mat,i,&j,&local_indices_cols,&array);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(MT,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

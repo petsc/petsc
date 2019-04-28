@@ -468,7 +468,8 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
 {
   Mat_MPIAIJ             *aij = (Mat_MPIAIJ*)A->data;
   PetscErrorCode         ierr;
-  PetscScalar            *b,*w,*svalues,*rvalues;
+  const PetscScalar      *b;
+  PetscScalar            *w,*svalues,*rvalues;
   VecScatter             ctx   = aij->Mvctx;
   PetscInt               i,j,k;
   const PetscInt         *sindices,*sstarts,*rindices,*rstarts;
@@ -499,7 +500,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   swaits  = contents->swaits;
   rwaits  = contents->rwaits;
 
-  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(workB,&w);CHKERRQ(ierr);
 
   for (i=0; i<nrecvs; i++) {
@@ -531,7 +532,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
 
   ierr = VecScatterRestoreRemote_Private(ctx,PETSC_TRUE/*send*/,&nsends,&sstarts,&sindices,&sprocs,NULL/*bs*/);CHKERRQ(ierr);
   ierr = VecScatterRestoreRemoteOrdered_Private(ctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,&rindices,&rprocs,NULL/*bs*/);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(workB,&w);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

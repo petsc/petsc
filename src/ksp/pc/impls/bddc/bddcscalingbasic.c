@@ -12,12 +12,13 @@ static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling);
 
 static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
 {
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  PetscScalar    *b,*x;
-  PetscInt       n;
-  PetscBLASInt   nrhs,info,m;
-  PetscBool      flg;
+  Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *b;
+  PetscScalar       *x;
+  PetscInt          n;
+  PetscBLASInt      nrhs,info,m;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
@@ -28,10 +29,10 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
 
   ierr = MatGetSize(B,NULL,&n);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n,&nrhs);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
-
   ierr = PetscMemcpy(x,b,m*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
 
   if (A->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS)
@@ -42,7 +43,6 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only LU factor supported");
 
-  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(nrhs*(2.0*m*m - m));CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -214,20 +214,20 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *u
 
 int main(int argc,char **argv)
 {
-  TS             ts;            /* ODE integrator */
-  Vec            U;             /* solution will be stored here */
-  Mat            A;             /* Jacobian matrix */
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscInt       n = 2,idx;
-  AppCtx         user;
-  PetscScalar    *u;
-  SNES           snes;
+  TS                ts;            /* ODE integrator */
+  Vec               U;             /* solution will be stored here */
+  Mat               A;             /* Jacobian matrix */
+  PetscErrorCode    ierr;
+  PetscMPIInt       size;
+  PetscInt          n = 2,idx;
+  AppCtx            user;
+  PetscScalar       *u;
+  SNES              snes;
   PetscScalar       *mat;
-  const PetscScalar *x;
-  Mat         B;
-  PetscScalar *amat;
-  PetscViewer viewer;
+  const PetscScalar *x,*rmat;
+  Mat               B;
+  PetscScalar       *amat;
+  PetscViewer       viewer;
 
 
 
@@ -310,11 +310,11 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,NULL,&B);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
   ierr = MatDenseGetArray(B,&amat);CHKERRQ(ierr);
-  ierr = PetscMemcpy(amat,mat,user.stepnum*3*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(amat,rmat,user.stepnum*3*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(B,&amat);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
