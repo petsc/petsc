@@ -89,6 +89,8 @@ class Package(config.base.Configure):
     self.installedpetsc         = 0
     self.installwithbatch       = 0  # install the package even though configure is running in the initial batch mode; f2blaslapack and fblaslapack for example
     self.builtafterpetsc        = 0  # package is compiled/installed after PETSc is compiled
+
+    self.downloaded             = 0  # 1 indicates that this package is being downloaded during this run (internal use only)
     return
 
   def __str__(self):
@@ -515,6 +517,9 @@ class Package(config.base.Configure):
     makefileSaved  = os.path.join(self.confDir, 'lib','petsc','conf','pkg.conf.'+self.package)
     gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
     gcommfileSaved = os.path.join(self.confDir,'lib','petsc','conf', 'pkg.gitcommit.'+self.package)
+    if self.downloaded:
+      self.log.write(self.PACKAGE+' was just downloaded, forcing a rebuild because cannot determine if package has changed\n')
+      return 1
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
       self.log.write('Have to rebuild '+self.PACKAGE+', '+makefile+' != '+makefileSaved+'\n')
       return 1
@@ -614,25 +619,26 @@ class Package(config.base.Configure):
     if not os.path.isdir(packages):
       os.makedirs(packages)
       self.framework.actions.addArgument('Framework', 'Directory creation', 'Created the external packages directory: '+packages)
-    Dir = None
+    Dir = []
     pkgdirs = os.listdir(packages)
     gitpkg  = 'git.'+self.package
     hgpkg  = 'hg.'+self.package
     self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ', '+hgpkg+' or a directory starting with '+str(self.downloaddirnames))
     if hasattr(self.sourceControl, 'git') and gitpkg in pkgdirs:
-      Dir = gitpkg
-    elif hasattr(self.sourceControl, 'hg') and hgpkg in pkgdirs:
-      Dir = hgpkg
-    else:
-      for d in pkgdirs:
-        for j in self.downloaddirnames:
-          if d.startswith(j) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
-            Dir = d
-            break
-        if Dir: break
+      Dir.append(gitpkg)
+    if hasattr(self.sourceControl, 'hg') and hgpkg in pkgdirs:
+      Dir.append(hgpkg)
+    for d in pkgdirs:
+      for j in self.downloaddirnames:
+        if d.startswith(j) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+          Dir.append(d)
+
+    if len(Dir) > 1:
+      raise RuntimeError('Located multiple directories with package '+self.package+' '+str(Dir)+'\nDelete directory '+self.arch+' and rerun ./configure')
+
     if Dir:
-      self.logPrint('Found a copy of '+self.PACKAGE+' in '+str(Dir))
-      return os.path.join(packages, Dir)
+      self.logPrint('Found a copy of '+self.PACKAGE+' in '+str(Dir[0]))
+      return os.path.join(packages, Dir[0])
     else:
       self.logPrint('Could not locate an existing copy of '+self.PACKAGE+':')
       self.logPrint('  '+str(pkgdirs))
@@ -689,6 +695,7 @@ class Package(config.base.Configure):
           raise RuntimeError('Could not locate downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
         retriever.restoreLog()
+        self.downloaded = 1
         return pkgdir
       except RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
