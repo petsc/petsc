@@ -5602,7 +5602,9 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
   case MAT_SUBSET_OFF_PROC_ENTRIES:
     mat->assembly_subset = flg;
     if (!mat->assembly_subset) { /* See the same logic in VecAssembly wrt VEC_SUBSET_OFF_PROC_ENTRIES */
+#if !defined(PETSC_HAVE_MPIUNI)
       ierr = MatStashScatterDestroy_BTS(&mat->stash);CHKERRQ(ierr);
+#endif
       mat->stash.first_assembly_done = PETSC_FALSE;
     }
     PetscFunctionReturn(0);
