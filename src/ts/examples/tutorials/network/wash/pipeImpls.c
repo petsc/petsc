@@ -22,7 +22,7 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
   ierr = DMDAVecGetArray(pipe->da, pipe->x, &x);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayRead(cda, local, &coords);CHKERRQ(ierr);
   ierr = DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0);CHKERRQ(ierr);
-  
+
   for (i = start; i < start + n; i++) {
     x[i].q = Q0;
     x[i].h = H0 - c * Q0 * PetscAbsScalar(Q0) * coords[i];
@@ -58,46 +58,36 @@ PETSC_STATIC_INLINE PetscScalar dhdx(PipeField *x,PetscInt i,PetscInt ilast,Pets
   }
 }
 
-PetscErrorCode PipeIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,PipeField *x,PipeField *xdot,PipeField *f,Pipe pipe)
+PetscErrorCode PipeIFunctionLocal_Lax(DMDALocalInfo *info,PetscReal ptime,PipeField *x,PipeField *xdot,PetscScalar *f,Pipe pipe)
 {
   PetscErrorCode ierr;
-  PetscInt       i, start, n, ilast;
-  PetscReal      c = (pipe->a * pipe->a) / (GRAV * pipe->A);
-  PetscReal      dx = pipe->length / (info->mx-1);
-  PetscScalar    qavg;
+  PetscInt       i,start,n,ilast;
+  PetscReal      a=pipe->a,A=pipe->A,R=pipe->R,c=a*a/(GRAV*A);
+  PetscReal      dx=pipe->length/(info->mx-1),dt=pipe->dt;
+  PetscScalar    qavg,xold_i,ha,hb,qa,qb;
+  PipeField      *xold=pipe->xold;
 
   PetscFunctionBegin;
   ierr = DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0);CHKERRQ(ierr);
-  
+
   /* interior and boundary */
-  ilast = start + n -1;
-  for (i = start; i < start + n; i++) {
-    if (i == start || i == ilast) {
-      qavg = x[i].q;
-    } else {
-      qavg = (x[i+1].q + x[i-1].q)/2.0; /* ok for single pipe with DM_BOUNDARY_GHOSTED, but mem corrupt for pipes! */
-    }
-    f[i].q = xdot[i].q + GRAV * pipe->A * dhdx(x, i, ilast, dx) + pipe->R * qavg * PetscAbsScalar(qavg);
-    f[i].h = xdot[i].h + c * dqdx(x, i, ilast, dx);
+  ilast = start + n - 1;
+  for (i = start + 1; i < start + n - 1; i++) {
+    qavg = (xold[i+1].q + xold[i-1].q)/2.0;
+    qa   = xold[i-1].q; qb   = xold[i+1].q;
+    ha   = xold[i-1].h; hb   = xold[i+1].h;
+
+    /* xdot[i].q = (x[i].q - old_i)/dt */
+    xold_i = 0.5*(qa+qb);
+    f[2*(i - 1) + 2] = (x[i].q - xold_i) + dt * (GRAV * pipe->A * dhdx(xold, i, ilast, dx) + pipe->R * qavg * PetscAbsScalar(qavg));
+
+    /* xdot[i].h = (x[i].h - xold_i)/dt */
+    xold_i = 0.5*(ha+hb);
+    f[2*(i - 1) + 3] =  (x[i].h - xold_i) + dt * c * dqdx(xold, i, ilast, dx);
   }
 
-  /* up-stream boundary */
-  if (info->xs == 0) {
-    if (pipe->boundary.Q0 == PIPE_CHARACTERISTIC) {
-      f[0].h = x[0].h - pipe->boundary.H0;
-    } else {
-      f[0].q = x[0].q - pipe->boundary.Q0;
-    }
-  }
-  
-  /* down-stream boundary */
-  if (start + n == info->mx) {
-    if (pipe->boundary.HL == PIPE_CHARACTERISTIC) {
-      f[info->mx-1].q = x[info->mx-1].q - pipe->boundary.QL;
-    } else {
-      f[info->mx-1].h = x[info->mx-1].h - pipe->boundary.HL;
-    }
-  }
+  /* Characteristic equations */
+  f[start + 1] = x[start].q - xold[start + 1].q - ((GRAV * A) / a)*(x[start].h - xold[start + 1].h) + dt*R*xold[start + 1].q * PetscAbsScalar(xold[start + 1].q);
+  f[2*ilast]   = x[ilast].q - xold[ilast - 1].q + ((GRAV * A) / a)*(x[ilast].h - xold[ilast - 1].h) + dt*R*xold[ilast - 1].q * PetscAbsScalar(xold[ilast - 1].q);
   PetscFunctionReturn(0);
 }
-

@@ -134,7 +134,7 @@ PetscErrorCode GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos
 
 PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
 {
-  FILE           *fp;
+  FILE           *fp=NULL;
   PetscErrorCode ierr;
   VERTEX_Water   vert;
   EDGE_Water     edge;

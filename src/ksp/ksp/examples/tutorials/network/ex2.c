@@ -305,7 +305,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkRegisterComponent(networkdm,"bsrt",sizeof(Branch),&componentkey[1]);CHKERRQ(ierr);
 
   /* Set number of nodes/edges */
-  ierr = DMNetworkSetSizes(networkdm,1,0,&nnode,&nbranch,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkSetSizes(networkdm,1,&nnode,&nbranch,0,NULL);CHKERRQ(ierr);
   /* Add edge connectivity */
   ierr = DMNetworkSetEdgeList(networkdm,&edgelist,NULL);CHKERRQ(ierr);
   /* Set up the network layout */
