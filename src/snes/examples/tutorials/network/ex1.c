@@ -197,7 +197,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 
     /* get its supporting edges */
     ierr = DMNetworkGetSupportingEdges(networkdm,cone[1],&nconnedges,&connedges);CHKERRQ(ierr);
-    /* printf("nconnedges %d\n",nconnedges); */
 
     for (k=0; k<nconnedges; k++) {
       e = connedges[k];
@@ -231,7 +230,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           PetscScalar flow = Flow_Pump(pump,hf,ht);
           PetscScalar Hp = 0.1; /* load->pl */
           PetscScalar flow_couple = 8.81*Hp*1.e6/(ht-hf);     /* pump->h0; */
-          /* printf("pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2); */
+          /* ierr = PetscPrintf(PETSC_COMM_SELF,"pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2);CHKERRQ(ierr); */
 #endif
           /* Get the components at the two vertices */
           ierr = DMNetworkGetComponent(networkdm,econe[0],0,&key_0,(void**)&vertexnode1);CHKERRQ(ierr);
@@ -365,11 +364,11 @@ int main(int argc,char **argv)
     ierr = PetscMalloc1(2*numEdges[0],&edgelist_power);CHKERRQ(ierr);
     ierr = GetListofEdges_Power(pfdata,edgelist_power);CHKERRQ(ierr);
 #if 0
-    printf("edgelist_power:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"edgelist_power:\n");CHKERRQ(ierr);
     for (i=0; i<numEdges[0]; i++) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%D %D]",edgelist_power[2*i],edgelist_power[2*i+1]);CHKERRQ(ierr);
     }
-    printf("\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 #endif
   }
   /* Broadcast power Sbase to all processors */
@@ -390,11 +389,11 @@ int main(int argc,char **argv)
     numEdges[1]    = waterdata->nedge;
     numVertices[1] = waterdata->nvertex;
 #if 0
-    printf("edgelist_water:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"edgelist_water:\n");CHKERRQ(ierr);
     for (i=0; i<numEdges[1]; i++) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%D %D]",edgelist_water[2*i],edgelist_water[2*i+1]);CHKERRQ(ierr);
     }
-    printf("\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,("\n");CHKERRQ(ierr);
 #endif
   }
 

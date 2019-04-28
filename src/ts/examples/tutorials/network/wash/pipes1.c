@@ -37,7 +37,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   }
   wash->Nedge = numEdges;
   wash->nedge = nedges;
-  /* printf("[%d] nedges %d, numEdges %d\n",rank,nedges,numEdges); */
+  /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] nedges %d, numEdges %d\n",rank,nedges,numEdges);CHKERRQ(ierr); */
 
   ierr = PetscCalloc3(size+1,&eowners,size,&nvtx,numVertices,&vtxDone);CHKERRQ(ierr);
   ierr = MPI_Allgather(&nedges,1,MPIU_INT,eowners+1,1,MPIU_INT,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
 
   estart = eowners[rank];
   eend   = eowners[rank+1];
-  /* printf("[%d] own lists row %d - %d\n",rank,estart,eend); */
+  /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] own lists row %d - %d\n",rank,estart,eend);CHKERRQ(ierr); */
 
   /* (2) distribute row block edgelist to all processors */
   if (!rank) {
@@ -219,7 +219,7 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
   /*
-   printf("F:\n");
+   ierr = PetscPrintf(PETSC_COMM_WORLD("F:\n");CHKERRQ(ierr);
    ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
    */
   PetscFunctionReturn(0);
@@ -288,7 +288,7 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
 #if 0
   PetscInt N;
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  printf("initial solution %d:\n",N);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"initial solution %d:\n",N);CHKERRQ(ierr);
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -653,9 +653,9 @@ int main(int argc,char ** argv)
   pipes       = wash->pipe;
 
 #if 0
-  printf("[%d] after WashNetworkDistribute...ne %d, nv %d\n",rank,nedges,nvertices);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] after WashNetworkDistribute...ne %d, nv %d\n",rank,nedges,nvertices);CHKERRQ(ierr);
   if (rank == 0) {
-    for (e=0; e<nedges; e++) printf(" edge %d --> %d\n",edgelist[2*e],edgelist[2*e+1]);
+    for (e=0; e<nedges; e++) ierr = PetscPrintf(PETSC_COMM_SELF," edge %d --> %d\n",edgelist[2*e],edgelist[2*e+1]);CHKERRQ(ierr);
   }
 #endif
 
@@ -669,7 +669,7 @@ int main(int argc,char ** argv)
 
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
-  /* printf("[%d] eStart/End: %d - %d; vStart/End: %d - %d\n",rank,eStart,eEnd,vStart,vEnd); */
+  /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] eStart/End: %d - %d; vStart/End: %d - %d\n",rank,eStart,eEnd,vStart,vEnd);CHKERRQ(ierr); */
 
   /* Test DMNetworkGetSubnetworkInfo() */
   if (test) {
@@ -724,7 +724,7 @@ int main(int argc,char ** argv)
   /* Set up DM for use */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
   if (viewdm) {
-    if (!rank) printf("\nAfter DMSetUp, DMView:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAfter DMSetUp, DMView:\n");CHKERRQ(ierr);
     ierr = DMView(networkdm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -745,7 +745,7 @@ int main(int argc,char ** argv)
   /* Network partitioning and distribution of data */
   ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
   if (viewdm) {
-    if (!rank) printf("\nAfter DMNetworkDistribute, DMView:\n");
+    PetscPrintf(PETSC_COMM_WORLD,"\nAfter DMNetworkDistribute, DMView:\n");CHKERRQ(ierr);
     ierr = DMView(networkdm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
