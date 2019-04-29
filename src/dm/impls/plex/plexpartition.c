@@ -527,8 +527,9 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
   if (!r) SETERRQ1(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
 
   if (part->ops->destroy) {
-    ierr              = (*part->ops->destroy)(part);CHKERRQ(ierr);
+    ierr = (*part->ops->destroy)(part);CHKERRQ(ierr);
   }
+  part->noGraph = PETSC_FALSE;
   ierr = PetscMemzero(part->ops, sizeof(struct _PetscPartitionerOps));CHKERRQ(ierr);
   ierr = (*r)(part);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) part, name);CHKERRQ(ierr);
@@ -794,12 +795,23 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
     PetscFunctionReturn(0);
   }
   if (part->height == 0) {
-    PetscInt numVertices;
+    PetscInt numVertices = 0;
     PetscInt *start     = NULL;
     PetscInt *adjacency = NULL;
     IS       globalNumbering;
 
-    ierr = DMPlexCreatePartitionerGraph(dm, 0, &numVertices, &start, &adjacency, &globalNumbering);CHKERRQ(ierr);
+    if (!part->noGraph || part->viewGraph) {
+      ierr = DMPlexCreatePartitionerGraph(dm, part->height, &numVertices, &start, &adjacency, &globalNumbering);CHKERRQ(ierr);
+    } else {
+      const PetscInt *idxs;
+      PetscInt       p, pStart, pEnd;
+
+      ierr = DMPlexGetHeightStratum(dm, part->height, &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = DMPlexCreateNumbering_Internal(dm, pStart, pEnd, 0, NULL, dm->sf, &globalNumbering);CHKERRQ(ierr);
+      ierr = ISGetIndices(globalNumbering, &idxs);CHKERRQ(ierr);
+      for (p = 0; p < pEnd - pStart; p++) numVertices += idxs[p] < 0 ? 0 : 1;
+      ierr = ISRestoreIndices(globalNumbering, &idxs);CHKERRQ(ierr);
+    }
     if (part->viewGraph) {
       PetscViewer viewer = part->viewerGraph;
       PetscBool   isascii;
@@ -958,6 +970,7 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM 
 static PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part)
 {
   PetscFunctionBegin;
+  part->noGraph             = PETSC_TRUE; /* PetscPartitionerShell cannot overload the partition call, so it is safe for now */
   part->ops->view           = PetscPartitionerView_Shell;
   part->ops->setfromoptions = PetscPartitionerSetFromOptions_Shell;
   part->ops->destroy        = PetscPartitionerDestroy_Shell;
@@ -994,10 +1007,10 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
   Collective on Part
 
   Input Parameters:
-+ part     - The PetscPartitioner
-. size - The number of partitions
-. sizes    - array of size size (or NULL) providing the number of points in each partition
-- points   - array of size sum(sizes) (may be NULL iff sizes is NULL), a permutation of the points that groups those assigned to each partition in order (i.e., partition 0 first, partition 1 next, etc.)
++ part   - The PetscPartitioner
+. size   - The number of partitions
+. sizes  - array of size size (or NULL) providing the number of points in each partition
+- points - array of size sum(sizes) (may be NULL iff sizes is NULL), a permutation of the points that groups those assigned to each partition in order (i.e., partition 0 first, partition 1 next, etc.)
 
   Level: developer
 
@@ -1183,6 +1196,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM
 static PetscErrorCode PetscPartitionerInitialize_Simple(PetscPartitioner part)
 {
   PetscFunctionBegin;
+  part->noGraph        = PETSC_TRUE;
   part->ops->view      = PetscPartitionerView_Simple;
   part->ops->destroy   = PetscPartitionerDestroy_Simple;
   part->ops->partition = PetscPartitionerPartition_Simple;
@@ -1257,6 +1271,7 @@ static PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, DM
 static PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part)
 {
   PetscFunctionBegin;
+  part->noGraph        = PETSC_TRUE;
   part->ops->view      = PetscPartitionerView_Gather;
   part->ops->destroy   = PetscPartitionerDestroy_Gather;
   part->ops->partition = PetscPartitionerPartition_Gather;
@@ -1456,6 +1471,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, DM 
 static PetscErrorCode PetscPartitionerInitialize_Chaco(PetscPartitioner part)
 {
   PetscFunctionBegin;
+  part->noGraph        = PETSC_FALSE;
   part->ops->view      = PetscPartitionerView_Chaco;
   part->ops->destroy   = PetscPartitionerDestroy_Chaco;
   part->ops->partition = PetscPartitionerPartition_Chaco;
@@ -1664,6 +1680,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
 static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
 {
   PetscFunctionBegin;
+  part->noGraph             = PETSC_FALSE;
   part->ops->view           = PetscPartitionerView_ParMetis;
   part->ops->setfromoptions = PetscPartitionerSetFromOptions_ParMetis;
   part->ops->destroy        = PetscPartitionerDestroy_ParMetis;
@@ -1697,7 +1714,6 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
   ierr = PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionercite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscBool PTScotchPartitionercite = PETSC_FALSE;
 const char PTScotchPartitionerCitation[] =
@@ -1971,6 +1987,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
 static PetscErrorCode PetscPartitionerInitialize_PTScotch(PetscPartitioner part)
 {
   PetscFunctionBegin;
+  part->noGraph             = PETSC_FALSE;
   part->ops->view           = PetscPartitionerView_PTScotch;
   part->ops->destroy        = PetscPartitionerDestroy_PTScotch;
   part->ops->partition      = PetscPartitionerPartition_PTScotch;

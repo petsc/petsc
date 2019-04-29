@@ -69,6 +69,7 @@ struct _p_PetscPartitioner {
   PetscViewer       viewerGraph;
   PetscViewerFormat formatGraph;
   PetscBool         viewGraph;
+  PetscBool         noGraph;          /* does this partitioner needs the connectivity graph? */
 };
 
 typedef struct {
