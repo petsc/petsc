@@ -31,6 +31,20 @@ uni-complex-float-int64:
       --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
+mcs:
+  stage: test
+  tags:
+    - mcs
+  before_script:
+    - hostname
+    - cat /etc/issue
+    - echo $(nproc)
+    - cat /proc/cpuinfo
+  script:
+    - ./configure  --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native'
+    - make
+    - make check
+
 .status:
   stage: ci-status
   image: jedbrown/alpine-curl
