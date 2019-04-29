@@ -31,17 +31,17 @@ implicit none
   call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
   call MPI_Comm_size(PETSC_COMM_WORLD,sizef,ierr);CHKERRA(ierr)
 
-  allocate(emptyranks(0:nemptyranks-1))
-  allocate(bigranks(0:nbigranks-1))
+  allocate(emptyranks(nemptyranks))
+  allocate(bigranks(nbigranks))
 
-  call PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,"Ranks to be skipped by partition","-emptyranks",emptyranks,nemptyranks,set,ierr);CHKERRA(ierr)
-  call PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,"Ranks to be overloaded","-bigranks",bigranks,nbigranks,set,ierr);CHKERRA(ierr)
+  call PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-emptyranks",emptyranks,nemptyranks,set,ierr);CHKERRA(ierr)
+  call PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-bigranks",bigranks,nbigranks,set,ierr);CHKERRA(ierr)
   
   m = 1
-  do i=0,nemptyranks-1
+  do i=1,nemptyranks
     if (rank == emptyranks(i)) m = 0
   end do
-  do i=0,nbigranks-1
+  do i=1,nbigranks
     if (rank == bigranks(i)) m = 5
   end do
 
@@ -79,12 +79,16 @@ implicit none
   call ISDestroy(is,ierr);CHKERRA(ierr)
   call MatPartitioningDestroy(part,ierr);CHKERRA(ierr)
   call MatDestroy(A,ierr);CHKERRA(ierr)
-  deallocate(emptyranks)
-  deallocate(bigranks)
-  deallocate(cols)
-  deallocate(vals)
   call PetscFinalize(ierr);CHKERRA(ierr)
   
 end program
 
 
+!/*TEST
+!
+!   test:
+!      nsize: 8
+!      args: -emptyranks 0,2,4 -bigranks 1,3,7 -mat_partitioning_type average
+!      # cannot test with external package partitioners since they produce different results on different systems
+!
+!TEST*/
