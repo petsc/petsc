@@ -532,6 +532,11 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     } else {
       ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
     }
+    PetscLogMemory = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&PetscLogMemory,NULL);CHKERRQ(ierr);
+    if (PetscLogMemory) {
+      ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
+    }
   }
   if (flg4 && format == PETSC_VIEWER_ASCII_XML) {
     PetscReal threshold = PetscRealConstant(0.01);

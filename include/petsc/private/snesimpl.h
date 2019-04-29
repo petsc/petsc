@@ -259,6 +259,7 @@ PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,P
 PETSC_EXTERN PetscErrorCode DMSNESCheck_Internal(SNES,DM,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve;
+PETSC_EXTERN PetscLogEvent SNES_Setup;
 PETSC_EXTERN PetscLogEvent SNES_LineSearch;
 PETSC_EXTERN PetscLogEvent SNES_FunctionEval;
 PETSC_EXTERN PetscLogEvent SNES_JacobianEval;
