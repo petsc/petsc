@@ -257,4 +257,14 @@ int main(int argc, char *argv[])
       nsize: 2
       args: -dof 3
 
+   test:
+      suffix: 4
+      nsize: 1
+      args: -dof 2 -namefields
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -dof 4 -namefields
+
 TEST*/
