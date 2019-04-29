@@ -23,15 +23,15 @@ program main
       PetscInt       :: Ii,JJ,ldim,low,high,iglobal,Istart,Iend
       PetscErrorCode :: ierr
       PetscInt       :: i,j,its,n
-      PetscInt, parameter :: m = 3
+      PetscInt       :: m = 3
       PetscMPIInt    :: mySize,myRank
-      PetscBool, parameter :: &
+      PetscBool :: &
         testnewC         = PETSC_FALSE, &
         testscaledMat    = PETSC_FALSE, &
         mat_nonsymmetric = PETSC_FALSE
       PetscBool      :: flg
       PetscRandom    :: rctx
-      PetscLogStage,dimension(2) :: stages
+      PetscLogStage,dimension(0:1) :: stages
       character(len=80)          :: outputString
       
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -60,15 +60,15 @@ program main
       ! Use the runtime option -log_view for a printout of performance
       ! statistics at the program's conlusion.
 
-      call PetscLogStageRegister("Original Solve",stages(1),ierr)
+      call PetscLogStageRegister("Original Solve",stages(0),ierr)
       CHKERRA(ierr)
-      call PetscLogStageRegister("Second Solve",stages(2),ierr)
+      call PetscLogStageRegister("Second Solve",stages(1),ierr)
       CHKERRA(ierr)
       
       ! -------------- Stage 0: Solve Original System ---------------------- 
       ! Indicate to PETSc profiling that we're beginning the first stage
       
-      call PetscLogStagePush(stages(1),ierr)
+      call PetscLogStagePush(stages(0),ierr)
       CHKERRA(ierr)
       
       ! Create parallel matrix, specifying only its global dimensions.
@@ -253,7 +253,7 @@ program main
       
       call PetscLogStagePop(ierr)
       CHKERRA(ierr)      
-      call PetscLogStagePush(stages(2),ierr)
+      call PetscLogStagePush(stages(1),ierr)
       CHKERRA(ierr)
       
       ! Initialize all matrix entries to zero.  MatZeroEntries() retains the
@@ -294,7 +294,7 @@ program main
           endif
           
           v=6.0
-          call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(C,1,Ii,1,Ii,v,ADD_VALUES,ierr)
           CHKERRA(ierr)
           
         enddo
@@ -311,11 +311,6 @@ program main
             CHKERRA(ierr)
           endif
         enddo
-      else 
-          call MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE,ierr)
-          CHKERRA(ierr)
-          call MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE,ierr)
-          CHKERRA(ierr)
       endif
       
       ! Assemble matrix, using the 2-step process:
@@ -411,5 +406,83 @@ program main
       
       call PetscFinalize(ierr)
       
+!/*TEST
+!
+!   test:
+!      args: -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!
+!   test:
+!      suffix: 2
+!      nsize: 2
+!      args: -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol .000001
+!
+!   test:
+!      suffix: 5
+!      nsize: 2
+!      args: -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_lg_residualnorm -ksp_monitor_lg_true_residualnorm
+!
+!   test:
+!      suffix: asm
+!      nsize: 4
+!      args: -pc_type asm
+!
+!   test:
+!      suffix: asm_baij
+!      nsize: 4
+!      args: -pc_type asm -mat_type baij
+!      output_file: output/ex5_asm.out
+!
+!   test:
+!      suffix: redundant_0
+!      args: -m 1000 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi
+!
+!   test:
+!      suffix: redundant_1
+!      nsize: 5
+!      args: -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi
+!
+!   test:
+!      suffix: redundant_2
+!      nsize: 5
+!      args: -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi
+!
+!   test:
+!      suffix: redundant_3
+!      nsize: 5
+!      args: -pc_type redundant -pc_redundant_number 5 -redundant_ksp_type gmres -redundant_pc_type jacobi
+!
+!   test:
+!      suffix: redundant_4
+!      nsize: 5
+!      args: -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -psubcomm_type interlaced
+!
+!   test:
+!      suffix: superlu_dist
+!      nsize: 15
+!      requires: superlu_dist
+!      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat
+!
+!   test:
+!      suffix: superlu_dist_2
+!      nsize: 15
+!      requires: superlu_dist
+!      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact SamePattern_SameRowPerm
+!      output_file: output/ex5_superlu_dist.out
+!
+!   test:
+!      suffix: superlu_dist_3
+!      nsize: 15
+!      requires: superlu_dist
+!      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT
+!      output_file: output/ex5_superlu_dist.out
+!
+!   test:
+!      suffix: superlu_dist_0
+!      nsize: 1
+!      requires: superlu_dist
+!      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -test_scaledMat
+!      output_file: output/ex5_superlu_dist.out
+!
+!TEST*/
 
 end program main
