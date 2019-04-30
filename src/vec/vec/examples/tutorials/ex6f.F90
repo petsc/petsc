@@ -97,3 +97,8 @@ program main
   
   end program
 
+!/*TEST
+!
+!     test:
+!
+!TEST*/
