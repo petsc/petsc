@@ -237,7 +237,7 @@ program main
 
       call KSPGetIterationNumber(myKsp,its,ierr)
       if (.not. testscaledMat .or. norm > 1.e-7) then
-        write(outputString,*)'Norm of error',norm,'Iterations',its,'\n'
+        write(outputString,'(a,f11.9,a,i2.2,a)') 'Norm of error ',norm,', Iterations ',its,'\n'
         call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr)
       endif
       
@@ -386,7 +386,7 @@ program main
       call VecNorm(x,NORM_2,norm,ierr); CHKERRA(ierr)
       call KSPGetIterationNumber(myKsp,its,ierr); CHKERRA(ierr)
       if (.not. testscaledMat .or. norm > 1.e-7) then
-        write(outputString,*)'Norm of error',norm,'Iterations',its,'\n'
+        write(outputString,'(a,f11.9,a,i2.2,a)') 'Norm of error ',norm,', Iterations ',its,'\n'
         call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr)
       endif
       
@@ -420,17 +420,19 @@ program main
 !      suffix: 5
 !      nsize: 2
 !      args: -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_lg_residualnorm -ksp_monitor_lg_true_residualnorm
+!      output_file: output/ex5f_5.out
 !
 !   test:
 !      suffix: asm
 !      nsize: 4
 !      args: -pc_type asm
+!      output_file: output/ex5f_asm.out
 !
 !   test:
 !      suffix: asm_baij
 !      nsize: 4
 !      args: -pc_type asm -mat_type baij
-!      output_file: output/ex5_asm.out
+!      output_file: output/ex5f_asm.out
 !
 !   test:
 !      suffix: redundant_0
@@ -467,21 +469,21 @@ program main
 !      nsize: 15
 !      requires: superlu_dist
 !      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact SamePattern_SameRowPerm
-!      output_file: output/ex5_superlu_dist.out
+!      output_file: output/ex5f_superlu_dist.out
 !
 !   test:
 !      suffix: superlu_dist_3
 !      nsize: 15
 !      requires: superlu_dist
 !      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT
-!      output_file: output/ex5_superlu_dist.out
+!      output_file: output/ex5f_superlu_dist.out
 !
 !   test:
 !      suffix: superlu_dist_0
 !      nsize: 1
 !      requires: superlu_dist
 !      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -test_scaledMat
-!      output_file: output/ex5_superlu_dist.out
+!      output_file: output/ex5f_superlu_dist.out
 !
 !TEST*/
 
