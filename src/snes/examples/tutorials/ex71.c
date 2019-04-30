@@ -258,12 +258,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
       coords[i+0] = PetscCosReal(alpha)*x - PetscSinReal(alpha)*y;
       coords[i+1] = PetscSinReal(alpha)*x + PetscCosReal(alpha)*y;
-#if 0
-      if ((PetscAbsReal(x - 0.333333333) < 1.0e-7) && (PetscAbsReal(y - 0.333333333) < 1.0e-7)) {
-        coords[i+0] += PetscCosReal(alpha)*0.05;
-        coords[i+1] += PetscSinReal(alpha)*0.05;
-      }
-#endif
     }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = DMSetCoordinates(*dm, coordinates);CHKERRQ(ierr);
