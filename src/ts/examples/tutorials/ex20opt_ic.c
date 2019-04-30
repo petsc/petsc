@@ -583,20 +583,20 @@ int main(int argc,char **argv)
       requires: !complex !single
 
     test:
-      args:  -ts_type cn -viewer_binary_skip_info -tao_monitor -tao_view -mu 1000 -ts_dt 0.03125 -ts_trajectory_dirname ex20opt_icdir -ts_trajectory_use_history 0
+      args:  -ts_type cn -viewer_binary_skip_info -tao_monitor -tao_view -mu 1000 -ts_dt 0.03125 -ts_trajectory_dirname ex20opt_icdir
       output_file: output/ex20opt_ic_1.out
 
     test:
       suffix: 2
-      args:  -ts_type beuler -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none -ts_trajectory_dirname ex20opt_icdir -ts_trajectory_use_history 0
+      args:  -ts_type beuler -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none -ts_trajectory_dirname ex20opt_icdir
       output_file: output/ex20opt_ic_2.out
 
     test:
       suffix: 3
-      args:  -ts_type cn -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none -ts_trajectory_dirname ex20opt_icdir -ts_trajectory_use_history 0
+      args:  -ts_type cn -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none -ts_trajectory_dirname ex20opt_icdir
       output_file: output/ex20opt_ic_3.out
 
     test:
       suffix: 4
-      args: -implicitform 0 -ts_dt 0.01 -ts_max_steps 2 -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view -mode 1 -my_tao_mf -ts_trajectory_use_history 0
+      args: -implicitform 0 -ts_dt 0.01 -ts_max_steps 2 -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view -mode 1 -my_tao_mf
 TEST*/

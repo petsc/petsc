@@ -1121,6 +1121,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
     ierr = TSTrajectoryGetSolutionOnly(tj,&solution_only);CHKERRQ(ierr);
     if (solution_only) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"TSAdjoint cannot use the solution-only mode when choosing the Basic TSTrajectory type. Turn it off with -ts_trajectory_solution_only 0");
   }
+  ierr = TSTrajectorySetUseHistory(tj,PETSC_FALSE);CHKERRQ(ierr); /* not use TSHistory */
 
   if (ts->quadraturets) { /* if there is integral in the cost function */
     ierr = VecDuplicate(ts->vecs_sensi[0],&ts->vec_drdu_col);CHKERRQ(ierr);
@@ -1148,7 +1149,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 
 .keywords: TS, timestep, reset
 
-.seealso: TSCreate(), TSAdjointSetup(), TSADestroy()
+.seealso: TSCreate(), TSAdjointSetUp(), TSADestroy()
 @*/
 PetscErrorCode TSAdjointReset(TS ts)
 {
