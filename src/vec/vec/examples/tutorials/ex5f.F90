@@ -77,3 +77,17 @@ implicit none
 end program
 
 
+!/*TEST
+!
+!     test:
+!       nsize: 1
+!       requires: mpiio
+!       output_file: output/ex5_1.out
+!
+!     test:
+!       suffix: 2
+!       nsize: 2
+!       requires: mpiio
+!       output_file: output/ex5_2.out
+!
+!TEST*/
