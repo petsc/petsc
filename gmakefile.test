@@ -184,6 +184,10 @@ pre-clean:
 	@touch $(TESTLOGFILE)
 	@echo "Using MAKEFLAGS:" ${MAKEFLAGS}
 
+check-test-errors:
+	@grep '^not ok' $(TESTLOGFILE) | grep -v 'not ok timeout' | tee $(TESTDIR)/allgtests-tap-err.log
+	@test ! -s $(TESTDIR)/allgtests-tap-err.log
+
 .PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
 testpkgs := $(foreach pkg, $(pkgs), test-$(pkg))
 # Targets to run tests in test-$pkg.$lang and delete the executables, language by language
