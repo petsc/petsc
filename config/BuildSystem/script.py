@@ -149,8 +149,11 @@ class Script(logger.Logger):
       if log: log.write('Executing: %s\n' % (command,))
       try:
         pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE,
-                     shell=useShell, universal_newlines=True)
+                     shell=useShell)
         (out, err) = pipe.communicate()
+        if sys.version_info >= (3,0):
+          out = out.decode(encoding='UTF-8',errors='replace')
+          err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
       except OSError as e:
         return ('', e.message, e.errno)
