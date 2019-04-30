@@ -71,3 +71,10 @@ implicit none
   call PetscFinalize(ierr);CHKERRA(ierr)
   
 end program
+
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!
+!TEST*/

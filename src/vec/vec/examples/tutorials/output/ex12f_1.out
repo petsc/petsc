@@ -1,0 +1,38 @@
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+1.
+1.
+1.
+1.
+1.
+Process [1]
+1.
+1.
+1.
+1.
+1.
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+Process [1]
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
