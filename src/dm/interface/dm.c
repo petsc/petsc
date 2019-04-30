@@ -402,7 +402,7 @@ PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
 
   Level: intermediate
 
-  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with 
+  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with
                   the Mat through a PetscObjectCompose() operation
 
 .seealso: MatSetDM(), DMCreateMatrix(), DMSetMatType()
@@ -429,7 +429,7 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
 
   Level: intermediate
 
-  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with 
+  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with
                   the Mat through a PetscObjectCompose() operation
 
 
@@ -2092,7 +2092,7 @@ PetscErrorCode DMGetBasisTransformVec_Internal(DM dm, Vec *tv)
 }
 
 /*@
-  DMHasBasisTransform - Employ a basis transformation from functions in global vectors to functions in local vectors
+  DMHasBasisTransform - Whether we employ a basis transformation from functions in global vectors to functions in local vectors
 
   Input Parameter:
 . dm - The DM
