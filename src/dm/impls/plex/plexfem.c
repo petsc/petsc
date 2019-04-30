@@ -457,8 +457,8 @@ PetscErrorCode DMPlexBasisTransformApply_Internal(DM dm, const PetscReal x[], Pe
   PetscFunctionBeginHot;
   ierr = (*dm->transformGetMatrix)(dm, x, l2g, &A, ctx);CHKERRQ(ierr);
   switch (dim) {
-  case 2: DMPlex_Mult2D_Internal(A, y, z);break;
-  case 3: DMPlex_Mult3D_Internal(A, y, z);break;
+  case 2: DMPlex_Mult2D_Internal(A, 1, y, z);break;
+  case 3: DMPlex_Mult3D_Internal(A, 1, y, z);break;
   }
   PetscFunctionReturn(0);
 }
@@ -477,13 +477,13 @@ static PetscErrorCode DMPlexBasisTransformField_Internal(DM dm, DM tdm, Vec tv, 
   ierr = DMPlexPointLocalFieldRead(tdm, p, f, ta, (void *) &tva);CHKERRQ(ierr);
   if (l2g) {
     switch (dof) {
-    case 4: DMPlex_Mult2D_Internal(tva, a, a);break;
-    case 9: DMPlex_Mult3D_Internal(tva, a, a);break;
+    case 4: DMPlex_Mult2D_Internal(tva, 1, a, a);break;
+    case 9: DMPlex_Mult3D_Internal(tva, 1, a, a);break;
     }
   } else {
     switch (dof) {
-    case 4: DMPlex_MultTranspose2D_Internal(tva, a, a);break;
-    case 9: DMPlex_MultTranspose3D_Internal(tva, a, a);break;
+    case 4: DMPlex_MultTranspose2D_Internal(tva, 1, a, a);break;
+    case 9: DMPlex_MultTranspose3D_Internal(tva, 1, a, a);break;
     }
   }
   ierr = VecRestoreArrayRead(tv, &ta);CHKERRQ(ierr);
