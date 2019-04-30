@@ -36,23 +36,23 @@ program main
   
   do r=myStart,myEnd-1
     if (r == 0) then
-     allocate(vals(0:1))
+     allocate(vals(2))
      vals = 1.0
-     allocate(cols(0:1),source=[r,r+1])
+     allocate(cols(2),source=[r,r+1])
      call MatSetValues(A, 1, r, 2, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
      deallocate(cols)
      deallocate(vals)
     else if (r == N-1) then
-     allocate(vals(0:1))
+     allocate(vals(2))
      vals = 1.0
-     allocate(cols(0:1),source=[r-1,r])
+     allocate(cols(2),source=[r-1,r])
      call MatSetValues(A, 1, r, 2, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
      deallocate(cols)
      deallocate(vals)
     else 
-     allocate(vals(0:2))
+     allocate(vals(3))
      vals = 1.0
-     allocate(cols(0:2),source=[r-1,r,r+1])
+     allocate(cols(3),source=[r-1,r,r+1])
      call MatSetValues(A, 1, r, 3, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
      deallocate(cols)
      deallocate(vals)
@@ -78,35 +78,35 @@ end program
 !      nsize: 3
 !      requires: parmetis
 !      args: -mat_partitioning_type parmetis
+!      output_file: output/ex15_1.out
 !
 !   test:
 !      suffix: 2
 !      nsize: 3
 !      requires: ptscotch
 !      args: -mat_partitioning_type ptscotch
+!      output_file: output/ex15_2.out
 !
 !   test:
 !      suffix: 3
 !      nsize: 4
 !      requires: party
 !      args: -mat_partitioning_type party
+!      output_file: output/ex15_3.out
 !
 !   test:
 !      suffix: 4
 !      nsize: 3
 !      requires: chaco
 !      args: -mat_partitioning_type chaco
+!      output_file: output/ex15_4.out
 !
 !   test:
 !      suffix: 5
 !      nsize: 3
 !      requires: parmetis
 !      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100
+!      output_file: output/ex15_5.out
 !
-!   test:
-!      suffix: 6
-!      nsize: 3
-!      requires: parmetis
-!      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100 -test_vertex_weights 1
 !TEST*/
 

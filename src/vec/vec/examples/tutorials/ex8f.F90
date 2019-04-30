@@ -98,3 +98,11 @@
   call PetscFinalize(ierr);CHKERRA(ierr)
    
 end program
+
+!/*TEST
+!
+!     test:
+!       nsize: 4
+!       output_file: output/ex8_1.out
+!
+!TEST*/

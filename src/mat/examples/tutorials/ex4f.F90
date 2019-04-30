@@ -57,3 +57,15 @@ implicit none
   
 end program
 
+!/*TEST
+!
+!   test:
+!      suffix: 1
+!      output_file: output/ex4_1.out
+!
+!   test:
+!      suffix: 2
+!      nsize: 2
+!      output_file: output/ex4_2.out
+!
+!TEST*/
