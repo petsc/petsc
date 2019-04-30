@@ -55,3 +55,8 @@ program main
       call PetscFinalize(ierr)
       
 end program main 
+!/*TEST
+!
+!   test:
+!
+!TEST*/

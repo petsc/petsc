@@ -53,3 +53,9 @@ program main
       CHKERRA(ierr)
       
 end program main
+
+!/*TEST
+!
+!   test:
+!
+!TEST*/
