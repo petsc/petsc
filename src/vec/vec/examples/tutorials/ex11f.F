@@ -64,33 +64,33 @@
       call VecNorm(x,NORM_2,norm,ierr)
       if (rank .eq. 0) then
          write (6,100) norm
- 100     format ('Norm of entire vector ',1pe9.2)
+ 100     format ('L_2 Norm of entire vector ',1pe9.2)
       endif
 
       comp = 0
       call VecStrideNorm(x,comp,NORM_2,norm,ierr)
       if (rank .eq. 0) then
          write (6,200) norm
- 200     format ('Norm of subvector ',1pe9.2)
+ 200     format ('L_2 Norm of subvector 0',1pe9.2)
       endif
 
       comp = 1
       call VecStrideNorm(x,comp,NORM_2,norm,ierr)
       if (rank .eq. 0) then
          write (6,300) norm
- 300     format ('Norm of subvector ',1pe9.2)
+ 300     format ('L_2 Norm of subvector 1',1pe9.2)
       endif
 
       call VecStrideNorm(x,comp,NORM_1,norm,ierr)
       if (rank .eq. 0) then
          write (6,400) norm
- 400     format ('Norm of subvector ',1pe9.2)
+ 400     format ('L_1 Norm of subvector 0',1pe9.2)
       endif
 
       call VecStrideNorm(x,comp,NORM_INFINITY,norm,ierr)
       if (rank .eq. 0) then
          write (6,500) norm
- 500     format ('Norm of subvector ',1pe9.2)
+ 500     format ('L_1 Norm of subvector 1',1pe9.2)
       endif
 
 !

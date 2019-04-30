@@ -103,3 +103,9 @@
 end program
 
 
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!
+!TEST*/
