@@ -76,5 +76,6 @@ end program
 !
 !     test:
 !       nsize: 2
+!       output_file: output/ex16_1.out
 !
 !TEST*/

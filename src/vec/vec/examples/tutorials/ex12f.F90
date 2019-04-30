@@ -59,5 +59,6 @@ implicit none
 !
 !     test:
 !       nsize: 2
+!       output_file: output/ex12_1.out
 !
 !TEST*/

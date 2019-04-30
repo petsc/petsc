@@ -98,7 +98,7 @@ program main
   !Return the value of the integral.
   
  
-  write(output,*) 'ln(2) is',myResult,'\n'
+  write(output,'(a,f9.6,a)') 'ln(2) is',myResult,'\n'
   call PetscPrintf(PETSC_COMM_WORLD,trim(output),ierr);CHKERRA(ierr)
   call VecDestroy(x,ierr);CHKERRA(ierr)
   call VecDestroy(xend,ierr);CHKERRA(ierr)
@@ -121,3 +121,16 @@ program main
     end function func
 
 end program
+
+!/*TEST
+!
+!     test:
+!       nsize: 1
+!       output_file: output/ex18_1.out
+!
+!     test:
+!       nsize: 2
+!       suffix: 2
+!       output_file: output/ex18_1.out
+!
+!TEST*/
