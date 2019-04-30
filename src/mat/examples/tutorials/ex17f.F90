@@ -89,6 +89,7 @@ end program
 !   test:
 !      nsize: 8
 !      args: -emptyranks 0,2,4 -bigranks 1,3,7 -mat_partitioning_type average
+!      output_file: output/ex17_1.out
 !      # cannot test with external package partitioners since they produce different results on different systems
 !
 !TEST*/
