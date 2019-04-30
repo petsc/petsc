@@ -1127,9 +1127,12 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
       }
       for (q = 0; q < Nq; ++q) {
         if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, point %D", detJ[q], c, q);
-        if (transform) {gcoords = &coords[coordDim*Nq];
-                        ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);}
-        else           {gcoords = &coords[coordDim*q];}
+        if (transform) {
+          gcoords = &coords[coordDim*Nq];
+          ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);
+        } else {
+          gcoords = &coords[coordDim*q];
+        }
         ierr = (*funcs[field])(coordDim, time, gcoords, Nc, funcVal, ctx);
         if (ierr) {
           PetscErrorCode ierr2;
@@ -1228,9 +1231,12 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
       }
       for (q = 0; q < Nq; ++q) {
         if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", detJ[q], c, q);
-        if (transform) {gcoords = &coords[coordDim*Nq];
-                        ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);}
-        else           {gcoords = &coords[coordDim*q];}
+        if (transform) {
+          gcoords = &coords[coordDim*Nq];
+          ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);
+        } else {
+          gcoords = &coords[coordDim*q];
+        }
         ierr = (*funcs[field])(coordDim, time, &coords[q*coordDim], n, numFields, funcVal, ctx);
         if (ierr) {
           PetscErrorCode ierr2;
@@ -1342,9 +1348,12 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
       }
       for (q = 0; q < Nq; ++q) {
         if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature point %D", detJ, c, q);
-        if (transform) {gcoords = &coords[coordDim*Nq];
-                        ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);}
-        else           {gcoords = &coords[coordDim*q];}
+        if (transform) {
+          gcoords = &coords[coordDim*Nq];
+          ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);
+        } else {
+          gcoords = &coords[coordDim*q];
+        }
         ierr = (*funcs[field])(coordDim, time, gcoords, numFields, funcVal, ctx);
         if (ierr) {
           PetscErrorCode ierr2;
