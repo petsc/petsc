@@ -12,7 +12,7 @@ program main
   MatPartitioning :: part
   IS              :: is
   PetscInt        :: r,myStart,myEnd
-  PetscInt,parameter :: N = 10
+  PetscInt        :: N = 10
   PetscErrorCode  :: ierr
   PetscScalar,pointer,dimension(:) :: vals
   PetscInt,pointer,dimension(:) :: cols
@@ -71,4 +71,42 @@ program main
   call PetscFinalize(ierr);CHKERRA(ierr)
  
 end program
+
+!/*TEST
+!
+!   test:
+!      nsize: 3
+!      requires: parmetis
+!      args: -mat_partitioning_type parmetis
+!
+!   test:
+!      suffix: 2
+!      nsize: 3
+!      requires: ptscotch
+!      args: -mat_partitioning_type ptscotch
+!
+!   test:
+!      suffix: 3
+!      nsize: 4
+!      requires: party
+!      args: -mat_partitioning_type party
+!
+!   test:
+!      suffix: 4
+!      nsize: 3
+!      requires: chaco
+!      args: -mat_partitioning_type chaco
+!
+!   test:
+!      suffix: 5
+!      nsize: 3
+!      requires: parmetis
+!      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100
+!
+!   test:
+!      suffix: 6
+!      nsize: 3
+!      requires: parmetis
+!      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100 -test_vertex_weights 1
+!TEST*/
 
