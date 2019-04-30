@@ -31,10 +31,11 @@ uni-complex-float-int64:
       --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
-mcs:
+mcs-fedora:
   stage: test
   tags:
     - mcs
+    - fedora
   before_script:
     - hostname
     - cat /etc/issue
@@ -42,6 +43,19 @@ mcs:
     - cat /proc/cpuinfo
   script:
     - ./configure  --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native'
+    - make
+    - make check
+
+mcs-freebsd:
+  stage: test
+  tags:
+    - mcs
+    - freebsd
+  before_script:
+    - hostname
+    - cat /etc/issue
+  script:
+    - ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native'
     - make
     - make check
 
