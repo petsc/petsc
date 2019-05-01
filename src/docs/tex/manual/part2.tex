@@ -2966,13 +2966,6 @@ One can provide an orthonormal set of null space vectors with \lstinline{MatSetN
 The vector of all ones is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
 For elasticity, where rotational rigid body modes are required to complete the near null space you can use \lstinline{MatNullSpaceCreateRigidBody()} to create the null space vectors and then \lstinline{MatSetNearNullSpace()}.
 
-There are several options to provide parameters to the coarsening algorithm and parallel data layout.
-Run a code that uses GAMG with \trl{-help} to get full listing of GAMG parameters with short parameter descriptions.
-
-{\bf Trouble shooting algebraic multigrid methods:}  
-If {\it GAMG}, {\it ML}, or {\it hypre} does not perform well the first thing to try is one of 
-the other methods. Often the default parameters or just the strengths of different algorithms can fix performance problems or provide useful information to guide further debugging.
-The rate of coarsening is criticle in AMG performance -- too slow of coarsening will result in an overly expensive solver per iteration and too fast coarsening will result in decrease in the convergence rate. \trl{-pc_gamg_threshold <x>} and  \trl{-pc_gamg_square_graph <N>,} are the primary parameters that control coarsening rates.
 The GAMG framework provides for reducing the number of active processes on coarse grids to reduce communication costs when there is not enough parallelism to keep relative communication costs down.
 Most AMG solver reduce to just one active process on the coarsest grid (the PETSc MG framework also supports redundantly solving the coarse grid on all processes to potentially reduce communication  costs), although this forcing to one process can be overridden if one wishes to use a parallel coarse grid solver.
 GAMG generalizes this by reducing the active number of processes on other coarse grids as well.
@@ -2982,6 +2975,21 @@ One can, and probably should, repartition the coarse grids with \trl{-pc_gamg_re
 As mentioned multigrid generally coarsens the problem until it is small enough to be solved with an exact solver (eg, LU or SVD) in a relatively small time.
 GAMG will stop coarsening when the number of equation on a grid falls below at threshold give by \trl{-pc_gamg_coarse_eq_limit <50>,}.
 
+There are several options to provide parameters to the coarsening algorithm and parallel data layout.
+Run a code that uses GAMG with \trl{-help} to get full listing of GAMG parameters with short parameter descriptions.
+The rate of coarsening is critical in AMG performance -- too slow of coarsening will result in an overly expensive solver per iteration and too fast coarsening will result in decrease in the convergence rate. \trl{-pc_gamg_threshold <0>} and  \trl{-pc_gamg_square_graph <1>,} are the primary parameters that control coarsening rates, which is very important for AMG perforamance.
+A greedy maximal independent set (MIS) algorithm is used in coarsening.
+Squaring the graph implements so called MIS-2, the root vertex in an aggregate is more than two edges away from another root vertex, instead of more than one in MIS.
+The threshold parameter sets a normalized threshold for which edges are removed from the MIS graph, thereby coarsening slower.
+Zero will keep all non-zero edges, a negative number will keep zero edges, a positive number will drop small edges.
+Typical finite threshold values are in the range of $0.01 - 0.05$.
+There are additional parameters for changing the weights on coarse grids.
+Note, the parallel algorithm requires symmetric weights/matrix.
+You must use \trl{-pc_gamg_sym_graph <true>} to symmetrize the graph if your problem is not symmetric.
+
+{\bf Trouble shooting algebraic multigrid methods:}  
+If {\it GAMG}, {\it ML}, or {\it hypre} does not perform well the first thing to try is one of 
+the other methods. Often the default parameters or just the strengths of different algorithms can fix performance problems or provide useful information to guide further debugging.
 There are several sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
 achieve the full potential of multigrid.
