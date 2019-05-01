@@ -311,22 +311,22 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(v, "Quadrature on %D points with %D components of order %D\n", quad->numPoints, quad->Nc, quad->order);CHKERRQ(ierr);}
-  else              {ierr = PetscViewerASCIIPrintf(v, "Quadrature on %D points of order %D\n", quad->numPoints, quad->order);CHKERRQ(ierr);}
+  if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(v, "Quadrature of order %D on %D points (dim %D) with %D components\n", quad->order, quad->numPoints, quad->dim, quad->Nc);CHKERRQ(ierr);}
+  else              {ierr = PetscViewerASCIIPrintf(v, "Quadrature of order %D on %D points (dim %D)\n", quad->order, quad->numPoints, quad->dim);CHKERRQ(ierr);}
   ierr = PetscViewerGetFormat(v, &format);CHKERRQ(ierr);
   if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
   for (q = 0; q < quad->numPoints; ++q) {
-    ierr = PetscViewerASCIIPrintf(v, "(");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "p%D (", q);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(v, PETSC_FALSE);CHKERRQ(ierr);
     for (d = 0; d < quad->dim; ++d) {
       if (d) {ierr = PetscViewerASCIIPrintf(v, ", ");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(v, "%+g", (double)quad->points[q*quad->dim+d]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(v, ") ");CHKERRQ(ierr);
-    if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(v, "(");CHKERRQ(ierr);}
+    if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(v, "w%D (", q);CHKERRQ(ierr);}
     for (c = 0; c < quad->Nc; ++c) {
       if (c) {ierr = PetscViewerASCIIPrintf(v, ", ");CHKERRQ(ierr);}
-      ierr = PetscViewerASCIIPrintf(v, "%g", (double)quad->weights[q*quad->Nc+c]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(v, "%+g", (double)quad->weights[q*quad->Nc+c]);CHKERRQ(ierr);
     }
     if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(v, ")");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(v, "\n");CHKERRQ(ierr);
@@ -358,7 +358,6 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   PetscValidHeader(quad, 1);
   if (viewer) PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) quad), &viewer);CHKERRQ(ierr);}
-  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)quad, viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   if (iascii) {ierr = PetscQuadratureView_Ascii(quad, viewer);CHKERRQ(ierr);}

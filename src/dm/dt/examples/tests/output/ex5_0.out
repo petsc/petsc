@@ -21,6 +21,4 @@ PetscFE Object: solution 1 MPI processes
     type: lagrange
     Dual space of order 1 with 3 components
     Continuous Lagrange dual space
-  PetscQuadrature Object: 1 MPI processes
-    type: GaussTensor
-    Quadrature on 2 points of order 3
+    Quadrature of order 3 on 2 points (dim 1)

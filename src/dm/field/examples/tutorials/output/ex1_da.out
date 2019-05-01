@@ -42,9 +42,7 @@ rH:
  5:   2.3725e-02   2.3725e-02   0.0000e+00   0.0000e+00   1.0402e-01
 10:   1.0402e-01   0.0000e+00   0.0000e+00   2.3725e-02   2.3725e-02
 15:   0.0000e+00
-PetscQuadrature Object: Test quadrature 1 MPI processes
-  type: GaussTensor
-  Quadrature on 4 points of order 3
+  Quadrature of order 3 on 4 points (dim 2)
 IS Object: FE Test Cells 1 MPI processes
   type: general
 Number of indices in set 2
