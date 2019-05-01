@@ -112,8 +112,8 @@ class tetgenio {
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://tetgen.org/files/tetgen1.4.3.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.4.3.tar.gz']
+    self.download     = ['http://www.tetgen.org/1.5/src/tetgen1.5.1.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.5.1.tar.gz']
     self.functions    = ['tetrahedralize']
     self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out, tetgenio *addin = NULL, tetgenio *bgmin = NULL);', 'tetrahedralize((char *) "", NULL, NULL)']
     self.includes     = ['tetgen.h']
