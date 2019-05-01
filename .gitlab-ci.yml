@@ -31,33 +31,59 @@ uni-complex-float-int64:
       --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
-mcs-fedora:
+.mcs_test:
   stage: test
-  tags:
-    - mcs
-    - fedora
-  before_script:
-    - hostname
-    - cat /etc/issue
-    - echo $(nproc)
-    - cat /proc/cpuinfo
   script:
-    - ./configure  --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native'
+    - ./config/examples/${TEST_ARCH}.py
     - make
     - make check
+    - make cleantest allgtests-tap TIMEOUT=300
 
-mcs-freebsd:
-  stage: test
+.linux_mcs_test:
+  extends: .mcs_test
+  tags:
+    - mcs
+    - linux
+  before_script:
+    - hostname
+    - grep PRETTY_NAME /etc/os-release
+    - echo $(nproc)
+
+.freebsd_mcs_test:
+  extends: .mcs_test
   tags:
     - mcs
     - freebsd
   before_script:
     - hostname
-    - cat /etc/issue
-  script:
-    - ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native'
-    - make
-    - make check
+    - freebsd-version
+    - echo $(sysctl -n hw.ncpu)
+
+linux-gcc-complex-opt:
+  extends: .linux_mcs_test
+  variables:
+    TEST_ARCH: arch-jenkins-linux-gcc-complex-opt
+
+linux-gcc-pkgs-opt:
+  extends: .linux_mcs_test
+  variables:
+    TEST_ARCH: arch-jenkins-linux-gcc-pkgs-opt
+
+linux-gcc-quad-64idx-dbg:
+  extends: .linux_mcs_test
+  variables:
+    TEST_ARCH: arch-jenkins-linux-gcc-quad-64idx-dbg
+
+freebsd-c-single-opt:
+  extends: .freebsd_mcs_test
+  variables:
+    TEST_ARCH: arch-jenkins-freebsd-c-single-opt
+
+freebsd-cxx-cmplx-64idx-dbg:
+  extends: .freebsd_mcs_test
+  stage: test
+  variables:
+    TEST_ARCH: arch-jenkins-freebsd-cxx-cmplx-64idx-dbg
 
 .status:
   stage: ci-status
