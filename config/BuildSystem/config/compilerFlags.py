@@ -77,6 +77,11 @@ class Configure(config.base.Configure):
       bopts.append('g')
     else:
       bopts.append('O')
+
+    # According to gcc doc, gcov does not require -g, so we do it alone
+    if self.argDB['with-gcov']:
+      bopts.append('gcov')
+
     options = self.getOptionsObject()
     if not options:
       return
@@ -96,10 +101,10 @@ class Configure(config.base.Configure):
       try:
         self.rejected[language] = []
         for bopt in bopts:
-          if not bopt == '' and self.getOptionalFlagsName(language) in self.argDB:
+          if bopt in ['g','O'] and self.getOptionalFlagsName(language) in self.argDB: # check --COPTFLAGS etc
             # treat user supplied options as single option - as it could include options separated by spaces '-tp k8-64'
             flags = [self.argDB[self.getOptionalFlagsName(language)]]
-          elif not bopt == '' and self.hasOptFlags(getattr(self.setCompilers,flagsName)):
+          elif bopt in ['g','O'] and self.hasOptFlags(getattr(self.setCompilers,flagsName)): # check --CFLAGS etc
             self.logPrint('Optimization options found in '+flagsName+ '. Skipping setting defaults')
             flags = []
           elif bopt == '' and flagsName in self.argDB:
@@ -107,6 +112,7 @@ class Configure(config.base.Configure):
             flags = []
           else:
             flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
+
           for testFlag in flags:
             if isinstance(testFlag,tuple):
               testFlag = ' '.join(testFlag)
