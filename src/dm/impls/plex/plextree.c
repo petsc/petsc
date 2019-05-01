@@ -1241,16 +1241,17 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
   ierr = PetscMalloc6(spdim,&v0,spdim,&v0parent,spdim,&vtmp,spdim*spdim,&J,spdim*spdim,&Jparent,spdim*spdim,&invJparent);CHKERRQ(ierr);
 
   for (f = 0; f < numFields; f++) {
-    PetscObject disc;
-    PetscClassId id;
-    PetscSpace     bspace;
-    PetscDualSpace dspace;
-    PetscInt i, j, k, nPoints, Nc, offset;
-    PetscInt fSize, maxDof;
-    PetscReal   *weights, *pointsRef, *pointsReal, *work;
-    PetscScalar *scwork, *X;
-    PetscInt  *sizes, *workIndRow, *workIndCol;
-    Mat Amat, Bmat, Xmat;
+    PetscObject       disc;
+    PetscClassId      id;
+    PetscSpace        bspace;
+    PetscDualSpace    dspace;
+    PetscInt          i, j, k, nPoints, Nc, offset;
+    PetscInt          fSize, maxDof;
+    PetscReal         *weights, *pointsRef, *pointsReal, *work;
+    PetscScalar       *scwork;
+    const PetscScalar *X;
+    PetscInt          *sizes, *workIndRow, *workIndCol;
+    Mat               Amat, Bmat, Xmat;
     const PetscInt    *numDof  = NULL;
     const PetscInt    ***perms = NULL;
     const PetscScalar ***flips = NULL;
@@ -1352,7 +1353,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       }
       ierr = EvaluateBasis(bspace,fSize,fSize,Nc,nPoints,sizes,pointsReal,weights,work,Bmat);CHKERRQ(ierr);
       ierr = MatMatSolve(Amat,Bmat,Xmat);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(Xmat,&X);CHKERRQ(ierr);
+      ierr = MatDenseGetArrayRead(Xmat,&X);CHKERRQ(ierr);
       ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSizeP,&closureP);CHKERRQ(ierr);
       ierr = PetscMalloc2(closureSize+1,&childOffsets,closureSizeP+1,&parentOffsets);CHKERRQ(ierr);
       childOffsets[0] = 0;
@@ -1430,7 +1431,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
               flipP  = (flips && flips[j]) ? flips[j][oq] : NULL;
               nWorkP = parentOffsets[j+1]-parentOffsets[j];
               /* get a copy of the child-to-anchor portion of the matrix, and transpose so that rows correspond to the
-               * child and columns correspond to the anchor: BUT the maxrix returned by MatDenseGetArray is
+               * child and columns correspond to the anchor: BUT the maxrix returned by MatDenseGetArrayRead() is
                * column-major, so transpose-transpose = do nothing */
               for (r = 0; r < nWork; r++) {
                 for (s = 0; s < nWorkP; s++) {
@@ -1459,7 +1460,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
           }
         }
       }
-      ierr = MatDenseRestoreArray(Xmat,&X);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArrayRead(Xmat,&X);CHKERRQ(ierr);
       ierr = PetscFree2(childOffsets,parentOffsets);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSizeP,&closureP);CHKERRQ(ierr);

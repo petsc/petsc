@@ -29,6 +29,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   Mat                    A,Aii,Ais,Asi,*Aholder,iAii;
   MatFactorInfo          info;
   PetscScalar            *xsurf,*xint;
+  const PetscScalar      *rxint;
 #if defined(PETSC_USE_DEBUG_foo)
   PetscScalar            tmp;
 #endif
@@ -219,14 +220,14 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   ierr = MatDestroy(&Xint_tmp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG_foo)
-  ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(Xint,&rxint);CHKERRQ(ierr);
   for (i=0; i<Nint; i++) {
     tmp = 0.0;
-    for (j=0; j<26; j++) tmp += xint[i+j*Nint];
+    for (j=0; j<26; j++) tmp += rxint[i+j*Nint];
 
     if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
-  ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
   /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 #endif
 
@@ -282,12 +283,12 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
   ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
-  ierr = MatSetValues(*P,Nint,IIint,26,gl,xint,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
-  ierr = MatSetValues(*P,Nsurf,IIsurf,26,gl,xsurf,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(Xint,&rxint);CHKERRQ(ierr);
+  ierr = MatSetValues(*P,Nint,IIint,26,gl,rxint,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(Xsurf,&rxint);CHKERRQ(ierr);
+  ierr = MatSetValues(*P,Nsurf,IIsurf,26,gl,rxint,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(Xsurf,&rxint);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);
@@ -338,6 +339,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   Mat                    A,Aii,Ais,Asi,*Aholder,iAii;
   MatFactorInfo          info;
   PetscScalar            *xsurf,*xint;
+  const PetscScalar      *rxint;
 #if defined(PETSC_USE_DEBUG_foo)
   PetscScalar            tmp;
 #endif
@@ -501,14 +503,14 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   ierr = MatDestroy(&Xint_tmp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG_foo)
-  ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(Xint,&rxint);CHKERRQ(ierr);
   for (i=0; i<Nint; i++) {
     tmp = 0.0;
-    for (j=0; j<6; j++) tmp += xint[i+j*Nint];
+    for (j=0; j<6; j++) tmp += rxint[i+j*Nint];
 
     if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
-  ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
   /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 #endif
 
@@ -559,12 +561,12 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
   ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
-  ierr = MatSetValues(*P,Nint,IIint,6,gl,xint,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
-  ierr = MatSetValues(*P,Nsurf,IIsurf,6,gl,xsurf,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(Xint,&rxint);CHKERRQ(ierr);
+  ierr = MatSetValues(*P,Nint,IIint,6,gl,rxint,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(Xsurf,&rxint);CHKERRQ(ierr);
+  ierr = MatSetValues(*P,Nsurf,IIsurf,6,gl,rxint,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(Xsurf,&rxint);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);

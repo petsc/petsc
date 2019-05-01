@@ -491,7 +491,8 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
 {
   Mat_MKL_PARDISO   *mat_mkl_pardiso=(Mat_MKL_PARDISO*)(A)->data;
   PetscErrorCode    ierr;
-  PetscScalar       *barray, *xarray;
+  const PetscScalar *barray;
+  PetscScalar       *xarray;
   PetscBool         flg;
 
   PetscFunctionBegin;
@@ -503,8 +504,8 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
   ierr = MatGetSize(B,NULL,(PetscInt*)&mat_mkl_pardiso->nrhs);CHKERRQ(ierr);
 
   if (mat_mkl_pardiso->nrhs > 0) {
-    ierr = MatDenseGetArray(B,&barray);
-    ierr = MatDenseGetArray(X,&xarray);
+    ierr = MatDenseGetArrayRead(B,&barray);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(X,&xarray);CHKERRQ(ierr);
 
     if (barray == xarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
     if (!mat_mkl_pardiso->schur) mat_mkl_pardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
@@ -529,6 +530,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
       &mat_mkl_pardiso->err);
     if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
+    ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
     if (mat_mkl_pardiso->schur) { /* solve Schur complement and expand solution */
       PetscScalar *o_schur_work = NULL;
       PetscInt    shift = mat_mkl_pardiso->schur_size*mat_mkl_pardiso->nrhs,scale;

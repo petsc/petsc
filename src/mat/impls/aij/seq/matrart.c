@@ -114,15 +114,16 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
 */
 PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat RAB,PetscScalar *work)
 {
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*r=(Mat_SeqAIJ*)R->data;
-  PetscErrorCode ierr;
-  PetscScalar    *b,r1,r2,r3,r4,*b1,*b2,*b3,*b4;
-  MatScalar      *aa,*ra;
-  PetscInt       cn =B->cmap->n,bm=B->rmap->n,col,i,j,n,*ai=a->i,*aj,am=A->rmap->n;
-  PetscInt       am2=2*am,am3=3*am,bm4=4*bm;
-  PetscScalar    *d,*c,*c2,*c3,*c4;
-  PetscInt       *rj,rm=R->rmap->n,dm=RAB->rmap->n,dn=RAB->cmap->n;
-  PetscInt       rm2=2*rm,rm3=3*rm,colrm;
+  Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data,*r=(Mat_SeqAIJ*)R->data;
+  PetscErrorCode    ierr;
+  PetscScalar       r1,r2,r3,r4;
+  const PetscScalar *b,*b1,*b2,*b3,*b4;
+  MatScalar         *aa,*ra;
+  PetscInt          cn =B->cmap->n,bm=B->rmap->n,col,i,j,n,*ai=a->i,*aj,am=A->rmap->n;
+  PetscInt          am2=2*am,am3=3*am,bm4=4*bm;
+  PetscScalar       *d,*c,*c2,*c3,*c4;
+  PetscInt          *rj,rm=R->rmap->n,dm=RAB->rmap->n,dn=RAB->cmap->n;
+  PetscInt         rm2=2*rm,rm3=3*rm,colrm;
 
   PetscFunctionBegin;
   if (!dm || !dn) PetscFunctionReturn(0);
@@ -147,7 +148,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
     }
   }
 
-  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(RAB,&d);CHKERRQ(ierr);
   b1   = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
   c    = work; c2 = c + am; c3 = c2 + am; c4 = c3 + am;
@@ -218,7 +219,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
   }
   ierr = PetscLogFlops(cn*2.0*(a->nz + r->nz));CHKERRQ(ierr);
 
-  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(RAB,&d);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(RAB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(RAB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

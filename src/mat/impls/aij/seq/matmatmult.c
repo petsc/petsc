@@ -1653,16 +1653,17 @@ PetscErrorCode  MatTransColoringApplySpToDen_SeqAIJ(MatTransposeColoring colorin
 
 PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcoloring,Mat Cden,Mat Csp)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)Csp->data;
-  PetscScalar    *ca_den,*ca_den_ptr,*ca=csp->a;
-  PetscInt       k,l,m=Cden->rmap->n,ncolors=matcoloring->ncolors;
-  PetscInt       brows=matcoloring->brows,*den2sp=matcoloring->den2sp; 
-  PetscInt       nrows,*row,*idx;
-  PetscInt       *rows=matcoloring->rows,*colorforrow=matcoloring->colorforrow;
+  PetscErrorCode    ierr;
+  Mat_SeqAIJ        *csp = (Mat_SeqAIJ*)Csp->data;
+  const PetscScalar *ca_den,*ca_den_ptr;
+  PetscScalar       *ca=csp->a;
+  PetscInt          k,l,m=Cden->rmap->n,ncolors=matcoloring->ncolors;
+  PetscInt          brows=matcoloring->brows,*den2sp=matcoloring->den2sp; 
+  PetscInt          nrows,*row,*idx;
+  PetscInt          *rows=matcoloring->rows,*colorforrow=matcoloring->colorforrow;
 
   PetscFunctionBegin;
-  ierr   = MatDenseGetArray(Cden,&ca_den);CHKERRQ(ierr);
+  ierr   = MatDenseGetArrayRead(Cden,&ca_den);CHKERRQ(ierr);
 
   if (brows > 0) { 
     PetscInt *lstart,row_end,row_start;
@@ -1703,7 +1704,7 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
     }
   } 
 
-  ierr = MatDenseRestoreArray(Cden,&ca_den);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(Cden,&ca_den);CHKERRQ(ierr);
 #if defined(PETSC_USE_INFO)
   if (matcoloring->brows > 0) {
     ierr = PetscInfo1(Csp,"Loop over %D row blocks for den2sp\n",brows);CHKERRQ(ierr);

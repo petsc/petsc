@@ -525,14 +525,14 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       ierr = PetscMalloc3(mss*mss,&W,mss,&pivots,B_lwork,&Bwork);CHKERRQ(ierr);
 
       for (i=0,cum=0;i<sub_schurs->n_subs;i++) {
-        PetscScalar  *M;
-        PetscInt     subset_size;
+        const PetscScalar *M;
+        PetscInt          subset_size;
 
         ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
         ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
-        ierr = MatDenseGetArray(deluxe_ctx->seq_mat[i],&M);CHKERRQ(ierr);
+        ierr = MatDenseGetArrayRead(deluxe_ctx->seq_mat[i],&M);CHKERRQ(ierr);
         ierr = PetscMemcpy(W,M,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
-        ierr = MatDenseRestoreArray(deluxe_ctx->seq_mat[i],&M);CHKERRQ(ierr);
+        ierr = MatDenseRestoreArrayRead(deluxe_ctx->seq_mat[i],&M);CHKERRQ(ierr);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
         PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,W,&B_N,pivots,&B_ierr));
         if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
