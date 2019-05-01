@@ -4,7 +4,8 @@ stages:
 
 variables:
   GIT_STRATEGY: fetch
-  GIT_DEPTH: 1
+  #GIT_DEPTH: 1
+  GIT_CLEAN_FLAGS: -ffdxq
 
 .test:
   stage: test
@@ -13,6 +14,10 @@ variables:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
   script:
+    - git config user.email "petsc@gitlab.none"
+    - git config user.name "petsc gitlab-ci"
+    - git fetch origin master
+    - git merge -m "test" FETCH_HEAD
     - python3 ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make -j$(nproc) -l$(nproc)
     - make -j$(nproc) -l$(nproc) -f gmakefile test search="${TEST_SEARCH}"
@@ -34,6 +39,10 @@ uni-complex-float-int64:
 .mcs_test:
   stage: test
   script:
+    - git config user.email "petsc@gitlab.none"
+    - git config user.name "petsc gitlab-ci"
+    - git fetch origin master
+    - git merge -m "test" FETCH_HEAD
     - ./config/examples/${TEST_ARCH}.py
     - make
     - make check
