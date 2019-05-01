@@ -1049,14 +1049,13 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  comm = PetscObjectComm((PetscObject)dm);
+  comm = PetscObjectComm((PetscObject)part);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition);CHKERRQ(ierr);
   if (size == 1) {
     for (np = 0; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, numVertices/nparts + ((numVertices % nparts) > np));CHKERRQ(ierr);}
-  }
-  else {
+  } else {
     PetscMPIInt rank;
     PetscInt nvGlobal, *offsets, myFirst, myLast;
 
@@ -1085,18 +1084,15 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM
 
         if (firstLargePart < rem) {
           firstPart = firstLargePart;
-        }
-        else {
+        } else {
           firstPart = rem + (myFirst - (rem * pBig)) / pSmall;
         }
         if (lastLargePart < rem) {
           lastPart = lastLargePart;
-        }
-        else {
+        } else {
           lastPart = rem + (myLast - (rem * pBig)) / pSmall;
         }
-      }
-      else {
+      } else {
         firstPart = myFirst / (nvGlobal/nparts);
         lastPart  = myLast  / (nvGlobal/nparts);
       }
