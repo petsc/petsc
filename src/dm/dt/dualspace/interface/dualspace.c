@@ -6,6 +6,72 @@ PetscClassId PETSCDUALSPACE_CLASSID = 0;
 PetscFunctionList PetscDualSpaceList              = NULL;
 PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 
+const char *const PetscDualSpaceReferenceCells[] = {"SIMPLEX", "TENSOR", "PetscDualSpaceReferenceCell", "PETSCDUALSPACE_REFCELL_",0};
+
+/*
+  PetscDualSpaceLatticePointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to at most 'max'.
+                                                     Ordering is lexicographic with lowest index as least significant in ordering.
+                                                     e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,0}.
+
+  Input Parameters:
++ len - The length of the tuple
+. max - The maximum sum
+- tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
+
+  Output Parameter:
+. tup - A tuple of len integers whos sum is at most 'max'
+
+  Level: developer
+
+.seealso: PetscDualSpaceTensorPointLexicographic_Internal()
+*/
+PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt len, PetscInt max, PetscInt tup[])
+{
+  PetscFunctionBegin;
+  while (len--) {
+    max -= tup[len];
+    if (!max) {
+      tup[len] = 0;
+      break;
+    }
+  }
+  tup[++len]++;
+  PetscFunctionReturn(0);
+}
+
+/*
+  PetscDualSpaceTensorPointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that are all less than or equal to 'max'.
+                                                    Ordering is lexicographic with lowest index as least significant in ordering.
+                                                    e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,1}, {0,2}, {1,2}, {2,2}.
+
+  Input Parameters:
++ len - The length of the tuple
+. max - The maximum value
+- tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
+
+  Output Parameter:
+. tup - A tuple of len integers whos sum is at most 'max'
+
+  Level: developer
+
+.seealso: PetscDualSpaceLatticePointLexicographic_Internal()
+*/
+PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt len, PetscInt max, PetscInt tup[])
+{
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  for (i = 0; i < len; i++) {
+    if (tup[i] < max) {
+      break;
+    } else {
+      tup[i] = 0;
+    }
+  }
+  tup[i]++;
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscDualSpaceRegister - Adds a new PetscDualSpace implementation
 
@@ -119,6 +185,33 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
+{
+  PetscViewerFormat format;
+  PetscInt          pdim, f;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject) sp, v);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(v, "Dual space with %D components, size %D\n", sp->Nc, pdim);CHKERRQ(ierr);
+  if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
+  ierr = PetscViewerGetFormat(v, &format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+    for (f = 0; f < pdim; ++f) {
+      ierr = PetscViewerASCIIPrintf(v, "Dual basis vector %D\n", f);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+      ierr = PetscQuadratureView(sp->functional[f], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDualSpaceView - Views a PetscDualSpace
 
@@ -141,12 +234,8 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   if (v) PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
-  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp, v);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscViewerASCIIPrintf(v, "Dual space of order %D with %D components\n", sp->order, sp->Nc);CHKERRQ(ierr);}
-  if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscDualSpaceView_ASCII(sp, v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -167,10 +256,12 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 @*/
 PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 {
-  const char    *defaultType;
-  char           name[256];
-  PetscBool      flg;
-  PetscErrorCode ierr;
+  PetscDualSpaceReferenceCell refCell = PETSCDUALSPACE_REFCELL_SIMPLEX;
+  PetscInt                    refDim  = 0;
+  PetscBool                   flg;
+  const char                 *defaultType;
+  char                        name[256];
+  PetscErrorCode              ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
@@ -193,10 +284,21 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsInt("-petscdualspace_refdim", "The spatial dimension of the reference cell", "PetscDualSpaceSetReferenceCell", refDim, &refDim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-petscdualspace_refcell", "Reference cell", "PetscDualSpaceSetReferenceCell", PetscDualSpaceReferenceCells, (PetscEnum) refCell, (PetscEnum *) &refCell, &flg);CHKERRQ(ierr);
+  if (flg) {
+    DM K;
+
+    if (!refDim) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_INCOMP, "Reference cell specified without a dimension. Use -petscdualspace_refdim.");
+    ierr = PetscDualSpaceCreateReferenceCell(sp, refDim, refCell == PETSCDUALSPACE_REFCELL_SIMPLEX ? PETSC_TRUE : PETSC_FALSE, &K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetDM(sp, K);CHKERRQ(ierr);
+    ierr = DMDestroy(&K);CHKERRQ(ierr);
+  }
+
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) sp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscDualSpaceViewFromOptions(sp, NULL, "-petscdualspace_view");CHKERRQ(ierr);
+  sp->setfromoptionscalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -221,6 +323,7 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
   if (sp->setupcalled) PetscFunctionReturn(0);
   sp->setupcalled = PETSC_TRUE;
   if (sp->ops->setup) {ierr = (*sp->ops->setup)(sp);CHKERRQ(ierr);}
+  if (sp->setfromoptionscalled) {ierr = PetscDualSpaceViewFromOptions(sp, NULL, "-petscdualspace_view");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -458,55 +561,6 @@ PetscErrorCode PetscDualSpaceSetNumComponents(PetscDualSpace sp, PetscInt Nc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   sp->Nc = Nc;
-  PetscFunctionReturn(0);
-}
-
-/*@
-  PetscDualSpaceLagrangeGetTensor - Get the tensor nature of the dual space
-
-  Not collective
-
-  Input Parameter:
-. sp - The PetscDualSpace
-
-  Output Parameter:
-. tensor - Whether the dual space has tensor layout (vs. simplicial)
-
-  Level: intermediate
-
-.seealso: PetscDualSpaceLagrangeSetTensor(), PetscDualSpaceCreate()
-@*/
-PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *tensor)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(tensor, 2);
-  ierr = PetscTryMethod(sp,"PetscDualSpaceLagrangeGetTensor_C",(PetscDualSpace,PetscBool *),(sp,tensor));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  PetscDualSpaceLagrangeSetTensor - Set the tensor nature of the dual space
-
-  Not collective
-
-  Input Parameters:
-+ sp - The PetscDualSpace
-- tensor - Whether the dual space has tensor layout (vs. simplicial)
-
-  Level: intermediate
-
-.seealso: PetscDualSpaceLagrangeGetTensor(), PetscDualSpaceCreate()
-@*/
-PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tensor)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  ierr = PetscTryMethod(sp,"PetscDualSpaceLagrangeSetTensor_C",(PetscDualSpace,PetscBool),(sp,tensor));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -975,9 +1029,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(subsp, 3);
   *subsp = NULL;
-  if (sp->ops->getheightsubspace) {
-    ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);
-  }
+  if (sp->ops->getheightsubspace) {ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1029,3 +1081,34 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscDualSpaceGetSymmetries - Returns a description of the symmetries of this basis
+
+  Not collective
+
+  Input Parameter:
+. sp - the PetscDualSpace object
+
+  Output Parameters:
++ perms - Permutations of the local degrees of freedom, parameterized by the point orientation
+- flips - Sign reversal of the local degrees of freedom, parameterized by the point orientation
+
+  Note: The permutation and flip arrays are organized in the following way
+$ perms[p][ornt][dof # on point] = new local dof #
+$ flips[p][ornt][dof # on point] = reversal or not
+
+  Level: developer
+
+.seealso: PetscDualSpaceSetSymmetries()
+@*/
+PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ****perms, const PetscScalar ****flips)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,PETSCDUALSPACE_CLASSID,1);
+  if (perms) {PetscValidPointer(perms,2); *perms = NULL;}
+  if (flips) {PetscValidPointer(flips,3); *flips = NULL;}
+  if (sp->ops->getsymmetries) {ierr = (sp->ops->getsymmetries)(sp,perms,flips);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}

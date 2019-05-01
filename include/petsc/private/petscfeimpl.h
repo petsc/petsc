@@ -87,15 +87,16 @@ struct _p_PetscDualSpace {
   PetscQuadrature *functional; /* The basis of functionals for this space */
   PetscQuadrature  allPoints;
   PetscBool        setupcalled;
+  PetscBool        setfromoptionscalled;
 };
 
 typedef struct {
-  PetscInt       *numDof;
-  PetscBool       simplexCell;
-  PetscBool       tensorSpace;
-  PetscBool       continuous;
-  PetscInt        height;
-  PetscDualSpace *subspaces;
+  PetscInt       *numDof;      /* [d]: Number of dofs for d-dimensional point */
+  PetscBool       simplexCell; /* Flag for simplices, as opposed to tensor cells */
+  PetscBool       tensorSpace; /* Flag for tensor product space of polynomials, as opposed to a space of maximum degree */
+  PetscBool       continuous;  /* Flag for a continuous basis, as opposed to discontinuous across element boundaries */
+  PetscInt        height;      /* The number of subspaces stored */
+  PetscDualSpace *subspaces;   /* [h]: The subspace for dimension dim-(h+1) */
   PetscInt     ***symmetries;
   PetscInt        numSelfSym;
   PetscInt        selfSymOff;
@@ -403,6 +404,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(Pet
   }
   PetscFunctionReturn(0);
 }
+
+PETSC_INTERN PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
+PETSC_INTERN PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension_Basic(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar []);

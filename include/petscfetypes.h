@@ -23,6 +23,18 @@ typedef struct _p_PetscSpace *PetscSpace;
 S*/
 typedef struct _p_PetscDualSpace *PetscDualSpace;
 
+/*MC
+  PetscDualSpaceReferenceCell - The type of reference cell
+
+  Notes: This is used only for automatic creation of reference cells. A PetscDualSpace can accept an arbitary DM for a reference cell.
+
+  Level: intermediate
+
+.seealso: PetscSpace
+M*/
+typedef enum { PETSCDUALSPACE_REFCELL_SIMPLEX, PETSCDUALSPACE_REFCELL_TENSOR } PetscDualSpaceReferenceCell;
+PETSC_EXTERN const char * const PetscDualSpaceReferenceCells[];
+
 /*S
   PetscFE - PETSc object that manages a finite element space, e.g. the P_1 Lagrange element
 
