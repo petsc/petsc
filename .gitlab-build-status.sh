@@ -44,4 +44,4 @@ curl --request POST $BITBUCKET_STATUS_API \
 --header "Content-Type:application/json" \
 --silent \
 --data "{ \"state\": \"$BITBUCKET_STATE\", \"key\": \"$BITBUCKET_KEY\", \"description\":
-\"$BITBUCKET_DESCRIPTION\",\"url\": \"$CI_PROJECT_URL/-/jobs/$CI_JOB_ID\" }"
+\"$BITBUCKET_DESCRIPTION\",\"url\": \"$CI_PROJECT_URL/pipelines/$CI_PIPELINE_ID\" }"
