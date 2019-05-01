@@ -1826,7 +1826,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nparts+1,&vtxdist,PetscMax(nvtxs,1),&assignment);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size+1,&vtxdist,PetscMax(nvtxs,1),&assignment);CHKERRQ(ierr);
 
   /* Calculate vertex distribution */
   vtxdist[0] = 0;
