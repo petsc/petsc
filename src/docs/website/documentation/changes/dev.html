@@ -113,7 +113,8 @@
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
-        <ul>
+      <ul>
+          <li>MatShift(Mat,0); will no longer silently insure there are no missing diagonal entries. (Previously it would put 0 into any diagonal entry that was missing</li>
           <li>Renamed MatComputeExplicitOperator() into MatComputeOperator() and MatComputeExplicitOperatorTranpose() into MatComputeOperatorTranspose(). Added extra argument to select the desired matrix type</li>
         </ul>
       <h4>PC:</h4>

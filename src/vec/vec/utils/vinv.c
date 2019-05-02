@@ -1482,6 +1482,7 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidLogicalCollectiveScalar(v,shift,2);
   ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
+  if (shift == 0.0) PetscFunctionReturn(0);
 
   if (v->ops->shift) {
     ierr = (*v->ops->shift)(v,shift);CHKERRQ(ierr);

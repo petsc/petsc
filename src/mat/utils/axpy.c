@@ -282,6 +282,7 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
   if (!Y->assembled) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (Y->factortype) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(Y,1);
+  if (a == 0.0) PetscFunctionReturn(0);
 
   if (Y->ops->shift) {
     ierr = (*Y->ops->shift)(Y,a);CHKERRQ(ierr);
