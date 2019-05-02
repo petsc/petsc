@@ -307,8 +307,8 @@ struct _MatStash {
   PetscInt      reproduce_count;
 
   /* The following variables are used for BTS communication */
-  PetscBool      subset_off_proc; /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
-  PetscBool      use_status;      /* Use MPI_Status to determine number of items in each message */
+  PetscBool      first_assembly_done;   /* Is the first time matrix assembly done? */
+  PetscBool      use_status;            /* Use MPI_Status to determine number of items in each message */
   PetscMPIInt    nsendranks;
   PetscMPIInt    nrecvranks;
   PetscMPIInt    *sendranks;
@@ -334,6 +334,9 @@ struct _MatStash {
   InsertMode     *insertmode;   /* Pointer to check mat->insertmode and set upon message arrival in case no local values have been set. */
 };
 
+#if !defined(PETSC_HAVE_MPIUNI)
+PETSC_INTERN PetscErrorCode MatStashScatterDestroy_BTS(MatStash*);
+#endif
 PETSC_INTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
 PETSC_INTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
 PETSC_INTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
@@ -395,7 +398,7 @@ struct _p_Mat {
   PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
   PetscBool              symmetric_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
-  PetscBool              subsetoffprocentries;
+  PetscBool              assembly_subset; /* set by MAT_SUBSET_OFF_PROC_ENTRIES */
   PetscBool              submat_singleis; /* for efficient PCSetUP_ASM() */
   PetscBool              structure_only;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)

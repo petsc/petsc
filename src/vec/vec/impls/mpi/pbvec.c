@@ -90,15 +90,23 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
 {
   Vec_MPI        *v = (Vec_MPI*)V->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   switch (op) {
   case VEC_IGNORE_OFF_PROC_ENTRIES: V->stash.donotstash = flag;
     break;
   case VEC_IGNORE_NEGATIVE_INDICES: V->stash.ignorenegidx = flag;
     break;
-  case VEC_SUBSET_OFF_PROC_ENTRIES: v->assembly_subset = flag;
+  case VEC_SUBSET_OFF_PROC_ENTRIES:
+    v->assembly_subset = flag; /* See the same logic in MatAssembly wrt MAT_SUBSET_OFF_PROC_ENTRIES */
+    if (!v->assembly_subset) { /* User indicates "do not reuse the communication pattern" */
+      ierr = VecAssemblyReset_MPI(V);CHKERRQ(ierr); /* Reset existing pattern to free memory */
+      v->first_assembly_done = PETSC_FALSE; /* Mark the first assembly is not done */
+    }
     break;
   }
+
   PetscFunctionReturn(0);
 }
 
@@ -126,13 +134,15 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* x->recvhdr only exists when we are reusing a communication network.  In that case, some messages can be empty, but
-   * we have to send them this time if we sent them before because the receiver is expecting them. */
-  if (hdr->count || (x->recvhdr && x->sendptrs[rankid].ints)) {
+  /* x->first_assembly_done indicates we are reusing a communication network. In that case, some
+     messages can be empty, but we have to send them this time if we sent them before because the
+     receiver is expecting them.
+   */
+  if (hdr->count || (x->first_assembly_done && x->sendptrs[rankid].ints)) {
     ierr = MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
     ierr = MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
   }
-  if (hdr->bcount || (x->recvhdr && x->sendptrs[rankid].intb)) {
+  if (hdr->bcount || (x->first_assembly_done && x->sendptrs[rankid].intb)) {
     ierr = MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
     ierr = MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
   }
@@ -236,9 +246,8 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   if (!x->segrecvint) {ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint);CHKERRQ(ierr);}
   if (!x->segrecvscalar) {ierr = PetscSegBufferCreate(sizeof(PetscScalar),1000,&x->segrecvscalar);CHKERRQ(ierr);}
   if (!x->segrecvframe) {ierr = PetscSegBufferCreate(sizeof(VecAssemblyFrame),50,&x->segrecvframe);CHKERRQ(ierr);}
-  if (x->recvhdr) {             /* VEC_SUBSET_OFF_PROC_ENTRIES and this is not the first assembly */
+  if (x->first_assembly_done) { /* this is not the first assembly */
     PetscMPIInt tag[4];
-    if (!x->assembly_subset) SETERRQ(comm,PETSC_ERR_PLIB,"Attempt to reuse rendezvous when not VEC_SUBSET_OFF_PROC_ENTRIES");
     for (i=0; i<4; i++) {ierr = PetscCommGetNewTag(comm,&tag[i]);CHKERRQ(ierr);}
     for (i=0; i<x->nsendranks; i++) {
       ierr = VecAssemblySend_MPI_Private(comm,tag,i,x->sendranks[i],x->sendhdr+i,x->sendreqs+4*i,X);CHKERRQ(ierr);
@@ -247,10 +256,15 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
       ierr = VecAssemblyRecv_MPI_Private(comm,tag,x->recvranks[i],x->recvhdr+i,x->recvreqs+4*i,X);CHKERRQ(ierr);
     }
     x->use_status = PETSC_TRUE;
-  } else {                      /* First time */
+  } else { /* First time assembly */
     ierr = PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
     x->use_status = PETSC_FALSE;
   }
+
+  /* The first_assembly_done flag is only meaningful when x->assembly_subset is set.
+     This line says when assembly_subset is set, then we mark that the first assembly is done.
+   */
+  x->first_assembly_done = x->assembly_subset;
 
   {
     PetscInt nstash,reallocs;
