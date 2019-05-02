@@ -10,7 +10,6 @@ static PetscErrorCode MatStashScatterEnd_Ref(MatStash*);
 static PetscErrorCode MatStashScatterBegin_BTS(Mat,MatStash*,PetscInt*);
 static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 static PetscErrorCode MatStashScatterEnd_BTS(MatStash*);
-static PetscErrorCode MatStashScatterDestroy_BTS(MatStash*);
 #endif
 
 /*
@@ -845,15 +844,11 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   }
 #endif
 
-  if (stash->subset_off_proc && !mat->subsetoffprocentries) { /* We won't use the old scatter context. */
-    ierr = MatStashScatterDestroy_BTS(stash);CHKERRQ(ierr);
-  }
-
   ierr = MatStashBlockTypeSetUp(stash);CHKERRQ(ierr);
   ierr = MatStashSortCompress_Private(stash,mat->insertmode);CHKERRQ(ierr);
   ierr = PetscSegBufferGetSize(stash->segsendblocks,&nblocks);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(stash->segsendblocks,&sendblocks);CHKERRQ(ierr);
-  if (stash->subset_off_proc && mat->subsetoffprocentries) { /* Set up sendhdrs and sendframes for each rank that we sent before */
+  if (stash->first_assembly_done) { /* Set up sendhdrs and sendframes for each rank that we sent before */
     PetscInt i;
     size_t b;
     for (i=0,b=0; i<stash->nsendranks; i++) {
@@ -918,7 +913,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
     }
   }
 
-  if (stash->subset_off_proc && mat->subsetoffprocentries) {
+  if (stash->first_assembly_done) {
     PetscMPIInt i,tag;
     ierr = PetscCommGetNewTag(stash->comm,&tag);CHKERRQ(ierr);
     for (i=0; i<stash->nrecvranks; i++) {
@@ -937,13 +932,13 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   }
 
   ierr = PetscSegBufferExtractInPlace(stash->segrecvframe,&stash->recvframes);CHKERRQ(ierr);
-  stash->recvframe_active = NULL;
-  stash->recvframe_i      = 0;
-  stash->some_i           = 0;
-  stash->some_count       = 0;
-  stash->recvcount        = 0;
-  stash->subset_off_proc  = mat->subsetoffprocentries;
-  stash->insertmode       = &mat->insertmode;
+  stash->recvframe_active     = NULL;
+  stash->recvframe_i          = 0;
+  stash->some_i               = 0;
+  stash->some_count           = 0;
+  stash->recvcount            = 0;
+  stash->first_assembly_done  = mat->assembly_subset; /* See the same logic in VecAssemblyBegin_MPI_BTS */
+  stash->insertmode           = &mat->insertmode;
   PetscFunctionReturn(0);
 }
 
@@ -992,7 +987,7 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
 
   PetscFunctionBegin;
   ierr = MPI_Waitall(stash->nsendranks,stash->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  if (stash->subset_off_proc) { /* Reuse the communication contexts, so consolidate and reset segrecvblocks  */
+  if (stash->first_assembly_done) { /* Reuse the communication contexts, so consolidate and reset segrecvblocks  */
     void *dummy;
     ierr = PetscSegBufferExtractInPlace(stash->segrecvblocks,&dummy);CHKERRQ(ierr);
   } else {                      /* No reuse, so collect everything. */
@@ -1020,7 +1015,7 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatStashScatterDestroy_BTS(MatStash *stash)
+PetscErrorCode MatStashScatterDestroy_BTS(MatStash *stash)
 {
   PetscErrorCode ierr;
 

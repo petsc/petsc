@@ -26,6 +26,7 @@ typedef struct {
   VecScatter  localupdate;              /* scatter to update ghost values */
 
   PetscBool   assembly_subset;          /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
+  PetscBool   first_assembly_done;      /* Is the first time assembly done? */
   PetscBool   use_status;               /* Use MPI_Status to determine number of items in each message */
   PetscMPIInt nsendranks;
   PetscMPIInt nrecvranks;
