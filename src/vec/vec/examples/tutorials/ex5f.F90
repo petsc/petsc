@@ -3,14 +3,15 @@ program main
 use petscvec
 implicit none
 
-  PetscErrorCode ierr
-  PetscMPIInt    rank,mySize
-  PetscInt       i
+  PetscErrorCode ::ierr
+  PetscMPIInt ::   rank,mySize
+  PetscInt :: i
+  PetscInt, parameter :: one = 1
   PetscInt :: m = 10
   PetscInt :: low,high,ldim,iglobal
-  PetscScalar    v
-  Vec            u
-  PetscViewer    viewer
+  PetscScalar :: v
+  Vec ::         u
+  PetscViewer :: viewer
   
   PetscBool :: flg
 #if defined(PETSC_USE_LOG)
@@ -41,7 +42,7 @@ implicit none
   do i=0,ldim-1
    iglobal = i + low
    v       = real(i + 100*rank)
-   call VecSetValues(u,1,iglobal,v,INSERT_VALUES,ierr);CHKERRA(ierr)
+   call VecSetValues(u,one,iglobal,v,INSERT_VALUES,ierr);CHKERRA(ierr)
   end do
   call VecAssemblyBegin(u,ierr);CHKERRA(ierr)
   call VecAssemblyEnd(u,ierr);CHKERRA(ierr)
