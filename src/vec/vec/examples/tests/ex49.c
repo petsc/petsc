@@ -41,7 +41,7 @@ int main(int argc, char **argv)
   ierr  = PetscIntView(1, &ln[rank], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   n     = ln[rank];
   ierr  = VecCreateMPI(MPI_COMM_WORLD, n, PETSC_DECIDE, &v);CHKERRQ(ierr);
-  ierr  = VecGetOwnershipRange(v, &rstart, NULL);
+  ierr  = VecGetOwnershipRange(v, &rstart, NULL);CHKERRQ(ierr);
 
   for (k=0; k<5; ++k) { /* 5 iterations of VecAssembly */
     PetscReal norm = 0.0;
