@@ -5,7 +5,7 @@
 
 #include <petscis.h> /*I "petscis.h" I*/
 #include <petscsf.h>
-#include <petsc/private/vecimpl.h>
+#include <petsc/private/isimpl.h>
 
 /*@
   PetscLayoutCreate - Allocates PetscLayout space and sets the map contents to the default.
