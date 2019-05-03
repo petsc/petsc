@@ -460,8 +460,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscIn
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
-PETSC_INTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
+PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
 PETSC_INTERN PetscErrorCode DMConstructBasisTransform_Internal(DM);
 
 #endif
