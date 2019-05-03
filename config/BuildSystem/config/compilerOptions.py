@@ -35,7 +35,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'g':
         flags.append('-g3')
       elif bopt == 'gcov':
-        flags.append('--coverage') # equal to -fprofile-arcs -ftest-coverage
+        flags.extend(['--coverage','-Og']) # --coverage is equal to -fprofile-arcs -ftest-coverage. Use -Og to have accurate coverage result and fine performance
       elif bopt == 'O':
         flags.append('-g')
         if config.setCompilers.Configure.isClang(compiler, self.log):
@@ -122,7 +122,7 @@ class CompilerOptions(config.base.Configure):
         # -g3 causes an as SEGV on OSX
         flags.append('-g')
       elif bopt == 'gcov':
-        flags.append('--coverage')
+        flags.extend(['--coverage','-Og'])
       elif bopt in ['O']:
         flags.append('-g')
         if 'USER' in os.environ:
@@ -209,7 +209,7 @@ class CompilerOptions(config.base.Configure):
         # g77 3.2.3 preprocesses the file into nothing if we give -g3
         flags.append('-g')
       elif bopt == 'gcov':
-        flags.append('--coverage')
+        flags.extend(['--coverage','-Og'])
       elif bopt == 'O':
         flags.append('-g')
         flags.extend(['-O'])
