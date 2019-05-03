@@ -4,7 +4,6 @@
    These are for blocks of data, each block is indicated with a single integer.
 */
 #include <petsc/private/isimpl.h>               /*I  "petscis.h"     I*/
-#include <petscvec.h>
 #include <petscviewer.h>
 
 typedef struct {
