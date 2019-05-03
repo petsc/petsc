@@ -2597,11 +2597,14 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
   + useInitialGuess  - whether to use the current distribution as initial guess (only used by ParMETIS).
   + parallel         - whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
 
+  Output parameters:
+  + success          - whether the graph partitioning was successful or not. If not, try useInitialGuess=True and parallel=True.
+
   Level: user
 
 @*/
 
-PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBool useInitialGuess, PetscBool parallel)
+PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBool useInitialGuess, PetscBool parallel, PetscBool *success)
 {
 #if defined(PETSC_HAVE_PARMETIS)
   PetscSF     sf;
@@ -2632,6 +2635,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscLayout layout;
 
   PetscFunctionBegin;
+  if (success) *success = PETSC_FALSE;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -2952,7 +2956,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     ierr = PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
-    PetscFunctionReturn(1);
+    PetscFunctionReturn(0);
   }
 
   /*Let's check how well we did distributing points*/
@@ -3011,6 +3015,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
+  if (success) *success = PETSC_TRUE;
   ierr = PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
 #else
   SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");

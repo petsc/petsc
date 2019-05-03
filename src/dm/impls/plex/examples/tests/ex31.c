@@ -72,6 +72,7 @@ int main(int argc, char **argv)
   PetscMPIInt    size;
   PetscSF        sf;
   PetscInt       pStart, pEnd, p, minBefore, maxBefore, minAfter, maxAfter, gSizeBefore, gSizeAfter;
+  PetscBool      success;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
@@ -125,7 +126,7 @@ int main(int argc, char **argv)
     ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);
   }
 
-  ierr = DMPlexRebalanceSharedPoints(dm, user.entityDepth, user.useInitialGuess, user.parallel);CHKERRQ(ierr);
+  ierr = DMPlexRebalanceSharedPoints(dm, user.entityDepth, user.useInitialGuess, user.parallel, &success);CHKERRQ(ierr);
 
   if (size>1) {
     ierr = PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &gsection);CHKERRQ(ierr);
