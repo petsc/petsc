@@ -3426,7 +3426,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryRead(fd,(char*)header,4,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,(char*)header,4,NULL,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
     if (header[3] < 0) SETERRQ(PetscObjectComm((PetscObject)newmat),PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format on disk, cannot load as MPIAIJ");
   }
@@ -3482,7 +3482,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
   if (!rank) {
     mend = m;
     if (size == 1) mend = mend - extra_rows;
-    ierr = PetscBinaryRead(fd,locrowlens,mend,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,locrowlens,mend,NULL,PETSC_INT);CHKERRQ(ierr);
     for (j=mend; j<m; j++) locrowlens[j] = 1;
     ierr = PetscMalloc1(mmax,&rowlengths);CHKERRQ(ierr);
     ierr = PetscCalloc1(size,&procsnz);CHKERRQ(ierr);
@@ -3492,7 +3492,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
     for (i=1; i<size; i++) {
       mend = browners[i+1] - browners[i];
       if (i == size-1) mend = mend - extra_rows;
-      ierr = PetscBinaryRead(fd,rowlengths,mend,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,rowlengths,mend,NULL,PETSC_INT);CHKERRQ(ierr);
       for (j=mend; j<browners[i+1] - browners[i]; j++) rowlengths[j] = 1;
       /* calculate the number of nonzeros on each processor */
       for (j=0; j<browners[i+1]-browners[i]; j++) {
@@ -3518,7 +3518,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
     ierr   = PetscMalloc1(nz+1,&ibuf);CHKERRQ(ierr);
     mycols = ibuf;
     if (size == 1) nz -= extra_rows;
-    ierr = PetscBinaryRead(fd,mycols,nz,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,mycols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
     if (size == 1) {
       for (i=0; i< extra_rows; i++) mycols[nz+i] = M+i;
     }
@@ -3526,13 +3526,13 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
     /* read in every ones (except the last) and ship off */
     for (i=1; i<size-1; i++) {
       nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,cols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
       ierr = MPI_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     /* read in the stuff for the last proc */
     if (size != 1) {
       nz   = procsnz[size-1] - extra_rows;  /* the extra rows are not on the disk */
-      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,cols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
       for (i=0; i<extra_rows; i++) cols[nz+i] = M+i;
       ierr = MPI_Send(cols,nz+extra_rows,MPIU_INT,size-1,tag,comm);CHKERRQ(ierr);
     }
@@ -3589,7 +3589,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
     vals   = buf;
     mycols = ibuf;
     if (size == 1) nz -= extra_rows;
-    ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
     if (size == 1) {
       for (i=0; i< extra_rows; i++) vals[nz+i] = 1.0;
     }
@@ -3606,14 +3606,14 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
     for (i=1; i<size-1; i++) {
       nz   = procsnz[i];
       vals = buf;
-      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
       ierr = MPIULong_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)newmat)->tag,comm);CHKERRQ(ierr);
     }
     /* the last proc */
     if (size != 1) {
       nz   = procsnz[i] - extra_rows;
       vals = buf;
-      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
       for (i=0; i<extra_rows; i++) vals[nz+i] = 1.0;
       ierr = MPIULong_Send(vals,nz+extra_rows,MPIU_SCALAR,size-1,((PetscObject)newmat)->tag,comm);CHKERRQ(ierr);
     }

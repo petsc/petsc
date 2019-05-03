@@ -862,11 +862,12 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
     ierr = MPIU_File_write_all(mfdes,data,cnt,mdtype,&status);CHKERRQ(ierr);
   } else {
     ierr = MPIU_File_read_all(mfdes,data,cnt,mdtype,&status);CHKERRQ(ierr);
+    if (cnt > 0) {ierr = MPI_Get_count(&status,mdtype,&cnt);CHKERRQ(ierr);}
   }
   ierr = MPI_Type_get_extent(mdtype,&ul,&dsize);CHKERRQ(ierr);
 
   vbinary->moff += dsize*cnt;
-  if (count) *count = num;
+  if (count) *count = cnt;
   PetscFunctionReturn(0);
 }
 #endif
@@ -906,8 +907,7 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,
     ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,num,count,dtype,PETSC_FALSE);CHKERRQ(ierr);
   } else {
 #endif
-    ierr = PetscBinarySynchronizedRead(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,num,dtype);CHKERRQ(ierr);
-    if (count) *count = num;
+    ierr = PetscBinarySynchronizedRead(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,num,count,dtype);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   }
 #endif

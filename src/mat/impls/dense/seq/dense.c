@@ -1102,7 +1102,7 @@ static PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"view must have one processor");
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,NULL,PETSC_INT);CHKERRQ(ierr);
   if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
 
@@ -1126,7 +1126,7 @@ static PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
        from row major to column major */
     ierr = PetscMalloc1(M*N > 0 ? M*N : 1,&w);CHKERRQ(ierr);
     /* read in nonzero values */
-    ierr = PetscBinaryRead(fd,w,M*N,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,w,M*N,NULL,PETSC_SCALAR);CHKERRQ(ierr);
     /* now flip the values and store them in the matrix*/
     for (j=0; j<N; j++) {
       for (i=0; i<M; i++) {
@@ -1137,7 +1137,7 @@ static PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
   } else {
     /* read row lengths */
     ierr = PetscMalloc1(M+1,&rowlengths);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,rowlengths,M,NULL,PETSC_INT);CHKERRQ(ierr);
 
     a = (Mat_SeqDense*)newmat->data;
     v = a->v;
@@ -1145,10 +1145,10 @@ static PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
     /* read column indices and nonzeros */
     ierr = PetscMalloc1(nz+1,&scols);CHKERRQ(ierr);
     cols = scols;
-    ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,cols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscMalloc1(nz+1,&svals);CHKERRQ(ierr);
     vals = svals;
-    ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
 
     /* insert into matrix */
     for (i=0; i<M; i++) {
