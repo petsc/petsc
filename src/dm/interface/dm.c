@@ -402,7 +402,7 @@ PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
 
   Level: intermediate
 
-  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with 
+  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with
                   the Mat through a PetscObjectCompose() operation
 
 .seealso: MatSetDM(), DMCreateMatrix(), DMSetMatType()
@@ -429,7 +429,7 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
 
   Level: intermediate
 
-  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with 
+  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with
                   the Mat through a PetscObjectCompose() operation
 
 
@@ -780,6 +780,9 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
   ierr = PetscFree3((*dm)->L,(*dm)->maxCell,(*dm)->bdtype);CHKERRQ(ierr);
+  if ((*dm)->transformDestroy) {ierr = (*(*dm)->transformDestroy)(*dm, (*dm)->transformCtx);CHKERRQ(ierr);}
+  ierr = DMDestroy(&(*dm)->transformDM);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*dm)->transform);CHKERRQ(ierr);
 
   ierr = DMClearDS(*dm);CHKERRQ(ierr);
   ierr = DMDestroy(&(*dm)->dmBC);CHKERRQ(ierr);
@@ -2070,6 +2073,114 @@ PetscErrorCode  DMSetRefineLevel(DM dm,PetscInt level)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMGetBasisTransformDM_Internal(DM dm, DM *tdm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(tdm, 2);
+  *tdm = dm->transformDM;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMGetBasisTransformVec_Internal(DM dm, Vec *tv)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(tv, 2);
+  *tv = dm->transform;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMHasBasisTransform - Whether we employ a basis transformation from functions in global vectors to functions in local vectors
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. flg - PETSC_TRUE if a basis transformation should be done
+
+  Level: developer
+
+.seealso: DMPlexGlobalToLocalBasis(), DMPlexLocalToGlobalBasis()()
+@*/
+PetscErrorCode DMHasBasisTransform(DM dm, PetscBool *flg)
+{
+  Vec            tv;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(flg, 2);
+  ierr = DMGetBasisTransformVec_Internal(dm, &tv);CHKERRQ(ierr);
+  *flg = tv ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMConstructBasisTransform_Internal(DM dm)
+{
+  PetscSection   s, ts;
+  PetscScalar   *ta;
+  PetscInt       cdim, pStart, pEnd, p, Nf, f, Nc, dof;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+  ierr = DMClone(dm, &dm->transformDM);CHKERRQ(ierr);
+  ierr = DMGetSection(dm->transformDM, &ts);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(ts, Nf);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(ts, pStart, pEnd);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    ierr = PetscSectionGetFieldComponents(s, f, &Nc);CHKERRQ(ierr);
+    /* We could start to label fields by their transformation properties */
+    if (Nc != cdim) continue;
+    for (p = pStart; p < pEnd; ++p) {
+      ierr = PetscSectionGetFieldDof(s, p, f, &dof);CHKERRQ(ierr);
+      if (!dof) continue;
+      ierr = PetscSectionSetFieldDof(ts, p, f, PetscSqr(cdim));CHKERRQ(ierr);
+      ierr = PetscSectionAddDof(ts, p, PetscSqr(cdim));CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(ts);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dm->transformDM, &dm->transform);CHKERRQ(ierr);
+  ierr = VecGetArray(dm->transform, &ta);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    for (f = 0; f < Nf; ++f) {
+      ierr = PetscSectionGetFieldDof(ts, p, f, &dof);CHKERRQ(ierr);
+      if (dof) {
+        PetscReal          x[3] = {0.0, 0.0, 0.0};
+        PetscScalar       *tva;
+        const PetscScalar *A;
+
+        /* TODO Get quadrature point for this dual basis vector for coordinate */
+        ierr = (*dm->transformGetMatrix)(dm, x, PETSC_TRUE, &A, dm->transformCtx);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalFieldRef(dm->transformDM, p, f, ta, (void *) &tva);CHKERRQ(ierr);
+        ierr = PetscMemcpy(tva, A, PetscSqr(cdim) * sizeof(PetscScalar));
+      }
+    }
+  }
+  ierr = VecRestoreArray(dm->transform, &ta);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCopyTransform(DM dm, DM newdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(newdm, DM_CLASSID, 2);
+  newdm->transformCtx       = dm->transformCtx;
+  newdm->transformSetUp     = dm->transformSetUp;
+  newdm->transformDestroy   = NULL;
+  newdm->transformGetMatrix = dm->transformGetMatrix;
+  if (newdm->transformSetUp) {ierr = DMConstructBasisTransform_Internal(newdm);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*@C
    DMGlobalToLocalHookAdd - adds a callback to be run when global to local is called
 
@@ -2250,11 +2361,13 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   PetscErrorCode          ierr;
   const PetscScalar      *gArray;
   PetscScalar            *lArray;
+  PetscBool               transform;
   DMGlobalToLocalHookLink link;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   if (sf) {
     if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
 
@@ -2263,6 +2376,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
     ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(g, &gArray);CHKERRQ(ierr);
+    if (transform) {ierr = DMPlexGlobalToLocalBasis(dm, l);CHKERRQ(ierr);}
   } else {
     if (!dm->ops->globaltolocalend) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Missing DMGlobalToLocalEnd() for type %s",((PetscObject)dm)->type_name);
     ierr = (*dm->ops->globaltolocalend)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
@@ -2421,9 +2535,10 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   PetscSF                 sf;
   PetscSection            s, gs;
   DMLocalToGlobalHookLink link;
+  Vec                     tmpl;
   const PetscScalar      *lArray;
   PetscScalar            *gArray;
-  PetscBool               isInsert;
+  PetscBool               isInsert, transform;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
@@ -2448,49 +2563,60 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   default:
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
   }
-  if (sf && !isInsert) {
-    ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
-    ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
-  } else if (s && isInsert) {
-    PetscInt gStart, pStart, pEnd, p;
-
-    ierr = DMGetGlobalSection(dm, &gs);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(g, &gStart, NULL);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
-    ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt dof, gdof, cdof, gcdof, off, goff, d, e;
-
-      ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(gs, p, &gdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetConstraintDof(gs, p, &gcdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(s, p, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(gs, p, &goff);CHKERRQ(ierr);
-      /* Ignore off-process data and points with no global data */
-      if (!gdof || goff < 0) continue;
-      if (dof != gdof) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
-      /* If no constraints are enforced in the global vector */
-      if (!gcdof) {
-        for (d = 0; d < dof; ++d) gArray[goff-gStart+d] = lArray[off+d];
-      /* If constraints are enforced in the global vector */
-      } else if (cdof == gcdof) {
-        const PetscInt *cdofs;
-        PetscInt        cind = 0;
-
-        ierr = PetscSectionGetConstraintIndices(s, p, &cdofs);CHKERRQ(ierr);
-        for (d = 0, e = 0; d < dof; ++d) {
-          if ((cind < cdof) && (d == cdofs[cind])) {++cind; continue;}
-          gArray[goff-gStart+e++] = lArray[off+d];
-        }
-      } else SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
+  if ((sf && !isInsert) || (s && isInsert)) {
+    ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
+    if (transform) {
+      ierr = DMGetNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl);CHKERRQ(ierr);
+      ierr = VecCopy(l, tmpl);CHKERRQ(ierr);
+      ierr = DMPlexLocalToGlobalBasis(dm, tmpl);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(tmpl, &lArray);CHKERRQ(ierr);
+    } else {
+      ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
+    ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+    if (sf && !isInsert) {
+      ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
+    } else if (s && isInsert) {
+      PetscInt gStart, pStart, pEnd, p;
+
+      ierr = DMGetGlobalSection(dm, &gs);CHKERRQ(ierr);
+      ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(g, &gStart, NULL);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; ++p) {
+        PetscInt dof, gdof, cdof, gcdof, off, goff, d, e;
+
+        ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(gs, p, &gdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(gs, p, &gcdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(s, p, &off);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(gs, p, &goff);CHKERRQ(ierr);
+        /* Ignore off-process data and points with no global data */
+        if (!gdof || goff < 0) continue;
+        if (dof != gdof) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
+        /* If no constraints are enforced in the global vector */
+        if (!gcdof) {
+          for (d = 0; d < dof; ++d) gArray[goff-gStart+d] = lArray[off+d];
+          /* If constraints are enforced in the global vector */
+        } else if (cdof == gcdof) {
+          const PetscInt *cdofs;
+          PetscInt        cind = 0;
+
+          ierr = PetscSectionGetConstraintIndices(s, p, &cdofs);CHKERRQ(ierr);
+          for (d = 0, e = 0; d < dof; ++d) {
+            if ((cind < cdof) && (d == cdofs[cind])) {++cind; continue;}
+            gArray[goff-gStart+e++] = lArray[off+d];
+          }
+        } else SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
+      }
+    }
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
+    if (transform) {
+      ierr = VecRestoreArrayRead(tmpl, &lArray);CHKERRQ(ierr);
+      ierr = DMRestoreNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl);CHKERRQ(ierr);
+    } else {
+      ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
+    }
   } else {
     ierr = (*dm->ops->localtoglobalbegin)(dm,l,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),g);CHKERRQ(ierr);
   }
@@ -2518,7 +2644,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
   PetscSF                 sf;
   PetscSection            s;
   DMLocalToGlobalHookLink link;
-  PetscBool               isInsert;
+  PetscBool               isInsert, transform;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
@@ -2538,11 +2664,23 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
   if (sf && !isInsert) {
     const PetscScalar *lArray;
     PetscScalar       *gArray;
+    Vec                tmpl;
 
-    ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
+    ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
+    if (transform) {
+      ierr = DMGetNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(tmpl, &lArray);CHKERRQ(ierr);
+    } else {
+      ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
+    }
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
+    if (transform) {
+      ierr = VecRestoreArrayRead(tmpl, &lArray);CHKERRQ(ierr);
+      ierr = DMRestoreNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl);CHKERRQ(ierr);
+    } else {
+      ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
+    }
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   } else if (s && isInsert) {
   } else {

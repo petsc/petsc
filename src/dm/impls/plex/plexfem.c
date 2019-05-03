@@ -347,6 +347,373 @@ PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  PetscReal    alpha; /* The first Euler angle, and in 2D the only one */
+  PetscReal    beta;  /* The second Euler angle */
+  PetscReal    gamma; /* The third Euler angle */
+  PetscInt     dim;   /* The dimension of R */
+  PetscScalar *R;     /* The rotation matrix, transforming a vector in the local basis to the global basis */
+  PetscScalar *RT;    /* The transposed rotation matrix, transforming a vector in the global basis to the local basis */
+} RotCtx;
+
+/*
+  Note: Following https://en.wikipedia.org/wiki/Euler_angles, we will specify Euler angles by extrinsic rotations, meaning that
+  we rotate with respect to a fixed initial coordinate system, the local basis (x-y-z). The global basis (X-Y-Z) is reached as follows:
+  $ The XYZ system rotates about the z axis by alpha. The X axis is now at angle alpha with respect to the x axis.
+  $ The XYZ system rotates again about the x axis by beta. The Z axis is now at angle beta with respect to the z axis.
+  $ The XYZ system rotates a third time about the z axis by gamma.
+*/
+static PetscErrorCode DMPlexBasisTransformSetUp_Rotation_Internal(DM dm, void *ctx)
+{
+  RotCtx        *rc  = (RotCtx *) ctx;
+  PetscInt       dim = rc->dim;
+  PetscReal      c1, s1, c2, s2, c3, s3;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc2(PetscSqr(dim), &rc->R, PetscSqr(dim), &rc->RT);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+    c1 = PetscCosReal(rc->alpha);s1 = PetscSinReal(rc->alpha);
+    rc->R[0] =  c1;rc->R[1] = s1;
+    rc->R[2] = -s1;rc->R[3] = c1;
+    ierr = PetscMemcpy(rc->RT, rc->R, PetscSqr(dim) * sizeof(PetscScalar));CHKERRQ(ierr);
+    DMPlex_Transpose2D_Internal(rc->RT);break;
+    break;
+  case 3:
+    c1 = PetscCosReal(rc->alpha);s1 = PetscSinReal(rc->alpha);
+    c2 = PetscCosReal(rc->beta); s2 = PetscSinReal(rc->beta);
+    c3 = PetscCosReal(rc->gamma);s3 = PetscSinReal(rc->gamma);
+    rc->R[0] =  c1*c3 - c2*s1*s3;rc->R[1] =  c3*s1    + c1*c2*s3;rc->R[2] = s2*s3;
+    rc->R[3] = -c1*s3 - c2*c3*s1;rc->R[4] =  c1*c2*c3 - s1*s3;   rc->R[5] = c3*s2;
+    rc->R[6] =  s1*s2;           rc->R[7] = -c1*s2;              rc->R[8] = c2;
+    ierr = PetscMemcpy(rc->RT, rc->R, PetscSqr(dim) * sizeof(PetscScalar));CHKERRQ(ierr);
+    DMPlex_Transpose3D_Internal(rc->RT);break;
+    break;
+  default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexBasisTransformDestroy_Rotation_Internal(DM dm, void *ctx)
+{
+  RotCtx        *rc = (RotCtx *) ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree2(rc->R, rc->RT);CHKERRQ(ierr);
+  ierr = PetscFree(rc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexBasisTransformGetMatrix_Rotation_Internal(DM dm, const PetscReal x[], PetscBool l2g, const PetscScalar **A, void *ctx)
+{
+  RotCtx *rc = (RotCtx *) ctx;
+
+  PetscFunctionBeginHot;
+  PetscValidPointer(ctx, 5);
+  if (l2g) {*A = rc->R;}
+  else     {*A = rc->RT;}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM dm, const PetscReal x[], PetscBool l2g, PetscInt dim, const PetscReal *y, PetscReal *z, void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  #if defined(PETSC_USE_COMPLEX)
+  switch (dim) {
+    case 2:
+    {
+      PetscScalar yt[2], zt[2];
+
+      yt[0] = y[0]; yt[1] = y[1];
+      ierr = DMPlexBasisTransformApply_Internal(dm, x, l2g, dim, yt, zt, ctx);CHKERRQ(ierr);
+      z[0] = PetscRealPart(zt[0]); z[1] = PetscRealPart(zt[1]);
+    }
+    break;
+    case 3:
+    {
+      PetscScalar yt[3], zt[3];
+
+      yt[0] = y[0]; yt[1] = y[1]; yt[2] = y[2];
+      ierr = DMPlexBasisTransformApply_Internal(dm, x, l2g, dim, yt, zt, ctx);CHKERRQ(ierr);
+      z[0] = PetscRealPart(zt[0]); z[1] = PetscRealPart(zt[1]); z[2] = PetscRealPart(zt[2]);
+    }
+    break;
+  }
+  #else
+  ierr = DMPlexBasisTransformApply_Internal(dm, x, l2g, dim, y, z, ctx);CHKERRQ(ierr);
+  #endif
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexBasisTransformApply_Internal(DM dm, const PetscReal x[], PetscBool l2g, PetscInt dim, const PetscScalar *y, PetscScalar *z, void *ctx)
+{
+  const PetscScalar *A;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBeginHot;
+  ierr = (*dm->transformGetMatrix)(dm, x, l2g, &A, ctx);CHKERRQ(ierr);
+  switch (dim) {
+  case 2: DMPlex_Mult2D_Internal(A, 1, y, z);break;
+  case 3: DMPlex_Mult3D_Internal(A, 1, y, z);break;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexBasisTransformField_Internal(DM dm, DM tdm, Vec tv, PetscInt p, PetscInt f, PetscBool l2g, PetscScalar *a)
+{
+  PetscSection       ts;
+  const PetscScalar *ta, *tva;
+  PetscInt           dof;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBeginHot;
+  ierr = DMGetSection(tdm, &ts);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldDof(ts, p, f, &dof);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(tv, &ta);CHKERRQ(ierr);
+  ierr = DMPlexPointLocalFieldRead(tdm, p, f, ta, (void *) &tva);CHKERRQ(ierr);
+  if (l2g) {
+    switch (dof) {
+    case 4: DMPlex_Mult2D_Internal(tva, 1, a, a);break;
+    case 9: DMPlex_Mult3D_Internal(tva, 1, a, a);break;
+    }
+  } else {
+    switch (dof) {
+    case 4: DMPlex_MultTranspose2D_Internal(tva, 1, a, a);break;
+    case 9: DMPlex_MultTranspose3D_Internal(tva, 1, a, a);break;
+    }
+  }
+  ierr = VecRestoreArrayRead(tv, &ta);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexBasisTransformFieldTensor_Internal(DM dm, DM tdm, Vec tv, PetscInt pf, PetscInt f, PetscInt pg, PetscInt g, PetscBool l2g, PetscInt lda, PetscScalar *a)
+{
+  PetscSection       s, ts;
+  const PetscScalar *ta, *tvaf, *tvag;
+  PetscInt           fdof, gdof, fpdof, gpdof;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBeginHot;
+  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetSection(tdm, &ts);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldDof(s, pf, f, &fpdof);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldDof(s, pg, g, &gpdof);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldDof(ts, pf, f, &fdof);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldDof(ts, pg, g, &gdof);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(tv, &ta);CHKERRQ(ierr);
+  ierr = DMPlexPointLocalFieldRead(tdm, pf, f, ta, (void *) &tvaf);CHKERRQ(ierr);
+  ierr = DMPlexPointLocalFieldRead(tdm, pg, g, ta, (void *) &tvag);CHKERRQ(ierr);
+  if (l2g) {
+    switch (fdof) {
+    case 4: DMPlex_MatMult2D_Internal(tvaf, gpdof, lda, a, a);break;
+    case 9: DMPlex_MatMult3D_Internal(tvaf, gpdof, lda, a, a);break;
+    }
+    switch (gdof) {
+    case 4: DMPlex_MatMultTransposeLeft2D_Internal(tvag, fpdof, lda, a, a);break;
+    case 9: DMPlex_MatMultTransposeLeft3D_Internal(tvag, fpdof, lda, a, a);break;
+    }
+  } else {
+    switch (fdof) {
+    case 4: DMPlex_MatMultTranspose2D_Internal(tvaf, gpdof, lda, a, a);break;
+    case 9: DMPlex_MatMultTranspose3D_Internal(tvaf, gpdof, lda, a, a);break;
+    }
+    switch (gdof) {
+    case 4: DMPlex_MatMultLeft2D_Internal(tvag, fpdof, lda, a, a);break;
+    case 9: DMPlex_MatMultLeft3D_Internal(tvag, fpdof, lda, a, a);break;
+    }
+  }
+  ierr = VecRestoreArrayRead(tv, &ta);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexBasisTransformPoint_Internal(DM dm, DM tdm, Vec tv, PetscInt p, PetscBool fieldActive[], PetscBool l2g, PetscScalar *a)
+{
+  PetscSection    s;
+  PetscSection    clSection;
+  IS              clPoints;
+  const PetscInt *clp;
+  PetscInt       *points = NULL;
+  PetscInt        Nf, f, Np, cp, dof, d = 0;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+  ierr = DMPlexGetCompressedClosure(dm, s, p, &Np, &points, &clSection, &clPoints, &clp);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    for (cp = 0; cp < Np*2; cp += 2) {
+      ierr = PetscSectionGetFieldDof(s, points[cp], f, &dof);CHKERRQ(ierr);
+      if (!dof) continue;
+      if (fieldActive[f]) {ierr = DMPlexBasisTransformField_Internal(dm, tdm, tv, points[cp], f, l2g, &a[d]);CHKERRQ(ierr);}
+      d += dof;
+    }
+  }
+  ierr = DMPlexRestoreCompressedClosure(dm, s, p, &Np, &points, &clSection, &clPoints, &clp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM dm, DM tdm, Vec tv, PetscInt p, PetscBool l2g, PetscInt lda, PetscScalar *a)
+{
+  PetscSection    s;
+  PetscSection    clSection;
+  IS              clPoints;
+  const PetscInt *clp;
+  PetscInt       *points = NULL;
+  PetscInt        Nf, f, g, Np, cpf, cpg, fdof, gdof, r, c = 0;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+  ierr = DMPlexGetCompressedClosure(dm, s, p, &Np, &points, &clSection, &clPoints, &clp);CHKERRQ(ierr);
+  for (f = 0, r = 0; f < Nf; ++f) {
+    for (cpf = 0; cpf < Np*2; cpf += 2) {
+      ierr = PetscSectionGetFieldDof(s, points[cpf], f, &fdof);CHKERRQ(ierr);
+      for (g = 0, c = 0; g < Nf; ++g) {
+        for (cpg = 0; cpg < Np*2; cpg += 2) {
+          ierr = PetscSectionGetFieldDof(s, points[cpg], g, &gdof);CHKERRQ(ierr);
+          ierr = DMPlexBasisTransformFieldTensor_Internal(dm, tdm, tv, points[cpf], f, points[cpg], g, l2g, lda, &a[r*lda+c]);CHKERRQ(ierr);
+          c += gdof;
+        }
+      }
+      if (c != lda) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of columns %D should be %D", c, lda);
+      r += fdof;
+    }
+  }
+  if (r != lda) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of rows %D should be %D", c, lda);
+  ierr = DMPlexRestoreCompressedClosure(dm, s, p, &Np, &points, &clSection, &clPoints, &clp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexBasisTransform_Internal(DM dm, Vec lv, PetscBool l2g)
+{
+  DM                 tdm;
+  Vec                tv;
+  PetscSection       ts, s;
+  const PetscScalar *ta;
+  PetscScalar       *a, *va;
+  PetscInt           pStart, pEnd, p, Nf, f;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetBasisTransformDM_Internal(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformVec_Internal(dm, &tv);CHKERRQ(ierr);
+  ierr = DMGetSection(tdm, &ts);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+  ierr = VecGetArray(lv, &a);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(tv, &ta);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    for (f = 0; f < Nf; ++f) {
+      ierr = DMPlexPointLocalFieldRef(dm, p, f, a, (void *) &va);CHKERRQ(ierr);
+      ierr = DMPlexBasisTransformField_Internal(dm, tdm, tv, p, f, l2g, va);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecRestoreArray(lv, &a);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(tv, &ta);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGlobalToLocalBasis - Transform the values in the given local vector from the global basis to the local basis
+
+  Input Parameters:
++ dm - The DM
+- lv - A local vector with values in the global basis
+
+  Output Parameters:
+. lv - A local vector with values in the local basis
+
+  Note: This method is only intended to be called inside DMGlobalToLocal(). It is unlikely that a user will have a local vector full of coefficients for the global basis unless they are reimplementing GlobalToLocal.
+
+  Level: developer
+
+.seealso: DMPlexLocalToGlobalBasis(), DMGetSection()
+@*/
+PetscErrorCode DMPlexGlobalToLocalBasis(DM dm, Vec lv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(lv, VEC_CLASSID, 2);
+  ierr = DMPlexBasisTransform_Internal(dm, lv, PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexLocalToGlobalBasis - Transform the values in the given local vector from the local basis to the global basis
+
+  Input Parameters:
++ dm - The DM
+- lv - A local vector with values in the local basis
+
+  Output Parameters:
+. lv - A local vector with values in the global basis
+
+  Note: This method is only intended to be called inside DMGlobalToLocal(). It is unlikely that a user would want a local vector full of coefficients for the global basis unless they are reimplementing GlobalToLocal.
+
+  Level: developer
+
+.seealso: DMPlexGlobalToLocalBasis(), DMGetSection()
+@*/
+PetscErrorCode DMPlexLocalToGlobalBasis(DM dm, Vec lv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(lv, VEC_CLASSID, 2);
+  ierr = DMPlexBasisTransform_Internal(dm, lv, PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexCreateBasisRotation - Create an internal transformation from the global basis, used to specify boundary conditions
+    and global solutions, to a local basis, appropriate for discretization integrals and assembly.
+
+  Input Parameters:
++ dm    - The DM
+. alpha - The first Euler angle, and in 2D the only one
+. beta  - The second Euler angle
+. gamma - The third Euler angle
+
+  Note: Following https://en.wikipedia.org/wiki/Euler_angles, we will specify Euler angles by extrinsic rotations, meaning that
+  we rotate with respect to a fixed initial coordinate system, the local basis (x-y-z). The global basis (X-Y-Z) is reached as follows:
+  $ The XYZ system rotates about the z axis by alpha. The X axis is now at angle alpha with respect to the x axis.
+  $ The XYZ system rotates again about the x axis by beta. The Z axis is now at angle beta with respect to the z axis.
+  $ The XYZ system rotates a third time about the z axis by gamma.
+
+  Level: developer
+
+.seealso: DMPlexGlobalToLocalBasis(), DMPlexLocalToGlobalBasis()
+@*/
+PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta, PetscReal gamma)
+{
+  RotCtx        *rc;
+  PetscInt       cdim;
+  PetscErrorCode ierr;
+
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1, &rc);CHKERRQ(ierr);
+  dm->transformCtx       = rc;
+  dm->transformSetUp     = DMPlexBasisTransformSetUp_Rotation_Internal;
+  dm->transformDestroy   = DMPlexBasisTransformDestroy_Rotation_Internal;
+  dm->transformGetMatrix = DMPlexBasisTransformGetMatrix_Rotation_Internal;
+  rc->dim   = cdim;
+  rc->alpha = alpha;
+  rc->beta  = beta;
+  rc->gamma = gamma;
+  ierr = (*dm->transformSetUp)(dm, dm->transformCtx);CHKERRQ(ierr);
+  ierr = DMConstructBasisTransform_Internal(dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMPlexInsertBoundaryValuesEssential - Insert boundary values into a local vector
 
@@ -666,7 +1033,9 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
 }
 
 /*@C
-  DMComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
+  DMComputeL2DiffLocal - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
+
+  Collective on DM
 
   Input Parameters:
 + dm     - The DM
@@ -685,13 +1054,16 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
 PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec localX, PetscReal *diff)
 {
   const PetscInt   debug = ((DM_Plex*)dm->data)->printL2;
+  DM               tdm;
+  Vec              tv;
   PetscSection     section;
   PetscQuadrature  quad;
   PetscScalar     *funcVal, *interpolant;
-  PetscReal       *coords, *detJ, *J;
+  PetscReal       *coords, *gcoords, *detJ, *J;
   PetscReal        localDiff = 0.0;
   const PetscReal *quadWeights;
   PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cellHeight, cStart, cEnd, cEndInterior, c, field, fieldOffset;
+  PetscBool        transform;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -699,6 +1071,9 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
   ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformDM_Internal(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformVec_Internal(dm, &tv);CHKERRQ(ierr);
+  ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   for (field = 0; field < numFields; ++field) {
     PetscObject  obj;
     PetscClassId id;
@@ -752,7 +1127,13 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
       }
       for (q = 0; q < Nq; ++q) {
         if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, point %D", detJ[q], c, q);
-        ierr = (*funcs[field])(coordDim, time, &coords[coordDim * q], Nc, funcVal, ctx);
+        if (transform) {
+          gcoords = &coords[coordDim*Nq];
+          ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);
+        } else {
+          gcoords = &coords[coordDim*q];
+        }
+        ierr = (*funcs[field])(coordDim, time, gcoords, Nc, funcVal, ctx);
         if (ierr) {
           PetscErrorCode ierr2;
           ierr2 = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr2);
@@ -760,6 +1141,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
           ierr2 = PetscFree5(funcVal,interpolant,coords,detJ,J);CHKERRQ(ierr2);
           CHKERRQ(ierr);
         }
+        if (transform) {ierr = DMPlexBasisTransformApply_Internal(dm, &coords[coordDim*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx);CHKERRQ(ierr);}
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
@@ -785,14 +1167,16 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
 PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt   debug = ((DM_Plex*)dm->data)->printL2;
+  DM               tdm;
   PetscSection     section;
   PetscQuadrature  quad;
-  Vec              localX;
+  Vec              localX, tv;
   PetscScalar     *funcVal, *interpolant;
   const PetscReal *quadPoints, *quadWeights;
-  PetscReal       *coords, *realSpaceDer, *J, *invJ, *detJ;
+  PetscReal       *coords, *gcoords, *realSpaceDer, *J, *invJ, *detJ;
   PetscReal        localDiff = 0.0;
   PetscInt         dim, coordDim, qNc = 0, Nq = 0, numFields, numComponents = 0, cStart, cEnd, cEndInterior, c, field, fieldOffset;
+  PetscBool        transform;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -803,6 +1187,9 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformDM_Internal(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformVec_Internal(dm, &tv);CHKERRQ(ierr);
+  ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   for (field = 0; field < numFields; ++field) {
     PetscFE  fe;
     PetscInt Nc;
@@ -844,6 +1231,12 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
       }
       for (q = 0; q < Nq; ++q) {
         if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", detJ[q], c, q);
+        if (transform) {
+          gcoords = &coords[coordDim*Nq];
+          ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);
+        } else {
+          gcoords = &coords[coordDim*q];
+        }
         ierr = (*funcs[field])(coordDim, time, &coords[q*coordDim], n, numFields, funcVal, ctx);
         if (ierr) {
           PetscErrorCode ierr2;
@@ -852,6 +1245,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
           ierr2 = PetscFree7(funcVal,coords,realSpaceDer,J,invJ,interpolant,detJ);CHKERRQ(ierr2);
           CHKERRQ(ierr);
         }
+        if (transform) {ierr = DMPlexBasisTransformApply_Internal(dm, &coords[coordDim*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx);CHKERRQ(ierr);}
         ierr = PetscFEInterpolateGradient_Static(fe, &x[fieldOffset], coordDim, invJ, n, q, interpolant);CHKERRQ(ierr);
         for (fc = 0; fc < Nc; ++fc) {
           const PetscReal wt = quadWeights[q*qNc+(qNc == 1 ? 0 : qc+fc)];
@@ -876,14 +1270,16 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
 PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt   debug = ((DM_Plex*)dm->data)->printL2;
+  DM               tdm;
   PetscSection     section;
   PetscQuadrature  quad;
-  Vec              localX;
+  Vec              localX, tv;
   PetscScalar     *funcVal, *interpolant;
-  PetscReal       *coords, *detJ, *J;
+  PetscReal       *coords, *gcoords, *detJ, *J;
   PetscReal       *localDiff;
   const PetscReal *quadPoints, *quadWeights;
   PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cStart, cEnd, cEndInterior, c, field, fieldOffset;
+  PetscBool        transform;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -892,9 +1288,13 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLocal(dm, time, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+  ierr = VecSet(localX, 0.0);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dm, time, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformDM_Internal(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformVec_Internal(dm, &tv);CHKERRQ(ierr);
+  ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   for (field = 0; field < numFields; ++field) {
     PetscObject  obj;
     PetscClassId id;
@@ -917,7 +1317,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   }
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
-  ierr = PetscCalloc6(numFields,&localDiff,numComponents,&funcVal,numComponents,&interpolant,coordDim*Nq,&coords,Nq,&detJ,coordDim*coordDim*Nq,&J);CHKERRQ(ierr);
+  ierr = PetscCalloc6(numFields,&localDiff,numComponents,&funcVal,numComponents,&interpolant,coordDim*(Nq+1),&coords,Nq,&detJ,coordDim*coordDim*Nq,&J);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
@@ -944,11 +1344,17 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
       if (debug) {
         char title[1024];
         ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
-        ierr = DMPrintCellVector(c, title, Nb*Nc, &x[fieldOffset]);CHKERRQ(ierr);
+        ierr = DMPrintCellVector(c, title, Nb, &x[fieldOffset]);CHKERRQ(ierr);
       }
       for (q = 0; q < Nq; ++q) {
         if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature point %D", detJ, c, q);
-        ierr = (*funcs[field])(coordDim, time, &coords[coordDim*q], numFields, funcVal, ctx);
+        if (transform) {
+          gcoords = &coords[coordDim*Nq];
+          ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);
+        } else {
+          gcoords = &coords[coordDim*q];
+        }
+        ierr = (*funcs[field])(coordDim, time, gcoords, numFields, funcVal, ctx);
         if (ierr) {
           PetscErrorCode ierr2;
           ierr2 = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr2);
@@ -956,18 +1362,20 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
           ierr2 = PetscFree6(localDiff,funcVal,interpolant,coords,detJ,J);CHKERRQ(ierr2);
           CHKERRQ(ierr);
         }
+        if (transform) {ierr = DMPlexBasisTransformApply_Internal(dm, &coords[coordDim*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx);CHKERRQ(ierr);}
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
         for (fc = 0; fc < Nc; ++fc) {
           const PetscReal wt = quadWeights[q*qNc+(qNc == 1 ? 0 : qc+fc)];
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d point %g %g %g diff %g\n", c, field, coordDim > 0 ? coords[0] : 0., coordDim > 1 ? coords[1] : 0., coordDim > 2 ? coords[2] : 0., PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*detJ[q]);CHKERRQ(ierr);}
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d point %g %g %g diff %g\n", c, field, coordDim > 0 ? coords[coordDim*q] : 0., coordDim > 1 ? coords[coordDim*q+1] : 0., coordDim > 2 ? coords[coordDim*q+2] : 0., PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*detJ[q]);CHKERRQ(ierr);}
           elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*detJ[q];
         }
       }
       fieldOffset += Nb;
       qc          += Nc;
       localDiff[field] += elemDiff;
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d field %d cum diff %g\n", c, field, localDiff[field]);CHKERRQ(ierr);}
     }
     ierr = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
   }
@@ -980,6 +1388,8 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
 
 /*@C
   DMPlexComputeL2DiffVec - This function computes the cellwise L_2 difference between a function u and an FEM interpolant solution u_h, and stores it in a Vec.
+
+  Collective on DM
 
   Input Parameters:
 + dm    - The DM
@@ -1095,6 +1505,8 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
 
 /*@C
   DMPlexComputeGradientClementInterpolant - This function computes the L2 projection of the cellwise gradient of a function u onto P1, and stores it in a Vec.
+
+  Collective on DM
 
   Input Parameters:
 + dm - The DM
@@ -3475,4 +3887,3 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   CHKMEMQ;
   PetscFunctionReturn(0);
 }
-

@@ -224,6 +224,13 @@ struct _p_DM {
   /* Constraints */
   PetscSection            defaultConstraintSection;
   Mat                     defaultConstraintMat;
+  /* Basis transformation */
+  DM                      transformDM;          /* Layout for basis transformation */
+  Vec                     transform;            /* Basis transformation matrices */
+  void                   *transformCtx;         /* Basis transformation context */
+  PetscErrorCode        (*transformSetUp)(DM, void *);
+  PetscErrorCode        (*transformDestroy)(DM, void *);
+  PetscErrorCode        (*transformGetMatrix)(DM, const PetscReal[], PetscBool, const PetscScalar **, void *);
   /* Coordinates */
   PetscInt                dimEmbed;             /* The dimension of the embedding space */
   DM                      coordinateDM;         /* Layout for coordinates (default section) */
@@ -452,5 +459,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscIn
 #endif
   PetscFunctionReturn(0);
 }
+
+PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
+PETSC_INTERN PetscErrorCode DMConstructBasisTransform_Internal(DM);
 
 #endif
