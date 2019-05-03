@@ -27,6 +27,8 @@ configure_options = [
   '--download-revolve=1',
   '--download-codipack=1',
   '--download-adblaslapack=1',
+  '--download-p4est=1',
+  '--download-zlib=1',
   ]
 
 if __name__ == '__main__':
