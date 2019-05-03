@@ -1010,5 +1010,3 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
   ierr = PetscFEInitialize_Basic(fem);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

@@ -340,7 +340,7 @@ PETSC_STATIC_INLINE void DMPlex_MultTranspose2D_Internal(const PetscScalar A[], 
 }
 PETSC_STATIC_INLINE void DMPlex_MultTranspose3D_Internal(const PetscScalar A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
 {
-  PetscScalar z[3] = {x[0], x[1], x[2]};
+  PetscScalar z[3];
   z[0] = x[0]; z[1] = x[ldx]; z[2] = x[ldx*2];
   y[0]     = A[0]*z[0] + A[3]*z[1] + A[6]*z[2];
   y[ldx]   = A[1]*z[0] + A[4]*z[1] + A[7]*z[2];

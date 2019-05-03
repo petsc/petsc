@@ -563,7 +563,7 @@ PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM dm, DM tdm, Vec tv, P
   IS              clPoints;
   const PetscInt *clp;
   PetscInt       *points = NULL;
-  PetscInt        Nf, f, g, Np, cpf, cpg, fdof, gdof, r, c;
+  PetscInt        Nf, f, g, Np, cpf, cpg, fdof, gdof, r, c = 0;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
