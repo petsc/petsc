@@ -1025,17 +1025,21 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscInt       numVertices = 0, numCells = 0, trueNumCells = 0;
   int            i, shift = 1;
   PetscMPIInt    rank;
-  PetscBool      binary, zerobase = PETSC_FALSE, periodic = PETSC_FALSE, usemarker = PETSC_FALSE;
-  PetscBool      enable_hybrid = PETSC_FALSE;
+  PetscBool      binary, zerobase = PETSC_FALSE, usemarker = PETSC_FALSE;
+  PetscBool      enable_hybrid = PETSC_FALSE, periodic = PETSC_TRUE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_hybrid", &enable_hybrid, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_periodic", &periodic, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_use_marker", &usemarker, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_zero_base", &zerobase, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_spacedim", &embedDim, NULL);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)viewer);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Gmsh options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_hybrid", "Generate hybrid cell bounds", "DMPlexCreateGmsh", enable_hybrid, &enable_hybrid, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_periodic","Read Gmsh periodic section", "DMPlexCreateGmsh", periodic, &periodic, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_use_marker", "Generate marker label", "DMPlexCreateGmsh", usemarker, &usemarker, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_zero_base", "Read Gmsh file with zero base indices", "DMPlexCreateGmsh", zerobase, &zerobase, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", embedDim, &embedDim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (zerobase) shift = 0;
 
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -1108,13 +1112,16 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
     /* OPTIONAL Read periodic section */
     if (periodic) {
+      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
+      ierr = GmshMatch(gmsh, "$Periodic", line, &periodic);CHKERRQ(ierr);
+    }
+    if (periodic) {
       PetscInt pVert, *periodicMapT, *aux;
 
       ierr = PetscMalloc1(numVertices, &periodicMapT);CHKERRQ(ierr);
       ierr = PetscBTCreate(numVertices, &periodicV);CHKERRQ(ierr);
       for (i = 0; i < numVertices; i++) periodicMapT[i] = i;
 
-      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
       ierr = GmshExpect(gmsh, "$Periodic", line);CHKERRQ(ierr);
       switch (gmsh->fileFormat) {
       case 41: ierr = DMPlexCreateGmsh_ReadPeriodic_v41(gmsh, shift, periodicMapT, periodicV);CHKERRQ(ierr); break;
@@ -1501,6 +1508,9 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
+
+  periodic = periodicMap ? PETSC_TRUE : PETSC_FALSE;
+  ierr = MPI_Bcast(&periodic, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
   ierr = DMSetPeriodicity(*dm, periodic, NULL, NULL, NULL);CHKERRQ(ierr);
 
   ierr = PetscFree(coordsIn);CHKERRQ(ierr);

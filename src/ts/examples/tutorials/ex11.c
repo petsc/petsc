@@ -2655,7 +2655,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   # Test GLVis visualization of PetscFV fields
   test:
     suffix: glvis_adv_2d_tet
-    args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
+    args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic 0
 
   test:
     suffix: glvis_adv_2d_quad
