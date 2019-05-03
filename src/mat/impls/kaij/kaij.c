@@ -69,7 +69,7 @@ PetscErrorCode  MatKAIJGetAIJ(Mat A,Mat *B)
 /*@C
    MatKAIJGetS - Get the S matrix describing the shift action of the KAIJ matrix
 
-   Not Collective, the entire S is stored and returned independently on all processes
+   Not Collective; the entire S is stored and returned independently on all processes.
 
    Input Parameter:
 .  A - the KAIJ matrix
@@ -96,7 +96,7 @@ PetscErrorCode  MatKAIJGetS(Mat A,const PetscScalar **S)
 /*@C
    MatKAIJGetT - Get the transformation matrix T associated with the KAIJ matrix
 
-   Not Collective, the entire T is stored and returned independently on all processes
+   Not Collective; the entire T is stored and returned independently on all processes
 
    Input Parameter:
 .  A - the KAIJ matrix
@@ -120,6 +120,128 @@ PetscErrorCode  MatKAIJGetT(Mat A,const PetscScalar **T)
   PetscFunctionReturn(0);
 }
 
+/*@
+   MatKAIJSetAIJ - Set the AIJ matrix describing the blockwise action of the KAIJ matrix
+
+   Logically Collective; if the AIJ matrix is parallel, the KAIJ matrix is also parallel
+
+   Input Parameters:
++  A - the KAIJ matrix
+-  B - the AIJ matrix
+
+   Level: advanced
+
+.seealso: MatKAIJGetAIJ(), MatKAIJSetS(), MatKAIJSetT()
+@*/
+PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    Mat_SeqKAIJ *a = (Mat_SeqKAIJ*)A->data;
+    a->AIJ = B;
+  } else {
+    Mat_MPIKAIJ *a = (Mat_MPIKAIJ*)A->data;
+    a->A = B;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatKAIJSetS - Set the S matrix describing the shift action of the KAIJ matrix
+
+   Logically Collective; the entire S is stored independently on all processes.
+
+   Input Parameters:
++  A - the KAIJ matrix
+.  p - the number of rows in S
+.  q - the number of columns in S
+-  S - the S matrix, in form of a scalar array in column-major format
+
+   Notes: The dimensions p and q must match those of the transformation matrix T associated with the KAIJ matrix. 
+
+   Level: Advanced
+
+.seealso: MatKAIJGetS(), MatKAIJSetT(), MatKAIJSetAIJ()
+@*/
+PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
+{
+  PetscErrorCode ierr;
+  Mat_SeqKAIJ    *a = (Mat_SeqKAIJ*)A->data;
+
+  PetscFunctionBegin;
+  if (a->S) {
+    ierr = PetscFree(a->S);CHKERRQ(ierr);
+  }
+  if (S) {
+    ierr = PetscMalloc(p*q*sizeof(PetscScalar),&a->S);CHKERRQ(ierr);
+    ierr = PetscMemcpy(a->S,S,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else  a->S = NULL;
+
+  a->p = p;
+  a->q = q;
+
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatKAIJSetT - Set the transformation matrix T associated with the KAIJ matrix
+
+   Logically Collective; the entire T is stored independently on all processes.
+
+   Input Parameters:
++  A - the KAIJ matrix
+.  p - the number of rows in S
+.  q - the number of columns in S
+-  T - the T matrix, in form of a scalar array in column-major format
+
+   Notes: The dimensions p and q must match those of the shift matrix S associated with the KAIJ matrix. 
+
+   Level: Advanced
+
+.seealso: MatKAIJGetT(), MatKAIJSetS(), MatKAIJSetAIJ()
+@*/
+PetscErrorCode MatKAIJSetT(Mat A,PetscInt p,PetscInt q,const PetscScalar T[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j;
+  Mat_SeqKAIJ    *a = (Mat_SeqKAIJ*)A->data;
+  PetscBool      isTI = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  /* check if T is an identity matrix */
+  if (T && (p == q)) {
+    isTI = PETSC_TRUE;
+    for (i=0; i<p; i++) {
+      for (j=0; j<q; j++) {
+        if (i == j) {
+          /* diagonal term must be 1 */
+          if (T[i+j*p] != 1.0) isTI = PETSC_FALSE;
+        } else {
+          /* off-diagonal term must be 0 */
+          if (T[i+j*p] != 0.0) isTI = PETSC_FALSE;
+        }
+      }
+    }
+  }
+  a->isTI = isTI;
+
+  if (a->T) {
+    ierr = PetscFree(a->T);CHKERRQ(ierr);
+  }
+  if (T && (!isTI)) {
+    ierr = PetscMalloc(p*q*sizeof(PetscScalar),&a->T);CHKERRQ(ierr);
+    ierr = PetscMemcpy(a->T,T,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
+  } // else a->T = NULL;
+
+  a->p = p;
+  a->q = q;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
 {
   PetscErrorCode ierr;
@@ -135,8 +257,78 @@ PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
 
 PetscErrorCode MatSetUp_KAIJ(Mat A)
 {
+  PetscErrorCode ierr;
+  PetscInt       n;
+  PetscMPIInt    size;
+  Mat_SeqKAIJ    *seqkaij = (Mat_SeqKAIJ*)A->data;
+
   PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Must use MatCreateKAIJ() to create KAIJ matrices");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetSizes(A,seqkaij->p*seqkaij->AIJ->rmap->n,seqkaij->q*seqkaij->AIJ->cmap->n,seqkaij->p*seqkaij->AIJ->rmap->N,seqkaij->q*seqkaij->AIJ->cmap->N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(A->rmap,seqkaij->p);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(A->cmap,seqkaij->q);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)seqkaij->AIJ);CHKERRQ(ierr);
+  } else {
+    Mat_MPIKAIJ *a;
+    Mat_MPIAIJ  *mpiaij;
+    IS          from,to;
+    Vec         gvec;
+    PetscScalar *T;
+    PetscInt    i,j;
+
+    a = (Mat_MPIKAIJ*)A->data;
+    mpiaij = a->A->data;
+    ierr = MatSetSizes(A,a->p*a->A->rmap->n,a->q*a->A->cmap->n,a->p*a->A->rmap->N,a->q*a->A->cmap->N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(A->rmap,seqkaij->p);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(A->cmap,seqkaij->q);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)a->A);CHKERRQ(ierr);
+
+    if (a->isTI) {
+      /* If the transformation matrix associated with the parallel matrix A is the identity matrix, then a->T will be NULL.
+       * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
+       * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
+       * to pass in. */
+      ierr = PetscMalloc(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
+      for (i=0; i<a->p; i++) {
+        for (j=0; j<a->q; j++) {
+          if (i==j) T[i+j*a->p] = 1.0;
+          else      T[i+j*a->p] = 0.0;
+        }
+      }
+    } else T = a->T;
+    ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr); 
+    ierr = MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ);CHKERRQ(ierr);
+    if (a->isTI) {
+      ierr = PetscFree(T);CHKERRQ(ierr);
+    }
+
+    ierr = VecGetSize(mpiaij->lvec,&n);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF,&a->w);CHKERRQ(ierr);
+    ierr = VecSetSizes(a->w,n*a->q,n*a->q);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(a->w,a->q);CHKERRQ(ierr);
+    ierr = VecSetType(a->w,VECSEQ);CHKERRQ(ierr);
+
+    /* create two temporary Index sets for build scatter gather */
+    ierr = ISCreateBlock(PetscObjectComm((PetscObject)a->A),a->q,n,mpiaij->garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,n*a->q,0,1,&to);CHKERRQ(ierr);
+
+    /* create temporary global vector to generate scatter context */
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)a->A),a->q,a->q*a->A->cmap->n,a->q*a->A->cmap->N,NULL,&gvec);CHKERRQ(ierr);
+
+    /* generate the scatter context */
+    ierr = VecScatterCreateWithData(gvec,from,a->w,to,&a->ctx);CHKERRQ(ierr);
+
+    ierr = ISDestroy(&from);CHKERRQ(ierr);
+    ierr = ISDestroy(&to);CHKERRQ(ierr);
+    ierr = VecDestroy(&gvec);CHKERRQ(ierr);
+  }
+
+  A->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -180,54 +372,6 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-/*MC
-  MATKAIJ - MATKAIJ = "kaij" - A matrix type to be used to evaluate matrices of the following form:
-
-    [I \otimes S + A \otimes T]
-
-  where
-    S is a dense (p \times q) matrix
-    T is a dense (p \times q) matrix
-    A is an AIJ  (n \times n) matrix
-    I is the identity matrix
-  The resulting matrix is (np \times nq)
-  
-  The matrix type is based on MATSEQAIJ for a sequential matrix A, and MATMPIAIJ for a distributed matrix A. 
-  S and T are always stored independently on all processes as a PetscScalar array in column-major format.
-
-  Operations provided:
-. MatMult
-. MatMultAdd
-. MatInvertBlockDiagonal
-
-  Level: advanced
-
-.seealso: MatKAIJGetAIJ(), MatKAIJGetS(), MatKAIJGetT(), MatCreateKAIJ()
-M*/
-
-PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
-{
-  PetscErrorCode ierr;
-  Mat_MPIKAIJ    *b;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr     = PetscNewLog(A,&b);CHKERRQ(ierr);
-  A->data  = (void*)b;
-
-  ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-
-  A->ops->setup = MatSetUp_KAIJ;
-
-  b->w    = 0;
-  ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIKAIJ);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 /* --------------------------------------------------------------------------------------*/
 
@@ -952,135 +1096,94 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
 
   Level: advanced
 
-.seealso: MatKAIJGetAIJ(), MATKAIJ
+.seealso: MatKAIJSetAIJ(), MatKAIJSetS(), MatKAIJSetT(), MatKAIJGetAIJ(), MatKAIJGetS(), MatKAIJGetT(), MATKAIJ
 @*/
 PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],const PetscScalar T[],Mat *kaij)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       n,i,j;
-  Mat            B;
-  PetscBool      isTI = PETSC_FALSE;
 
   PetscFunctionBegin;
-
-  /* check if T is an identity matrix */
-  if (T && (p == q)) {
-    isTI = PETSC_TRUE;
-    for (i=0; i<p; i++) {
-      for (j=0; j<q; j++) {
-        if (i == j) {
-          /* diagonal term must be 1 */
-          if (T[i+j*p] != 1.0) isTI = PETSC_FALSE;
-        } else {
-          /* off-diagonal term must be 0 */
-          if (T[i+j*p] != 0.0) isTI = PETSC_FALSE;
-        }
-      }
-    }
-  }
-
-  ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,p*A->rmap->n,q*A->cmap->n,p*A->rmap->N,q*A->cmap->N);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->rmap,p);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,q);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-
-  B->assembled = PETSC_TRUE;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),kaij);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-
   if (size == 1) {
-    Mat_SeqKAIJ *b;
-
-    ierr = MatSetType(B,MATSEQKAIJ);CHKERRQ(ierr);
-
-    B->ops->setup   = NULL;
-    B->ops->destroy = MatDestroy_SeqKAIJ;
-    B->ops->view    = MatView_SeqKAIJ;
-    b               = (Mat_SeqKAIJ*)B->data;
-    b->p            = p;
-    b->q            = q;
-    b->AIJ          = A;
-    b->isTI         = isTI;
-    if (S) {
-      ierr = PetscMalloc(p*q*sizeof(PetscScalar),&b->S);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->S,S,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
-    } else  b->S = NULL;
-    if (T && (!isTI)) {
-      ierr = PetscMalloc(p*q*sizeof(PetscScalar),&b->T);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->T,T,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
-    } else b->T = NULL;
-
-    B->ops->mult                = MatMult_SeqKAIJ_N;
-    B->ops->multadd             = MatMultAdd_SeqKAIJ_N;
-    B->ops->invertblockdiagonal = MatInvertBlockDiagonal_SeqKAIJ_N;
-    B->ops->getrow              = MatGetRow_SeqKAIJ;
-    B->ops->restorerow          = MatRestoreRow_SeqKAIJ;
-    B->ops->sor                 = MatSOR_SeqKAIJ;
+    ierr = MatSetType(*kaij,MATSEQKAIJ);CHKERRQ(ierr);
   } else {
-    Mat_MPIAIJ  *mpiaij = (Mat_MPIAIJ*)A->data;
-    Mat_MPIKAIJ *b;
-    IS          from,to;
-    Vec         gvec;
-
-    ierr = MatSetType(B,MATMPIKAIJ);CHKERRQ(ierr);
-
-    B->ops->setup   = NULL;
-    B->ops->destroy = MatDestroy_MPIKAIJ;
-    B->ops->view    = MatView_MPIKAIJ;
-
-    b       = (Mat_MPIKAIJ*)B->data;
-    b->p    = p;
-    b->q    = q;
-    b->A    = A;
-    b->isTI = isTI;
-    if (S) {
-      ierr = PetscMalloc(p*q*sizeof(PetscScalar),&b->S);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->S,S,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
-    } else  b->S = NULL;
-    if (T &&(!isTI)) {
-      ierr = PetscMalloc(p*q*sizeof(PetscScalar),&b->T);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->T,T,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
-    } else b->T = NULL;
-
-    ierr = MatCreateKAIJ(mpiaij->A,p,q,S   ,T,&b->AIJ);CHKERRQ(ierr); 
-    ierr = MatCreateKAIJ(mpiaij->B,p,q,NULL,T,&b->OAIJ);CHKERRQ(ierr);
-
-    ierr = VecGetSize(mpiaij->lvec,&n);CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_SELF,&b->w);CHKERRQ(ierr);
-    ierr = VecSetSizes(b->w,n*q,n*q);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(b->w,q);CHKERRQ(ierr);
-    ierr = VecSetType(b->w,VECSEQ);CHKERRQ(ierr);
-
-    /* create two temporary Index sets for build scatter gather */
-    ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),q,n,mpiaij->garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,n*q,0,1,&to);CHKERRQ(ierr);
-
-    /* create temporary global vector to generate scatter context */
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),q,q*A->cmap->n,q*A->cmap->N,NULL,&gvec);CHKERRQ(ierr);
-
-    /* generate the scatter context */
-    ierr = VecScatterCreateWithData(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);
-
-    ierr = ISDestroy(&from);CHKERRQ(ierr);
-    ierr = ISDestroy(&to);CHKERRQ(ierr);
-    ierr = VecDestroy(&gvec);CHKERRQ(ierr);
-
-    B->ops->mult                = MatMult_MPIKAIJ_dof;
-    B->ops->multadd             = MatMultAdd_MPIKAIJ_dof;
-    B->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ_dof;
-    B->ops->getrow              = MatGetRow_MPIKAIJ;
-    B->ops->restorerow          = MatRestoreRow_MPIKAIJ;
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIKAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(*kaij,MATMPIKAIJ);CHKERRQ(ierr);
   }
-  B->ops->createsubmatrix = MatCreateSubMatrix_KAIJ;
-  B->assembled = PETSC_TRUE;
-  ierr  = MatSetUp(B);CHKERRQ(ierr);
-  *kaij = B;
-  ierr  = MatViewFromOptions(B,NULL,"-mat_view");CHKERRQ(ierr);
+  ierr = MatKAIJSetAIJ(*kaij,A);CHKERRQ(ierr);
+  ierr = MatKAIJSetS(*kaij,p,q,S);CHKERRQ(ierr);
+  ierr = MatKAIJSetT(*kaij,p,q,T);CHKERRQ(ierr);
+  ierr = MatSetUp(*kaij);
+  PetscFunctionReturn(0);
+}
 
+/*MC
+  MATKAIJ - MATKAIJ = "kaij" - A matrix type to be used to evaluate matrices of the following form:
+
+    [I \otimes S + A \otimes T]
+
+  where
+    S is a dense (p \times q) matrix
+    T is a dense (p \times q) matrix
+    A is an AIJ  (n \times n) matrix
+    I is the identity matrix
+  The resulting matrix is (np \times nq)
+  
+  The matrix type is based on MATSEQAIJ for a sequential matrix A, and MATMPIAIJ for a distributed matrix A. 
+  S and T are always stored independently on all processes as a PetscScalar array in column-major format.
+
+  Operations provided:
++ MatMult
+. MatMultAdd
+. MatInvertBlockDiagonal
+- MatView
+
+  Level: advanced
+
+.seealso: MatKAIJSetAIJ(), MatKAIJSetS(), MatKAIJSetT(), MatKAIJGetAIJ(), MatKAIJGetS(), MatKAIJGetT(), MatCreateKAIJ()
+M*/
+
+PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
+{
+  PetscErrorCode ierr;
+  Mat_MPIKAIJ    *b;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr     = PetscNewLog(A,&b);CHKERRQ(ierr);
+  A->data  = (void*)b;
+
+  ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+
+  A->ops->setup = MatSetUp_KAIJ;
+
+  b->w    = 0;
+  ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ);CHKERRQ(ierr);
+
+    A->ops->setup               = MatSetUp_KAIJ;
+    A->ops->destroy             = MatDestroy_SeqKAIJ;
+    A->ops->view                = MatView_SeqKAIJ;
+    A->ops->mult                = MatMult_SeqKAIJ_N;
+    A->ops->multadd             = MatMultAdd_SeqKAIJ_N;
+    A->ops->invertblockdiagonal = MatInvertBlockDiagonal_SeqKAIJ_N;
+    A->ops->getrow              = MatGetRow_SeqKAIJ;
+    A->ops->restorerow          = MatRestoreRow_SeqKAIJ;
+    A->ops->sor                 = MatSOR_SeqKAIJ;
+  } else {
+    ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIKAIJ);CHKERRQ(ierr);
+    A->ops->setup               = MatSetUp_KAIJ;
+    A->ops->destroy             = MatDestroy_MPIKAIJ;
+    A->ops->view                = MatView_MPIKAIJ;
+    A->ops->mult                = MatMult_MPIKAIJ_dof;
+    A->ops->multadd             = MatMultAdd_MPIKAIJ_dof;
+    A->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ_dof;
+    A->ops->getrow              = MatGetRow_MPIKAIJ;
+    A->ops->restorerow          = MatRestoreRow_MPIKAIJ;
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIKAIJ);CHKERRQ(ierr);
+  }
+  A->ops->createsubmatrix = MatCreateSubMatrix_KAIJ;
   PetscFunctionReturn(0);
 }
