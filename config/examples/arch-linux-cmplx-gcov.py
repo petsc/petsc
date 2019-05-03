@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 configure_options = [
-  'COPTFLAGS=-g -O',
-  'FOPTFLAGS=-g -O',
-  'CXXOPTFLAGS=-g -O',
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
   '--with-gcov=1',
