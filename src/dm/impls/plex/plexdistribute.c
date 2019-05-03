@@ -710,7 +710,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   /* Before building the migration SF we need to know the new stratum offsets */
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, NULL, &iremote);CHKERRQ(ierr);
   ierr = PetscMalloc2(nroots, &pointDepths, nleaves, &remoteDepths);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm,&hybEnd[depth],&hybEnd[depth-1],&hybEnd[1],&hybEnd[0]);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm,&hybEnd[depth],&hybEnd[PetscMax(depth-1,0)],&hybEnd[1],&hybEnd[0]);CHKERRQ(ierr);
   for (d = 0; d < depth+1; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {

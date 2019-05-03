@@ -655,7 +655,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);
+    if (coordSection && coordinates) {
+      ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);
+    }
     ierr = DMGetLabel(dm, "marker", &markers);CHKERRQ(ierr);
     if (markers) {ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);}
     if (size > 1) {
