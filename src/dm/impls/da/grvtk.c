@@ -5,6 +5,28 @@
 */
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
+/* Helper function which determines if any DMDA fields are named.  This is used
+   as a proxy for the user's intention to use DMDA fields as distinct
+   scalar-valued fields as opposed to a single vector-valued field */
+static PetscErrorCode DMDAGetFieldsNamed(DM da,PetscBool *fieldsnamed)
+{
+  PetscErrorCode ierr;
+  PetscInt       f,bs;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetDof(da,&bs);CHKERRQ(ierr);
+  *fieldsnamed = PETSC_FALSE;
+  for (f=0; f<bs; ++f) {
+    const char * fieldname;
+    ierr = DMDAGetFieldName(da,f,&fieldname);CHKERRQ(ierr);
+    if (fieldname) {
+      *fieldsnamed = PETSC_TRUE;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 {
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -91,9 +113,10 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
     ierr = PetscFPrintf(comm,fp,"      <PointData Scalars=\"ScalarPointData\">\n");CHKERRQ(ierr);
     for (link=vtk->link; link; link=link->next) {
       Vec        X = (Vec)link->vec;
-      PetscInt   bs;
+      PetscInt   bs,f;
       DM         daCurr;
-      const char *vecname = "Unnamed Vec data";
+      PetscBool  fieldsnamed;
+      const char *vecname = "Unnamed";
 
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
       ierr = DMDAGetInfo(daCurr,0,0,0,0,0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
@@ -102,8 +125,25 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       if (((PetscObject)X)->name || link != vtk->link) {
         ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
       }
-      ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%D\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,bs,boffset);CHKERRQ(ierr);
-      boffset += bs*nnodes*sizeof(PetscScalar) + sizeof(int);
+
+      /* If any fields are named, add scalar fields. Otherwise, add a vector field */
+      ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);
+      if (fieldsnamed) {
+        for (f=0; f<bs; f++) {
+          char       buf[256];
+          const char *fieldname;
+          ierr = DMDAGetFieldName(daCurr,f,&fieldname);CHKERRQ(ierr);
+          if (!fieldname) {
+            ierr      = PetscSNPrintf(buf,sizeof(buf),"%D",f);CHKERRQ(ierr);
+            fieldname = buf;
+          }
+          ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
+          boffset += nnodes*sizeof(PetscScalar) + sizeof(int);
+        }
+      } else {
+        ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%D\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,bs,boffset);CHKERRQ(ierr);
+        boffset += bs*nnodes*sizeof(PetscScalar) + sizeof(int);
+      }
     }
     ierr = PetscFPrintf(comm,fp,"      </PointData>\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fp,"    </Piece>\n");CHKERRQ(ierr);
@@ -114,7 +154,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
   /* Now write the arrays. */
   tag  = ((PetscObject)viewer)->tag;
-  ierr = PetscMalloc2(maxnnodes*PetscMax(3,maxbs),&array,maxnnodes*3,&array2);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxnnodes*PetscMax(3,maxbs),&array,maxnnodes*PetscMax(3,maxbs),&array2);CHKERRQ(ierr);
   for (r=0; r<size; r++) {
     MPI_Status status;
     PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
@@ -176,8 +216,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
     for (link=vtk->link; link; link=link->next) {
       Vec               X = (Vec)link->vec;
       const PetscScalar *x;
-      PetscInt          bs;
+      PetscInt          bs,f;
       DM                daCurr;
+      PetscBool         fieldsnamed;
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
       ierr = DMDAGetInfo(daCurr,0,0,0,0, 0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
       ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
@@ -190,7 +231,25 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
         } else {
           ierr = PetscMemcpy(array,x,nnodes*bs*sizeof(PetscScalar));CHKERRQ(ierr);
         }
-        ierr = PetscViewerVTKFWrite(viewer,fp,array,bs*nnodes,MPIU_SCALAR);CHKERRQ(ierr);
+
+        /* If any fields are named, add scalar fields. Otherwise, add a vector field */
+        ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);
+        if (fieldsnamed) {
+          for (f=0; f<bs; f++) {
+            /* Extract and transpose the f'th field */
+            for (k=0; k<zm; k++) {
+              for (j=0; j<ym; j++) {
+                for (i=0; i<xm; i++) {
+                  PetscInt Iloc = i+xm*(j+ym*k);
+                  array2[Iloc] = array[Iloc*bs + f];
+                }
+              }
+            }
+            ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR);CHKERRQ(ierr);
+          }
+        } else {
+          ierr = PetscViewerVTKFWrite(viewer,fp,array,bs*nnodes,MPIU_SCALAR);CHKERRQ(ierr);
+        }
       } else if (r == rank) {
         ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
       }
@@ -284,9 +343,10 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
     ierr = PetscFPrintf(comm,fp,"      <PointData Scalars=\"ScalarPointData\">\n");CHKERRQ(ierr);
     for (link=vtk->link; link; link=link->next) {
       Vec        X = (Vec)link->vec;
-      PetscInt   bs;
+      PetscInt   bs,f;
       DM         daCurr;
-      const char *vecname = "Unnamed Vec data";
+      PetscBool  fieldsnamed;
+      const char *vecname = "Unnamed";
 
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
       ierr = DMDAGetInfo(daCurr,0,0,0,0,0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
@@ -295,8 +355,24 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
       }
 
-     ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%D\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,bs,boffset);CHKERRQ(ierr);
-     boffset += bs*nnodes*sizeof(PetscScalar) + sizeof(int);
+      /* If any fields are named, add scalar fields. Otherwise, add a vector field */
+      ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);
+      if (fieldsnamed) {
+        for (f=0; f<bs; f++) {
+          char       buf[256];
+          const char *fieldname;
+          ierr = DMDAGetFieldName(daCurr,f,&fieldname);CHKERRQ(ierr);
+          if (!fieldname) {
+            ierr      = PetscSNPrintf(buf,sizeof(buf),"%D",f);CHKERRQ(ierr);
+            fieldname = buf;
+          }
+          ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
+          boffset += nnodes*sizeof(PetscScalar) + sizeof(int);
+        }
+      } else {
+        ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%D\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,bs,boffset);CHKERRQ(ierr);
+        boffset += bs*nnodes*sizeof(PetscScalar) + sizeof(int);
+      }
     }
     ierr = PetscFPrintf(comm,fp,"      </PointData>\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fp,"    </Piece>\n");CHKERRQ(ierr);
@@ -307,7 +383,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 
   /* Now write the arrays. */
   tag  = ((PetscObject)viewer)->tag;
-  ierr = PetscMalloc2(PetscMax(maxnnodes*maxbs,info.xm+info.ym+info.zm),&array,info.xm+info.ym+info.zm,&array2);CHKERRQ(ierr);
+  ierr = PetscMalloc2(PetscMax(maxnnodes*maxbs,info.xm+info.ym+info.zm),&array,PetscMax(maxnnodes*maxbs,info.xm+info.ym+info.zm),&array2);CHKERRQ(ierr);
   for (r=0; r<size; r++) {
     MPI_Status status;
     PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
@@ -393,8 +469,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
     for (link=vtk->link; link; link=link->next) {
       Vec               X = (Vec)link->vec;
       const PetscScalar *x;
-      PetscInt          bs;
+      PetscInt          bs,f;
       DM                daCurr;
+      PetscBool         fieldsnamed;
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
       ierr = DMDAGetInfo(daCurr,0,0,0,0,0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
 
@@ -407,6 +484,22 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
           if (nn != nnodes*bs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
           ierr = PetscMemcpy(array,x,nnodes*bs*sizeof(PetscScalar));CHKERRQ(ierr);
+        }
+        /* If any fields are named, add scalar fields. Otherwise, add a vector field */
+        ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);
+        if (fieldsnamed) {
+          for (f=0; f<bs; f++) {
+            /* Extract and transpose the f'th field */
+            for (k=0; k<zm; k++) {
+              for (j=0; j<ym; j++) {
+                for (i=0; i<xm; i++) {
+                  PetscInt Iloc = i+xm*(j+ym*k);
+                  array2[Iloc] = array[Iloc*bs + f];
+                }
+              }
+            }
+            ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR);CHKERRQ(ierr);
+          }
         }
         ierr = PetscViewerVTKFWrite(viewer,fp,array,nnodes*bs,MPIU_SCALAR);CHKERRQ(ierr);
 
@@ -436,10 +529,13 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 
    Level: developer
 
-   Note:
+   Notes:
    This function is a callback used by the VTK viewer to actually write the file.
    The reason for this odd model is that the VTK file format does not provide any way to write one field at a time.
    Instead, metadata for the entire file needs to be available up-front before you can start writing the file.
+
+   If any fields have been named (see e.g. DMDASetFieldName()), then individual scalar
+   fields are written. Otherwise, a single multi-dof (vector) field is written.
 
 .seealso: PETSCVIEWERVTK
 @*/
