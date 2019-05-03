@@ -798,7 +798,7 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
   else if (ptype == PETSC_DOUBLE)      *htype = H5T_NATIVE_DOUBLE;
   else if (ptype == PETSC_LONG)        *htype = H5T_NATIVE_LONG;
   else if (ptype == PETSC_SHORT)       *htype = H5T_NATIVE_SHORT;
-  else if (ptype == PETSC_ENUM)        *htype = H5T_NATIVE_DOUBLE;
+  else if (ptype == PETSC_ENUM)        *htype = H5T_NATIVE_INT;
   else if (ptype == PETSC_BOOL)        *htype = H5T_NATIVE_INT;
   else if (ptype == PETSC_FLOAT)       *htype = H5T_NATIVE_FLOAT;
   else if (ptype == PETSC_CHAR)        *htype = H5T_NATIVE_CHAR;
