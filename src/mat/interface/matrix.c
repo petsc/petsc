@@ -4366,7 +4366,7 @@ static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFactorType ftype,PetscErrorCode (*getfactor)(Mat,MatFactorType,Mat*))
 {
   PetscErrorCode              ierr;
-  MatSolverTypeHolder         next = MatSolverTypeHolders,prev;
+  MatSolverTypeHolder         next = MatSolverTypeHolders,prev = NULL;
   PetscBool                   flg;
   MatSolverTypeForSpecifcType inext,iprev = NULL;
 
