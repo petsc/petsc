@@ -1649,6 +1649,9 @@ PETSC_EXTERN PetscErrorCode MatCreateKAIJ(Mat,PetscInt,PetscInt,const PetscScala
 PETSC_EXTERN PetscErrorCode MatKAIJGetAIJ(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatKAIJGetS(Mat,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode MatKAIJGetT(Mat,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJSetAIJ(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatKAIJSetS(Mat,PetscInt,PetscInt,const PetscScalar []);
+PETSC_EXTERN PetscErrorCode MatKAIJSetT(Mat,PetscInt,PetscInt,const PetscScalar []);
 
 PETSC_EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat,Vec);
 
