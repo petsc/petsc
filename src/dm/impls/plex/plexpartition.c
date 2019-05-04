@@ -800,12 +800,12 @@ static PetscErrorCode PetscPartitionerGetDefaultType(const char *currentType, co
 {
   PetscFunctionBegin;
   if (!currentType) {
-#if defined(PETSC_HAVE_CHACO)
-    *defaultType = PETSCPARTITIONERCHACO;
-#elif defined(PETSC_HAVE_PARMETIS)
+#if defined(PETSC_HAVE_PARMETIS)
     *defaultType = PETSCPARTITIONERPARMETIS;
 #elif defined(PETSC_HAVE_PTSCOTCH)
     *defaultType = PETSCPARTITIONERPTSCOTCH;
+#elif defined(PETSC_HAVE_CHACO)
+    *defaultType = PETSCPARTITIONERCHACO;
 #else
     *defaultType = PETSCPARTITIONERSIMPLE;
 #endif
