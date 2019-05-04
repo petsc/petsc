@@ -435,7 +435,7 @@ class Configure(config.base.Configure):
       except RuntimeError:
         pass
     if not self.cxxCompileC:
-      for flag in ['-TP','-P']:
+      for flag in ['-x c++', '-TP','-P']:
         try:
           self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
           self.cxxCompileC = True
