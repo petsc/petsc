@@ -321,7 +321,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)a->A),a->q,a->q*a->A->cmap->n,a->q*a->A->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
     /* generate the scatter context */
-    ierr = VecScatterCreateWithData(gvec,from,a->w,to,&a->ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate(gvec,from,a->w,to,&a->ctx);CHKERRQ(ierr);
 
     ierr = ISDestroy(&from);CHKERRQ(ierr);
     ierr = ISDestroy(&to);CHKERRQ(ierr);
