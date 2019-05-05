@@ -31,24 +31,6 @@
  30 TAO,  Function value: 0.849937,  Residual: 1.89384e-07 
  31 TAO,  Function value: 0.849937,  Residual: 1.5372e-07 
  32 TAO,  Function value: 0.849937,  Residual: 6.72611e-08 
- 33 TAO,  Function value: 0.849937,  Residual: 5.44716e-08 
- 34 TAO,  Function value: 0.849937,  Residual: 5.85976e-08 
- 35 TAO,  Function value: 0.849937,  Residual: 5.69701e-08 
- 36 TAO,  Function value: 0.849937,  Residual: 5.21429e-08 
- 37 TAO,  Function value: 0.849937,  Residual: 3.2229e-08 
- 38 TAO,  Function value: 0.849937,  Residual: 2.75134e-08 
- 39 TAO,  Function value: 0.849937,  Residual: 2.78128e-08 
- 40 TAO,  Function value: 0.849937,  Residual: 2.352e-08 
- 41 TAO,  Function value: 0.849937,  Residual: 2.44014e-08 
- 42 TAO,  Function value: 0.849937,  Residual: 2.02376e-08 
- 43 TAO,  Function value: 0.849937,  Residual: 1.59702e-08 
- 44 TAO,  Function value: 0.849937,  Residual: 1.75326e-08 
- 45 TAO,  Function value: 0.849937,  Residual: 1.96842e-08 
- 46 TAO,  Function value: 0.849937,  Residual: 1.81835e-08 
- 47 TAO,  Function value: 0.849937,  Residual: 1.51095e-08 
- 48 TAO,  Function value: 0.849937,  Residual: 1.50135e-08 
- 49 TAO,  Function value: 0.849937,  Residual: 1.02144e-08 
- 50 TAO,  Function value: 0.849937,  Residual: 8.95351e-09 
 Vec Object: 1 MPI processes
   type: seq
 2.
@@ -62,12 +44,12 @@ Vec Object: 1 MPI processes
 2.
 2.30725
 2.
-1.99477
+1.99478
 2.
 1.59983
 2.
 1.22992
 2.
-0.984687
+0.98469
 2.
 0.860197

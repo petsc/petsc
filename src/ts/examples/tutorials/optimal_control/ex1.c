@@ -654,7 +654,7 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir,PetscScalar arr[],Aircraft actx)
       requires: !complex !single
 
     test:
-      args:  -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor
+      args:  -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor -tao_gatol 1e-7
 
     test:
       suffix: 2
