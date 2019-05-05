@@ -1033,11 +1033,13 @@ PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(sviewer);CHKERRQ(ierr);
     }
+    ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_ctx->B_Ddelta,MATSHELL,&isshell);CHKERRQ(ierr);
     if (isshell) {
       BDdelta_DN ctx;
       ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP BDdelta: DB^t * (B D^-1 B^t)^-1 for deluxe scaling (just from rank 0)\n");CHKERRQ(ierr);
       ierr = MatShellGetContext(pc_ctx->B_Ddelta,&ctx);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
       if (!rank) {
         PetscInt tl;
 
@@ -1048,8 +1050,8 @@ PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
         ierr = MatView(ctx->BD,sviewer);CHKERRQ(ierr);
         ierr = PetscViewerPopFormat(sviewer);CHKERRQ(ierr);
       }
+      ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

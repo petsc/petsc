@@ -447,7 +447,11 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
   if (sviewer) *sviewer = NULL;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
+    PetscMPIInt flg;
+
+    ierr = MPI_Comm_compare(PETSC_COMM_SELF,comm,&flg);CHKERRQ(ierr);
+    if (flg != MPI_IDENT && flg != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscViewerGetSubViewer() for PETSCVIEWERDRAW requires a singleton MPI_Comm");
+    ierr = PetscViewerCreate(comm,sviewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(*sviewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
     svdraw = (PetscViewer_Draw*)(*sviewer)->data;
     (*sviewer)->format = viewer->format;
