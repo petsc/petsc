@@ -256,6 +256,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction)IFunction,&app);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&app);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -305,9 +306,6 @@ int main(int argc,char **argv)
   ierr = VecZeroEntries(mu[0]);CHKERRQ(ierr);
   ierr = VecZeroEntries(mu[1]);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,2,lambda,mu);CHKERRQ(ierr);
-
-  /*   Set RHS JacobianP */
-  ierr = TSSetRHSJacobianP(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
