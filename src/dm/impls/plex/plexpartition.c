@@ -196,8 +196,10 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     }
     (*numVertices)++;
   }
+  ierr = PetscFree(adj);CHKERRQ(ierr);
   ierr = PetscFree2(adjCells, remoteCells);CHKERRQ(ierr);
   ierr = DMSetBasicAdjacency(dm, useCone, useClosure);CHKERRQ(ierr);
+
   /* Derive CSR graph from section/segbuffer */
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
@@ -207,15 +209,47 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     ierr = PetscSectionGetOffset(section, p, &(vOffsets[idx++]));CHKERRQ(ierr);
   }
   vOffsets[*numVertices] = size;
-  if (offsets) *offsets = vOffsets;
   ierr = PetscSegBufferExtractAlloc(adjBuffer, &graph);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellNumbering);CHKERRQ(ierr);
+
+  if (nroots >= 0) {
+    /* Filter out duplicate edges using section/segbuffer */
+    ierr = PetscSectionReset(section);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(section, 0, *numVertices);CHKERRQ(ierr);
+    for (p = 0; p < *numVertices; p++) {
+      PetscInt start = vOffsets[p], end = vOffsets[p+1];
+      PetscInt numEdges = end-start, *PETSC_RESTRICT edges;
+      ierr = PetscSortRemoveDupsInt(&numEdges, &graph[start]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(section, p, numEdges);CHKERRQ(ierr);
+      ierr = PetscSegBufferGetInts(adjBuffer, numEdges, &edges);CHKERRQ(ierr);
+      ierr = PetscMemcpy(edges, &graph[start], numEdges*sizeof(*edges));CHKERRQ(ierr);
+    }
+    ierr = PetscFree(vOffsets);CHKERRQ(ierr);
+    ierr = PetscFree(graph);CHKERRQ(ierr);
+    /* Derive CSR graph from section/segbuffer */
+    ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
+    ierr = PetscMalloc1(*numVertices+1, &vOffsets);CHKERRQ(ierr);
+    for (idx = 0, p = 0; p < *numVertices; p++) {
+      ierr = PetscSectionGetOffset(section, p, &(vOffsets[idx++]));CHKERRQ(ierr);
+    }
+    vOffsets[*numVertices] = size;
+    ierr = PetscSegBufferExtractAlloc(adjBuffer, &graph);CHKERRQ(ierr);
+  } else {
+    /* Sort adjacencies (not strictly necessary) */
+    for (p = 0; p < *numVertices; p++) {
+      PetscInt start = vOffsets[p], end = vOffsets[p+1];
+      ierr = PetscSortInt(end-start, &graph[start]);CHKERRQ(ierr);
+    }
+  }
+
+  if (offsets) *offsets = vOffsets;
   if (adjacency) *adjacency = graph;
-  /* Clean up */
+
+  /* Cleanup */
   ierr = PetscSegBufferDestroy(&adjBuffer);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  ierr = PetscFree(adj);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellNumbering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
