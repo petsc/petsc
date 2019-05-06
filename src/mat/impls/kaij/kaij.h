@@ -16,11 +16,11 @@
   } sor;
 
 typedef struct {
-  KAIJHEADER;
+  KAIJHEADER
 } Mat_SeqKAIJ;
 
 typedef struct {
-  KAIJHEADER;
+  KAIJHEADER
   Mat        OAIJ;
   Mat        A;
   VecScatter ctx;     /* update ghost points for parallel case */
