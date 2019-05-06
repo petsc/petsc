@@ -134,22 +134,20 @@ PetscErrorCode PCHYPREGetSolver(PC pc,HYPRE_Solver *hsolver)
 static PetscErrorCode PCHYPREResetNearNullSpace_Private(PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
+  PetscInt       i;
   PetscErrorCode ierr;
+  PETSC_UNUSED PetscScalar *petscvecarray;
 
   PetscFunctionBegin;
-  if (jac->n_hmnull && jac->hmnull) {
-    PetscInt                 i;
-    PETSC_UNUSED PetscScalar *petscvecarray;
-
-    for (i=0; i<jac->n_hmnull; i++) {
-      VecHYPRE_ParVectorReplacePointer(jac->hmnull[i],jac->hmnull_hypre_data_array[i],petscvecarray);
-      PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->hmnull[i]));
-    }
-    ierr = PetscFree(jac->hmnull);CHKERRQ(ierr);
-    ierr = PetscFree(jac->hmnull_hypre_data_array);CHKERRQ(ierr);
-    ierr = PetscFree(jac->phmnull);CHKERRQ(ierr);
-    ierr = VecDestroy(&jac->hmnull_constant);CHKERRQ(ierr);
+  for (i=0; i<jac->n_hmnull; i++) {
+    VecHYPRE_ParVectorReplacePointer(jac->hmnull[i],jac->hmnull_hypre_data_array[i],petscvecarray);
+    PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->hmnull[i]));
   }
+  ierr = PetscFree(jac->hmnull);CHKERRQ(ierr);
+  ierr = PetscFree(jac->hmnull_hypre_data_array);CHKERRQ(ierr);
+  ierr = PetscFree(jac->phmnull);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->hmnull_constant);CHKERRQ(ierr);
+  jac->n_hmnull = 0;
   PetscFunctionReturn(0);
 }
 
