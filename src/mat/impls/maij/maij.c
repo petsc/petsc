@@ -3096,35 +3096,28 @@ PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,Pe
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  /* MatPtAPSymbolic_MPIAIJ_MPIMAIJ() is not implemented yet. Convert PP to mpiaij format */
-  ierr = MatConvert(PP,MATMPIAIJ,MAT_INPLACE_MATRIX,&PP);CHKERRQ(ierr);
-  ierr =(*PP->ops->ptapsymbolic)(A,PP,fill,C);CHKERRQ(ierr);
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatPtAPSymbolic is not implemented for MPIMAIJ matrix yet");
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatPtAPNumeric is not implemented for MPIMAIJ matrix yet");
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatPtAPNumeric is not implemented for MPIMAIJ matrix yet");
   PetscFunctionReturn(0);
 }
-
+PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-    ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ(A,P,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+    ierr = PetscInfo((PetscObject)A,"Converting from MAIJ to AIJ matrix since implementation not available for MAIJ");
+    ierr = MatConvert(P,MATMPIAIJ,MAT_INPLACE_MATRIX,&P);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  ierr = ((*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  ierr = MatPtAP_MPIAIJ_MPIAIJ(A,P,scall,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
