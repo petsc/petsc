@@ -5,7 +5,6 @@ static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptions
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
   PetscBool      monitor = PETSC_FALSE;
-  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES NGMRES options");CHKERRQ(ierr);
@@ -19,11 +18,6 @@ static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptions
     ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  /* set the default type of the line search if the user hasn't already. */
-  if (!snes->linesearch) {
-    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -213,6 +207,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
 {
   SNES_NGMRES    *ngmres;
   PetscErrorCode ierr;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   snes->ops->destroy        = SNESDestroy_NGMRES;
@@ -236,6 +231,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
     snes->max_funcs = 30000;
     snes->max_its   = 10000;
   }
+
+  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
   ngmres->additive_linesearch = NULL;
   ngmres->approxfunc       = PETSC_FALSE;

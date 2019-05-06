@@ -505,7 +505,6 @@ PetscErrorCode SNESSetFromOptions_VI(PetscOptionItems *PetscOptionsObject,SNES s
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
-  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES VI options");CHKERRQ(ierr);
@@ -518,11 +517,6 @@ PetscErrorCode SNESSetFromOptions_VI(PetscOptionItems *PetscOptionsObject,SNES s
   ierr = PetscOptionsBool("-snes_vi_monitor_residual","Monitor residual all non-active variables; using zero for active constraints","SNESMonitorVIResidual",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESMonitorSet(snes,SNESVIMonitorResidual,PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes)),NULL);CHKERRQ(ierr);
-  }
-  if (!snes->linesearch) {
-    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
-    ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

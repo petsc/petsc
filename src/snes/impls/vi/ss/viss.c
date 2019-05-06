@@ -429,18 +429,11 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
-  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions_VI(PetscOptionsObject,snes);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES semismooth method options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  /* set up the default line search */
-  if (!snes->linesearch) {
-    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
-    ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -468,6 +461,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
 {
   PetscErrorCode    ierr;
   SNES_VINEWTONSSLS *vi;
+  SNESLineSearch    linesearch;
 
   PetscFunctionBegin;
   snes->ops->reset          = SNESReset_VINEWTONSSLS;
@@ -479,6 +473,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
 
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_FALSE;
+
+  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
+  ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 

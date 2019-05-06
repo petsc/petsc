@@ -62,8 +62,8 @@ static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObjec
   SNES_NCG       *ncg = (SNES_NCG*)snes->data;
   PetscErrorCode ierr;
   PetscBool      debug = PETSC_FALSE;
-  SNESLineSearch linesearch;
   SNESNCGType    ncgtype=ncg->type;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES NCG options");CHKERRQ(ierr);
