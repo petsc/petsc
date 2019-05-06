@@ -280,7 +280,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     PetscInt    i,j;
 
     a = (Mat_MPIKAIJ*)A->data;
-    mpiaij = a->A->data;
+    mpiaij = (Mat_MPIAIJ*)a->A->data;
     ierr = MatSetSizes(A,a->p*a->A->rmap->n,a->q*a->A->cmap->n,a->p*a->A->rmap->N,a->q*a->A->cmap->N);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(A->rmap,seqkaij->p);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(A->cmap,seqkaij->q);CHKERRQ(ierr);
