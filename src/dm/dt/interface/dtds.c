@@ -346,7 +346,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 PetscErrorCode PetscDSSetUp(PetscDS prob)
 {
   const PetscInt Nf = prob->Nf;
-  PetscInt       dim, dimEmbed, work, NcMax = 0, NqMax = 0, NsMax = 1, f;
+  PetscInt       dim, dimEmbed, NbMax = 0, NcMax = 0, NqMax = 0, NsMax = 1, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -390,16 +390,17 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     prob->offDer[f+1] = Nc*dim + prob->offDer[f];
     if (q) {ierr = PetscQuadratureGetData(q, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
     NqMax          = PetscMax(NqMax, Nq);
+    NbMax          = PetscMax(NbMax, Nb);
     NcMax          = PetscMax(NcMax, Nc);
     prob->totDim  += Nb;
     prob->totComp += Nc;
     /* There are two faces for all fields but the cohesive field on a hybrid cell */
     if (prob->isHybrid && (f < Nf-1)) prob->totDim += Nb;
   }
-  work = PetscMax(prob->totComp*dim, PetscSqr(NcMax*dim));
   /* Allocate works space */
   if (prob->isHybrid) NsMax = 2;
-  ierr = PetscMalloc5(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed,&prob->u_x,dimEmbed,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscMalloc3(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed,&prob->u_x);CHKERRQ(ierr);
+  ierr = PetscMalloc5(dimEmbed,&prob->x,NbMax*NcMax,&prob->basisReal,NbMax*NcMax*dimEmbed,&prob->basisDerReal,NbMax*NcMax,&prob->testReal,NbMax*NcMax*dimEmbed,&prob->testDerReal);CHKERRQ(ierr);
   ierr = PetscMalloc6(NsMax*NqMax*NcMax,&prob->f0,NsMax*NqMax*NcMax*dim,&prob->f1,
                       NsMax*NsMax*NqMax*NcMax*NcMax,&prob->g0,NsMax*NsMax*NqMax*NcMax*NcMax*dim,&prob->g1,
                       NsMax*NsMax*NqMax*NcMax*NcMax*dim,&prob->g2,NsMax*NsMax*NqMax*NcMax*NcMax*dim*dim,&prob->g3);CHKERRQ(ierr);
@@ -416,7 +417,8 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
   ierr = PetscFree2(prob->Nc,prob->Nb);CHKERRQ(ierr);
   ierr = PetscFree2(prob->off,prob->offDer);CHKERRQ(ierr);
   ierr = PetscFree4(prob->basis,prob->basisDer,prob->basisFace,prob->basisDerFace);CHKERRQ(ierr);
-  ierr = PetscFree5(prob->u,prob->u_t,prob->u_x,prob->x,prob->refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscFree3(prob->u,prob->u_t,prob->u_x);CHKERRQ(ierr);
+  ierr = PetscFree5(prob->x,prob->basisReal, prob->basisDerReal,prob->testReal,prob->testDerReal);CHKERRQ(ierr);
   ierr = PetscFree6(prob->f0,prob->f1,prob->g0,prob->g1,prob->g2,prob->g3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2436,7 +2438,7 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 }
 
 /*@
-  PetscDSGetDimensions - Returns the size of the approximation space for each field on an evaluation point 
+  PetscDSGetDimensions - Returns the size of the approximation space for each field on an evaluation point
 
   Not collective
 
@@ -2648,15 +2650,18 @@ PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscSca
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar **refSpaceDer)
+PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **basisReal, PetscScalar **basisDerReal, PetscScalar **testReal, PetscScalar **testDerReal)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
-  if (x)           {PetscValidPointer(x, 2);           *x           = prob->x;}
-  if (refSpaceDer) {PetscValidPointer(refSpaceDer, 3); *refSpaceDer = prob->refSpaceDer;}
+  if (x)            {PetscValidPointer(x, 2);            *x            = prob->x;}
+  if (basisReal)    {PetscValidPointer(basisReal, 3);    *basisReal    = prob->basisReal;}
+  if (basisDerReal) {PetscValidPointer(basisDerReal, 3); *basisDerReal = prob->basisDerReal;}
+  if (testReal)     {PetscValidPointer(testReal, 3);     *testReal     = prob->testReal;}
+  if (testDerReal)  {PetscValidPointer(testDerReal, 3);  *testDerReal  = prob->testDerReal;}
   PetscFunctionReturn(0);
 }
 

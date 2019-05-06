@@ -394,6 +394,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
 
   s->order = 0;
   s->Nc    = 1;
+  s->k     = 0;
   s->setupcalled = PETSC_FALSE;
 
   *sp = s;
@@ -1110,5 +1111,357 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
   if (perms) {PetscValidPointer(perms,2); *perms = NULL;}
   if (flips) {PetscValidPointer(flips,3); *flips = NULL;}
   if (sp->ops->getsymmetries) {ierr = (sp->ops->getsymmetries)(sp,perms,flips);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceGetDeRahm - Get the k-simplex associated with the functionals in this dual space
+
+  Input Parameter:
+. dsp - The PetscDualSpace
+
+  Output Parameter:
+. k   - The simplex dimension
+
+  Level: advanced
+
+  Note: Currently supported values are
+$ 0: These are H_1 methods that only transform coordinates
+$ 1: These are Hcurl methods that transform functions using the covariant Piola transform (COVARIANT_PIOLA_TRANSFORM)
+$ 2: These are the same as 1
+$ 3: These are Hdiv methods that transform functions using the contravariant Piola transform (CONTRAVARIANT_PIOLA_TRANSFORM)
+
+.seealso: PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransform(), PetscDualSpaceTransformType
+@*/
+PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
+{
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(k, 2);
+  *k = dsp->k;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpaceTransform - Transform the function values
+
+  Input Parameters:
++ dsp       - The PetscDualSpace
+. trans     - The type of transform
+. isInverse - Flag to invert the transform
+. fegeom    - The cell geometry
+. Nv        - The number of function samples
+. Nc        - The number of function components
+- vals      - The function values
+
+  Output Parameter:
+. vals      - The transformed function values
+
+  Level: developer
+
+.seealso: PetscDualSpaceTransformGradient(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransform
+@*/
+PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
+{
+  DM             dm;
+  PetscInt       dim, v, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(fegeom, 4);
+  PetscValidPointer(vals, 7);
+  ierr = PetscDualSpaceGetDM(dsp, &dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  /* Assume its a vector, otherwise assume its a bunch of scalars */
+  if (Nc == 1 || Nc != dim) PetscFunctionReturn(0);
+  switch (trans) {
+    case IDENTITY_TRANSFORM: break;
+    case COVARIANT_PIOLA_TRANSFORM: /* Covariant Piola mapping $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$ */
+    if (isInverse) {
+      for (v = 0; v < Nv; ++v) {
+        switch (dim)
+        {
+          case 2: DMPlex_MultTranspose2D_Internal(fegeom->J, 1, &vals[v*Nc], &vals[v*Nc]);break;
+          case 3: DMPlex_MultTranspose3D_Internal(fegeom->J, 1, &vals[v*Nc], &vals[v*Nc]);break;
+          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+        }
+      }
+    } else {
+      for (v = 0; v < Nv; ++v) {
+        switch (dim)
+        {
+          case 2: DMPlex_MultTranspose2D_Internal(fegeom->invJ, 1, &vals[v*Nc], &vals[v*Nc]);break;
+          case 3: DMPlex_MultTranspose3D_Internal(fegeom->invJ, 1, &vals[v*Nc], &vals[v*Nc]);break;
+          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+        }
+      }
+    }
+    break;
+    case CONTRAVARIANT_PIOLA_TRANSFORM: /* Contravariant Piola mapping $\sigma^*(F) = \frac{1}{|\det J|} J F \circ \phi^{-1}$ */
+    if (isInverse) {
+      for (v = 0; v < Nv; ++v) {
+        switch (dim)
+        {
+          case 2: DMPlex_Mult2D_Internal(fegeom->invJ, 1, &vals[v*Nc], &vals[v*Nc]);break;
+          case 3: DMPlex_Mult3D_Internal(fegeom->invJ, 1, &vals[v*Nc], &vals[v*Nc]);break;
+          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+        }
+        for (c = 0; c < Nc; ++c) vals[v*Nc+c] *= fegeom->detJ[0];
+      }
+    } else {
+      for (v = 0; v < Nv; ++v) {
+        switch (dim)
+        {
+          case 2: DMPlex_Mult2D_Internal(fegeom->J, 1, &vals[v*Nc], &vals[v*Nc]);break;
+          case 3: DMPlex_Mult3D_Internal(fegeom->J, 1, &vals[v*Nc], &vals[v*Nc]);break;
+          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+        }
+        for (c = 0; c < Nc; ++c) vals[v*Nc+c] /= fegeom->detJ[0];
+      }
+    }
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+/*@C
+  PetscDualSpaceTransformGradient - Transform the function gradient values
+
+  Input Parameters:
++ dsp       - The PetscDualSpace
+. trans     - The type of transform
+. isInverse - Flag to invert the transform
+. fegeom    - The cell geometry
+. Nv        - The number of function gradient samples
+. Nc        - The number of function components
+- vals      - The function gradient values
+
+  Output Parameter:
+. vals      - The transformed function values
+
+  Level: developer
+
+.seealso: PetscDualSpaceTransform(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransform
+@*/
+PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
+{
+  DM             dm;
+  PetscInt       dim, v, c, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(fegeom, 4);
+  PetscValidPointer(vals, 7);
+  ierr = PetscDualSpaceGetDM(dsp, &dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  /* Transform gradient */
+  for (v = 0; v < Nv; ++v) {
+    for (c = 0; c < Nc; ++c) {
+      switch (dim)
+      {
+        case 2: DMPlex_MultTranspose2D_Internal(fegeom->invJ, 1, &vals[(v*Nc+c)*dim], &vals[(v*Nc+c)*dim]);break;
+        case 3: DMPlex_MultTranspose3D_Internal(fegeom->invJ, 1, &vals[(v*Nc+c)*dim], &vals[(v*Nc+c)*dim]);break;
+        default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+      }
+    }
+  }
+  /* Assume its a vector, otherwise assume its a bunch of scalars */
+  if (Nc == 1 || Nc != dim) PetscFunctionReturn(0);
+  switch (trans) {
+    case IDENTITY_TRANSFORM: break;
+    case COVARIANT_PIOLA_TRANSFORM: /* Covariant Piola mapping $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$ */
+    if (isInverse) {
+      for (v = 0; v < Nv; ++v) {
+        for (d = 0; d < dim; ++d) {
+          switch (dim)
+          {
+            case 2: DMPlex_MultTranspose2D_Internal(fegeom->J, dim, &vals[v*Nc*dim+d], &vals[v*Nc*dim+d]);break;
+            case 3: DMPlex_MultTranspose3D_Internal(fegeom->J, dim, &vals[v*Nc*dim+d], &vals[v*Nc*dim+d]);break;
+            default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+          }
+        }
+      }
+    } else {
+      for (v = 0; v < Nv; ++v) {
+        for (d = 0; d < dim; ++d) {
+          switch (dim)
+          {
+            case 2: DMPlex_MultTranspose2D_Internal(fegeom->invJ, dim, &vals[v*Nc*dim+d], &vals[v*Nc*dim+d]);break;
+            case 3: DMPlex_MultTranspose3D_Internal(fegeom->invJ, dim, &vals[v*Nc*dim+d], &vals[v*Nc*dim+d]);break;
+            default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+          }
+        }
+      }
+    }
+    break;
+    case CONTRAVARIANT_PIOLA_TRANSFORM: /* Contravariant Piola mapping $\sigma^*(F) = \frac{1}{|\det J|} J F \circ \phi^{-1}$ */
+    if (isInverse) {
+      for (v = 0; v < Nv; ++v) {
+        for (d = 0; d < dim; ++d) {
+          switch (dim)
+          {
+            case 2: DMPlex_Mult2D_Internal(fegeom->invJ, dim, &vals[v*Nc*dim+d], &vals[v*Nc*dim+d]);break;
+            case 3: DMPlex_Mult3D_Internal(fegeom->invJ, dim, &vals[v*Nc*dim+d], &vals[v*Nc*dim+d]);break;
+            default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+          }
+          for (c = 0; c < Nc; ++c) vals[(v*Nc+c)*dim+d] *= fegeom->detJ[0];
+        }
+      }
+    } else {
+      for (v = 0; v < Nv; ++v) {
+        for (d = 0; d < dim; ++d) {
+          switch (dim)
+          {
+            case 2: DMPlex_Mult2D_Internal(fegeom->J, dim, &vals[v*Nc*dim+d], &vals[v*Nc*dim+d]);break;
+            case 3: DMPlex_Mult3D_Internal(fegeom->J, dim, &vals[v*Nc*dim+d], &vals[v*Nc*dim+d]);break;
+            default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+          }
+          for (c = 0; c < Nc; ++c) vals[(v*Nc+c)*dim+d] /= fegeom->detJ[0];
+        }
+      }
+    }
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpacePullback - Transform the given functional so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
+
+  Input Parameters:
++ dsp        - The PetscDualSpace
+. fegeom     - The geometry for this cell
+. Nq         - The number of function samples
+. Nc         - The number of function components
+- pointEval  - The function values
+
+  Output Parameter:
+. pointEval  - The transformed function values
+
+  Level: advanced
+
+  Note: Functions transform in a complementary way (pushforward) to functionals, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
+
+.seealso: PetscDualSpacePushforward(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
+@*/
+PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
+{
+  PetscDualSpaceTransformType trans;
+  PetscInt                    k;
+  PetscErrorCode              ierr;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(fegeom, 2);
+  PetscValidPointer(pointEval, 5);
+  /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
+     This determines their transformation properties. */
+  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+  switch (k)
+  {
+    case 0: /* H^1 point evaluations */
+    trans = IDENTITY_TRANSFORM;break;
+    case 1: /* Hcurl preserves tangential edge traces  */
+    case 2:
+    trans = COVARIANT_PIOLA_TRANSFORM;break;
+    case 3: /* Hdiv preserve normal traces */
+    trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
+  }
+  ierr = PetscDualSpaceTransform(dsp, trans, PETSC_TRUE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpacePushforward - Transform the given function so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
+
+  Input Parameters:
++ dsp        - The PetscDualSpace
+. fegeom     - The geometry for this cell
+. Nq         - The number of function samples
+. Nc         - The number of function components
+- pointEval  - The function values
+
+  Output Parameter:
+. pointEval  - The transformed function values
+
+  Level: advanced
+
+  Note: Functionals transform in a complementary way (pullback) to functions, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
+
+.seealso: PetscDualSpacePullback(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
+@*/
+PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
+{
+  PetscDualSpaceTransformType trans;
+  PetscInt                    k;
+  PetscErrorCode              ierr;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(fegeom, 2);
+  PetscValidPointer(pointEval, 5);
+  /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
+     This determines their transformation properties. */
+  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+  switch (k)
+  {
+    case 0: /* H^1 point evaluations */
+    trans = IDENTITY_TRANSFORM;break;
+    case 1: /* Hcurl preserves tangential edge traces  */
+    case 2:
+    trans = COVARIANT_PIOLA_TRANSFORM;break;
+    case 3: /* Hdiv preserve normal traces */
+    trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
+  }
+  ierr = PetscDualSpaceTransform(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpacePushforwardGradient - Transform the given function gradient so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
+
+  Input Parameters:
++ dsp        - The PetscDualSpace
+. fegeom     - The geometry for this cell
+. Nq         - The number of function gradient samples
+. Nc         - The number of function components
+- pointEval  - The function gradient values
+
+  Output Parameter:
+. pointEval  - The transformed function gradient values
+
+  Level: advanced
+
+  Note: Functionals transform in a complementary way (pullback) to functions, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
+
+.seealso: PetscDualSpacePushforward(), PPetscDualSpacePullback(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
+@*/PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
+{
+  PetscDualSpaceTransformType trans;
+  PetscInt                    k;
+  PetscErrorCode              ierr;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(fegeom, 2);
+  PetscValidPointer(pointEval, 5);
+  /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
+     This determines their transformation properties. */
+  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+  switch (k)
+  {
+    case 0: /* H^1 point evaluations */
+    trans = IDENTITY_TRANSFORM;break;
+    case 1: /* Hcurl preserves tangential edge traces  */
+    case 2:
+    trans = COVARIANT_PIOLA_TRANSFORM;break;
+    case 3: /* Hdiv preserve normal traces */
+    trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
+  }
+  ierr = PetscDualSpaceTransformGradient(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

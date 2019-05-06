@@ -73,7 +73,10 @@ struct _p_PetscDS {
   PetscScalar *u;                 /* Field evaluation */
   PetscScalar *u_t;               /* Field time derivative evaluation */
   PetscScalar *u_x;               /* Field gradient evaluation */
-  PetscScalar *refSpaceDer;       /* Workspace for computing derivative in the reference coordinates */
+  PetscScalar *basisReal;         /* Workspace for pushforward */
+  PetscScalar *basisDerReal;      /* Workspace for derivative pushforward */
+  PetscScalar *testReal;          /* Workspace for pushforward */
+  PetscScalar *testDerReal;       /* Workspace for derivative pushforward */
   PetscReal   *x;                 /* Workspace for computing real coordinates */
   PetscScalar *f0, *f1;           /* Point evaluations of weak form residual integrands */
   PetscScalar *g0, *g1, *g2, *g3; /* Point evaluations of weak form Jacobian integrands */
