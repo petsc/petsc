@@ -20,7 +20,7 @@ DMField Object: field 1 MPI processes
       Basic Finite Element in 2 dimensions with 2 components
       PetscSpace Object: MyPetscFE 1 MPI processes
         type: poly
-        Space in 2 variables with 2 components
+        Space in 2 variables with 2 components, size 12
         Polynomial space of degree 2
       PetscDualSpace Object: MyPetscFE 1 MPI processes
         type: lagrange

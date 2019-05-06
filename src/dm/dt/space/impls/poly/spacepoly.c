@@ -1,5 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
+const char *const PetscSpacePolynomialTypes[] = {"P", "PMINUS_HDIV", "PMINUS_HCURL", "PetscSpacePolynomialType", "PETSCSPACE_POLYNOMIALTYPE_",0};
+
 PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -9,6 +11,7 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOption
   ierr = PetscOptionsHead(PetscOptionsObject,"PetscSpace polynomial options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_sym", "Use only symmetric polynomials", "PetscSpacePolynomialSetSymmetric", poly->symmetric, &poly->symmetric, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_tensor", "Use the tensor product polynomials", "PetscSpacePolynomialSetTensor", poly->tensor, &poly->tensor, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-petscspace_poly_type", "Type of polynomial space", "PetscSpacePolynomialSetType", PetscSpacePolynomialTypes, (PetscEnum)poly->ptype, (PetscEnum*)&poly->ptype, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -19,7 +22,7 @@ static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(v, "%s space of degree %D\n", poly->tensor ? "Tensor polynomial" : "Polynomial", sp->degree);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(v, "%s%s%s space of degree %D\n", poly->ptype ? PetscSpacePolynomialTypes[poly->ptype] : "", poly->ptype ? " " : "", poly->tensor ? "Tensor polynomial" : "Polynomial", sp->degree);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -82,20 +85,26 @@ PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
   PetscInt         deg  = sp->degree;
-  PetscInt         n    = sp->Nv, i;
+  PetscInt         n    = sp->Nv, N, i;
   PetscReal        D    = 1.0;
 
   PetscFunctionBegin;
+  if ((poly->ptype == PETSCSPACE_POLYNOMIALTYPE_PMINUS_HDIV) || (poly->ptype == PETSCSPACE_POLYNOMIALTYPE_PMINUS_HCURL)) --deg;
   if (poly->tensor) {
-    *dim = 1;
-    for (i = 0; i < n; ++i) *dim *= (deg+1);
+    N = 1;
+    for (i = 0; i < n; ++i) N *= (deg+1);
   } else {
     for (i = 1; i <= n; ++i) {
       D *= ((PetscReal) (deg+i))/i;
     }
-    *dim = (PetscInt) (D + 0.5);
+    N = (PetscInt) (D + 0.5);
   }
-  *dim *= sp->Nc;
+  if ((poly->ptype == PETSCSPACE_POLYNOMIALTYPE_PMINUS_HDIV) || (poly->ptype == PETSCSPACE_POLYNOMIALTYPE_PMINUS_HCURL)) {
+    N *= sp->Nc + 1;
+  } else {
+    N *= sp->Nc;
+  }
+  *dim = N;
   PetscFunctionReturn(0);
 }
 
@@ -183,6 +192,7 @@ static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt 
 */
 PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
+  const PetscInt eps[3][3][3] = {{{0, 0, 0}, {0, 0, 1}, {0, -1, 0}}, {{0, 0, -1}, {0, 0, 0}, {1, 0, 0}}, {{0, 1, 0}, {-1, 0, 0}, {0, 0, 0}}};
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
   DM               dm      = sp->dm;
   PetscInt         Nc      = sp->Nc;
@@ -191,7 +201,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscInt         dim     = sp->Nv;
   PetscReal       *lpoints, *tmp, *LB, *LD, *LH;
   PetscInt        *ind, *tup;
-  PetscInt         c, pdim, d, e, der, der2, i, p, deg, o;
+  PetscInt         c, pdim, pdimRed, d, e, der, der2, i, p, deg, o;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -219,9 +229,14 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   /* Multiply by A (pdim x ndegree * dim) */
   ierr = PetscMalloc2(dim,&ind,dim,&tup);CHKERRQ(ierr);
   if (B) {
+    PetscInt topDegree = sp->degree;
+
     /* B (npoints x pdim x Nc) */
     ierr = PetscMemzero(B, npoints*pdim*Nc*Nc * sizeof(PetscReal));CHKERRQ(ierr);
+    if ((poly->ptype == PETSCSPACE_POLYNOMIALTYPE_PMINUS_HDIV) || (poly->ptype == PETSCSPACE_POLYNOMIALTYPE_PMINUS_HCURL)) topDegree--;
+    /* Make complete space portion */
     if (poly->tensor) {
+      if (poly->ptype != PETSCSPACE_POLYNOMIALTYPE_P) SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Tensor spaces not supported for P^- spaces (%s)", PetscSpacePolynomialTypes[poly->ptype]);
       i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
       while (ind[0] >= 0) {
@@ -236,7 +251,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       }
     } else {
       i = 0;
-      for (o = 0; o <= sp->degree; ++o) {
+      for (o = 0; o <= topDegree; ++o) {
         ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
@@ -250,16 +265,50 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
         }
       }
     }
+    pdimRed = i;
     /* Make direct sum basis for multicomponent space */
     for (p = 0; p < npoints; ++p) {
-      for (i = 0; i < pdim; ++i) {
+      for (i = 0; i < pdimRed; ++i) {
         for (c = 1; c < Nc; ++c) {
           B[(p*pdim*Nc + i*Nc + c)*Nc + c] = B[(p*pdim + i)*Nc*Nc];
         }
       }
     }
+    /* Make homogeneous part */
+    if (topDegree < sp->degree) {
+      if (poly->tensor) {
+      } else {
+        i = pdimRed;
+        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        while (ind[0] >= 0) {
+          ierr = LatticePoint_Internal(dim, topDegree, ind, tup);CHKERRQ(ierr);
+          for (p = 0; p < npoints; ++p) {
+            for (c = 0; c < Nc; ++c) {
+              B[(p*pdim*Nc + i*Nc + c)*Nc + c] = 1.0;
+              for (d = 0; d < dim; ++d) {
+                B[(p*pdim*Nc + i*Nc + c)*Nc + c] *= LB[(tup[d]*dim + d)*npoints + p];
+              }
+              switch (poly->ptype) {
+              case PETSCSPACE_POLYNOMIALTYPE_PMINUS_HDIV:
+                B[(p*pdim*Nc + i*Nc + c)*Nc + c] *= LB[(c*dim + d)*npoints + p];break;
+              case PETSCSPACE_POLYNOMIALTYPE_PMINUS_HCURL:
+              {
+                PetscReal sum = 0.0;
+                for (d = 0; d < dim; ++d) for (e = 0; e < dim; ++e) sum += eps[c][d][e]*LB[(d*dim + d)*npoints + p];
+                B[(p*pdim*Nc + i*Nc + c)*Nc + c] *= sum;
+                break;
+              }
+              default: SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Invalid polynomial type %s", PetscSpacePolynomialTypes[poly->ptype]);
+              }
+            }
+          }
+          ++i;
+        }
+      }
+    }
   }
   if (D) {
+    if (poly->ptype != PETSCSPACE_POLYNOMIALTYPE_P) SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Derivatives not supported for P^- spaces (%s)", PetscSpacePolynomialTypes[poly->ptype]);
     /* D (npoints x pdim x Nc x dim) */
     ierr = PetscMemzero(D, npoints*pdim*Nc*Nc*dim * sizeof(PetscReal));CHKERRQ(ierr);
     if (poly->tensor) {
@@ -315,6 +364,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
     }
   }
   if (H) {
+    if (poly->ptype != PETSCSPACE_POLYNOMIALTYPE_P) SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Hessians not supported for P^- spaces (%s)", PetscSpacePolynomialTypes[poly->ptype]);
     /* H (npoints x pdim x Nc x Nc x dim x dim) */
     ierr = PetscMemzero(H, npoints*pdim*Nc*Nc*dim*dim * sizeof(PetscReal));CHKERRQ(ierr);
     if (poly->tensor) {
