@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 configure_options = [
-  'COPTFLAGS=-g -O',
-  'FOPTFLAGS=-g -O',
-  'CXXOPTFLAGS=-g -O',
   '--with-gcov=1',
   #'--download-mpich=1', use system MPI as elemental fails with this
   '--download-fblaslapack=1',

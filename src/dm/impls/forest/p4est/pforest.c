@@ -2691,7 +2691,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
               if (!cl) {
                 newcid = cid + 1;
               } else {
-                PetscInt rcl, parent, parentOrnt;
+                PetscInt rcl, parent, parentOrnt = 0;
 
                 ierr = DMPlexGetTreeParent(refTree,point,&parent,NULL);CHKERRQ(ierr);
                 if (parent == point) {
