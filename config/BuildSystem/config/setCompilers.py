@@ -1074,6 +1074,11 @@ class Configure(config.base.Configure):
     if not self.argDB['with-pic'] and not useSharedLibraries:
       self.logPrint("Skip checking PIC options on user request")
       return
+    if self.argDB['with-pic'] and not useSharedLibraries:
+      # this is a flaw in configure; it is a legitimate use case where PETSc is built with PIC flags but not shared libraries
+      # to fix it the capability to build shared libraries must be enabled in configure if --with-pic=true even if shared libraries are off and this
+      # test must use that capability instead of using the default shared library build in that case which is static libraries
+      raise RuntimeError("Cannot determine compiler PIC flags if shared libraries is turned off\nEither run using --with-shared-libraries or --with-pic=0 and supply the compiler PIC flag via CFLAGS, CXXXFLAGS, and FCFLAGS\n")
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
