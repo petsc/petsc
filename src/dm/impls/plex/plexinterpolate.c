@@ -303,7 +303,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     PetscInt        numCellFacesT, faceSize, cf;
 
     /* First get normal cell face size (we now allow hybrid cells to meet normal cells on either hybrid or normal faces */
-    ierr = DMPlexGetFaces_Internal(dm, cellDim, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);
+    if (pStart[cellDepth] < pMax) {ierr = DMPlexGetFaces_Internal(dm, cellDim, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);}
 
     ierr = DMPlexGetConeSize(dm, pMax, &coneSizeH);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, pMax, &cone);CHKERRQ(ierr);
@@ -337,6 +337,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       ierr = PetscFree(sizes);CHKERRQ(ierr);
       if (minv != maxv) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Different number of vertices for hybrid face %D != %D", minv, maxv);
       faceSizeAllH = minv;
+      if (!faceSizeAll) faceSizeAll = faceSizeAllT;
     } else { /* the size of the faces in hybrid cells is the same */
       faceSizeAll = faceSizeAllH = faceSizeAllT = faceSize;
     }
