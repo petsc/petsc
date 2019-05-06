@@ -235,7 +235,7 @@ PetscErrorCode MatKAIJSetT(Mat A,PetscInt p,PetscInt q,const PetscScalar T[])
   if (T && (!isTI)) {
     ierr = PetscMalloc(p*q*sizeof(PetscScalar),&a->T);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->T,T,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
-  } // else a->T = NULL;
+  } else a->T = NULL;
 
   a->p = p;
   a->q = q;
