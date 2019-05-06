@@ -40,15 +40,6 @@ static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode PCSetUp_LU(PC pc)
 {
   PetscErrorCode         ierr;
@@ -274,7 +265,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   pc->ops->applytranspose    = PCApplyTranspose_LU;
   pc->ops->setup             = PCSetUp_LU;
   pc->ops->setfromoptions    = PCSetFromOptions_LU;
-  pc->ops->view              = PCView_LU;
+  pc->ops->view              = PCView_Factor;
   pc->ops->applyrichardson   = 0;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C",PCFactorReorderForNonzeroDiagonal_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
