@@ -468,7 +468,9 @@ cdef class DMPlex(DM):
         cdef PetscInt centityDepth = asInt(entityDepth)
         cdef PetscBool cuseInitialGuess = asBool(useInitialGuess)
         cdef PetscBool cparallel = asBool(parallel)
-        CHKERR( DMPlexRebalanceSharedPoints(self.dm, centityDepth, cuseInitialGuess, cparallel) )
+        cdef PetscBool csuccess = PETSC_FALSE
+        CHKERR( DMPlexRebalanceSharedPoints(self.dm, centityDepth, cuseInitialGuess, cparallel, &csuccess) )
+        return toBool(csuccess)
 
     def distribute(self, overlap=0):
         cdef PetscDM dmParallel = NULL
