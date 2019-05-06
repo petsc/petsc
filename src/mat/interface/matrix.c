@@ -981,7 +981,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscInt          rows,cols,rbs,cbs;
-  PetscBool         iascii,ibinary;
+  PetscBool         iascii,ibinary,isstring;
   PetscViewerFormat format;
   PetscMPIInt       size;
 #if defined(PETSC_HAVE_SAWS)
@@ -1001,6 +1001,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (ibinary) {
     PetscBool mpiio;
     ierr = PetscViewerBinaryGetUseMPIIO(viewer,&mpiio);CHKERRQ(ierr);
@@ -1059,6 +1060,11 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
       ierr = PetscObjectViewSAWs((PetscObject)mat,viewer);CHKERRQ(ierr);
     }
 #endif
+  } else if (isstring) {
+    const char *type;
+    ierr = MatGetType(mat,&type);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," MatType: %-7.7s",type);CHKERRQ(ierr);
+    if (mat->ops->view) {ierr = (*mat->ops->view)(mat,viewer);CHKERRQ(ierr);}
   }
   if ((format == PETSC_VIEWER_NATIVE || format == PETSC_VIEWER_LOAD_BALANCE) && mat->ops->viewnative) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);

@@ -70,8 +70,10 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
    in case nidx == 0. That will take care of the space for the trailing '\0' as well.
    For nidx == 0, the whole string 16 '\0'.
    */
-  ierr = PetscMalloc1(16*(nidx+1)+1, &cidx);CHKERRQ(ierr);
-  ierr = PetscViewerStringOpen(PETSC_COMM_SELF, cidx, 16*(nidx+1)+1, &sviewer);CHKERRQ(ierr);
+#define len  16*(nidx+1)+1
+  ierr = PetscMalloc1(len, &cidx);CHKERRQ(ierr);
+  ierr = PetscViewerStringOpen(PETSC_COMM_SELF, cidx, len, &sviewer);CHKERRQ(ierr);
+#undef len
   ierr = ISGetIndices(osm->iis[i], &idx);CHKERRQ(ierr);
   for (j = 0; j < nidx; ++j) {
     ierr = PetscViewerStringSPrintf(sviewer, "%D ", idx[j]);CHKERRQ(ierr);
@@ -95,8 +97,10 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
    in case nidx == 0. That will take care of the space for the trailing '\0' as well.
    For nidx == 0, the whole string 16 '\0'.
    */
-  ierr = PetscMalloc1(16*(nidx+1)+1, &cidx);CHKERRQ(ierr);
-  ierr = PetscViewerStringOpen(PETSC_COMM_SELF, cidx, 16*(nidx+1)+1, &sviewer);CHKERRQ(ierr);
+#define len  16*(nidx+1)+1
+  ierr = PetscMalloc1(len, &cidx);CHKERRQ(ierr);
+  ierr = PetscViewerStringOpen(PETSC_COMM_SELF, cidx, len, &sviewer);CHKERRQ(ierr);
+#undef len
   ierr = ISGetIndices(osm->ois[i], &idx);CHKERRQ(ierr);
   for (j = 0; j < nidx; ++j) {
     ierr = PetscViewerStringSPrintf(sviewer,"%D ", idx[j]);CHKERRQ(ierr);

@@ -434,7 +434,8 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   } else if (isstring) {
     const char *type;
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
-    ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," SNESType: %-7.7s",type);CHKERRQ(ierr);
+    if (snes->ops->view) {ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);}
   } else if (isbinary) {
     PetscInt    classid = SNES_FILE_CLASSID;
     MPI_Comm    comm;
