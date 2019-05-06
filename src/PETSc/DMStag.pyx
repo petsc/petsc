@@ -86,7 +86,7 @@ cdef class DMStag(DM):
             assert(nprocs==ndim)
 
         # ownership ranges
-        cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
+        cdef PetscInt *lx = NULL, *ly = NULL, *lz = NULL
         if ownership_ranges is not None:
             nranges = asStagOwnershipRanges(ownership_ranges, ndim, &m, &n, &p, &lx, &ly, &lz)       
             assert(nranges==ndim)
@@ -141,7 +141,7 @@ cdef class DMStag(DM):
 
     def setOwnershipRanges(self, ranges):
         cdef PetscInt dim=0, m=PETSC_DECIDE, n=PETSC_DECIDE, p=PETSC_DECIDE
-        cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
+        cdef PetscInt *lx = NULL, *ly = NULL, *lz = NULL
         CHKERR( DMGetDimension(self.dm, &dim) )
         CHKERR( DMStagGetNumRanks(self.dm, &m, &n, &p) )
         ownership_ranges = asStagOwnershipRanges(ranges, dim, &m, &n, &p, &lx, &ly, &lz)
