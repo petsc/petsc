@@ -22,17 +22,6 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  PetscBool      iascii;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode PCSetUp_Cholesky(PC pc)
 {
   PetscErrorCode         ierr;
@@ -311,7 +300,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   pc->ops->applytranspose      = PCApplyTranspose_Cholesky;
   pc->ops->setup               = PCSetUp_Cholesky;
   pc->ops->setfromoptions      = PCSetFromOptions_Cholesky;
-  pc->ops->view                = PCView_Cholesky;
+  pc->ops->view                = PCView_Factor;
   pc->ops->applyrichardson     = 0;
   PetscFunctionReturn(0);
 }
