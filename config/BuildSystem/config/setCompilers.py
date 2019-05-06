@@ -1040,6 +1040,7 @@ class Configure(config.base.Configure):
 
   def insertCompilerFlag(self, flag, compilerOnly):
     '''DANGEROUS: Put in the compiler flag without checking'''
+    if not flag: return
     flagsArg = self.getCompilerFlagsArg(compilerOnly)
     setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
     self.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
@@ -1073,6 +1074,11 @@ class Configure(config.base.Configure):
     if not self.argDB['with-pic'] and not useSharedLibraries:
       self.logPrint("Skip checking PIC options on user request")
       return
+    if self.argDB['with-pic'] and not useSharedLibraries:
+      # this is a flaw in configure; it is a legitimate use case where PETSc is built with PIC flags but not shared libraries
+      # to fix it the capability to build shared libraries must be enabled in configure if --with-pic=true even if shared libraries are off and this
+      # test must use that capability instead of using the default shared library build in that case which is static libraries
+      raise RuntimeError("Cannot determine compiler PIC flags if shared libraries is turned off\nEither run using --with-shared-libraries or --with-pic=0 and supply the compiler PIC flag via CFLAGS, CXXXFLAGS, and FCFLAGS\n")
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
@@ -1089,7 +1095,10 @@ class Configure(config.base.Configure):
       compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
       oldCompilerFlags = getattr(self, compilerFlagsArg)
       for testFlag in self.generatePICGuesses():
-        self.logPrint('Trying '+language+' compiler flag '+testFlag)
+        if testFlag:
+          self.logPrint('Trying '+language+' compiler flag '+testFlag+' for PIC code')
+        else:
+          self.logPrint('Trying '+language+' for PIC code without any compiler flag')
         acceptedPIC = 1
         try:
           self.addCompilerFlag(testFlag, compilerOnly = 1)
@@ -1100,7 +1109,10 @@ class Configure(config.base.Configure):
           self.logPrint('Rejected '+language+' compiler flag '+testFlag+' because shared linker cannot handle it')
           setattr(self, compilerFlagsArg, oldCompilerFlags)
           continue
-        self.logPrint('Accepted '+language+' compiler flag '+testFlag)
+        if testFlag:
+          self.logPrint('Accepted '+language+' compiler flag '+testFlag+' for PIC code')
+        else:
+          self.logPrint('Accepted '+language+' PIC code without compiler flag')
         self.isPIC = 1
         break
       self.popLanguage()
