@@ -100,69 +100,6 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 }
 
 /*@
-   KSPGetTabLevel - Gets the number of tabs that ASCII output used by ksp.
-
-   Not Collective
-
-   Input Parameter:
-.  ksp - a KSP object.
-
-   Output Parameter:
-.   tab - the number of tabs
-
-   Level: developer
-
-    Notes:
-    this is used in conjunction with KSPSetTabLevel() to manage the output from the KSP and its PC coherently.
-
-
-.seealso:  KSPSetTabLevel()
-
-@*/
-PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectGetTabLevel((PetscObject)ksp, tab);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-   KSPSetTabLevel - Sets the number of tabs that ASCII output for the ksp andn its pc will use.
-
-   Not Collective
-
-   Input Parameters:
-+  ksp - a KSP object
--  tab - the number of tabs
-
-   Level: developer
-
-    Notes:
-    this is used to manage the output from KSP and PC objects that are imbedded in other objects,
-           for example, the KSP object inside a SNES object. By indenting each lower level further the heirarchy
-           of objects is very clear.  By setting the KSP object's tab level with KSPSetTabLevel() its PC object
-           automatically receives the same tab level, so that whatever objects the pc might create are tabbed
-           appropriately, too.
-
-.seealso:  KSPGetTabLevel()
-@*/
-PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectSetTabLevel((PetscObject)ksp, tab);CHKERRQ(ierr);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  /* Do we need a PCSetTabLevel()? */
-  ierr = PetscObjectSetTabLevel((PetscObject)ksp->pc, tab);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
    KSPSetUseFischerGuess - Use the Paul Fischer algorithm
 
    Logically Collective on KSP

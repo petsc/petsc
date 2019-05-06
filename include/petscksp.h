@@ -322,8 +322,6 @@ PETSC_EXTERN PetscErrorCode KSPGetOperatorsSet(KSP,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode KSPSetOptionsPrefix(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode KSPAppendOptionsPrefix(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode KSPGetOptionsPrefix(KSP,const char*[]);
-PETSC_EXTERN PetscErrorCode KSPSetTabLevel(KSP,PetscInt);
-PETSC_EXTERN PetscErrorCode KSPGetTabLevel(KSP,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode KSPSetDiagonalScale(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetDiagonalScale(KSP,PetscBool*);
