@@ -1,0 +1,42 @@
+Solving ODE "hull1972a3" with dt 0.010000, final time 5.000000 and system size 1.
+      TSAdapt glee glee 0:35 step   0 accepted t=0          + 1.000e-02 dt=1.000e-01  wlte=1.44e-06  wltea=2.89e-06 wlter=2.86e-06
+      TSAdapt glee glee 0:35 step   1 accepted t=0.01       + 1.000e-01 dt=2.296e-01  wlte=0.0112  wltea=0.0236 wlter=0.0212
+      TSAdapt glee glee 0:35 step   2 accepted t=0.11       + 2.296e-01 dt=3.834e-01  wlte=0.0352  wltea=0.0844 wlter=0.0605
+      TSAdapt glee glee 0:35 step   3 rejected t=0.339567   + 3.834e-01 dt=1.876e-01  wlte= 3.89  wltea= 11.4 wlter=  5.9
+      TSAdapt glee glee 0:35 step   3 accepted t=0.339567   + 1.876e-01 dt=2.061e-01  wlte= 0.17  wltea=0.451 wlter=0.272
+      TSAdapt glee glee 0:35 step   4 rejected t=0.527184   + 2.061e-01 dt=1.681e-01  wlte=0.503  wltea= 1.48 wlter= 0.76
+      TSAdapt glee glee 0:35 step   4 accepted t=0.527184   + 1.681e-01 dt=1.679e-01  wlte=0.227  wltea=0.658 wlter=0.347
+      TSAdapt glee glee 0:35 step   5 accepted t=0.695235   + 1.679e-01 dt=1.528e-01  wlte=0.305  wltea=0.958 wlter=0.448
+      TSAdapt glee glee 0:35 step   6 accepted t=0.863177   + 1.528e-01 dt=1.442e-01  wlte=0.248  wltea=0.827 wlter=0.353
+      TSAdapt glee glee 0:35 step   7 accepted t=1.01596    + 1.442e-01 dt=1.422e-01  wlte=0.198  wltea=0.694 wlter=0.277
+      TSAdapt glee glee 0:35 step   8 accepted t=1.16016    + 1.422e-01 dt=1.459e-01  wlte=0.164  wltea=0.592 wlter=0.226
+      TSAdapt glee glee 0:35 step   9 accepted t=1.30236    + 1.459e-01 dt=1.552e-01  wlte=0.139  wltea=0.512 wlter= 0.19
+      TSAdapt glee glee 0:35 step  10 accepted t=1.44824    + 1.552e-01 dt=1.695e-01  wlte=0.124  wltea=0.461 wlter= 0.17
+      TSAdapt glee glee 0:35 step  11 accepted t=1.60341    + 1.695e-01 dt=1.829e-01  wlte=0.132  wltea=0.484 wlter=0.182
+      TSAdapt glee glee 0:35 step  12 accepted t=1.77293    + 1.829e-01 dt=1.847e-01  wlte=0.179  wltea=0.632 wlter= 0.25
+      TSAdapt glee glee 0:35 step  13 accepted t=1.95586    + 1.847e-01 dt=1.825e-01  wlte=0.207  wltea=0.688 wlter=0.296
+      TSAdapt glee glee 0:35 step  14 accepted t=2.14052    + 1.825e-01 dt=1.918e-01  wlte=0.175  wltea=0.538 wlter=0.259
+      TSAdapt glee glee 0:35 step  15 accepted t=2.323      + 1.918e-01 dt=2.156e-01  wlte=0.147  wltea=0.411 wlter=0.228
+      TSAdapt glee glee 0:35 step  16 accepted t=2.51478    + 2.156e-01 dt=3.031e-01  wlte=0.0674  wltea=0.168 wlter=0.113
+      TSAdapt glee glee 0:35 step  17 accepted t=2.73039    + 3.031e-01 dt=2.969e-01  wlte=0.337  wltea=0.713 wlter= 0.64
+      TSAdapt glee glee 0:35 step  18 rejected t=3.03349    + 2.969e-01 dt=1.749e-01  wlte= 2.47  wltea= 4.52 wlter= 5.45
+      TSAdapt glee glee 0:35 step  18 rejected t=3.03349    + 1.749e-01 dt=1.405e-01  wlte=0.761  wltea= 1.47 wlter= 1.57
+      TSAdapt glee glee 0:35 step  18 rejected t=3.03349    + 1.405e-01 dt=1.229e-01  wlte=0.552  wltea= 1.09 wlter= 1.12
+      TSAdapt glee glee 0:35 step  18 accepted t=3.03349    + 1.229e-01 dt=1.124e-01  wlte=0.465  wltea=0.923 wlter=0.936
+      TSAdapt glee glee 0:35 step  19 accepted t=3.15636    + 1.124e-01 dt=1.051e-01  wlte=0.402  wltea=0.756 wlter=0.858
+      TSAdapt glee glee 0:35 step  20 accepted t=3.26878    + 1.051e-01 dt=1.006e-01  wlte=0.347  wltea=0.623 wlter=0.783
+      TSAdapt glee glee 0:35 step  21 accepted t=3.37391    + 1.006e-01 dt=9.817e-02  wlte=0.303  wltea=0.521 wlter=0.723
+      TSAdapt glee glee 0:35 step  22 accepted t=3.47448    + 9.817e-02 dt=9.752e-02  wlte=0.268  wltea=0.444 wlter=0.674
+      TSAdapt glee glee 0:35 step  23 accepted t=3.57265    + 9.752e-02 dt=9.837e-02  wlte=0.239  wltea=0.383 wlter=0.634
+      TSAdapt glee glee 0:35 step  24 accepted t=3.67017    + 9.837e-02 dt=1.006e-01  wlte=0.214  wltea=0.334 wlter=0.599
+      TSAdapt glee glee 0:35 step  25 accepted t=3.76854    + 1.006e-01 dt=1.044e-01  wlte=0.193  wltea=0.292 wlter=0.567
+      TSAdapt glee glee 0:35 step  26 accepted t=3.86916    + 1.044e-01 dt=1.098e-01  wlte=0.173  wltea=0.255 wlter=0.535
+      TSAdapt glee glee 0:35 step  27 accepted t=3.97351    + 1.098e-01 dt=1.176e-01  wlte=0.154  wltea=0.223 wlter=0.499
+      TSAdapt glee glee 0:35 step  28 accepted t=4.08334    + 1.176e-01 dt=1.287e-01  wlte=0.135  wltea=0.191 wlter=0.457
+      TSAdapt glee glee 0:35 step  29 accepted t=4.20093    + 1.287e-01 dt=1.457e-01  wlte=0.113  wltea=0.158 wlter=  0.4
+      TSAdapt glee glee 0:35 step  30 accepted t=4.32967    + 1.457e-01 dt=1.750e-01  wlte=0.0865  wltea=0.119 wlter=0.315
+      TSAdapt glee glee 0:35 step  31 accepted t=4.47535    + 1.750e-01 dt=1.748e-01  wlte=0.0417  wltea=0.0571 wlter=0.155
+      TSAdapt glee glee 0:35 step  32 accepted t=4.65036    + 1.748e-01 dt=1.748e-01  wlte=0.0135  wltea=0.0185 wlter=0.0498
+      TSAdapt glee glee 0:35 step  33 accepted t=4.82518    + 1.748e-01 dt=2.387e-01  wlte=0.0523  wltea=0.0724 wlter=0.189
+Estimated Error = 2.062832E-04.
+Error           = 2.371583E-04.

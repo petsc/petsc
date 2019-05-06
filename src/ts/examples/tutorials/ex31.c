@@ -1190,7 +1190,8 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   Mat             Jac = NULL;       /* Jacobian matrix                        */
   Vec             Yerr;             /* Auxiliary solution vector              */
   PetscReal       err_norm;         /* Estimated error norm                   */
-
+  PetscReal       final_time;       /* Actual final time from the integrator  */
+  
   PetscFunctionBegin;
   N = GetSize((const char *)&ptype[0]);
   if (N < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Illegal problem specification.\n");
@@ -1216,7 +1217,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = TSSetSolution(ts,Y);CHKERRQ(ierr);
   /* Specify left/right-hand side functions                               */
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
-
+  
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP) || (!strcmp(time_scheme,TSGLEE)))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
@@ -1238,6 +1239,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Solve */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&final_time);CHKERRQ(ierr);
 
   /* Get the estimated error, if available */
   ierr = VecDuplicate(Y,&Yerr);CHKERRQ(ierr);
@@ -1249,7 +1251,10 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Exact solution */
   ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);
-  ierr = ExactSolution(Yex,&ptype[0],tfinal,exact_flag);CHKERRQ(ierr);
+  if(PetscAbsScalar(final_time-tfinal)>2.*PETSC_MACHINE_EPSILON) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Note: There is a difference between the prescribed final time %g and the actual final time, %g.\n",(double)tfinal,(double)final_time);CHKERRQ(ierr);
+  }
+  ierr = ExactSolution(Yex,&ptype[0],final_time,exact_flag);CHKERRQ(ierr);
 
   /* Calculate Error */
   ierr = VecAYPX(Yex,-1.0,Y);CHKERRQ(ierr);
@@ -1320,11 +1325,21 @@ int main(int argc, char **argv)
 /*TEST
 
     test:
-
-    test:
       suffix: 2
       args: -ts_type glee -final_time 5 -ts_adapt_type none
       timeoutfactor: 3
       requires: !single
+
+    test:
+      suffix: 3
+      args: -ts_type glee -final_time 5 -ts_adapt_type glee -ts_adapt_monitor  -ts_max_steps 50  -problem hull1972a3 -ts_adapt_glee_use_local 1
+      timeoutfactor: 3
+      requires: !single
+
+    test:
+      suffix: 4
+      args: -ts_type glee -final_time 5 -ts_adapt_type glee -ts_adapt_monitor  -ts_max_steps 50  -problem hull1972a3  -ts_max_reject 100 -ts_adapt_glee_use_local 0
+      timeoutfactor: 3
+      requires: !single !__float128
 
 TEST*/
