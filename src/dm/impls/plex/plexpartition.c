@@ -1800,18 +1800,17 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   ubvec[0] = pm->imbalanceRatio;
   /* Weight cells by dofs on cell by default */
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  for (v = 0; v < nvtxs; ++v) vwgt[v] = 1;
   if (section) {
     PetscInt cStart, cEnd, dof;
 
-    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-    for (v = cStart; v < cEnd; ++v) {
+    /* WARNING: Assumes that meshes with overlap have the overlapped cells at the end of the stratum. */
+    /* To do this properly, we should use the cell numbering created in DMPlexCreatePartitionerGraph. */
+    ierr = DMPlexGetHeightStratum(dm, part->height, &cStart, &cEnd);CHKERRQ(ierr);
+    for (v = cStart; v < cStart + numVertices; ++v) {
       ierr = PetscSectionGetDof(section, v, &dof);CHKERRQ(ierr);
-      /* WARNING: Assumes that meshes with overlap have the overlapped cells at the end of the stratum. */
-      /* To do this properly, we should use the cell numbering created in DMPlexCreatePartitionerGraph. */
-      if (v-cStart < numVertices) vwgt[v-cStart] = PetscMax(dof, 1);
+      vwgt[v-cStart] = PetscMax(dof, 1);
     }
-  } else {
-    for (v = 0; v < nvtxs; ++v) vwgt[v] = 1;
   }
   wgtflag |= 2; /* have weights on graph vertices */
 
@@ -2035,7 +2034,7 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
   ierr = SCOTCH_archInit(&archdat);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_archCmplt(&archdat, nparts);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_dgraphMapInit(&grafdat, &mappdat, &archdat, part);CHKERRPTSCOTCH(ierr);
-  
+
   ierr = SCOTCH_dgraphMapCompute(&grafdat, &mappdat, &stradat);CHKERRPTSCOTCH(ierr);
   SCOTCH_dgraphMapExit(&grafdat, &mappdat);
   SCOTCH_archExit(&archdat);
@@ -2126,22 +2125,21 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
 
   if (nparts == 1) {
     ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));CHKERRQ(ierr);
-  } else {
+  } else { /* Weight cells by dofs on cell by default */
     PetscSection section;
-    /* Weight cells by dofs on cell by default */
+
+    /* WARNING: Assumes that meshes with overlap have the overlapped cells at the end of the stratum. */
+    /* To do this properly, we should use the cell numbering created in DMPlexCreatePartitionerGraph. */
     ierr = PetscMalloc1(PetscMax(nvtxs,1),&vwgt);CHKERRQ(ierr);
+    for (v = 0; v < PetscMax(nvtxs,1); ++v) vwgt[v] = 1;
     ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
     if (section) {
-      PetscInt vStart, eEnd, dof;
-      ierr = DMPlexGetHeightStratum(dm, 0, &vStart, &eEnd);CHKERRQ(ierr);
-      for (v = vStart; v < eEnd; ++v) {
+      PetscInt vStart, vEnd, dof;
+      ierr = DMPlexGetHeightStratum(dm, part->height, &vStart, &vEnd);CHKERRQ(ierr);
+      for (v = vStart; v < vStart + numVertices; ++v) {
         ierr = PetscSectionGetDof(section, v, &dof);CHKERRQ(ierr);
-        /* WARNING: Assumes that meshes with overlap have the overlapped cells at the end of the stratum. */
-        /* To do this properly, we should use the cell numbering created in DMPlexCreatePartitionerGraph. */
-        if (v-vStart < numVertices) vwgt[v-vStart] = PetscMax(dof, 1);
+        vwgt[v-vStart] = PetscMax(dof, 1);
       }
-    } else {
-      for (v = 0; v < nvtxs; ++v) vwgt[v] = 1;
     }
     {
       PetscPartitioner_PTScotch *pts = (PetscPartitioner_PTScotch *) part->data;
@@ -2693,7 +2691,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
 /* The two functions below are used by DMPlexRebalanceSharedPoints which errors
  * when PETSc is built without ParMETIS. To avoid -Wunused-function, we take
  * them out in that case. */
-#if defined(PETSC_HAVE_PARMETIS) 
+#if defined(PETSC_HAVE_PARMETIS)
 /*@C
 
   DMPlexRewriteSF - Rewrites the ownership of the SF of a DM (in place).
@@ -3142,7 +3140,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     if (!rank) {
       PetscInt *adjncy_g, *xadj_g, *vtxwgt_g;
       lenadjncy = 0;
-  
+
       for (i=0; i<numRows; i++) {
         PetscInt temp=0;
         ierr = MatGetRow(As, i, &temp, NULL, NULL);CHKERRQ(ierr);
