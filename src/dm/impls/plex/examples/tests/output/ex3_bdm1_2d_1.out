@@ -1,2 +1,2 @@
-Function tests FAIL for order 1 at tolerance 1e-10 error 0.816497
-Function tests FAIL for order 1 derivatives at tolerance 1e-10 error 2.
+Function tests pass for order 1 at tolerance 1e-10
+Function tests pass for order 1 derivatives at tolerance 1e-10

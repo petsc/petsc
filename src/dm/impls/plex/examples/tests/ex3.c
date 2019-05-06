@@ -936,9 +936,16 @@ int main(int argc, char **argv)
   if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
   if (user.testInjector) {ierr = TestInjector(dm, &user);CHKERRQ(ierr);}
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
-  if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {
-    ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
-    ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
+  {
+    PetscDualSpace dsp;
+    PetscInt       k;
+
+    ierr = PetscFEGetDualSpace(user.fe, &dsp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+    if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE && k == 0) {
+      ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
+      ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
+    }
   }
   ierr = CheckConvergence(dm, 3, &user);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&user.fe);CHKERRQ(ierr);
