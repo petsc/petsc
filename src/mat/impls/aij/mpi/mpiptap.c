@@ -218,7 +218,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ        *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
-  Mat_SeqAIJ        *ap,*p_loc,*p_oth,*c_seq;
+  Mat_SeqAIJ        *ap,*p_loc,*p_oth=NULL,*c_seq;
   Mat_APMPI         *ptap = c->ap;
   Mat               AP_loc,C_loc,C_oth;
   PetscInt          i,rstart,rend,cm,ncols,row,*api,*apj,am = A->rmap->n,apnz,nout;
