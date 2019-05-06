@@ -261,8 +261,8 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetSymTrans",MAT_CLASSID,&MAT_Getsymtranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSymTransR",MAT_CLASSID,&MAT_Getsymtransreduced);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_CLASSID,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPARSECopyTo",MAT_CLASSID,&MAT_CUSPARSECopyToGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatViennaCLCopyTo",MAT_CLASSID,&MAT_ViennaCLCopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCUSPARSCopyTo",MAT_CLASSID,&MAT_CUSPARSECopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatVCLCopyTo",  MAT_CLASSID,&MAT_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch",MAT_CLASSID,&MAT_SetValuesBatch);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&MATCOLORING_Apply);CHKERRQ(ierr);
