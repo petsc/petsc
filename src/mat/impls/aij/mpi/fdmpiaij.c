@@ -276,7 +276,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
        (3-3) Loop over block rows of vector, putting results into Jacobian matrix
        */
       nrows_k = nrows[nbcols++];
-      ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
 
       if (coloring->htype[0] == 'w') {
         for (l=0; l<nrows_k; l++) {
@@ -290,7 +289,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
           nz++;
         }
       }
-      ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
     }
   } else { /* bcols == 1 */
     for (k=0; k<ncolors; k++) {
