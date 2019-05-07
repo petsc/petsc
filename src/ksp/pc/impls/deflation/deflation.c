@@ -271,36 +271,20 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-/*
-   PCCreate_Deflation - Creates a Deflation preconditioner context, PC_DeflationPC_Deflation,
-   and sets this as the private data within the generic preconditioning
-   context, PC, that was created within PCCreate().
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCCreate()
-*/
-
 /*MC
-     PCDEFLATION - Deflation (i.e. diagonal scaling preconditioning)
+     PCDEFLATION - Deflation preconditioner shifts part of the spectrum to zero (deflates)
+     or to a predefined value
 
    Options Database Key:
-+    -pc_jacobi_type <diagonal,rowmax,rowsum> - approach for forming the preconditioner
++    -pc_deflation_type <init,pre,post> - selects approach to deflation (default: pre)
 -    -pc_jacobi_abs - use the absolute value of the diagonal entry
 
    Level: beginner
 
-  Concepts: Deflation, diagonal scaling, preconditioners
+  Concepts: Deflation, preconditioners
 
   Notes:
-    By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric
-         can scale each side of the matrix by the square root of the diagonal entries.
-
-         Zero entries along the diagonal are replaced with the value 1.0
-
-         See PCPBDEFLATION for a point-block Deflation preconditioner
+    todo
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCDeflationSetType(), PCDeflationSetSpace()
@@ -312,10 +296,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /*
-     Creates the private data structure for this preconditioner and
-     attach it to the PC object.
-  */
   ierr     = PetscNewLog(pc,&def);CHKERRQ(ierr);
   pc->data = (void*)def;
 
