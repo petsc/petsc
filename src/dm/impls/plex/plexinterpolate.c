@@ -344,6 +344,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, cellDim, coneSizeH, cone, &numCellFacesH, &numCellFacesT, &faceSize, &cellFaces);CHKERRQ(ierr);
   } else if (pEnd[cellDepth] > pStart[cellDepth]) {
     ierr = DMPlexGetFaces_Internal(dm, cellDim, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);
+    faceSizeAllH = faceSizeAllT = faceSizeAll;
   }
   if (faceSizeAll > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSizeAll);
 
