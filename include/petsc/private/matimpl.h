@@ -148,7 +148,7 @@ struct _MatOps {
   PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*placeholder_98)(Mat);
+  PetscErrorCode (*pintocpu)(Mat,PetscBool);
   /*99*/
   PetscErrorCode (*placeholder_99)(Mat);
   PetscErrorCode (*placeholder_100)(Mat);
@@ -403,6 +403,7 @@ struct _p_Mat {
   PetscBool              structure_only;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadFlag       valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+  PetscBool              pinnedtocpu;
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   char                   *solvertype;

@@ -1872,3 +1872,26 @@ PetscErrorCode VecSetInf(Vec xin)
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+/*@
+     VecPinToCPU - marks a vector to temprarily stay on the CPU and perform computations on the CPU
+
+   Input Parameters:
++   v - the vector
+-   flg - pin to the CPU if value of PETSC_TRUE
+
+@*/
+PetscErrorCode VecPinToCPU(Vec v,PetscBool flg)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  PetscErrorCode ierr;
+
+  if (v->pinnedtocpu == flg) return 0;
+  v->pinnedtocpu = flg;
+  if (v->ops->pintocpu) {
+    ierr = (*v->ops->pintocpu)(v,flg);CHKERRQ(ierr);
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
