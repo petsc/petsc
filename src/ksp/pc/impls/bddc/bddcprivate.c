@@ -2376,9 +2376,9 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
 
           ierr = DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&size,&closure);CHKERRQ(ierr);
           for (k = 0; k < 2*size; k += 2) {
-            PetscInt s, p = closure[k], off, dof, cdof;
+            PetscInt s, pp, p = closure[k], off, dof, cdof;
 
-            ierr = PetscSectionGetConstraintDof(subSection, p, &cdof);CHKERRQ(ierr);
+            ierr = PetscSectionGetConstraintDof(subSection,p,&cdof);CHKERRQ(ierr);
             ierr = PetscSectionGetOffset(subSection,p,&off);CHKERRQ(ierr);
             ierr = PetscSectionGetDof(subSection,p,&dof);CHKERRQ(ierr);
             for (s = 0; s < dof-cdof; s++) {
@@ -2387,6 +2387,20 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
                 ids[cum++] = off+s;
               } else { /* cross-vertex */
                 pids[cump++] = off+s;
+              }
+            }
+            ierr = DMPlexGetTreeParent(dm,p,&pp,NULL);CHKERRQ(ierr);
+            if (pp != p) {
+              ierr = PetscSectionGetConstraintDof(subSection,pp,&cdof);CHKERRQ(ierr);
+              ierr = PetscSectionGetOffset(subSection,pp,&off);CHKERRQ(ierr);
+              ierr = PetscSectionGetDof(subSection,pp,&dof);CHKERRQ(ierr);
+              for (s = 0; s < dof-cdof; s++) {
+                if (PetscBTLookupSet(btvt,off+s)) continue;
+                if (!PetscBTLookup(btv,off+s)) {
+                  ids[cum++] = off+s;
+                } else { /* cross-vertex */
+                  pids[cump++] = off+s;
+                }
               }
             }
           }
@@ -7115,9 +7129,11 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
     /* attach info on disconnected subdomains if present */
     if (pcbddc->n_local_subs) {
-      PetscInt *local_subs;
+      PetscInt *local_subs,n,totn;
 
-      ierr = PetscMalloc1(N,&local_subs);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(matis->A,&n,NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&local_subs);CHKERRQ(ierr);
+      for (i=0;i<n;i++) local_subs[i] = pcbddc->n_local_subs;
       for (i=0;i<pcbddc->n_local_subs;i++) {
         const PetscInt *idxs;
         PetscInt       nl,j;
@@ -7127,7 +7143,8 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
         for (j=0;j<nl;j++) local_subs[idxs[j]] = i;
         ierr = ISRestoreIndices(pcbddc->local_subs[i],&idxs);CHKERRQ(ierr);
       }
-      pcbddc->mat_graph->n_local_subs = pcbddc->n_local_subs;
+      for (i=0,totn=0;i<n;i++) totn = PetscMax(totn,local_subs[i]);
+      pcbddc->mat_graph->n_local_subs = totn + 1;
       pcbddc->mat_graph->local_subs = local_subs;
     }
   }
