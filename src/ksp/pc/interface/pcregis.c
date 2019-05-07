@@ -58,6 +58,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC);
 #endif
 PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC);
 
 /*@C
    PCRegisterAll - Registers all of the preconditioners in the PC package.
@@ -135,5 +136,6 @@ PetscErrorCode  PCRegisterAll(void)
 #endif
   ierr = PCRegister(PCBDDC         ,PCCreate_BDDC);CHKERRQ(ierr);
   ierr = PCRegister(PCLMVM         ,PCCreate_LMVM);CHKERRQ(ierr);
+  ierr = PCRegister(PCDEFLATION    ,PCCreate_Deflation);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

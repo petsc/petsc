@@ -33,6 +33,7 @@ PETSC_EXTERN const char *const PCMGCycleTypes[];
 PETSC_EXTERN const char *const PCMGGalerkinTypes[];
 PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN const char *const PCPatchConstructTypes[];
+PETSC_EXTERN const char *const PCDeflationTypes[];
 PETSC_EXTERN const char *const PCFailedReasons[];
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
@@ -416,4 +417,8 @@ PETSC_EXTERN PetscErrorCode PCLMVMClearIS(PC);
 
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
+PETSC_EXTERN PetscErrorCode PCDeflationSetType(PC,PCDeflationType);
+PETSC_EXTERN PetscErrorCode PCDeflationGetType(PC,PCDeflationType*);
+
 #endif /* PETSCPC_H */
+
