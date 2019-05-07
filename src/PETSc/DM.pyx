@@ -469,7 +469,8 @@ cdef class DM(Object):
         cdef PetscDMLabel clbl = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMRemoveLabel(self.dm, cname, &clbl) )
-        # CHKERR( DMLabelDestroy(&clbl) )
+        # TODO: Once DMLabel is wrapped, this should return the label, like the C function.
+        CHKERR( DMLabelDestroy(&clbl) )
 
     def getLabelValue(self, name, point):
         cdef PetscInt cpoint = asInt(point), value = 0
