@@ -419,6 +419,7 @@ PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
 PETSC_EXTERN PetscErrorCode PCDeflationSetType(PC,PCDeflationType);
 PETSC_EXTERN PetscErrorCode PCDeflationGetType(PC,PCDeflationType*);
+PETSC_EXTERN PetscErrorCode PCDeflationSetSpace(PC,Mat,PetscBool);
 
 #endif /* PETSCPC_H */
 

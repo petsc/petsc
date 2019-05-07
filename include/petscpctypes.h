@@ -318,8 +318,47 @@ typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, 
 
 .seealso: PCDeflationSetType()
 
+.seealso: PCDeflationSetType(), PCDEFLATION
 E*/
 typedef enum {PC_DEFLATION_INIT,PC_DEFLATION_PRE,PC_DEFLATION_POST} PCDeflationType;
+
+/*E
+    PCDeflationSpaceType - Type of deflation space TODO improve doc
+    Level: beginner
+
+    Values:
++   PC_DEFLATION_SPACE_HAAR        - directly assembled Haar (db2) wawelet with cut-off
+.   PC_DEFLATION_SPACE_JACKET_HAAR - directly assembled Haar ......
+.   PC_DEFLATION_SPACE_DB2         - implicit product of db2 (2 coefficient Daubechies wavelet)/Haar wavelet
+.   PC_DEFLATION_SPACE_DB4         -
+.   PC_DEFLATION_SPACE_DB8         -
+.   PC_DEFLATION_SPACE_DB16        -
+.   PC_DEFLATION_SPACE_BIORTH22    -
+.   PC_DEFLATION_SPACE_MEYER       -
+.   PC_DEFLATION_SPACE_AGGREGATION - aggregates local indices (given by operator matix distribution) into subdomain
+.   PC_DEFLATION_SPACE_SLEPC       - computes eigenvectors using SLEPc
+.   PC_DEFLATION_SPACE_SLEPC_CHEAP - same AS DEFLATION_SPACE_SLEPC, but it directly assembles AW by scaling columns of W with eigenvalues
+-   PC_DEFLATION_SPACE_USER        - indicates space set by user
+
+    Notes:
+      SLEPc....
+
+.seealso: PCDeflationComputeSpace(), PCDEFLATION
+E*/
+typedef enum {
+  PC_DEFLATION_SPACE_HAAR,
+  PC_DEFLATION_SPACE_JACKET_HAAR,
+  PC_DEFLATION_SPACE_DB2,
+  PC_DEFLATION_SPACE_DB4,
+  PC_DEFLATION_SPACE_DB8,
+  PC_DEFLATION_SPACE_DB16,
+  PC_DEFLATION_SPACE_BIORTH22,
+  PC_DEFLATION_SPACE_MEYER,
+  PC_DEFLATION_SPACE_AGGREGATION,
+  PC_DEFLATION_SPACE_SLEPC,
+  PC_DEFLATION_SPACE_SLEPC_CHEAP,
+  PC_DEFLATION_SPACE_USER
+} PCDeflationSpaceType;
 
 /*E
     PCFailedReason - indicates type of PC failure
