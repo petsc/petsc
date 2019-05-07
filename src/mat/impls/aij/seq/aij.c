@@ -2175,46 +2175,6 @@ PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
-{
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  Mat            C;
-  PetscErrorCode ierr;
-  PetscInt       i,*aj = a->j,*ai = a->i,m = A->rmap->n,len,*col;
-  MatScalar      *array = a->a;
-
-  PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
-    ierr = PetscCalloc1(1+A->cmap->n,&col);CHKERRQ(ierr);
-
-    for (i=0; i<ai[m]; i++) col[aj[i]] += 1;
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
-    ierr = MatSetSizes(C,A->cmap->n,m,A->cmap->n,m);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(C,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
-    ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,col);CHKERRQ(ierr);
-    ierr = PetscFree(col);CHKERRQ(ierr);
-  } else {
-    C = *B;
-  }
-
-  for (i=0; i<m; i++) {
-    len    = ai[i+1]-ai[i];
-    ierr   = MatSetValues_SeqAIJ(C,len,aj,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
-    array += len;
-    aj    += len;
-  }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
-    *B = C;
-  } else {
-    ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode  MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) A->data,*bij = (Mat_SeqAIJ*) B->data;
@@ -3276,7 +3236,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatLUFactor_SeqAIJ,
                                         0,
                                         MatSOR_SeqAIJ,
-                                        MatTranspose_SeqAIJ_FAST,
+                                        MatTranspose_SeqAIJ,
                                 /*1 5*/ MatGetInfo_SeqAIJ,
                                         MatEqual_SeqAIJ,
                                         MatGetDiagonal_SeqAIJ,
