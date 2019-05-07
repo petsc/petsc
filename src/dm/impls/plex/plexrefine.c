@@ -10069,7 +10069,7 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
 {
   DM             rdm;
   PetscInt      *depthSize;
-  PetscInt       dim, depth = 0, d, pStart = 0, pEnd = 0;
+  PetscInt       dim, embedDim, depth = 0, d, pStart = 0, pEnd = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -10077,6 +10077,8 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &embedDim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(rdm, embedDim);CHKERRQ(ierr);
   /* Calculate number of new points of each depth */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   if (depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated for regular refinement");

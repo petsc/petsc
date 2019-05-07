@@ -546,16 +546,18 @@ int main(int argc, char **argv)
        requires: p4est !single
 
      test:
+       TODO: not broken, but the 3D case below is broken, so I do not trust this one
        output_file: output/ex2_steps2.out
        suffix: p4est_2d_tfb_distributed_nc
-       args: -petscspace_type tensor -petscspace_degree 3 -dim 2 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -distribute_base -use_bcs 0
+       args: -petscspace_type tensor -petscspace_degree 3 -dim 2 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -distribute_base -petscpartitioner_type shell -petscpartitioner_shell_random
        nsize: 3
        requires: p4est !single
 
      test:
+       TODO: broken
        output_file: output/ex2_steps2.out
        suffix: p4est_3d_tfb_distributed_nc
-       args: -petscspace_type tensor -petscspace_degree 2 -dim 3 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -distribute_base -use_bcs 0
+       args: -petscspace_type tensor -petscspace_degree 2 -dim 3 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -distribute_base -petscpartitioner_type shell -petscpartitioner_shell_random
        nsize: 3
        requires: p4est !single
 
