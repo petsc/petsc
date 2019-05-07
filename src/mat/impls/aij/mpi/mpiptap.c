@@ -218,7 +218,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ        *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
-  Mat_SeqAIJ        *ap,*p_loc,*p_oth,*c_seq;
+  Mat_SeqAIJ        *ap,*p_loc,*p_oth=NULL,*c_seq;
   Mat_APMPI         *ptap = c->ap;
   Mat               AP_loc,C_loc,C_oth;
   PetscInt          i,rstart,rend,cm,ncols,row,*api,*apj,am = A->rmap->n,apnz,nout;
@@ -227,7 +227,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-  if (!ptap) {
+  if (!ptap->AP_loc) {
     MPI_Comm comm;
     ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
     SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
@@ -258,7 +258,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
   if (ptap->P_oth) p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
-  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ptap->P_oth is NULL. Cannot proceed!");
 
   api   = ap->i;
   apj   = ap->j;
@@ -828,7 +827,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  if (!ptap) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
+  if (!ptap->P_oth) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
 
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
 
@@ -973,7 +972,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  if (!ptap) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
+  if (!ptap->P_oth) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
 
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
 
@@ -1957,7 +1956,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-  if (!ptap) {
+  if (!ptap->AP_loc) {
     MPI_Comm comm;
     ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
     SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
