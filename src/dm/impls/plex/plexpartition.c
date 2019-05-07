@@ -27,6 +27,8 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
                                "  pages   = {71--85},\n"
                                "  year    = {1998}\n}\n";
 
+PETSC_STATIC_INLINE PetscInt DMPlex_GlobalID(PetscInt point) { return point >= 0 ? point : -(point+1); }
+
 /*@C
   DMPlexCreatePartitionerGraph - Create a CSR graph of point connections for the partitioner
 
@@ -81,9 +83,8 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     if (rank && *numVertices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
     PetscFunctionReturn(0);
   }
-  ierr = DMPlexGetHeightStratum(dm, height, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, height, &pStart, &pEnd);CHKERRQ(ierr);
   /* Build adjacency graph via a section/segbuffer */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
@@ -91,7 +92,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   /* Always use FVM adjacency to create partitioner graph */
   ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
   ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &cellNumbering);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Internal(dm, pStart, pEnd, 0, NULL, sfPoint, &cellNumbering);CHKERRQ(ierr);
   if (globalNumbering) {
     ierr = PetscObjectReference((PetscObject)cellNumbering);CHKERRQ(ierr);
     *globalNumbering = cellNumbering;
@@ -100,12 +101,12 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   /* For all boundary faces (including faces adjacent to a ghost cell), record the local cell in adjCells
      Broadcast adjCells to remoteCells (to get cells from roots) and Reduce adjCells to remoteCells (to get cells from leaves)
    */
-  ierr = PetscSFGetGraph(dm->sf, &nroots, &nleaves, &local, NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, &nroots, &nleaves, &local, NULL);CHKERRQ(ierr);
   if (nroots >= 0) {
     PetscInt fStart, fEnd, f;
 
     ierr = PetscCalloc2(nroots, &adjCells, nroots, &remoteCells);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm, height+1, &fStart, &fEnd);CHKERRQ(ierr);
     for (l = 0; l < nroots; ++l) adjCells[l] = -3;
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt *support;
@@ -113,12 +114,33 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 
       ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
-      if (supportSize == 1) adjCells[f] = cellNum[support[0]];
+      if (supportSize == 1) adjCells[f] = DMPlex_GlobalID(cellNum[support[0]]);
       else if (supportSize == 2) {
         ierr = PetscFindInt(support[0], nleaves, local, &p);CHKERRQ(ierr);
-        if (p >= 0) adjCells[f] = cellNum[support[1]];
+        if (p >= 0) adjCells[f] = DMPlex_GlobalID(cellNum[support[1]]);
         ierr = PetscFindInt(support[1], nleaves, local, &p);CHKERRQ(ierr);
-        if (p >= 0) adjCells[f] = cellNum[support[0]];
+        if (p >= 0) adjCells[f] = DMPlex_GlobalID(cellNum[support[0]]);
+      }
+      /* Handle non-conforming meshes */
+      if (supportSize > 2) {
+        PetscInt        numChildren, i;
+        const PetscInt *children;
+
+        ierr = DMPlexGetTreeChildren(dm, f, &numChildren, &children);CHKERRQ(ierr);
+        for (i = 0; i < numChildren; ++i) {
+          const PetscInt child = children[i];
+          if (fStart <= child && child < fEnd) {
+            ierr = DMPlexGetSupport(dm, child, &support);CHKERRQ(ierr);
+            ierr = DMPlexGetSupportSize(dm, child, &supportSize);CHKERRQ(ierr);
+            if (supportSize == 1) adjCells[child] = DMPlex_GlobalID(cellNum[support[0]]);
+            else if (supportSize == 2) {
+              ierr = PetscFindInt(support[0], nleaves, local, &p);CHKERRQ(ierr);
+              if (p >= 0) adjCells[child] = DMPlex_GlobalID(cellNum[support[1]]);
+              ierr = PetscFindInt(support[1], nleaves, local, &p);CHKERRQ(ierr);
+              if (p >= 0) adjCells[child] = DMPlex_GlobalID(cellNum[support[0]]);
+            }
+          }
+        }
       }
     }
     for (l = 0; l < nroots; ++l) remoteCells[l] = -1;
@@ -129,22 +151,34 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   }
   /* Combine local and global adjacencies */
   for (*numVertices = 0, p = pStart; p < pEnd; p++) {
-    const PetscInt *cone;
-    PetscInt        coneSize, c;
-
     /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
     if (nroots > 0) {if (cellNum[p] < 0) continue;}
     /* Add remote cells */
     if (remoteCells) {
+      const PetscInt gp = DMPlex_GlobalID(cellNum[p]);
+      PetscInt       coneSize, numChildren, c, i;
+      const PetscInt *cone, *children;
+
       ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
       for (c = 0; c < coneSize; ++c) {
-        if (remoteCells[cone[c]] != -1) {
+        const PetscInt point = cone[c];
+        if (remoteCells[point] >= 0 && remoteCells[point] != gp) {
           PetscInt *PETSC_RESTRICT pBuf;
-
           ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
           ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
-          *pBuf = remoteCells[cone[c]];
+          *pBuf = remoteCells[point];
+        }
+        /* Handle non-conforming meshes */
+        ierr = DMPlexGetTreeChildren(dm, point, &numChildren, &children);CHKERRQ(ierr);
+        for (i = 0; i < numChildren; ++i) {
+          const PetscInt child = children[i];
+          if (remoteCells[child] >= 0 && remoteCells[child] != gp) {
+            PetscInt *PETSC_RESTRICT pBuf;
+            ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
+            ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
+            *pBuf = remoteCells[child];
+          }
         }
       }
     }
@@ -157,13 +191,15 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
         PetscInt *PETSC_RESTRICT pBuf;
         ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
         ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
-        *pBuf = cellNum[point];
+        *pBuf = DMPlex_GlobalID(cellNum[point]);
       }
     }
     (*numVertices)++;
   }
+  ierr = PetscFree(adj);CHKERRQ(ierr);
   ierr = PetscFree2(adjCells, remoteCells);CHKERRQ(ierr);
   ierr = DMSetBasicAdjacency(dm, useCone, useClosure);CHKERRQ(ierr);
+
   /* Derive CSR graph from section/segbuffer */
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
@@ -173,15 +209,47 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     ierr = PetscSectionGetOffset(section, p, &(vOffsets[idx++]));CHKERRQ(ierr);
   }
   vOffsets[*numVertices] = size;
-  if (offsets) *offsets = vOffsets;
   ierr = PetscSegBufferExtractAlloc(adjBuffer, &graph);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellNumbering);CHKERRQ(ierr);
+
+  if (nroots >= 0) {
+    /* Filter out duplicate edges using section/segbuffer */
+    ierr = PetscSectionReset(section);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(section, 0, *numVertices);CHKERRQ(ierr);
+    for (p = 0; p < *numVertices; p++) {
+      PetscInt start = vOffsets[p], end = vOffsets[p+1];
+      PetscInt numEdges = end-start, *PETSC_RESTRICT edges;
+      ierr = PetscSortRemoveDupsInt(&numEdges, &graph[start]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(section, p, numEdges);CHKERRQ(ierr);
+      ierr = PetscSegBufferGetInts(adjBuffer, numEdges, &edges);CHKERRQ(ierr);
+      ierr = PetscMemcpy(edges, &graph[start], numEdges*sizeof(*edges));CHKERRQ(ierr);
+    }
+    ierr = PetscFree(vOffsets);CHKERRQ(ierr);
+    ierr = PetscFree(graph);CHKERRQ(ierr);
+    /* Derive CSR graph from section/segbuffer */
+    ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
+    ierr = PetscMalloc1(*numVertices+1, &vOffsets);CHKERRQ(ierr);
+    for (idx = 0, p = 0; p < *numVertices; p++) {
+      ierr = PetscSectionGetOffset(section, p, &(vOffsets[idx++]));CHKERRQ(ierr);
+    }
+    vOffsets[*numVertices] = size;
+    ierr = PetscSegBufferExtractAlloc(adjBuffer, &graph);CHKERRQ(ierr);
+  } else {
+    /* Sort adjacencies (not strictly necessary) */
+    for (p = 0; p < *numVertices; p++) {
+      PetscInt start = vOffsets[p], end = vOffsets[p+1];
+      ierr = PetscSortInt(end-start, &graph[start]);CHKERRQ(ierr);
+    }
+  }
+
+  if (offsets) *offsets = vOffsets;
   if (adjacency) *adjacency = graph;
-  /* Clean up */
+
+  /* Cleanup */
   ierr = PetscSegBufferDestroy(&adjBuffer);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  ierr = PetscFree(adj);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellNumbering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -583,6 +651,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   if (part->ops->setfromoptions) {
     ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
   }
+  ierr = PetscViewerDestroy(&part->viewerGraph);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, &part->formatGraph, &part->viewGraph);CHKERRQ(ierr);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part);CHKERRQ(ierr);
@@ -1458,6 +1527,7 @@ static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, Petsc
 static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
 {
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
+  PetscInt                  p_randomSeed = -1; /* TODO: Add this to PetscPartitioner_ParMetis */
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
@@ -1465,6 +1535,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *
   ierr = PetscOptionsEList("-petscpartitioner_parmetis_type", "Partitioning method", "", ptypes, 2, ptypes[p->ptype], &p->ptype, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-petscpartitioner_parmetis_imbalance_ratio", "Load imbalance ratio limit", "", p->imbalanceRatio, &p->imbalanceRatio, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscpartitioner_parmetis_seed", "Random seed", "", p_randomSeed, &p_randomSeed, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1495,9 +1566,11 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   /* Outputs */
   PetscInt       v, i, *assignment, *points;
   PetscMPIInt    size, rank, p;
+  PetscInt       pm_randomSeed = -1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetInt(((PetscObject)part)->options,((PetscObject)part)->prefix,"-petscpartitioner_parmetis_seed", &pm_randomSeed, NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -1537,6 +1610,8 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     if (vtxdist[p+1] == vtxdist[size]) {
       if (rank == p) {
         ierr = METIS_SetDefaultOptions(options); /* initialize all defaults */
+        options[METIS_OPTION_DBGLVL] = pm->debugFlag;
+        options[METIS_OPTION_SEED]   = pm_randomSeed;
         if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
         if (metis_ptype == 1) {
           PetscStackPush("METIS_PartGraphRecursive");
@@ -1558,8 +1633,9 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
         }
       }
     } else {
-      options[0] = 1;
+      options[0] = 1; /*use options */
       options[1] = pm->debugFlag;
+      options[2] = (pm_randomSeed == -1) ? 15 : pm_randomSeed; /* default is GLOBAL_SEED=15 from `libparmetis/defs.h` */
       PetscStackPush("ParMETIS_V3_PartKway");
       ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &comm);
       PetscStackPop;

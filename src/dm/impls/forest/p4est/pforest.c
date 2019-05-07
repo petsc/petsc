@@ -1788,16 +1788,18 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
     PetscInt     coordDim;
     Vec          coordVec;
     PetscSection coordSec;
+    PetscBool    localized;
 
-    ierr = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm,&coordVec);CHKERRQ(ierr);
-    ierr = DMGetCoordinateSection(dm,&coordSec);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coordVec);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocalizedLocal(dm, &localized);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSec);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; c++) {
       PetscInt    dof;
       PetscScalar *cellCoords = NULL;
 
       ierr = DMPlexVecGetClosure(dm, coordSec, coordVec, c, &dof, &cellCoords);CHKERRQ(ierr);
-      if (!dm->periodic && dof != P4EST_CHILDREN * coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners");
+      if (!localized && dof != P4EST_CHILDREN * coordDim) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners: (dof) %D != %D * %D (sdim)", dof, P4EST_CHILDREN, coordDim);
       for (v = 0; v < P4EST_CHILDREN; v++) {
         PetscInt i, lim = PetscMin(3, coordDim);
         PetscInt p4estVert = PetscVertToP4estVert[v];

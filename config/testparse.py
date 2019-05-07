@@ -148,7 +148,7 @@ def _getSeparateTestvars(testDict):
 
   # Now check args
   if 'args' not in testDict: return sepvars
-  for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
+  for varset in re.split('(^|\W)-(?=[a-zA-Z])',testDict['args']):
     if not varset.strip(): continue
     if '{{' in varset:
       # Assuming only one for loop per var specification
@@ -165,7 +165,7 @@ def _getNewArgs(args):
   """
   newargs=''
   if not args.strip(): return args
-  for varset in re.split('-(?=[a-zA-Z])',args):
+  for varset in re.split('(^|\W)-(?=[a-zA-Z])',args):
     if not varset.strip(): continue
     if '{{' not in varset:
       if 'separate' not in varset:

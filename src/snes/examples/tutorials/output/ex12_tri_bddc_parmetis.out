@@ -1,7 +1,9 @@
   0 SNES Function norm 5.83179 
-    0 KSP Residual norm 5.05497 
-    1 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 1
+    0 KSP Residual norm 5.0581 
+    1 KSP Residual norm 0.0106943 
+    2 KSP Residual norm 7.46624e-07 
+    3 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_RTOL iterations 3
   1 SNES Function norm < 1.e-11
 L_2 Error: 0.00527027
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
@@ -9,7 +11,7 @@ SNES Object: 4 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=1
+  total number of linear solver iterations=3
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 4 MPI processes
@@ -66,15 +68,15 @@ SNES Object: 4 MPI processes
       Benign subspace trick is active: 0
       Algebraic computation of no-net-flux: 0
     ********************************** STATISTICS AT LEVEL 0 **********************************
-      Global dofs sizes: all 49 interface 7 coarse 1
-      Coarsening ratios: all/coarse 49 interface/coarse 7
-      Active processes : 2
-      Total subdomains : 2
+      Global dofs sizes: all 49 interface 13 coarse 5
+      Coarsening ratios: all/coarse 9 interface/coarse 2
+      Active processes : 4
+      Total subdomains : 4
       Dofs type        :	MIN	MAX	MEAN
-      Interior  dofs   :	21	21	21
+      Interior  dofs   :	9	9	9
       Interface dofs   :	7	7	7
-      Primal    dofs   :	1	1	1
-      Local     dofs   :	28	28	28
+      Primal    dofs   :	3	3	3
+      Local     dofs   :	16	16	16
       Local     subs   :	1	1
     --- Interior solver (rank 0)
       KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
@@ -88,20 +90,20 @@ SNES Object: 4 MPI processes
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5., needed 1.55046
+          factor fill ratio given 5., needed 1.43902
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=21, cols=21
+                rows=9, cols=9
                 package used to perform factorization: petsc
-                total: nonzeros=169, allocated nonzeros=169
+                total: nonzeros=59, allocated nonzeros=59
                 total number of mallocs used during MatSetValues calls =0
-                  not using I-node routines
+                  using I-node routines: found 7 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
           type: seqaij
-          rows=21, cols=21
-          total: nonzeros=109, allocated nonzeros=109
+          rows=9, cols=9
+          total: nonzeros=41, allocated nonzeros=41
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     --- Correction solver (rank 0)
@@ -116,69 +118,69 @@ SNES Object: 4 MPI processes
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5., needed 1.72727
+          factor fill ratio given 5., needed 1.29333
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=28, cols=28
+                rows=15, cols=15
                 package used to perform factorization: petsc
-                total: nonzeros=266, allocated nonzeros=266
+                total: nonzeros=97, allocated nonzeros=97
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (pc_bddc_neumann_) 1 MPI processes
           type: seqaij
-          rows=28, cols=28
-          total: nonzeros=154, allocated nonzeros=154
+          rows=15, cols=15
+          total: nonzeros=75, allocated nonzeros=75
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     --- Coarse solver
-      KSP Object: (pc_bddc_coarse_) 1 MPI processes
+      KSP Object: (pc_bddc_coarse_) 4 MPI processes
         type: preonly
         maximum iterations=1, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (pc_bddc_coarse_) 1 MPI processes
+      PC Object: (pc_bddc_coarse_) 4 MPI processes
         type: redundant
-          First (color=0) of 1 PCs follows
-          KSP Object: (pc_bddc_coarse_redundant_) 1 MPI processes
-            type: preonly
-            maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-            left preconditioning
-            using NONE norm type for convergence test
-          PC Object: (pc_bddc_coarse_redundant_) 1 MPI processes
-            type: lu
-              out-of-place factorization
-              tolerance for zero pivot 2.22045e-14
-              matrix ordering: nd
-              factor fill ratio given 5., needed 1.
-                Factored matrix follows:
-                  Mat Object: 1 MPI processes
-                    type: seqaij
-                    rows=1, cols=1
-                    package used to perform factorization: petsc
-                    total: nonzeros=1, allocated nonzeros=1
-                    total number of mallocs used during MatSetValues calls =0
-                      not using I-node routines
-            linear system matrix = precond matrix:
-            Mat Object: (pc_bddc_coarse_) 1 MPI processes
-              type: seqaij
-              rows=1, cols=1
-              total: nonzeros=1, allocated nonzeros=1
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
+          First (color=0) of 4 PCs follows
         linear system matrix = precond matrix:
-        Mat Object: (pc_bddc_coarse_) 1 MPI processes
-          type: seqaij
-          rows=1, cols=1
-          total: nonzeros=1, allocated nonzeros=1
+        Mat Object: (pc_bddc_coarse_) 4 MPI processes
+          type: mpiaij
+          rows=5, cols=5
+          total: nonzeros=21, allocated nonzeros=25
           total number of mallocs used during MatSetValues calls =0
-            not using I-node routines
+            using I-node (on process 0) routines: found 1 nodes, limit used is 5
+              KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+                type: lu
+                  out-of-place factorization
+                  tolerance for zero pivot 2.22045e-14
+                  matrix ordering: nd
+                  factor fill ratio given 5., needed 1.09524
+                    Factored matrix follows:
+                      Mat Object:     1 MPI processes
+                        type: seqaij
+                        rows=5, cols=5
+                        package used to perform factorization: petsc
+                        total: nonzeros=23, allocated nonzeros=23
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 3 nodes, limit used is 5
+                linear system matrix = precond matrix:
+                Mat Object:     1 MPI processes
+                  type: seqaij
+                  rows=5, cols=5
+                  total: nonzeros=21, allocated nonzeros=21
+                  total number of mallocs used during MatSetValues calls =0
+                    not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 4 MPI processes
       type: is
       rows=49, cols=49
-      total: nonzeros=308, allocated nonzeros=334
+      total: nonzeros=328, allocated nonzeros=386
       total number of mallocs used during MatSetValues calls =0
