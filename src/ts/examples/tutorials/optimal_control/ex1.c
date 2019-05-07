@@ -293,7 +293,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(aircraft.Jacp,PETSC_DECIDE,PETSC_DECIDE,2,2*aircraft.nsteps);CHKERRQ(ierr);
   ierr = MatSetFromOptions(aircraft.Jacp);CHKERRQ(ierr);
   ierr = MatSetUp(aircraft.Jacp);CHKERRQ(ierr);
-  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,1,2,NULL,&aircraft.DRDP);CHKERRQ(ierr);
+  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2*aircraft.nsteps,1,NULL,&aircraft.DRDP);CHKERRQ(ierr);
   ierr = MatSetUp(aircraft.DRDP);CHKERRQ(ierr);
   ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,&aircraft.DRDU);CHKERRQ(ierr);
   ierr = MatSetUp(aircraft.DRDU);CHKERRQ(ierr);
