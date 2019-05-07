@@ -143,7 +143,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
     for (i=0;i<an;i++) {
       ati[i+1] += ati[i];
     }
-  } else {
+  } else { /* This segment is called by MatTranspose_MPIAIJ(...,MAT_INITIAL_MATRIX,..) directly! */
     Mat_SeqAIJ *sub_B = (Mat_SeqAIJ*) (*B)->data;
     ati = sub_B->i;
     atj = sub_B->j;
@@ -169,7 +169,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   ierr = PetscFree(atfill);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),an,am,ati,atj,ata,&At);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(At,A->cmap->bs,A->rmap->bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(At,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
 
     at          = (Mat_SeqAIJ*)(At->data);
     at->free_a  = PETSC_TRUE;
