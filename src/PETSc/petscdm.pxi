@@ -132,6 +132,7 @@ cdef extern from * nogil:
     int DMGetLabel(PetscDM,const_char*,PetscDMLabel*)
     int DMAddLabel(PetscDM,PetscDMLabel)
     int DMRemoveLabel(PetscDM,const_char[],PetscDMLabel*)
+    int DMLabelDestroy(PetscDMLabel *)
     #int DMCopyLabels(PetscDM,PetscDM)
 
     int DMShellSetGlobalVector(PetscDM,PetscVec)
