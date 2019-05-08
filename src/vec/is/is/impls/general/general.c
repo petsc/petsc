@@ -237,6 +237,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
+  bs   = PetscMax(bs, 1); /* If N = 0, bs  = 0 as well */
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
 
@@ -728,9 +729,3 @@ PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",ISGeneralSetIndices_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
