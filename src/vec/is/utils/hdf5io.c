@@ -1,4 +1,4 @@
-#include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
 #include <petscis.h>    /*I   "petscis.h"   I*/
 

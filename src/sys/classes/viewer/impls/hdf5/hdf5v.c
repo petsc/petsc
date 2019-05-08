@@ -1,4 +1,4 @@
-#include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE < 10800)
 #error "PETSc needs HDF5 version >= 1.8.0"
