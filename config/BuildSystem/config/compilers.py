@@ -24,6 +24,7 @@ class Configure(config.base.Configure):
     self.fmainlibs = []
     self.clibs = []
     self.cxxlibs = []
+    self.cxxCompileC = False
     self.cRestrict = ' '
     self.cxxRestrict = ' '
     self.cxxdialect = ''
@@ -426,18 +427,18 @@ class Configure(config.base.Configure):
     cxxObj = self.framework.getCompilerObject('Cxx')
     oldExt = cxxObj.sourceExtension
     cxxObj.sourceExtension = self.framework.getCompilerObject('C').sourceExtension
-    success=0
     for flag in ['', '-+', '-x cxx -tlocal', '-Kc++']:
       try:
         self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };')
-        success=1
+        self.cxxCompileC = True
         break
       except RuntimeError:
         pass
-    if success==0:
-      for flag in ['-TP','-P']:
+    if not self.cxxCompileC:
+      for flag in ['-x c++', '-TP','-P']:
         try:
           self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
+          self.cxxCompileC = True
           break
         except RuntimeError:
           pass
