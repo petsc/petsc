@@ -302,4 +302,5 @@ class CompilerOptions(config.base.Configure):
     except RuntimeError as e:
       self.logWrite('Could not determine compiler version: '+str(e))
     self.logWrite('getCompilerVersion: '+str(compiler)+' '+str(version)+'\n')
+    self.framework.addMakeMacro(language+'_VERSION',version)
     return version

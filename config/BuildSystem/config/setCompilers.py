@@ -38,21 +38,25 @@ class Configure(config.base.Configure):
     if hasattr(self, 'CC'):
       self.pushLanguage('C')
       desc.append('  C Compiler:         '+self.getCompiler()+' '+self.getCompilerFlags())
+      if self.compilerflags.version['C']: desc.append('    version: '+self.compilerflags.version['C'])
       if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if hasattr(self, 'CUDAC'):
       self.pushLanguage('CUDA')
       desc.append('  CUDA Compiler:      '+self.getCompiler()+' '+self.getCompilerFlags())
+      if self.compilerflags.version['CUDA']: desc.append('    version: '+self.compilerflags.version['CUDA'])
       if not self.getLinker() == self.getCompiler(): desc.append('  CUDA Linker:        '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if hasattr(self, 'CXX'):
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler()+' '+self.getCompilerFlags())
+      if self.compilerflags.version['Cxx']: desc.append('    version: '+self.compilerflags.version['Cxx'])
       if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if hasattr(self, 'FC'):
       self.pushLanguage('FC')
       desc.append('  Fortran Compiler:   '+self.getCompiler()+' '+self.getCompilerFlags())
+      if self.compilerflags.version['FC']: desc.append('    version: '+self.compilerflags.version['FC'])
       if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:     '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     desc.append('Linkers:')
@@ -121,6 +125,7 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.headers = framework.require('config.headers', None)
     self.libraries = framework.require('config.libraries', None)
+    self.compilerflags = framework.require('config.compilerFlags', None)
     return
 
   def isNAG(compiler, log):
