@@ -25,7 +25,7 @@ program main
       KSP             :: ksp         ! KSP context 
       PC              :: myPc           ! PC context 
       PC              :: subpc        ! PC context for subdomain 
-      PetscReal       :: norm         ! norm of solution error 
+      PetscScalar     :: norm         ! norm of solution error 
       PetscReal,parameter :: tol = 1.e-6
       PetscErrorCode  :: ierr
       PetscInt        :: i,j,Ii,JJ,n
@@ -257,7 +257,7 @@ program main
 
       call VecNorm(x,NORM_2,norm,ierr); CHKERRA(ierr)
       call KSPGetIterationNumber(ksp,its,ierr); CHKERRA(ierr)
-      write(outputString,*)'Norm of error',norm,'Iterations',its,'\n'
+      write(outputString,*)'Norm of error',real(norm),'Iterations',its,'\n'         ! PETScScalar might be of complex type
       call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr); CHKERRA(ierr)
       
       ! Free work space.  All PETSc objects should be destroyed when they
