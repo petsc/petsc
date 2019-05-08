@@ -761,6 +761,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*p_oth=(Mat_SeqAIJ*)P_oth->data,*pd=(Mat_SeqAIJ*)p->A->data,*po=(Mat_SeqAIJ*)p->B->data;
   PetscInt             *ai,nzi,j,*aj,row,col,*pi,pnz,*p_othcols,pcstart,*pj,k,nzpi;
   PetscScalar          ra,*aa,*pa;
+  PetscLogDouble       flops=0.0;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
@@ -780,6 +781,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
     for (k=0; k<nzpi; k++) {
       ierr = PetscHMapIVAddValue(hmap,pj[k]+pcstart,ra*pa[k]);CHKERRQ(ierr);
     }
+    flops += nzpi;
   }
   for (j=0; j<nzi; j++) {
     ra   = aa[j];
@@ -790,6 +792,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
     for (k=0; k<nzpi; k++) {
       ierr = PetscHMapIVAddValue(hmap,p->garray[pj[k]],ra*pa[k]);CHKERRQ(ierr);
     }
+    flops += nzpi;
   }
 
 
@@ -809,8 +812,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
       for (col=0; col<pnz; col++) {
         ierr = PetscHMapIVAddValue(hmap,p_othcols[col],ra*pa[col]);CHKERRQ(ierr);
       }
+      flops += pnz;
     }
   } /* end if (ao) */
+
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -823,6 +829,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
   PetscHMapIV       hmap;
   PetscInt          i,j,jj,kk,nzi,*c_rmtj,voff,*c_othj,pn,pon,pcstart,pcend,ccstart,ccend,row,am,*poj,*pdj,*apindices,cmaxr,*c_rmtc,*c_rmtjj,*dcc,*occ,loc;
   PetscScalar       *c_rmta,*c_otha,*poa,*pda,*apvalues,*apvaluestmp,*c_rmtaa;
+  PetscLogDouble    flops=0.0;
   MPI_Comm          comm;
 
   PetscFunctionBegin;
@@ -891,6 +898,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
             c_rmtc[poj[j]]++;
           }
         }
+        flops += voff;
       } /* End jj */
     } /* End j */
   } /* End i */
@@ -930,6 +938,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
         apvaluestmp[jj] = apvalues[jj]*pda[j];
       }
       ierr = MatSetValues(C,1,&row,voff,apindices,apvaluestmp,ADD_VALUES);CHKERRQ(ierr);
+      flops += voff;
     }
   }
 
@@ -949,6 +958,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
 
   ptap->reuse = MAT_REUSE_MATRIX;
 
@@ -968,6 +978,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,Mat C)
   PetscHMapIV       hmap;
   PetscInt          i,j,jj,kk,nzi,dnzi,*c_rmtj,voff,*c_othj,pn,pon,pcstart,pcend,row,am,*poj,*pdj,*apindices,cmaxr,*c_rmtc,*c_rmtjj,loc;
   PetscScalar       *c_rmta,*c_otha,*poa,*pda,*apvalues,*apvaluestmp,*c_rmtaa;
+  PetscLogDouble    flops=0.0;
   MPI_Comm          comm;
 
   PetscFunctionBegin;
@@ -1044,6 +1055,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,Mat C)
           }
         }
       } /* End jj */
+      flops += voff;
     } /* End j */
 
     /* Form local C(ii, :) */
@@ -1055,6 +1067,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,Mat C)
         apvaluestmp[jj] = apvalues[jj]*pda[j];
       }/* End kk */
       ierr = MatSetValues(C,1,&row,voff,apindices,apvaluestmp,ADD_VALUES);CHKERRQ(ierr);
+      flops += voff;
     }/* End j */
   } /* End i */
 
@@ -1077,6 +1090,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,Mat C)
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
 
   ptap->reuse = MAT_REUSE_MATRIX;
 
