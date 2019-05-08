@@ -245,7 +245,6 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
       } else {
         fegeom.v    = &fgeom->v[tp*dE];
         fegeom.invJ = &fgeom->suppInvJ[0][tp*dE*dE];
-        //fegeom.invJ = &fgeom->invJ[tp*dE*dE];
         fegeom.detJ = &fgeom->detJ[tp];
         fegeom.n    = &fgeom->n[tp*dE];
       }
