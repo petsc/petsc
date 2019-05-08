@@ -792,11 +792,11 @@ $    FILE_MODE_APPEND - open existing file for binary output
 .  binv - PetscViewer for binary input/output to use with the specified file
 
     Options Database Keys:
-+    -viewer_binary_filename <name>
-.    -viewer_binary_skip_info
-.    -viewer_binary_skip_options
-.    -viewer_binary_skip_header
--    -viewer_binary_mpiio
++    -viewer_binary_filename <name> -
+.    -viewer_binary_skip_info -
+.    -viewer_binary_skip_options -
+.    -viewer_binary_skip_header -
+-    -viewer_binary_mpiio -
 
    Level: beginner
 
