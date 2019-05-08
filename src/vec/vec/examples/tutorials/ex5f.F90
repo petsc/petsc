@@ -26,7 +26,7 @@ implicit none
   
   call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr) 
   
-  call MPI_Comm_Size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)  !gives number of processes in the group of comm (integer) 
+  call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)  !gives number of processes in the group of comm (integer) 
   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr);CHKERRA(ierr) !gives the integer value for a particular option in the database. 
 
   ! PART 1:  Generate vector, then write it in binary format */
