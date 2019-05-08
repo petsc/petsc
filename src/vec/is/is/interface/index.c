@@ -39,9 +39,13 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(subset,IS_CLASSID,1);
+  if (subset_mult) {
+    PetscValidHeaderSpecific(subset_mult,IS_CLASSID,2);
+  }
+  if (!N && !subset_n) PetscFunctionReturn(0);
   ierr = ISGetLocalSize(subset,&n);CHKERRQ(ierr);
   if (subset_mult) {
-    PetscCheckSameComm(subset,1,subset_mult,2);
     ierr = ISGetLocalSize(subset,&i);CHKERRQ(ierr);
     if (i != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %d != %d",n,i);
   }
@@ -105,16 +109,23 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   /* cumulative of number of indexes and size of subset without holes */
 #if defined(PETSC_HAVE_MPI_EXSCAN)
   start = 0;
-  ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr  = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
 #else
-  ierr = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr  = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
   start = start-nlocals;
 #endif
 
   if (N) { /* compute total size of new subset if requested */
-    *N = start + nlocals;
+    *N   = start + nlocals;
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)subset),&commsize);CHKERRQ(ierr);
     ierr = MPI_Bcast(N,1,MPIU_INT,commsize-1,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  }
+
+  if (!subset_n) {
+    ierr = PetscFree(gidxs);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    ierr = PetscFree2(leaf_data,root_data);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
 
   /* adapt root data with cumulative */
