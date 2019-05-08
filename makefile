@@ -95,17 +95,24 @@ info:
 	-@echo "Using configuration flags:"
 	-@grep "\#define " ${PETSCCONF_H}
 	-@echo "-----------------------------------------"
-	-@echo "Using C/C++ compile: ${PETSC_COMPILE}"
-	-@if [ "${PETSC_LANGUAGE}" = "CONLY" -a "${MPICC_SHOW}" != "" ]; then \
-             printf  "mpicc -show: %b\n" "${MPICC_SHOW}"; \
-	  elif [ "${PETSC_LANGUAGE}" = "CXXONLY" -a "${MPICXX_SHOW}" != "" ]; then \
-             printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
-          fi;
+	-@echo "Using C compile: ${PETSC_COMPILE}"
+	-@if [  "${MPICC_SHOW}" != "" ]; then \
+             printf  "mpicc -show: %b\n" "${MPICC_SHOW}";\
+          fi; \
+          printf  "C compiler version: %b\n" "${C_VERSION}"; \
+	  if [ "${CXX}" != "" ]; then \
+	   echo "Using C++ compile: ${PETSC_CXXCOMPILE}";\
+	    if [ "${MPICXX_SHOW}" != "" ]; then \
+               printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
+            fi;\
+            printf  "C++ compiler version: %b\n" "${Cxx_VERSION}"; \
+          fi
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran compile: ${PETSC_FCOMPILE}";\
            if [ "${MPIFC_SHOW}" != "" ]; then \
              printf "mpif90 -show: %b\n" "${MPIFC_SHOW}"; \
            fi; \
+             printf  "Fortran compiler version: %b\n" "${FC_VERSION}"; \
          fi
 	-@if [ "${CUDAC}" != "" ]; then \
 	   echo "Using CUDA compile: ${PETSC_CUCOMPILE}";\
