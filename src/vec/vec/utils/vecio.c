@@ -9,6 +9,7 @@
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/viewerimpl.h>
+#include <petscviewerhdf5.h>
 
 static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,PetscInt *rows)
 {
