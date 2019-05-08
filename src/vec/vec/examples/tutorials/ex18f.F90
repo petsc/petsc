@@ -98,7 +98,7 @@ program main
   !Return the value of the integral.
   
  
-  write(output,'(a,f9.6,a)') 'ln(2) is',myResult,'\n'
+  write(output,'(a,f9.6,a)') 'ln(2) is',real(myResult),'\n'           ! PetscScalar might be complex
   call PetscPrintf(PETSC_COMM_WORLD,trim(output),ierr);CHKERRA(ierr)
   call VecDestroy(x,ierr);CHKERRA(ierr)
   call VecDestroy(xend,ierr);CHKERRA(ierr)
