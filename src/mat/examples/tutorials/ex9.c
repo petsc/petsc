@@ -17,7 +17,7 @@ T*/
 
 int main(int argc,char **args)
 {
-  Mat            A[3],B;                       /* matrix */
+  Mat            A[3],B,C;                     /* matrix */
   PetscViewer    fd;                           /* viewer */
   char           file[PETSC_MAX_PATH_LEN];     /* input file name */
   PetscErrorCode ierr;
@@ -65,6 +65,11 @@ int main(int argc,char **args)
   if (nmat != 3) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetNMat %d != 3\n",nmat);CHKERRQ(ierr);
   }
+  ierr = MatCompositeGetMat(B,1,&C);CHKERRQ(ierr);
+  if (C != A[1]) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetMat\n");CHKERRQ(ierr);
+  }
+
   ierr = MatMult(B,x,y);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);

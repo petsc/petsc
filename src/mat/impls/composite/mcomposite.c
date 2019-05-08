@@ -624,9 +624,9 @@ PetscErrorCode  MatCompositeMerge(Mat mat)
 .  size - the local size
 .  nmat - number of matrices in composite
 
-   Level: beginner
+   Level: advanced
 
-.seealso: MatCreateComposite()
+.seealso: MatCreateComposite(), MatCompositeGetMat()
 
 @*/
 PetscErrorCode MatCompositeGetNMat(Mat A,PetscInt *nmat)
@@ -638,6 +638,47 @@ PetscErrorCode MatCompositeGetNMat(Mat A,PetscInt *nmat)
   PetscValidPointer(nmat,2);
   shell = (Mat_Composite*)A->data;
   *nmat = shell->nmat;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatCompositeGetMat - Returns the ith matrix from composite.
+
+   Logically Collective on Mat
+
+   Input Parameter:
++  A - the composite matrix
+-  i - the number of requested matrix
+
+   Output Parameter:
+.  Ai - ith matrix in composite
+
+   Level: advanced
+
+.seealso: MatCreateComposite(), MatCompositeGetNMat()
+
+@*/
+PetscErrorCode MatCompositeGetMat(Mat A,PetscInt i,Mat *Ai)
+{
+  Mat_Composite     *shell;
+  Mat_CompositeLink ilink;
+  PetscInt          k;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(A,i,2);
+  PetscValidPointer(Ai,3);
+  shell = (Mat_Composite*)A->data;
+  if (i >= shell->nmat) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"index out of range: %d >= %d",i,shell->nmat);
+  ilink = shell->head;
+  for (k=0; k<i; k++) {
+    if (ilink) {
+      ilink = ilink->next;
+    } else {
+      break;
+    }
+  }
+  *Ai = ilink->mat;
   PetscFunctionReturn(0);
 }
 
