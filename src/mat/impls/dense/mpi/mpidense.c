@@ -1694,7 +1694,7 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
+static PetscErrorCode MatLoad_MPIDense_Binary(Mat newmat,PetscViewer viewer)
 {
   Mat_MPIDense   *a;
   PetscScalar    *vals,*svals;
@@ -1705,15 +1705,9 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   PetscInt       *ourlens,*procsnz = 0,jj,*mycols,*smycols;
   PetscInt       i,nz,j,rstart,rend;
   int            fd;
-  PetscBool      isbinary;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ2(PetscObjectComm((PetscObject)newmat),PETSC_ERR_SUP,"Viewer type %s not yet supported for reading %s matrices",((PetscObject)viewer)->type_name,((PetscObject)newmat)->type_name);
-
-  /* force binary viewer to load .info file if it has not yet done so */
-  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1876,6 +1870,32 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
 
   ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatLoad_MPIDense(Mat newMat, PetscViewer viewer)
+{
+  PetscBool      isbinary, ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(newMat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  /* force binary viewer to load .info file if it has not yet done so */
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
+  if (isbinary) {
+    ierr = MatLoad_MPIDense_Binary(newMat,viewer);CHKERRQ(ierr);
+  } else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = MatLoad_Dense_HDF5(newMat,viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject)newMat),PETSC_ERR_SUP,"HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  } else {
+    SETERRQ2(PetscObjectComm((PetscObject)newMat),PETSC_ERR_SUP,"Viewer type %s not yet supported for reading %s matrices",((PetscObject)viewer)->type_name,((PetscObject)newMat)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 
