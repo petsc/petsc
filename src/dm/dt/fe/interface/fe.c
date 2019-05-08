@@ -1710,7 +1710,7 @@ PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, 
   return 0;
 }
 
-PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscInt dim, PetscInt Nq, PetscInt Nb, PetscInt Nc, PetscReal basis[], PetscReal basisDer[], PetscReal tmpBasis[], PetscReal tmpBasisDer[], PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
+PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscInt dim, PetscInt Nq, PetscInt Nb, PetscInt Nc, PetscReal basis[], PetscReal basisDer[], PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
 {
   PetscInt       q, b, c, d;
   PetscErrorCode ierr;
@@ -1740,7 +1740,7 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscInt dim, PetscI
   return(0);
 }
 
-PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscInt dim, PetscInt NbI, PetscInt NcI, const PetscReal basisI[], const PetscReal basisDerI[], PetscReal tmpBasisI[], PetscReal tmpBasisDerI[], PetscInt NbJ, PetscInt NcJ, const PetscReal basisJ[], const PetscReal basisDerJ[], PetscReal tmpBasisJ[], PetscReal tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt eOffset, PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
+PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscInt dim, PetscInt NbI, PetscInt NcI, const PetscReal basisI[], const PetscReal basisDerI[], PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscInt NbJ, PetscInt NcJ, const PetscReal basisJ[], const PetscReal basisDerJ[], PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt eOffset, PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
 {
   PetscInt       f, fc, g, gc, df, dg;
   PetscErrorCode ierr;

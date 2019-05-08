@@ -273,8 +273,8 @@ PETSC_INTERN PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(Pets
 
 PETSC_INTERN PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS, PetscInt, PetscInt, const PetscInt[], const PetscInt[], PetscInt, PetscReal *[], PetscReal *[], PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);
 PETSC_INTERN PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
-PETSC_INTERN PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE, PetscInt, PetscInt, PetscInt, PetscInt, PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscFEGeom *, PetscScalar[], PetscScalar[], PetscScalar[]);
-PETSC_INTERN PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE, PetscFE, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], PetscReal[], PetscReal[], PetscInt, PetscInt, const PetscReal[], const PetscReal[], PetscReal[], PetscReal[], PetscFEGeom *, const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[]);
+PETSC_INTERN PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE, PetscInt, PetscInt, PetscInt, PetscInt, PetscReal[], PetscReal[], PetscScalar[], PetscScalar[], PetscFEGeom *, PetscScalar[], PetscScalar[], PetscScalar[]);
+PETSC_INTERN PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE, PetscFE, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], PetscScalar[], PetscScalar[], PetscInt, PetscInt, const PetscReal[], const PetscReal[], PetscScalar[], PetscScalar[], PetscFEGeom *, const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension_Basic(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar []);
