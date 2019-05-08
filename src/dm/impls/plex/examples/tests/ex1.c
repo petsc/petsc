@@ -480,12 +480,12 @@ int main(int argc, char **argv)
     suffix: part_parmetis_0
     requires: parmetis
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -petscpartitioner_type parmetis -dm_view -petscpartitioner_view
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -petscpartitioner_type parmetis -dm_view -petscpartitioner_view -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
   test:
     suffix: part_ptscotch_0
     requires: ptscotch
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -dm_refine 0 -interpolate 0 -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_ptscotch_strategy quality
+    args: -dim 2 -cell_simplex 0 -dm_refine 0 -interpolate 1 -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_ptscotch_strategy quality -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
   test:
     suffix: part_ptscotch_1
     requires: ptscotch
