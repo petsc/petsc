@@ -24,6 +24,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   Vec            x,y,z,work;
   PetscReal      rnorm;
+  PetscInt       nmat;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
@@ -60,6 +61,10 @@ int main(int argc,char **args)
   ierr = MatMultAdd(A[2],x,z,z);CHKERRQ(ierr);
 
   ierr = MatCreateComposite(PETSC_COMM_WORLD,3,A,&B);CHKERRQ(ierr);
+  ierr = MatCompositeGetNMat(B,&nmat);CHKERRQ(ierr);
+  if (nmat != 3) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetNMat %d != 3\n",nmat);CHKERRQ(ierr);
+  }
   ierr = MatMult(B,x,y);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);

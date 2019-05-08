@@ -15,6 +15,7 @@ typedef struct {
   PetscScalar       scale;        /* scale factor supplied with MatScale() */
   Vec               left,right;   /* left and right diagonal scaling provided with MatDiagonalScale() */
   Vec               leftwork,rightwork;
+  PetscInt          nmat;
 } Mat_Composite;
 
 PetscErrorCode MatDestroy_Composite(Mat mat)
@@ -407,6 +408,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   A->preallocated = PETSC_TRUE;
   b->type         = MAT_COMPOSITE_ADDITIVE;
   b->scale        = 1.0;
+  b->nmat         = 0;
   ierr            = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -501,7 +503,8 @@ PetscErrorCode  MatCompositeAddMat(Mat mat,Mat smat)
     next->next  = ilink;
     ilink->prev = next;
   }
-  shell->tail = ilink;
+  shell->tail =  ilink;
+  shell->nmat += 1;
   PetscFunctionReturn(0);
 }
 
@@ -608,3 +611,33 @@ PetscErrorCode  MatCompositeMerge(Mat mat)
   ierr = VecDestroy(&right);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@
+   MatCompositeGetNMat - Returns the number of matrices in composite.
+
+   Not Collective
+
+   Input Parameter:
+.  A - the composite matrix
+
+   Output Parameter:
+.  size - the local size
+.  nmat - number of matrices in composite
+
+   Level: beginner
+
+.seealso: MatCreateComposite()
+
+@*/
+PetscErrorCode MatCompositeGetNMat(Mat A,PetscInt *nmat)
+{
+  Mat_Composite  *shell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(nmat,2);
+  shell = (Mat_Composite*)A->data;
+  *nmat = shell->nmat;
+  PetscFunctionReturn(0);
+}
+
