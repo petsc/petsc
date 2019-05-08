@@ -196,17 +196,17 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 
   Input Parameters:
 + viewer - The HDF5 viewer
-- name   - The vector name
+- name   - The dataset name
 
   Output Parameter:
 + bs     - block size
 - N      - global size
 
-  Note:
-  A vector is stored as an HDF5 dataspace with 1-4 dimensions in this order:
+  Notes:
+  The dataset is stored as an HDF5 dataspace with 1-4 dimensions in the order
   1) # timesteps (optional), 2) # blocks, 3) # elements per block (optional), 4) real and imaginary part (only for complex).
 
-  A vectors can be stored as a 2D dataspace even if its blocksize is 1; see PetscViewerHDF5SetBaseDimension2().
+  The dataset can be stored as a 2D dataspace even if its blocksize is 1; see PetscViewerHDF5SetBaseDimension2().
 
   Level: advanced
 
