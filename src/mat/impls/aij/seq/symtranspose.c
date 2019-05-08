@@ -137,7 +137,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
     /* Walk through aj and count ## of non-zeros in each row of A^T. */
     /* Note: offset by 1 for fast conversion into csr format. */
     for (i=0;i<ai[am];i++) {
-      ati[aj[i]+1] += 1;
+      ati[aj[i]+1] += 1; /* count ## of non-zeros for row aj[i] of A^T */
     }
     /* Form ati for csr format of A^T. */
     for (i=0;i<an;i++) {
