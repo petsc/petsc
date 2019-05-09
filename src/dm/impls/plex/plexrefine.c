@@ -1,6 +1,9 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscsf.h>
 
+const char * const CellRefiners[] = {"NOOP", "SIMPLEX_1D", "SIMPLEX_2D", "HYBRID_SIMPLEX_2D", "SIMPLEX_TO_HEX_2D", "HYBRID_SIMPLEX_TO_HEX_2D", "HEX_2D", "HYBRID_HEX_2D",
+                                     "SIMPLEX_3D", "HYBRID_SIMPLEX_3D", "SIMPLEX_TO_HEX_3D", "HYBRID_SIMPLEX_TO_HEX_3D", "HEX_3D", "HYBRID_HEX_3D", "CellRefiners", "REFINER_", 0};
+
 PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cStart, PetscInt *fStart, PetscInt *eStart, PetscInt *vStart)
 {
   PetscFunctionBegin;
@@ -18,6 +21,126 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt 
   if (vEnd) *vEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0];
   if (fEnd) *fEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0] + depthSize[depth-1];
   if (eEnd) *eEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0] + depthSize[depth-1] + depthSize[1];
+  PetscFunctionReturn(0);
+}
+
+/*
+  Note that j and invj are non-square:
+         v0 + j x_face = x_cell
+    invj (x_cell - v0) = x_face
+*/
+PetscErrorCode CellRefinerGetAffineFaceTransforms_Internal(CellRefiner refiner, PetscInt *numFaces, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[], PetscReal *detj[])
+{
+  PetscReal     *v = NULL, *j = NULL, *invj = NULL, *dj = NULL;
+  PetscInt       cdim, fdim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (refiner) {
+  case REFINER_NOOP: break;
+  case REFINER_SIMPLEX_2D:
+    /*
+     2
+     |\
+     | \
+     |  \
+     |   \
+     |    \
+     |     \
+     |      \
+     2       1
+     |        \
+     |         \
+     |          \
+     0---0-------1
+     */
+    cdim = 2;
+    fdim = 1;
+    if (numFaces) *numFaces = 3;
+    if (v0) {
+      ierr = PetscMalloc1(3*cdim,      &v);CHKERRQ(ierr);
+      ierr = PetscMalloc1(3*cdim*fdim, &j);CHKERRQ(ierr);
+      ierr = PetscMalloc1(3*cdim*fdim, &invj);CHKERRQ(ierr);
+      ierr = PetscMalloc1(3,           &dj);CHKERRQ(ierr);
+      /* 0 */
+      v[0+0] =  0.0; v[0+1] = -1.0;
+      j[0+0] =  1.0;
+      j[0+1] =  0.0;
+      invj[0+0] = 1.0; invj[0+1] = 0.0;
+      dj[0]  = 1.0;
+      /* 1 */
+      v[2+0] =  0.0; v[2+1] =  0.0;
+      j[2+0] = -1.0;
+      j[2+1] =  1.0;
+      invj[2+0] = -0.5; invj[2+1] = 0.5;
+      dj[1]  = 1.414213562373095;
+      /* 2 */
+      v[4+0] = -1.0; v[4+1] =  0.0;
+      j[4+0] =  0.0;
+      j[4+1] = -1.0;
+      invj[4+0] = 0.0; invj[4+1] = -1.0;
+      dj[2]  = 1.0;
+    }
+    break;
+  case REFINER_HEX_2D:
+    /*
+     3---------2---------2
+     |                   |
+     |                   |
+     |                   |
+     3                   1
+     |                   |
+     |                   |
+     |                   |
+     0---------0---------1
+     */
+    cdim = 2;
+    fdim = 1;
+    if (numFaces) *numFaces = 4;
+    if (v0) {
+      ierr = PetscMalloc1(4*cdim,      &v);CHKERRQ(ierr);
+      ierr = PetscMalloc1(4*cdim*fdim, &j);CHKERRQ(ierr);
+      ierr = PetscMalloc1(4*cdim*fdim, &invj);CHKERRQ(ierr);
+      ierr = PetscMalloc1(4,           &dj);CHKERRQ(ierr);
+      /* 0 */
+      v[0+0] =  0.0; v[0+1] = -1.0;
+      j[0+0] =  1.0;
+      j[0+1] =  0.0;
+      invj[0+0] =  1.0; invj[0+1] =  0.0;
+      dj[0]  = 1.0;
+      /* 1 */
+      v[2+0] =  1.0; v[2+1] =  0.0;
+      j[2+0] =  0.0;
+      j[2+1] =  1.0;
+      invj[2+0] =  0.0; invj[2+1] =  1.0;
+      dj[1]  = 1.0;
+      /* 2 */
+      v[4+0] =  0.0; v[4+1] = 1.0;
+      j[4+0] = -1.0;
+      j[4+1] =  0.0;
+      invj[4+0] = -1.0; invj[4+1] =  0.0;
+      dj[2]  = 1.0;
+      /* 3 */
+      v[6+0] = -1.0; v[6+1] =  0.0;
+      j[6+0] =  0.0;
+      j[6+1] = -1.0;
+      invj[6+0] =  0.0; invj[6+1] = -1.0;
+      dj[3]  = 1.0;
+    }
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
+  }
+  if (v0)     {*v0     = v;}
+  else        {ierr = PetscFree(v);CHKERRQ(ierr);}
+  if (jac)    {*jac    = j;}
+  else        {ierr = PetscFree(j);CHKERRQ(ierr);}
+  if (invjac) {*invjac = invj;}
+  else        {ierr = PetscFree(invj);CHKERRQ(ierr);}
+  if (invjac) {*invjac = invj;}
+  else        {ierr = PetscFree(invj);CHKERRQ(ierr);}
+  if (detj)   {*detj   = dj;}
+  else        {ierr = PetscFree(dj);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -175,7 +298,7 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
       }
     }
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
   if (v0) {*v0 = v; *jac = j; *invjac = invj;}
   PetscFunctionReturn(0);
@@ -211,7 +334,7 @@ PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner refiner, const PetscRe
     for (d = 0; d < 2; ++d) if ((point[d] < -1.00000000001) || (point[d] > 1.000000000001)) {*inside = PETSC_FALSE; break;}
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
   PetscFunctionReturn(0);
 }
@@ -338,7 +461,7 @@ static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt d
     depthSize[3] += 4*(cEnd - cMax);                                              /* Every hybrid cell split into 4 cells */
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
   PetscFunctionReturn(0);
 }
@@ -1602,7 +1725,7 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
   PetscFunctionReturn(0);
 }
@@ -8087,7 +8210,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     ierr = PetscFree(supportRef);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
   PetscFunctionReturn(0);
 }
@@ -8297,7 +8420,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       }
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
     }
     parentId = pi;
   } else {
@@ -8695,7 +8818,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
@@ -8989,7 +9112,7 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       }
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
     }
   }
   /* Communicate depthSizes for each remote rank */
@@ -9478,7 +9601,7 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       }
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
     }
   }
   if (m != numLeavesNew) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of leaf point %D should be %D", m, numLeavesNew);
@@ -9552,7 +9675,7 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
     if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
   cMax = cMax < 0 ? cEnd : cMax;
   fMax = fMax < 0 ? fEnd : fMax;
@@ -10049,7 +10172,7 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
           }
           break;
         default:
-          SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", refiner);
+          SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
         }
       }
       ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
@@ -10150,7 +10273,7 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
     for (v = vStart; v < vEnd; ++v) fpoints[v-pStart] = vStartNew + (v - vStart);
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %D", cellRefiner);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[cellRefiner]);
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, fpoints, PETSC_OWN_POINTER, fpointIS);CHKERRQ(ierr);
   ierr = PetscFree(depthSize);CHKERRQ(ierr);
