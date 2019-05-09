@@ -3,7 +3,7 @@
 
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
 #include <petscdmnetwork.h> /*I      "petscdmnetwork.h"    I*/
-#include "petsc/private/dmimpl.h"
+#include <petsc/private/dmpleximpl.h>  /*I  "petscdmplex.h"  I*/
 
 #define MAX_DATA_AT_POINT 36
 

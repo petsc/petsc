@@ -282,6 +282,7 @@ PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, 
 PETSC_INTERN PetscErrorCode DMPlexCreateNumbering_Internal(DM, PetscInt, PetscInt, PetscInt, PetscInt *, PetscSF, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, DMLabel, DM *);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);
 
 /* invert dihedral symmetry: return a^-1,
  * using the representation described in

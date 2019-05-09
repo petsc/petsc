@@ -4,7 +4,7 @@
 #if !defined(__PETSCDMNETWORK_H)
 #define __PETSCDMNETWORK_H
 
-#include <petscdm.h>
+#include <petscdmplex.h>
 #include <petscviewer.h>
 
 /*

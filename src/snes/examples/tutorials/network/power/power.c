@@ -1,5 +1,7 @@
 static char help[] = "This example demonstrates the use of DMNetwork interface for solving a nonlinear electric power grid problem.\n\
                       The available solver options are in the poweroptions file and the data files are in the datafiles directory.\n\
+                      See 'Evaluation of overlapping restricted additive schwarz preconditioning for parallel solution \n\
+                          of very large power flow problems' https://dl.acm.org/citation.cfm?id=2536784).\n\
                       The data file format used is from the MatPower package (http://www.pserc.cornell.edu//matpower/).\n\
                       Run this program: mpiexec -n <n> ./pf\n\
                       mpiexec -n <n> ./pfc \n";
