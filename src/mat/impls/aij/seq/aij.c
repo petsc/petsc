@@ -3255,7 +3255,9 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
         ierr = MatSetValues(x,1,&i,1,&col,&a,ADD_VALUES);CHKERRQ(ierr);
       }
     }
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet coded");
+  } else {
+    for (i=0; i<aij->nz; i++) {ierr = PetscRandomGetValue(rctx,aij->a+i);CHKERRQ(ierr);}
+  }
   ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3280,7 +3282,7 @@ PetscErrorCode  MatSetRandomSkipColumnRange_SeqAIJ_Private(Mat x,PetscInt low,Pe
       if (col >= low) col += nskip; /* shift col rightward to skip the hole */
       ierr = MatSetValues(x,1,&i,1,&col,&a,ADD_VALUES);CHKERRQ(ierr);
     }
-
+  }
   ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
