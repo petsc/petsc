@@ -1717,7 +1717,6 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   if (!network->userEdgeJacobian && !network->userVertexJacobian) {
     /* user does not provide Jacobian blocks */
     ierr = DMCreateMatrix_Plex(network->plex,J);CHKERRQ(ierr);
-    ierr = MatSetOption(*J,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
