@@ -953,11 +953,11 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   Mat             MatAIJ  = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
   Mat             MatOAIJ = ((Mat_SeqKAIJ*)b->OAIJ->data)->AIJ;
   Mat             AIJ     = b->A;
+  PetscBool       diag    = PETSC_FALSE;
   PetscErrorCode  ierr;
   const PetscInt  rstart=A->rmap->rstart,rend=A->rmap->rend,p=b->p,q=b->q,*garray;
   PetscInt        nz,*idx,ncolsaij,ncolsoaij,*colsaij,*colsoaij,r,s,c,i,j,lrow;
   PetscScalar     *v,*vals,*ovals,*S=b->S,*T=b->T;
-  PetscBool       diag;
 
   PetscFunctionBegin;
   if (b->getrowactive) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
@@ -980,7 +980,6 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
     ierr = MatGetRow_SeqAIJ(MatAIJ,lrow/p,&ncolsaij,&colsaij,&vals);CHKERRQ(ierr);
     ierr = MatGetRow_SeqAIJ(MatOAIJ,lrow/p,&ncolsoaij,&colsoaij,&ovals);CHKERRQ(ierr);
 
-    diag  = PETSC_FALSE;
     c     = ncolsaij + ncolsoaij;
     for (i=0; i<ncolsaij; i++) {
       /* check if this row contains a diagonal entry */
