@@ -118,7 +118,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
+PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,anzj;
@@ -129,8 +129,6 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *ata,*aa=a->a;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
-
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     /* Allocate space for symbolic transpose info and work array */
     ierr = PetscCalloc1(an+1,&ati);CHKERRQ(ierr);
@@ -139,13 +137,13 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
     /* Walk through aj and count ## of non-zeros in each row of A^T. */
     /* Note: offset by 1 for fast conversion into csr format. */
     for (i=0;i<ai[am];i++) {
-      ati[aj[i]+1] += 1;
+      ati[aj[i]+1] += 1; /* count ## of non-zeros for row aj[i] of A^T */
     }
     /* Form ati for csr format of A^T. */
     for (i=0;i<an;i++) {
       ati[i+1] += ati[i];
     }
-  } else {
+  } else { /* This segment is called by MatTranspose_MPIAIJ(...,MAT_INITIAL_MATRIX,..) directly! */
     Mat_SeqAIJ *sub_B = (Mat_SeqAIJ*) (*B)->data;
     ati = sub_B->i;
     atj = sub_B->j;
@@ -171,6 +169,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   ierr = PetscFree(atfill);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),an,am,ati,atj,ata,&At);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(At,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
 
     at          = (Mat_SeqAIJ*)(At->data);
     at->free_a  = PETSC_TRUE;
@@ -186,7 +185,6 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   } else {
     ierr = MatHeaderMerge(A,&At);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

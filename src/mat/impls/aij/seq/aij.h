@@ -240,7 +240,6 @@ PETSC_INTERN PetscErrorCode MatSetOption_SeqAIJ(Mat,MatOption,PetscBool);
 
 PETSC_INTERN PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat,PetscInt,PetscInt,PetscInt *[],PetscInt *[]);
-PETSC_INTERN PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat,MatReuse,Mat *);
 PETSC_INTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatTranspose_SeqAIJ(Mat,MatReuse,Mat*);

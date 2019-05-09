@@ -28,7 +28,7 @@ PetscLogEvent MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTranspo
 PetscLogEvent MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
 PetscLogEvent MAT_MatMatMult, MAT_MatMatMultSymbolic, MAT_MatMatMultNumeric;
 PetscLogEvent MAT_MultHermitianTranspose,MAT_MultHermitianTransposeAdd;
-PetscLogEvent MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
+PetscLogEvent MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_GetBrowsOfAcols;
 PetscLogEvent MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 PetscLogEvent MAT_GetMultiProcBlock;

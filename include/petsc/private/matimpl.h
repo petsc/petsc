@@ -1707,7 +1707,6 @@ PETSC_EXTERN PetscLogEvent MAT_Applypapt;
 PETSC_EXTERN PetscLogEvent MAT_Applypapt_symbolic;
 PETSC_EXTERN PetscLogEvent MAT_Applypapt_numeric;
 PETSC_EXTERN PetscLogEvent MAT_Getsymtranspose;
-PETSC_EXTERN PetscLogEvent MAT_Transpose_SeqAIJ;
 PETSC_EXTERN PetscLogEvent MAT_Getsymtransreduced;
 PETSC_EXTERN PetscLogEvent MAT_GetSequentialNonzeroStructure;
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
