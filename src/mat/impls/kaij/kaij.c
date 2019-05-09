@@ -871,8 +871,9 @@ PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ_dof(Mat A,const PetscScalar **valu
 
 PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **values)
 {
-  Mat_SeqKAIJ     *b    = (Mat_SeqKAIJ*) A->data;
-  PetscErrorCode  ierr,diag;
+  Mat_SeqKAIJ     *b   = (Mat_SeqKAIJ*) A->data;
+  PetscErrorCode  diag = PETSC_FALSE;
+  PetscErrorCode  ierr;
   PetscInt        nzaij,nz,*colsaij,*idx,i,j,p=b->p,q=b->q,r=row/p,s=row%p,c;
   PetscScalar     *vaij,*v,*S=b->S,*T=b->T;
 
@@ -890,7 +891,6 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
 
   if (T || b->isTI) {
     ierr  = MatGetRow_SeqAIJ(b->AIJ,r,&nzaij,&colsaij,&vaij);CHKERRQ(ierr);
-    diag  = PETSC_FALSE;
     c     = nzaij;
     for (i=0; i<nzaij; i++) {
       /* check if this row contains a diagonal entry */
