@@ -16,9 +16,10 @@
   PetscMPIInt    rank
   PetscInt    ::   i,ng,rstart,rend,M
   PetscInt, pointer, dimension(:) :: gindices
-  PetscScalar, parameter :: one = 1.0
+  PetscScalar, parameter :: sone = 1.0
   Vec   ::         x
   ISLocalToGlobalMapping :: ltog
+  PetscInt,parameter :: one = 1
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   if (ierr /= 0) then
@@ -35,10 +36,10 @@
 !        just the global size.
 !
   call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRA(ierr)
-  call VecSetSizes(x,rank+1,PETSC_DECIDE,ierr);CHKERRA(ierr)
+  call VecSetSizes(x,rank+one,PETSC_DECIDE,ierr);CHKERRA(ierr)
   call VecSetFromOptions(x,ierr);CHKERRA(ierr)
 
-  call VecSet(x,one,ierr);CHKERRA(ierr)
+  call VecSet(x,sone,ierr);CHKERRA(ierr)
 
 !
 !     Set the local to global ordering for the vector. Each processor
@@ -64,7 +65,7 @@
 
   if (gindices(ng-1) == M) gindices(ng-1) = 0
 
-  call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,ng,gindices,PETSC_COPY_VALUES,ltog,ierr);CHKERRA(ierr)
+  call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,one,ng,gindices,PETSC_COPY_VALUES,ltog,ierr);CHKERRA(ierr)
   call VecSetLocalToGlobalMapping(x,ltog,ierr);CHKERRA(ierr)
   call ISLocalToGlobalMappingDestroy(ltog,ierr);CHKERRA(ierr)
   deallocate(gindices)
@@ -79,7 +80,7 @@
      !   contributions will be added together.
 
   do i=0,ng-1
-   call VecSetValuesLocal(x,1,i,one,ADD_VALUES,ierr);CHKERRA(ierr)
+   call VecSetValuesLocal(x,one,i,sone,ADD_VALUES,ierr);CHKERRA(ierr)
   end do
 
   !
@@ -98,3 +99,11 @@
   call PetscFinalize(ierr);CHKERRA(ierr)
    
 end program
+
+!/*TEST
+!
+!     test:
+!       nsize: 4
+!       output_file: output/ex8_1.out
+!
+!TEST*/

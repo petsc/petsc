@@ -23,8 +23,8 @@ program main
   PetscScalar :: myResult = 0
   Vec            x,xend
   character(len=128) :: output
+  PetscInt,parameter :: zero = 0, one = 1, two = 2
 
-  
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   if (ierr /= 0) then
     print*,'PetscInitialize failed'
@@ -49,12 +49,12 @@ program main
   myResult = 0.5
   if (rank==0) then
     i = 0
-    call VecSetValues(xend,1,i,myResult,INSERT_VALUES,ierr);CHKERRA(ierr)
+    call VecSetValues(xend,one,i,myResult,INSERT_VALUES,ierr);CHKERRA(ierr)
   endif
   
   if (rank == mySize-1) then
     i    = N-1
-    call VecSetValues(xend,1,i,myResult,INSERT_VALUES,ierr);CHKERRA(ierr)
+    call VecSetValues(xend,one,i,myResult,INSERT_VALUES,ierr);CHKERRA(ierr)
   endif
   
   ! Assemble vector, using the 2-step process:
@@ -98,7 +98,7 @@ program main
   !Return the value of the integral.
   
  
-  write(output,*) 'ln(2) is',myResult,'\n'
+  write(output,'(a,f9.6,a)') 'ln(2) is',real(myResult),'\n'           ! PetscScalar might be complex
   call PetscPrintf(PETSC_COMM_WORLD,trim(output),ierr);CHKERRA(ierr)
   call VecDestroy(x,ierr);CHKERRA(ierr)
   call VecDestroy(xend,ierr);CHKERRA(ierr)
@@ -121,3 +121,16 @@ program main
     end function func
 
 end program
+
+!/*TEST
+!
+!     test:
+!       nsize: 1
+!       output_file: output/ex18_1.out
+!
+!     test:
+!       nsize: 2
+!       suffix: 2
+!       output_file: output/ex18_1.out
+!
+!TEST*/

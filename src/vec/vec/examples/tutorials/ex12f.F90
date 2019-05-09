@@ -8,8 +8,9 @@ implicit none
   PetscErrorCode ierr
   Vec   v,s              
   PetscInt,parameter ::      n   = 20
-  PetscScalar,parameter ::    one = 1.0
+  PetscScalar,parameter ::   sone = 1.0
   PetscBool :: flg
+  PetscInt,parameter :: zero = 0, one = 1, two = 2
 
  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   if (ierr /= 0) then
@@ -23,7 +24,7 @@ implicit none
   !Create multi-component vector with 2 components
   call VecCreate(PETSC_COMM_WORLD,v,ierr);CHKERRA(ierr)
   call VecSetSizes(v,PETSC_DECIDE,n,ierr);CHKERRA(ierr)
-  call VecSetBlockSize(v,2,ierr);CHKERRA(ierr)
+  call VecSetBlockSize(v,two,ierr);CHKERRA(ierr)
   call VecSetFromOptions(v,ierr);CHKERRA(ierr)
 
 
@@ -33,16 +34,16 @@ implicit none
   call VecSetFromOptions(s,ierr);CHKERRA(ierr)
 
   !Set the vectors to entries to a constant value.
-  call VecSet(v,one,ierr);CHKERRA(ierr)
+  call VecSet(v,sone,ierr);CHKERRA(ierr)
 
   !Get the first component from the multi-component vector to the single vector
-  call VecStrideGather(v,0,s,INSERT_VALUES,ierr);CHKERRA(ierr)
+  call VecStrideGather(v,zero,s,INSERT_VALUES,ierr);CHKERRA(ierr)
 
   call VecView(s,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
 
 
   !Put the values back into the second component
-  call VecStrideScatter(s,1,v,ADD_VALUES,ierr);CHKERRA(ierr)
+  call VecStrideScatter(s,one,v,ADD_VALUES,ierr);CHKERRA(ierr)
 
   call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
 
@@ -55,3 +56,10 @@ implicit none
 
   end program
 
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!       output_file: output/ex12_1.out
+!
+!TEST*/

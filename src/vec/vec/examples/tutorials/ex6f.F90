@@ -81,7 +81,7 @@ program main
    SETERRA(PETSC_COMM_SELF,1,"Error: Must have array length > 0")
   endif
   
-  write(outstring,*) "reading data in binary from input.dat, sz = ", sz, "\n"
+  write(outstring,'(a,i2.2,a)') "reading data in binary from input.dat, sz =", sz, " ...\n"
   call PetscPrintf(PETSC_COMM_SELF,trim(outstring),ierr);CHKERRA(ierr)
   
   call PetscBinaryRead(fd,avec,sz,PETSC_SCALAR,ierr);CHKERRA(ierr)
@@ -97,3 +97,9 @@ program main
   
   end program
 
+!/*TEST
+!
+!     test:
+!        output_file: output/ex6_1.out
+!
+!TEST*/
