@@ -25,7 +25,7 @@ program main
       KSP             :: ksp         ! KSP context 
       PC              :: myPc           ! PC context 
       PC              :: subpc        ! PC context for subdomain 
-      PetscScalar     :: norm         ! norm of solution error 
+      PetscReal       :: norm         ! norm of solution error 
       PetscReal,parameter :: tol = 1.e-6
       PetscErrorCode  :: ierr
       PetscInt        :: i,j,Ii,JJ,n
@@ -35,11 +35,12 @@ program main
       PetscScalar     :: v
       PetscScalar, parameter :: &
         myNone = -1.0, &
-        one    = 1.0
+        sone   = 1.0
       PetscBool       :: isbjacobi,flg
       KSP,allocatable,dimension(:) ::   subksp     ! array of local KSP contexts on this processor 
       PetscInt,allocatable,dimension(:) :: blks
       character(len=80)    :: outputString
+      PetscInt,parameter :: one = 1, five = 5
    
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr /= 0) then
@@ -65,34 +66,34 @@ program main
       call  MatCreate(PETSC_COMM_WORLD,A,ierr)
       call  MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call  MatSetFromOptions(A,ierr)
-      call  MatMPIAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,5,PETSC_NULL_INTEGER,ierr)
-      call  MatSeqAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,ierr)
+      call  MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr)
+      call  MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
       call  MatGetOwnershipRange(A,Istart,Iend,ierr)
       
       do Ii=Istart,Iend-1
           v =-1.0; i = Ii/n; j = Ii - i*n
           if (i>0) then
             JJ = Ii - n
-            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
+            call MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
           endif
           
           if (i<m-1) then
             JJ = Ii + n
-            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
+            call MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
           endif
       
           if (j>0) then
             JJ = Ii - 1
-            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
+            call MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
           endif
       
           if (j<n-1) then
             JJ = Ii + 1
-            call MatSetValues(A,1,Ii,1,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
+            call MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
           endif
           
           v=4.0
-          call MatSetValues(A,1,Ii,1,Ii,v,ADD_VALUES,ierr);CHKERRA(ierr)
+          call MatSetValues(A,one,Ii,one,Ii,v,ADD_VALUES,ierr);CHKERRA(ierr)
           
         enddo
      
@@ -112,7 +113,7 @@ program main
       
       ! Set exact solution; then compute right-hand-side vector.
       
-      call Vecset(u,one,ierr)
+      call Vecset(u,sone,ierr)
       CHKERRA(ierr)
       call MatMult(A,u,b,ierr)
       CHKERRA(ierr)

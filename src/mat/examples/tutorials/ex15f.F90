@@ -17,6 +17,7 @@ program main
   PetscScalar,pointer,dimension(:) :: vals
   PetscInt,pointer,dimension(:) :: cols
   PetscBool :: flg
+  PetscInt,parameter :: one = 1, two = 2, three = 3
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   if (ierr /= 0) then
@@ -28,8 +29,8 @@ program main
   call MatCreate(PETSC_COMM_WORLD, A,ierr);CHKERRA(ierr)
   call MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N,ierr);CHKERRA(ierr)
   call MatSetFromOptions(A,ierr);CHKERRA(ierr)
-  call MatSeqAIJSetPreallocation(A, 3, PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatMPIAIJSetPreallocation(A, 3, PETSC_NULL_INTEGER, 2, PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  call MatSeqAIJSetPreallocation(A, three, PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  call MatMPIAIJSetPreallocation(A, three, PETSC_NULL_INTEGER, two, PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
 
   !/* Create a linear mesh */
   call MatGetOwnershipRange(A, myStart, myEnd,ierr);CHKERRA(ierr)
@@ -39,21 +40,21 @@ program main
      allocate(vals(2))
      vals = 1.0
      allocate(cols(2),source=[r,r+1])
-     call MatSetValues(A, 1, r, 2, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
+     call MatSetValues(A, one, r, two, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
      deallocate(cols)
      deallocate(vals)
     else if (r == N-1) then
      allocate(vals(2))
      vals = 1.0
      allocate(cols(2),source=[r-1,r])
-     call MatSetValues(A, 1, r, 2, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
+     call MatSetValues(A, one, r, two, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
      deallocate(cols)
      deallocate(vals)
     else 
      allocate(vals(3))
      vals = 1.0
      allocate(cols(3),source=[r-1,r,r+1])
-     call MatSetValues(A, 1, r, 3, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
+     call MatSetValues(A, one, r, three, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
      deallocate(cols)
      deallocate(vals)
     end if

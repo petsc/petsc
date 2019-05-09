@@ -21,6 +21,7 @@ implicit none
   PetscMPIInt   ::  rank,sizef
   PetscErrorCode  ierr
   PetscBool  set
+  PetscInt,parameter :: zero = 0, one = 1, two = 2, three = 3
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   if (ierr /= 0) then
@@ -48,12 +49,12 @@ implicit none
   call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
   call MatSetsizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE,ierr);CHKERRA(ierr)
   call MatSetFromOptions(A,ierr);CHKERRA(ierr)
-  call MatSeqAIJSetPreallocation(A,3,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatMPIAIJSetPreallocation(A,3,PETSC_NULL_INTEGER,2,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatSeqBAIJSetPreallocation(A,1,3,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatMPIBAIJSetPreallocation(A,1,3,PETSC_NULL_INTEGER,2,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatSeqSBAIJSetPreallocation(A,1,2,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatMPISBAIJSetPreallocation(A,1,2,PETSC_NULL_INTEGER,1,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  call MatSeqAIJSetPreallocation(A,three,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  call MatMPIAIJSetPreallocation(A,three,PETSC_NULL_INTEGER,two,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  call MatSeqBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  call MatMPIBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER,2,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  call MatSeqSBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  call MatMPISBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER,1,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
 
   call MatGetSize(A,PETSC_NULL_INTEGER,N,ierr);CHKERRA(ierr)
   call MatGetOwnershipRange(A,rstart,rend,ierr);CHKERRA(ierr)
@@ -64,7 +65,7 @@ implicit none
     
     cols = (/mod((i+N-1),N),i,mod((i+1),N)/)
     vals = [1.0,1.0,1.0]
-    call MatSetValues(A,1,i,3,cols,vals,INSERT_VALUES,ierr);CHKERRA(ierr)
+    call MatSetValues(A,one,i,three,cols,vals,INSERT_VALUES,ierr);CHKERRA(ierr)
   end do
 
   call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)

@@ -33,7 +33,8 @@ program main
       PetscRandom    :: rctx
       PetscLogStage,dimension(0:1) :: stages
       character(len=80)          :: outputString
-      
+      PetscInt,parameter :: one = 1
+
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr /= 0) then
         write(6,*)'Unable to initialize PETSc'
@@ -101,30 +102,30 @@ program main
           v =-1.0; i = Ii/n; j = Ii - i*n
           if (i>0) then
             JJ = Ii - n
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
           
           if (i<m-1) then
             JJ = Ii + n
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
       
           if (j>0) then
             JJ = Ii - 1
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
       
           if (j<n-1) then
             JJ = Ii + 1
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
           
           v=4.0
-          call MatSetValues(C,1,Ii,1,Ii,v,ADD_VALUES,ierr)
+          call MatSetValues(C,one,Ii,one,Ii,v,ADD_VALUES,ierr)
           CHKERRA(ierr)
           
       enddo intitializeC
@@ -135,7 +136,7 @@ program main
           v=-1.5; i=Ii/n
           if (i>1) then
             JJ=Ii-n-1
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
         enddo
@@ -185,7 +186,7 @@ program main
       do i=0,ldim-1
         iglobal = i + low
         v = real(i + 100*myRank)
-        call VecSetValues(u,1,iglobal,v,INSERT_VALUES,ierr)
+        call VecSetValues(u,one,iglobal,v,INSERT_VALUES,ierr)
         CHKERRA(ierr)
       enddo
 
@@ -271,30 +272,30 @@ program main
           v =-1.0; Ii=j + n*i
           if (i>0) then
             JJ = Ii - n
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
           
           if (i<m-1) then
             JJ = Ii + n
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
       
           if (j>0) then
             JJ = Ii - 1
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
       
           if (j<n-1) then
             JJ = Ii + 1
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
           
           v=6.0
-          call MatSetValues(C,1,Ii,1,Ii,v,ADD_VALUES,ierr)
+          call MatSetValues(C,one,Ii,one,Ii,v,ADD_VALUES,ierr)
           CHKERRA(ierr)
           
         enddo
@@ -307,7 +308,7 @@ program main
           v=-1.5;  i=Ii/n
           if (i>1) then
             JJ=Ii-n-1
-            call MatSetValues(C,1,Ii,1,JJ,v,ADD_VALUES,ierr)
+            call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
         enddo
@@ -328,11 +329,11 @@ program main
 
         if (myRank /= 0) then
           v = 6.0*0.00001; Ii = 0; JJ = 0
-          call MatSetValues(C,1,Ii,1,JJ,v,INSERT_VALUES,ierr)
+          call MatSetValues(C,one,Ii,one,JJ,v,INSERT_VALUES,ierr)
           CHKERRA(ierr)
         elseif (myRank == mySize -1) then
           v = 6.0*0.00001; Ii = m*n-1; JJ = m*n-1
-          call MatSetValues(C,1,Ii,1,JJ,v,INSERT_VALUES,ierr)
+          call MatSetValues(C,one,Ii,one,JJ,v,INSERT_VALUES,ierr)
           
         endif
         

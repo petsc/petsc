@@ -23,8 +23,8 @@ program main
   PetscScalar :: myResult = 0
   Vec            x,xend
   character(len=128) :: output
+  PetscInt,parameter :: zero = 0, one = 1, two = 2
 
-  
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   if (ierr /= 0) then
     print*,'PetscInitialize failed'
@@ -49,12 +49,12 @@ program main
   myResult = 0.5
   if (rank==0) then
     i = 0
-    call VecSetValues(xend,1,i,myResult,INSERT_VALUES,ierr);CHKERRA(ierr)
+    call VecSetValues(xend,one,i,myResult,INSERT_VALUES,ierr);CHKERRA(ierr)
   endif
   
   if (rank == mySize-1) then
     i    = N-1
-    call VecSetValues(xend,1,i,myResult,INSERT_VALUES,ierr);CHKERRA(ierr)
+    call VecSetValues(xend,one,i,myResult,INSERT_VALUES,ierr);CHKERRA(ierr)
   endif
   
   ! Assemble vector, using the 2-step process:
