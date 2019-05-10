@@ -41,7 +41,11 @@ static PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm
   /* Return subviewer in process zero */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
+    PetscMPIInt flg;
+
+    ierr = MPI_Comm_compare(PETSC_COMM_SELF,comm,&flg);CHKERRQ(ierr);
+    if (flg != MPI_IDENT && flg != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscViewerGetSubViewer() for PETSCVIEWERBINARY requires a singleton MPI_Comm");
+    ierr = PetscViewerCreate(comm,outviewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(*outviewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
     ierr = PetscMemcpy((*outviewer)->data,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
     (*outviewer)->setupcalled = PETSC_TRUE;
@@ -73,7 +77,7 @@ static PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm
 
 static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
-  PetscErrorCode     rank;
+  PetscMPIInt        rank;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
 #if defined(PETSC_HAVE_MPIIO)

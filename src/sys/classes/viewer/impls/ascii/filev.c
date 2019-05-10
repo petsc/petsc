@@ -11,6 +11,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
   int               err;
 
   PetscFunctionBegin;
+  if (vascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
     if (vascii->fd && vascii->closefile) {
@@ -44,7 +45,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"ASCII PetscViewer destroyed before restoring singleton or subcomm PetscViewer");
+  if (vascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = PetscViewerFileClose_ASCII(viewer);CHKERRQ(ierr);
   ierr = PetscFree(vascii);CHKERRQ(ierr);
 
@@ -111,6 +112,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
   FILE              *fd = vascii->fd;
 
   PetscFunctionBegin;
+  if (vascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -402,6 +404,7 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (ascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) ascii->allowsynchronized++;
   PetscFunctionReturn(0);
@@ -432,6 +435,7 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (ascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ascii->allowsynchronized--;
@@ -590,6 +594,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (ascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   PetscValidCharPointer(format,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
@@ -790,7 +795,13 @@ PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer,MPI_Comm subcomm
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data,*ovascii;
 
   PetscFunctionBegin;
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer already obtained from PetscViewer and not restored");
+  /*
+     The following line is a bug; but if it is removed the code won't work because it relies on this behavior. In particular
+     this line causes the synchronized flush to occur when the viewer is destroyed (since the count never gets to zero)
+     in some examples this displays information that otherwise would be lost
+  */
   ierr         = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr         = PetscViewerCreate(subcomm,outviewer);CHKERRQ(ierr);
   ierr         = PetscViewerSetType(*outviewer,PETSCVIEWERASCII);CHKERRQ(ierr);
@@ -819,9 +830,10 @@ PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer,MPI_Comm com
   if (!ascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer never obtained from PetscViewer");
   if (ascii->sviewer != *outviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate this SubViewer");
 
-  ascii->sviewer             = 0;
+  ascii->sviewer             = NULL;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
   ierr                       = PetscViewerDestroy(outviewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
