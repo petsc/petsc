@@ -1259,7 +1259,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
 PetscErrorCode  PetscLogView_CSV(PetscViewer viewer)
 {
   PetscStageLog      stageLog;
-  PetscEventPerfInfo *eventInfo = NULL, *stageInfo = NULL;
+  PetscEventPerfInfo *eventInfo = NULL;
   PetscLogDouble     locTotalTime, maxMem;
   int                numStages,numEvents,stage,event;
   MPI_Comm           comm = PetscObjectComm((PetscObject) viewer);
@@ -1279,8 +1279,6 @@ PetscErrorCode  PetscLogView_CSV(PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"Stage Name,Event Name,Rank,Time,Num Messages,Message Length,Num Reductions,FLOP,dof0,dof1,dof2,dof3,dof4,dof5,dof6,dof7,e0,e1,e2,e3,e4,e5,e6,e7,%d\n", size);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   for (stage=0; stage<numStages; stage++) {
-    stageInfo = &stageLog->stageInfo[stage].perfInfo;
-
     ierr = MPIU_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     for (event = 0; event < numEvents; event++) {
       eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
