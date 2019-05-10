@@ -3215,11 +3215,39 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
         ierr = MatSetValues(x,1,&i,1,&col,&a,ADD_VALUES);CHKERRQ(ierr);
       }
     }
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet coded");
+  } else {
+    for (i=0; i<aij->nz; i++) {ierr = PetscRandomGetValue(rctx,aij->a+i);CHKERRQ(ierr);}
+  }
   ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/* Like MatSetRandom_SeqAIJ, but do not set values on columns in range of [low, high) */
+PetscErrorCode  MatSetRandomSkipColumnRange_SeqAIJ_Private(Mat x,PetscInt low,PetscInt high,PetscRandom rctx)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)x->data;
+  PetscScalar    a;
+  PetscInt       m,n,i,j,col,nskip;
+
+  PetscFunctionBegin;
+  nskip = high - low;
+  ierr  = MatGetSize(x,&m,&n);CHKERRQ(ierr);
+  n    -= nskip; /* shrink number of columns where nonzeros can be set */
+  for (i=0; i<m; i++) {
+    for (j=0; j<aij->imax[i]; j++) {
+      ierr = PetscRandomGetValue(rctx,&a);CHKERRQ(ierr);
+      col  = (PetscInt)(n*PetscRealPart(a));
+      if (col >= low) col += nskip; /* shift col rightward to skip the hole */
+      ierr = MatSetValues(x,1,&i,1,&col,&a,ADD_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
