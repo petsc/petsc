@@ -149,6 +149,16 @@ else
 PETSC_TEST_LIB = $(C_SH_LIB_PATH) $(PETSC_EXTERNAL_LIB_BASIC)
 endif
 
+# manually list some some library dependencies to check for circular dependencies
+$(TESTDIR)/sys/examples/tests/ex9: PETSC_TEST_LIB = $(PETSC_SYS_LIB)
+$(TESTDIR)/vec/vec/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_VEC_LIB)
+$(TESTDIR)/mat/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_MAT_LIB)
+$(TESTDIR)/dm/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_DM_LIB)
+$(TESTDIR)/ksp/ksp/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_KSP_LIB)
+$(TESTDIR)/snes/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_SNES_LIB)
+$(TESTDIR)/ts/examples/tests/ex2: PETSC_TEST_LIB = $(PETSC_TS_LIB)
+$(TESTDIR)/tao/examples/tutorials/ex1: PETSC_TEST_LIB = $(PETSC_TAO_LIB)
+
 # Test executables
 $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
