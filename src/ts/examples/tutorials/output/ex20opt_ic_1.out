@@ -1,18 +1,14 @@
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.49734;-0.834225], Cost function f=0.1144
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.19278;-1.04229], Cost function f=0.00102718
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.22433;-1.01808], Cost function f=0.00012752
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21763;-1.02315], Cost function f=5.32282e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21745;-1.02327], Cost function f=5.3001e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21707;-1.02348], Cost function f=5.21879e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21638;-1.0237], Cost function f=4.99256e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.2151;-1.02376], Cost function f=4.38077e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21318;-1.02301], Cost function f=3.06762e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21135;-1.02027], Cost function f=1.07169e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21446;-1.01605], Cost function f=3.98717e-06
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21307;-1.01749], Cost function f=8.16769e-10
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.23568e-11
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=7.67925e-18
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=8.96644e-21
+  0 TAO,  Function value: 0.112365,  Residual: 0.988583 
+  1 TAO,  Function value: 0.013098,  Residual: 0.578333 
+  2 TAO,  Function value: 0.0100314,  Residual: 0.358504 
+  3 TAO,  Function value: 0.00234055,  Residual: 0.111577 
+  4 TAO,  Function value: 0.00151942,  Residual: 0.0549001 
+  5 TAO,  Function value: 0.00126723,  Residual: 0.0415212 
+  6 TAO,  Function value: 8.80513e-05,  Residual: 0.0245156 
+  7 TAO,  Function value: 1.13434e-06,  Residual: 0.00280576 
+  8 TAO,  Function value: 8.96281e-10,  Residual: 0.000135237 
+  9 TAO,  Function value: 2.64402e-10,  Residual: 6.92484e-05 
+ 10 TAO,  Function value: 1.75752e-18,  Residual: 2.84042e-09 
 Tao Object: 1 MPI processes
   type: blmvm
   Gradient steps: 0
@@ -25,7 +21,7 @@ Tao Object: 1 MPI processes
       Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
-      Number of updates: 13
+      Number of updates: 9
       Number of rejects: 0
       Number of resets: 1
       Mat Object: (J0_) 1 MPI processes
@@ -36,7 +32,7 @@ Tao Object: 1 MPI processes
           Convex factor: theta=0.125
           Max. storage: 1
           Used storage: 1
-          Number of updates: 13
+          Number of updates: 9
           Number of rejects: 0
           Number of resets: 1
   TaoLineSearch Object: 1 MPI processes
@@ -50,12 +46,8 @@ Tao Object: 1 MPI processes
     Termination reason: 1
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=3.71547e-10
-  Objective value=8.96644e-21
-  total number of iterations=14,                          (max: 2000)
-  total number of function/gradient evaluations=15,      (max: 4000)
+  Residual in Function/Gradient:=2.84042e-09
+  Objective value=1.75752e-18
+  total number of iterations=10,                          (max: 2000)
+  total number of function/gradient evaluations=11,      (max: 4000)
   Solution converged:    ||g(X)|| <= gatol
-Vec Object: 1 MPI processes
-  type: seq
-2.
--0.666667

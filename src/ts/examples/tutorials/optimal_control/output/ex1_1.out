@@ -1,0 +1,55 @@
+  0 TAO,  Function value: 1.95262,  Residual: 0.794468 
+  1 TAO,  Function value: 1.1986,  Residual: 0.631604 
+  2 TAO,  Function value: 0.922083,  Residual: 0.115246 
+  3 TAO,  Function value: 0.883546,  Residual: 0.107942 
+  4 TAO,  Function value: 0.864172,  Residual: 0.0529224 
+  5 TAO,  Function value: 0.856017,  Residual: 0.0403164 
+  6 TAO,  Function value: 0.853279,  Residual: 0.0168164 
+  7 TAO,  Function value: 0.851462,  Residual: 0.00814896 
+  8 TAO,  Function value: 0.85057,  Residual: 0.00614541 
+  9 TAO,  Function value: 0.850415,  Residual: 0.00997918 
+ 10 TAO,  Function value: 0.850253,  Residual: 0.00330701 
+ 11 TAO,  Function value: 0.850178,  Residual: 0.002152 
+ 12 TAO,  Function value: 0.850115,  Residual: 0.00262041 
+ 13 TAO,  Function value: 0.849966,  Residual: 0.00118741 
+ 14 TAO,  Function value: 0.849941,  Residual: 0.000713287 
+ 15 TAO,  Function value: 0.849938,  Residual: 0.000543042 
+ 16 TAO,  Function value: 0.849937,  Residual: 0.00017318 
+ 17 TAO,  Function value: 0.849937,  Residual: 9.40846e-05 
+ 18 TAO,  Function value: 0.849937,  Residual: 6.04507e-05 
+ 19 TAO,  Function value: 0.849937,  Residual: 2.79542e-05 
+ 20 TAO,  Function value: 0.849937,  Residual: 1.0464e-05 
+ 21 TAO,  Function value: 0.849937,  Residual: 5.37824e-06 
+ 22 TAO,  Function value: 0.849937,  Residual: 2.20888e-06 
+ 23 TAO,  Function value: 0.849937,  Residual: 1.74497e-06 
+ 24 TAO,  Function value: 0.849937,  Residual: 9.37823e-07 
+ 25 TAO,  Function value: 0.849937,  Residual: 5.76214e-07 
+ 26 TAO,  Function value: 0.849937,  Residual: 6.42549e-07 
+ 27 TAO,  Function value: 0.849937,  Residual: 3.30317e-07 
+ 28 TAO,  Function value: 0.849937,  Residual: 2.31613e-07 
+ 29 TAO,  Function value: 0.849937,  Residual: 2.02554e-07 
+ 30 TAO,  Function value: 0.849937,  Residual: 1.89384e-07 
+ 31 TAO,  Function value: 0.849937,  Residual: 1.5372e-07 
+ 32 TAO,  Function value: 0.849937,  Residual: 6.72611e-08 
+Vec Object: 1 MPI processes
+  type: seq
+2.
+2.88134
+2.
+2.79477
+2.
+2.68143
+2.
+2.52676
+2.
+2.30725
+2.
+1.99478
+2.
+1.59983
+2.
+1.22992
+2.
+0.98469
+2.
+0.860197

@@ -73,7 +73,9 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
   ierr = PetscLogEventBegin(TSTrajectory_Set,tj,ts,0,0);CHKERRQ(ierr);
   ierr = (*tj->ops->set)(tj,ts,stepnum,time,X);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_Set,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = TSHistoryUpdate(tj->tsh,stepnum,time);CHKERRQ(ierr);
+  if (tj->usehistory) {
+    ierr = TSHistoryUpdate(tj->tsh,stepnum,time);CHKERRQ(ierr);
+  }
   if (tj->lag.caching) tj->lag.Udotcached.time = PETSC_MIN_REAL;
   PetscFunctionReturn(0);
 }
@@ -443,6 +445,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   t->adjoint_solve_mode   = PETSC_TRUE;
   t->solution_only        = PETSC_FALSE;
   t->keepfiles            = PETSC_FALSE;
+  t->usehistory           = PETSC_TRUE;
   *tj  = t;
   ierr = TSTrajectorySetDirname(t,"SA-data");CHKERRQ(ierr);
   ierr = TSTrajectorySetFiletemplate(t,"SA-%06D.bin");CHKERRQ(ierr);
@@ -466,7 +469,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 
 .keywords: TS, trajectory, timestep, set, type
 
-.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy()
+.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy(), TSTrajectoryGetType()
 
 @*/
 PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,TSTrajectoryType type)
@@ -491,6 +494,33 @@ PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,TSTrajectoryType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)tj,type);CHKERRQ(ierr);
   ierr = (*r)(tj,ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSTrajectoryGetType - Gets the trajectory type
+
+  Collective on TS
+
+  Input Parameters:
++ tj   - the TSTrajectory context
+- ts   - the TS context
+
+  Output Parameters:
+. type - a known method
+
+  Level: developer
+
+.keywords: TS, trajectory, timestep, get, type
+
+.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy(), TSTrajectorySetType()
+
+@*/
+PetscErrorCode TSTrajectoryGetType(TSTrajectory tj,TS ts,TSTrajectoryType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+  if (type) *type = ((PetscObject)tj)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -641,6 +671,33 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
   } else {
     ierr = TSTrajectorySetType(tj,ts,defaultType);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSTrajectorySetUseHistory - Use TSHistory in TSTrajectory
+
+   Collective on TSTrajectory
+
+   Input Arguments:
++  tj - the TSTrajectory context
+-  flg - PETSC_TRUE to save, PETSC_FALSE to disable
+
+   Options Database Keys:
+.  -ts_trajectory_use_history - have it use TSHistory
+
+   Level: advanced
+
+.keywords: TS, trajectory, set, TSHistory
+
+.seealso: TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetUp()
+@*/
+PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+  PetscValidLogicalCollectiveBool(tj,flg,2);
+  tj->usehistory = flg;
   PetscFunctionReturn(0);
 }
 
@@ -820,6 +877,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
   if (ts) PetscValidHeaderSpecific(ts,TS_CLASSID,2);
   ierr = PetscObjectOptionsBegin((PetscObject)tj);CHKERRQ(ierr);
   ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,tj,ts);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_trajectory_use_history","Turn on/off usage of TSHistory",NULL,tj->usehistory,&tj->usehistory,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_trajectory_monitor","Print checkpointing schedules","TSTrajectorySetMonitor",tj->monitor ? PETSC_TRUE:PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSTrajectorySetMonitor(tj,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ts_trajectory_reconstruction_order","Interpolation order for reconstruction",NULL,tj->lag.order,&tj->lag.order,NULL);CHKERRQ(ierr);

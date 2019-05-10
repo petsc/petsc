@@ -1,5 +1,5 @@
 
-static char help[] = "Solves the van der Pol equation.\n\
+static char help[] = "Solves the van der Pol equation and demonstrate IMEX.\n\
 Input parameters include:\n\
       -mu : stiffness parameter\n\n";
 
@@ -11,18 +11,18 @@ Input parameters include:\n\
 /* ------------------------------------------------------------------------
 
    This program solves the van der Pol equation
-       y'' - \mu (1-y^2)*y' + y = 0        (1)
+       y'' - \mu ((1-y^2)*y' - y) = 0        (1)
    on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = 2, y'(0) = 0,
-   This is a nonlinear equation.
+       y(0) = 2, y'(0) = −2/3 +10/(81*\mu) − 292/(2187*\mu^2),
+   This is a nonlinear equation. The well prepared initial condition gives errors that are not dominated by the first few steps of the method when \mu is large.
 
    Notes:
    This code demonstrates the TS solver interface to two variants of
    linear problems, u_t = f(u,t), namely turning (1) into a system of
    first order differential equations,
 
-   [ y' ] = [          z          ]
-   [ z' ]   [ \mu (1 - y^2) z - y ]
+   [ y' ] = [          z            ]
+   [ z' ]   [ \mu ((1 - y^2) z - y) ]
 
    which then we can write as a vector equation
 
@@ -32,8 +32,8 @@ Input parameters include:\n\
    which is now in the desired form of u_t = f(u,t). One way that we
    can split f(u,t) in (2) is to split by component,
 
-   [ u_1' ] = [ u_2 ] + [            0              ]
-   [ u_2' ]   [  0  ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
+   [ u_1' ] = [ u_2 ] + [            0                ]
+   [ u_2' ]   [  0  ]   [ \mu ((1 - u_1^2) u_2 - u_1) ]
 
    where
 
@@ -42,8 +42,8 @@ Input parameters include:\n\
 
    and
 
-   [ G(u',u,t) ] = [ u_1' ] - [            0              ]
-                   [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
+   [ G(u',u,t) ] = [ u_1' ] - [            0                ]
+                   [ u_2' ]   [ \mu ((1 - u_1^2) u_2 - u_1) ]
 
    Using the definition of the Jacobian of G (from the PETSc user manual),
    in the equation G(u',u,t) = F(u,t),
@@ -58,15 +58,15 @@ Input parameters include:\n\
    -- = [       ]
    du'  [ 0 ; 1 ]
 
-   dG   [       0       ;         0        ]
-   -- = [                                  ]
-   du   [ -2 \mu u_1*u_2 - 1;  \mu (1 - u_1^2) ]
+   dG   [       0             ;         0        ]
+   -- = [                                        ]
+   du   [ -\mu (2*u_1*u_2 + 1);  \mu (1 - u_1^2) ]
 
    Hence,
 
-          [      a       ;          0          ]
-   J(G) = [                                    ]
-          [ 2 \mu u_1*u_2 + 1; a - \mu (1 - u_1^2) ]
+          [      a             ;          0          ]
+   J(G) = [                                          ]
+          [ \mu (2*u_1*u_2 + 1); a - \mu (1 - u_1^2) ]
 
   ------------------------------------------------------------------------- */
 
@@ -104,14 +104,14 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
   PetscErrorCode    ierr;
   User              user = (User)ctx;
   const PetscScalar *x,*xdot;
-  PetscScalar       *f;  
+  PetscScalar       *f;
 
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0] + (user->imex ? 0 : x[1]);
-  f[1] = xdot[1] - user->mu*(1. - x[0]*x[0])*x[1] + x[0];
+  f[1] = xdot[1] - user->mu*((1. - x[0]*x[0])*x[1] - x[0]);
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   PetscFunctionBeginUser;
   ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   J[0][0] = a;                    J[0][1] = (user->imex ? 0 : 1.);
-  J[1][0] = 2.*mu*x[0]*x[1]+1.;   J[1][1] = a - mu*(1. - x[0]*x[0]);
+  J[1][0] = mu*(2.*x[0]*x[1]+1.);   J[1][1] = a - mu*(1. - x[0]*x[0]);
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
@@ -194,7 +194,7 @@ int main(int argc,char **argv)
   Vec            x;             /* solution, residual vectors */
   Mat            A;             /* Jacobian matrix */
   PetscInt       steps;
-  PetscReal      ftime   =0.5;
+  PetscReal      ftime = 0.5;
   PetscBool      monitor = PETSC_FALSE;
   PetscScalar    *x_ptr;
   PetscMPIInt    size;
@@ -213,7 +213,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.mu          = 1000;
+  user.mu          = 1000.0;
   user.imex        = PETSC_TRUE;
   user.next_output = 0.0;
 
@@ -248,11 +248,10 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
-
-  x_ptr[0] = 2;   x_ptr[1] = 0.66666654321;
-
+  x_ptr[0] = 2.0;
+  x_ptr[1] = -2.0/3.0 + 10.0/(81.0*user.mu) - 292.0/(2187.0*user.mu*user.mu);
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,.001);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options

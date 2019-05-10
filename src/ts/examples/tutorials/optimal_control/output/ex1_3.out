@@ -1,0 +1,75 @@
+  0 TAO,  Function value: 1.95262,  Residual: 0.794468 
+  0 TAO,  Function value: 0.956287,  Residual: 0.206556 
+  1 TAO,  Function value: 0.882116,  Residual: 0.12537 
+  2 TAO,  Function value: 0.855085,  Residual: 0.0220737 
+  3 TAO,  Function value: 0.852475,  Residual: 0.0287703 
+  4 TAO,  Function value: 0.850011,  Residual: 0.00385325 
+  5 TAO,  Function value: 0.849937,  Residual: 0.00014656 
+  6 TAO,  Function value: 0.849937,  Residual: 3.75585e-07 
+  7 TAO,  Function value: 0.849937,  Residual: 1.55146e-12 
+Tao Object: 1 MPI processes
+  type: bntr
+    CG steps: 0
+    Newton steps: 7
+    Scaled gradient steps: 0
+    Gradient steps: 0
+    KSP termination reasons:
+      atol: 0
+      rtol: 3
+      ctol: 4
+      negc: 0
+      dtol: 0
+      iter: 0
+      othr: 0
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=0
+    using variable bounds
+    Termination reason: 0
+  KSP Object: (tao_bnk_) 1 MPI processes
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: (tao_bnk_) 1 MPI processes
+    type: none
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI processes
+      type: submatrix
+      rows=10, cols=10
+  total KSP iterations: 45
+  Active Set subset type: subvec
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=1.55146e-12
+  Objective value=0.849937
+  total number of iterations=7,                          (max: 50)
+  total number of function/gradient evaluations=21,      (max: 10000)
+  total number of Hessian evaluations=8
+  Solution converged:    ||g(X)|| <= gatol
+Vec Object: 1 MPI processes
+  type: seq
+2.
+2.88134
+2.
+2.79477
+2.
+2.68143
+2.
+2.52676
+2.
+2.30725
+2.
+1.99477
+2.
+1.59983
+2.
+1.22992
+2.
+0.984687
+2.
+0.860197

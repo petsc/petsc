@@ -16,115 +16,9 @@ F*/
 */
 #include <petsctao.h>
 #include <petscts.h>
-
-typedef struct {
-  PetscScalar H,D,omega_b,omega_s,Pmax,Pmax_ini,Pm,E,V,X,u_s,c;
-  PetscInt    beta;
-  PetscReal   tf,tcl;
-} AppCtx;
+#include "ex3.h"
 
 PetscErrorCode FormFunction(Tao,Vec,PetscReal*,void*);
-
-/* Event check */
-PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
-{
-  AppCtx        *user=(AppCtx*)ctx;
-
-  PetscFunctionBegin;
-  /* Event for fault-on time */
-  fvalue[0] = t - user->tf;
-  /* Event for fault-off time */
-  fvalue[1] = t - user->tcl;
-
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec X,PetscBool forwardsolve,void* ctx)
-{
-  AppCtx *user=(AppCtx*)ctx;
-
-  PetscFunctionBegin;
-
-  if (event_list[0] == 0) {
-    if (forwardsolve) user->Pmax = 0.0; /* Apply disturbance - this is done by setting Pmax = 0 */
-    else user->Pmax = user->Pmax_ini; /* Going backward, reversal of event */
-  } else if(event_list[0] == 1) {
-    if (forwardsolve) user->Pmax = user->Pmax_ini; /* Remove the fault  - this is done by setting Pmax = Pmax_ini */
-    else user->Pmax = 0.0; /* Going backward, reversal of event */
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
-     Defines the ODE passed to the ODE solver
-*/
-static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
-{
-  PetscErrorCode    ierr;
-  PetscScalar       *f,Pmax;
-  const PetscScalar *u,*udot;
-
-  PetscFunctionBegin;
-  /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  Pmax = ctx->Pmax;
-
-  f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
-  f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
-
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-     Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
-*/
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
-{
-  PetscErrorCode    ierr;
-  PetscInt          rowcol[] = {0,1};
-  PetscScalar       J[2][2],Pmax;
-  const PetscScalar *u,*udot;
-
-  PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  Pmax = ctx->Pmax;
-
-  J[0][0] = a;                       J[0][1] = -ctx->omega_b;
-  J[1][1] = 2.0*ctx->H/ctx->omega_s*a + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
-
-  ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (A != B) {
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
-{
-  PetscErrorCode    ierr;
-  PetscScalar       *r;
-  const PetscScalar *u;
-
-  PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(R,&r);CHKERRQ(ierr);
-  r[0] = ctx->c*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta);CHKERRQ(ierr);
-  ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 PetscErrorCode monitor(Tao tao,AppCtx *ctx)
 {
@@ -270,8 +164,7 @@ int main(int argc,char **argv)
 PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 {
   AppCtx            *ctx = (AppCtx*)ctx0;
-  TS                ts;
-
+  TS                ts,quadts;
   Vec               U;             /* solution will be stored here */
   Mat               A;             /* Jacobian matrix */
   PetscErrorCode    ierr;
@@ -322,7 +215,10 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.03125);CHKERRQ(ierr);
-  ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,PETSC_NULL,PETSC_NULL,PETSC_TRUE,ctx);CHKERRQ(ierr);
+  ierr = TSCreateQuadratureTS(ts,PETSC_TRUE,&quadts);CHKERRQ(ierr);
+  ierr = TSGetSolution(quadts,&q);CHKERRQ(ierr);
+  ierr = VecSet(q,0.0);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(quadts,NULL,(TSRHSFunction)CostIntegrand,ctx);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   direction[0] = direction[1] = 1;
@@ -337,9 +233,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
-
-  ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
-
   ierr = VecGetArrayRead(q,&qx_ptr);CHKERRQ(ierr);
   *f   = -ctx->Pm + qx_ptr[0];
   ierr = VecRestoreArrayRead(q,&qx_ptr);CHKERRQ(ierr);
@@ -350,7 +243,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-
   return 0;
 }
 

@@ -1,9 +1,9 @@
 
- trajectory sensitivity: d[Psi(tf)]/d[pm]  d[Psi(tf)]/d[pm]
+ trajectory sensitivity: d[phi(tf)]/d[pm]  d[omega(tf)]/d[pm]
 Mat Object: 1 MPI processes
   type: seqdense
--4.7646171251090764e-03 
-1.4998524221585163e-02 
+-4.7646171251077840e-03 
+1.4998524221585170e-02 
 
  cost function=11.4129
 
