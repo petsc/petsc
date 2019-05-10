@@ -2479,8 +2479,13 @@ static PetscErrorCode  MatSetRandom_MPIAIJ(Mat x,PetscRandom rctx)
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)x->data;
 
   PetscFunctionBegin;
+  if (!x->assembled && !x->preallocated) SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "MatSetRandom on an unassembled and unpreallocated MATMPIAIJ is not allowed");
   ierr = MatSetRandom(aij->A,rctx);CHKERRQ(ierr);
-  ierr = MatSetRandom(aij->B,rctx);CHKERRQ(ierr);
+  if (x->assembled) {
+    ierr = MatSetRandom(aij->B,rctx);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetRandomSkipColumnRange_SeqAIJ_Private(aij->B,x->cmap->rstart,x->cmap->rend,rctx);CHKERRQ(ierr);
+  }
   ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
