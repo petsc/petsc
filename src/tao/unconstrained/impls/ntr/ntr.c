@@ -36,8 +36,8 @@ static const char *NTR_UPDATE[64] = {"reduction","interpolation"};
    definite matrix (the preconditioner).  Here g is the gradient and H
    is the Hessian matrix.
 
-   Note:  TaoSolve_NTR MUST use the iterative solver KSPCGNASH, KSPCGSTCG,
-          or KSPCGGLTR.  Thus, we set KSPCGNASH, KSPCGSTCG, or KSPCGGLTR in this
+   Note:  TaoSolve_NTR MUST use the iterative solver KSPNASH, KSPSTCG,
+          or KSPGLTR.  Thus, we set KSPNASH, KSPSTCG, or KSPGLTR in this
           routine regardless of what the user may have previously specified.
 */
 static PetscErrorCode TaoSolve_NTR(Tao tao)
@@ -66,9 +66,9 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   }
 
   ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGNASH,&is_nash);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGSTCG,&is_stcg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGGLTR,&is_gltr);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPNASH,&is_nash);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPSTCG,&is_stcg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPGLTR,&is_gltr);CHKERRQ(ierr);
   if (!is_nash && !is_stcg && !is_gltr) {
     SETERRQ(PETSC_COMM_SELF,1,"TAO_NTR requires nash, stcg, or gltr for the KSP");
   }
@@ -662,6 +662,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(tao->ksp,"tao_ntr_");CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

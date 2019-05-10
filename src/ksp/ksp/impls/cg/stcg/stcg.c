@@ -595,7 +595,7 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(PetscOptionItems *PetscOptionsObj
 }
 
 /*MC
-     KSPCGSTCG -   Code to run conjugate gradient method subject to a constraint
+     KSPSTCG -   Code to run conjugate gradient method subject to a constraint
          on the solution norm. This is used in Trust Region methods for
          nonlinear equations, SNESNEWTONTR
 
@@ -638,7 +638,7 @@ $  other KSP converged/diverged reasons
 .seealso:  KSPCreate(), KSPCGSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn()
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_CGSTCG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSPCG_STCG     *cg;

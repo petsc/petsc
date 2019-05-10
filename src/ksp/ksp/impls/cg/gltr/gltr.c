@@ -9,7 +9,7 @@
 static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 /*@
-    KSPCGGLTRGetMinEig - Get minimum eigenvalue.
+    KSPGLTRGetMinEig - Get minimum eigenvalue.
 
     Collective on KSP
 
@@ -21,18 +21,18 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 .keywords: KSP, GLTR, get, minimum eigenvalue
 @*/
-PetscErrorCode  KSPCGGLTRGetMinEig(KSP ksp, PetscReal *e_min)
+PetscErrorCode  KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPCGGLTRGetMinEig_C",(KSP,PetscReal*),(ksp,e_min));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ksp,"KSPGLTRGetMinEig_C",(KSP,PetscReal*),(ksp,e_min));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
-    KSPCGGLTRGetLambda - Get multiplier on trust-region constraint.
+    KSPGLTRGetLambda - Get multiplier on trust-region constraint.
 
     Not Collective
 
@@ -44,13 +44,13 @@ PetscErrorCode  KSPCGGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 
 .keywords: KSP, GLTR, get, multiplier
 @*/
-PetscErrorCode  KSPCGGLTRGetLambda(KSP ksp, PetscReal *lambda)
+PetscErrorCode  KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPCGGLTRGetLambda_C",(KSP,PetscReal*),(ksp,lambda));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ksp,"KSPGLTRGetLambda_C",(KSP,PetscReal*),(ksp,lambda));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1273,8 +1273,8 @@ static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGLTRGetMinEig_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGLTRGetLambda_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -1310,7 +1310,7 @@ static PetscErrorCode  KSPCGGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  KSPCGGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
+static PetscErrorCode  KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
 {
   KSPCG_GLTR *cg = (KSPCG_GLTR*)ksp->data;
 
@@ -1319,7 +1319,7 @@ static PetscErrorCode  KSPCGGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  KSPCGGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
+static PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 {
   KSPCG_GLTR *cg = (KSPCG_GLTR*)ksp->data;
 
@@ -1352,7 +1352,7 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(PetscOptionItems *PetscOptionsObj
 }
 
 /*MC
-     KSPCGGLTR -   Code to run conjugate gradient method subject to a constraint
+     KSPGLTR -   Code to run conjugate gradient method subject to a constraint
          on the solution norm. This is used in Trust Region methods for
          nonlinear equations, SNESNEWTONTR
 
@@ -1392,10 +1392,10 @@ $  other KSP converged/diverged reasons
 
    Level: developer
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn(), KSPCGGLTRGetMinEig(), KSPCGGLTRGetLambda()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn(), KSPGLTRGetMinEig(), KSPGLTRGetLambda()
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_CGGLTR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSPCG_GLTR       *cg;
@@ -1436,7 +1436,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGGLTR(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",KSPCGSetRadius_GLTR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C", KSPCGGetNormD_GLTR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",KSPCGGetObjFcn_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGLTRGetMinEig_C",KSPCGGLTRGetMinEig_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGLTRGetLambda_C",KSPCGGLTRGetLambda_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",KSPGLTRGetMinEig_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",KSPGLTRGetLambda_GLTR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -82,9 +82,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
      Will be reset during the first iteration
   */
   ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGNASH,&is_nash);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGSTCG,&is_stcg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGGLTR,&is_gltr);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPNASH,&is_nash);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPSTCG,&is_stcg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPGLTR,&is_gltr);CHKERRQ(ierr);
 
   ierr = KSPCGSetRadius(tao->ksp,nlsP->max_radius);CHKERRQ(ierr);
 
@@ -357,7 +357,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
         /* Initialize the perturbation */
         pert = PetscMin(nlsP->imax, PetscMax(nlsP->imin, nlsP->imfac * gnorm));
         if (is_gltr) {
-          ierr = KSPCGGLTRGetMinEig(tao->ksp,&e_min);CHKERRQ(ierr);
+          ierr = KSPGLTRGetMinEig(tao->ksp,&e_min);CHKERRQ(ierr);
           pert = PetscMax(pert, -e_min);
         }
       } else {
@@ -419,7 +419,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           /* Initialize the perturbation */
           pert = PetscMin(nlsP->imax, PetscMax(nlsP->imin, nlsP->imfac * gnorm));
           if (is_gltr) {
-            ierr = KSPCGGLTRGetMinEig(tao->ksp, &e_min);CHKERRQ(ierr);
+            ierr = KSPGLTRGetMinEig(tao->ksp, &e_min);CHKERRQ(ierr);
             pert = PetscMax(pert, -e_min);
           }
         } else {
@@ -462,7 +462,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           /* Initialize the perturbation */
           pert = PetscMin(nlsP->imax, PetscMax(nlsP->imin, nlsP->imfac * gnorm));
           if (is_gltr) {
-            ierr = KSPCGGLTRGetMinEig(tao->ksp,&e_min);CHKERRQ(ierr);
+            ierr = KSPGLTRGetMinEig(tao->ksp,&e_min);CHKERRQ(ierr);
             pert = PetscMax(pert, -e_min);
           }
         } else {
@@ -982,6 +982,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(tao->ksp,"tao_nls_");CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
