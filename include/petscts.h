@@ -259,8 +259,8 @@ PETSC_EXTERN PetscErrorCode TSGetRHSJacobianP(TS,Mat*,PetscErrorCode(**)(TS,Pets
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSSetIJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianP(TS,PetscReal,Vec,Vec,PetscReal,Mat,PetscBool);
-PETSC_EXTERN PetscErrorCode TSComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
-PETSC_EXTERN PetscErrorCode TSComputeDRDUFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetQuadratureTS then TSComputeRHSJacobianP") PetscErrorCode TSComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetQuadratureTS then TSComputeRHSJacobian") PetscErrorCode TSComputeDRDUFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetIHessianProduct(TS,Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
                                                     Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
                                                     Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
@@ -357,8 +357,8 @@ PETSC_EXTERN PetscErrorCode TSAdjointMonitorSetFromOptions(TS,const char[],const
 
 PETSC_EXTERN PETSC_DEPRECATED("Use TSSetRHSJacobianP")     PetscErrorCode TSAdjointSetRHSJacobian(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
 PETSC_EXTERN PETSC_DEPRECATED("Use TSComputeRHSJacobianP") PetscErrorCode TSAdjointComputeRHSJacobian(TS,PetscReal,Vec,Mat);
-PETSC_EXTERN PETSC_DEPRECATED("Use TSComputeDRDPFunction") PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
-PETSC_EXTERN PETSC_DEPRECATED("Use TSComputeDRDUFunction") PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetQuadratureTS then TSComputeRHSJacobianP") PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetQuadratureTS then TSComputeRHSJacobian") PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetSteps(TS,PetscInt);
 

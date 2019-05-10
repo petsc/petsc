@@ -370,26 +370,10 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec Q)
 }
 
 /*@C
-  TSComputeDRDUFunction - Runs the user-defined DRDU function.
+  TSComputeDRDUFunction - Deprecated, use TSGetQuadratureTS() then TSComputeRHSJacobian()
 
-  Collective on TS
+  Level: deprecated
 
-  Input Parameters:
-+ ts - the TS context obtained from TSCreate()
-. t - current time
-- U - stata vector
-
-  Output Parameters:
-. DRDU - vector array to hold the outputs
-
-  Notes:
-  TSComputeDRDUFunction() is typically used for sensitivity implementation,
-  so most users would not generally call this routine themselves.
-
-  Level: developer
-
-.keywords: TS, sensitivity
-.seealso: TSSetCostIntegrand()
 @*/
 PetscErrorCode TSComputeDRDUFunction(TS ts,PetscReal t,Vec U,Vec *DRDU)
 {
@@ -407,26 +391,10 @@ PetscErrorCode TSComputeDRDUFunction(TS ts,PetscReal t,Vec U,Vec *DRDU)
 }
 
 /*@C
-  TSComputeDRDPFunction - Runs the user-defined DRDP function.
+  TSComputeDRDPFunction - Deprecated, use TSGetQuadratureTS() then TSComputeRHSJacobianP()
 
-  Collective on TS
+  Level: deprecated
 
-  Input Parameters:
-+ ts - the TS context obtained from TSCreate()
-. t - current time
-- U - stata vector
-
-  Output Parameters:
-. DRDP - vector array to hold the outputs
-
-  Notes:
-  TSComputeDRDPFunction() is typically used for sensitivity implementation,
-  so most users would not generally call this routine themselves.
-
-  Level: developer
-
-.keywords: TS, sensitivity
-.seealso: TSSetCostIntegrand()
 @*/
 PetscErrorCode TSComputeDRDPFunction(TS ts,PetscReal t,Vec U,Vec *DRDP)
 {
@@ -1251,7 +1219,7 @@ PetscErrorCode TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat Amat)
 }
 
 /*@
-  TSAdjointComputeDRDYFunction - Deprecated, use TSComputeDRDUFunction()
+  TSAdjointComputeDRDYFunction - Deprecated, use TSGetQuadratureTS() then TSComputeRHSJacobian()
 
   Level: deprecated
 
@@ -1271,7 +1239,7 @@ PetscErrorCode TSAdjointComputeDRDYFunction(TS ts,PetscReal t,Vec U,Vec *DRDU)
 }
 
 /*@
-  TSAdjointComputeDRDPFunction - Deprecated, use TSComputeDRDPFunction()
+  TSAdjointComputeDRDPFunction - Deprecated, use TSGetQuadratureTS() then TSComputeRHSJacobianP()
 
   Level: deprecated
 
