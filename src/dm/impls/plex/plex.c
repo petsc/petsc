@@ -2520,6 +2520,31 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt depth, PetscInt pStart, PetscInt pEnd)
+{
+  IS             stratumIS;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (pStart >= pEnd) PetscFunctionReturn(0);
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt  qStart, qEnd, numLevels, level;
+    PetscBool overlap = PETSC_FALSE;
+    ierr = DMLabelGetNumValues(label, &numLevels);CHKERRQ(ierr);
+    for (level = 0; level < numLevels; level++) {
+      ierr = DMLabelGetStratumBounds(label, level, &qStart, &qEnd);CHKERRQ(ierr);
+      if ((pStart >= qStart && pStart < qEnd) || (pEnd > qStart && pEnd <= qEnd)) {overlap = PETSC_TRUE; break;}
+    }
+    if (overlap) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_PLIB, "New depth %D range [%D,%D) overlaps with depth %D range [%D,%D)", depth, pStart, pEnd, level, qStart, qEnd);
+  }
+#endif
+  ierr = ISCreateStride(PETSC_COMM_SELF, pEnd-pStart, pStart, 1, &stratumIS);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumIS(label, depth, stratumIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexCreateDimStratum(DM,DMLabel,DMLabel,PetscInt,PetscInt);
 
 /*@
@@ -2559,109 +2584,94 @@ PetscErrorCode DMPlexStratify(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscLogEventBegin(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
-  /* Calculate depth */
+
+  /* Create depth label */
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMCreateLabel(dm, "depth");CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
-  /* Initialize roots and count leaves */
-  for (p = pStart; p < pEnd; ++p) {
+
+  {
+    /* Initialize roots and count leaves */
+    PetscInt sMin = PETSC_MAX_INT;
+    PetscInt sMax = PETSC_MIN_INT;
     PetscInt coneSize, supportSize;
 
-    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
-    if (!coneSize && supportSize) {
-      ++numRoots;
-      ierr = DMLabelSetValue(label, p, 0);CHKERRQ(ierr);
-    } else if (!supportSize && coneSize) {
-      ++numLeaves;
-    } else if (!supportSize && !coneSize) {
-      /* Isolated points */
-      ierr = DMLabelSetValue(label, p, 0);CHKERRQ(ierr);
-    }
-  }
-  if (numRoots + numLeaves == (pEnd - pStart)) {
     for (p = pStart; p < pEnd; ++p) {
-      PetscInt coneSize, supportSize;
+      ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+      if (!coneSize && supportSize) {
+        sMin = PetscMin(p, sMin);
+        sMax = PetscMax(p, sMax);
+        ++numRoots;
+      } else if (!supportSize && coneSize) {
+        ++numLeaves;
+      } else if (!supportSize && !coneSize) {
+        /* Isolated points */
+        sMin = PetscMin(p, sMin);
+        sMax = PetscMax(p, sMax);
+      }
+    }
+    ierr = DMPlexCreateDepthStratum(dm, label, 0, sMin, sMax+1);CHKERRQ(ierr);
+  }
 
+  if (numRoots + numLeaves == (pEnd - pStart)) {
+    PetscInt sMin = PETSC_MAX_INT;
+    PetscInt sMax = PETSC_MIN_INT;
+    PetscInt coneSize, supportSize;
+
+    for (p = pStart; p < pEnd; ++p) {
       ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
       if (!supportSize && coneSize) {
-        ierr = DMLabelSetValue(label, p, 1);CHKERRQ(ierr);
+        sMin = PetscMin(p, sMin);
+        sMax = PetscMax(p, sMax);
       }
     }
+    ierr = DMPlexCreateDepthStratum(dm, label, 1, sMin, sMax+1);CHKERRQ(ierr);
   } else {
-    IS       pointIS;
-    PetscInt numPoints = 0, level = 0;
+    PetscInt level = 0;
+    PetscInt qStart, qEnd, q;
 
-    ierr = DMLabelGetStratumIS(label, level, &pointIS);CHKERRQ(ierr);
-    if (pointIS) {ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);}
-    while (numPoints) {
-      const PetscInt *points;
-      const PetscInt  newLevel = level+1;
+    ierr = DMLabelGetStratumBounds(label, level, &qStart, &qEnd);CHKERRQ(ierr);
+    while (qEnd > qStart) {
+      PetscInt sMin = PETSC_MAX_INT;
+      PetscInt sMax = PETSC_MIN_INT;
 
-      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-      for (p = 0; p < numPoints; ++p) {
-        const PetscInt  point = points[p];
+      for (q = qStart; q < qEnd; ++q) {
         const PetscInt *support;
         PetscInt        supportSize, s;
 
-        ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
-        ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
+        ierr = DMPlexGetSupportSize(dm, q, &supportSize);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm, q, &support);CHKERRQ(ierr);
         for (s = 0; s < supportSize; ++s) {
-          ierr = DMLabelSetValue(label, support[s], newLevel);CHKERRQ(ierr);
+          sMin = PetscMin(support[s], sMin);
+          sMax = PetscMax(support[s], sMax);
         }
       }
-      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
-      ++level;
-      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-      ierr = DMLabelGetStratumIS(label, level, &pointIS);CHKERRQ(ierr);
-      if (pointIS) {ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);}
-      else         {numPoints = 0;}
+      ierr = DMLabelGetNumValues(label, &level);CHKERRQ(ierr);
+      ierr = DMPlexCreateDepthStratum(dm, label, level, sMin, sMax+1);CHKERRQ(ierr);
+      ierr = DMLabelGetStratumBounds(label, level, &qStart, &qEnd);CHKERRQ(ierr);
     }
-    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
   { /* just in case there is an empty process */
     PetscInt numValues, maxValues = 0, v;
 
-    ierr = DMLabelGetNumValues(label,&numValues);CHKERRQ(ierr);
-    for (v = 0; v < numValues; v++) {
-      IS pointIS;
-
-      ierr = DMLabelGetStratumIS(label, v, &pointIS);CHKERRQ(ierr);
-      if (pointIS) {
-        PetscInt  min, max, numPoints;
-        PetscInt  start;
-        PetscBool contig;
-
-        ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
-        ierr = ISGetMinMax(pointIS, &min, &max);CHKERRQ(ierr);
-        ierr = ISContiguousLocal(pointIS,min,max+1,&start,&contig);CHKERRQ(ierr);
-        if (start == 0 && contig) {
-          ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-          ierr = ISCreateStride(PETSC_COMM_SELF,numPoints,min,1,&pointIS);CHKERRQ(ierr);
-          ierr = DMLabelSetStratumIS(label, v, pointIS);CHKERRQ(ierr);
-        }
-      }
-      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-    }
+    ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&numValues,&maxValues,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     for (v = numValues; v < maxValues; v++) {
-      ierr = DMLabelAddStratum(label,v);CHKERRQ(ierr);
+      ierr = DMLabelAddStratum(label, v);CHKERRQ(ierr);
     }
   }
   ierr = PetscObjectStateGet((PetscObject) label, &mesh->depthState);CHKERRQ(ierr);
 
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   if (cMax >= 0 || fMax >= 0 || eMax >= 0 || vMax >= 0) {
-    DMLabel  dimLabel;
     PetscInt dim;
+    DMLabel  dimLabel;
 
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm, "dim");CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
-    if (!dimLabel) {
-      ierr = DMCreateLabel(dm, "dim");CHKERRQ(ierr);
-      ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
-    }
     if (cMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, dim, cMax);CHKERRQ(ierr);}
     if (fMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, dim - 1, fMax);CHKERRQ(ierr);}
     if (eMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, 1, eMax);CHKERRQ(ierr);}

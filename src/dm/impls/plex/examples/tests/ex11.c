@@ -140,10 +140,25 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     ierr = MPI_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
     for (v = numValues; v < maxValues; ++v) {ierr = DMLabelAddStratum(label,v);CHKERRQ(ierr);}
   }
+  {
+    DMLabel label;
+    ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+  }
+  {
+    PetscPartitioner part;
+    ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
+  }
   ierr = DMPlexDistribute(dm, 1, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);CHKERRQ(ierr);
     dm   = dmDist;
+  }
+  {
+    DMLabel label;
+    ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
   /* Create a cell vector */
   {
@@ -223,6 +238,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
+  test:
+    suffix: 2
+    nsize: 2
   test:
     suffix: 1
     nsize: 2
