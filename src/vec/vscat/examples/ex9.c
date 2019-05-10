@@ -1,4 +1,4 @@
-static char help[]= "This example shows how to transfer vectors from a parent communicator to vectors on a child communicator.\n\
+static char help[]= "This example shows how to transfer vectors from a parent communicator to vectors on a child communicator and vice versa.\n\
   It also shows how to transfer vectors from a subcommunicator to vectors on another subcommunicator. The two subcommunicators are not\n\
   required to cover all processes in PETSC_COMM_WORLD.\n\n";
 
@@ -25,9 +25,10 @@ int main(int argc,char **argv)
 
   /*===========================================================================
    *  Transfer a vector x defined on PETSC_COMM_WORLD to a vector y defined on
-   *  a subcommunicator of PETSC_COMM_WORLD.
+   *  a subcommunicator of PETSC_COMM_WORLD and vice versa.
    *===========================================================================*/
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"x_commworld");CHKERRQ(ierr); /* Give a name to view x clearly */
 
   /* Initialize x to [-0.0, -1.0, -2.0, ..., -19.0] */
   ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
@@ -38,7 +39,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
-  /* Transfer x to a vector y only defined on subcomm0 */
+  /* Transfer x to a vector y only defined on subcomm0 and vice versa */
   if (mycolor == 0) { /* subcomm0 contains ranks 0, 3, 6, ... in PETSC_COMM_WORLD */
     Vec         y;
     PetscScalar *yvalue;
@@ -67,10 +68,20 @@ int main(int argc,char **argv)
      */
     ierr = VecRestoreArray(y,&yvalue);CHKERRQ(ierr);
 
-    /* Libraries on subcomm0 can safely use y now, for example, view it */
+    /* Libraries on subcomm0 can safely use y now, for example, view and scale it */
     ierr = VecView(y,PETSC_VIEWER_STDOUT_(subcomm));CHKERRQ(ierr);
-    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    ierr = VecScale(y,2.0);CHKERRQ(ierr);
 
+    /* Send the new y back to x */
+    ierr = VecGetArray(y,&yvalue);CHKERRQ(ierr); /* If VecScale is done on GPU, Petsc will prepare a valid yvalue for access */
+    /* Supply new yvalue to yg without memory copying */
+    ierr = VecPlaceArray(yg,yvalue);CHKERRQ(ierr);
+    ierr = VecScatterBegin(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecResetArray(yg);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&yvalue);CHKERRQ(ierr);
+
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
   } else {
     /* Ranks outside of subcomm0 do not supply values to yg */
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,0/*n*/,N,NULL,&yg);
@@ -84,8 +95,15 @@ int main(int argc,char **argv)
     ierr = VecScatterCreate(x,ix,yg,iy,&vscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    /* Send the new y back to x. Ranks outside of subcomm0 actually have nothing to send.
+       But they have to call VecScatterBegin/End since these routines are collective.
+     */
+    ierr = VecScatterBegin(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
 
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(&ix);CHKERRQ(ierr);
   ierr = ISDestroy(&iy);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
