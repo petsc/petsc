@@ -238,7 +238,6 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   Mat            conn, CSR;
   IS             fis, cis, cis_own;
   PetscSF        sfPoint;
-  const char     *prefix;
   const PetscInt *rows, *cols, *ii, *jj;
   PetscInt       *idxs,*idxs2;
   PetscInt       dim, depth, floc, cloc, i, M, N, c, m, cStart, cEnd, fStart, fEnd;
@@ -265,7 +264,6 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
     PetscFunctionReturn(0);
   }
   /* Interpolated and parallel case */
-  ierr = DMGetOptionsPrefix(dm, &prefix);CHKERRQ(ierr);
 
   /* numbering */
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
@@ -314,13 +312,6 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), m, idxs, PETSC_OWN_POINTER, &cis);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), cloc, idxs2, PETSC_OWN_POINTER, &cis_own);CHKERRQ(ierr);
 
-  ierr = PetscObjectSetName((PetscObject)cis, "Local cells");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)cis_own, "Owned local cells");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)cis, prefix);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)cis_own, prefix);CHKERRQ(ierr);
-  ierr = ISViewFromOptions(cis, NULL, "-dm_plex_csr_is_view");CHKERRQ(ierr);
-  ierr = ISViewFromOptions(cis_own, NULL, "-dm_plex_csr_is_view");CHKERRQ(ierr);
-
   /* Create matrix to hold F-C connectivity (MatMatTranspose Mult not supported for MPIAIJ) */
   ierr = MatCreate(PetscObjectComm((PetscObject)dm), &conn);CHKERRQ(ierr);
   ierr = MatSetSizes(conn, floc, cloc, M, N);CHKERRQ(ierr);
@@ -364,18 +355,9 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   ierr = MatAssemblyBegin(conn, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(conn, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscObjectSetName((PetscObject)conn, "F-C connectivity");CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(conn, prefix);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(conn, NULL, "-dm_plex_csr_conn_view");CHKERRQ(ierr);
-
   /* Get parallel CSR by doing conn^T * conn */
   ierr = MatTransposeMatMult(conn, conn, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CSR);CHKERRQ(ierr);
   ierr = MatDestroy(&conn);CHKERRQ(ierr);
-
-  ierr = PetscObjectSetName((PetscObject)CSR, "Connectivity");CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(CSR, prefix);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_plex_csr_dm_view");CHKERRQ(ierr);
-  ierr = MatViewFromOptions(CSR, NULL, "-dm_plex_csr_mat_view");CHKERRQ(ierr);
 
   /* extract local part of the CSR */
   ierr = MatMPIAIJGetLocalMat(CSR, MAT_INITIAL_MATRIX, &conn);CHKERRQ(ierr);
@@ -998,7 +980,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
 
     if (!part->noGraph || part->viewGraph) {
       ierr = DMPlexCreatePartitionerGraph(dm, part->height, &numVertices, &start, &adjacency, &globalNumbering);CHKERRQ(ierr);
-    } else {
+    } else { /* only compute the number of owned local vertices */
       const PetscInt *idxs;
       PetscInt       p, pStart, pEnd;
 
