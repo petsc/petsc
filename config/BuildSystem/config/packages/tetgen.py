@@ -197,10 +197,3 @@ class Configure(config.package.Package):
       self.postInstall(output1+err1+output2+err2,'make.inc')
 
     return self.installDir
-
-  def consistencyChecks(self):
-    config.package.Package.consistencyChecks(self)
-    if self.argDB['with-'+self.package]:
-      if self.languages.clanguage == 'C':
-        raise RuntimeError('TetGen: requires --with-clanguage=cxx. Or use ctetgen instead.')
-    return
