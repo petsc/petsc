@@ -1253,6 +1253,56 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*
+  PetscLogView_CSV - Each process prints the times for its own events in Comma-Separated Value Format
+*/
+PetscErrorCode  PetscLogView_CSV(PetscViewer viewer)
+{
+  PetscStageLog      stageLog;
+  PetscEventPerfInfo *eventInfo = NULL;
+  PetscLogDouble     locTotalTime, maxMem;
+  int                numStages,numEvents,stage,event;
+  MPI_Comm           comm = PetscObjectComm((PetscObject) viewer);
+  PetscMPIInt        rank,size;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  /* Must preserve reduction count before we go on */
+  /* Get the total elapsed time */
+  PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = PetscMallocGetMaximumUsage(&maxMem);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Stage Name,Event Name,Rank,Time,Num Messages,Message Length,Num Reductions,FLOP,dof0,dof1,dof2,dof3,dof4,dof5,dof6,dof7,e0,e1,e2,e3,e4,e5,e6,e7,%d\n", size);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  for (stage=0; stage<numStages; stage++) {
+    ierr = MPIU_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
+    for (event = 0; event < numEvents; event++) {
+      eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s,%s,%d,%g,%g,%g,%g,%g",stageLog->stageInfo[stage].name,
+                                                stageLog->eventLog->eventInfo[event].name,rank,eventInfo->time,eventInfo->numMessages,
+                                                eventInfo->messageLength,eventInfo->numReductions,eventInfo->flops);CHKERRQ(ierr);
+      if (eventInfo->dof[0] >= 0.) {
+        PetscInt d, e;
+
+        for (d = 0; d < 8; ++d) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->dof[d]);CHKERRQ(ierr);
+        }
+        for (e = 0; e < 8; ++e) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->errors[e]);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscLogViewWarnSync(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
@@ -1788,6 +1838,8 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
     ierr = PetscLogView_Default(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscLogView_Detailed(viewer);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_CSV) {
+    ierr = PetscLogView_CSV(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_XML) {
     ierr = PetscLogView_Nested(viewer);CHKERRQ(ierr);
   }

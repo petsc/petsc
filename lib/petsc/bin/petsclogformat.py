@@ -324,10 +324,62 @@ def PrintPercentTable(localTimes,localFlops,localMessages,localMessageLens,local
     print("\end{tabular}")
     print("\end{table}")
     print("\end{document}")
+    
+
+
+# def PrintPercentTable_CSV_Compress(localTimes,localFlops,localMessages,localMessageLens,localReductions,Stages,Latex = False):
+#   ''' Prints a simple table that displays the percent of time, flops, etc for each event in each stage'''
+# 
+#   output  = io.StringIO()
+#   csv_writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
+#   csv_writer.writerow(['Stage','Event','Count','Time','Flops','Messages','Reductions','Flop rate')
+# 
+#   time,flops,numMessages,numMessageLen,numReductions  = ComputeTotals(localTimes,localFlops,localMessages,localMessageLens,localReductions)
+#   if not numMessages: numMessages = 1
+#   if not numReductions: numReductions = 1
+#   sumStages = ComputeSums(Stages)
+#   for stage in sumStages:
+#     L = sumStages[stage].keys()
+#     L.sort(cmp=ObjectsCompare)
+#     seperatoradded = False
+#     for i in xrange(len(L)):
+#       event  = L[i]
+#       space  = 0
+#       if event.startswith("SNESSolve"):        space = 1
+#       elif event.startswith("SNES"):           space = 2
+#       elif event.startswith("KSPGMRESOrthog"): space = 3
+#       elif event.startswith("KSP"):            space = 2
+#       elif event.startswith("PC"):             space = 3
+#       elif event.startswith("MatMult"):        space = 3
+#       elif event.startswith("Mat"):            space = 4
+#       elif event.startswith("Vec"):            space = 5
+#       if Sorted.index(event) > Sorted.index("PCGAMGPOpt_AGG"):
+#         space = 2
+#         if not seperatoradded:
+#           seperatoradded = True
+# 
+#       if len(localTimes) > 1:
+#         values = [100*sumStages[stage][event]["time"]/time,100*sumStages[stage][event]["flops"]/flops,100*sumStages[stage][event]["numMessages"]/numMessages,100*sumStages[stage][event]["numReductions"]/numReductions]
+#         if max(values) > .5:
+#           csv_writer.writerow(stage, event, '%6.0f' % sumStages[stage][event]["count"], '%5.0f' % values[0], '%5.0f' % values[1], '%5.0f' % values[2], '%5.0f' % values[3], '%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0))
+#       else:
+#         values = [100*sumStages[stage][event]["time"]/time,100*sumStages[stage][event]["flops"]/flops]
+#         if max(values) > .5:
+#           csv_writer.writerow(stage, event, '%6.0f' % sumStages[stage][event]["count"], '%5.0f' % values[0], '%5.0f' % values[1], , , '%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0))
+# 
+#   compress = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
+#   compressed_data = compress.compress(output.getvalue())
+#   compressed_data += compress.flush()
+# 
+#   print(compressed_data)
+
 
 if __name__ == '__main__':
   import sys
   import os
+  # import io
+  # import csv
+  # import zlib
   sys.path.append(os.getcwd())
   datafile = sys.argv[1]
   if datafile.endswith('.py'): datafile = datafile[0:-3]
