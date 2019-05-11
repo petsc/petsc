@@ -12,7 +12,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscInt        *i = NULL;
   const PetscInt  *j = NULL;
   const PetscScalar *a = NULL;
-  const char      *a_name = NULL, *i_name = NULL, *j_name = NULL, *mat_name = NULL, *c_name = NULL;
+  char            *a_name = NULL, *i_name = NULL, *j_name = NULL, *c_name = NULL;
+  const char      *mat_name = NULL;
   PetscInt        p, m, M, N;
   PetscInt        bs = mat->rmap->bs;
   PetscBool       flg;
@@ -39,7 +40,19 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)mat,&mat_name);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5GetAIJNames(viewer,&i_name,&j_name,&a_name,&c_name);CHKERRQ(ierr);
+  if (format==PETSC_VIEWER_HDF5_MAT) {
+    ierr = PetscStrallocpy("jc",&i_name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy("ir",&j_name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy("data",&a_name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy("MATLAB_sparse",&c_name);CHKERRQ(ierr);
+  } else {
+    /* TODO Once corresponding MatView is implemented, change the names to i,j,a */
+    /* TODO Maybe there could be both namings in the file, using "symbolic link" features of HDF5. */
+    ierr = PetscStrallocpy("jc",&i_name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy("ir",&j_name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy("data",&a_name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy("MATLAB_sparse",&c_name);CHKERRQ(ierr);
+  }
 
   ierr = PetscOptionsBegin(comm,NULL,"Options for loading matrix from HDF5","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,&flg);CHKERRQ(ierr);
@@ -138,6 +151,10 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   }
 
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscFree(i_name);CHKERRQ(ierr);
+  ierr = PetscFree(j_name);CHKERRQ(ierr);
+  ierr = PetscFree(a_name);CHKERRQ(ierr);
+  ierr = PetscFree(c_name);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&jmap);CHKERRQ(ierr);
   ierr = PetscFree(i);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is_i,&i_glob);CHKERRQ(ierr);

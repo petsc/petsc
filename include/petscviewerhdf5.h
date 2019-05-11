@@ -61,7 +61,4 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer,PetscBo
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer,PetscBool*);
-
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetAIJNames(PetscViewer,const char[],const char[],const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetAIJNames(PetscViewer,const char*[],const char*[],const char*[],const char*[]);
 #endif
