@@ -245,6 +245,8 @@ int main(int argc,char **argv)
 
 /*TEST
 
+   build:
+      requires: !define(PETSC_HAVE_MPIUNI)
    test:
       nsize: 7
 TEST*/
