@@ -135,6 +135,12 @@
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+        <ul>
+          <li>Added tangent linear models for Runge-Kutta methods</li>
+          <li>Added second-order adjoint solvers based on Runge-Kutta methods and Theta methods</li>
+          <li>Improved the usage of first-order adjoint solvers in an optimization context. (The TS object can be reused in the optimization loop)</li>
+          <li>Changed the APIs for integrand evaluations and corresponding derivative evaluations. TSSetCostIntegrand() is deprecated. (Instead a quadrature TS is used to handle the callbacks)</li>
+        </ul>
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>
         <ul>
