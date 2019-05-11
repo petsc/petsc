@@ -761,6 +761,12 @@ prepend-path PATH "%s"
       self.addDefine('DEPRECATED_ENUM(why)', '__attribute((deprecated))')
     else:
       self.addDefine('DEPRECATED_ENUM(why)', ' ')
+    # I was unable to make a CPP macro that takes the old and new values as seperate arguments and builds the message needed by _Pragma
+    # hence the deprecation message is handled as it is
+    if self.checkCompile('#define TEST _Pragma("GCC warning \"Testing _Pragma\"") value'):
+      self.addDefine('DEPRECATED_MACRO(why)', '_Pragma(why)')
+    else:
+      self.addDefine('DEPRECATED_MACRO(why)', ' ')
     self.popLanguage()
 
   def configureAlign(self):

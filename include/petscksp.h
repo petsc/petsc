@@ -39,9 +39,12 @@ typedef const char* KSPType;
 #define KSPPIPECGRR   "pipecgrr"
 #define KSPPIPELCG     "pipelcg"
 #define   KSPCGNE       "cgne"
-#define   KSPCGNASH     "nash"
-#define   KSPCGSTCG     "stcg"
-#define   KSPCGGLTR     "gltr"
+#define   KSPNASH       "nash"
+#define   KSPSTCG       "stcg"
+#define   KSPGLTR       "gltr"
+#define     KSPCGNASH  PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGNASH macro is deprecated use KSPNASH (since version 3.11)\"")  "nash"
+#define     KSPCGSTCG  PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGSTCG macro is deprecated use KSPSTCG (since version 3.11)\"")  "stcg"
+#define     KSPCGGLTR  PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGGLTR macro is deprecated use KSPSGLTR (since version 3.11)\"") "gltr"
 #define KSPFCG        "fcg"
 #define KSPPIPEFCG    "pipefcg"
 #define KSPGMRES      "gmres"
@@ -635,8 +638,10 @@ PETSC_EXTERN PetscErrorCode KSPCGSetRadius(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPCGGetNormD(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPCGGetObjFcn(KSP,PetscReal*);
 
-PETSC_EXTERN PetscErrorCode KSPCGGLTRGetMinEig(KSP,PetscReal*);
-PETSC_EXTERN PetscErrorCode KSPCGGLTRGetLambda(KSP,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPGLTRGetMinEig(KSP,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPGLTRGetLambda(KSP,PetscReal*);
+PETSC_DEPRECATED("Use KSPGLTRGetMinEig (since v3.12)") PETSC_STATIC_INLINE PetscErrorCode KSPCGGLTRGetMinEig(KSP ksp,PetscReal *x) {return KSPGLTRGetMinEig(ksp,x);}
+PETSC_DEPRECATED("Use KSPGLTRGetLambda (since v3.12)") PETSC_STATIC_INLINE PetscErrorCode KSPCGGLTRGetLambda(KSP ksp,PetscReal *x) {return KSPGLTRGetLambda(ksp,x);}
 
 PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP,const char[]);
 

@@ -1066,7 +1066,7 @@ $  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned
    Notes:
     If this routine is called before or doing the KSPSolve() the value of KSP_CONVERGED_ITERATING is returned
 
-   The values  KSP_CONVERGED_CG_NEG_CURVE, KSP_CONVERGED_CG_CONSTRAINED, and KSP_CONVERGED_STEP_LENGTH are returned only by the special KSPCGNASH, KSPCGSTCG, and KSPCGGLTR
+   The values  KSP_CONVERGED_CG_NEG_CURVE, KSP_CONVERGED_CG_CONSTRAINED, and KSP_CONVERGED_STEP_LENGTH are returned only by the special KSPNASH, KSPSTCG, and KSPGLTR
    solvers which are used by the SNESNEWTONTR (trust region) solver.
 
    Level: intermediate

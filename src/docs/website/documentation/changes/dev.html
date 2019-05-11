@@ -124,6 +124,9 @@
       <h4>KSP:</h4>
         <ul>
           <li>Renamed KSPComputeExplicitOperator() into KSPComputeOperator(). Added extra argument to select the desired matrix type</li>
+          <li> KSPCGGLTRGetMinEig(KSP,PetscReal*) -> KSPGLTRGetMinEig(KSP,PetscReal*)</li>
+          <li> KSPCGGLTRGetLambda(KSP,PetscReal*) ->  KSPGLTRGetLambda(KSP,PetscReal*)</li>
+          <li> KSPCGNASH, KSPCGSTCG, KSPCGGLTR -> KSPNASH, KSPSTCG, KSPGLTR</li>
         </ul>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
