@@ -1,6 +1,7 @@
 #include <petscis.h>         /*I  "petscis.h"  I*/
 #include <petsc/private/isimpl.h>
 #include <petsc/private/viewerimpl.h>
+#include <petscviewerhdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
 /*
