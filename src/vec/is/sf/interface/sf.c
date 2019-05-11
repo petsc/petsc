@@ -1254,6 +1254,9 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
 
    Level: advanced
 
+   Notes:
+   The returned array is owned by PetscSF and automatically freed by PetscSFDestroy(). Hence no need to call PetscFree() on it.
+
 .seealso: PetscSFGatherBegin()
 @*/
 PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
@@ -1290,6 +1293,9 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
 
    Level: developer
 
+   Notes:
+   The returned array is owned by PetscSF and automatically freed by PetscSFDestroy(). Hence no need to call PetscFree() on it.
+
 .seealso:
 @*/
 PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
@@ -1312,7 +1318,8 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
 
 
 /*@C
-   PetscSFComputeMultiRootOriginalNumbering - Returns original numbering of multi-roots (roots of multi-SF returned by PetscSFGetMultiSF()). Each multi-root is assigned index of its original root.
+   PetscSFComputeMultiRootOriginalNumbering - Returns original numbering of multi-roots (roots of multi-SF returned by PetscSFGetMultiSF()).
+   Each multi-root is assigned index of the corresponding original root.
 
    Collective
 
@@ -1321,13 +1328,17 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
 -  degree - degree of each root vertex, computed with PetscSFComputeDegreeBegin()/PetscSFComputeDegreeEnd()
 
    Output Arguments:
-.  mRootsOrigNumbering - original indices of multi-roots; length of the array is equal to the number of multi-roots (roots of multi-SF)
++  nMultiRoots - (optional) number of multi-roots (roots of multi-SF)
+-  multiRootsOrigNumbering - original indices of multi-roots; length of this array is nMultiRoots
 
    Level: developer
+   
+   Notes:
+   The returned array multiRootsOrigNumbering is newly allocated and should be destroyed with PetscFree() when no longer needed.
 
 .seealso: PetscSFComputeDegreeBegin(), PetscSFComputeDegreeEnd(), PetscSFGetMultiSF()
 @*/
-PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscInt degree[], PetscInt *mRootsOrigNumbering[])
+PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscInt degree[], PetscInt *nMultiRoots, PetscInt *multiRootsOrigNumbering[])
 {
   PetscSF             msf;
   PetscInt            i, j, k, nroots, nmroots;
@@ -1337,19 +1348,21 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   if (nroots) PetscValidIntPointer(degree,2);
-  PetscValidPointer(mRootsOrigNumbering,3);
+  if (nMultiRoots) PetscValidIntPointer(nMultiRoots,3);
+  PetscValidPointer(multiRootsOrigNumbering,4);
   ierr = PetscSFGetMultiSF(sf,&msf);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(msf, &nmroots, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nmroots, mRootsOrigNumbering);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nmroots, multiRootsOrigNumbering);CHKERRQ(ierr);
   for (i=0,j=0,k=0; i<nroots; i++) {
     if (!degree[i]) continue;
     for (j=0; j<degree[i]; j++,k++) {
-      (*mRootsOrigNumbering)[k] = i;
+      (*multiRootsOrigNumbering)[k] = i;
     }
   }
 #if defined(PETSC_USE_DEBUG)
   if (PetscUnlikely(k != nmroots)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sanity check fail");
 #endif
+  if (nMultiRoots) *nMultiRoots = nmroots;
   PetscFunctionReturn(0);
 }
 

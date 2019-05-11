@@ -436,16 +436,13 @@ int main(int argc,char **argv)
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF\n");CHKERRQ(ierr);
     ierr = PetscSFView(msf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF roots indices in original SF roots numbering\n");CHKERRQ(ierr);
-    ierr = PetscSFGetGraph(msf,&inedges,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscSFComputeMultiRootOriginalNumbering(sf,degree,&mRootsOrigNumbering);CHKERRQ(ierr);
+    ierr = PetscSFComputeMultiRootOriginalNumbering(sf,degree,&inedges,&mRootsOrigNumbering);CHKERRQ(ierr);
     ierr = PetscIntView(inedges,mRootsOrigNumbering,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF\n");CHKERRQ(ierr);
     ierr = PetscSFView(imsf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF, original numbering\n");CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFViewCustomLocals_Private(imsf,mRootsOrigNumbering,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&imsf);CHKERRQ(ierr);
     ierr = PetscFree(mRootsOrigNumbering);CHKERRQ(ierr);
