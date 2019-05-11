@@ -6,7 +6,6 @@
 #define petscviewerhdf5pushgroup_       PETSCVIEWERHDF5PUSHGROUP
 #define petscviewerhdf5getgroup_        PETSCVIEWERHDF5GETGROUP
 #define petscviewerhdf5hasattribute_    PETSCVIEWERHDF5HASATTRIBUTE
-#define petscviewerhdf5readsizes_       PETSCVIEWERHDF5READSIZES
 #define petscviewerhdf5writeattribute_  PETSCVIEWERHDF5WRITEATTRIBUTE
 #define petscviewerhdf5readattribute_   PETSCVIEWERHDF5READATTRIBUTE
 #define petscviewerhdf5setaijnames_     PETSCVIEWERHDF5SETAIJNAMES
@@ -16,7 +15,6 @@
 #define petscviewerhdf5pushgroup_       petscviewerhdf5pushgroup
 #define petscviewerhdf5getgroup_        petscviewerhdf5getgroup
 #define petscviewerhdf5hasattribute_    petscviewerhdf5hasattribute
-#define petscviewerhdf5readsizes_       petscviewerhdf5readsizes
 #define petscviewerhdf5writeattribute_  petscviewerhdf5writeattribute
 #define petscviewerhdf5readattribute_   petscviewerhdf5readattribute
 #define petscviewerhdf5setaijnames_     petscviewerhdf5setaijnames
@@ -63,16 +61,6 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5hasattribute_(PetscViewer *viewer
    *ierr = PetscViewerHDF5HasAttribute(*viewer, c1, c2, has);if (*ierr) return;
    FREECHAR(parent, c1);
    FREECHAR(name, c2);
-}
-
-PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5readsizes_(PetscViewer *viewer, char* name PETSC_MIXED_LEN(len),
-    PetscInt *bs, PetscInt *N, PetscErrorCode *ierr PETSC_END_LEN(len))
-{
-   char *c1;
-
-   FIXCHAR(name, len, c1);
-   *ierr = PetscViewerHDF5ReadSizes(*viewer, c1, bs, N);
-   FREECHAR(name, c1);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5writeattribute_(PetscViewer *viewer, char* parent PETSC_MIXED_LEN(plen),
