@@ -51,7 +51,7 @@ int main(int argc,char **argv)
     /* Create yg on PETSC_COMM_WORLD and alias yg with y. They share the memory pointed by yvalue.
        Note this is a collective call. All processes have to call it and supply consistent N.
      */
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,yvalue,&yg);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,yvalue,&yg);CHKERRQ(ierr);
 
     /* Create an identity map that makes yg[i] = x[i], i=0..N-1 */
     ierr = VecGetOwnershipRange(yg,&low,&high);CHKERRQ(ierr); /* low, high are global indices */
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
     ierr = VecDestroy(&y);CHKERRQ(ierr);
   } else {
     /* Ranks outside of subcomm0 do not supply values to yg */
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,0/*n*/,N,NULL,&yg);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,0/*n*/,N,NULL,&yg);CHKERRQ(ierr);
 
     /* Ranks in subcomm0 already specified the full range of the identity map. The remaining
        ranks just need to create empty ISes to cheat VecScatterCreate.
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
     ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
-    ierr = MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,1,100/*tag*/,&intercomm);
+    ierr = MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,1,100/*tag*/,&intercomm);CHKERRQ(ierr);
 
     /* Tell rank 0 of subcomm1 the global size of x */
     if (!lrank) {ierr = MPI_Send(&N,1,MPIU_INT,0/*receiver's rank in remote comm, i.e., subcomm1*/,200/*tag*/,intercomm);CHKERRQ(ierr);}
@@ -186,7 +186,7 @@ int main(int argc,char **argv)
     PetscMPIInt lrank;
 
     ierr = MPI_Comm_rank(subcomm,&lrank);CHKERRQ(ierr);
-    ierr = MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,0/*remote_leader*/,100/*tag*/,&intercomm);
+    ierr = MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,0/*remote_leader*/,100/*tag*/,&intercomm);CHKERRQ(ierr);
 
     /* Two rank-0 are talking */
     if (!lrank) {ierr = MPI_Recv(&N,1,MPIU_INT,0/*sender's rank in remote comm, i.e. subcomm0*/,200/*tag*/,intercomm,MPI_STATUS_IGNORE);CHKERRQ(ierr);}
