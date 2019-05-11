@@ -908,6 +908,10 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
 
   if (cols || values) {
     ierr = PetscMalloc2(nz,&idx,nz,&v);CHKERRQ(ierr);
+    for (i=0; i<q; i++) {
+      /* We need to initialize the v[i] to zero to handle the case in which T is NULL (not the identity matrix). */
+      v[i] = 0.0;
+    }
     if (b->isTI) {
       for (i=0; i<nzaij; i++) {
         for (j=0; j<q; j++) {
