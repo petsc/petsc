@@ -752,11 +752,14 @@ prepend-path PATH "%s"
     ## why we can't have nice things.
     #
     # if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
-    #   self.addDefine('DEPRECATED(why)', '__attribute((deprecated(why)))')
+    #   self.addDefine('DEPRECATED_FUNCTION(why)', '__attribute((deprecated(why)))')
+    #   self.addDefine('DEPRECATED_TYPEDEF(why)', '__attribute((deprecated(why)))')
     if self.checkCompile("""__attribute((deprecated)) static int myfunc(void) { return 1;}""", ''):
-      self.addDefine('DEPRECATED(why)', '__attribute((deprecated))')
+      self.addDefine('DEPRECATED_FUNCTION(why)', '__attribute((deprecated))')
+      self.addDefine('DEPRECATED_TYPEDEF(why)', '__attribute((deprecated))')
     else:
-      self.addDefine('DEPRECATED(why)', ' ')
+      self.addDefine('DEPRECATED_FUNCTION(why)', ' ')
+      self.addDefine('DEPRECATED_TYPEDEF(why)', ' ')
     if self.checkCompile("""enum E {oldval __attribute((deprecated)), newval };""", ''):
       self.addDefine('DEPRECATED_ENUM(why)', '__attribute((deprecated))')
     else:

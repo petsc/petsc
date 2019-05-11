@@ -529,8 +529,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
   PetscFunctionReturn(0);
 }
 /* The three are deprecated */
-PETSC_DEPRECATED("Use VecLockReadPush (since v3.11)") PetscErrorCode VecLockPush(Vec);
-PETSC_DEPRECATED("Use VecLockReadPop (since v3.11)")  PetscErrorCode VecLockPop(Vec);
+PETSC_DEPRECATED_FUNCTION("Use VecLockReadPush() (since version 3.11)") PetscErrorCode VecLockPush(Vec);
+PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11)")  PetscErrorCode VecLockPop(Vec);
 #define VecLocked(x,arg) VecSetErrorIfLocked(x,arg)
 #else
 #define VecLockReadPush(x)           0
