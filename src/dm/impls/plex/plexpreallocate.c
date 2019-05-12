@@ -247,7 +247,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   ierr = PetscSectionSetUp(leafSectionAdj);CHKERRQ(ierr);
   if (debug) {
     ierr = PetscPrintf(comm, "Adjacency Section for Preallocation on Leaves:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(leafSectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSectionView(leafSectionAdj, NULL);CHKERRQ(ierr);
   }
   /* Get maximum remote adjacency sizes for owned dofs on interface (roots) */
   if (doComm) {
@@ -256,7 +256,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   }
   if (debug) {
     ierr = PetscPrintf(comm, "Adjancency Section for Preallocation on Roots:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(rootSectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSectionView(rootSectionAdj, NULL);CHKERRQ(ierr);
   }
   /* Add in local adjacency sizes for owned dofs on interface (roots) */
   for (p = pStart; p < pEnd; ++p) {
@@ -289,7 +289,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   ierr = PetscSectionSetUp(rootSectionAdj);CHKERRQ(ierr);
   if (debug) {
     ierr = PetscPrintf(comm, "Adjancency Section for Preallocation on Roots after local additions:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(rootSectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSectionView(rootSectionAdj, NULL);CHKERRQ(ierr);
   }
   /* Create adj SF based on dof SF */
   ierr = PetscSFCreateRemoteOffsets(sfDof, rootSectionAdj, leafSectionAdj, &remoteOffsets);CHKERRQ(ierr);
@@ -444,7 +444,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   if (debug) {
     IS tmp;
     ierr = PetscPrintf(comm, "Adjancency Section for Preallocation on Roots after compression:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(rootSectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSectionView(rootSectionAdj, NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Root adjacency indices after compression\n");CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, NULL);CHKERRQ(ierr);
@@ -501,7 +501,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   ierr = PetscSectionSetUp(sectionAdj);CHKERRQ(ierr);
   if (debug) {
     ierr = PetscPrintf(comm, "Adjacency Section for Preallocation:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(sectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSectionView(sectionAdj, NULL);CHKERRQ(ierr);
   }
   /* Get adjacent indices */
   ierr = PetscSectionGetStorageSize(sectionAdj, &numCols);CHKERRQ(ierr);
@@ -744,9 +744,9 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
     ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
     ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSectionView(section, NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Input Global Section for Preallocation:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(sectionGlobal, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSectionView(sectionGlobal, NULL);CHKERRQ(ierr);
     if (size > 1) {
       ierr = PetscPrintf(comm, "Input SF for Preallocation:\n");CHKERRQ(ierr);
       ierr = PetscSFView(sf, NULL);CHKERRQ(ierr);
