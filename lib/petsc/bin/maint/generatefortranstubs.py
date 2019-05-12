@@ -211,6 +211,9 @@ def processf90interfaces(petscdir,verbose):
           while txt:
             fd.write(txt)
             if txt.find('subroutine ') > -1:
+              while txt.endswith('&\n'):
+                txt = fdr.readline()
+                fd.write(txt)
               fd.write('      use petsc'+mansec+'def\n')
             txt = fdr.readline()
           fdr.close()

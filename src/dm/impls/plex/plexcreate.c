@@ -2780,7 +2780,7 @@ PetscErrorCode DMPlexBuildCoordinates_Parallel_Internal(DM dm, PetscInt spaceDim
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexCreateFromCellListParallel - This takes as input common mesh generator output, a list of the vertices for each cell, and produces a DM
 
   Input Parameters:
@@ -2922,7 +2922,7 @@ PetscErrorCode DMPlexBuildCoordinates_Internal(DM dm, PetscInt spaceDim, PetscIn
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexCreateFromCellList - This takes as input common mesh generator output, a list of the vertices for each cell, and produces a DM
 
   Input Parameters:
