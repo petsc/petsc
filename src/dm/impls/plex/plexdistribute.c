@@ -1470,7 +1470,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
 /*@C
   DMPlexMigrate  - Migrates internal DM data over the supplied star forest
-  
+
   Collective on DM and PetscSF
 
   Input Parameter:
@@ -1547,8 +1547,6 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMPlexPartitionLabelClosure_Private(DM,DMLabel,PetscInt,PetscInt,const PetscInt[],IS*);
-
 /*@C
   DMPlexDistribute - Distributes the mesh and any associated sections.
 
@@ -1607,10 +1605,11 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = PetscLogEventBegin(DMPLEX_PartSelf,dm,0,0,0);CHKERRQ(ierr);
   {
     /* Convert partition to DMLabel */
-    IS         is;
-    PetscHSetI ht;
-    PetscInt pStart, pEnd, proc, npoints, poff = 0, nranks, *iranks;
+    IS             is;
+    PetscHSetI     ht;
     const PetscInt *points;
+    PetscInt       *iranks;
+    PetscInt       pStart, pEnd, proc, npoints, poff = 0, nranks;
 
     ierr = DMLabelCreate(PETSC_COMM_SELF, "Point Partition", &lblPartition);CHKERRQ(ierr);
     /* Preallocate strata */
@@ -1633,7 +1632,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
       ierr = PetscSectionGetDof(cellPartSection, proc, &npoints);CHKERRQ(ierr);
       if (!npoints) continue;
       ierr = PetscSectionGetOffset(cellPartSection, proc, &poff);CHKERRQ(ierr);
-      ierr = DMPlexPartitionLabelClosure_Private(dm, lblPartition, proc, npoints, points+poff, &is);CHKERRQ(ierr);
+      ierr = DMPlexClosurePoints_Private(dm, npoints, points+poff, &is);CHKERRQ(ierr);
       ierr = DMLabelSetStratumIS(lblPartition, proc, is);CHKERRQ(ierr);
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
@@ -1807,7 +1806,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
 /*@C
   DMPlexGetGatherDM - Get a copy of the DMPlex that gathers all points on the
   root process of the original's communicator.
-  
+
   Collective on DM
 
   Input Parameters:
@@ -1852,7 +1851,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 
 /*@C
   DMPlexGetRedundantDM - Get a copy of the DMPlex that is completely copied on each process.
-  
+
   Collective on DM
 
   Input Parameters:
