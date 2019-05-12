@@ -503,20 +503,6 @@ PetscErrorCode DMStagGetStencilWidth(DM dm,PetscInt *stencilWidth)
 }
 
 /*@C
-  DMStagGetGhostType - deprecated; use DMStagGetStencilType()
-
-  Level: deprecated
-@*/
-PetscErrorCode DMStagGetGhostType(DM dm,DMStagStencilType *stencilType)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMStagGetStencilType(dm,stencilType);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
   DMStagGetOwnershipRanges - get elements per rank in each direction
 
   Not Collective
@@ -930,20 +916,6 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
   if (nRanks0) stag->nRanks[0] = nRanks0;
   if (nRanks1) stag->nRanks[1] = nRanks1;
   if (nRanks2) stag->nRanks[2] = nRanks2;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  DMStagSetGhostType - deprecated; use DMStagSetStencilType()
-
-  Level: deprecated
-@*/
-PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType stencilType)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMStagSetStencilType(dm,stencilType);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -370,11 +370,11 @@ For example,
 \item \lstinline{MatHeaderReplace()} is not intended for users (it is in \trl{include/petsc/private/matimpl.h}) but is marked \lstinline{PETSC_EXTERN} since it is used both by implementations of the \lstinline{Mat} class (which could be defined in plugin implementations) and by functions in the \lstinline{DM} and \lstinline{KSP} packages.
 \end{itemize}
 \item Before removing or renaming an API function, type, or enumerator,
-\lstinline{PETSC_DEPRECATED()} should be used in the relevant header file to indicate the new, correct usage and the version number where the deprecation will first appear. For example,
+\lstinline{PETSC_DEPRECATED_XXX()} should be used in the relevant header file to indicate the new, correct usage and the version number where the deprecation will first appear. For example,
 \begin{lstlisting}
-typedef NewType OldType PETSC_DEPRECATED("Use NewType (since v3.9)");
-PETSC_DEPRECATED("Use NewFunction (since v3.9)") PetscErrorCode OldFunction();
-#define OLD_ENUMERATOR_DEPRECATED  OLD_ENUMERATOR PETSC_DEPRECATED_ENUM("Use NEW_ENUMERATOR (since v3.9)")
+typedef NewType OldType PETSC_DEPRECATED_TYPEDEF("Use NewType (since version 3.9)");
+PETSC_DEPRECATED_FUNCTION("Use NewFunction() (since version 3.9)") PetscErrorCode OldFunction();
+#define OLD_ENUMERATOR_DEPRECATED  OLD_ENUMERATOR PETSC_DEPRECATED_ENUM("Use NEW_ENUMERATOR (since version 3.9)")
 typedef enum {
   OLD_ENUMERATOR_DEPRECATED = 3,
   NEW_ENUMERATOR = 3
