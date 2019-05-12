@@ -3223,7 +3223,7 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
 . dm - The DM
 
   Options Database Keys:
-. -dm_plex_create_from_hdf5_xdmf - use the PETSC_VIEWER_HDF5_XDMF format for reading HDF5 
+. -dm_plex_create_from_hdf5_xdmf - use the PETSC_VIEWER_HDF5_XDMF format for reading HDF5
 
   Level: beginner
 
@@ -3409,7 +3409,7 @@ PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool 
     ierr = DMGetSection(rdm->coordinateDM, &cs);CHKERRQ(ierr);
     if (cs) {ierr = PetscSectionGetChart(cs, NULL, &pEnd);CHKERRQ(ierr);}
     if (pEnd >= 0) {
-      ierr = DMClone(rdm->coordinateDM, &ncdm);CHKERRQ(ierr);
+      ierr = DMClone(*refdm, &ncdm);CHKERRQ(ierr);
       ierr = DMCopyDisc(rdm->coordinateDM, ncdm);CHKERRQ(ierr);
       ierr = DMSetSection(ncdm, cs);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(*refdm, ncdm);CHKERRQ(ierr);
