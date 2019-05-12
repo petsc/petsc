@@ -988,6 +988,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
   PetscSFCheckGraphSet(sf,1);
   if (nroots) PetscValidPointer(selected,3);
   PetscValidPointer(newsf,4);
+  ierr = PetscLogEventBegin(PETSCSF_EmbedSF,sf,0,0,0);CHKERRQ(ierr);
   if (sf->mine) for (i = 0; i < sf->nleaves; ++i) {leafsize = PetscMax(leafsize, sf->mine[i]+1);}
   else leafsize = sf->nleaves;
   ierr = PetscCalloc2(sf->nroots,&rootdata,leafsize,&leafdata);CHKERRQ(ierr);
@@ -1011,6 +1012,8 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
   ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,newsf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*newsf,sf->nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(*newsf);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_EmbedSF,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
