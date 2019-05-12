@@ -9,11 +9,35 @@ and Hdiv elements.\n\n\n";
 #include <petscds.h>
 #include <petscconvest.h>
 
+typedef enum {SOL_LINEAR, SOL_QUADRATIC, SOL_QUARTIC, SOL_UNKNOWN, NUM_SOLTYPE} SolType;
+const char *SolTypeNames[NUM_SOLTYPE+3] = {"linear", "quadratic", "quartic", "unknown", "SolType", "SOL_", NULL};
+
 typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;     /* The topological mesh dimension */
   PetscBool simplex; /* Simplicial mesh */
+  SolType   solType; /* The tyoe of exact solution */
 } AppCtx;
+
+/* 2D Dirichlet potential example
+
+  u = x
+  q = <1, 0>
+  f = 0
+
+  We will need a boundary integral of u over \Gamma.
+*/
+static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  u[0] = x[0];
+  return 0;
+}
+static PetscErrorCode linear_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt c;
+  for (c = 0; c < Nc; ++c) u[c] = c ? 0.0 : 1.0;
+  return 0;
+}
 
 /* 2D Dirichlet potential example
 
@@ -69,6 +93,24 @@ static PetscErrorCode quartic_q(PetscInt dim, PetscReal time, const PetscReal x[
 }
 
 /* <v, -\nabla\cdot q> + <v, f> */
+static void f0_linear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                        PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  f0[0] = 0.0;
+}
+static void f0_bd_linear_q(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                           PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscScalar potential;
+  PetscInt    d;
+
+  linear_u(dim, t, x, dim, &potential, NULL);
+  for (d = 0; d < dim; ++d) f0[d] = -potential*n[d];
+}
 static void f0_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -80,6 +122,17 @@ static void f0_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     f0[0] -= u_x[uOff_x[0]+d*dim+d];
   }
   f0[0] += 4.0;
+}
+static void f0_bd_quadratic_q(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                              PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscScalar potential;
+  PetscInt    d;
+
+  quadratic_u(dim, t, x, dim, &potential, NULL);
+  for (d = 0; d < dim; ++d) f0[d] = -potential*n[d];
 }
 static void f0_quartic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -162,6 +215,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex24.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex24.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-sol_type", "Type of exact solution", "ex24.c", SolTypeNames, (PetscEnum) options->solType, (PetscEnum *) &options->solType, NULL);
+
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -171,8 +226,19 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* Create box mesh */
-  ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  if (0) {
+    DMLabel     label;
+    const char *name = "marker";
+
+    ierr = DMPlexCreateReferenceCell(comm, user->dim, user->simplex, dm);CHKERRQ(ierr);
+    ierr = DMCreateLabel(*dm, name);CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, name, &label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
+    ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
+  } else {
+    /* Create box mesh */
+    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  }
   /* Distribute mesh over processes */
   {
     DM               dmDist = NULL;
@@ -223,15 +289,34 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_q, f1_q);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 1, f0_quartic_u, NULL);CHKERRQ(ierr);
   // Put in boundary integral
   ierr = PetscDSSetJacobian(prob, 0, 0, g0_qq, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL, g2_qu, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_uq, NULL, NULL);CHKERRQ(ierr);
-  // Put in boundary Jacobian
   //ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, 1, &id, user);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 0, quartic_q, user);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 1, quartic_u, user);CHKERRQ(ierr);
+  switch (user->solType)
+  {
+    case SOL_LINEAR:
+      ierr = PetscDSSetResidual(prob, 1, f0_linear_u, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetBdResidual(prob, 0, f0_bd_linear_q, NULL);CHKERRQ(ierr);
+      ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL, "Dirichlet Bd Integral", "marker", 0, 0, NULL, (void (*)(void)) NULL, 1, &id, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(prob, 0, linear_q, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(prob, 1, linear_u, user);CHKERRQ(ierr);
+      break;
+    case SOL_QUADRATIC:
+      ierr = PetscDSSetResidual(prob, 1, f0_quadratic_u, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetBdResidual(prob, 0, f0_bd_quadratic_q, NULL);CHKERRQ(ierr);
+      ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL, "Dirichlet Bd Integral", "marker", 0, 0, NULL, (void (*)(void)) NULL, 1, &id, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(prob, 0, quadratic_q, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(prob, 1, quadratic_u, user);CHKERRQ(ierr);
+      break;
+    case SOL_QUARTIC:
+      ierr = PetscDSSetResidual(prob, 1, f0_quartic_u, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(prob, 0, quartic_q, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(prob, 1, quartic_u, user);CHKERRQ(ierr);
+      break;
+    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid exact solution type %s", SolTypeNames[PetscMin(user->solType, SOL_UNKNOWN)]);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -303,12 +388,35 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_bdm1_p0_0
     requires: triangle
-    args: -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
+    args: -sol_type linear \
+          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
+          -dmsnes_check -snes_error_if_not_converged \
+          -ksp_rtol 1e-10 -ksp_error_if_not_converged \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
+            -fieldsplit_field_pc_type lu \
+            -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+  test:
+    suffix: 2d_bdm1_p0_1
+    requires: triangle
+    args: -sol_type quadratic \
+          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
+          -dmsnes_check -snes_error_if_not_converged \
+          -ksp_rtol 1e-10 -ksp_error_if_not_converged \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
+            -fieldsplit_field_pc_type lu \
+            -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+  test:
+    suffix: 2d_bdm1_p0_2
+    requires: triangle
+    args: -sol_type quartic \
+          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
           -snes_error_if_not_converged \
           -ksp_rtol 1e-10 -ksp_error_if_not_converged \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
             -fieldsplit_field_pc_type lu \
             -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+
+
   test:
     suffix: 2d_bdmq1_p0_0
     requires: triangle
