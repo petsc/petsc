@@ -378,7 +378,7 @@ int main(int argc,char **args)
       /*
        Open a string viewer; then write info to it.
       */
-      ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,sizeof(kspinfo),&viewer);CHKERRQ(ierr);
       ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
       ierr = PetscStrrchr(file[PetscPreLoadIt],'/',&matrixname);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %s \n",matrixname,its,norm,kspinfo);CHKERRQ(ierr);

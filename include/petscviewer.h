@@ -197,7 +197,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **)
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryRead(PetscViewer,void*,PetscInt,PetscInt*,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer,void*,PetscInt,PetscDataType,PetscBool );
 PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...);
-PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],size_t);
+PETSC_EXTERN PetscErrorCode PetscViewerStringGetStringRead(PetscViewer,const char*[],size_t*);
+PETSC_EXTERN PetscErrorCode PetscViewerStringSetOwnString(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawClear(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawSetHold(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawGetHold(PetscViewer,PetscBool*);
