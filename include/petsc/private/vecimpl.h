@@ -93,6 +93,7 @@ struct _VecOps {
   PetscErrorCode (*restorelocalvector)(Vec,Vec);
   PetscErrorCode (*getlocalvectorread)(Vec,Vec);
   PetscErrorCode (*restorelocalvectorread)(Vec,Vec);
+  PetscErrorCode (*pintocpu)(Vec,PetscBool);
 };
 
 /*
@@ -139,6 +140,7 @@ struct _p_Vec {
   PetscInt               lock;         /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadFlag       valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
+  PetscBool              pinnedtocpu;
   void                   *spptr; /* this is the special pointer to the array on the GPU */
 #endif
 };

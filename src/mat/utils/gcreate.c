@@ -421,3 +421,26 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@
+     MatPinToCPU - marks a matrix to temprarily stay on the CPU and perform computations on the CPU
+
+   Input Parameters:
++   A - the matrix
+-   flg - pin to the CPU if value of PETSC_TRUE
+
+@*/
+PetscErrorCode MatPinToCPU(Mat A,PetscBool flg)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  PetscErrorCode ierr;
+
+  if (A->pinnedtocpu == flg) return 0;
+  A->pinnedtocpu = flg;
+  if (A->ops->pintocpu) {
+    ierr = (*A->ops->pintocpu)(A,flg);CHKERRQ(ierr);
+  }
+#endif
+  PetscFunctionReturn(0);
+}

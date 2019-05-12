@@ -250,7 +250,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
+  if (!A->pinnedtocpu) {
+    ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -349,20 +351,18 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatPinToCPU_SeqAIJViennaCL(Mat,PetscBool);
 static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   PetscErrorCode ierr;
-  Mat C;
+  Mat            C;
 
   PetscFunctionBegin;
   ierr = MatDuplicate_SeqAIJ(A,cpvalues,B);CHKERRQ(ierr);
   C = *B;
 
-  C->ops->mult        = MatMult_SeqAIJViennaCL;
-  C->ops->multadd     = MatMultAdd_SeqAIJViennaCL;
-  C->ops->assemblyend = MatAssemblyEnd_SeqAIJViennaCL;
-  C->ops->destroy     = MatDestroy_SeqAIJViennaCL;
-  C->ops->duplicate   = MatDuplicate_SeqAIJViennaCL;
+  ierr = MatPinToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
+  C->ops->pintocpu = MatPinToCPU_SeqAIJViennaCL;
 
   C->spptr        = new Mat_SeqAIJViennaCL();
   ((Mat_SeqAIJViennaCL*)C->spptr)->tempvec        = NULL;
@@ -378,6 +378,26 @@ static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpval
     ierr = MatViennaCLCopyToGPU(C);CHKERRQ(ierr);
   }
 
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatPinToCPU_SeqAIJViennaCL(Mat A,PetscBool flg)
+{
+  PetscFunctionBegin;
+  A->pinnedtocpu = flg;
+  if (flg) {
+    A->ops->mult           = MatMult_SeqAIJ;
+    A->ops->multadd        = MatMultAdd_SeqAIJ;
+    A->ops->assemblyend    = MatAssemblyEnd_SeqAIJ;
+    A->ops->destroy        = MatDestroy_SeqAIJ;
+    A->ops->duplicate      = MatDuplicate_SeqAIJ;
+  } else {
+    A->ops->mult           = MatMult_SeqAIJViennaCL;
+    A->ops->multadd        = MatMultAdd_SeqAIJViennaCL;
+    A->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
+    A->ops->destroy        = MatDestroy_SeqAIJViennaCL;
+    A->ops->duplicate      = MatDuplicate_SeqAIJViennaCL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -400,17 +420,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
   aij             = (Mat_SeqAIJ*)B->data;
   aij->inode.use  = PETSC_FALSE;
 
-  B->ops->mult    = MatMult_SeqAIJViennaCL;
-  B->ops->multadd = MatMultAdd_SeqAIJViennaCL;
   B->spptr        = new Mat_SeqAIJViennaCL();
 
   ((Mat_SeqAIJViennaCL*)B->spptr)->tempvec        = NULL;
   ((Mat_SeqAIJViennaCL*)B->spptr)->mat            = NULL;
   ((Mat_SeqAIJViennaCL*)B->spptr)->compressed_mat = NULL;
 
-  B->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
-  B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
-  B->ops->duplicate      = MatDuplicate_SeqAIJViennaCL;
+  ierr = MatPinToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
+  A->ops->pintocpu = MatPinToCPU_SeqAIJViennaCL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);

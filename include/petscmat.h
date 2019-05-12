@@ -1786,6 +1786,8 @@ PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat,PetscInt);
 #endif
 
 
+PETSC_EXTERN PetscErrorCode MatPinToCPU(Mat,PetscBool);
+
 #ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
