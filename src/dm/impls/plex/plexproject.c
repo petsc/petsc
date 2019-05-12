@@ -178,7 +178,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
   const PetscScalar *constants;
   PetscReal         *x;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
-  PetscFEGeom        fegeom;
+  PetscFEGeom        fegeom, cgeom;
   const PetscInt     dE = fgeom->dimEmbed;
   PetscInt           dimAux = 0, numConstants, Nf, NfAux = 0, f, spDim, d, v, tp = 0;
   PetscBool          isAffine;
@@ -221,6 +221,10 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
     fegeom.invJ = fgeom->invJ;
     fegeom.detJ = fgeom->detJ;
     fegeom.n    = fgeom->n;
+
+    cgeom.J     = fgeom->suppJ[0];
+    cgeom.invJ  = fgeom->suppInvJ[0];
+    cgeom.detJ  = fgeom->suppDetJ[0];
   }
   for (f = 0, v = 0; f < Nf; ++f) {
     PetscQuadrature   allPoints;
@@ -243,13 +247,18 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
       if (isAffine) {
         CoordinatesRefToReal(dE, dim, fegeom.xi, fgeom->v, fegeom.J, &points[q*dim], x);
       } else {
-        fegeom.v    = &fgeom->v[tp*dE];
-        fegeom.invJ = &fgeom->suppInvJ[0][tp*dE*dE];
+        fegeom.v    = &fegeom.v[tp*dE];
+        fegeom.J    = &fgeom->J[tp*dE*dE];
+        fegeom.invJ = &fgeom->invJ[tp*dE*dE];
         fegeom.detJ = &fgeom->detJ[tp];
         fegeom.n    = &fgeom->n[tp*dE];
+
+        cgeom.J     = &fgeom->suppJ[0][tp*dE*dE];
+        cgeom.invJ  = &fgeom->suppInvJ[0][tp*dE*dE];
+        cgeom.detJ  = &fgeom->suppDetJ[0][tp];
       }
-      ierr = PetscFEEvaluateFieldJets_Internal(prob, dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, &fegeom, coefficients, coefficients_t, u, u_x, u_t);CHKERRQ(ierr);
-      if (probAux) {ierr = PetscFEEvaluateFieldJets_Internal(probAux, dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, &fegeom, coefficientsAux, coefficientsAux_t, a, a_x, a_t);CHKERRQ(ierr);}
+      ierr = PetscFEEvaluateFieldJets_Internal(prob, dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, &cgeom, coefficients, coefficients_t, u, u_x, u_t);CHKERRQ(ierr);
+      if (probAux) {ierr = PetscFEEvaluateFieldJets_Internal(probAux, dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, &cgeom, coefficientsAux, coefficientsAux_t, a, a_x, a_t);CHKERRQ(ierr);}
       (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, fegeom.v, fegeom.n, numConstants, constants, &pointEval[Nc[f]*q]);
     }
     ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
