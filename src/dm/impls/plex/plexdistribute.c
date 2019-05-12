@@ -1520,9 +1520,9 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
     /* Derive the new local-to-global mapping from the old one */
     ierr = PetscSFGetGraph(sf, NULL, &nleaves, NULL, NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves, &numbering_new);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf, MPIU_INT, (PetscInt *) numbering_orig, numbering_new);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf, MPIU_INT, (PetscInt *) numbering_orig, numbering_new);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreate(comm, 1, nleaves, (const PetscInt*) numbering_new, PETSC_OWN_POINTER, &ltogMigration);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, numbering_orig, numbering_new);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, numbering_orig, numbering_new);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm, 1, nleaves, numbering_new, PETSC_OWN_POINTER, &ltogMigration);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(ltogOriginal, (const PetscInt**)&numbering_orig);CHKERRQ(ierr);
     ierr = ISDestroy(&isOriginal);CHKERRQ(ierr);
   } else {
@@ -1567,7 +1567,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMSetAdjacency()
+.seealso: DMPlexCreate(), DMSetAdjacency()
 @*/
 PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
@@ -1739,7 +1739,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMSetAdjacency()
+.seealso: DMPlexCreate(), DMSetAdjacency()
 @*/
 PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM *dmOverlap)
 {
