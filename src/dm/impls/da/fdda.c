@@ -1068,8 +1068,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
@@ -1178,8 +1181,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
@@ -1293,8 +1299,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
@@ -1424,8 +1433,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -1553,8 +1565,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
@@ -1729,8 +1744,11 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
       }
     }
     ierr = PetscFree2(values,cols);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1793,8 +1811,11 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
       ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
   }
@@ -1883,8 +1904,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -1989,8 +2013,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -2102,8 +2129,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -2210,8 +2240,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -2361,8 +2394,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);

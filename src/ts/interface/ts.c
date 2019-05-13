@@ -2019,16 +2019,10 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    if (ts->snes && ts->usessnes)  {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    }
-    ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
-    ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
-    ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," TSType: %-7.7s",type);CHKERRQ(ierr);
+    if (ts->ops->view) {ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);}
   } else if (isbinary) {
     PetscInt    classid = TS_FILE_CLASSID;
     MPI_Comm    comm;
@@ -2089,6 +2083,13 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
 #endif
   }
+  if (ts->snes && ts->usessnes)  {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+  ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
+  ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&isundials);CHKERRQ(ierr);

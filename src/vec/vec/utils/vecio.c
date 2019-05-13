@@ -9,6 +9,7 @@
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/viewerimpl.h>
+#include <petscviewerhdf5.h>
 
 static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,PetscInt *rows)
 {
@@ -144,10 +145,6 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_HDF5)
-/*
-     This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
-   checks back and forth between the two types of variables.
-*/
 PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */

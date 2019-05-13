@@ -58,6 +58,7 @@ PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
 */
 static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 {
+  IS             is;
   PetscInt       off = 0, *pointArray, p;
   PetscErrorCode ierr;
 
@@ -76,8 +77,9 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
       ierr = PetscBTSet(label->bt, point - label->pStart);CHKERRQ(ierr);
     }
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,label->stratumSizes[v],pointArray,PETSC_OWN_POINTER,&(label->points[v]));CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) (label->points[v]), "indices");CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], pointArray, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) is, "indices");CHKERRQ(ierr);
+  label->points[v]  = is;
   label->validIS[v] = PETSC_TRUE;
   ierr = PetscObjectStateIncrease((PetscObject) label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -231,6 +233,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelNewStratum(DMLabel label, PetscInt val
   tmpH[v] = ht;
   tmpP[v] = is;
   tmpB[v] = PETSC_TRUE;
+  ierr = PetscObjectStateIncrease((PetscObject) label);CHKERRQ(ierr);
   *index = v;
   PetscFunctionReturn(0);
 }
@@ -318,6 +321,7 @@ PetscErrorCode DMLabelAddStrata(DMLabel label, PetscInt numStrata, const PetscIn
       tmpP[v] = is;
       tmpB[v] = PETSC_TRUE;
     }
+    ierr = PetscObjectStateIncrease((PetscObject) label);CHKERRQ(ierr);
   } else {
     for (v = 0; v < numStrata; ++v) {
       ierr = DMLabelAddStratum(label, values[v]);CHKERRQ(ierr);
@@ -1131,8 +1135,9 @@ PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
   ierr = ISGetLocalSize(is, &(label->stratumSizes[v]));CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   ierr = ISDestroy(&(label->points[v]));CHKERRQ(ierr);
-  label->points[v] = is;
+  label->points[v]  = is;
   label->validIS[v] = PETSC_TRUE;
+  ierr = PetscObjectStateIncrease((PetscObject) label);CHKERRQ(ierr);
   if (label->bt) {
     const PetscInt *points;
     PetscInt p;
@@ -1184,8 +1189,9 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
     }
     label->stratumSizes[v] = 0;
     ierr = ISDestroy(&label->points[v]);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_OWN_POINTER, &label->points[v]);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, &label->points[v]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) label->points[v], "indices");CHKERRQ(ierr);
+    ierr = PetscObjectStateIncrease((PetscObject) label);CHKERRQ(ierr);
   } else {
     ierr = PetscHSetIClear(label->ht[v]);CHKERRQ(ierr);
   }

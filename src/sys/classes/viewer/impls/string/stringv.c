@@ -2,9 +2,10 @@
 #include <petsc/private/viewerimpl.h>   /*I  "petscsys.h"  I*/
 
 typedef struct  {
-  char   *string;         /* string where info is stored */
-  char   *head;           /* pointer to begining of unused portion */
-  size_t curlen,maxlen;
+  char      *string;         /* string where info is stored */
+  char      *head;           /* pointer to begining of unused portion */
+  size_t    curlen,maxlen;
+  PetscBool ownstring;       /* string viewer is responsable for freeing the string */
 } PetscViewer_String;
 
 static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
@@ -13,6 +14,9 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  if (vstr->ownstring) {
+    ierr = PetscFree(vstr->string);CHKERRQ(ierr);
+  }
   ierr = PetscFree(vstr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -33,7 +37,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 
    Concepts: printing^to string
 
-.seealso: PetscViewerStringOpen()
+.seealso: PetscViewerStringOpen(), PetscViewerStringGetStringRead(), PetscViewerStringSetString(), PETSCVIEWERSTRING
 @*/
 PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 {
@@ -86,7 +90,7 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
 
   Concepts: PetscViewerString^creating
 
-.seealso: PetscViewerDestroy(), PetscViewerStringSPrintf()
+.seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PetscViewerStringGetStringRead(), PetscViewerStringSetString(), PETSCVIEWERSTRING
 @*/
 PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],size_t len,PetscViewer *lab)
 {
@@ -153,6 +157,41 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 
 /*@C
 
+   PetscViewerStringGetStringRead - Returns the string that a string viewer uses
+
+   Logically Collective on PetscViewer
+
+  Input Parameter:
+.   viewer - string viewer
+
+  Output Paramters:
++    string - the string, optional use NULL if you do not need
+-   len - the length of the string, optional use NULL if you do
+
+  Notes: Do not write to the string nor free it
+
+  Level: advanced
+
+.seealso: PetscViewerStringOpen(), PETSCVIEWERSTRING, PetscViewerStringSetString(), PetscViewerStringSPrintf(),
+          PetscViewerStringSetOwnString()
+@*/
+PetscErrorCode  PetscViewerStringGetStringRead(PetscViewer viewer,const char *string[],size_t *len)
+{
+  PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
+  PetscErrorCode     ierr;
+  PetscBool          isstring;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  if (!isstring) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for PETSCVIEWERSTRING");
+  if (string) *string = vstr->string;
+  if (len)    *len    = vstr->maxlen;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+
    PetscViewerStringSetString - sets the string that a string viewer will print to
 
    Logically Collective on PetscViewer
@@ -162,11 +201,17 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 .   string - the string to print data into
 -   len - the length of the string
 
+  Notes: The function does not copy the string, it uses it directly therefor you cannot free
+   the string until the viewer is destroyed. If you call PetscViewerStringSetOwnString() the ownership
+   passes to the viewer and it will be responsable for freeing it. In this case the string must be
+   obtained with PetscMalloc().
+
   Level: advanced
 
-.seealso: PetscViewerStringOpen()
+.seealso: PetscViewerStringOpen(), PETSCVIEWERSTRING, PetscViewerStringGetStringRead(), PetscViewerStringSPrintf(),
+          PetscViewerStringSetOwnString()
 @*/
-PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],PetscInt len)
+PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],size_t len)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
   PetscErrorCode     ierr;
@@ -187,6 +232,36 @@ PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],Pets
   PetscFunctionReturn(0);
 }
 
+/*@C
+
+   PetscViewerStringSetOwnString - tells the viewer that it now owns the string and is responsible for freeing it
+
+   Logically Collective on PetscViewer
+
+  Input Parameters:
+.   viewer - string viewer
+
+  Notes: If you call this the string must have been obtained with PetscMalloc() and you cannot free the string
+
+  Level: advanced
+
+.seealso: PetscViewerStringOpen(), PETSCVIEWERSTRING, PetscViewerStringGetStringRead(), PetscViewerStringSPrintf(),
+          PetscViewerStringSetString()
+@*/
+PetscErrorCode  PetscViewerStringSetOwnString(PetscViewer viewer)
+{
+  PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
+  PetscErrorCode     ierr;
+  PetscBool          isstring;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  if (!isstring) PetscFunctionReturn(0);
+
+  vstr->ownstring = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
 
 
 

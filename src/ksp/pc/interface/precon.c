@@ -1673,8 +1673,10 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     }
   } else if (isstring) {
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
-    ierr = PetscViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," PCType: %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
+    if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
+    if (pc->pmat && pc->pmat != pc->mat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
   } else if (isbinary) {
     PetscInt    classid = PC_FILE_CLASSID;
     MPI_Comm    comm;

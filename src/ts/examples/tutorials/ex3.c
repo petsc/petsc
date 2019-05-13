@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   PetscInt       steps,m;
   PetscMPIInt    size;
   PetscReal      dt;
-  PetscBool      flg;
+  PetscBool      flg,flg_string;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -110,6 +110,8 @@ int main(int argc,char **argv)
   m    = 60;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  flg_string = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_string_viewer",&flg_string,NULL);CHKERRQ(ierr);
 
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
@@ -150,7 +152,9 @@ int main(int argc,char **argv)
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
+  if (!flg_string) {
+    ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -241,7 +245,20 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps));CHKERRQ(ierr);
-  ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  if (!flg_string) {
+    ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  } else {
+    PetscViewer stringviewer;
+    char        string[512];
+    const char  *outstring;
+
+    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,string,sizeof(string),&stringviewer);CHKERRQ(ierr);
+    ierr = TSView(ts,stringviewer);CHKERRQ(ierr);
+    ierr = PetscViewerStringGetStringRead(stringviewer,&outstring,NULL);CHKERRQ(ierr);
+    if ((char*)outstring != (char*)string) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"String returned from viewer does not equal original string");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Output from string viewer:%s\n",outstring);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&stringviewer);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -581,4 +598,15 @@ PetscErrorCode IJacobianHeat(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s,Mat A,
       requires: !single
       suffix: fischer_guess_2
       args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 2,10 -pc_type none -ksp_converged_reason
+
+    test:
+      requires: !single
+      suffix: stringview
+      args: -nox -ts_type rosw -test_string_viewer
+
+    test:
+      requires: !single
+      suffix: stringview_euler
+      args: -nox -ts_type euler -test_string_viewer
+
 TEST*/

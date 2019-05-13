@@ -119,7 +119,7 @@ PETSC_EXTERN PetscErrorCode DMStagVecRestoreArrayDOFRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMStagVecSetValuesStencil(DM,Vec,PetscInt,const DMStagStencil*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagVecSplitToDMDA(DM,Vec,DMStagStencilLocation,PetscInt,DM*,Vec*);
 
-PETSC_EXTERN PETSC_DEPRECATED("Use DMStagGetStencilType") PetscErrorCode DMStagGetGhostType(DM,DMStagStencilType*);
-PETSC_EXTERN PETSC_DEPRECATED("Use DMStagSetStencilType") PetscErrorCode DMStagSetGhostType(DM,DMStagStencilType);
+PETSC_DEPRECATED_FUNCTION("Use DMStagGetStencilType() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode DMStagGetGhostType(DM dm,DMStagStencilType *s) {return DMStagGetStencilType(dm,s);}
+PETSC_DEPRECATED_FUNCTION("Use DMStagSetStencilType() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType *s) {return DMStagGetStencilType(dm,s);}
 
 #endif
