@@ -553,14 +553,14 @@ DEF_Block(char,7)
 
 static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 {
-  PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
   PetscErrorCode ierr;
-  PetscInt *rlengths,*ilengths,i;
-  PetscMPIInt rank,niranks,*iranks;
-  MPI_Comm comm;
-  MPI_Group group;
-  PetscMPIInt nreqs = 0;
-  MPI_Request *reqs;
+  PetscInt       *rlengths,*ilengths,i;
+  PetscMPIInt    rank,niranks,*iranks;
+  MPI_Comm       comm;
+  MPI_Group      group;
+  PetscMPIInt    nreqs = 0;
+  MPI_Request    *reqs;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_group(PETSC_COMM_SELF,&group);CHKERRQ(ierr);
