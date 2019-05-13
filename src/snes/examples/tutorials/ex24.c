@@ -416,10 +416,25 @@ int main(int argc, char **argv)
             -fieldsplit_field_pc_type lu \
             -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
 
-
   test:
     suffix: 2d_bdmq1_p0_0
     requires: triangle
-    args: -simplex 0 -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+    args: -simplex 0 -sol_type linear \
+          -field_petscspace_poly_type pminus_hdiv -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
+          -dmsnes_check -snes_error_if_not_converged \
+          -ksp_rtol 1e-10 -ksp_error_if_not_converged \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
+            -fieldsplit_field_pc_type lu \
+            -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+  test:
+    suffix: 2d_bdmq1_p0_2
+    requires: triangle
+    args: -simplex 0 -sol_type quartic \
+          -field_petscspace_poly_type_no pminus_hdiv -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
+          -dmsnes_check -snes_error_if_not_converged \
+          -ksp_rtol 1e-10 -ksp_error_if_not_converged \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
+            -fieldsplit_field_pc_type lu \
+            -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
 
 TEST*/
