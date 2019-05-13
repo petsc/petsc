@@ -440,7 +440,11 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
       for (_i=low1; _i<high1; _i++) { \
         if (rp1[_i] > col) break; \
         if (rp1[_i] == col) { \
-          if (addv == ADD_VALUES) ap1[_i] += value;   \
+          if (addv == ADD_VALUES) { \
+            ap1[_i] += value;   \
+            /* Not sure LogFlops will slow dow the code or not */ \
+            (void)PetscLogFlops(1.0);   \
+           } \
           else                    ap1[_i] = value; \
           goto a_noinsert; \
         } \
@@ -475,7 +479,10 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
     for (_i=low2; _i<high2; _i++) {                       \
       if (rp2[_i] > col) break;                           \
       if (rp2[_i] == col) {                               \
-        if (addv == ADD_VALUES) ap2[_i] += value;         \
+        if (addv == ADD_VALUES) {                         \
+          ap2[_i] += value;                               \
+          (void)PetscLogFlops(1.0);                       \
+        }                                                 \
         else                    ap2[_i] = value;          \
         goto b_noinsert;                                  \
       }                                                   \

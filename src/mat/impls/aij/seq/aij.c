@@ -465,7 +465,10 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
         if (rp[i] > col) break;
         if (rp[i] == col) {
           if (!A->structure_only) {
-            if (is == ADD_VALUES) ap[i] += value;
+            if (is == ADD_VALUES) {
+              ap[i] += value;
+              (void)PetscLogFlops(1.0);
+            }
             else ap[i] = value;
           }
           low = i + 1;
