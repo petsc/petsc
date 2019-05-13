@@ -268,7 +268,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
     apa = ap->a + api[i];
     ierr = PetscMemzero(apa,sizeof(PetscScalar)*apnz);CHKERRQ(ierr);
     AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa);
-    ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
   }
   ierr = ISGlobalToLocalMappingApply(ptap->ltog,IS_GTOLM_DROP,api[AP_loc->rmap->n],apj,&nout,apj);CHKERRQ(ierr);
   if (api[AP_loc->rmap->n] != nout) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %D != %D\n",api[AP_loc->rmap->n],nout);
@@ -2014,7 +2013,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       ap->a[j+ap->i[i]] = apa[col];
       apa[col] = 0.0;
     }
-    ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
   }
 
   /* 3) C_loc = Rd*AP_loc, C_oth = Ro*AP_loc */
