@@ -2230,9 +2230,10 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
 PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, PetscInt **remoteOffsets, PetscSection leafSection)
 {
   PetscSF        embedSF;
-  const PetscInt *ilocal, *indices;
+  const PetscInt *indices;
   IS             selected;
-  PetscInt       numFields, nroots, nleaves, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, i, f;
+  PetscInt       numFields, nroots, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, f;
+  PetscBool      sub,lsub;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2248,22 +2249,22 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   ierr = PetscSFGetGraph(sf,&nroots,NULL,NULL,NULL);CHKERRQ(ierr);
   rpEnd = PetscMin(rpEnd,nroots);
   rpEnd = PetscMax(rpStart,rpEnd);
-  ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
-  ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
-  ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
-  ierr = ISDestroy(&selected);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(embedSF, NULL, &nleaves, &ilocal, NULL);CHKERRQ(ierr);
-  if (nleaves && ilocal) {
-    for (i = 0; i < nleaves; ++i) {
-      lpStart = PetscMin(lpStart, ilocal[i]);
-      lpEnd   = PetscMax(lpEnd,   ilocal[i]);
-    }
-    ++lpEnd;
+  /* see if we can avoid creating the embedded SF, since it can cost more than an allreduce */
+  lsub = (PetscBool)(nroots != rpEnd - rpStart);
+  ierr = MPIU_Allreduce(&lsub,&sub,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
+  if (sub) {
+    ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
+    ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
+    ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
+    ierr = ISDestroy(&selected);CHKERRQ(ierr);
   } else {
-    lpStart = 0;
-    lpEnd   = nleaves;
+    ierr = PetscObjectReference((PetscObject)sf);CHKERRQ(ierr);
+    embedSF = sf;
   }
+  ierr = PetscSFGetLeafRange(embedSF, &lpStart, &lpEnd);CHKERRQ(ierr);
+  lpEnd++;
+
   ierr = PetscSectionSetChart(leafSection, lpStart, lpEnd);CHKERRQ(ierr);
   /* Could fuse these at the cost of a copy and extra allocation */
   ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart]);CHKERRQ(ierr);
