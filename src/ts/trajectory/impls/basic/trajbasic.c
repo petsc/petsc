@@ -65,7 +65,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
 
   PetscFunctionBegin;
   ierr = PetscSNPrintf(filename,sizeof(filename),tj->dirfiletemplate,stepnum);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
+PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
 {
   MPI_Comm       comm;
   PetscMPIInt    rank;
@@ -110,16 +110,21 @@ static PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
   ierr = PetscObjectGetComm((PetscObject)tj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    const char* dir = tj->dirname;
-    PetscBool   flg;
+    char      *dir = tj->dirname;
+    PetscBool flg;
 
-    /* I don't like running PetscRMTree on a directory */
-    ierr = PetscTestDirectory(dir,'w',&flg);CHKERRQ(ierr);
-    if (!flg) {
-      ierr = PetscTestFile(dir,'r',&flg);CHKERRQ(ierr);
-      if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified path is a file - not a dir: %s",dir);
-      ierr = PetscMkdir(dir);CHKERRQ(ierr);
-    } else SETERRQ1(comm,PETSC_ERR_SUP,"Directory %s not empty",tj->dirname);
+    if (!dir) {
+      char dtempname[16] = "TS-data-XXXXXX";
+      ierr = PetscMkdtemp(dtempname);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(dtempname,&tj->dirname);CHKERRQ(ierr);
+    } else {
+      ierr = PetscTestDirectory(dir,'w',&flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscTestFile(dir,'r',&flg);CHKERRQ(ierr);
+        if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified path is a file - not a dir: %s",dir);
+        ierr = PetscMkdir(dir);CHKERRQ(ierr);
+      } else SETERRQ1(comm,PETSC_ERR_SUP,"Directory %s not empty",tj->dirname);
+    }
   }
   ierr = PetscBarrier((PetscObject)tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -139,7 +144,7 @@ static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj)
 /*MC
       TSTRAJECTORYBASIC - Stores each solution of the ODE/DAE in a file
 
-      Saves each timestep into a seperate file named SA-data/SA-%06d.bin. The file name can be changed.
+      Saves each timestep into a seperate file named TS-data-XXXXXX/TS-%06d.bin. The file name can be changed.
 
       This version saves the solutions at all the stages
 

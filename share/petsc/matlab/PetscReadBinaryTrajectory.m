@@ -6,12 +6,12 @@ function [varargout] = PetscBinaryReadTrajectory(inarg)
 %  Emit as Matlab struct
 %
 %  Examples: A = PetscBinaryReadTrajectory('myfolder'); read from myfolder.
-%            A = PetscBinaryReadTrajectory(); read from folder 'SA-data' or 'Visualization-data' if they exist, SA-data has the priority.
+%            A = PetscBinaryReadTrajectory(); read from folder 'TS-data' or 'Visualization-data' if they exist, TS-data has the priority.
 %
 
 if nargin < 1
-  if exist('SA-data','dir')
-    inarg = 'SA-data';
+  if exist('TS-data','dir')
+    inarg = 'TS-data';
   elseif exist('Visualization-data','dir')
     inarg = 'Visualization-data';
   else
@@ -39,7 +39,7 @@ if exist(fullname,'file') == 2
 end
 
 for stepnum=1:maxsteps
-  filename = sprintf('SA-%06d.bin',stepnum-1);
+  filename = sprintf('TS-%06d.bin',stepnum-1);
   fullname = fullfile(inarg,filename);
   if exist(fullname,'file') ~= 2
     steps = stepnum-1;

@@ -447,8 +447,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   t->keepfiles            = PETSC_FALSE;
   t->usehistory           = PETSC_TRUE;
   *tj  = t;
-  ierr = TSTrajectorySetDirname(t,"SA-data");CHKERRQ(ierr);
-  ierr = TSTrajectorySetFiletemplate(t,"SA-%06D.bin");CHKERRQ(ierr);
+  ierr = TSTrajectorySetFiletemplate(t,"TS-%06D.bin");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -624,7 +623,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 
     ierr = PetscObjectGetComm((PetscObject)(*tj),&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    if (!rank) { /* we own the directory, so we run PetscRMTree on it */
+    if (!rank && (*tj)->dirname) { /* we own the directory, so we run PetscRMTree on it */
       ierr = PetscRMTree((*tj)->dirname);CHKERRQ(ierr);
     }
   }
