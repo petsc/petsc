@@ -595,8 +595,8 @@ PetscErrorCode  MatCompositeMerge(Mat mat)
     }
   } else {
     ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
-    while ((prev = prev->prev)) {
-      ierr = MatMatMult(tmat,prev->mat,MAT_INITIAL_MATRIX,PETSC_DECIDE,&newmat);CHKERRQ(ierr);
+    while ((next = next->next)) {
+      ierr = MatMatMult(next->mat,tmat,MAT_INITIAL_MATRIX,PETSC_DECIDE,&newmat);CHKERRQ(ierr);
       ierr = MatDestroy(&tmat);CHKERRQ(ierr);
       tmat = newmat;
     }
