@@ -195,11 +195,17 @@ class Configure(config.package.Package):
     # Try specified BLASLAPACK library
     if 'with-blaslapack-lib' in self.argDB:
       yield ('User specified BLAS/LAPACK library', None, self.argDB['with-blaslapack-lib'])
-      raise RuntimeError('You set a value for --with-blaslapack-lib=<lib>, but '+str(self.argDB['with-blaslapack-lib'])+' cannot be used\n')
+      if self.defaultPrecision == '__float128':
+        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blaslapack-lib'])+'; suggest --download-fcblaslapack\n')
+      else:
+        raise RuntimeError('You set a value for --with-blaslapack-lib=<lib>, but '+str(self.argDB['with-blaslapack-lib'])+' cannot be used\n')
     # Try specified BLAS and LAPACK libraries
     if 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
       yield ('User specified BLAS and LAPACK libraries', self.argDB['with-blas-lib'], self.argDB['with-lapack-lib'])
-      raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
+      if self.defaultPrecision == '__float128':
+        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+'; suggest --download-fcblaslapack\n')
+      else:
+        raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
     # Try specified installation root
     if 'with-blaslapack-dir' in self.argDB:
       dir = self.argDB['with-blaslapack-dir']
@@ -209,6 +215,11 @@ class Configure(config.package.Package):
         raise RuntimeError('Bad option: '+'--with-blaslapack-dir='+self.argDB['with-blaslapack-dir']+'\n'+
                            fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
                            'Do not install software in this location nor use software in this directory.')
+
+      if self.defaultPrecision == '__float128':
+        yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
+        raise RuntimeError('__float128 precision requires f2c libraries; they are not available in '+dir+'; suggest --download-fcblaslapack\n')
+
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
       self.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
@@ -317,6 +328,8 @@ class Configure(config.package.Package):
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'))
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
+    if self.defaultPrecision == '__float128':
+      raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-fcblaslapack\n')
     # IRIX locations
     yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a')
     yield ('Another IRIX Mathematics library', None, 'libscs.a')

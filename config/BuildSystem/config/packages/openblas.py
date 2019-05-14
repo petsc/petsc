@@ -9,11 +9,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'v0.3.3'
-    self.download         = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
-    self.precisions       = ['single','double']
-    self.fc               = 1
-    self.installwithbatch = 1
+    self.gitcommit              = 'v0.3.3'
+    self.download               = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
+    self.precisions             = ['single','double']
+    self.skippackagewithoptions = 1
+    self.fc                     = 1
+    self.installwithbatch       = 1
 
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
@@ -31,9 +32,6 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-
-    if not hasattr(self.compilers, 'FC'):
-      raise RuntimeError('Cannot request OpenBLAS without Fortran compiler, use --download-f2cblaslapack intead')
 
     cmdline = 'CC='+self.compilers.CC+' FC='+self.compilers.FC
     if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']:
