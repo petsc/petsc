@@ -2694,20 +2694,31 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 @*/
 PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
 {
-  PetscMPIInt     rank, size;
-  PetscInt        n, numRemote, p, numPoints, pStart, pEnd, idx = 0;
+  PetscMPIInt     rank;
+  PetscInt        n, numRemote, p, numPoints, pStart, pEnd, idx = 0, nNeighbors;
   PetscSFNode    *remotePoints;
-  IS              remoteRootIS;
-  const PetscInt *remoteRoots;
+  IS              remoteRootIS, neighborsIS;
+  const PetscInt *remoteRoots, *neighbors;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_PartLabelCreateSF,dm,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
 
-  for (numRemote = 0, n = 0; n < size; ++n) {
-    ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(label, &neighborsIS);CHKERRQ(ierr);
+#if 0
+  {
+    IS is;
+    ierr = ISDuplicate(neighborsIS, &is);CHKERRQ(ierr);
+    ierr = ISSort(is);CHKERRQ(ierr);
+    ierr = ISDestroy(&neighborsIS);CHKERRQ(ierr);
+    neighborsIS = is;
+  }
+#endif
+  ierr = ISGetLocalSize(neighborsIS, &nNeighbors);CHKERRQ(ierr);
+  ierr = ISGetIndices(neighborsIS, &neighbors);CHKERRQ(ierr);
+  for (numRemote = 0, n = 0; n < nNeighbors; ++n) {
+    ierr = DMLabelGetStratumSize(label, neighbors[n], &numPoints);CHKERRQ(ierr);
     numRemote += numPoints;
   }
   ierr = PetscMalloc1(numRemote, &remotePoints);CHKERRQ(ierr);
@@ -2725,14 +2736,16 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
     ierr = ISDestroy(&remoteRootIS);CHKERRQ(ierr);
   }
   /* Now add remote points */
-  for (n = 0; n < size; ++n) {
-    ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
-    if (numPoints <= 0 || n == rank) continue;
-    ierr = DMLabelGetStratumIS(label, n, &remoteRootIS);CHKERRQ(ierr);
+  for (n = 0; n < nNeighbors; ++n) {
+    const PetscInt nn = neighbors[n];
+
+    ierr = DMLabelGetStratumSize(label, nn, &numPoints);CHKERRQ(ierr);
+    if (nn == rank || numPoints <= 0) continue;
+    ierr = DMLabelGetStratumIS(label, nn, &remoteRootIS);CHKERRQ(ierr);
     ierr = ISGetIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
     for (p = 0; p < numPoints; p++) {
       remotePoints[idx].index = remoteRoots[p];
-      remotePoints[idx].rank = n;
+      remotePoints[idx].rank = nn;
       idx++;
     }
     ierr = ISRestoreIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
@@ -2742,6 +2755,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sf, pEnd-pStart, numRemote, NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFSetUp(*sf);CHKERRQ(ierr);
+  ierr = ISDestroy(&neighborsIS);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_PartLabelCreateSF,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1638,10 +1638,10 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     ierr = ISRestoreIndices(cellPart, &points);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_PartSelf,dm,0,0,0);CHKERRQ(ierr);
+
   ierr = DMLabelCreate(PETSC_COMM_SELF, "Point migration", &lblMigration);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelInvert(dm, lblPartition, NULL, lblMigration);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelCreateSF(dm, lblMigration, &sfMigration);CHKERRQ(ierr);
-  /* Stratify the SF in case we are migrating an already parallel plex */
   ierr = DMPlexStratifyMigrationSF(dm, sfMigration, &sfStratified);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);
   sfMigration = sfStratified;
