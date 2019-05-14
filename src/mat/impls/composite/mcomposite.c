@@ -381,7 +381,8 @@ static struct _MatOps MatOps_Values = {0,
 };
 
 /*MC
-   MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices (all matrices are of same size and parallel layout).
+   MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices.
+    The matrices need to have a correct size and parallel layout for the sum or product to be valid.
 
    Notes:
     to use the product of the matrices call MatCompositeSetType(mat,MAT_COMPOSITE_MULTIPLICATIVE);
@@ -453,8 +454,10 @@ PetscErrorCode  MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,M
   if (nmat < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
   PetscValidPointer(mat,3);
 
-  ierr = MatGetLocalSize(mats[0],&m,&n);CHKERRQ(ierr);
-  ierr = MatGetSize(mats[0],&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mats[0],PETSC_IGNORE,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mats[nmat-1],&m,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = MatGetSize(mats[0],PETSC_IGNORE,&N);CHKERRQ(ierr);
+  ierr = MatGetSize(mats[nmat-1],&M,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATCOMPOSITE);CHKERRQ(ierr);
