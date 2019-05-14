@@ -257,7 +257,7 @@ int main(int argc, char **argv)
     suffix: lb_0
     requires: parmetis
     nsize: 4
-    args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view
+    args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -prelb_dm_view ::load_balance -dm_view ::load_balance
 
   # Same tests as above, but with balancing of the shared point partition
   test:
@@ -312,5 +312,5 @@ int main(int argc, char **argv)
     suffix: lb_1
     requires: parmetis
     nsize: 4
-    args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -partition_balance
+    args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -partition_balance -prelb_dm_view ::load_balance -dm_view ::load_balance
 TEST*/

@@ -69,6 +69,7 @@ struct _p_PetscPartitioner {
   PetscViewer       viewerGraph;
   PetscViewerFormat formatGraph;
   PetscBool         viewGraph;
+  PetscBool         noGraph;          /* if true, the partitioner does not need the connectivity graph, only the number of local vertices */
 };
 
 typedef struct {
@@ -79,7 +80,25 @@ typedef struct {
   PetscInt  ptype;
   PetscReal imbalanceRatio;
   PetscInt  debugFlag;
+  PetscInt  randomSeed;
 } PetscPartitioner_ParMetis;
+
+typedef struct {
+  PetscInt  strategy;
+  PetscReal imbalance;
+} PetscPartitioner_PTScotch;
+
+static const char *const
+PTScotchStrategyList[] = {
+  "DEFAULT",
+  "QUALITY",
+  "SPEED",
+  "BALANCE",
+  "SAFETY",
+  "SCALABILITY",
+  "RECURSIVE",
+  "REMAP"
+};
 
 typedef struct {
   PetscSection section;   /* Sizes for each partition */

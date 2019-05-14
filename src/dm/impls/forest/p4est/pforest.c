@@ -1370,6 +1370,7 @@ static PetscErrorCode DMView_ASCII_pforest(PetscObject odm, PetscViewer viewer)
     else      {ierr = PetscViewerASCIIPrintf(viewer, "Forest in %D dimensions:\n", dim);CHKERRQ(ierr);}
   }
   case PETSC_VIEWER_ASCII_INFO_DETAIL:
+  case PETSC_VIEWER_LOAD_BALANCE:
   {
     DM plex;
 

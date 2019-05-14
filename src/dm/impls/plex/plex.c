@@ -890,6 +890,107 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     for (c = 0; c < numColors;  ++c) {ierr = PetscFree(colors[c]);CHKERRQ(ierr);}
     for (c = 0; c < numLColors; ++c) {ierr = PetscFree(lcolors[c]);CHKERRQ(ierr);}
     ierr = PetscFree3(names, colors, lcolors);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_LOAD_BALANCE) {
+    Vec                    cown,acown;
+    VecScatter             sct;
+    ISLocalToGlobalMapping g2l;
+    IS                     gid,acis;
+    MPI_Comm               comm,ncomm = MPI_COMM_NULL;
+    MPI_Group              ggroup,ngroup;
+    PetscScalar            *array,nid;
+    const PetscInt         *idxs;
+    PetscInt               *idxs2,*start,*adjacency,*work;
+    PetscInt64             lm[3],gm[3];
+    PetscInt               i,c,cStart,cEnd,cum,numVertices,ect,ectn,cellHeight;
+    PetscMPIInt            d1,d2,rank;
+
+    ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_SHARED_COMM)
+    ierr = MPI_Comm_split_type(comm,MPI_COMM_TYPE_SHARED,rank,MPI_INFO_NULL,&ncomm);CHKERRQ(ierr);
+#endif
+    if (ncomm != MPI_COMM_NULL) {
+      ierr = MPI_Comm_group(comm,&ggroup);CHKERRQ(ierr);
+      ierr = MPI_Comm_group(ncomm,&ngroup);CHKERRQ(ierr);
+      d1   = 0;
+      ierr = MPI_Group_translate_ranks(ngroup,1,&d1,ggroup,&d2);CHKERRQ(ierr);
+      nid  = d2;
+      ierr = MPI_Group_free(&ggroup);CHKERRQ(ierr);
+      ierr = MPI_Group_free(&ngroup);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&ncomm);CHKERRQ(ierr);
+    } else nid = 0.0;
+
+    /* Get connectivity */
+    ierr = DMPlexGetVTKCellHeight(dm,&cellHeight);CHKERRQ(ierr);
+    ierr = DMPlexCreatePartitionerGraph(dm,cellHeight,&numVertices,&start,&adjacency,&gid);CHKERRQ(ierr);
+
+    /* filter overlapped local cells */
+    ierr = DMPlexGetHeightStratum(dm,cellHeight,&cStart,&cEnd);CHKERRQ(ierr);
+    ierr = ISGetIndices(gid,&idxs);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(gid,&cum);CHKERRQ(ierr);
+    ierr = PetscMalloc1(cum,&idxs2);CHKERRQ(ierr);
+    for (c = cStart, cum = 0; c < cEnd; c++) {
+      if (idxs[c-cStart] < 0) continue;
+      idxs2[cum++] = idxs[c-cStart];
+    }
+    ierr = ISRestoreIndices(gid,&idxs);CHKERRQ(ierr);
+    if (numVertices != cum) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected %D != %D",numVertices,cum);
+    ierr = ISDestroy(&gid);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,numVertices,idxs2,PETSC_OWN_POINTER,&gid);CHKERRQ(ierr);
+
+    /* support for node-aware cell locality */
+    ierr = ISCreateGeneral(comm,start[numVertices],adjacency,PETSC_USE_POINTER,&acis);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,start[numVertices],&acown);CHKERRQ(ierr);
+    ierr = VecCreateMPI(comm,numVertices,PETSC_DECIDE,&cown);CHKERRQ(ierr);
+    ierr = VecGetArray(cown,&array);CHKERRQ(ierr);
+    for (c = 0; c < numVertices; c++) array[c] = nid;
+    ierr = VecRestoreArray(cown,&array);CHKERRQ(ierr);
+    ierr = VecScatterCreate(cown,acis,acown,NULL,&sct);CHKERRQ(ierr);
+    ierr = VecScatterBegin(sct,cown,acown,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(sct,cown,acown,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = ISDestroy(&acis);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&sct);CHKERRQ(ierr);
+    ierr = VecDestroy(&cown);CHKERRQ(ierr);
+
+    /* compute edgeCut */
+    for (c = 0, cum = 0; c < numVertices; c++) cum = PetscMax(cum,start[c+1]-start[c]);
+    ierr = PetscMalloc1(cum,&work);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(gid,&g2l);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingSetType(g2l,ISLOCALTOGLOBALMAPPINGHASH);CHKERRQ(ierr);
+    ierr = ISDestroy(&gid);CHKERRQ(ierr);
+    ierr = VecGetArray(acown,&array);CHKERRQ(ierr);
+    for (c = 0, ect = 0, ectn = 0; c < numVertices; c++) {
+      PetscInt totl;
+
+      totl = start[c+1]-start[c];
+      ierr = ISGlobalToLocalMappingApply(g2l,IS_GTOLM_MASK,totl,adjacency+start[c],NULL,work);CHKERRQ(ierr);
+      for (i = 0; i < totl; i++) {
+        if (work[i] < 0) {
+          ect  += 1;
+          ectn += (array[i + start[c]] != nid) ? 0 : 1;
+        }
+      }
+    }
+    ierr  = PetscFree(work);CHKERRQ(ierr);
+    ierr  = VecRestoreArray(acown,&array);CHKERRQ(ierr);
+    lm[0] = numVertices > 0 ?  numVertices : PETSC_MAX_INT;
+    lm[1] = -numVertices;
+    ierr  = MPIU_Allreduce(lm,gm,2,MPIU_INT64,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr  = PetscViewerASCIIPrintf(viewer,"  Cell balance: %.2f (max %D, min %D",-((double)gm[1])/((double)gm[0]),-(PetscInt)gm[1],(PetscInt)gm[0]);CHKERRQ(ierr);
+    lm[0] = ect; /* edgeCut */
+    lm[1] = ectn; /* node-aware edgeCut */
+    lm[2] = numVertices > 0 ? 0 : 1; /* empty processes */
+    ierr  = MPIU_Allreduce(lm,gm,3,MPIU_INT64,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr  = PetscViewerASCIIPrintf(viewer,", empty %D)\n",(PetscInt)gm[2]);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_SHARED_COMM)
+    ierr  = PetscViewerASCIIPrintf(viewer,"  Edge Cut: %D (on node %.3f)\n",(PetscInt)(gm[0]/2),gm[0] ? ((double)(gm[1]))/((double)gm[0]) : 1.);CHKERRQ(ierr);
+#else
+    ierr  = PetscViewerASCIIPrintf(viewer,"  Edge Cut: %D (on node %.3f)\n",(PetscInt)(gm[0]/2),0.0);CHKERRQ(ierr);
+#endif
+    ierr  = ISLocalToGlobalMappingDestroy(&g2l);CHKERRQ(ierr);
+    ierr  = PetscFree(start);CHKERRQ(ierr);
+    ierr  = PetscFree(adjacency);CHKERRQ(ierr);
+    ierr  = VecDestroy(&acown);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm;
     PetscInt   *sizes, *hybsizes;

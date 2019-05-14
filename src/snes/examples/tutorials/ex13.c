@@ -129,6 +129,7 @@ static PetscErrorCode CreateSpectralPlanes(DM dm, PetscInt numPlanes, const Pets
     ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p);CHKERRQ(ierr);
     ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+    ierr = DMLabelAddStratum(label, 1);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       PetscInt off;
 
