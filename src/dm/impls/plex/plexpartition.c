@@ -2630,6 +2630,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     if (counter > PETSC_MPI_INT_MAX) locOverflow = PETSC_TRUE;
     ierr = MPI_Allreduce(&locOverflow, &mpiOverflow, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
     if (!mpiOverflow) {
+      ierr = PetscInfo(dm,"Using Alltoallv for mesh distribution\n");CHKERRQ(ierr);
       leafSize = (PetscInt) counter;
       ierr = PetscMalloc1(leafSize, &leafPoints);CHKERRQ(ierr);
       ierr = MPI_Alltoallv(rootPoints, scounts, sdispls, MPIU_2INT, leafPoints, rcounts, rdispls, MPIU_2INT, comm);CHKERRQ(ierr);
@@ -2644,9 +2645,11 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     PetscSection leafSection;
 
     if (processSF) {
+      ierr = PetscInfo(dm,"Using processSF for mesh distribution\n");CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)processSF);CHKERRQ(ierr);
       procSF = processSF;
     } else {
+      ierr = PetscInfo(dm,"Using processSF for mesh distribution (MPI overflow)\n");CHKERRQ(ierr);
       ierr = PetscMalloc1(size, &remote);CHKERRQ(ierr);
       for (r = 0; r < size; ++r) { remote[r].rank  = r; remote[r].index = rank; }
       ierr = PetscSFCreate(comm, &procSF);CHKERRQ(ierr);
