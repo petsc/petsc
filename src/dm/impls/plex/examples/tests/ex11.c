@@ -240,11 +240,9 @@ int main(int argc, char **argv)
   test:
     suffix: 0
   test:
-    suffix: 2
-    nsize: 2
-  test:
     suffix: 1
     nsize: 2
+    args: -petscpartitioner_type simple
 
   testset:
     suffix: gmsh
