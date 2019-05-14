@@ -68,6 +68,26 @@ uni-complex-float-int64:
     - freebsd-version
     - echo $(sysctl -n hw.ncpu)
 
+.osx_mcs_test:
+  extends: .mcs_test
+  tags:
+    - mcs
+    - osx
+  before_script:
+    - hostname
+    - sw_vers -productVersion
+    - echo $(sysctl -n hw.ncpu)
+
+.opensolaris_mcs_test:
+  extends: .mcs_test
+  tags:
+    - mcs
+    - opensolaris
+  before_script:
+    - hostname
+    - uname -a
+    - echo $(nproc)
+
 linux-gcc-complex-opt:
   extends: .linux_mcs_test
   variables:
@@ -93,6 +113,18 @@ freebsd-cxx-cmplx-64idx-dbg:
   stage: test
   variables:
     TEST_ARCH: arch-jenkins-freebsd-cxx-cmplx-64idx-dbg
+
+osx-cxx-pkgs-opt:
+  extends: .osx_mcs_test
+  stage: test
+  variables:
+    TEST_ARCH: arch-jenkins-osx-cxx-pkgs-opt
+
+opensolaris-cmplx-pkgs-dbg:
+  extends: .opensolaris_mcs_test
+  stage: test
+  variables:
+    TEST_ARCH: arch-jenkins-opensolaris-cmplx-pkgs-dbg
 
 .status:
   stage: ci-status
