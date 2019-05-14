@@ -1,23 +1,20 @@
 stages:
   - test
+  - test-long
   - ci-status
-
 variables:
   GIT_STRATEGY: fetch
-  #GIT_DEPTH: 1
   GIT_CLEAN_FLAGS: -ffdxq
 
 .test:
   stage: test
   image: jedbrown/mpich
+  variables:
+    GIT_DEPTH: 1
   before_script:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
   script:
-    - git config user.email "petsc@gitlab.none"
-    - git config user.name "petsc gitlab-ci"
-    - git fetch origin master
-    - git merge -m "test" FETCH_HEAD
     - python3 ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make -j$(nproc) -l$(nproc)
     - make -j$(nproc) -l$(nproc) -f gmakefile test search="${TEST_SEARCH}"
@@ -37,7 +34,7 @@ uni-complex-float-int64:
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
 .mcs_test:
-  stage: test
+  stage: test-long
   script:
     - git config user.email "petsc@gitlab.none"
     - git config user.name "petsc gitlab-ci"
@@ -110,19 +107,16 @@ freebsd-c-single-opt:
 
 freebsd-cxx-cmplx-64idx-dbg:
   extends: .freebsd_mcs_test
-  stage: test
   variables:
     TEST_ARCH: arch-jenkins-freebsd-cxx-cmplx-64idx-dbg
 
 osx-cxx-pkgs-opt:
   extends: .osx_mcs_test
-  stage: test
   variables:
     TEST_ARCH: arch-jenkins-osx-cxx-pkgs-opt
 
 opensolaris-cmplx-pkgs-dbg:
   extends: .opensolaris_mcs_test
-  stage: test
   variables:
     TEST_ARCH: arch-jenkins-opensolaris-cmplx-pkgs-dbg
 
