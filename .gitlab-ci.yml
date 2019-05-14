@@ -15,23 +15,35 @@ variables:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
   script:
-    - python3 ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
+    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make -j$(nproc) -l$(nproc)
     - make -j$(nproc) -l$(nproc) -f gmakefile test search="${TEST_SEARCH}"
 
-mpich:
+mpich-cxx-py3:
   extends: .test
   variables:
-    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-fc=0
+    PYTHON: python3
+    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-clanguage=cxx --with-fc=0
     TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
   extends: .test
   variables:
+    PYTHON: python3
     CONFIG_OPTS: <
       --with-mpi=0
       --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
+
+c89-mlib-static-py2:
+  extends: .test
+  variables:
+    PYTHON: python3
+    CONFIG_OPTS: <
+      --with-mpi-dir=/usr/local
+      --with-single-library=0 --with-shared-libraries=0 'CFLAGS=-std=c89 -pedantic -Wno-long-long -Wno-overlength-strings'
+    TEST_SEARCH: snes_tutorials-ex48%
+
 
 .mcs_test:
   stage: test-long
