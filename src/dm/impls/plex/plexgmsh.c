@@ -1026,7 +1026,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   int            i, shift = 1;
   PetscMPIInt    rank;
   PetscBool      binary, zerobase = PETSC_FALSE, usemarker = PETSC_FALSE;
-  PetscBool      enable_hybrid = PETSC_FALSE, periodic = PETSC_TRUE;
+  PetscBool      enable_hybrid = interpolate, periodic = PETSC_TRUE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1167,14 +1167,18 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   if (!rank) {
-    PetscBool hybrid = PETSC_FALSE;
+    PetscBool hybrid   = PETSC_FALSE;
+    PetscInt  cellType = -1;
 
     for (trueNumCells = 0, c = 0; c < numCells; ++c) {
-      int on = -1;
-      if (gmsh_elem[c].dim > dim) {dim = gmsh_elem[c].dim; trueNumCells = 0;}
-      if (gmsh_elem[c].dim == dim) {hybrid = (trueNumCells ? (on != gmsh_elem[c].cellType ? on = gmsh_elem[c].cellType,PETSC_TRUE : hybrid) : (on = gmsh_elem[c].cellType, PETSC_FALSE) ); trueNumCells++;}
+      if (gmsh_elem[c].dim > dim) {dim = gmsh_elem[c].dim; trueNumCells = 0; hybrid = PETSC_FALSE; cellType = -1;}
+      if (gmsh_elem[c].dim < dim) continue;
+      if (cellType == -1) cellType = gmsh_elem[c].cellType;
+      /* different cell type indicate an hybrid mesh in PLEX */
+      if (cellType != gmsh_elem[c].cellType) hybrid = PETSC_TRUE;
       /* wedges always indicate an hybrid mesh in PLEX */
-      if (on == 6 || on == 13) hybrid = PETSC_TRUE;
+      if (cellType == 6 || cellType == 13) hybrid = PETSC_TRUE;
+      trueNumCells++;
     }
     /* Renumber cells for hybrid grids */
     if (hybrid && enable_hybrid) {
