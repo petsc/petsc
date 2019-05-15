@@ -469,7 +469,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 /*@
   DMDACreate - Creates a DMDA object.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DMDA object
@@ -479,10 +479,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 
   Level: advanced
 
-  Developers Note: Since there exists DMDACreate1/2/3d() should this routine even exist?
+  Developers Note: 
+  Since there exists DMDACreate1/2/3d() should this routine even exist?
 
 .keywords: DMDA, create
-.seealso:  DMDASetSizes(), DMDADuplicate(),  DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso:  DMDASetSizes(), DMClone(),  DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
 PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)
 {
