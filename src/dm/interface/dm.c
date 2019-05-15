@@ -5286,7 +5286,7 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
 
   Output Parameters:
 + pStart - The first point of the given dimension
-. pEnd - The first point following points of the given dimension
+- pEnd - The first point following points of the given dimension
 
   Note:
   The points are vertices in the Hasse diagram encoding the topology. This is explained in
