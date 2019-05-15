@@ -61,8 +61,7 @@ c89-mlib-static-py2:
 .linux_mcs_test:
   extends: .mcs_test
   tags:
-    - mcs
-    - linux
+    - mcs-linux
   before_script:
     - hostname
     - grep PRETTY_NAME /etc/os-release
@@ -71,8 +70,7 @@ c89-mlib-static-py2:
 .freebsd_mcs_test:
   extends: .mcs_test
   tags:
-    - mcs
-    - freebsd
+    - mcs-freebsd
   before_script:
     - hostname
     - freebsd-version
@@ -81,8 +79,7 @@ c89-mlib-static-py2:
 .osx_mcs_test:
   extends: .mcs_test
   tags:
-    - mcs
-    - osx
+    - mcs-osx
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
   before_script:
@@ -93,8 +90,7 @@ c89-mlib-static-py2:
 .opensolaris_mcs_test:
   extends: .mcs_test
   tags:
-    - mcs
-    - opensolaris
+    - mcs-opensolaris
   before_script:
     - hostname
     - uname -a
