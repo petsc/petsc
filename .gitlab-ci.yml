@@ -17,7 +17,7 @@ variables:
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make -j$(nproc) -l$(nproc)
-    - make -j$(nproc) -l$(nproc) -f gmakefile test search="${TEST_SEARCH}"
+    - make -j$(nproc) -l$(nproc) -f gmakefile.test PETSC_DIR=$PWD test search="${TEST_SEARCH}"
 
 mpich-cxx-py3:
   extends: .test
