@@ -91,6 +91,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %g\n",(double)rnorm);CHKERRQ(ierr);
   }
 
+  ierr = MatCompositeSetMergeFromRight(B,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatCompositeMerge(B);CHKERRQ(ierr);
   ierr = MatMult(B,v,y);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
