@@ -1340,46 +1340,59 @@ PetscErrorCode MatRestoreRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
 
 PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data;
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*at;
   Mat            C;
   PetscErrorCode ierr;
-  PetscInt       i,j,k,*aj=a->j,*ai=a->i,bs=A->rmap->bs,mbs=a->mbs,nbs=a->nbs,len,*col;
-  PetscInt       *rows,*cols,bs2=a->bs2;
-  MatScalar      *array;
+  PetscInt       i,j,k,*aj=a->j,*ai=a->i,bs=A->rmap->bs,mbs=a->mbs,nbs=a->nbs,*atfill;
+  PetscInt       bs2=a->bs2,*ati,*atj,anzj,kr;
+  MatScalar      *ata,*aa=a->a;
 
   PetscFunctionBegin;
+  ierr = PetscCalloc1(1+nbs,&atfill);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
-    ierr = PetscCalloc1(1+nbs,&col);CHKERRQ(ierr);
+    for (i=0; i<ai[mbs]; i++) atfill[aj[i]] += 1; /* count num of non-zeros in row aj[i] */
 
-    for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,A->cmap->n,A->rmap->N,A->cmap->n,A->rmap->N);CHKERRQ(ierr);
     ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSeqBAIJSetPreallocation(C,bs,0,col);CHKERRQ(ierr);
-    ierr = PetscFree(col);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(C,bs,0,atfill);CHKERRQ(ierr);
+
+    at  = (Mat_SeqBAIJ*)C->data;
+    ati = at->i;
+    for (i=0; i<nbs; i++) at->ilen[i] = at->imax[i] = ati[i+1] - ati[i];
   } else {
     C = *B;
+    at = (Mat_SeqBAIJ*)C->data;
+    ati = at->i;
   }
 
-  array = a->a;
-  ierr  = PetscMalloc2(bs,&rows,bs,&cols);CHKERRQ(ierr);
+  atj = at->j;
+  ata = at->a;
+
+  /* Copy ati into atfill so we have locations of the next free space in atj */
+  ierr = PetscMemcpy(atfill,ati,nbs*sizeof(PetscInt));CHKERRQ(ierr);
+
+  /* Walk through A row-wise and mark nonzero entries of A^T. */
   for (i=0; i<mbs; i++) {
-    cols[0] = i*bs;
-    for (k=1; k<bs; k++) cols[k] = cols[k-1] + 1;
-    len = ai[i+1] - ai[i];
-    for (j=0; j<len; j++) {
-      rows[0] = (*aj++)*bs;
-      for (k=1; k<bs; k++) rows[k] = rows[k-1] + 1;
-      ierr   = MatSetValues_SeqBAIJ(C,bs,rows,bs,cols,array,INSERT_VALUES);CHKERRQ(ierr);
-      array += bs2;
+    anzj = ai[i+1] - ai[i];
+    for (j=0; j<anzj; j++) {
+      atj[atfill[*aj]] = i;
+      for (kr=0; kr<bs; kr++) {
+        for (k=0; k<bs; k++) {
+          ata[bs2*atfill[*aj]+k*bs+kr] = *aa++;
+        }
+      }
+      atfill[*aj++] += 1;
     }
   }
-  ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
-
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* Clean up temporary space and complete requests. */
+  ierr = PetscFree(atfill);CHKERRQ(ierr);
+
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
+    ierr = MatSetBlockSizes(C,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
     *B = C;
   } else {
     ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);
