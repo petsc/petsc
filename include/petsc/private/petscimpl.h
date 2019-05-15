@@ -292,8 +292,10 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     For example, in the dot product between two vectors,
   both vectors must be either Seq or MPI, not one of each
 */
-#define PetscCheckSameType(a,arga,b,argb) \
-  if (((PetscObject)a)->type != ((PetscObject)b)->type) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb);
+#define PetscCheckSameType(a,arga,b,argb)                               \
+  do {                                                                  \
+    if (((PetscObject)a)->type != ((PetscObject)b)->type) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb); \
+  } while (0)
 /*
     Check type_name
 */
@@ -315,8 +317,10 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 /*
    Use this macro to check if the type is set
 */
-#define PetscValidType(a,arg) \
-  if (!((PetscObject)a)->type_name) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"%s object's type is not set: Argument # %d",((PetscObject)a)->class_name,arg);
+#define PetscValidType(a,arg)                                           \
+  do {                                                                  \
+    if (!((PetscObject)a)->type_name) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"%s object's type is not set: Argument # %d",((PetscObject)a)->class_name,arg); \
+  } while (0)
 /*
    Sometimes object must live on same communicator to inter-operate
 */
@@ -393,10 +397,10 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 .seealso: PetscUseMethod()
 */
 #define  PetscTryMethod(obj,A,B,C) \
-  0;{ PetscErrorCode (*f)B, __ierr; \
+  0; do { PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,&f);CHKERRQ(__ierr); \
-    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
-  }
+    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);} \
+  } while(0)
 
 /*
    PetscUseMethod - Queries an object for a method, if it exists then calls it, otherwise generates an error.
@@ -407,11 +411,11 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 .seealso: PetscTryMethod()
 */
 #define  PetscUseMethod(obj,A,B,C) \
-  0;{ PetscErrorCode (*f)B, __ierr; \
+  0; do { PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,&f);CHKERRQ(__ierr); \
-    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
+    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);} \
     else SETERRQ1(PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
-  }
+  } while(0)
 
 /*MC
    PetscObjectStateIncrease - Increases the state of any PetscObject

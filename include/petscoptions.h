@@ -159,7 +159,7 @@ M*/
              PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
              PetscMemzero(PetscOptionsObject,sizeof(PetscOptionItems)); \
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
-             PetscErrorCode _5_ierr = PetscOptionsBegin_Private(PetscOptionsObject,comm,prefix,mess,sec);CHKERRQ(_5_ierr);
+             PetscErrorCode _5_ierr = PetscOptionsBegin_Private(PetscOptionsObject,comm,prefix,mess,sec);CHKERRQ(_5_ierr)
 
 /*MC
     PetscObjectOptionsBegin - Begins a set of queries on the options database that are related and should be
@@ -194,7 +194,7 @@ M*/
              PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
              PetscOptionsObject->options = ((PetscObject)obj)->options; \
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
-             PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(PetscOptionsObject,obj);CHKERRQ(_5_ierr);
+             PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(PetscOptionsObject,obj);CHKERRQ(_5_ierr)
 
 /*MC
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
@@ -259,7 +259,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(PetscOptionItems *,const char[]);
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsEnum()
 M*/
-#define    PetscOptionsTail() 0; {if (PetscOptionsObject->count != 1) PetscFunctionReturn(0);}
+#define    PetscOptionsTail() 0; do {if (PetscOptionsObject->count != 1) PetscFunctionReturn(0);} while(0)
 
 #define PetscOptionsEnum(a,b,c,d,e,f,g) PetscOptionsEnum_Private(PetscOptionsObject,a,b,c,d,e,f,g)
 #define PetscOptionsInt(a,b,c,d,e,f) PetscOptionsInt_Private(PetscOptionsObject,a,b,c,d,e,f)

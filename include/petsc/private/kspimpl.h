@@ -363,7 +363,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
 
 .seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckNorm(), KSPCheckSolve()
 M*/
-#define KSPCheckDot(ksp,beta)           \
+#define KSPCheckDot(ksp,beta) do { \
   if (PetscIsInfOrNanScalar(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
     else {\
@@ -381,7 +381,7 @@ M*/
       }\
       PetscFunctionReturn(0);\
     }\
-  }
+  } } while (0)
 
 /*MC
    KSPCheckNorm - Checks if the result of a norm used by the corresponding KSP contains Inf or NaN. These indicate that the previous
@@ -404,7 +404,7 @@ M*/
 
 .seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckDot(), KSPCheckSolve()
 M*/
-#define KSPCheckNorm(ksp,beta)           \
+#define KSPCheckNorm(ksp,beta) do { \
   if (PetscIsInfOrNanReal(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
     else {\
@@ -422,6 +422,6 @@ M*/
       }\
       PetscFunctionReturn(0);\
     }\
-  }
+  } } while (0)
 
 #endif

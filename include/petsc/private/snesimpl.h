@@ -273,7 +273,7 @@ PETSC_INTERN const char SNESCitation[];
 /*
     Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf
 */
-#define SNESCheckFunctionNorm(snes,beta) \
+#define SNESCheckFunctionNorm(snes,beta) do { \
   if (PetscIsInfOrNanReal(beta)) {\
     if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
     else {\
@@ -283,9 +283,9 @@ PETSC_INTERN const char SNESCitation[];
       else              snes->reason = SNES_DIVERGED_FNORM_NAN;\
       PetscFunctionReturn(0);\
     }\
-  }
+  } } while (0)
 
-#define SNESCheckJacobianDomainerror(snes) \
+#define SNESCheckJacobianDomainerror(snes) do { \
   if (snes->checkjacdomainerror) {\
    PetscBool domainerror;\
    PetscErrorCode ierr = MPIU_Allreduce((int*)&snes->jacobiandomainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
@@ -294,11 +294,11 @@ PETSC_INTERN const char SNESCitation[];
      if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Jacobian domain error");\
      PetscFunctionReturn(0);\
    }\
- }
+  } } while (0)
 
 
 #define SNESCheckKSPSolve(snes)\
-  {\
+  do {\
     KSPConvergedReason kspreason; \
     PetscErrorCode ierr;                                                \
     PetscInt lits;                                                      \
@@ -320,6 +320,6 @@ PETSC_INTERN const char SNESCitation[];
         }\
       }\
     }\
-  }
+  } while (0)
 
 #endif
