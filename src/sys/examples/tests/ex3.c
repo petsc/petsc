@@ -35,7 +35,7 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      args: -fp_trap
-      filter:  Error: true
+      args: -fp_trap -error_output_stdout
+      filter: true
 
 TEST*/
