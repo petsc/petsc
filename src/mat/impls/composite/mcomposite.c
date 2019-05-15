@@ -236,192 +236,6 @@ PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
-static struct _MatOps MatOps_Values = {0,
-                                       0,
-                                       0,
-                                       MatMult_Composite,
-                                       0,
-                                /*  5*/ MatMultTranspose_Composite,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                /* 10*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                /* 15*/ 0,
-                                       0,
-                                       MatGetDiagonal_Composite,
-                                       MatDiagonalScale_Composite,
-                                       0,
-                                /* 20*/ 0,
-                                       MatAssemblyEnd_Composite,
-                                       0,
-                                       0,
-                               /* 24*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 29*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 34*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 39*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 44*/ 0,
-                                       MatScale_Composite,
-                                       MatShift_Basic,
-                                       0,
-                                       0,
-                               /* 49*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 54*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 59*/ 0,
-                                       MatDestroy_Composite,
-                                       0,
-                                       0,
-                                       0,
-                               /* 64*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 69*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 74*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 79*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 84*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 89*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 94*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                /*99*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*104*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*109*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*114*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*119*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*124*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*129*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*134*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*139*/ 0,
-                                       0,
-                                       0
-};
-
-/*MC
-   MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices.
-    The matrices need to have a correct size and parallel layout for the sum or product to be valid.
-
-   Notes:
-    to use the product of the matrices call MatCompositeSetType(mat,MAT_COMPOSITE_MULTIPLICATIVE);
-
-  Level: advanced
-
-.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeMerge(), MatCompositeSetType(), MatCompositeType
-M*/
-
-PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
-{
-  Mat_Composite  *b;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
-  A->data = (void*)b;
-  ierr    = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-
-  A->assembled    = PETSC_TRUE;
-  A->preallocated = PETSC_TRUE;
-  b->type         = MAT_COMPOSITE_ADDITIVE;
-  b->scale        = 1.0;
-  b->nmat         = 0;
-  ierr            = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
-
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeAddMat_C",MatCompositeAddMat_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetType_C",MatCompositeSetType_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeMerge_C",MatCompositeMerge_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetNMat_C",MatCompositeGetNMat_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetMat_C",MatCompositeGetMat_Composite);CHKERRQ(ierr);
-
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*@
    MatCreateComposite - Creates a matrix as the sum of zero or more matrices
 
@@ -725,6 +539,191 @@ PetscErrorCode MatCompositeGetMat(Mat mat,PetscInt i,Mat *Ai)
   PetscValidLogicalCollectiveInt(mat,i,2);
   PetscValidPointer(Ai,3);
   ierr = PetscUseMethod(mat,"MatCompositeGetMat_C",(Mat,PetscInt,Mat*),(mat,i,Ai));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static struct _MatOps MatOps_Values = {0,
+                                       0,
+                                       0,
+                                       MatMult_Composite,
+                                       0,
+                                /*  5*/ MatMultTranspose_Composite,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /* 10*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /* 15*/ 0,
+                                       0,
+                                       MatGetDiagonal_Composite,
+                                       MatDiagonalScale_Composite,
+                                       0,
+                                /* 20*/ 0,
+                                       MatAssemblyEnd_Composite,
+                                       0,
+                                       0,
+                               /* 24*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 29*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 34*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 39*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 44*/ 0,
+                                       MatScale_Composite,
+                                       MatShift_Basic,
+                                       0,
+                                       0,
+                               /* 49*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 54*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 59*/ 0,
+                                       MatDestroy_Composite,
+                                       0,
+                                       0,
+                                       0,
+                               /* 64*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 69*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 74*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 79*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 84*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 89*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 94*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*99*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*104*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*109*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*114*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*119*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*124*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*129*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*134*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*139*/ 0,
+                                       0,
+                                       0
+};
+
+/*MC
+   MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices.
+    The matrices need to have a correct size and parallel layout for the sum or product to be valid.
+
+   Notes:
+    to use the product of the matrices call MatCompositeSetType(mat,MAT_COMPOSITE_MULTIPLICATIVE);
+
+  Level: advanced
+
+.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeMerge(), MatCompositeSetType(), MatCompositeType
+M*/
+
+PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
+{
+  Mat_Composite  *b;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
+  A->data = (void*)b;
+  ierr    = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+
+  A->assembled      = PETSC_TRUE;
+  A->preallocated   = PETSC_TRUE;
+  b->type           = MAT_COMPOSITE_ADDITIVE;
+  b->scale          = 1.0;
+  b->nmat           = 0;
+
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeAddMat_C",MatCompositeAddMat_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetType_C",MatCompositeSetType_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeMerge_C",MatCompositeMerge_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetNMat_C",MatCompositeGetNMat_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetMat_C",MatCompositeGetMat_Composite);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
