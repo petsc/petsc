@@ -5,6 +5,7 @@ stages:
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
+  PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
 
 .test:
   stage: test
@@ -82,6 +83,8 @@ c89-mlib-static-py2:
   tags:
     - mcs
     - osx
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
   before_script:
     - hostname
     - sw_vers -productVersion
