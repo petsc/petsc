@@ -546,7 +546,7 @@ PetscErrorCode MatCompositeMerge(Mat mat)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCompositeGetNMat_Composite(Mat mat,PetscInt *nmat)
+static PetscErrorCode MatCompositeGetNmat_Composite(Mat mat,PetscInt *nmat)
 {
   Mat_Composite     *shell = (Mat_Composite*)mat->data;
 
@@ -556,7 +556,7 @@ static PetscErrorCode MatCompositeGetNMat_Composite(Mat mat,PetscInt *nmat)
 }
 
 /*@
-   MatCompositeGetNMat - Returns the number of matrices in composite.
+   MatCompositeGetNmat - Returns the number of matrices in composite.
 
    Not Collective
 
@@ -572,14 +572,14 @@ static PetscErrorCode MatCompositeGetNMat_Composite(Mat mat,PetscInt *nmat)
 .seealso: MatCreateComposite(), MatCompositeGetMat()
 
 @*/
-PetscErrorCode MatCompositeGetNMat(Mat mat,PetscInt *nmat)
+PetscErrorCode MatCompositeGetNmat(Mat mat,PetscInt *nmat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(nmat,2);
-  ierr = PetscUseMethod(mat,"MatCompositeGetNMat_C",(Mat,PetscInt*),(mat,nmat));CHKERRQ(ierr);
+  ierr = PetscUseMethod(mat,"MatCompositeGetNmat_C",(Mat,PetscInt*),(mat,nmat));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -613,7 +613,7 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat,PetscInt i,Mat *Ai)
 
    Level: advanced
 
-.seealso: MatCreateComposite(), MatCompositeGetNMat()
+.seealso: MatCreateComposite(), MatCompositeGetNmat()
 
 @*/
 PetscErrorCode MatCompositeGetMat(Mat mat,PetscInt i,Mat *Ai)
@@ -842,7 +842,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetType_C",MatCompositeSetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetType_C",MatCompositeGetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeMerge_C",MatCompositeMerge_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetNMat_C",MatCompositeGetNMat_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetNmat_C",MatCompositeGetNmat_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetMat_C",MatCompositeGetMat_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetMergeFromRight_C",MatCompositeSetMergeFromRight_Composite);CHKERRQ(ierr);
 
