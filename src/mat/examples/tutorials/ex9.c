@@ -51,13 +51,14 @@ int main(int argc,char **args)
   ierr = VecDuplicate(v,&v2);CHKERRQ(ierr);
 
   ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = MatMult(A[1],x,z);CHKERRQ(ierr);
   for (i = 2; i < nmat+1; i++) {
     ierr = MatMultAdd(A[i],x,z,z);CHKERRQ(ierr);
   }
 
   ierr = MatCreateComposite(PETSC_COMM_WORLD,nmat,A+1,&B);CHKERRQ(ierr);
-  ierr = MatMult(B,x,y);CHKERRQ(ierr);
+  ierr = MatMultAdd(B,x,y,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 10000.0*PETSC_MACHINE_EPSILON) {

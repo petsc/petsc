@@ -168,6 +168,46 @@ PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatMultAdd_Composite(Mat A,Vec x,Vec y,Vec z)
+{
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (y != z) {
+    ierr = MatMult(A,x,z);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,y);CHKERRQ(ierr);
+  } else {
+    if (!shell->leftwork) {
+      ierr = VecDuplicate(z,&shell->leftwork);CHKERRQ(ierr);
+    }
+    ierr = MatMult(A,x,shell->leftwork);CHKERRQ(ierr);
+    ierr = VecCopy(y,z);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,shell->leftwork);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMultTransposeAdd_Composite(Mat A,Vec x,Vec y, Vec z)
+{
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (y != z) {
+    ierr = MatMultTranspose(A,x,z);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,y);CHKERRQ(ierr);
+  } else {
+    if (!shell->rightwork) {
+      ierr = VecDuplicate(z,&shell->rightwork);CHKERRQ(ierr);
+    }
+    ierr = MatMultTranspose(A,x,shell->rightwork);CHKERRQ(ierr);
+    ierr = VecCopy(y,z);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,shell->rightwork);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 {
   Mat_Composite     *shell = (Mat_Composite*)A->data;
@@ -626,9 +666,9 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                        MatMult_Composite,
-                                       0,
+                                       MatMultAdd_Composite,
                                 /*  5*/ MatMultTranspose_Composite,
-                                       0,
+                                       MatMultTransposeAdd_Composite,
                                        0,
                                        0,
                                        0,
