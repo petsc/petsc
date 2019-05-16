@@ -7,6 +7,20 @@
 #include <petsc/private/dmstagimpl.h>
 #include <petscsf.h>
 
+static PetscErrorCode DMClone_Stag(DM dm,DM *newdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Destroy the DM created by generic logic in DMClone() */
+  if (*newdm) {
+    ierr = DMDestroy(newdm);CHKERRQ(ierr);
+  }
+  ierr = DMStagDuplicateWithoutSetup(dm,PetscObjectComm((PetscObject)dm),newdm);CHKERRQ(ierr);
+  ierr = DMSetUp(*newdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMDestroy_Stag(DM dm)
 {
   PetscErrorCode ierr;
@@ -464,6 +478,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
     case 3: dm->ops->setup     = DMSetUp_Stag_3d; break;
     default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
   }
+  dm->ops->clone               = DMClone_Stag;
   dm->ops->view                = DMView_Stag;
   dm->ops->getcompatibility    = DMGetCompatibility_Stag;
   PetscFunctionReturn(0);
