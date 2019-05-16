@@ -17,14 +17,15 @@ T*/
 
 int main(int argc,char **args)
 {
-  Mat            *A,B;           /* matrix */
-  PetscErrorCode ierr;
-  Vec            x,y,v,v2,z;
-  PetscReal      rnorm;
-  PetscInt       n = 20;         /* size of the matrix */
-  PetscInt       nmat = 3;       /* number of matrices */
-  PetscInt       i;
-  PetscRandom    rctx;
+  Mat              *A,B;           /* matrix */
+  PetscErrorCode   ierr;
+  Vec              x,y,v,v2,z;
+  PetscReal        rnorm;
+  PetscInt         n = 20;         /* size of the matrix */
+  PetscInt         nmat = 3;       /* number of matrices */
+  PetscInt         i;
+  PetscRandom      rctx;
+  MatCompositeType type;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -142,6 +143,10 @@ int main(int argc,char **args)
   ierr = MatCompositeGetMat(B,0,&A[nmat+2]);CHKERRQ(ierr);
   if (A[0] != A[nmat+2]) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetMat\n");CHKERRQ(ierr);
+  }
+  ierr = MatCompositeGetType(B,&type);CHKERRQ(ierr);
+  if (type != MAT_COMPOSITE_ADDITIVE) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetType\n");CHKERRQ(ierr);
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
