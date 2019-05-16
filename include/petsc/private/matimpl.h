@@ -1246,7 +1246,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
     bt      - PetscBT (bitarray) with all bits set to false
 */
 #define PetscIncompleteLLClean(idx_start,lnk_max,nlnk,lnk,lnklvl,indices,indiceslvl,bt) 0;\
-{\
+do {\
   PetscInt _j,_idx=idx_start;\
   for (_j=0; _j<nlnk; _j++){\
     _idx = lnk[_idx];\
@@ -1256,23 +1256,23 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
     ierr = PetscBTClear(bt,_idx);CHKERRQ(ierr);\
   }\
   lnk[idx_start] = lnk_max;\
-}
+} while (0)
 /*
   Free memories used by the list
 */
 #define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(&(bt)))
 
-#define MatCheckSameLocalSize(A,ar1,B,ar2) \
+#define MatCheckSameLocalSize(A,ar1,B,ar2) do { \
   PetscCheckSameComm(A,ar1,B,ar2); \
-  if ((A->rmap->n != B->rmap->n) || (A->cmap->n != B->cmap->n)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible matrix local sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->n,A->cmap->n,ar2,B->rmap->n,B->cmap->n);
+  if ((A->rmap->n != B->rmap->n) || (A->cmap->n != B->cmap->n)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible matrix local sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->n,A->cmap->n,ar2,B->rmap->n,B->cmap->n);} while (0)
 
-#define MatCheckSameSize(A,ar1,B,ar2) \
+#define MatCheckSameSize(A,ar1,B,ar2) do { \
   if ((A->rmap->N != B->rmap->N) || (A->cmap->N != B->cmap->N)) SETERRQ6(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Incompatible matrix global sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->N,A->cmap->N,ar2,B->rmap->N,B->cmap->N);\
-  MatCheckSameLocalSize(A,ar1,B,ar2);
+  MatCheckSameLocalSize(A,ar1,B,ar2);} while (0)
 
-#define VecCheckMatCompatible(M,x,ar1,b,ar2)                               \
-  if (M->cmap->N != x->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix column global size %D",ar1,x->map->N,M->cmap->N);\
-  if (M->rmap->N != b->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix row global size %D",ar2,b->map->N,M->rmap->N);
+#define VecCheckMatCompatible(M,x,ar1,b,ar2) do { \
+  if (M->cmap->N != x->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix column global size %D",ar1,x->map->N,M->cmap->N); \
+  if (M->rmap->N != b->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix row global size %D",ar2,b->map->N,M->rmap->N);} while (0)
 
 /* -------------------------------------------------------------------------------------------------------*/
 #include <petscbt.h>

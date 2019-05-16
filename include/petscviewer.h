@@ -165,7 +165,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscOptionsPopGetViewerOff(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewerOff(PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,PetscOptions,const char[],const char[],PetscViewer*,PetscViewerFormat*,PetscBool*);
-#define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f);
+#define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f)
 PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems*,const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
 
 typedef struct {PetscViewer viewer;PetscViewerFormat format;} PetscViewerAndFormat;
