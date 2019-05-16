@@ -1,6 +1,7 @@
 stages:
   - ci-begin
   - test
+  - ci-long-begin
   - test-long
   - ci-end
 variables:
@@ -144,6 +145,12 @@ inprogress:
   extends: .status
   variables:
     BUILD_STATUS: running
+
+shortcomplete:
+  stage: ci-long-begin
+  extends: .status
+  variables:
+    BUILD_STATUS: shortcomplete
 
 success:
   stage: ci-end

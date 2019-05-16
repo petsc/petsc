@@ -26,7 +26,11 @@ BITBUCKET_KEY="ci/gitlab-ci/$CI_JOB_NAME"
 case "$BUILD_STATUS" in
 running)
    BITBUCKET_STATE="INPROGRESS"
-   BITBUCKET_DESCRIPTION="The build is running!"
+   BITBUCKET_DESCRIPTION="The short-test build is running!"
+   ;;
+shortcomplete)
+   BITBUCKET_STATE="INPROGRESS"
+   BITBUCKET_DESCRIPTION="The short-test is complete. Long-test build is running!"
    ;;
 passed)
    BITBUCKET_STATE="SUCCESSFUL"
