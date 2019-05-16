@@ -1173,13 +1173,14 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm,PetscInt const *lx,PetscInt const 
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
   const PetscInt  *lin[3];
-  PetscInt        d;
+  PetscInt        d,dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   lin[0] = lx; lin[1] = ly; lin[2] = lz;
-  for (d=0; d<3; ++d) {
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  for (d=0; d<dim; ++d) {
     if (lin[d]) {
       if (stag->nRanks[d] < 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of ranks");
       if (!stag->l[d]) {
