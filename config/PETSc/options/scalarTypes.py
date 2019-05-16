@@ -77,6 +77,11 @@ class Configure(config.base.Configure):
 
   def configurePrecision(self):
     '''Set the default real number precision for PETSc objects'''
+    if self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);'):
+      self.addDefine('HAVE_REAL___FLOAT128', '1')
+      have__float128 = 1
+    else:
+      have__float128 = 0
     self.precision = self.framework.argDB['with-precision'].lower()
     if self.precision == '__fp16':  # supported by gcc trunk
       if self.scalartype == 'complex':
@@ -98,7 +103,7 @@ class Configure(config.base.Configure):
       else:
         raise RuntimeError('quadmath support not found. --with-precision=__float128 works with gcc-4.6 and newer compilers.')
     else:
-      raise RuntimeError('--with-precision must be single, double,__float128')
+      raise RuntimeError('--with-precision must be __fp16, single, double, or __float128')
     self.logPrint('Precision is '+str(self.precision))
     if self.precision == '__float128' and self.scalartype == 'complex' and self.languages.clanguage == 'Cxx':
       raise RuntimeError('Cannot use --with-precision=__float128 --with-scalar-type=complex and --with-clanguage=cxx because C++ std:complex class has no support for __float128, use --with-clanguage=c')

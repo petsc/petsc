@@ -8,20 +8,21 @@ class Configure(config.package.Package):
     self.downloadonWindows      = 1
     self.skippackagewithoptions = 1
     self.installwithbatch       = 1
+    self.fc                     = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     return
 
+  def configureLibrary(self):
+    if 'with-64-bit-blas-indices' in self.argDB and self.argDB['with-64-bit-blas-indices']:
+      raise RuntimeError('fblaslapack does not support -with-64-bit-blas-indices')
+    if 'known-64-bit-blas-indices' in self.argDB and self.argDB['known-64-bit-blas-indices']:
+      raise RuntimeError('fblaslapack does not support -known-64-bit-blas-indices')
+    config.package.Package.configureLibrary(self)
 
   def Install(self):
     import os
-
-    if self.defaultPrecision == '__float128':
-      raise RuntimeError('Cannot build fblaslapack with __float128; use --download-f2cblaslapack instead')
-
-    if not hasattr(self.compilers, 'FC'):
-      raise RuntimeError('Cannot request fblaslapack without Fortran compiler, use --download-f2cblaslapack intead')
 
     self.setCompilers.pushLanguage('FC')
     if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
