@@ -102,37 +102,37 @@ c89-mlib-static-py2:
 linux-gcc-complex-opt:
   extends: .linux_mcs_test
   variables:
-    TEST_ARCH: arch-jenkins-linux-gcc-complex-opt
+    TEST_ARCH: arch-ci-linux-gcc-complex-opt
 
 linux-gcc-pkgs-opt:
   extends: .linux_mcs_test
   variables:
-    TEST_ARCH: arch-jenkins-linux-gcc-pkgs-opt
+    TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
 
 linux-gcc-quad-64idx-dbg:
   extends: .linux_mcs_test
   variables:
-    TEST_ARCH: arch-jenkins-linux-gcc-quad-64idx-dbg
+    TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
 freebsd-c-single-opt:
   extends: .freebsd_mcs_test
   variables:
-    TEST_ARCH: arch-jenkins-freebsd-c-single-opt
+    TEST_ARCH: arch-ci-freebsd-c-single-opt
 
 freebsd-cxx-cmplx-64idx-dbg:
   extends: .freebsd_mcs_test
   variables:
-    TEST_ARCH: arch-jenkins-freebsd-cxx-cmplx-64idx-dbg
+    TEST_ARCH: arch-ci-freebsd-cxx-cmplx-64idx-dbg
 
 osx-cxx-pkgs-opt:
   extends: .osx_mcs_test
   variables:
-    TEST_ARCH: arch-jenkins-osx-cxx-pkgs-opt
+    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
 
 opensolaris-cmplx-pkgs-dbg:
   extends: .opensolaris_mcs_test
   variables:
-    TEST_ARCH: arch-jenkins-opensolaris-cmplx-pkgs-dbg
+    TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
 
 .status:
   image: jedbrown/alpine-curl
