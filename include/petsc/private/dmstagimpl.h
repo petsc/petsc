@@ -43,6 +43,7 @@ typedef struct {
   PetscBool         lastRank[DMSTAG_MAX_DIM];     /* Last rank in this dim?             */
 } DM_Stag;
 
+PETSC_INTERN PetscErrorCode DMStagDuplicateWithoutSetup(DM,MPI_Comm,DM*);
 PETSC_INTERN PetscErrorCode DMStagInitialize(DMBoundaryType,DMBoundaryType,DMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,DMStagStencilType,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM);
