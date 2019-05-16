@@ -1802,10 +1802,10 @@ int main(int argc, char **argv)
   # Serial tests with GLVis visualization
   test:
     suffix: glvis_2d_tet_p1
-    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 1 -vec_view glvis: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
+    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 1 -vec_view glvis: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic 0
   test:
     suffix: glvis_2d_tet_p2
-    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
+    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic 0
   test:
     suffix: glvis_2d_hex_p1
     args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 1 -vec_view glvis: -simplex 0 -dm_refine 1

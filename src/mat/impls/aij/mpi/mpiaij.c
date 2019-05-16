@@ -2944,7 +2944,7 @@ PetscErrorCode MatLoad_MPIAIJ_Binary(Mat newMat, PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryRead(fd,(char*)header,4,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,(char*)header,4,NULL,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
     if (header[3] < 0) SETERRQ(PetscObjectComm((PetscObject)newMat),PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format on disk,cannot load as MATMPIAIJ");
   }
@@ -2987,14 +2987,14 @@ PetscErrorCode MatLoad_MPIAIJ_Binary(Mat newMat, PetscViewer viewer)
   /* distribute row lengths to all processors */
   ierr = PetscMalloc2(m,&ourlens,m,&offlens);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryRead(fd,ourlens,m,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,ourlens,m,NULL,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscMalloc1(mmax,&rowlengths);CHKERRQ(ierr);
     ierr = PetscCalloc1(size,&procsnz);CHKERRQ(ierr);
     for (j=0; j<m; j++) {
       procsnz[0] += ourlens[j];
     }
     for (i=1; i<size; i++) {
-      ierr = PetscBinaryRead(fd,rowlengths,rowners[i+1]-rowners[i],PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,rowlengths,rowners[i+1]-rowners[i],NULL,PETSC_INT);CHKERRQ(ierr);
       /* calculate the number of nonzeros on each processor */
       for (j=0; j<rowners[i+1]-rowners[i]; j++) {
         procsnz[i] += rowlengths[j];
@@ -3017,12 +3017,12 @@ PetscErrorCode MatLoad_MPIAIJ_Binary(Mat newMat, PetscViewer viewer)
     /* read in my part of the matrix column indices  */
     nz   = procsnz[0];
     ierr = PetscMalloc1(nz,&mycols);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,mycols,nz,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,mycols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
 
     /* read in every one elses and ship off */
     for (i=1; i<size; i++) {
       nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,cols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
       ierr = MPIULong_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -3078,7 +3078,7 @@ PetscErrorCode MatLoad_MPIAIJ_Binary(Mat newMat, PetscViewer viewer)
 
     /* read in my part of the matrix numerical values  */
     nz   = procsnz[0];
-    ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
 
     /* insert into matrix */
     jj      = rstart;
@@ -3094,7 +3094,7 @@ PetscErrorCode MatLoad_MPIAIJ_Binary(Mat newMat, PetscViewer viewer)
     /* read in other processors and ship out */
     for (i=1; i<size; i++) {
       nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
       ierr = MPIULong_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)newMat)->tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(procsnz);CHKERRQ(ierr);

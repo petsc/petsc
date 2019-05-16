@@ -4428,7 +4428,7 @@ PetscErrorCode MatLoad_SeqAIJ_Binary(Mat newMat, PetscViewer viewer)
   ierr = MatSetBlockSize(newMat,bs);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,NULL,PETSC_INT);CHKERRQ(ierr);
   if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
@@ -4436,7 +4436,7 @@ PetscErrorCode MatLoad_SeqAIJ_Binary(Mat newMat, PetscViewer viewer)
 
   /* read in row lengths */
   ierr = PetscMalloc1(M,&rowlengths);CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,rowlengths,M,NULL,PETSC_INT);CHKERRQ(ierr);
 
   /* check if sum of rowlengths is same as nz */
   for (i=0,sum=0; i< M; i++) sum +=rowlengths[i];
@@ -4456,10 +4456,10 @@ PetscErrorCode MatLoad_SeqAIJ_Binary(Mat newMat, PetscViewer viewer)
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(newMat,0,rowlengths);CHKERRQ(ierr);
   a    = (Mat_SeqAIJ*)newMat->data;
 
-  ierr = PetscBinaryRead(fd,a->j,nz,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,a->j,nz,NULL,PETSC_INT);CHKERRQ(ierr);
 
   /* read in nonzero values */
-  ierr = PetscBinaryRead(fd,a->a,nz,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,a->a,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
 
   /* set matrix "i" values */
   a->i[0] = 0;

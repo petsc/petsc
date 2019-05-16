@@ -531,19 +531,31 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_7
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_view ::ascii_info_detail -interpolate -test_shape
   test:
     suffix: gmsh_8
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
-  test:
-    suffix: gmsh_9
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
-  test:
-    suffix: gmsh_10
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
-  test:
-    suffix: gmsh_11
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape -dm_refine 1
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_view ::ascii_info_detail -interpolate -test_shape
+  testset:
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic_bin.msh -dm_view ::ascii_info_detail -interpolate -test_shape
+    test:
+      suffix: gmsh_9
+    test:
+      suffix: gmsh_9_periodic_0
+      args: -dm_plex_gmsh_periodic 0
+  testset:
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_view ::ascii_info_detail -interpolate -test_shape
+    test:
+      suffix: gmsh_10
+    test:
+      suffix: gmsh_10_periodic_0
+      args: -dm_plex_gmsh_periodic 0
+  testset:
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_view ::ascii_info_detail -interpolate -test_shape -dm_refine 1
+    test:
+      suffix: gmsh_11
+    test:
+      suffix: gmsh_11_periodic_0
+      args: -dm_plex_gmsh_periodic 0
   test:
     suffix: gmsh_12
     nsize: 4
@@ -552,7 +564,7 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_13_hybs2t
     nsize: 4
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -petscpartitioner_type simple -interpolate 1 -dm_view -test_shape -simplex2tensor -dm_plex_gmsh_hybrid -dm_plex_check_faces -dm_plex_check_skeleton -dm_plex_check_symmetry
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -petscpartitioner_type simple -interpolate 1 -dm_view -test_shape -simplex2tensor -dm_plex_check_faces -dm_plex_check_skeleton -dm_plex_check_symmetry
   test:
     suffix: gmsh_14_ext
     requires: !single
@@ -563,13 +575,13 @@ int main(int argc, char **argv)
     args: -ext_layers 2 -ext_thickness 1.5 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -interpolate -dm_plex_check_faces -dm_plex_check_symmetry -dm_plex_check_skeleton -simplex2tensor -test_shape
   test:
     suffix: gmsh_15_hyb3d
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_faces -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_gmsh_hybrid
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_faces -dm_plex_check_symmetry -dm_plex_check_skeleton
   test:
     suffix: gmsh_15_hyb3d_vtk
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view vtk:
   test:
     suffix: gmsh_15_hyb3d_s2t
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_faces -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_gmsh_hybrid -simplex2tensor -test_shape
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_faces -dm_plex_check_symmetry -dm_plex_check_skeleton -simplex2tensor -test_shape
   test:
     suffix: gmsh_16_spheresurface
     nsize : 4
@@ -581,7 +593,7 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_16_spheresurface_extruded
     nsize : 4
-    args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_hybrid -dm_plex_gmsh_spacedim 3 -dm_plex_check_symmetry -dm_plex_check_faces -dm_plex_check_skeleton -dm_view -interpolate -petscpartitioner_type simple
+    args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_plex_check_symmetry -dm_plex_check_faces -dm_plex_check_skeleton -dm_view -interpolate -petscpartitioner_type simple
   test:
     suffix: gmsh_16_spheresurface_extruded_s2t
     nsize : 4
@@ -590,7 +602,7 @@ int main(int argc, char **argv)
   # Legacy Gmsh v22/v40 ascii/binary reader tests
   testset:
     output_file: output/ex1_gmsh_3d_legacy.out
-    args: -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
+    args: -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
     test:
       suffix: gmsh_3d_ascii_v22
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh2
@@ -607,7 +619,7 @@ int main(int argc, char **argv)
 
   # Gmsh v41 ascii/binary reader tests
   testset: # 32bit mesh, sequential
-    args: -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
+    args: -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
     output_file: output/ex1_gmsh_3d_32.out
     test:
       suffix: gmsh_3d_ascii_v41_32
@@ -620,7 +632,7 @@ int main(int argc, char **argv)
       requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
   testset:  # 32bit mesh, parallel
-    args:  -petscpartitioner_type simple -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
+    args:  -petscpartitioner_type simple -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
     nsize: 2
     output_file: output/ex1_gmsh_3d_32_np2.out
     test:
@@ -634,7 +646,7 @@ int main(int argc, char **argv)
       requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
   testset: # 64bit mesh, sequential
-    args: -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
+    args: -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
     output_file: output/ex1_gmsh_3d_64.out
     test:
       suffix: gmsh_3d_ascii_v41_64
@@ -647,7 +659,7 @@ int main(int argc, char **argv)
       requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh -viewer_binary_mpiio
   testset:  # 64bit mesh, parallel
-    args:  -petscpartitioner_type simple -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
+    args:  -petscpartitioner_type simple -dm_view ::ascii_info_detail -interpolate -dm_plex_check_symmetry -dm_plex_check_faces -test_shape
     nsize: 2
     output_file: output/ex1_gmsh_3d_64_np2.out
     test:
@@ -770,15 +782,15 @@ int main(int argc, char **argv)
   # Test GLVis output
   test:
     suffix: glvis_2d_tet
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_view glvis:
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic 0 -dm_view glvis:
 
   test:
     suffix: glvis_2d_tet_per
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary 0
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary 0
 
   test:
     suffix: glvis_2d_tet_per_mfem
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_boundary -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -viewer_glvis_dm_plex_enable_boundary -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
 
   test:
     suffix: glvis_2d_quad
@@ -794,16 +806,16 @@ int main(int argc, char **argv)
 
   test:
     suffix: glvis_3d_tet
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_view glvis:
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_plex_gmsh_periodic 0 -dm_view glvis:
 
   test:
     suffix: glvis_3d_tet_per
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_plex_gmsh_periodic -dm_view glvis: -interpolate -viewer_glvis_dm_plex_enable_boundary
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_view glvis: -interpolate -viewer_glvis_dm_plex_enable_boundary
 
   test:
     suffix: glvis_3d_tet_per_mfem
     TODO: broken
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
 
   test:
     suffix: glvis_3d_hex
@@ -829,7 +841,7 @@ int main(int argc, char **argv)
       args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
     test:
       suffix: p4est_gmsh_periodic
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
     test:
       suffix: p4est_gmsh_surface
       args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
@@ -839,10 +851,10 @@ int main(int argc, char **argv)
       args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -petscpartitioner_type simple -dm_view ::load_balance
     test:
       suffix: p4est_hyb_2d
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -dm_plex_gmsh_hybrid
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh
     test:
       suffix: p4est_hyb_3d
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_plex_gmsh_hybrid
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh
     test:
       requires: ctetgen
       suffix: p4est_s2t_bugfaces_3d
@@ -864,7 +876,7 @@ int main(int argc, char **argv)
     test:
       requires: long_runtime
       suffix: p4est_gmsh_periodic_3d
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_plex_gmsh_periodic
+      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh
 
   testset:
     requires: p4est
@@ -878,7 +890,7 @@ int main(int argc, char **argv)
       args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash
     test:
       suffix: p4est_par_gmsh_periodic
-      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic
+      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
     test:
       suffix: p4est_par_gmsh_surface
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
@@ -891,7 +903,7 @@ int main(int argc, char **argv)
     test:
       requires: long_runtime
       suffix: p4est_par_gmsh_periodic_3d
-      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_plex_gmsh_periodic
+      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh
 
   testset:
     requires: p4est
@@ -905,7 +917,7 @@ int main(int argc, char **argv)
       args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash
     test:
       suffix: p4est_par_ovl_gmsh_periodic
-      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic
+      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
     test:
       suffix: p4est_par_ovl_gmsh_surface
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
@@ -918,13 +930,13 @@ int main(int argc, char **argv)
     test:
       requires: long_runtime
       suffix: p4est_par_ovl_gmsh_periodic_3d
-      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh -dm_plex_gmsh_periodic
+      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh
     test:
       suffix: p4est_par_ovl_hyb_2d
-      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -dm_plex_gmsh_hybrid
+      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh
     test:
       suffix: p4est_par_ovl_hyb_3d
-      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_plex_gmsh_hybrid
+      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh
 
   test:
     TODO: broken
@@ -941,10 +953,10 @@ int main(int argc, char **argv)
 
   test:
     suffix: glvis_2d_hyb
-    args: -dim 2 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -dm_plex_gmsh_hybrid -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
+    args: -dim 2 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
 
   test:
     suffix: glvis_3d_hyb
-    args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_plex_gmsh_hybrid -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
+    args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
 
 TEST*/

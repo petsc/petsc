@@ -73,7 +73,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     /* Always read 32-bit ints and cast to PetscInt */
     int *ibuf;
     ierr = PetscMalloc1(count, &ibuf);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fdes, ibuf, count, PETSC_ENUM);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fdes, ibuf, count, NULL, PETSC_ENUM);CHKERRQ(ierr);
     ierr = PetscByteSwap(ibuf, PETSC_ENUM, count);CHKERRQ(ierr);
     for (i = 0; i < count; i++) ((PetscInt*)data)[i] = (PetscInt)(ibuf[i]);
     ierr = PetscFree(ibuf);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     float *fbuf;
     /* Always read 32-bit floats and cast to PetscScalar */
     ierr = PetscMalloc1(count, &fbuf);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fdes, fbuf, count, PETSC_FLOAT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fdes, fbuf, count, NULL, PETSC_FLOAT);CHKERRQ(ierr);
     ierr = PetscByteSwap(fbuf, PETSC_FLOAT, count);CHKERRQ(ierr);
     for (i = 0; i < count; i++) ((PetscScalar*)data)[i] = (PetscScalar)(fbuf[i]);
     ierr = PetscFree(fbuf);CHKERRQ(ierr);

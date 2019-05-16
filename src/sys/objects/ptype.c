@@ -31,7 +31,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
   PetscFunctionBegin;
   if (ptype == PETSC_INT)              *mtype = MPIU_INT;
   else if (ptype == PETSC_DOUBLE)      *mtype = MPI_DOUBLE;
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
   else if (ptype == PETSC_COMPLEX)     *mtype = MPIU_C_COMPLEX;
 #elif defined(PETSC_USE_REAL___FLOAT128)
@@ -51,7 +51,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
 #if defined(PETSC_USE_REAL___FLOAT128)
   else if (ptype == PETSC___FLOAT128)  *mtype = MPIU___FLOAT128;
 #elif defined(PETSC_USE_REAL___FP16)
-  else if (ptype == PETSC___FP16)  *mtype = MPIU___FP16;
+  else if (ptype == PETSC___FP16)      *mtype = MPIU___FP16;
 #endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   PetscFunctionReturn(0);
@@ -81,7 +81,7 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
 #endif
   else if (mtype == MPIU_INT64)      *ptype = PETSC_INT64;
   else if (mtype == MPI_DOUBLE)      *ptype = PETSC_DOUBLE;
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
   else if (mtype == MPIU_C_COMPLEX)  *ptype = PETSC_COMPLEX;
 #elif defined(PETSC_USE_REAL___FLOAT128)
@@ -105,7 +105,11 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
 
 typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
               PETSC_DOUBLE_SIZE      = sizeof(double),
-              PETSC_COMPLEX_SIZE     = sizeof(PetscScalar),
+#if defined(PETSC_HAVE_COMPLEX)
+              PETSC_COMPLEX_SIZE     = sizeof(PetscComplex),
+#else
+              PETSC_COMPLEX_SIZE     = 2*sizeof(PetscReal),
+#endif
               PETSC_LONG_SIZE        = sizeof(long),
               PETSC_SHORT_SIZE       = sizeof(short),
               PETSC_FLOAT_SIZE       = sizeof(float),
@@ -139,16 +143,10 @@ typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
 PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
 {
   PetscFunctionBegin;
-  if ((int) ptype < 0) {
-    *size = -(int) ptype;
-    PetscFunctionReturn(0);
-  }
-
-  if (ptype == PETSC_INT)              *size = PETSC_INT_SIZE;
+  if ((int) ptype < 0)                 *size = -(int)ptype;
+  else if (ptype == PETSC_INT)         *size = PETSC_INT_SIZE;
   else if (ptype == PETSC_DOUBLE)      *size = PETSC_DOUBLE_SIZE;
-#if defined(PETSC_USE_COMPLEX)
   else if (ptype == PETSC_COMPLEX)     *size = PETSC_COMPLEX_SIZE;
-#endif
   else if (ptype == PETSC_LONG)        *size = PETSC_LONG_SIZE;
   else if (ptype == PETSC_SHORT)       *size = PETSC_SHORT_SIZE;
   else if (ptype == PETSC_FLOAT)       *size = PETSC_FLOAT_SIZE;

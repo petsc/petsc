@@ -1025,17 +1025,21 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscInt       numVertices = 0, numCells = 0, trueNumCells = 0;
   int            i, shift = 1;
   PetscMPIInt    rank;
-  PetscBool      binary, zerobase = PETSC_FALSE, periodic = PETSC_FALSE, usemarker = PETSC_FALSE;
-  PetscBool      enable_hybrid = PETSC_FALSE;
+  PetscBool      binary, zerobase = PETSC_FALSE, usemarker = PETSC_FALSE;
+  PetscBool      enable_hybrid = interpolate, periodic = PETSC_TRUE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_hybrid", &enable_hybrid, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_periodic", &periodic, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_use_marker", &usemarker, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_zero_base", &zerobase, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_gmsh_spacedim", &embedDim, NULL);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)viewer);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Gmsh options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_hybrid", "Generate hybrid cell bounds", "DMPlexCreateGmsh", enable_hybrid, &enable_hybrid, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_periodic","Read Gmsh periodic section", "DMPlexCreateGmsh", periodic, &periodic, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_use_marker", "Generate marker label", "DMPlexCreateGmsh", usemarker, &usemarker, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_zero_base", "Read Gmsh file with zero base indices", "DMPlexCreateGmsh", zerobase, &zerobase, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", embedDim, &embedDim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (zerobase) shift = 0;
 
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -1108,13 +1112,16 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
     /* OPTIONAL Read periodic section */
     if (periodic) {
+      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
+      ierr = GmshMatch(gmsh, "$Periodic", line, &periodic);CHKERRQ(ierr);
+    }
+    if (periodic) {
       PetscInt pVert, *periodicMapT, *aux;
 
       ierr = PetscMalloc1(numVertices, &periodicMapT);CHKERRQ(ierr);
       ierr = PetscBTCreate(numVertices, &periodicV);CHKERRQ(ierr);
       for (i = 0; i < numVertices; i++) periodicMapT[i] = i;
 
-      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
       ierr = GmshExpect(gmsh, "$Periodic", line);CHKERRQ(ierr);
       switch (gmsh->fileFormat) {
       case 41: ierr = DMPlexCreateGmsh_ReadPeriodic_v41(gmsh, shift, periodicMapT, periodicV);CHKERRQ(ierr); break;
@@ -1160,14 +1167,18 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   if (!rank) {
-    PetscBool hybrid = PETSC_FALSE;
+    PetscBool hybrid   = PETSC_FALSE;
+    PetscInt  cellType = -1;
 
     for (trueNumCells = 0, c = 0; c < numCells; ++c) {
-      int on = -1;
-      if (gmsh_elem[c].dim > dim) {dim = gmsh_elem[c].dim; trueNumCells = 0;}
-      if (gmsh_elem[c].dim == dim) {hybrid = (trueNumCells ? (on != gmsh_elem[c].cellType ? on = gmsh_elem[c].cellType,PETSC_TRUE : hybrid) : (on = gmsh_elem[c].cellType, PETSC_FALSE) ); trueNumCells++;}
+      if (gmsh_elem[c].dim > dim) {dim = gmsh_elem[c].dim; trueNumCells = 0; hybrid = PETSC_FALSE; cellType = -1;}
+      if (gmsh_elem[c].dim < dim) continue;
+      if (cellType == -1) cellType = gmsh_elem[c].cellType;
+      /* different cell type indicate an hybrid mesh in PLEX */
+      if (cellType != gmsh_elem[c].cellType) hybrid = PETSC_TRUE;
       /* wedges always indicate an hybrid mesh in PLEX */
-      if (on == 6 || on == 13) hybrid = PETSC_TRUE;
+      if (cellType == 6 || cellType == 13) hybrid = PETSC_TRUE;
+      trueNumCells++;
     }
     /* Renumber cells for hybrid grids */
     if (hybrid && enable_hybrid) {
@@ -1501,6 +1512,9 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
+
+  periodic = periodicMap ? PETSC_TRUE : PETSC_FALSE;
+  ierr = MPI_Bcast(&periodic, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
   ierr = DMSetPeriodicity(*dm, periodic, NULL, NULL, NULL);CHKERRQ(ierr);
 
   ierr = PetscFree(coordsIn);CHKERRQ(ierr);

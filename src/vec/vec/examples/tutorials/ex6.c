@@ -62,11 +62,11 @@ int main(int argc,char **args)
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
 
   /* Read data into vector */
-  ierr = PetscBinaryRead(fd,&sz,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,&sz,1,NULL,PETSC_INT);CHKERRQ(ierr);
   if (sz <=0) SETERRQ(PETSC_COMM_SELF,1,"Error: Must have array length > 0");
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%D ...\n",sz);CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,avec,sz,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,avec,sz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
 
   /* View vector */
   ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
