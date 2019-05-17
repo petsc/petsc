@@ -387,16 +387,15 @@ static PetscErrorCode MatCompositeSetType_Composite(Mat mat,MatCompositeType typ
   Mat_Composite  *b = (Mat_Composite*)mat->data;
 
   PetscFunctionBegin;
+  b->type = type;
   if (type == MAT_COMPOSITE_MULTIPLICATIVE) {
     mat->ops->getdiagonal   = 0;
     mat->ops->mult          = MatMult_Composite_Multiplicative;
     mat->ops->multtranspose = MatMultTranspose_Composite_Multiplicative;
-    b->type                 = MAT_COMPOSITE_MULTIPLICATIVE;
   } else {
     mat->ops->getdiagonal   = MatGetDiagonal_Composite;
     mat->ops->mult          = MatMult_Composite;
     mat->ops->multtranspose = MatMultTranspose_Composite;
-    b->type                 = MAT_COMPOSITE_ADDITIVE;
   }
   PetscFunctionReturn(0);
 }
