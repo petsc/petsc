@@ -137,9 +137,9 @@ int main(int argc,char **args)
      Test get functions
   */
   ierr = MatCreateComposite(PETSC_COMM_WORLD,nmat,A,&B);CHKERRQ(ierr);
-  ierr = MatCompositeGetNmat(B,&n);CHKERRQ(ierr);
+  ierr = MatCompositeGetNumberMat(B,&n);CHKERRQ(ierr);
   if (nmat != n) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetNMat %d != %d\n",nmat,n);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetNumberMat %d != %d\n",nmat,n);CHKERRQ(ierr);
   }
   ierr = MatCompositeGetMat(B,0,&A[nmat+2]);CHKERRQ(ierr);
   if (A[0] != A[nmat+2]) {
