@@ -16,6 +16,7 @@ typedef struct {
   Vec               left,right;   /* left and right diagonal scaling provided with MatDiagonalScale() */
   Vec               leftwork,rightwork;
   PetscInt          nmat;
+  PetscBool         merge;
   PetscBool         mergefromright;
 } Mat_Composite;
 
@@ -232,12 +233,11 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 
 PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
 {
-  PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
+  Mat_Composite     *shell = (Mat_Composite*)Y->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)Y)->options,((PetscObject)Y)->prefix,"-mat_composite_merge",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
+  if (shell->merge) {
     ierr = MatCompositeMerge(Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -277,6 +277,19 @@ PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,Mat A)
+{
+  Mat_Composite  *a = (Mat_Composite*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"MATCOMPOSITE options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_composite_merge","Merge at MatAssemblyEnd","MatCompositeMerge",a->merge,&a->merge,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_composite_merge_from_right","Set direction of merge","MatCompositeSetMergeFromRight",a->mergefromright,&a->mergefromright,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatCreateComposite - Creates a matrix as the sum or product of one or more matrices
 
@@ -289,6 +302,10 @@ PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
 
    Output Parameter:
 .  mat - the matrix
+
+   Options Database Keys:
++  -mat_composite_merge - merge in MatAssemblyEnd()
+-  -mat_composite_merge_from_right - merge starts from right
 
    Level: advanced
 
@@ -518,8 +535,8 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 .  mat - the composite matrix
 
 
-   Options Database:
-.  -mat_composite_merge  (you must call MatAssemblyBegin()/MatAssemblyEnd() to have this checked)
+   Options Database Keys:
+.  -mat_composite_merge - merge in MatAssemblyEnd()
 
    Level: advanced
 
@@ -738,7 +755,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                /* 74*/ 0,
                                        0,
-                                       0,
+                                       MatSetFromOptions_Composite,
                                        0,
                                        0,
                                /* 79*/ 0,
@@ -836,6 +853,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   b->type           = MAT_COMPOSITE_ADDITIVE;
   b->scale          = 1.0;
   b->nmat           = 0;
+  b->merge          = PETSC_FALSE;
   b->mergefromright = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeAddMat_C",MatCompositeAddMat_Composite);CHKERRQ(ierr);

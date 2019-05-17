@@ -58,6 +58,7 @@ int main(int argc,char **args)
   }
 
   ierr = MatCreateComposite(PETSC_COMM_WORLD,nmat,A+1,&B);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatMultAdd(B,x,y,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
@@ -175,5 +176,6 @@ int main(int argc,char **args)
    test:
       nsize: 2
       requires: double
+      args: -mat_composite_merge 0
 
 TEST*/
