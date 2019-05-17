@@ -278,7 +278,7 @@ PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
 }
 
 /*@
-   MatCreateComposite - Creates a matrix as the sum of zero or more matrices
+   MatCreateComposite - Creates a matrix as the sum or product of one or more matrices
 
   Collective on MPI_Comm
 
@@ -359,7 +359,7 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat,Mat smat)
 }
 
 /*@
-    MatCompositeAddMat - add another matrix to a composite matrix
+    MatCompositeAddMat - Add another matrix to a composite matrix.
 
    Collective on Mat
 
@@ -369,7 +369,7 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat,Mat smat)
 
    Level: advanced
 
-.seealso: MatCreateComposite()
+.seealso: MatCreateComposite(), MatCompositeGetMat(), MATCOMPOSITE
 @*/
 PetscErrorCode MatCompositeAddMat(Mat mat,Mat smat)
 {
@@ -402,19 +402,14 @@ static PetscErrorCode MatCompositeSetType_Composite(Mat mat,MatCompositeType typ
 }
 
 /*@
-   MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product
+   MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product.
 
   Collective on MPI_Comm
 
    Input Parameters:
 .  mat - the composite matrix
 
-
    Level: advanced
-
-   Notes:
-      The MatType of the resulting matrix will be the same as the MatType of the FIRST
-    matrix in the composite matrix.
 
 .seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MatCompositeGetType(), MATCOMPOSITE
 
@@ -516,7 +511,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 
 /*@
    MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
-     by summing all the matrices inside the composite matrix.
+     by summing or computing the product of all the matrices inside the composite matrix.
 
   Collective on MPI_Comm
 
@@ -564,12 +559,11 @@ static PetscErrorCode MatCompositeGetNmat_Composite(Mat mat,PetscInt *nmat)
 .  mat - the composite matrix
 
    Output Parameter:
-+  size - the local size
--  nmat - number of matrices in composite
+.  nmat - number of matrices in composite
 
    Level: advanced
 
-.seealso: MatCreateComposite(), MatCompositeGetMat()
+.seealso: MatCreateComposite(), MatCompositeGetMat(), MATCOMPOSITE
 
 @*/
 PetscErrorCode MatCompositeGetNmat(Mat mat,PetscInt *nmat)
@@ -600,7 +594,7 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat,PetscInt i,Mat *Ai)
 }
 
 /*@
-   MatCompositeGetMat - Returns the ith matrix from composite.
+   MatCompositeGetMat - Returns the ith matrix from the composite matrix.
 
    Logically Collective on Mat
 
@@ -613,7 +607,7 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat,PetscInt i,Mat *Ai)
 
    Level: advanced
 
-.seealso: MatCreateComposite(), MatCompositeGetNmat()
+.seealso: MatCreateComposite(), MatCompositeGetNmat(), MatCompositeAddMat(), MATCOMPOSITE
 
 @*/
 PetscErrorCode MatCompositeGetMat(Mat mat,PetscInt i,Mat *Ai)
@@ -648,7 +642,14 @@ static PetscErrorCode MatCompositeSetMergeFromRight_Composite(Mat mat,PetscBool 
 
    Level: advanced
 
-.seealso: MatCreateComposite(), MatCompositeMerge()
+   Notes:
+    Has an effect only if the composite matrix is multiplicative.
+
+    The resulting matrix is the same regardles of the flg. Only the order of operation is changed.
+    If flg is true the order of the merge is mat[nmat-1]*(mat[nmat-2]*(...*(mat[1]*mat[0])))
+    otherwise the order is (((mat[nmat-1]*mat[nmat-2])*mat[nmat-3])*...)*mat[0].
+
+.seealso: MatCreateComposite(), MatCompositeMerge(), MATCOMPOSITE
 
 @*/
 PetscErrorCode MatCompositeSetMergeFromRight(Mat mat,PetscBool flg)
