@@ -835,11 +835,11 @@ static PetscErrorCode DMPlexGetTrueSupportSize(DM dm,PetscInt p,PetscInt *dof,Pe
 
 static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-  PetscSection newSupportSection;
-  PetscInt newSize, *newSupports, pStart, pEnd, p, d, depth;
-  PetscInt *numTrueSupp;
-  PetscInt *offsets;
+  DM_Plex        *mesh = (DM_Plex *)dm->data;
+  PetscSection   newSupportSection;
+  PetscInt       newSize, *newSupports, pStart, pEnd, p, d, depth;
+  PetscInt       *numTrueSupp;
+  PetscInt       *offsets;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -988,8 +988,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
       }
     }
     mesh->computeanchormatrix = DMPlexComputeAnchorMatrix_Tree_FromReference;
-  }
-  else {
+  } else {
     mesh->computeanchormatrix = DMPlexComputeAnchorMatrix_Tree_Direct;
   }
   ierr = DMPlexTreeSymmetrize(dm);CHKERRQ(ierr);

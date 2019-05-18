@@ -214,18 +214,24 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv);CHKERRQ(ierr);
     if (dmConv) {
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_seq_1_");CHKERRQ(ierr);
       ierr = DMSetFromOptions(dmConv);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = dmConv;
     }
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_seq_1_");CHKERRQ(ierr);
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(*dm, NULL, "-conv_seq_1_dm_view");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMConvert(*dm,DMPLEX,&dmConv);CHKERRQ(ierr);
     if (dmConv) {
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_seq_2_");CHKERRQ(ierr);
+      ierr = DMSetFromOptions(dmConv);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = dmConv;
     }
-    ierr = DMViewFromOptions(*dm, NULL, "-conv_seq_2_dm_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_seq_2_");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
 #endif
@@ -314,6 +320,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = dmConv;
     }
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_par_1_");CHKERRQ(ierr);
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMConvert(*dm, DMPLEX, &dmConv);CHKERRQ(ierr);
@@ -323,6 +330,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = dmConv;
     }
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_par_2_");CHKERRQ(ierr);
     ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
 #else
@@ -832,51 +840,51 @@ int main(int argc, char **argv)
   # Test P4EST
   testset:
     requires: p4est
-    args: -interpolate -dm_view -test_p4est_seq -test_shape -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces -dm_forest_minimum_refinement 1
+    args: -interpolate -dm_view -test_p4est_seq -test_shape -conv_seq_2_dm_plex_check_symmetry -conv_seq_2_dm_plex_check_skeleton -conv_seq_2_dm_plex_check_faces -conv_seq_1_dm_forest_minimum_refinement 1
     test:
       suffix: p4est_periodic
-      args: -dim 2 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -domain_box_sizes 3,5 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
+      args: -dim 2 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -domain_box_sizes 3,5 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 2 -conv_seq_1_dm_p4est_refine_pattern hash
     test:
       suffix: p4est_periodic_3d
-      args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
+      args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 2 -conv_seq_1_dm_p4est_refine_pattern hash
     test:
       suffix: p4est_gmsh_periodic
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
+      args: -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
     test:
       suffix: p4est_gmsh_surface
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
+      args: -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
     test:
       suffix: p4est_gmsh_surface_parallel
       nsize: 2
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -petscpartitioner_type simple -dm_view ::load_balance
+      args: -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -petscpartitioner_type simple -dm_view ::load_balance
     test:
       suffix: p4est_hyb_2d
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh
+      args: -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh
     test:
       suffix: p4est_hyb_3d
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh
+      args: -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh
     test:
       requires: ctetgen
       suffix: p4est_s2t_bugfaces_3d
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 0 -dim 3 -domain_box_sizes 1,1 -cell_simplex
+      args: -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 0 -dim 3 -domain_box_sizes 1,1 -cell_simplex
     test:
       suffix: p4est_bug_overlapsf
       nsize: 3
-      args: -dim 3 -cell_simplex 0 -domain_box_sizes 2,2,1 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash  -petscpartitioner_type simple
+      args: -dim 3 -cell_simplex 0 -domain_box_sizes 2,2,1 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash  -petscpartitioner_type simple
     test:
       suffix: p4est_redistribute
       nsize: 3
-      args: -dim 3 -cell_simplex 0 -domain_box_sizes 2,2,1 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash  -petscpartitioner_type simple -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_view ::load_balance
+      args: -dim 3 -cell_simplex 0 -domain_box_sizes 2,2,1 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash  -petscpartitioner_type simple -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_view ::load_balance
     test:
       suffix: p4est_gmsh_s2t_3d
-      args: -dm_forest_initial_refinement 1 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+      args: -conv_seq_1_dm_forest_initial_refinement 1 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
     test:
       suffix: p4est_gmsh_s2t_3d_hash
-      args: -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+      args: -conv_seq_1_dm_forest_initial_refinement 1 -conv_seq_1_dm_forest_maximum_refinement 2 -conv_seq_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
     test:
       requires: long_runtime
       suffix: p4est_gmsh_periodic_3d
-      args: -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 1 -dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh
+      args: -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh
 
   testset:
     requires: p4est
@@ -949,7 +957,7 @@ int main(int argc, char **argv)
     requires: p4est
     nsize: 2
     suffix: p4est_bug_distribute_overlap
-    args: -interpolate -test_p4est_seq -test_shape -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces -dm_forest_minimum_refinement 0 -dm_forest_partition_overlap 0 -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 3,3 -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -overlap 1 -dm_view ::load_balance
+    args: -interpolate -test_p4est_seq -test_shape -conv_seq_2_dm_plex_check_symmetry -conv_seq_2_dm_plex_check_skeleton -conv_seq_2_dm_plex_check_faces -conv_seq_1_dm_forest_minimum_refinement 0 -conv_seq_1_dm_forest_partition_overlap 0 -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 3,3 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 2 -conv_seq_1_dm_p4est_refine_pattern hash -petscpartitioner_type simple -overlap 1 -dm_view ::load_balance
 
   test:
     suffix: glvis_2d_hyb

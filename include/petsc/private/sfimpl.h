@@ -15,6 +15,10 @@ PETSC_EXTERN PetscLogEvent PETSCSF_ReduceBegin;
 PETSC_EXTERN PetscLogEvent PETSCSF_ReduceEnd;
 PETSC_EXTERN PetscLogEvent PETSCSF_FetchAndOpBegin;
 PETSC_EXTERN PetscLogEvent PETSCSF_FetchAndOpEnd;
+PETSC_EXTERN PetscLogEvent PETSCSF_EmbedSF;
+PETSC_EXTERN PetscLogEvent PETSCSF_DistSect;
+PETSC_EXTERN PetscLogEvent PETSCSF_SectSF;
+PETSC_EXTERN PetscLogEvent PETSCSF_RemoteOff;
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);

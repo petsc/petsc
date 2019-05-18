@@ -10180,9 +10180,6 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
     }
     ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-    if (0) {
-      ierr = DMLabelView(labelNew, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    }
   }
   PetscFunctionReturn(0);
 }

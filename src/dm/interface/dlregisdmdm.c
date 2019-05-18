@@ -80,6 +80,11 @@ PetscErrorCode  DMInitializePackage(void)
 
   ierr = PetscLogEventRegister("Mesh Partition",         DM_CLASSID,&DMPLEX_Partition);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Mesh Migration",         DM_CLASSID,&DMPLEX_Migrate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexPartSelf",         DM_CLASSID,&DMPLEX_PartSelf);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexPartLblInv",       DM_CLASSID,&DMPLEX_PartLabelInvert);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexPartLblSF",        DM_CLASSID,&DMPLEX_PartLabelCreateSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexPartStrtSF",       DM_CLASSID,&DMPLEX_PartStratSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexPointSF",          DM_CLASSID,&DMPLEX_CreatePointSF);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexInterp",           DM_CLASSID,&DMPLEX_Interpolate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistribute",       DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistCones",        DM_CLASSID,&DMPLEX_DistributeCones);CHKERRQ(ierr);
@@ -94,6 +99,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexNToGBegin",        DM_CLASSID,&DMPLEX_NaturalToGlobalBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexNToGEnd",          DM_CLASSID,&DMPLEX_NaturalToGlobalEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexStratify",         DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexSymmetrize",       DM_CLASSID,&DMPLEX_Symmetrize);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexPrealloc",         DM_CLASSID,&DMPLEX_Preallocate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexResidualFE",       DM_CLASSID,&DMPLEX_ResidualFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexJacobianFE",       DM_CLASSID,&DMPLEX_JacobianFEM);CHKERRQ(ierr);
@@ -101,7 +107,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexInjectorFE",       DM_CLASSID,&DMPLEX_InjectorFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexIntegralFEM",      DM_CLASSID,&DMPLEX_IntegralFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexCreateGmsh",       DM_CLASSID,&DMPLEX_CreateGmsh);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexRebalanceSharedPoints", DM_CLASSID,&DMPLEX_RebalanceSharedPoints);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexRebalance",        DM_CLASSID,&DMPLEX_RebalanceSharedPoints);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup);CHKERRQ(ierr);

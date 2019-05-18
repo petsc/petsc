@@ -611,9 +611,6 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
   for (; c < cEnd; ++c) {
     ierr = DMLabelSetValue(vtkLabel, c, 1);CHKERRQ(ierr);
   }
-  if (0) {
-    ierr = DMLabelView(vtkLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
   ierr = DMPlexGetHeightStratum(dmNew, 1, &fStart, &fEnd);CHKERRQ(ierr);
   for (f = fStart; f < fEnd; ++f) {
     PetscInt numCells;
@@ -630,9 +627,6 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
       ierr = DMLabelGetValue(vtkLabel, cells[1], &vB);CHKERRQ(ierr);
       if (vA != 1 && vB != 1) {ierr = DMLabelSetValue(ghostLabel, f, 1);CHKERRQ(ierr);}
     }
-  }
-  if (0) {
-    ierr = DMLabelView(ghostLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

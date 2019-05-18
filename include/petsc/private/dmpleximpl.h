@@ -9,6 +9,11 @@
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
 PETSC_EXTERN PetscLogEvent DMPLEX_Partition;
+PETSC_EXTERN PetscLogEvent DMPLEX_PartSelf;
+PETSC_EXTERN PetscLogEvent DMPLEX_PartLabelInvert;
+PETSC_EXTERN PetscLogEvent DMPLEX_PartLabelCreateSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_PartStratSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreatePointSF;
 PETSC_EXTERN PetscLogEvent DMPLEX_Distribute;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeCones;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeLabels;
@@ -23,6 +28,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_GlobalToNaturalEnd;
 PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalBegin;
 PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalEnd;
 PETSC_EXTERN PetscLogEvent DMPLEX_Stratify;
+PETSC_EXTERN PetscLogEvent DMPLEX_Symmetrize;
 PETSC_EXTERN PetscLogEvent DMPLEX_Preallocate;
 PETSC_EXTERN PetscLogEvent DMPLEX_ResidualFEM;
 PETSC_EXTERN PetscLogEvent DMPLEX_JacobianFEM;
@@ -235,6 +241,7 @@ PETSC_EXTERN PetscErrorCode DMPlexView_HDF5(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexLoad_HDF5(DM, PetscViewer);
 #endif
 
+PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM,PetscInt,const PetscInt[],IS*);
 PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *, DM);
 PETSC_INTERN PetscErrorCode DMCoarsen_Plex(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_Plex(DM, PetscInt, DM []);

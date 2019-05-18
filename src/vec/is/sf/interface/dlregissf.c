@@ -14,6 +14,10 @@ PetscLogEvent PETSCSF_ReduceBegin;
 PetscLogEvent PETSCSF_ReduceEnd;
 PetscLogEvent PETSCSF_FetchAndOpBegin;
 PetscLogEvent PETSCSF_FetchAndOpEnd;
+PetscLogEvent PETSCSF_EmbedSF;
+PetscLogEvent PETSCSF_DistSect;
+PetscLogEvent PETSCSF_SectSF;
+PetscLogEvent PETSCSF_RemoteOff;
 
 /*@C
    PetscSFInitializePackage - Initialize SF package
@@ -48,6 +52,10 @@ PetscErrorCode PetscSFInitializePackage(void)
   ierr = PetscLogEventRegister("SFReduceEnd"    , PETSCSF_CLASSID, &PETSCSF_ReduceEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFFetchOpBegin" , PETSCSF_CLASSID, &PETSCSF_FetchAndOpBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFFetchOpEnd"   , PETSCSF_CLASSID, &PETSCSF_FetchAndOpEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFCreateEmbed"  , PETSCSF_CLASSID, &PETSCSF_EmbedSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFDistSection"  , PETSCSF_CLASSID, &PETSCSF_DistSect);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFSectionSF"    , PETSCSF_CLASSID, &PETSCSF_SectSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFRemoteOff"    , PETSCSF_CLASSID, &PETSCSF_RemoteOff);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
