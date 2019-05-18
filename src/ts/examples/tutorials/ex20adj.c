@@ -352,7 +352,7 @@ int main(int argc,char **argv)
 
     test:
       requires: revolve
-      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -mu 100000 -ts_trajectory_dirname ex20adj1dir
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -mu 100000
 
     test:
       suffix: 2

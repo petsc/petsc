@@ -63,6 +63,7 @@ typedef struct _TJScheduler {
   PetscInt      total_steps;  /* total number of steps */
   Stack         stack;
   DiskStack     diskstack;
+  PetscViewer   viewer;
 } TJScheduler;
 
 static PetscErrorCode TurnForwardWithStepsize(TS ts,PetscReal nextstepsize)
@@ -250,19 +251,6 @@ static PetscErrorCode StackFind(Stack *stack,StackElement *e,PetscInt index)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode OutputBIN(MPI_Comm comm,const char *filename,PetscViewer *viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(*viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*viewer,filename);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode WriteToDisk(PetscInt stepnum,PetscReal time,PetscReal timeprev,Vec X,Vec *Y,PetscInt numY,PetscBool solution_only,PetscViewer viewer)
 {
   PetscInt       i;
@@ -300,7 +288,7 @@ static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   Vec            *Y;
   PetscInt       i;
   StackElement   e = NULL;
-  PetscViewer    viewer;
+  TJScheduler    *tjsch = (TJScheduler*)tj->data;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
   MPI_Comm       comm;
@@ -312,34 +300,26 @@ static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Dump stack id %D to file\n",id);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(tj->monitor);CHKERRQ(ierr);
   }
-  if (id == 1) {
-    PetscMPIInt rank;
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscRMTree("SA-data");CHKERRQ(ierr);
-      ierr = PetscMkdir("SA-data");CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
-  ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof(filename),"%s/TS-STACK%06d.bin",tj->dirname,id);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(tjsch->viewer,filename);CHKERRQ(ierr);
+  ierr = PetscViewerSetUp(tjsch->viewer);CHKERRQ(ierr);
   for (i=0;i<stack->stacksize;i++) {
     e = stack->container[i];
     ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
-    ierr = WriteToDisk(e->stepnum,e->time,e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+    ierr = WriteToDisk(e->stepnum,e->time,e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,tjsch->viewer);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
     ts->trajectory->diskwrites++;
   }
   /* save the last step for restart, the last step is in memory when using single level schemes, but not necessarily the case for multi level schemes */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = WriteToDisk(ts->steps,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+  ierr = WriteToDisk(ts->steps,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,tjsch->viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskwrites++;
   for (i=0;i<stack->stacksize;i++) {
     ierr = StackPop(stack,&e);CHKERRQ(ierr);
     ierr = ElementDestroy(stack,e);CHKERRQ(ierr);
   }
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -358,8 +338,8 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Load stack from file\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
-  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"%s/TS-STACK%06d.bin",tj->dirname,id);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   for (i=0;i<stack->stacksize;i++) {
     ierr = ElementCreate(ts,stack,&e);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -404,13 +384,13 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
   /* VecView writes to file two extra int's for class id and number of rows */
   off  = -((stack->solution_only?0:stack->numY)+1)*(size*PETSC_BINARY_SCALAR_SIZE+2*PETSC_BINARY_INT_SIZE)-PETSC_BINARY_INT_SIZE-2*PETSC_BINARY_SCALAR_SIZE;
 
-  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"%s/TS-STACK%06d.bin",tj->dirname,id);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetUseMPIIO(viewer,&usempiio);CHKERRQ(ierr);
   if (usempiio) {
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,(MPI_File*)&fd);CHKERRQ(ierr);
-    ierr = PetscBinarySynchronizedSeek(PETSC_COMM_WORLD,fd,off,PETSC_BINARY_SEEK_END,&offset);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedSeek(PetscObjectComm((PetscObject)tj),fd,off,PETSC_BINARY_SEEK_END,&offset);CHKERRQ(ierr);
   } else {
 #endif
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -423,8 +403,8 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
   ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
-  ierr = TurnBackward(ts);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = TurnBackward(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -433,7 +413,7 @@ static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 {
   Vec            *Y;
   PetscInt       stepnum;
-  PetscViewer    viewer;
+  TJScheduler    *tjsch = (TJScheduler*)tj->data;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
   MPI_Comm       comm;
@@ -446,24 +426,15 @@ static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
     ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
   ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
-  if (id == 1) {
-    PetscMPIInt rank;
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscRMTree("SA-data");CHKERRQ(ierr);
-      ierr = PetscMkdir("SA-data");CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-CPS%06d.bin",id);CHKERRQ(ierr);
-  ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof(filename),"%s/TS-CPS%06d.bin",tj->dirname,id);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(tjsch->viewer,filename);CHKERRQ(ierr);
+  ierr = PetscViewerSetUp(tjsch->viewer);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = WriteToDisk(stepnum,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+  ierr = WriteToDisk(stepnum,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,tjsch->viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskwrites++;
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -480,15 +451,14 @@ static PetscErrorCode LoadSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Load a single point from file\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
-  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-CPS%06d.bin",id);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"%s/TS-CPS%06d.bin",tj->dirname,id);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
-
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1803,6 +1773,10 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     }
   }
 
+  if ((tjsch->stype >= TWO_LEVEL_NOREVOLVE && tjsch->stype < REVOLVE_OFFLINE) || tjsch->stype == REVOLVE_MULTISTAGE) { /* these types need to use disk */
+    ierr = TSTrajectorySetUp_Basic(tj,ts);CHKERRQ(ierr);
+  }
+
   tjsch->recompute = PETSC_FALSE;
   ierr = TSGetStages(ts,&numY,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = StackCreate(stack,stack->stacksize,numY);CHKERRQ(ierr);
@@ -1840,6 +1814,7 @@ static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscViewerDestroy(&tjsch->viewer);CHKERRQ(ierr);
   ierr = PetscFree(tjsch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1876,6 +1851,10 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   tjsch->save_stack   = PETSC_TRUE;
 
   tjsch->stack.solution_only = tj->solution_only;
+  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)tj),&tjsch->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(tjsch->viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(tjsch->viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(tjsch->viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
 
   tj->data = tjsch;
   PetscFunctionReturn(0);

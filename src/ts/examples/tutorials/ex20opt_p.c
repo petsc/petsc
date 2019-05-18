@@ -710,22 +710,22 @@ PetscErrorCode Adjoint2(Vec P,PetscScalar arr[],User ctx)
     build:
       requires: !complex !single
     test:
-      args:  -implicitform 0 -ts_type rk -ts_adapt_type none -mu 10 -ts_dt 0.1 -viewer_binary_skip_info -tao_monitor -tao_view -ts_trajectory_dirname ex20opt_pdir
+      args:  -implicitform 0 -ts_type rk -ts_adapt_type none -mu 10 -ts_dt 0.1 -viewer_binary_skip_info -tao_monitor -tao_view
       output_file: output/ex20opt_p_1.out
 
     test:
       suffix: 2
-      args:  -implicitform 0 -ts_type rk -ts_adapt_type none -mu 10 -ts_dt 0.1 -viewer_binary_skip_info -tao_monitor -tao_type bntr -tao_bnk_pc_type none -ts_trajectory_dirname ex20opt_pdir
+      args:  -implicitform 0 -ts_type rk -ts_adapt_type none -mu 10 -ts_dt 0.1 -viewer_binary_skip_info -tao_monitor -tao_type bntr -tao_bnk_pc_type none
       output_file: output/ex20opt_p_2.out
 
     test:
       suffix: 3
-      args:  -ts_type cn -ts_adapt_type none -mu 100 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -ts_trajectory_dirname ex20opt_pdir
+      args:  -ts_type cn -ts_adapt_type none -mu 100 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01
       output_file: output/ex20opt_p_3.out
 
     test:
       suffix: 4
-      args:  -ts_type cn -ts_adapt_type none -mu 100 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none -ts_trajectory_dirname ex20opt_pdir
+      args:  -ts_type cn -ts_adapt_type none -mu 100 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none
       output_file: output/ex20opt_p_4.out
 
 TEST*/

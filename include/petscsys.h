@@ -2274,6 +2274,7 @@ PETSC_EXTERN PetscErrorCode PetscGetHomeDirectory(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscTestFile(const char[],char,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscTestDirectory(const char[],char,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscMkdir(const char[]);
+PETSC_EXTERN PetscErrorCode PetscMkdtemp(char[]);
 PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscBinaryRead(int,void*,PetscInt,PetscInt*,PetscDataType);
