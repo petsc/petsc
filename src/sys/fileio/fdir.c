@@ -70,8 +70,7 @@ PetscErrorCode PetscMkdtemp(char dir[])
     PetscErrorCode ierr;
 
     while (err && i<max_retry_time) {
-      ierr = PetscStrncpy(name,dir,sizeof(name)-1);CHKERRQ(ierr);
-      name[sizeof(name)-1] = 0;
+      ierr = PetscStrncpy(name,dir,sizeof(name));CHKERRQ(ierr);
       ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
       err = _mktemp_s(name,len+1);
       if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not generate a unique name using the template: %s",dir);
