@@ -61,8 +61,30 @@ PetscErrorCode PetscMkdir(const char dir[])
 PetscErrorCode PetscMkdtemp(char dir[])
 {
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_WINDOWS_H) && defined(PETSC_HAVE_IO_H) && defined(PETSC_HAVE__MKDIR) && defined(PETSC_HAVE_DIRECT_H)
+  {
+    int            err = 1;
+    char           name[PETSC_MAX_PATH_LEN];
+    PetscInt       i = 0,max_retry_time = 26;
+    size_t         len;
+    PetscErrorCode ierr;
+
+    while (err && i<max_retry_time) {
+      ierr = PetscStrncpy(name,dir,sizeof(name)-1);CHKERRQ(ierr);
+      name[sizeof(name)-1] = 0;
+      ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
+      err = _mktemp_s(name,len+1);
+      if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not generate a unique name using the template: %s",dir);
+      err = _mkdir(name);
+      i++;
+    }
+    if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Exceeds maximum retry time when creating temporary dir: %s",dir);
+    ierr = PetscStrncpy(dir,name,len+1);CHKERRQ(ierr);
+  }
+#else
   dir = mkdtemp(dir);
   if(!dir) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create temporary dir using the template: %s",dir);
+#endif
   PetscFunctionReturn(0);
 }
 
