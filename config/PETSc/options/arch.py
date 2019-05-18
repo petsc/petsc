@@ -20,6 +20,12 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc', '-PETSC_ARCH=<string>',     nargs.Arg(None, None, 'The configuration name'))
     help.addArgument('PETSc', '-with-petsc-arch=<string>',nargs.Arg(None, None, 'The configuration name'))
+    help.addArgument('PETSc', '-force=<bool>',            nargs.ArgBool(None, 0, 'Bypass configure hash caching, and run to completion'))
+    return
+
+  def setupDependencies(self, framework):
+    self.sourceControl = framework.require('config.sourceControl',self)
+    self.petscdir = framework.require('PETSc.options.petscdir', self)
     return
 
   def createArchitecture(self):
@@ -63,8 +69,63 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
     return
 
+  def makeDependency(self,hash):
+    import os
+    try:
+      os.makedirs(os.path.join(self.arch,'lib','petsc','conf'))
+    except:
+      pass
+    try:
+      with open(os.path.join(self.arch,'lib','petsc','conf','configure-hash'), 'w') as f:
+        f.write(hash)
+    except:
+      self.logPrint('Unable to make configure hash file: '+os.path.join(self.arch,'lib','petsc','conf','configure-hash'))
+      return
+    self.logPrint('Wrote configure hash file: '+os.path.join(self.arch,'lib','petsc','conf','configure-hash'))
+
+  def checkDependency(self):
+    '''Checks if configure needs to be run'''
+    '''Checks if files in config have changed, the command line options have changed or the PATH has changed'''
+    import os
+    import sys
+    import hashlib
+    args = list(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:]))
+    args.sort()
+    hash = str(args) + '\n'
+    try: hash += os.environ['PATH'] + '\n'
+    except: pass
+    try:
+      for root, dirs, files in os.walk('config'):
+        for f in files:
+          if f.endswith('.pyc') or f.endswith('~') or f.startswith('.') or f.startswith('#'): continue
+          fname = os.path.join(root,f)
+          md5sum = hashlib.md5(open(fname,'rb').read()).hexdigest()
+          hash += md5sum + ' '+ fname + '\n'
+    except:
+      self.logPrint('Error generating file list/md5 from config directory for configure hash, forcing new configuration')
+      return
+    if self.argDB['force']:
+      self.makeDependency(hash)
+      return
+    a = ''
+    try:
+      with open(os.path.join(self.arch,'lib','petsc','conf','configure-hash'), 'r') as f:
+        a = f.read()
+    except:
+      # no previous record so write current hash
+      self.makeDependency(hash)
+      return
+    if a == hash:
+      self.logPrint('configure hash file: '+os.path.join(self.arch,'lib','petsc','conf','configure-hash')+' matches; no need to run configure.')
+      print('Your configure options and state has not changed; no need to run configure')
+      print('However you can force a configure run using the option: --force')
+      sys.exit()
+    self.makeDependency(hash)
+    self.logPrint('configure hash file: '+os.path.join(self.arch,'lib','petsc','conf','configure-hash')+' does not match\n'+a+'\n---\n'+hash+'\n need to run configure')
+
   def configure(self):
     self.executeTest(self.configureArchitecture)
     # required by top-level configure.py
     self.framework.arch = self.arch
+    self.checkDependency()
     return
