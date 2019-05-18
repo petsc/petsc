@@ -133,6 +133,10 @@ typedef struct {
   PetscLogDouble numMessages;   /* The number of messages in this event */
   PetscLogDouble messageLength; /* The total message lengths in this event */
   PetscLogDouble numReductions; /* The number of reductions in this event */
+  PetscLogDouble memIncrease;   /* How much the resident memory has increased in this event */
+  PetscLogDouble mallocIncrease;/* How much the maximum malloced space has increased in this event */
+  PetscLogDouble mallocSpace;   /* How much the space was malloced and kept during this event */
+  PetscLogDouble mallocIncreaseEvent;  /* Maximum of the high water mark with in event minus memory available at the end of the event */
 } PetscEventPerfInfo;
 
 typedef struct _n_PetscEventRegLog *PetscEventRegLog;
@@ -287,6 +291,8 @@ PETSC_EXTERN PetscLogDouble petsc_wait_any_ct;
 PETSC_EXTERN PetscLogDouble petsc_wait_all_ct;
 PETSC_EXTERN PetscLogDouble petsc_sum_of_waits_ct;
 
+PETSC_EXTERN PetscBool      PetscLogMemory;
+
 PETSC_EXTERN PetscBool PetscLogSyncOn;  /* true if logging synchronization is enabled */
 PETSC_EXTERN PetscErrorCode PetscLogEventSynchronize(PetscLogEvent, MPI_Comm);
 
@@ -431,6 +437,8 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #endif /* !__MPIUNI_H && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/
+
+#define PetscLogMemory                     PETSC_FALSE
 
 #define PetscLogFlops(n)                   0
 #define PetscGetFlops(a)                   (*(a) = 0.0,0)

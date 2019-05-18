@@ -1205,6 +1205,8 @@ PETSC_EXTERN PetscErrorCode PetscMallocDump(FILE *);
 PETSC_EXTERN PetscErrorCode PetscMallocDumpLog(FILE *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
+PETSC_EXTERN PetscErrorCode PetscMallocPushMaximumUsage(int);
+PETSC_EXTERN PetscErrorCode PetscMallocPopMaximumUsage(int,PetscLogDouble*);
 PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[]);

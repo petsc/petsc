@@ -8,6 +8,7 @@
 #include <petsc/private/logimpl.h>  /*I    "petscsys.h"   I*/
 
 PetscBool PetscLogSyncOn = PETSC_FALSE;
+PetscBool PetscLogMemory = PETSC_FALSE;
 
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
 /* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */
@@ -658,6 +659,16 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event,int t,PetscObject o
   eventLog->eventInfo[event].numMessages   -= petsc_irecv_ct  + petsc_isend_ct  + petsc_recv_ct  + petsc_send_ct;
   eventLog->eventInfo[event].messageLength -= petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
   eventLog->eventInfo[event].numReductions -= petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
+  if (PetscLogMemory) {
+    PetscLogDouble usage;
+    ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);
+    eventLog->eventInfo[event].memIncrease -= usage;
+    ierr = PetscMallocGetCurrentUsage(&usage);CHKERRQ(ierr);
+    eventLog->eventInfo[event].mallocSpace -= usage;
+    ierr = PetscMallocGetMaximumUsage(&usage);CHKERRQ(ierr);
+    eventLog->eventInfo[event].mallocIncrease -= usage;
+    ierr = PetscMallocPushMaximumUsage((int)event);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -686,6 +697,17 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event,int t,PetscObject o1,
   eventLog->eventInfo[event].numMessages   += petsc_irecv_ct  + petsc_isend_ct  + petsc_recv_ct  + petsc_send_ct;
   eventLog->eventInfo[event].messageLength += petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
   eventLog->eventInfo[event].numReductions += petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
+  if (PetscLogMemory) {
+    PetscLogDouble usage,musage;
+    ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);
+    eventLog->eventInfo[event].memIncrease += usage;
+    ierr = PetscMallocGetCurrentUsage(&usage);CHKERRQ(ierr);
+    eventLog->eventInfo[event].mallocSpace += usage;
+    ierr = PetscMallocPopMaximumUsage((int)event,&musage);CHKERRQ(ierr);
+    eventLog->eventInfo[event].mallocIncreaseEvent = PetscMax(musage-usage,eventLog->eventInfo[event].mallocIncreaseEvent);
+    ierr = PetscMallocGetMaximumUsage(&usage);CHKERRQ(ierr);
+    eventLog->eventInfo[event].mallocIncrease += usage;
+  }
   PetscFunctionReturn(0);
 }
 
