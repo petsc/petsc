@@ -67,6 +67,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat);
 #endif
 
+PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat);
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc
 
@@ -164,6 +165,8 @@ PetscErrorCode  MatRegisterAll(void)
 
   ierr = MatRegister(MATPREALLOCATOR,   MatCreate_Preallocator);CHKERRQ(ierr);
   ierr = MatRegister(MATDUMMY,          MatCreate_Dummy);CHKERRQ(ierr);
+
+  ierr = MatRegister(MATCONSTANTDIAGONAL,MatCreate_ConstantDiagonal);CHKERRQ(ierr);
 
 #if defined PETSC_HAVE_HYPRE
   ierr = MatRegister(MATHYPRE,          MatCreate_HYPRE);CHKERRQ(ierr);

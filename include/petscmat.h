@@ -100,6 +100,7 @@ typedef const char* MatType;
 #define MATLMVMSYMBRDN     "lmvmsymbrdn"
 #define MATLMVMSYMBADBRDN  "lmvmsymbadbrdn"
 #define MATLMVMDIAGBRDN    "lmvmdiagbrdn"
+#define MATCONSTANTDIAGONAL "constantdiagonal"
 
 /*J
     MatSolverType - String with the name of a PETSc matrix solver type.
@@ -284,6 +285,7 @@ PETSC_EXTERN PetscErrorCode MatHermitianTransposeGetMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSubMatrixVirtual(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatSubMatrixVirtualUpdate(Mat,Mat,IS,IS);
 PETSC_EXTERN PetscErrorCode MatCreateLocalRef(Mat,IS,IS,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateConstantDiagonal(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar,Mat*);
 
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_EXTERN PetscErrorCode MatHYPRESetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
