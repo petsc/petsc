@@ -6,8 +6,8 @@
 /*
    These variables identify the code as a PETSc application to Box.
 
-   See -   http://stackoverflow.com/questions/4616553/using-oauth-in-free-open-source-software
-   Users can get their own application IDs - goto https://developers.box.com
+   See -   https://stackoverflow.com/questions/4616553/using-oauth-in-free-open-source-software
+   Users can get their own application IDs - goto https://developer.box.com
 
 */
 #define PETSC_BOX_CLIENT_ID  "sse42nygt4zqgrdwi0luv79q1u1f0xza"

@@ -556,7 +556,7 @@ M*/
   Level: beginner
 
    Notes:
-    We highly recommend using valgrind http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind for finding memory problems. This is useful
+    We highly recommend using valgrind https://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind for finding memory problems. This is useful
     on systems that do not have valgrind, but much much less useful.
 
     Must run with the option -malloc_debug to enable this option

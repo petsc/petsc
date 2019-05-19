@@ -11,7 +11,7 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 /*J
     PetscSFType - String with the name of a PetscSF method or the creation function
        with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.so:mysfcreate()
+       https://www.mcs.anl.gov/petsc/lib.so:mysfcreate()
 
    Level: beginner
 

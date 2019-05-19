@@ -10,7 +10,7 @@
 .     rtol - relative tolerance
 +     atol - absolute tolerances
 
-    Notes: https://www.python.org/dev/peps/pep-0485
+    Notes: https://www.python.org/dev/peps/pep-0485/
 
     Level: beginner
 @*/

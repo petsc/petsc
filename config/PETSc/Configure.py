@@ -212,7 +212,7 @@ class Configure(config.base.Configure):
 
 proc ModulesHelp { } {
     puts stderr "This module sets the path and environment variables for petsc-%s"
-    puts stderr "     see http://www.mcs.anl.gov/petsc/ for more information      "
+    puts stderr "     see https://www.mcs.anl.gov/petsc/ for more information      "
     puts stderr ""
 }
 module-whatis "PETSc - Portable, Extensible Toolkit for Scientific Computation"
@@ -676,7 +676,7 @@ prepend-path PATH "%s"
       # sel.  These are both reasonable changes, but negatively impact
       # portability.
       #
-      # [1] http://software.intel.com/file/6373
+      # [1] https://software.intel.com/file/6373
       self.addDefine('HAVE_XMMINTRIN_H', 1)
       self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const char*)(a),(c))')
       self.addDefine('PREFETCH_HINT_NTA', '_MM_HINT_NTA')

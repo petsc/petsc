@@ -83,7 +83,7 @@ static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
   is detected, hence the user should check that the YAML file is valid before 
   supplying it, for instance at http://www.yamllint.com/ .
 
-  Inspired by http://stackoverflow.com/a/621451
+  Inspired by https://stackoverflow.com/a/621451
 
   Level: intermediate
 

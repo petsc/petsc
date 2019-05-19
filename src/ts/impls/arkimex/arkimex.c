@@ -155,7 +155,7 @@ M*/
      References:
 .   1. -  L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
 
-     This method is referred to as SSP2-(3,3,2) in http://arxiv.org/abs/1110.4375
+     This method is referred to as SSP2-(3,3,2) in https://arxiv.org/abs/1110.4375
 
      Options Database:
 .      -ts_arkimex_type prssp2
@@ -189,7 +189,7 @@ M*/
 
      References:
 +   1. -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
--   2. -  This method is referred to as ARS(4,4,3) in http://arxiv.org/abs/1110.4375
+-   2. -  This method is referred to as ARS(4,4,3) in https://arxiv.org/abs/1110.4375
 
      Level: advanced
 
@@ -204,7 +204,7 @@ M*/
 .      -ts_arkimex_type bpr3
 
      References:
- .    This method is referred to as ARK3 in http://arxiv.org/abs/1110.4375
+ .    This method is referred to as ARK3 in https://arxiv.org/abs/1110.4375
 
      Level: advanced
 

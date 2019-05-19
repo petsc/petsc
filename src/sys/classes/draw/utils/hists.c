@@ -42,7 +42,7 @@ struct _p_PetscDrawHG {
 .  hist - The histogram context
 
    Notes:
-    The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here http://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+    The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
 
    The histogram is only displayed when PetscDrawHGDraw() is called.
 

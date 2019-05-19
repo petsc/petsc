@@ -9,7 +9,7 @@
   Concepts: star forest
 
        PetscSF uses the concept of star forests to indicate and determine the communication patterns concisely and efficiently.
-  A star  http://en.wikipedia.org/wiki/Star_(graph_theory) forest is simply a collection of trees of height 1. The leave nodes represent
+  A star  https://en.wikipedia.org/wiki/Star_(graph_theory) forest is simply a collection of trees of height 1. The leave nodes represent
   "ghost locations" for the root nodes.
 
 .seealso: PetscSFCreate(), VecScatter, VecScatterCreate()

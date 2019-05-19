@@ -377,7 +377,7 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
    Level: beginner
 
    Notes:
-    See http://www-users.cs.umn.edu/~karypis/metis/
+    See https://www-users.cs.umn.edu/~karypis/metis/
 
 .keywords: Partitioning, create, context
 

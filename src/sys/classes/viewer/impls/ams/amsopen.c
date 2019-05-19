@@ -30,7 +30,7 @@
     one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
     PetscObjectSAWsViewOff().
 
-    Information about the SAWs is available via http://bitbucket.org/saws/saws
+    Information about the SAWs is available via https://bitbucket.org/saws/saws
 
 .seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_SAWS_(), PetscObjectSAWsBlock(),
           PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess(), PetscObjectSAWsGrantAccess()
