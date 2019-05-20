@@ -65,11 +65,11 @@ PetscErrorCode PetscMkdtemp(char dir[])
   {
     int            err = 1;
     char           name[PETSC_MAX_PATH_LEN];
-    PetscInt       i = 0,max_retry_time = 26;
+    PetscInt       i = 0,max_retry = 26;
     size_t         len;
     PetscErrorCode ierr;
 
-    while (err && i<max_retry_time) {
+    while (err && i < max_retry) {
       ierr = PetscStrncpy(name,dir,sizeof(name));CHKERRQ(ierr);
       ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
       err = _mktemp_s(name,len+1);
@@ -77,7 +77,7 @@ PetscErrorCode PetscMkdtemp(char dir[])
       err = _mkdir(name);
       i++;
     }
-    if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Exceeds maximum retry time when creating temporary dir: %s",dir);
+    if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Exceeds maximum retry time when creating temporary dir using the template: %s",dir);
     ierr = PetscStrncpy(dir,name,len+1);CHKERRQ(ierr);
   }
 #else
