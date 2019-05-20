@@ -178,7 +178,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
       }
       fl = fl->next;
     }
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid generator of dimension %D registered",boundary->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid generator of dimension %D registered",boundary->dim+1);
   }
   PetscFunctionReturn(0);
 }
