@@ -307,7 +307,7 @@ PetscErrorCode MatSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,
 
    Options Database Keys:
 +  -mat_composite_merge - merge in MatAssemblyEnd()
--  -mat_composite_merge_from_right - merge starts from right
+-  -mat_composite_merge_type - set merge direction
 
    Level: advanced
 
@@ -585,7 +585,8 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 
 
    Options Database Keys:
-.  -mat_composite_merge - merge in MatAssemblyEnd()
++  -mat_composite_merge - merge in MatAssemblyEnd()
+-  -mat_composite_merge_type - set merge direction
 
    Level: advanced
 
