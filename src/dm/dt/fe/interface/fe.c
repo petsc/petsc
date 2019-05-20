@@ -1041,14 +1041,10 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
 @*/
 PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, PetscScalar vals[])
 {
-  PetscDualSpace dsp;
-  PetscInt       Nc;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  ierr = PetscFEGetDualSpace(fe, &dsp);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-  ierr = PetscDualSpacePushforward(dsp, fegeom, Nv, Nc, vals);CHKERRQ(ierr);
+  PetscFunctionBeginHot;
+  ierr = PetscDualSpacePushforward(fe->dualSpace, fegeom, Nv, fe->numComponents, vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1072,14 +1068,10 @@ PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, 
 @*/
 PetscErrorCode PetscFEPushforwardGradient(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, PetscScalar vals[])
 {
-  PetscDualSpace dsp;
-  PetscInt       Nc;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  ierr = PetscFEGetDualSpace(fe, &dsp);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-  ierr = PetscDualSpacePushforwardGradient(dsp, fegeom, Nv, Nc, vals);CHKERRQ(ierr);
+  PetscFunctionBeginHot;
+  ierr = PetscDualSpacePushforwardGradient(fe->dualSpace, fegeom, Nv, fe->numComponents, vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

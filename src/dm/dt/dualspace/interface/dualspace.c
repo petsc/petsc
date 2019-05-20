@@ -1171,8 +1171,7 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(fegeom, 4);
   PetscValidPointer(vals, 7);
-  ierr = PetscDualSpaceGetDM(dsp, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  dim  = dsp->dm->dim;
   /* Assume its a vector, otherwise assume its a bunch of scalars */
   if (Nc == 1 || Nc != dim) PetscFunctionReturn(0);
   switch (trans) {
@@ -1253,8 +1252,7 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(fegeom, 4);
   PetscValidPointer(vals, 7);
-  ierr = PetscDualSpaceGetDM(dsp, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  dim  = dsp->dm->dim;
   /* Transform gradient */
   for (v = 0; v < Nv; ++v) {
     for (c = 0; c < Nc; ++c) {
@@ -1349,7 +1347,6 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
 PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
 {
   PetscDualSpaceTransformType trans;
-  PetscInt                    k;
   PetscErrorCode              ierr;
 
   PetscFunctionBeginHot;
@@ -1358,8 +1355,7 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
   PetscValidPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
-  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
-  switch (k)
+  switch (dsp->k)
   {
     case 0: /* H^1 point evaluations */
     trans = IDENTITY_TRANSFORM;break;
@@ -1368,7 +1364,7 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
     trans = COVARIANT_PIOLA_TRANSFORM;break;
     case 3: /* Hdiv preserve normal traces */
     trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", dsp->k);
   }
   ierr = PetscDualSpaceTransform(dsp, trans, PETSC_TRUE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1396,7 +1392,6 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
 PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
 {
   PetscDualSpaceTransformType trans;
-  PetscInt                    k;
   PetscErrorCode              ierr;
 
   PetscFunctionBeginHot;
@@ -1405,8 +1400,7 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
   PetscValidPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
-  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
-  switch (k)
+  switch (dsp->k)
   {
     case 0: /* H^1 point evaluations */
     trans = IDENTITY_TRANSFORM;break;
@@ -1415,7 +1409,7 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
     trans = COVARIANT_PIOLA_TRANSFORM;break;
     case 3: /* Hdiv preserve normal traces */
     trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", dsp->k);
   }
   ierr = PetscDualSpaceTransform(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1442,7 +1436,6 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
 @*/PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
 {
   PetscDualSpaceTransformType trans;
-  PetscInt                    k;
   PetscErrorCode              ierr;
 
   PetscFunctionBeginHot;
@@ -1451,8 +1444,7 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
   PetscValidPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
-  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
-  switch (k)
+  switch (dsp->k)
   {
     case 0: /* H^1 point evaluations */
     trans = IDENTITY_TRANSFORM;break;
@@ -1461,7 +1453,7 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
     trans = COVARIANT_PIOLA_TRANSFORM;break;
     case 3: /* Hdiv preserve normal traces */
     trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", dsp->k);
   }
   ierr = PetscDualSpaceTransformGradient(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
