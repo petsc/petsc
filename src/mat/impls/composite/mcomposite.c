@@ -1,6 +1,8 @@
 
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
+const char *const MatCompositeMergeTypes[] = {"left","right","MatCompositeMergeType","MAT_COMPOSITE_",0};
+
 typedef struct _Mat_CompositeLink *Mat_CompositeLink;
 struct _Mat_CompositeLink {
   Mat               mat;
@@ -9,15 +11,15 @@ struct _Mat_CompositeLink {
 };
 
 typedef struct {
-  MatCompositeType  type;
-  Mat_CompositeLink head,tail;
-  Vec               work;
-  PetscScalar       scale;        /* scale factor supplied with MatScale() */
-  Vec               left,right;   /* left and right diagonal scaling provided with MatDiagonalScale() */
-  Vec               leftwork,rightwork;
-  PetscInt          nmat;
-  PetscBool         merge;
-  PetscBool         mergefromright;
+  MatCompositeType      type;
+  Mat_CompositeLink     head,tail;
+  Vec                   work;
+  PetscScalar           scale;        /* scale factor supplied with MatScale() */
+  Vec                   left,right;   /* left and right diagonal scaling provided with MatDiagonalScale() */
+  Vec                   leftwork,rightwork;
+  PetscInt              nmat;
+  PetscBool             merge;
+  MatCompositeMergeType mergetype;
 } Mat_Composite;
 
 PetscErrorCode MatDestroy_Composite(Mat mat)
@@ -285,7 +287,7 @@ PetscErrorCode MatSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"MATCOMPOSITE options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_composite_merge","Merge at MatAssemblyEnd","MatCompositeMerge",a->merge,&a->merge,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_composite_merge_from_right","Set direction of merge","MatCompositeSetMergeFromRight",a->mergefromright,&a->mergefromright,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-mat_composite_merge_type","Set composite merge direction","MatCompositeSetMergeType",MatCompositeMergeTypes,(PetscEnum)a->mergetype,(PetscEnum*)&a->mergetype,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -476,6 +478,46 @@ PetscErrorCode MatCompositeGetType(Mat mat,MatCompositeType *type)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatCompositeSetMergeType_Composite(Mat mat,MatCompositeMergeType type)
+{
+  Mat_Composite     *shell = (Mat_Composite*)mat->data;
+
+  PetscFunctionBegin;
+  shell->mergetype = type;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatCompositeSetMergeType - Sets order of MatCompositeMerge().
+
+   Logically Collective on Mat
+
+   Input Parameter:
++  mat - the composite matrix
+-  type - MAT_COMPOSITE_MERGE RIGHT (default) to start merge from right with the first added matrix (mat[0]),
+          MAT_COMPOSITE_MERGE_LEFT to start merge from left with the last added matrix (mat[nmat-1])
+
+   Level: advanced
+
+   Notes:
+    The resulting matrix is the same regardles of the MergeType. Only the order of operation is changed.
+    If set to MAT_COMPOSITE_MERGE_RIGHT the order of the merge is mat[nmat-1]*(mat[nmat-2]*(...*(mat[1]*mat[0])))
+    otherwise the order is (((mat[nmat-1]*mat[nmat-2])*mat[nmat-3])*...)*mat[0].
+
+.seealso: MatCreateComposite(), MatCompositeMerge(), MATCOMPOSITE
+
+@*/
+PetscErrorCode MatCompositeSetMergeType(Mat mat,MatCompositeMergeType type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(mat,type,2);
+  ierr = PetscUseMethod(mat,"MatCompositeSetMergeType_C",(Mat,MatCompositeMergeType),(mat,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 {
   Mat_Composite     *shell = (Mat_Composite*)mat->data;
@@ -490,12 +532,19 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 
   PetscFunctionBegin;
   if (shell->type == MAT_COMPOSITE_ADDITIVE) {
-    ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
-    while ((next = next->next)) {
-      ierr = MatAXPY(tmat,1.0,next->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
+      ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
+      while ((next = next->next)) {
+        ierr = MatAXPY(tmat,1.0,next->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = MatDuplicate(prev->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
+      while ((prev = prev->prev)) {
+        ierr = MatAXPY(tmat,1.0,prev->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
     }
   } else {
-    if (shell->mergefromright) {
+    if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
       ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
       while ((next = next->next)) {
         ierr = MatMatMult(next->mat,tmat,MAT_INITIAL_MATRIX,PETSC_DECIDE,&newmat);CHKERRQ(ierr);
@@ -544,7 +593,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
       The MatType of the resulting matrix will be the same as the MatType of the FIRST
     matrix in the composite matrix.
 
-.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MatCompositeSetMergeFromRight(), MATCOMPOSITE
+.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MatCompositeSetMergeType(), MATCOMPOSITE
 
 @*/
 PetscErrorCode MatCompositeMerge(Mat mat)
@@ -635,47 +684,6 @@ PetscErrorCode MatCompositeGetMat(Mat mat,PetscInt i,Mat *Ai)
   PetscValidLogicalCollectiveInt(mat,i,2);
   PetscValidPointer(Ai,3);
   ierr = PetscUseMethod(mat,"MatCompositeGetMat_C",(Mat,PetscInt,Mat*),(mat,i,Ai));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatCompositeSetMergeFromRight_Composite(Mat mat,PetscBool flg)
-{
-  Mat_Composite     *shell = (Mat_Composite*)mat->data;
-
-  PetscFunctionBegin;
-  shell->mergefromright = flg;
-  PetscFunctionReturn(0);
-}
-
-/*@
-   MatCompositeSetMergeFromRight - Sets MatCompositeMerge() to start from right.
-
-   Logically Collective on Mat
-
-   Input Parameter:
-+  mat - the composite matrix
--  flg - if true (default) the merge starts with the first added matrix (mat[0])
-
-   Level: advanced
-
-   Notes:
-    Has an effect only if the composite matrix is multiplicative.
-
-    The resulting matrix is the same regardles of the flg. Only the order of operation is changed.
-    If flg is true the order of the merge is mat[nmat-1]*(mat[nmat-2]*(...*(mat[1]*mat[0])))
-    otherwise the order is (((mat[nmat-1]*mat[nmat-2])*mat[nmat-3])*...)*mat[0].
-
-.seealso: MatCreateComposite(), MatCompositeMerge(), MATCOMPOSITE
-
-@*/
-PetscErrorCode MatCompositeSetMergeFromRight(Mat mat,PetscBool flg)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidLogicalCollectiveBool(mat,flg,2);
-  ierr = PetscUseMethod(mat,"MatCompositeSetMergeFromRight_C",(Mat,PetscBool),(mat,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -832,7 +840,7 @@ static struct _MatOps MatOps_Values = {0,
 
   Level: advanced
 
-.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeSetType(), MatCompositeGetType(), MatCompositeMerge(), MatCompositeSetMergeFromRight(), MatCompositeGetNumberMat(), MatCompositeGetMat()
+.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeSetType(), MatCompositeGetType(), MatCompositeMerge(), MatCompositeSetMergeType(), MatCompositeGetNumberMat(), MatCompositeGetMat()
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
@@ -848,21 +856,21 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  A->assembled      = PETSC_TRUE;
-  A->preallocated   = PETSC_TRUE;
-  b->type           = MAT_COMPOSITE_ADDITIVE;
-  b->scale          = 1.0;
-  b->nmat           = 0;
-  b->merge          = PETSC_FALSE;
-  b->mergefromright = PETSC_TRUE;
+  A->assembled    = PETSC_TRUE;
+  A->preallocated = PETSC_TRUE;
+  b->type         = MAT_COMPOSITE_ADDITIVE;
+  b->scale        = 1.0;
+  b->nmat         = 0;
+  b->merge        = PETSC_FALSE;
+  b->mergetype    = MAT_COMPOSITE_MERGE_RIGHT;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeAddMat_C",MatCompositeAddMat_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetType_C",MatCompositeSetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetType_C",MatCompositeGetType_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetMergeType_C",MatCompositeSetMergeType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeMerge_C",MatCompositeMerge_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetNumberMat_C",MatCompositeGetNumberMat_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetMat_C",MatCompositeGetMat_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetMergeFromRight_C",MatCompositeSetMergeFromRight_Composite);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

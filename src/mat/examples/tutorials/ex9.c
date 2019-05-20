@@ -86,7 +86,7 @@ int main(int argc,char **args)
 
   ierr = MatCreateComposite(PETSC_COMM_WORLD,nmat,A,&B);CHKERRQ(ierr);
   ierr = MatCompositeSetType(B,MAT_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
-  ierr = MatCompositeSetMergeFromRight(B,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatCompositeSetMergeType(B,MAT_COMPOSITE_MERGE_LEFT);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); /* do MatCompositeMerge() if -mat_composite_merge 1 */
