@@ -168,7 +168,7 @@ class Configure(config.base.Configure):
     fd.write('cflags_dep='+self.compilers.dependenciesGenerationFlag.get('C','')+'\n')
     fd.write('ldflag_rpath='+self.setCompilers.CSharedLinkerFlag+'\n')
     self.setCompilers.popLanguage()
-    if hasattr(self.compilers, 'C++'):
+    if hasattr(self.compilers, 'CXX'):
       self.setCompilers.pushLanguage('C++')
       fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
       fd.write('cxxflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
