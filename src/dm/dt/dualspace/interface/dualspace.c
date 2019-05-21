@@ -1163,15 +1163,13 @@ PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
 @*/
 PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
 {
-  DM             dm;
-  PetscInt       dim, v, c;
-  PetscErrorCode ierr;
+  PetscInt dim, v, c;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(fegeom, 4);
   PetscValidPointer(vals, 7);
-  dim  = dsp->dm->dim;
+  dim = dsp->dm->dim;
   /* Assume its a vector, otherwise assume its a bunch of scalars */
   if (Nc == 1 || Nc != dim) PetscFunctionReturn(0);
   switch (trans) {
@@ -1244,15 +1242,13 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
 @*/
 PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
 {
-  DM             dm;
-  PetscInt       dim, v, c, d;
-  PetscErrorCode ierr;
+  PetscInt dim, v, c, d;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(fegeom, 4);
   PetscValidPointer(vals, 7);
-  dim  = dsp->dm->dim;
+  dim = dsp->dm->dim;
   /* Transform gradient */
   for (v = 0; v < Nv; ++v) {
     for (c = 0; c < Nc; ++c) {
