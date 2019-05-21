@@ -422,7 +422,7 @@ static PetscErrorCode MatCompositeSetType_Composite(Mat mat,MatCompositeType typ
 /*@
    MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product.
 
-  Collective on MPI_Comm
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the composite matrix
@@ -438,6 +438,7 @@ PetscErrorCode MatCompositeSetType(Mat mat,MatCompositeType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(mat,type,2);
   ierr = PetscUseMethod(mat,"MatCompositeSetType_C",(Mat,MatCompositeType),(mat,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -578,7 +579,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
    MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
      by summing or computing the product of all the matrices inside the composite matrix.
 
-  Collective on MPI_Comm
+  Collective
 
    Input Parameters:
 .  mat - the composite matrix
