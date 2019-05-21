@@ -566,7 +566,7 @@ class Configure(config.package.Package):
 
   def runTimeTest(self,name,includes,body,lib = None,nobatch=0):
     '''Either runs a test or adds it to the batch of runtime tests'''
-    if name in self.argDB: return self.argDB[name]
+    if name in self.framework.clArgDB: return self.argDB[name]
     if self.argDB['with-batch']:
       if nobatch:
         raise RuntimeError('In batch mode you must provide the value for --'+name)
