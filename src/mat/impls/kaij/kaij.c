@@ -177,7 +177,7 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
     ierr = PetscFree(a->S);CHKERRQ(ierr);
   }
   if (S) {
-    ierr = PetscMalloc(p*q*sizeof(PetscScalar),&a->S);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p*q*sizeof(PetscScalar),&a->S);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->S,S,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
   } else  a->S = NULL;
 
@@ -233,7 +233,7 @@ PetscErrorCode MatKAIJSetT(Mat A,PetscInt p,PetscInt q,const PetscScalar T[])
     ierr = PetscFree(a->T);CHKERRQ(ierr);
   }
   if (T && (!isTI)) {
-    ierr = PetscMalloc(p*q*sizeof(PetscScalar),&a->T);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p*q*sizeof(PetscScalar),&a->T);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->T,T,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
   } else a->T = NULL;
 
@@ -249,7 +249,9 @@ PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&b->AIJ);CHKERRQ(ierr);
-  ierr = PetscFree3(b->S,b->T,b->ibdiag);CHKERRQ(ierr);
+  ierr = PetscFree(b->S);CHKERRQ(ierr);
+  ierr = PetscFree(b->T);CHKERRQ(ierr);
+  ierr = PetscFree(b->ibdiag);CHKERRQ(ierr);
   ierr = PetscFree5(b->sor.w,b->sor.y,b->sor.work,b->sor.t,b->sor.arr);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -293,7 +295,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
        * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
        * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
        * to pass in. */
-      ierr = PetscMalloc(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
+      ierr = PetscMalloc1(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
       for (i=0; i<a->p; i++) {
         for (j=0; j<a->q; j++) {
           if (i==j) T[i+j*a->p] = 1.0;
@@ -367,7 +369,9 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   ierr = MatDestroy(&b->A);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&b->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&b->w);CHKERRQ(ierr);
-  ierr = PetscFree3(b->S,b->T,b->ibdiag);CHKERRQ(ierr);
+  ierr = PetscFree(b->S);CHKERRQ(ierr);
+  ierr = PetscFree(b->T);CHKERRQ(ierr);
+  ierr = PetscFree(b->ibdiag);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -491,7 +495,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ_N(Mat A,const PetscScalar **values
     PetscFunctionReturn(0);
   }
   if (!b->ibdiag) {
-    ierr = PetscMalloc(dof2*m*sizeof(PetscScalar),&b->ibdiag);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof2*m*sizeof(PetscScalar),&b->ibdiag);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)A,dof2*m*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   if (values) *values = b->ibdiag;
