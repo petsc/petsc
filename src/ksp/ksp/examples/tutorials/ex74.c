@@ -42,7 +42,7 @@ At each time step, we solve                                         \n\
 with MATKAIJ and KSP.                                               \n\
                                                                     \n\
 Available IRK Methods:                                              \n\
-  2       4th-order, 2-stage Gauss method                           \n\
+  gauss       n-stage Gauss method                                  \n\
                                                                     \n";
 
 /*T
@@ -65,7 +65,6 @@ T*/
 #include <petscdt.h>
 
 /* define the IRK methods available */
-#define IRKGAUSS24    "gauss24"
 #define IRKGAUSS      "gauss"
 
 typedef enum {
@@ -84,7 +83,6 @@ typedef struct __context__ {
 } UserContext;
 
 static PetscErrorCode ExactSolution(Vec,void*,PetscReal);
-static PetscErrorCode RKCreate_Gauss24(PetscInt,PetscScalar**,PetscScalar**,PetscReal**);
 static PetscErrorCode RKCreate_Gauss(PetscInt,PetscScalar**,PetscScalar**,PetscReal**);
 static PetscErrorCode Assemble_AdvDiff(MPI_Comm,UserContext*,Mat*);
 
@@ -105,7 +103,6 @@ int main(int argc, char **argv)
   char              irktype[256] = IRKGAUSS;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscFunctionListAdd(&IRKList,IRKGAUSS24,RKCreate_Gauss24);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&IRKList,IRKGAUSS,RKCreate_Gauss);CHKERRQ(ierr);
 
   /* default value */
@@ -291,27 +288,6 @@ PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
 }
 
 /* Arrays should be freed with PetscFree3(A,b,c) */
-static PetscErrorCode RKCreate_Gauss24(PetscInt nstages,PetscScalar **gauss_A,PetscScalar **gauss_b,PetscReal **gauss_c)
-{
-  PetscErrorCode    ierr;
-  PetscScalar       *A,*b;
-  PetscReal         *c;
-
-  PetscFunctionBegin;
-  if (nstages != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Method 'gauss24' does not support %D stages, use -irk_nstages 2",nstages);
-  ierr = PetscMalloc3(PetscSqr(nstages),&A,nstages,&b,nstages,&c);CHKERRQ(ierr);
-  A[0] = 0.25; A[2] = (3.0-2.0*1.7320508075688772)/12.0;
-  A[1] = (3.0+2.0*1.7320508075688772)/12.0; A[3] = 0.25;
-  b[0] = 0.5;                        b[1] = 0.5;
-  c[0] = 0.5 - PetscSqrtReal(3)/6;   c[1] = 0.5 + PetscSqrtReal(3)/6;
-
-  *gauss_A = A;
-  *gauss_b = b;
-  *gauss_c = c;
-  PetscFunctionReturn(0);
-}
-
-/* Arrays should be freed with PetscFree3(A,b,c) */
 static PetscErrorCode RKCreate_Gauss(PetscInt nstages,PetscScalar **gauss_A,PetscScalar **gauss_b,PetscReal **gauss_c)
 {
   PetscErrorCode    ierr;
@@ -355,6 +331,7 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm,UserContext *user,Mat *J)
   PetscErrorCode ierr;
   PetscInt       matis,matie,i;
   PetscReal      dx,dx2;
+
   PetscFunctionBegin;
   dx = (user->xmax - user->xmin)/((PetscReal)user->imax); dx2 = dx*dx;
   ierr = MatCreate(comm,J);CHKERRQ(ierr);
@@ -402,7 +379,7 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm,UserContext *user,Mat *J)
 /*TEST
  test:
    suffix: 1
-   args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss24
+   args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 2
  test:
    suffix: 2
    args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100
