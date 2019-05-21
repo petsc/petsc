@@ -77,20 +77,22 @@ static PetscErrorCode MatShift_ConstantDiagonal(Mat Y,PetscScalar a)
 
 static PetscErrorCode MatScale_ConstantDiagonal(Mat Y,PetscScalar a)
 {
+  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx  = (Mat_ConstantDiagonal*)Y->data;
 
   PetscFunctionBegin;
-  if (a != 1.) PetscObjectStateIncrease((PetscObject)Y);
+  if (a != 1.) {ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);}
   ctx->diag *= a;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatZeroEntries_ConstantDiagonal(Mat Y)
 {
+  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx  = (Mat_ConstantDiagonal*)Y->data;
 
   PetscFunctionBegin;
-  if (ctx->diag != 0.0) PetscObjectStateIncrease((PetscObject)Y);
+  if (ctx->diag != 0.0) {ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);}
   ctx->diag = 0.0;
   PetscFunctionReturn(0);
 }
@@ -198,13 +200,14 @@ PETSC_EXTERN PetscErrorCode  MatCreate_ConstantDiagonal(Mat A)
 
 static PetscErrorCode MatFactorNumeric_ConstantDiagonal(Mat fact,Mat A,const MatFactorInfo *info)
 {
+  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *actx = (Mat_ConstantDiagonal*)A->data,*fctx = (Mat_ConstantDiagonal*)fact->data;
 
   PetscFunctionBegin;
   if (actx->diag == 0.0) fact->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   else fact->factorerrortype = MAT_FACTOR_NOERROR;
   fctx->diag = 1.0/actx->diag;
-  PetscObjectStateIncrease((PetscObject)fact);
+  ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   fact->ops->solve = MatMult_ConstantDiagonal;
   PetscFunctionReturn(0);
 }
