@@ -174,6 +174,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);            /* Y <- X - Y */
       ierr = SNESComputeFunction(snes,Y,G);CHKERRQ(ierr); /*  F(X) */
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */
+      SNESCheckFunctionNorm(snes,gnorm);
       if (fnorm == gpnorm) rho = 0.0;
       else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm);
 
