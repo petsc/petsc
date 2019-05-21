@@ -141,6 +141,11 @@ struct _p_PetscSectionSym {
   SymWorkLink workout;
 };
 
-
 PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
+
+#if defined(PETSC_HAVE_HDF5)
+#include <H5Ipublic.h>
+PETSC_INTERN PetscErrorCode PetscViewerHDF5Load(PetscViewer,const char *,PetscLayout,hid_t,void**);
+#endif
+
 #endif

@@ -7,6 +7,7 @@
 
 #include <petscsys.h>
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
+#include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load */
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/viewerimpl.h>
 #include <petscviewerhdf5.h>
