@@ -8,7 +8,7 @@
 #                 -old_arch <old PETSC_ARCH>
 #                 -new_dir  <new PETSC_DIR>
 #                 -new_arch <new PETSC_ARCH>
-#                 -libs     <a list of space separated library names>. Names can be petsc, petscvec, vec, ksp, etc.
+#                 -report_format   <format of the report file, either xml or html. Optional, Default=html>
 #
 
 from __future__ import print_function
@@ -32,7 +32,7 @@ def gen_xml_desc(petsc_dir, petsc_arch, libs, xmlfile):
 
   for name in libs:
     name = name.lower()
-    if not name.startswith('petsc'): # one can input -libs petsc, or libs petscsys petscvec, or -libs sys vec
+    if not name.startswith('petsc'): # Support petsc, petscsys, or sys etc
       name = 'petsc'+name
     libname       = 'lib'+name
     libname_so    = os.path.join(petsc_dir, petsc_arch, 'lib', libname+'.so')
@@ -77,15 +77,19 @@ def gen_xml_desc(petsc_dir, petsc_arch, libs, xmlfile):
     file.write("\n")
     file.write("</include_paths>\n")
 
-def run_abi_checker(petsc_dir, petsc_arch, abi_dir,name, oldxml, newxml):
+def run_abi_checker(petsc_dir, petsc_arch, abi_dir, oldxml, newxml, rformat):
   retval         = 0
   petscvariables = os.path.join(petsc_dir, petsc_arch, 'lib', 'petsc','conf', 'petscvariables')
   ccstring       = subprocess.check_output(['grep', '^CC =', petscvariables])
   cc             = ccstring.split('=')[1].strip()
-  reportfile     = os.path.join(abi_dir,'report.html')
-  abichecker     = os.path.join(petsc_dir, 'lib', 'petsc', 'bin', 'maint', 'abi-compliance-checker', 'abi-compliance-checker.pl')
+  if rformat == 'html':
+    report = 'report.html'
+  else:
+    report = 'report.xml'
+  reportfile   = os.path.join(abi_dir, report)
 
-  retval = subprocess.call([abichecker, '-l', 'petsc', '--lang=C', '-old', oldxml, '-new', newxml, '--gcc-path', cc, '--report-path', reportfile])
+  abichecker     = os.path.join(petsc_dir, 'lib', 'petsc', 'bin', 'maint', 'abi-compliance-checker', 'abi-compliance-checker.pl')
+  retval = subprocess.call([abichecker, '-l', 'petsc', '--lang=C', '-old', oldxml, '-new', newxml, '--gcc-path', cc, '--report-path', reportfile, '--report-format', rformat])
   return retval
 
 def main():
@@ -94,14 +98,27 @@ def main():
   parser.add_argument("-old_arch", help="Old PETSC_ARCH, which defines the PETSc library to compare with", required=True)
   parser.add_argument("-new_dir",  help="New PETSC_DIR", required=True)
   parser.add_argument("-new_arch", help="New PETSC_ARCH", required=True)
-  parser.add_argument("-libs",     help="PETSc library names, e.g., petsc", nargs='+', required=True)
+  parser.add_argument("-report_format", help="format of the report file", default='html')
 
   args     = parser.parse_args()
   old_dir  = args.old_dir
   old_arch = args.old_arch
   new_dir  = args.new_dir
   new_arch = args.new_arch
-  libs     = args.libs
+  rformat   = args.report_format
+
+  petscconf_h = os.path.join(new_dir, new_arch, 'include', 'petscconf.h')
+
+  if not os.path.isfile(petscconf_h):
+    raise RuntimeError('Could not find file %s\n'% (petscconf_h))
+
+  if 'PETSC_USE_SINGLE_LIBRARY' in open(petscconf_h).read():
+    libs=['petsc']
+  else:
+    libs=['sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'tao']
+
+  if rformat != 'html' and rformat != 'xml':
+     raise RuntimeError('Unsupported report format "%s". Only html and xml are supported.\n'% (rformat))
 
   # We generate report under new_dir
   abi_dir = os.path.join(new_dir, new_arch, 'abi')
@@ -113,11 +130,11 @@ def main():
   newxml = os.path.join(abi_dir, 'new.xml')
   gen_xml_desc(old_dir,old_arch, libs, oldxml)
   gen_xml_desc(new_dir,new_arch, libs, newxml)
-  ierr = run_abi_checker(new_dir, new_arch, abi_dir, libs, oldxml, newxml)
+  ierr = run_abi_checker(new_dir, new_arch, abi_dir, oldxml, newxml,rformat)
 
   print("=========================================================================================")
   if (ierr):
-    print("Error: ABI/API compatibility check failed. Open the compatibility report(s) with a browser to see details.")
+    print("Error: ABI/API compatibility check failed. Open the compatibility report file to see details.")
   else:
     print("ABI/API of the two versions are compatible.")
 

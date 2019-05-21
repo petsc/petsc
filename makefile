@@ -227,7 +227,7 @@ abitest:
 	-@echo "         PETSC_ARCH         = ${PETSC_ARCH}"
 	-@echo "         Branch             = "`git rev-parse --abbrev-ref HEAD`
 	-@echo "========================================================================================="
-	-@$(PYTHON)	${PETSC_DIR}/lib/petsc/bin/maint/abicheck.py -old_dir ${PETSC_DIR_ABI_OLD} -old_arch ${PETSC_ARCH_ABI_OLD} -new_dir ${PETSC_DIR} -new_arch ${PETSC_ARCH} -libs petsc
+	-@$(PYTHON)	${PETSC_DIR}/lib/petsc/bin/maint/abicheck.py -old_dir ${PETSC_DIR_ABI_OLD} -old_arch ${PETSC_ARCH_ABI_OLD} -new_dir ${PETSC_DIR} -new_arch ${PETSC_ARCH} -report_format html
 
 # Compare ABI/API of current PETSC_ARCH/PETSC_DIR with a previous branch
 abitestcomplete:
