@@ -57,7 +57,7 @@ class Configure(config.package.Package):
     try:
       self.logPrintBox('Installing OpenBLAS')
       self.installDirProvider.printSudoPasswordMessage()
-      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'mkdir -p '+libdir+' && '+self.installSudo+'cp -f libopenblas.* '+ libdir, timeout=30, log = self.log)
+      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+' make PREFIX='+self.installDir+' install', timeout=30, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')

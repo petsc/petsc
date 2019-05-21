@@ -13,9 +13,9 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
-    if 'with-64-bit-blas-indices' in self.argDB and self.argDB['with-64-bit-blas-indices']:
+    if self.argDB['with-64-bit-blas-indices']:
       raise RuntimeError('f2blaslapack does not support -with-64-bit-blas-indices')
-    if 'known-64-bit-blas-indices' in self.argDB and self.argDB['known-64-bit-blas-indices']:
+    if self.argDB['known-64-bit-blas-indices']:
       raise RuntimeError('f2blaslapack does not support -known-64-bit-blas-indices')
     config.package.Package.configureLibrary(self)
 

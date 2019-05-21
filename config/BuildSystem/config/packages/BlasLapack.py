@@ -170,18 +170,20 @@ class Configure(config.package.Package):
       libDir = self.f2cblaslapack.libDir
       f2cBlas = [os.path.join(libDir,'libf2cblas.a')]
       f2cLapack = [os.path.join(libDir,'libf2clapack.a')]
-      yield ('f2cblaslapack', f2cBlas, f2cLapack)
-      yield ('f2cblaslapack', f2cBlas+['-lquadmath'], f2cLapack)
+      yield ('f2cblaslapack', f2cBlas, f2cLapack, '32')
+      yield ('f2cblaslapack', f2cBlas+['-lquadmath'], f2cLapack, '32')
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
       libDir = self.fblaslapack.libDir
-      yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'))
+      yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'), '32')
       raise RuntimeError('--download-fblaslapack libraries cannot be used')
     if self.openblas.found:
       self.f2c = 0
       libDir = self.openblas.libDir
-      yield ('openblas', None, os.path.join(libDir,'libopenblas.a'))
+      if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']: known = '64'
+      else: known = '32'
+      yield ('openblas', None, os.path.join(libDir,'libopenblas.a'),known)
       raise RuntimeError('--download-openblas libraries cannot be used')
     if 'with-blas-lib' in self.argDB and not 'with-lapack-lib' in self.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
@@ -194,14 +196,14 @@ class Configure(config.package.Package):
 
     # Try specified BLASLAPACK library
     if 'with-blaslapack-lib' in self.argDB:
-      yield ('User specified BLAS/LAPACK library', None, self.argDB['with-blaslapack-lib'])
+      yield ('User specified BLAS/LAPACK library', None, self.argDB['with-blaslapack-lib'], 'unknown')
       if self.defaultPrecision == '__float128':
         raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blaslapack-lib'])+'; suggest --download-fcblaslapack\n')
       else:
         raise RuntimeError('You set a value for --with-blaslapack-lib=<lib>, but '+str(self.argDB['with-blaslapack-lib'])+' cannot be used\n')
     # Try specified BLAS and LAPACK libraries
     if 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
-      yield ('User specified BLAS and LAPACK libraries', self.argDB['with-blas-lib'], self.argDB['with-lapack-lib'])
+      yield ('User specified BLAS and LAPACK libraries', self.argDB['with-blas-lib'], self.argDB['with-lapack-lib'], 'unknown')
       if self.defaultPrecision == '__float128':
         raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+'; suggest --download-fcblaslapack\n')
       else:
@@ -217,7 +219,7 @@ class Configure(config.package.Package):
                            'Do not install software in this location nor use software in this directory.')
 
       if self.defaultPrecision == '__float128':
-        yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
+        yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'), '32')
         raise RuntimeError('__float128 precision requires f2c libraries; they are not available in '+dir+'; suggest --download-fcblaslapack\n')
 
       if not (len(dir) > 2 and dir[1] == ':') :
@@ -225,8 +227,12 @@ class Configure(config.package.Package):
       self.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
       self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
 
-      if self.argDB['with-64-bit-blas-indices']: ILP64 = '_ilp64'
-      else: ILP64 = '_lp64'
+      if self.argDB['with-64-bit-blas-indices']:
+        ILP64 = '_ilp64'
+        known = '64'
+      else:
+        ILP64 = '_lp64'
+        known = '32'
 
       # Look for Multi-Threaded MKL for MKL_C/Pardiso
       useCPardiso=0
@@ -250,112 +256,112 @@ class Configure(config.package.Package):
           else:
             #  iomp5 is provided by the Intel compilers on MacOS. Run source /opt/intel/bin/compilervars.sh intel64 to have it added to LIBRARY_PATH
             #  then locate libimp5.dylib in the LIBRARY_PATH and copy it to os.path.join(dir,libdir)
-            yield ('User specified MKL-C/Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_64+['iomp5','dl','pthread'])
+            yield ('User specified MKL-C/Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_64+['iomp5','dl','pthread'],known)
             #   mkl_gnu_thread does not exist on MacOS
-            yield ('User specified MKL-C/Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_64+['gomp','dl','pthread'])
-            yield ('User specified MKL-C/Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_32+['iomp5','dl','pthread'])
-            yield ('User specified MKL-C/Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_32+['gomp','dl','pthread'])
+            yield ('User specified MKL-C/Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_64+['gomp','dl','pthread'],known)
+            yield ('User specified MKL-C/Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_32+['iomp5','dl','pthread'],'32')
+            yield ('User specified MKL-C/Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_32+['gomp','dl','pthread'],'32')
         return
 
-      yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'))
-      yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
-      yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'))
+      yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'),'32')
+      yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'),'32')
+      yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32')
       # Check MATLAB [ILP64] MKL
-      yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'])
+      yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'],'64')
       oldFlags = self.setCompilers.LDFLAGS
       self.setCompilers.LDFLAGS += '-Wl,-rpath,'+os.path.join(dir,'bin','maci64')
-      yield ('User specified MATLAB [ILP64] MKL MacOS lib dir', None, [os.path.join(dir,'bin','maci64','mkl.dylib'), os.path.join(dir,'sys','os','maci64','libiomp5.dylib'), 'pthread'])
+      yield ('User specified MATLAB [ILP64] MKL MacOS lib dir', None, [os.path.join(dir,'bin','maci64','mkl.dylib'), os.path.join(dir,'sys','os','maci64','libiomp5.dylib'), 'pthread'],'64')
       self.setCompilers.LDFLAGS = oldFlags
-      yield ('User specified MKL11/12 and later', None, [os.path.join(dir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','pthread'])
+      yield ('User specified MKL11/12 and later', None, [os.path.join(dir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','pthread'],known)
       # Some new MKL 11/12 variations
       for libdir in [os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
-          yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread'])
+          yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread'],'32')
       for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64','']:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
-          yield ('User specified MKL11+ Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','mkl_def','pthread'])
-          yield ('User specified MKL11+ Mac-64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','pthread'])
+          yield ('User specified MKL11+ Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','mkl_def','pthread'],known)
+          yield ('User specified MKL11+ Mac-64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_sequential','mkl_core','pthread'],known)
       # Older Linux MKL checks
-      yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'])
+      yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'],'32')
       for libdir in ['32','64','em64t']:
-        yield ('User specified MKL Linux installation root', None, [os.path.join(dir,'lib',libdir,'libmkl_lapack.a'),'mkl', 'guide', 'pthread'])
-      yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'])
-      yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'])
-      yield ('User specified MKL Linux-ia64 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_ipf.a', 'guide', 'pthread'])
-      yield ('User specified MKL Linux-em64t lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_em64t.a', 'guide', 'pthread'])
-      yield ('User specified MKL Linux-x86 installation root', None, [os.path.join(dir,'lib','32','libmkl_lapack.a'),'libmkl_def.a', 'guide', 'pthread'])
-      yield ('User specified MKL Linux-x86 installation root', None, [os.path.join(dir,'lib','32','libmkl_lapack.a'),'libmkl_def.a', 'guide', 'vml','pthread'])
-      yield ('User specified MKL Linux-ia64 installation root', None, [os.path.join(dir,'lib','64','libmkl_lapack.a'),'libmkl_ipf.a', 'guide', 'pthread'])
-      yield ('User specified MKL Linux-em64t installation root', None, [os.path.join(dir,'lib','em64t','libmkl_lapack.a'),'libmkl_em64t.a', 'guide', 'pthread'])
+        yield ('User specified MKL Linux installation root', None, [os.path.join(dir,'lib',libdir,'libmkl_lapack.a'),'mkl', 'guide', 'pthread'],'32')
+      yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'],'32')
+      yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'],'32')
+      yield ('User specified MKL Linux-ia64 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_ipf.a', 'guide', 'pthread'],'32')
+      yield ('User specified MKL Linux-em64t lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_em64t.a', 'guide', 'pthread'],'32')
+      yield ('User specified MKL Linux-x86 installation root', None, [os.path.join(dir,'lib','32','libmkl_lapack.a'),'libmkl_def.a', 'guide', 'pthread'],'32')
+      yield ('User specified MKL Linux-x86 installation root', None, [os.path.join(dir,'lib','32','libmkl_lapack.a'),'libmkl_def.a', 'guide', 'vml','pthread'],'32')
+      yield ('User specified MKL Linux-ia64 installation root', None, [os.path.join(dir,'lib','64','libmkl_lapack.a'),'libmkl_ipf.a', 'guide', 'pthread'],'32')
+      yield ('User specified MKL Linux-em64t installation root', None, [os.path.join(dir,'lib','em64t','libmkl_lapack.a'),'libmkl_em64t.a', 'guide', 'pthread'],'32')
       # Mac MKL check
-      yield ('User specified MKL Mac-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_ia32.a', 'guide'])
-      yield ('User specified MKL Max-x86 installation root', None, [os.path.join(dir,'Libraries','32','libmkl_lapack.a'),'libmkl_ia32.a', 'guide'])
-      yield ('User specified MKL Max-x86 installation root', None, [os.path.join(dir,'lib','32','libmkl_lapack.a'),'libmkl_ia32.a', 'guide'])
-      yield ('User specified MKL Mac-em64t lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_intel'+ILP64+'.a', 'guide'])
-      yield ('User specified MKL Max-em64t installation root', None, [os.path.join(dir,'Libraries','32','libmkl_lapack.a'),'libmkl_intel'+ILP64+'.a', 'guide'])
-      yield ('User specified MKL Max-em64t installation root', None, [os.path.join(dir,'lib','32','libmkl_lapack.a'),'libmkl_intel'+ILP64+'.a', 'guide'])
+      yield ('User specified MKL Mac-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_ia32.a', 'guide'],'32')
+      yield ('User specified MKL Max-x86 installation root', None, [os.path.join(dir,'Libraries','32','libmkl_lapack.a'),'libmkl_ia32.a', 'guide'],'32')
+      yield ('User specified MKL Max-x86 installation root', None, [os.path.join(dir,'lib','32','libmkl_lapack.a'),'libmkl_ia32.a', 'guide'],'32')
+      yield ('User specified MKL Mac-em64t lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_intel'+ILP64+'.a', 'guide'],known)
+      yield ('User specified MKL Max-em64t installation root', None, [os.path.join(dir,'Libraries','32','libmkl_lapack.a'),'libmkl_intel'+ILP64+'.a', 'guide'],'32')
+      yield ('User specified MKL Max-em64t installation root', None, [os.path.join(dir,'lib','32','libmkl_lapack.a'),'libmkl_intel'+ILP64+'.a', 'guide'],'32')
       # Check MKL on windows
-      yield ('User specified MKL Windows lib dir', None, [os.path.join(dir, 'mkl_c_dll.lib')])
-      yield ('User specified stdcall MKL Windows lib dir', None, [os.path.join(dir, 'mkl_s_dll.lib')])
-      yield ('User specified ia64/em64t MKL Windows lib dir', None, [os.path.join(dir, 'mkl_dll.lib')])
-      yield ('User specified MKL10-32 Windows lib dir', None, [os.path.join(dir, 'mkl_intel_c_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'])
-      yield ('User specified MKL10-32 Windows stdcall lib dir', None, [os.path.join(dir, 'mkl_intel_s_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'])
-      yield ('User specified MKL10-64 Windows lib dir', None, [os.path.join(dir, 'mkl_intel'+ILP64+'_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'])
+      yield ('User specified MKL Windows lib dir', None, [os.path.join(dir, 'mkl_c_dll.lib')],'32')
+      yield ('User specified stdcall MKL Windows lib dir', None, [os.path.join(dir, 'mkl_s_dll.lib')],'32')
+      yield ('User specified ia64/em64t MKL Windows lib dir', None, [os.path.join(dir, 'mkl_dll.lib')],'32')
+      yield ('User specified MKL10-32 Windows lib dir', None, [os.path.join(dir, 'mkl_intel_c_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'],'32')
+      yield ('User specified MKL10-32 Windows stdcall lib dir', None, [os.path.join(dir, 'mkl_intel_s_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'],'32')
+      yield ('User specified MKL10-64 Windows lib dir', None, [os.path.join(dir, 'mkl_intel'+ILP64+'_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'],known)
       mkldir = os.path.join(dir, 'ia32', 'lib')
-      yield ('User specified MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_c_dll.lib')])
-      yield ('User specified stdcall MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_s_dll.lib')])
-      yield ('User specified MKL10-32 Windows installation root', None, [os.path.join(mkldir, 'mkl_intel_c_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'])
-      yield ('User specified MKL10-32 Windows stdcall installation root', None, [os.path.join(mkldir, 'mkl_intel_s_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'])
+      yield ('User specified MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_c_dll.lib')],'32')
+      yield ('User specified stdcall MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_s_dll.lib')],'32')
+      yield ('User specified MKL10-32 Windows installation root', None, [os.path.join(mkldir, 'mkl_intel_c_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'],'32')
+      yield ('User specified MKL10-32 Windows stdcall installation root', None, [os.path.join(mkldir, 'mkl_intel_s_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'],'32')
       mkldir = os.path.join(dir, 'em64t', 'lib')
-      yield ('User specified MKL10-64 Windows installation root', None, [os.path.join(mkldir, 'mkl_intel'+ILP64+'_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'])
-      yield ('User specified em64t MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_dll.lib')])
+      yield ('User specified MKL10-64 Windows installation root', None, [os.path.join(mkldir, 'mkl_intel'+ILP64+'_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'],known)
+      yield ('User specified em64t MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_dll.lib')],'32')
       mkldir = os.path.join(dir, 'ia64', 'lib')
-      yield ('User specified ia64 MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_dll.lib')])
-      yield ('User specified MKL10-64 Windows installation root', None, [os.path.join(mkldir, 'mkl_intel'+ILP64+'_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'])
+      yield ('User specified ia64 MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_dll.lib')],'32')
+      yield ('User specified MKL10-64 Windows installation root', None, [os.path.join(mkldir, 'mkl_intel'+ILP64+'_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'],known)
       # Check AMD ACML libraries
-      yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml.a'))
-      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')])
-      yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'))
-      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')])
+      yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml.a'),'32')
+      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')],'32')
+      yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'),'32')
+      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')],'32')
       # Search for atlas
-      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')])
-      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')])
+      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32')
+      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32')
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
-      yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'))
+      yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown')
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-fcblaslapack\n')
     # IRIX locations
-    yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a')
-    yield ('Another IRIX Mathematics library', None, 'libscs.a')
-    yield ('Compaq/Alpha Mathematics library', None, 'libcxml.a')
+    yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a','32')
+    yield ('Another IRIX Mathematics library', None, 'libscs.a','32')
+    yield ('Compaq/Alpha Mathematics library', None, 'libcxml.a','32')
     # IBM ESSL locations
-    yield ('IBM ESSL Mathematics library', None, 'libessl.a')
-    yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a')
+    yield ('IBM ESSL Mathematics library', None, 'libessl.a','32')
+    yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a','32')
     # Try compiler defaults
-    yield ('Default compiler libraries', '', '')
-    yield ('Default compiler locations', 'libblas.a', 'liblapack.a')
-    yield ('HPUX', 'libveclib.a', 'liblapack.a')
+    yield ('Default compiler libraries', '', '','unknown')
+    yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown')
+    yield ('HPUX', 'libveclib.a', 'liblapack.a','unknown')
     # /usr/local/lib
     dir = os.path.join('/usr','local','lib')
-    yield ('Default compiler locations /usr/local/lib', os.path.join(dir,'libblas.a'), os.path.join(dir,'liblapack.a'))
-    yield ('Default Atlas location',['libcblas.a','libf77blas.a','libatlas.a'],  ['liblapack.a'])
-    yield ('Default Atlas location',['libf77blas.a','libatlas.a'],  ['liblapack.a'])
-    yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'])
-    yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'])
+    yield ('Default compiler locations /usr/local/lib', os.path.join(dir,'libblas.a'), os.path.join(dir,'liblapack.a'),'unknown')
+    yield ('Default Atlas location',['libcblas.a','libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown')
+    yield ('Default Atlas location',['libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown')
+    yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'],'unknown')
+    yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown')
     # Try MacOSX location
     dir = os.path.join('/Library', 'Frameworks', 'Intel_MKL.framework','Libraries','32')
-    yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'])
-    yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
+    yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'],'32')
+    yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'),'32')
     # Sun locations
-    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'])
-    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'])
-    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libfui.a','libfsu.a','libsunmath.a'])
+    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'],'32')
+    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'],'32')
+    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libfui.a','libfsu.a','libsunmath.a'],'32')
     # Try Microsoft Windows location
     for MKL_Version in [os.path.join('MKL','9.0'),os.path.join('MKL','8.1.1'),os.path.join('MKL','8.1'),os.path.join('MKL','8.0.1'),os.path.join('MKL','8.0'),'MKL72','MKL70','MKL61','MKL']:
       mklpath = os.path.join('/cygdrive', 'c', 'Program Files', 'Intel', MKL_Version)
@@ -363,12 +369,12 @@ class Configure(config.package.Package):
         self.logPrint('MKL Path not found.. skipping: '+mklpath)
       else:
         mkldir = os.path.join(mklpath, 'ia32', 'lib')
-        yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'))
-        yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(mkldir,'mkl_s_dll.lib'))
+        yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'),'32')
+        yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(mkldir,'mkl_s_dll.lib'),'32')
         mkldir = os.path.join(mklpath, 'em64t', 'lib')
-        yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'))
+        yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32')
         mkldir = os.path.join(mklpath, 'ia64', 'lib')
-        yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'))
+        yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32')
     return
 
   def configureLibrary(self):
@@ -379,7 +385,7 @@ class Configure(config.package.Package):
     self.functionalBlasLapack = []
     self.foundBlas   = 0
     self.foundLapack = 0
-    for (name, blasLibrary, lapackLibrary) in self.generateGuesses():
+    for (name, blasLibrary, lapackLibrary,self.known64) in self.generateGuesses():
       self.log.write('================================================================================\n')
       self.log.write('Checking for a functional BLAS and LAPACK in '+name+'\n')
       (foundBlas, foundLapack) = self.executeTest(self.checkLib, [lapackLibrary, blasLibrary])
@@ -598,39 +604,45 @@ class Configure(config.package.Package):
 
   def checkRuntimeIssues(self):
     '''Determines if BLAS/LAPACK routines use 32 or 64 bit integers'''
-    self.log.write('Checking if BLAS/LAPACK routines use 32 or 64 bit integers')
-    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
-    t = self.getType()
-    body     = '''extern '''+t+''' '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+    if self.known64 == '64':
+      self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
+      self.has64bitindices = 1
+      self.log.write('64 bit blas indices based on the BLAS/LAPACK library being used\n')
+    elif self.known64 == '32':
+      self.log.write('32 bit blas indices based on the BLAS/LAPACK library being used\n')
+    else:
+      includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+      t = self.getType()
+      body     = '''extern '''+t+''' '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
                   '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
                   int one1mkl = 1,nmkl = 2;
                   '''+t+''' dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
-    result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
-    if result:
-      self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
-      result = int(result)
+      result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
       if result:
-        if self.defaultPrecision == 'single':
-          self.log.write('Checking for 64 bit blas indices: special check for Apple single precision\n')
-          # On Apple single precision sdot() returns a double so we need to test that case
-          body     = '''extern double '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+        self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
+        result = int(result)
+        if result:
+          if self.defaultPrecision == 'single':
+            self.log.write('Checking for 64 bit blas indices: special check for Apple single precision\n')
+            # On Apple single precision sdot() returns a double so we need to test that case
+            body     = '''extern double '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
                   '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
                   int one1mkl = 1,nmkl = 2;
                   double dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "--known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
-          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
-          result = int(result)
-      if result:
+            result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
+            result = int(result)
+        if result:
+          self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
+          self.has64bitindices = 1
+          self.log.write('Checking for 64 bit blas indices: result not equal to 1 so assuming 64 bit blas indices\n')
+      else:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
         self.has64bitindices = 1
-        self.log.write('Checking for 64 bit blas indices: result not equal to 1 so assuming 64 bit blas indices\n')
-    else:
-      self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
-      self.has64bitindices = 1
-      self.log.write('Checking for 64 bit blas indices: program did not return therefor assuming 64 bit blas indices\n')
+        self.log.write('Checking for 64 bit blas indices: program did not return therefor assuming 64 bit blas indices\n')
     if not self.defaultPrecision == 'single': return
     self.log.write('Checking if sdot() returns a float or a double\n')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
