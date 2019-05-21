@@ -622,19 +622,22 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
   } else {
     PetscScalar     *x = NULL, *field, *gradient, *interpolant, *interpolantGrad;
     PetscFVCellGeom  cg;
+    PetscFEGeom      fegeom;
     const PetscReal *quadWeights;
-    PetscReal       *coords, *detJ, *J, *invJ;
+    PetscReal       *coords;
     PetscInt         Nb, fc, Nq, qNc, Nf, f, fieldOffset;
 
+    fegeom.dim      = dim;
+    fegeom.dimEmbed = cdim;
     ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature((PetscFE) obj, &quad);CHKERRQ(ierr);
     ierr = DMPlexVecGetClosure(plex, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
     ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights);CHKERRQ(ierr);
-    ierr = PetscMalloc6(Nc,&field,cdim*Nc,&gradient,cdim*Nq,&coords,Nq,&detJ,cdim*cdim*Nq,&J,cdim*cdim*Nq,&invJ);CHKERRQ(ierr);
+    ierr = PetscMalloc6(Nc,&field,cdim*Nc,&gradient,cdim*Nq,&coords,Nq,&fegeom.detJ,cdim*cdim*Nq,&fegeom.J,cdim*cdim*Nq,&fegeom.invJ);CHKERRQ(ierr);
     ierr = PetscMalloc2(Nc, &interpolant, cdim*Nc, &interpolantGrad);CHKERRQ(ierr);
-    ierr = DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, J, invJ, detJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFVM(plex, cell, &cg.volume, NULL, NULL);CHKERRQ(ierr);
     ierr = PetscMemzero(gradient, cdim*Nc * sizeof(PetscScalar));CHKERRQ(ierr);
     for (f = 0, fieldOffset = 0; f < Nf; ++f) {
@@ -644,12 +647,12 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
       ierr = PetscMemzero(interpolant,     Nc * sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PetscMemzero(interpolantGrad, cdim*Nc * sizeof(PetscScalar));CHKERRQ(ierr);
       for (q = 0; q < Nq; ++q) {
-        ierr = PetscFEInterpolateFieldAndGradient_Static((PetscFE) obj, x, dim, invJ, q, interpolant, interpolantGrad);CHKERRQ(ierr);
+        ierr = PetscFEInterpolateFieldAndGradient_Static((PetscFE) obj, x, &fegeom, q, interpolant, interpolantGrad);CHKERRQ(ierr);
         for (fc = 0; fc < Nc; ++fc) {
           const PetscReal wt = quadWeights[q*qNc+qc+fc];
 
-          field[fc] += interpolant[fc]*wt*detJ[q];
-          for (d = 0; d < cdim; ++d) gradient[fc*cdim+d] += interpolantGrad[fc*dim+d]*wt*detJ[q];
+          field[fc] += interpolant[fc]*wt*fegeom.detJ[q];
+          for (d = 0; d < cdim; ++d) gradient[fc*cdim+d] += interpolantGrad[fc*dim+d]*wt*fegeom.detJ[q];
         }
       }
       fieldOffset += Nb;
@@ -662,7 +665,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
       for (d = 0; d < cdim; ++d) gradient[fc*cdim+d] /= cg.volume;
     }
     ierr = (*adaptor->ops->computeerrorindicator)(adaptor, dim, Nc, field, gradient, &cg, errInd, ctx);CHKERRQ(ierr);
-    ierr = PetscFree6(field,gradient,coords,detJ,J,invJ);CHKERRQ(ierr);
+    ierr = PetscFree6(field,gradient,coords,fegeom.detJ,fegeom.J,fegeom.invJ);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

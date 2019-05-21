@@ -879,9 +879,9 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
       ierr = SetupSection(rdm, user);CHKERRQ(ierr);
       ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
       p    = PetscLog2Real(errorOld/error);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %D: %.2g\n", r, (double)p);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %D: %.2f\n", r, (double)p);CHKERRQ(ierr);
       p    = PetscLog2Real(errorDerOld/errorDer);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %D: %.2g\n", r, (double)p);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %D: %.2f\n", r, (double)p);CHKERRQ(ierr);
       ierr = DMDestroy(&odm);CHKERRQ(ierr);
       odm         = rdm;
       errorOld    = error;
@@ -901,10 +901,10 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
       len  = cEnd - cStart;
       rel  = error/errorOld;
       p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at coarsening %D: %.2g\n", c, (double)p);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at coarsening %D: %.2f\n", c, (double)p);CHKERRQ(ierr);
       rel  = errorDer/errorDerOld;
       p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at coarsening %D: %.2g\n", c, (double)p);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at coarsening %D: %.2f\n", c, (double)p);CHKERRQ(ierr);
       ierr = DMDestroy(&odm);CHKERRQ(ierr);
       odm         = cdm;
       errorOld    = error;

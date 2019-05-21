@@ -512,11 +512,12 @@ PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscL
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
+PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   /* Nbc = batchSize */
-  PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *) fem->data;
+  PetscFE           fem;
+  PetscFE_OpenCL   *ocl;
   PetscPointFunc    f0_func;
   PetscPointFunc    f1_func;
   PetscQuadrature   q;
@@ -554,6 +555,8 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fem);CHKERRQ(ierr);
+  ocl  = (PetscFE_OpenCL *) fem->data;
   if (!Ne) {ierr = PetscFEOpenCLLogResidual(fem, 0.0, 0.0);CHKERRQ(ierr); PetscFunctionReturn(0);}
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
@@ -569,7 +572,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
   /* Calculate layout */
   if (Ne % (N_cb*N_bc)) { /* Remainder cells */
-    ierr = PetscFEIntegrateResidual_Basic(fem, prob, field, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
+    ierr = PetscFEIntegrateResidual_Basic(prob, field, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscFEOpenCLCalculateGrid(fem, Ne, N_cb*N_bc, &x, &y, &z);CHKERRQ(ierr);
@@ -855,4 +858,3 @@ PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 }
 
 #endif /* PETSC_HAVE_OPENCL */
-
