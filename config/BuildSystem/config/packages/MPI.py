@@ -140,6 +140,22 @@ class Configure(config.package.Package):
     '''Sets flag indicating if MPI libraries are shared or not and
     determines if MPI libraries CANNOT be used by shared libraries'''
     self.executeTest(self.configureMPIEXEC)
+    if self.argDB['with-batch']:
+      if self.argDB['with-shared-libraries']:
+        if not 'known-mpi-shared-libraries' in self.argDB:
+          self.logPrintBox('***** WARNING: Cannot verify that MPI is a shared library - in\n\
+batch-mode! If MPI is a static library but linked into multiple shared\n\
+libraries that the application uses, sometimes compiles go through -\n\
+but one might get run-time errors. If you know that the MPI library is\n\
+shared - run with --known-mpi-shared-libraries=1 option to remove this\n\
+warning message *****')
+        elif not self.argDB['known-mpi-shared-libraries']:
+          raise RuntimeError('Provided MPI library is flagged as static library! If its linked\n\
+into multipe shared libraries that an application uses, sometimes\n\
+compiles go through - but one might get run-time errors.  Either\n\
+rebuild PETSc with --with-shared-libraries=0 or provide MPI with\n\
+shared libraries and flag it with --known-mpi-shared-libraries=1')
+      return
     try:
       self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
     except RuntimeError as e:
