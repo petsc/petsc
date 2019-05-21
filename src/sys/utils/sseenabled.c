@@ -12,13 +12,14 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
   char           *vendor;
   char           Intel[13]="GenuineIntel";
   char           AMD[13]  ="AuthenticAMD";
+  char           Hygon[13]="HygonGenuine";
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(13,&vendor);CHKERRQ(ierr);
   strcpy(vendor,"************");
   CPUID_GET_VENDOR(vendor);
-  if (!strcmp(vendor,Intel) || !strcmp(vendor,AMD)) {
-    /* Both Intel and AMD use bit 25 of CPUID_FEATURES */
+  if (!strcmp(vendor,Intel) || !strcmp(vendor,AMD) || !strcmp(vendor,Hygon)) {
+    /* Both Intel and AMD, Hygon use bit 25 of CPUID_FEATURES */
     /* to denote availability of SSE Support */
     unsigned long myeax,myebx,myecx,myedx;
     CPUID(CPUID_FEATURES,&myeax,&myebx,&myecx,&myedx);
