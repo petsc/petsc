@@ -20,6 +20,7 @@ typedef struct {
   PetscInt              nmat;
   PetscBool             merge;
   MatCompositeMergeType mergetype;
+  MatStructure          structure;
 } Mat_Composite;
 
 PetscErrorCode MatDestroy_Composite(Mat mat)
@@ -479,6 +480,78 @@ PetscErrorCode MatCompositeGetType(Mat mat,MatCompositeType *type)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatCompositeSetMatStructure_Composite(Mat mat,MatStructure str)
+{
+  Mat_Composite  *b = (Mat_Composite*)mat->data;
+
+  PetscFunctionBegin;
+  b->structure = str;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatCompositeSetMatStructure - Indicates structure of matrices in the composite matrix.
+
+   Not Collective
+
+   Input Parameters:
++  mat - the composite matrix
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN (default) or SUBSET_NONZERO_PATTERN
+
+   Level: advanced
+
+   Notes:
+    Information about the matrices structure is used in MatCompositeMerge() for additive composite matrix.
+
+.seealso: MatAXPY(), MatCreateComposite(), MatCompositeMerge() MatCompositeGetMatStructure(), MATCOMPOSITE
+
+@*/
+PetscErrorCode MatCompositeSetMatStructure(Mat mat,MatStructure str)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  ierr = PetscUseMethod(mat,"MatCompositeSetMatStructure_C",(Mat,MatStructure),(mat,str));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatCompositeGetMatStructure_Composite(Mat mat,MatStructure *str)
+{
+  Mat_Composite  *b = (Mat_Composite*)mat->data;
+
+  PetscFunctionBegin;
+  *str = b->structure;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatCompositeGetMatStructure - Returns the structure of matrices in the composite matrix.
+
+   Not Collective
+
+   Input Parameter:
+.  mat - the composite matrix
+
+   Output Parameter:
+.  str - structure of the matrices
+
+   Level: advanced
+
+.seealso: MatCreateComposite(), MatCompositeSetMatStructure(), MATCOMPOSITE
+
+@*/
+PetscErrorCode MatCompositeGetMatStructure(Mat mat,MatStructure *str)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(str,2);
+  ierr = PetscUseMethod(mat,"MatCompositeGetMatStructure_C",(Mat,MatStructure*),(mat,str));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatCompositeSetMergeType_Composite(Mat mat,MatCompositeMergeType type)
 {
   Mat_Composite     *shell = (Mat_Composite*)mat->data;
@@ -536,12 +609,12 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
       ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
       while ((next = next->next)) {
-        ierr = MatAXPY(tmat,1.0,next->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatAXPY(tmat,1.0,next->mat,shell->structure);CHKERRQ(ierr);
       }
     } else {
       ierr = MatDuplicate(prev->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
       while ((prev = prev->prev)) {
-        ierr = MatAXPY(tmat,1.0,prev->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatAXPY(tmat,1.0,prev->mat,shell->structure);CHKERRQ(ierr);
       }
     }
   } else {
@@ -595,7 +668,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
       The MatType of the resulting matrix will be the same as the MatType of the FIRST
     matrix in the composite matrix.
 
-.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MatCompositeSetMergeType(), MATCOMPOSITE
+.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MatCompositeSetMatStructure(), MatCompositeSetMergeType(), MATCOMPOSITE
 
 @*/
 PetscErrorCode MatCompositeMerge(Mat mat)
@@ -842,7 +915,7 @@ static struct _MatOps MatOps_Values = {0,
 
   Level: advanced
 
-.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeSetType(), MatCompositeGetType(), MatCompositeMerge(), MatCompositeSetMergeType(), MatCompositeGetNumberMat(), MatCompositeGetMat()
+.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeSetType(), MatCompositeGetType(), MatCompositeSetMatStructure(), MatCompositeSetMatStructure(), MatCompositeMerge(), MatCompositeSetMergeType(), MatCompositeGetNumberMat(), MatCompositeGetMat()
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
@@ -865,11 +938,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   b->nmat         = 0;
   b->merge        = PETSC_FALSE;
   b->mergetype    = MAT_COMPOSITE_MERGE_RIGHT;
+  b->structure    = DIFFERENT_NONZERO_PATTERN;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeAddMat_C",MatCompositeAddMat_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetType_C",MatCompositeSetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetType_C",MatCompositeGetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetMergeType_C",MatCompositeSetMergeType_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetMatStructure_C",MatCompositeSetMatStructure_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetMatStructure_C",MatCompositeGetMatStructure_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeMerge_C",MatCompositeMerge_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetNumberMat_C",MatCompositeGetNumberMat_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeGetMat_C",MatCompositeGetMat_Composite);CHKERRQ(ierr);

@@ -65,6 +65,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add %g\n",(double)rnorm);CHKERRQ(ierr);
   }
 
+  ierr = MatCompositeSetMatStructure(B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* default */
   ierr = MatCompositeMerge(B);CHKERRQ(ierr);
   ierr = MatMult(B,x,y);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

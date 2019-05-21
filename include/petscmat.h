@@ -276,6 +276,8 @@ PETSC_EXTERN PetscErrorCode MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 PETSC_EXTERN PetscErrorCode MatCompositeSetType(Mat,MatCompositeType);
 PETSC_EXTERN PetscErrorCode MatCompositeGetType(Mat,MatCompositeType*);
+PETSC_EXTERN PetscErrorCode MatCompositeSetMatStructure(Mat,MatStructure);
+PETSC_EXTERN PetscErrorCode MatCompositeGetMatStructure(Mat,MatStructure*);
 PETSC_EXTERN PetscErrorCode MatCompositeGetNumberMat(Mat,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatCompositeGetMat(Mat,PetscInt,Mat*);
 
