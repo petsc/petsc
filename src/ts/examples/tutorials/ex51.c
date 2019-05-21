@@ -61,8 +61,8 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscInt       n = 2;
   PetscScalar    *u;
-  PetscScalar    t, final_time = 1.0, dt = 0.25;
-  PetscScalar    error;
+  PetscReal      t, final_time = 1.0, dt = 0.25;
+  PetscReal      error;
   TSAdapt        adapt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
