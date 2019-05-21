@@ -50,7 +50,7 @@ static PetscErrorCode MatMult_ConstantDiagonal(Mat J,Vec x,Vec y)
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)J->data;
 
   PetscFunctionBegin;
-  ierr = VecAXPBY(y,ctx->diag,0.0,x);
+  ierr = VecAXPBY(y,ctx->diag,0.0,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -66,10 +66,11 @@ PetscErrorCode MatGetDiagonal_ConstantDiagonal(Mat J,Vec x)
 
 static PetscErrorCode MatShift_ConstantDiagonal(Mat Y,PetscScalar a)
 {
+  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)Y->data;
 
   PetscFunctionBegin;
-  if (a != 0.) PetscObjectStateIncrease((PetscObject)Y);
+  if (a != 0.) {ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);}
   ctx->diag += a;
   PetscFunctionReturn(0);
 }
@@ -102,7 +103,7 @@ PetscErrorCode MatSOR_ConstantDiagonal(Mat matin,Vec x,PetscReal omega,MatSORTyp
   PetscFunctionBegin;
   if (ctx->diag == 0.0) matin->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   else matin->factorerrortype = MAT_FACTOR_NOERROR;
-  ierr = VecAXPBY(y,1.0/ctx->diag,0.0,x);
+  ierr = VecAXPBY(y,1.0/ctx->diag,0.0,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
