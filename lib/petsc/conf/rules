@@ -774,28 +774,26 @@ checkbadFileHeader:
 	done
 
 checkbadSource:
-	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \
-       a=`grep '( ' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: extra blank after (" ; \
-       fi; \
-       a=`grep ' )' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: extra blank before )" ; \
-       fi; \
-         a=`grep 'register int' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: do not use register keyword in PETSc" ; \
-       fi; \
-         a=`grep 'register double' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: do not use register keyword in PETSc" ; \
-       fi; \
-         a=`grep '; CHK' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: space before CHKERRx() or CHKPTRx()" ; \
-       fi; \
-         done
+	-@${RM} -f checkbadSource.out
+	-@echo "Tabs in file -----------------------------------------" > checkbadSource.out
+	-@git --no-pager grep -l -P  '\t'  -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "White space at end of line ---------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P ' $$' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+#	-@echo "Space after ( ----------------------------------------" >> checkbadSource.out
+#	-@git --no-pager grep -l -P '\( ' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P ' \)' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "Space before CHKERRQ ---------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P '; CHKERRQ' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "No space after if or for -----------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P -e 'for\(' -e 'if\(' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "DOS file (with DOS newlines)--------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P '\r' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@a=`cat checkbadSource.out | wc -l`; let "l=$$a-6" ;\
+         if [ $$l -gt 0 ] ; then \
+           echo $$l " files with errors detected in source code formatting" ;\
+           cat checkbadSource.out ;\
+         fi
 
 checkTestCoverage:
 	-@for filename in ex*.c; do \
