@@ -13,39 +13,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-/*@
-    DMCreateInterpolationScale - Forms L = R*1/diag(R*1) - L.*v is like a coarse grid average of the
-      nearby fine grid points.
-
-  Input Parameters:
-+      dac - DM that defines a coarse mesh
-.      daf - DM that defines a fine mesh
--      mat - the restriction (or interpolation operator) from fine to coarse
-
-  Output Parameter:
-.    scale - the scaled vector
-
-  Level: developer
-
-.seealso: DMCreateInterpolation()
-
-@*/
-PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
-{
-  PetscErrorCode ierr;
-  Vec            fine;
-  PetscScalar    one = 1.0;
-
-  PetscFunctionBegin;
-  ierr = DMCreateGlobalVector(daf,&fine);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dac,scale);CHKERRQ(ierr);
-  ierr = VecSet(fine,one);CHKERRQ(ierr);
-  ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
-  ierr = VecDestroy(&fine);CHKERRQ(ierr);
-  ierr = VecReciprocal(*scale);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*
    Since the interpolation uses MATMAIJ for dof > 0 we convert request for non-MATAIJ baseded matrices to MATAIJ.
    This is a bit of a hack, the reason for it is partially because -dm_mat_type defines the
