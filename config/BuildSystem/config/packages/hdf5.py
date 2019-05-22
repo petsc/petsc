@@ -57,6 +57,4 @@ class Configure(config.package.GNUPackage):
       # libraries, but fall back to linking only C.
       self.liblist = [['libhdf5hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] + self.liblist
     config.package.GNUPackage.configureLibrary(self)
-    if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
-      self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)
     return

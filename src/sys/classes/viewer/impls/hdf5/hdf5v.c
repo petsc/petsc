@@ -369,9 +369,6 @@ PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer viewer,PetscBool *flg)
 static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  MPI_Info          info = MPI_INFO_NULL;
-#endif
   hid_t             plist_id;
   PetscErrorCode    ierr;
 
@@ -381,9 +378,7 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
   ierr = PetscStrallocpy(name, &hdf5->filename);CHKERRQ(ierr);
   /* Set up file access property list with parallel I/O access */
   PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  PetscStackCallHDF5(H5Pset_fapl_mpio,(plist_id, PetscObjectComm((PetscObject)viewer), info));
-#endif
+  PetscStackCallHDF5(H5Pset_fapl_mpio,(plist_id, PetscObjectComm((PetscObject)viewer), MPI_INFO_NULL));
   /* Create or open the file collectively */
   switch (hdf5->btype) {
   case FILE_MODE_READ:
