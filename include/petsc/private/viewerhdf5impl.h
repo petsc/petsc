@@ -15,6 +15,7 @@ typedef struct {
   char          *filename;
   PetscFileMode btype;
   hid_t         file_id;
+  hid_t         dxpl_id;   /* H5P_DATASET_XFER property list controlling raw data transfer (read/write). Properties are modified using H5Pset_dxpl_* functions. */
   PetscInt      timestep;
   PetscViewerHDF5GroupList *groups;
   PetscBool     basedimension2;  /* save vectors and DMDA vectors with a dimension of at least 2 even if the bs/dof is 1 */

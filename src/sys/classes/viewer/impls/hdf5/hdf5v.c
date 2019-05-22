@@ -83,6 +83,7 @@ static PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  PetscStackCallHDF5(H5Pclose,(hdf5->dxpl_id));
   ierr = PetscViewerFileClose_HDF5(viewer);CHKERRQ(ierr);
   while (hdf5->groups) {
     PetscViewerHDF5GroupList *tmp = hdf5->groups->next;
@@ -353,6 +354,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   hdf5->filename         = 0;
   hdf5->timestep         = -1;
   hdf5->groups           = NULL;
+
+  PetscStackCallHDF5Return(hdf5->dxpl_id,H5Pcreate,(H5P_DATASET_XFER));
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_HDF5);CHKERRQ(ierr);
