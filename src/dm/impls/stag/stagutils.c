@@ -476,6 +476,34 @@ PetscErrorCode DMStagGetNumRanks(DM dm,PetscInt *nRanks0,PetscInt *nRanks1,Petsc
 }
 
 /*@C
+  DMStagGetEntries - get number of native entries in the global representation
+
+  Not Collective
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameters:
+. entries - number of rank-native entries in the global representation
+
+  Note:
+  This is the number of entries on this rank for a global vector associated with dm.
+
+  Level: developer
+
+.seealso: DMSTAG, DMStagGetDOF(), DMStagGetEntriesPerElement(), DMCreateLocalVector()
+@*/
+PetscErrorCode DMStagGetEntries(DM dm,PetscInt *entries)
+{
+  const DM_Stag * const stag = (DM_Stag*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (entries) *entries = stag->entries;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   DMStagGetEntriesPerElement - get number of entries per element in the local representation
 
   Not Collective
