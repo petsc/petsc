@@ -100,9 +100,27 @@ PetscErrorCode DMStagGetLocationDOF(DM dm,DMStagStencilLocation loc,PetscInt *do
   PetscFunctionReturn(0);
 }
 
-/* Convert an array of DMStagStencil objects to an array of indices into a local vector.
-  The .c fields in pos must always be set (even if to 0).  */
-static PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagStencil *pos,PetscInt *ix)
+/*@C
+  DMStagStencilToIndexLocal - Convert an array of DMStagStencil objects to an array of indices into a local vector.
+
+  Not Collective
+
+  Input Parameters:
++ dm - the DMStag object
+. n - the number of DMStagStencil objects
+- pos - an array of n DMStagStencil objects
+
+  Output Parameter:
+. ix - output array of n indices
+
+  Notes:
+  The .c fields in pos must always be set (even if to 0).
+
+  Level: developer
+
+.seealso: DMSTAG, DMStagStencilLocation, DMStagStencil, DMGetLocalVector, DMCreateLocalVector
+@*/
+PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagStencil *pos,PetscInt *ix)
 {
   PetscErrorCode        ierr;
   const DM_Stag * const stag = (DM_Stag*)dm->data;
