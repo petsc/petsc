@@ -1,4 +1,5 @@
 #include <petsc/private/viewerimpl.h>
+#include <petsc/private/viewerhdf5impl.h>
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE < 10800)
 #error "PETSc needs HDF5 version >= 1.8.0"
@@ -6,21 +7,6 @@
 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer, const char[], PetscBool, PetscBool*, H5O_type_t*);
 static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool*);
-
-typedef struct GroupList {
-  const char       *name;
-  struct GroupList *next;
-} GroupList;
-
-typedef struct {
-  char          *filename;
-  PetscFileMode btype;
-  hid_t         file_id;
-  PetscInt      timestep;
-  GroupList     *groups;
-  PetscBool     basedimension2;  /* save vectors and DMDA vectors with a dimension of at least 2 even if the bs/dof is 1 */
-  PetscBool     spoutput;  /* write data in single precision even if PETSc is compiled with double precision PetscReal */
-} PetscViewer_HDF5;
 
 static PetscErrorCode PetscViewerHDF5GetAbsolutePath_Internal(PetscViewer viewer, const char objname[], char **fullpath)
 {
@@ -99,7 +85,7 @@ static PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerFileClose_HDF5(viewer);CHKERRQ(ierr);
   while (hdf5->groups) {
-    GroupList *tmp = hdf5->groups->next;
+    PetscViewerHDF5GroupList *tmp = hdf5->groups->next;
 
     ierr         = PetscFree(hdf5->groups->name);CHKERRQ(ierr);
     ierr         = PetscFree(hdf5->groups);CHKERRQ(ierr);
@@ -463,7 +449,7 @@ PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  GroupList        *groupNode;
+  PetscViewerHDF5GroupList *groupNode;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -492,7 +478,7 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  GroupList        *groupNode;
+  PetscViewerHDF5GroupList *groupNode;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
