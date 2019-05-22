@@ -92,9 +92,6 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-FFLAGS=<string>',       nargs.Arg(None, None, 'Specify the Fortran compiler options'))
     help.addArgument('Compilers', '-FC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the FC linker flags'))
 
-    help.addArgument('Compilers', '-with-gnu-compilers=<bool>',      nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
-    help.addArgument('Compilers', '-with-vendor-compilers=<vendor as string>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
-
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
 
     help.addArgument('Compilers', '-CUDAPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
@@ -446,16 +443,6 @@ class Configure(config.base.Configure):
       return 1
     return 0
 
-  def checkVendor(self):
-    '''Determine the compiler vendor'''
-    self.vendor = self.argDB['with-vendor-compilers']
-    if self.argDB['with-vendor-compilers'] == 'no' or self.argDB['with-vendor-compilers'] == 'false':
-      self.vendor = None
-    if self.argDB['with-vendor-compilers'] == '1' or self.argDB['with-vendor-compilers'] == 'yes' or self.argDB['with-vendor-compilers'] == 'true':
-      self.vendor = ''
-    self.logPrint('Compiler vendor is "'+str(self.vendor)+'"')
-    return
-
   def checkInitialFlags(self):
     '''Initialize the compiler and linker flags'''
     for language in ['C', 'CUDA', 'Cxx', 'FC']:
@@ -510,8 +497,7 @@ class Configure(config.base.Configure):
     return
 
   def generateCCompilerGuesses(self):
-    '''Determine the C compiler using CC, then --with-cc, then MPI, then GNU, then vendors
-       - Any given category can be excluded'''
+    '''Determine the C compiler '''
     if hasattr(self, 'CC'):
       yield self.CC
     elif 'with-cc' in self.argDB:
@@ -544,49 +530,22 @@ class Configure(config.base.Configure):
         self.argDB['with-mpi-compilers'] = 0
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpicc', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpicc'
-        if Configure.isGNU('hcc', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'hcc'
-        if not Configure.isGNU('mpicc', self.log) and (not self.vendor is None):
-          yield 'mpicc'
-        if not Configure.isGNU('hcc', self.log) and (not self.vendor is None):
-          yield 'hcc'
-        if not self.vendor is None:
-          yield 'mpcc_r'
-          yield 'mpcc'
-          yield 'mpxlc'
+        yield 'mpicc'
+        yield 'mpiicc'
+        yield 'mpcc_r'
+        yield 'mpcc'
+        yield 'mpxlc'
+        yield 'hcc'
         self.usedMPICompilers = 0
-      vendor = self.vendor
-      if (not vendor) and self.argDB['with-gnu-compilers']:
-        yield 'gcc'
-        if Configure.isGNU('cc', self.log):
-          yield 'cc'
-      if not self.vendor is None:
-        if not vendor and not Configure.isGNU('cc', self.log):
-          yield 'cc'
-        if vendor == 'borland' or not vendor:
-          yield 'win32fe bcc32'
-        if vendor == 'kai' or not vendor:
-          yield 'kcc'
-        if vendor == 'ibm' or not vendor:
-          yield 'xlc'
-        if vendor == 'intel' or not vendor:
-          yield 'icc'
-          yield 'ecc'
-          yield 'win32fe icl'
-        if vendor == 'microsoft' or not vendor:
-          yield 'win32fe cl'
-        if vendor == 'portland' or not vendor:
-          yield 'pgcc'
-        if vendor == 'solaris' or not vendor:
-          if not Configure.isGNU('cc', self.log):
-            yield 'cc'
-      # duplicate code
-      if self.argDB['with-gnu-compilers']:
-        yield 'gcc'
-        if Configure.isGNU('cc', self.log):
-          yield 'cc'
+      yield 'gcc'
+      yield 'clang'
+      yield 'icc'
+      yield 'cc'
+      yield 'xlc'
+      yield 'win32fe icl'
+      yield 'win32fe cl'
+      yield 'pgcc'
+      yield 'win32fe bcc32'
     return
 
   def checkCCompiler(self):
@@ -639,7 +598,7 @@ class Configure(config.base.Configure):
 
   def generateCUDACompilerGuesses(self):
     import os
-    '''Determine the CUDA compiler using CUDAC, then --with-cudac, then vendors
+    '''Determine the CUDA compiler using CUDAC, then --with-cudac
        - Any given category can be excluded'''
     if hasattr(self, 'CUDAC'):
       yield self.CUDAC
@@ -654,10 +613,6 @@ class Configure(config.base.Configure):
       nvccPath = os.path.join(self.argDB['with-cuda-dir'], 'bin','nvcc')
       yield nvccPath
     else:
-      vendor = self.vendor
-      if not self.vendor is None:
-        if vendor == 'nvidia' or not vendor:
-          yield 'nvcc'
       yield 'nvcc'
       yield os.path.join('/Developer','NVIDIA','CUDA-6.5','bin','nvcc')
       yield os.path.join('/usr','local','cuda','bin','nvcc')
@@ -718,8 +673,7 @@ class Configure(config.base.Configure):
     return
 
   def generateCxxCompilerGuesses(self):
-    '''Determine the Cxx compiler using CXX, then --with-cxx, then MPI, then GNU, then vendors
-       - Any given category can be excluded'''
+    '''Determine the Cxx compiler'''
     import os
 
     if hasattr(self, 'CXX'):
@@ -755,65 +709,41 @@ class Configure(config.base.Configure):
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpicxx', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpicxx'
-        if not Configure.isGNU('mpicxx', self.log) and (not self.vendor is None):
-          yield 'mpicxx'
-        if Configure.isGNU('mpiCC', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpiCC'
-        if not Configure.isGNU('mpiCC', self.log) and (not self.vendor is None):
-          yield 'mpiCC'
-        if Configure.isGNU('mpic++', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpic++'
-        if not Configure.isGNU('mpic++', self.log) and (not self.vendor is None):
-          yield 'mpic++'
-        if not self.vendor is None:
-          yield 'mpCC_r'
-          yield 'mpCC'
+        yield 'mpicxx'
+        yield 'mpiicpc'
+        yield 'mpCC_r'
+        yield 'mpiCC'
+        yield 'mpic++'
+        yield 'mpCC'
+        yield 'mpxlC'
         self.usedMPICompilers = 0
       #attempt to match c++ compiler with c compiler
       if self.CC.find('win32fe cl') >= 0:
         yield 'win32fe cl'
       elif self.CC.find('win32fe icl') >= 0:
         yield 'win32fe icl'
+      elif self.CC == 'gcc':
+        yield 'g++'
       elif self.CC == 'clang':
         yield 'clang++'
       elif self.CC == 'icc':
         yield 'icpc'
-      vendor = self.vendor
-      if (not vendor) and self.argDB['with-gnu-compilers']:
-        yield 'g++'
-        if Configure.isGNU('c++', self.log):
-          yield 'c++'
-      if not self.vendor is None:
-        if not vendor:
-          if not Configure.isGNU('c++', self.log):
-            yield 'c++'
-          if not Configure.isGNU('CC', self.log):
-            yield 'CC'
-          yield 'cxx'
-          yield 'cc++'
-        if vendor == 'borland' or not vendor:
-          yield 'win32fe bcc32'
-        if vendor == 'ibm' or not vendor:
-          yield 'xlC'
-        if vendor == 'intel' or not vendor:
-          yield 'icpc'
-          yield 'ccpc'
-          yield 'icc'
-          yield 'ecc'
-          yield 'win32fe icl'
-        if vendor == 'microsoft' or not vendor:
-          yield 'win32fe cl'
-        if vendor == 'portland' or not vendor:
-          yield 'pgCC'
-        if vendor == 'solaris':
-          yield 'CC'
-      #duplicate code
-      if self.argDB['with-gnu-compilers']:
-        yield 'g++'
-        if Configure.isGNU('c++', self.log):
-          yield 'c++'
+      elif self.CC == 'xlc':
+        yield 'xlC'
+      yield 'g++'
+      yield 'clang++'
+      yield 'c++'
+      yield 'icpc'
+      yield 'CC'
+      yield 'cxx'
+      yield 'cc++'
+      yield 'xlC'
+      yield 'ccpc'
+      yield 'win32fe icl'
+      yield 'win32fe cl'
+      yield 'pgCC'
+      yield 'CC'
+      yield 'win32fe bcc32'
     return
 
   def checkCxxCompiler(self):
@@ -877,8 +807,7 @@ class Configure(config.base.Configure):
     return
 
   def generateFortranCompilerGuesses(self):
-    '''Determine the Fortran compiler using FC, then --with-fc, then MPI, then GNU, then vendors
-       - Any given category can be excluded'''
+    '''Determine the Fortran compiler'''
     import os
 
     if hasattr(self, 'FC'):
@@ -900,76 +829,50 @@ class Configure(config.base.Configure):
       self.usedMPICompilers = 1
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiifort')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')
-      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif77')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf90')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf90_r')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
-      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf90')
-      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf77')
       self.usedMPICompilers = 0
-      if os.path.isfile(os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isfile((os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
-        raise RuntimeError('bin/mpif90[f77] you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      if os.path.isfile(os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')):
+        raise RuntimeError('bin/mpif90 you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpif90', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpif90'
-        if not Configure.isGNU('mpif90', self.log) and (not self.vendor is None):
-          yield 'mpif90'
-        if Configure.isGNU('mpif77', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpif77'
-        if not Configure.isGNU('mpif77', self.log) and (not self.vendor is None):
-          yield 'mpif77'
-        if not self.vendor is None:
-          yield 'mpxlf_r'
-          yield 'mpxlf'
-          yield 'mpf90'
-          yield 'mpf77'
+        yield 'mpif90'
+        yield 'mpiifort'
+        yield 'mpxlf_r'
+        yield 'mpxlf'
+        yield 'mpf90'
         self.usedMPICompilers = 0
       #attempt to match fortran compiler with c compiler
-      if self.CC.find('win32fe cl') >= 0:
+      if self.CC == 'gcc':
+        yield 'gfortran'
+      elif self.CC == 'clang':
+        yield 'gfortran'
+      elif self.CC == 'icc':
+        yield 'ifort'
+      elif self.CC == 'xlc':
+        yield 'xlf90'
+        yield 'xlf'
+      elif self.CC.find('win32fe cl') >= 0:
         yield 'win32fe f90'
         yield 'win32fe ifc'
       elif self.CC.find('win32fe icl') >= 0:
         yield 'win32fe ifc'
-      elif self.CC == 'icc':
-        yield 'ifort'
-      vendor = self.vendor
-      if (not vendor) and self.argDB['with-gnu-compilers']:
-        yield 'gfortran'
-        yield 'g95'
-        yield 'g77'
-        if Configure.isGNU('f77', self.log):
-          yield 'f77'
-      if not self.vendor is None:
-        if vendor == 'ibm' or not vendor:
-          yield 'xlf'
-          yield 'xlf90'
-        if not vendor or vendor in ['absoft', 'cray', 'dec', 'hp', 'sgi']:
-          yield 'f90'
-        if vendor == 'lahaye' or not vendor:
-          yield 'lf95'
-        if vendor == 'intel' or not vendor:
-          yield 'win32fe ifort'
-          yield 'win32fe ifl'
-          yield 'ifort'
-          yield 'ifc'
-          yield 'efc'
-        if vendor == 'portland' or not vendor:
-          yield 'pgf90'
-          yield 'pgf77'
-        if vendor == 'solaris' or not vendor:
-          yield 'f95'
-          yield 'f90'
-          if not Configure.isGNU('f77', self.log):
-            yield 'f77'
-      #duplicate code
-      if self.argDB['with-gnu-compilers']:
-        yield 'gfortran'
-        yield 'g95'
-        yield 'g77'
-        if Configure.isGNU('f77', self.log):
-          yield 'f77'
+      yield 'gfortran'
+      yield 'g95'
+      yield 'xlf90'
+      yield 'xlf'
+      yield 'f90'
+      yield 'lf95'
+      yield 'win32fe ifort'
+      yield 'win32fe ifl'
+      yield 'ifort'
+      yield 'ifc'
+      yield 'pgf90'
+      yield 'f95'
+      yield 'f90'
     return
 
   def checkFortranCompiler(self):
@@ -987,7 +890,7 @@ class Configure(config.base.Configure):
       except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('Error testing Fortran compiler: '+str(e))
-        if os.path.basename(self.FC) in ['mpif90', 'mpif77']:
+        if os.path.basename(self.FC) in ['mpif90']:
           self.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         self.delMakeMacro('FC')
         del self.FC
@@ -1628,7 +1531,7 @@ if (dlclose(handle)) {
 
     if 'with-mpi-dir' in self.argDB and self.argDB['with-mpi-compilers']:
       optcplrs = [(['with-cc','CC'],['mpiicc','mpicc','mpcc','hcc','mpcc_r']),
-              (['with-fc','FC'],['mpiifort','mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
+              (['with-fc','FC'],['mpiifort','mpif90','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90']),
               (['with-cxx','CXX'],['mpiicpc','mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
       for opts,cplrs in optcplrs:
         for opt in opts:
@@ -1719,7 +1622,6 @@ if (dlclose(handle)) {
     self.executeTest(self.checkEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.requireMpiLdPath)
-    self.executeTest(self.checkVendor)
     self.executeTest(self.checkInitialFlags)
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
