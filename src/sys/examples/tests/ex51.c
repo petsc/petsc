@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscBool      found;
   char           localname[PETSC_MAX_PATH_LEN];
-  const char     url[] = "http://www.mcs.anl.gov/petsc/index.html";
+  const char     url[] = "https://www.mcs.anl.gov/petsc/index.html";
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.

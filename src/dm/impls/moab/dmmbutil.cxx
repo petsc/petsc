@@ -807,7 +807,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 . dim - The spatial dimension
 . filename - The name of the mesh file to be loaded
 . usrreadopts - The options string to read a MOAB mesh.
-  Reference (Parallel Mesh Initialization: http://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html#fivetwo)
+  Reference (Parallel Mesh Initialization: https://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html#fivetwo)
 
   Output Parameter:
 . dm  - The DM object

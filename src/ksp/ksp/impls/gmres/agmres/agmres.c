@@ -729,7 +729,7 @@ There are  many ongoing work that aim at avoiding (or minimizing) the communicat
  Inputs from Guy Atenekeng <atenekeng@yahoo.com> and R.B. Sidje <roger.b.sidje@ua.edu>
 
  References :
- +   [1] D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflated restarting. Research report INRIA RR-7787, November 2011,http://hal.inria.fr/inria-00638247/en,  in revision for ETNA.
+ +   [1] D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflated restarting. Research report INRIA RR-7787, November 2011,https://hal.inria.fr/inria-00638247/en,  in revision for ETNA.
  .  [2] D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids, In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
  .  [3] B. Philippe and L. Reichel, On the generation of Krylov subspace bases, Applied Numerical
 Mathematics, 62(9), pp. 1171-1186, 2012

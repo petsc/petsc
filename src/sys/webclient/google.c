@@ -6,7 +6,7 @@
 /*
    These variables identify the code as a PETSc application to Google.
 
-   See -   http://stackoverflow.com/questions/4616553/using-oauth-in-free-open-source-software
+   See -   https://stackoverflow.com/questions/4616553/using-oauth-in-free-open-source-software
    Users can get their own application IDs - https://code.google.com/p/google-apps-manager/wiki/GettingAnOAuthConsoleKey
 
 */

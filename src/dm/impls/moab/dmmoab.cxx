@@ -14,7 +14,7 @@
                     field-based/blocked Vec(Get/Set) methods. Input from and output to different formats are
                     available.
 
-  Reference: http://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html
+  Reference: https://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html
 
   Level: intermediate
 

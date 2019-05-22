@@ -26,8 +26,8 @@ static const char citation[] =
 "pages = {667-696},\n"
 "year = {2014},\n"
 "doi = {10.1142/S0218202513500632},\n"
-"URL = {http://www.worldscientific.com/doi/abs/10.1142/S0218202513500632},\n"
-"eprint = {http://www.worldscientific.com/doi/pdf/10.1142/S0218202513500632}\n"
+"URL = {https://www.worldscientific.com/doi/abs/10.1142/S0218202513500632},\n"
+"eprint = {https://www.worldscientific.com/doi/pdf/10.1142/S0218202513500632}\n"
 "}\n";
 static const char citation2[] =
 "@article{li2013nonoverlapping,\n"

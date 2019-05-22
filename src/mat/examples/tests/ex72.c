@@ -2,7 +2,7 @@ static char help[] = "Read a non-complex sparse matrix from a Matrix Market (v. 
 and write it to a file in petsc sparse binary format. If the matrix is symmetric, the binary file is in \n\
 PETSc MATSBAIJ format, otherwise it is in MATAIJ format \n\
 Usage:  ./ex72 -fin <infile> -fout <outfile> \n\
-(See http://math.nist.gov/MatrixMarket for details.)\n\
+(See https://math.nist.gov/MatrixMarket/ for details.)\n\
 The option -aij_only allows to use MATAIJ for all cases.\n\\n";
 
 /*

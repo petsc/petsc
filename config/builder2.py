@@ -308,7 +308,7 @@ if __name__ == '__main__':
   import argparse
 
   parser = argparse.ArgumentParser(description     = 'PETSc BuildSystem',
-                                   epilog          = 'For more information, visit http://www.mcs.anl.gov/petsc',
+                                   epilog          = 'For more information, visit https://www.mcs.anl.gov/petsc',
                                    formatter_class = argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('--version', action='version', version='PETSc BuildSystem 0.1')
   subparsers = parser.add_subparsers(help='build actions')

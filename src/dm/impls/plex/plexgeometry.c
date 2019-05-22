@@ -493,7 +493,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr = DMLabelCreate(PETSC_COMM_SELF, "cells", &lbox->cellsSparse);CHKERRQ(ierr);
   ierr = DMLabelCreateIndex(lbox->cellsSparse, cStart, cEnd);CHKERRQ(ierr);
-  /* Compute boxes which overlap each cell: http://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
+  /* Compute boxes which overlap each cell: https://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscCalloc2(16 * dim, &dboxes, 16, &boxes);CHKERRQ(ierr);

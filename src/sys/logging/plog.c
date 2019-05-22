@@ -1832,7 +1832,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   directory then open filename.xml with your browser. Specific notes for certain browsers
 $    Firefox and Internet explorer - simply open the file
 $    Google Chrome - you must start up Chrome with the option --allow-file-access-from-files
-$    Safari - see http://ccm.net/faq/36342-safari-how-to-enable-local-file-access
+$    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-access
   or one can use the package http://xmlsoft.org/XSLT/xsltproc2.html to translate the xml file to html and then open it with 
   your browser.
   Alternatively, use the script ${PETSC_DIR}/lib/petsc/bin/petsc-performance-view to automatically open a new browser

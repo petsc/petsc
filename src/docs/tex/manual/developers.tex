@@ -87,12 +87,12 @@ computation. This document provides information for PETSc
 developers and those wishing to contribute to PETSc. The text assumes
 that you are familiar with PETSc and have access to PETSc source code
 and documentation (available
-via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}) including the PETSc users manual \cite{petsc-user-ref}.
+via \href{https://www.mcs.anl.gov/petsc}{https://www.mcs.anl.gov/petsc}) including the PETSc users manual \cite{petsc-user-ref}.
 Higher-level views of PETSc can be found in \cite{s2011}, \cite{bgms00}, \cite{miss-paper}, \cite{bgms98}, and \cite{petsc-efficient}. 
 
 Before contributing code to PETSc, please read Chapter \ref{chapter:styleguide}, which contains the source code style guide.
 Information on how to submit patches and pull requests to PETSc can be found at
-\href{http://www.mcs.anl.gov/petsc/developers/index.html}{http://www.mcs.anl.gov/petsc/developers/index.html}.
+\href{https://www.mcs.anl.gov/petsc/developers/index.html}{https://www.mcs.anl.gov/petsc/developers/index.html}.
 
 \vspace{1cm}
 
@@ -502,7 +502,7 @@ These are currently always \lstinline{int}, but their use clarifies the code.
 PETSc  uses a ``call error handler; then (depending on result) return
 error code'' model when problems are detected in the running code.
 The public include file for error handling is
- \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}},
+ \href{https://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}},
  and the source code for the PETSc error handling is in \trl{src/sys/error/}.
 
 \subsection{Simplified Interface}
@@ -552,7 +552,7 @@ PetscErrorCode PetscError(MPI_Comm,int line,const char *func,const char *file,er
 }
 \end{lstlisting}
 The variable \lstinline{eh} is the current error handler context and is defined in
- \href{http://www.mcs.anl.gov/petsc/petsc-master/src/sys/error/err.c.html}{\trl{src/sys/error/err.c}} as
+ \href{https://www.mcs.anl.gov/petsc/petsc-master/src/sys/error/err.c.html}{\trl{src/sys/error/err.c}} as
 \begin{lstlisting}
 typedef struct _PetscEH* PetscEH;
 struct _PetscEH {
@@ -582,7 +582,7 @@ PETSc provides several default error handlers:
 
 The PETSc error handler takes an error code.
 The generic error codes are defined in
-\href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}}.
+\href{https://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}}.
 The same error code is used many times in the libraries.
 For example, the error code \lstinline{PETSC_ERR_MEM} is used whenever a requested memory allocation is not available.
 
@@ -658,7 +658,7 @@ The routines \lstinline{PetscTrMallocDefault()} and \lstinline{PetscTrFreeDefaul
 This section provides details about the implementation of event
 logging and profiling within the PETSc kernel.
 The interface for profiling in PETSc is contained in the file
-\href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsclog.h.html}{\trl{include/petsclog.h}}. The source code for the profile logging
+\href{https://www.mcs.anl.gov/petsc/petsc-master/include/petsclog.h.html}{\trl{include/petsclog.h}}. The source code for the profile logging
 is in \trl{src/sys/plog/}.
 
 \subsection{Profiling Object Creation and Destruction}
@@ -703,7 +703,7 @@ PetscLogEventBegin(PetscLogEvent event,PetscObject o1,...,PetscObject o4);
 PetscLogEventEnd(PetscLogEvent event,PetscObject o1,...,PetscObject o4);
 \end{lstlisting}
 This logging is usually done in the abstract
-interface file for the operations, for example, \href{http://www.mcs.anl.gov/petsc/petsc-master/src/mat/interface/matrix.c.html}{\trl{src/mat/interface/matrix.c}}.
+interface file for the operations, for example, \href{https://www.mcs.anl.gov/petsc/petsc-master/src/mat/interface/matrix.c.html}{\trl{src/mat/interface/matrix.c}}.
 
 \subsection{Controlling Profiling}
 
@@ -796,7 +796,7 @@ without altering or recompiling the application code.
 \section{Common Object Header}
 
 All PETSc/PETSc objects have the following common header structures
-defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/petscimpl.h.html}{\trl{include/petsc/private/petscimpl.h}}:
+defined in \href{https://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/petscimpl.h.html}{\trl{include/petsc/private/petscimpl.h}}:
 
 \begin{lstlisting}[caption=Function table common to all PETSc-compatible classes]
 typedef struct {
@@ -833,7 +833,7 @@ struct _p_<class> {
 \end{lstlisting}
 Here \lstinline{<class>ops} is a function table (like the \lstinline{PetscOps} above) that
 contains the function pointers for the operations specific to that class.
-For example, the PETSc vector class object operations in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/vecimple.h.html}{\trl{include/petsc/private/vecimpl.h}} include the following.
+For example, the PETSc vector class object operations in \href{https://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/vecimple.h.html}{\trl{include/petsc/private/vecimpl.h}} include the following.
 
 \begin{lstlisting}[caption=Function table common to all PETSc-compatible vector objects (truncated)]
 typedef struct _VecOps* VecOps;
@@ -969,7 +969,7 @@ manner; but unless there is a specific reason, they should use the PETSc default
 not have to ``reinvent the wheel.''
 
 \subsection{Compose and Query Objects}
-In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{\trl{src/sys/objects/olist.c}}, PETSc defines a C \lstinline{struct}
+In \href{https://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{\trl{src/sys/objects/olist.c}}, PETSc defines a C \lstinline{struct}
 \begin{lstlisting}
   typedef struct _PetscObjectList* PetscObjectList;
   struct _PetscObjectList {
@@ -990,7 +990,7 @@ The function \lstinline{PetscObjectListAdd()} will create the initial PetscObjec
 \lstinline{fl} points to a NULL.
 
 The PETSc object \lstinline{compose()} and \lstinline{query()} functions are
-as follows (defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/inherit.c.html}{\trl{src/sys/objects/inherit.c}}).
+as follows (defined in \href{https://www.mcs.anl.gov/petsc/petsc-master/src/objects/inherit.c.html}{\trl{src/sys/objects/inherit.c}}).
 \begin{lstlisting}
 PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char *name,PetscObject ptr)
 {
@@ -1014,7 +1014,7 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char *name,PetscObje
 \subsection{Compose and Query Functions}
 
 PETSc allows you to compose functions by specifying a name and function pointer.
-In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/sys/dll/reg.c.html}{\trl{src/sys/dll/reg.c}},
+In \href{https://www.mcs.anl.gov/petsc/petsc-master/src/sys/dll/reg.c.html}{\trl{src/sys/dll/reg.c}},
 PETSc defines the following linked list structure.
 
 \begin{lstlisting}

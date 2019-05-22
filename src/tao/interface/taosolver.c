@@ -207,7 +207,7 @@ PetscErrorCode TaoSolve(Tao tao)
                                 "Institution = {Argonne National Laboratory},\n"
                                 "Year   = 2014,\n"
                                 "Number = {ANL/MCS-TM-322 - Revision 3.5},\n"
-                                "url    = {http://www.mcs.anl.gov/tao}\n}\n",&set);CHKERRQ(ierr);
+                                "url    = {https://www.mcs.anl.gov/research/projects/tao/}\n}\n",&set);CHKERRQ(ierr);
   tao->header_printed = PETSC_FALSE;
   ierr = TaoSetUp(tao);CHKERRQ(ierr);
   ierr = TaoResetStatistics(tao);CHKERRQ(ierr);

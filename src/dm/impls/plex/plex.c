@@ -2651,8 +2651,8 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
 static PetscErrorCode DMPlexCreateDimStratum(DM,DMLabel,DMLabel,PetscInt,PetscInt);
 
 /*@
-  DMPlexStratify - The DAG for most topologies is a graded poset (http://en.wikipedia.org/wiki/Graded_poset), and
-  can be illustrated by a Hasse Diagram (a http://en.wikipedia.org/wiki/Hasse_diagram). The strata group all points of the
+  DMPlexStratify - The DAG for most topologies is a graded poset (https://en.wikipedia.org/wiki/Graded_poset), and
+  can be illustrated by a Hasse Diagram (https://en.wikipedia.org/wiki/Hasse_diagram). The strata group all points of the
   same grade, and this function calculates the strata. This grade can be seen as the height (or depth) of the point in
   the DAG.
 

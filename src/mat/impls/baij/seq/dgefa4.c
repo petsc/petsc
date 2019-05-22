@@ -156,7 +156,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(float *a)
      See: Streaming SIMD Extensions -- Inverse of 4x4 Matrix
      Order Number: 245043-001
      March 1999
-     http://www.intel.com
+     https://www.intel.com/content/www/us/en/homepage.html
 
      Inverse of a 4x4 matrix via Kramer's Rule:
      bool Invert4x4(SMLXMatrix &);

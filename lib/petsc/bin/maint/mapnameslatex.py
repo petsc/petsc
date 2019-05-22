@@ -291,13 +291,13 @@ if __name__ == "__main__":
                         # NOTE: The latex listings escapechar ($) is hard-coded here 
                         # and must match the latex source 
                         # (see src/docs/tex/manual/manualpreamble.tex)
-                        value = '$\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}$'
+                        value = '$\\href{'+'https://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}$'
                     elif lstinline_bracket > 0 :
-                        value = '}\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline{'+mvalue+'}}\\findex{'+value+'}\\lstinline{' #end and start a new inside href
+                        value = '}\\href{'+'https://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline{'+mvalue+'}}\\findex{'+value+'}\\lstinline{' #end and start a new inside href
                     elif lstinlinemod_bracket > 0 :
-                        value = '|\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline|'+mvalue+'|}\\findex{'+value+'}\\lstinline|' #end and start a new inside href
+                        value = '|\\href{'+'https://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline|'+mvalue+'|}\\findex{'+value+'}\\lstinline|' #end and start a new inside href
                     else :
-                        value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
+                        value = '\\href{'+'https://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
         	value = token.value
             if token.value[0] == '}' and lstinline_bracket > 0 :

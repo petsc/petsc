@@ -1582,7 +1582,7 @@ $    idxm(MatStencil_c,1) = c
    a single value per point) you can skip filling those indices.
 
    Inspired by the structured grid interface to the HYPRE package
-   (http://www.llnl.gov/CASC/hypre)
+   (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
    Efficiency Alert:
    The routine MatSetValuesBlockedStencil() may offer much better efficiency
@@ -1696,7 +1696,7 @@ $    idxm(MatStencil_k,1) = k
    in the matrix.
 
    Inspired by the structured grid interface to the HYPRE package
-   (http://www.llnl.gov/CASC/hypre)
+   (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
    Level: beginner
 
@@ -9866,7 +9866,7 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 
    Level: intermediate
 
-   Developers Note: There are ways to estimate the number of nonzeros in the resulting product, see for example, http://arxiv.org/abs/1006.4173
+   Developers Note: There are ways to estimate the number of nonzeros in the resulting product, see for example, https://arxiv.org/abs/1006.4173
      We should incorporate them into PETSc.
 
 .seealso: MatMatMult(), MatMatMultNumeric()

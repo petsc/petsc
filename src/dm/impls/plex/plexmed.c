@@ -15,7 +15,7 @@
   Output Parameter:
 . dm  - The DM object representing the mesh
 
-  Note: http://www.salome-platform.org/user-section/about/med, http://docs.salome-platform.org/latest/MED_index.html
+  Note: https://www.salome-platform.org/user-section/about/med, http://docs.salome-platform.org/latest/MED_index.html
 
   Level: beginner
 

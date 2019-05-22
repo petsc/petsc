@@ -3,7 +3,7 @@
 configure_options = [
   '--with-cc=clang',
   '--with-cxx=clang++',
-  '--with-fc=gfortran', # http://brew.sh/
+  '--with-fc=gfortran', # https://brew.sh/
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',

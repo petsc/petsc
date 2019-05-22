@@ -5,7 +5,7 @@
 configure_options = [
   '--with-cc=clang',
   '--with-cxx=clang++',
-  '--with-fc=gfortran', # http://brew.sh/
+  '--with-fc=gfortran', # https://brew.sh/
 
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-deprecated',
   '--with-clanguage=cxx',
