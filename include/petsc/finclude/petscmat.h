@@ -41,6 +41,7 @@
 #define MatPartitioningType character*(80)
 #define MatCoarsenType character*(80)
 #define MatCompositeType PetscEnum
+#define MatCompositeMergeType PetscEnum
 #define MatStencil PetscInt
 #define MatStencil_k 1
 #define MatStencil_j 2
