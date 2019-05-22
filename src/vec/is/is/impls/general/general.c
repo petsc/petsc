@@ -3,8 +3,8 @@
      Provides the functions for index sets (IS) defined by a list of integers.
 */
 #include <../src/vec/is/is/impls/general/general.h> /*I  "petscis.h"  I*/
-#include <petscviewer.h>
-#include <petscviewerhdf5.h>
+#include <petsc/private/viewerimpl.h>
+#include <petsc/private/viewerhdf5impl.h>
 
 static PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
 {
@@ -222,9 +222,9 @@ static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isou
 #if defined(PETSC_HAVE_HDF5)
 static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 {
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
   hid_t           filespace;  /* file dataspace identifier */
   hid_t           chunkspace; /* chunk dataset property identifier */
-  hid_t           plist_id;   /* property list identifier */
   hid_t           dset_id;    /* dataset identifier */
   hid_t           memspace;   /* memory dataspace identifier */
   hid_t           inttype;    /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
@@ -335,21 +335,13 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     PetscStackCallHDF5Return(filespace,H5Screate,(H5S_NULL));
   }
 
-  /* Create property list for collective dataset write */
-  PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_DATASET_XFER));
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  PetscStackCallHDF5(H5Pset_dxpl_mpio,(plist_id, H5FD_MPIO_COLLECTIVE));
-#endif
-  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
-
   ierr = ISGetIndices(is, &ind);CHKERRQ(ierr);
-  PetscStackCallHDF5(H5Dwrite,(dset_id, inttype, memspace, filespace, plist_id, ind));
+  PetscStackCallHDF5(H5Dwrite,(dset_id, inttype, memspace, filespace, hdf5->dxpl_id, ind));
   PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
   ierr = ISRestoreIndices(is, &ind);CHKERRQ(ierr);
 
   /* Close/release resources */
   PetscStackCallHDF5(H5Gclose,(group));
-  PetscStackCallHDF5(H5Pclose,(plist_id));
   PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Sclose,(memspace));
   PetscStackCallHDF5(H5Dclose,(dset_id));

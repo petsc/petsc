@@ -1,4 +1,5 @@
 #include <petsc/private/viewerimpl.h>
+#include <petsc/private/viewerhdf5impl.h>
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
 #include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load */
 #include <petscis.h>    /*I   "petscis.h"   I*/
@@ -6,7 +7,7 @@
 #if defined(PETSC_HAVE_HDF5)
 
 struct _n_HDF5ReadCtx {
-  hid_t file, group, dataset, dataspace, plist;
+  hid_t file, group, dataset, dataspace;
   PetscInt timestep;
   PetscBool complexVal, dim2, horizontal;
 };
@@ -27,12 +28,6 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   if (h->complexVal) {ierr = PetscViewerHDF5ReadAttribute(viewer,name,"complex",PETSC_BOOL,&h->complexVal);CHKERRQ(ierr);}
   /* MATLAB stores column vectors horizontally */
   ierr = PetscViewerHDF5HasAttribute(viewer,name,"MATLAB_class",&h->horizontal);CHKERRQ(ierr);
-  /* Create property list for collective dataset read */
-  PetscStackCallHDF5Return(h->plist,H5Pcreate,(H5P_DATASET_XFER));
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  PetscStackCallHDF5(H5Pset_dxpl_mpio,(h->plist, H5FD_MPIO_COLLECTIVE));
-#endif
-  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
   *ctx = h;
   PetscFunctionReturn(0);
 }
@@ -44,7 +39,6 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
 
   PetscFunctionBegin;
   h = *ctx;
-  PetscStackCallHDF5(H5Pclose,(h->plist));
   PetscStackCallHDF5(H5Gclose,(h->group));
   PetscStackCallHDF5(H5Sclose,(h->dataspace));
   PetscStackCallHDF5(H5Dclose,(h->dataset));
@@ -152,8 +146,10 @@ static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer vie
 
 static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5ReadCtx h, hid_t datatype, hid_t memspace, void *arr)
 {
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
   PetscFunctionBegin;
-  PetscStackCallHDF5(H5Dread,(h->dataset, datatype, memspace, h->dataspace, h->plist, arr));
+  PetscStackCallHDF5(H5Dread,(h->dataset, datatype, memspace, h->dataspace, hdf5->dxpl_id, arr));
   PetscFunctionReturn(0);
 }
 
