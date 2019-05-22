@@ -69,10 +69,10 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm,Vec *vec)
 static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
 {
   PetscErrorCode         ierr;
-  const DM_Stag * const  stag = (DM_Stag*)dm->data;
   MatType                matType;
   PetscBool              isaij,isshell;
-  PetscInt               width,nNeighbors,dim;
+  PetscInt               entries,width,nNeighbors,dim,dof[DMSTAG_MAX_STRATA],stencilWidth;
+  DMStagStencilType      stencilType;
   ISLocalToGlobalMapping ltogmap;
 
   PetscFunctionBegin;
@@ -80,24 +80,28 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
   ierr = DMGetMatType(dm,&matType);CHKERRQ(ierr);
   ierr = PetscStrcmp(matType,MATAIJ,&isaij);CHKERRQ(ierr);
   ierr = PetscStrcmp(matType,MATSHELL,&isshell);CHKERRQ(ierr);
+  ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
+  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
+  ierr = DMStagGetStencilWidth(dm,&stencilWidth);CHKERRQ(ierr);
+  ierr = DMStagGetStencilType(dm,&stencilType);CHKERRQ(ierr);
 
   if (isaij) {
     /* This implementation gives a very dense stencil, which is likely unsuitable for
        real applications. */
-    switch (stag->stencilType) {
+    switch (stencilType) {
       case DMSTAG_STENCIL_NONE:
         nNeighbors = 1;
         break;
       case DMSTAG_STENCIL_STAR:
         switch (dim) {
           case 1 :
-            nNeighbors = 2*stag->stencilWidth + 1;
+            nNeighbors = 2*stencilWidth + 1;
             break;
           case 2 :
-            nNeighbors = 4*stag->stencilWidth + 3;
+            nNeighbors = 4*stencilWidth + 3;
             break;
           case 3 :
-            nNeighbors = 6*stag->stencilWidth + 5;
+            nNeighbors = 6*stencilWidth + 5;
             break;
           default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
         }
@@ -105,24 +109,24 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
       case DMSTAG_STENCIL_BOX:
         switch (dim) {
           case 1 :
-            nNeighbors = (2*stag->stencilWidth + 1);
+            nNeighbors = (2*stencilWidth + 1);
             break;
           case 2 :
-            nNeighbors = (2*stag->stencilWidth + 1) * (2*stag->stencilWidth + 1);
+            nNeighbors = (2*stencilWidth + 1) * (2*stencilWidth + 1);
             break;
           case 3 :
-            nNeighbors = (2*stag->stencilWidth + 1) * (2*stag->stencilWidth + 1) * (2*stag->stencilWidth + 1);
+            nNeighbors = (2*stencilWidth + 1) * (2*stencilWidth + 1) * (2*stencilWidth + 1);
             break;
           default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
         }
         break;
       default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported stencil");
     }
-    width = (stag->dof[0] + stag->dof[1] + stag->dof[2] + stag->dof[3]) * nNeighbors;
-    ierr = MatCreateAIJ(PETSC_COMM_WORLD,stag->entries,stag->entries,PETSC_DETERMINE,PETSC_DETERMINE,width,NULL,width,NULL,mat);CHKERRQ(ierr);
+    width = (dof[0] + dof[1] + dof[2] + dof[3]) * nNeighbors;
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,entries,entries,PETSC_DETERMINE,PETSC_DETERMINE,width,NULL,width,NULL,mat);CHKERRQ(ierr);
   } else if (isshell) {
     ierr = MatCreate(PetscObjectComm((PetscObject)dm),mat);CHKERRQ(ierr);
-    ierr = MatSetSizes(*mat,stag->entries,stag->entries,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetSizes(*mat,entries,entries,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(*mat,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(*mat);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for Mattype %s",matType);
