@@ -1948,7 +1948,7 @@ distribution across the processes can (and should) be done in a ``pre-processing
 before the numerical computations. However, this does not mean it need be done
 in a separate, sequential program; rather, it should be done before one sets up the
 parallel grid data structures in the actual program. PETSc provides an interface to
-the ParMETIS (developed by George Karypis; see \href{https://www.mcs.anl.gov/petsc/documentation//installation.html}{\trl{$PETSC_DIR/docs/installation.html}}.
+the ParMETIS (developed by George Karypis; see \href{https://www.mcs.anl.gov/petsc/documentation/installation.html}{\trl{$PETSC_DIR/docs/installation.html}}.
 for directions on installing PETSc to use ParMETIS) to allow the partitioning to be done in
 parallel. PETSc does not currently provide directly support for dynamic
 repartitioning, load balancing by migrating matrix entries between processes, etc.
@@ -8362,7 +8362,7 @@ PETSc codes by \lstinline{PetscScalar}, is defined as \lstinline{complex} (or \l
  for machines using templated complex class
 libraries).  To work with complex numbers,
 the user should run \trl{./configure} with the additional option \trl{--with-scalar-type=complex}.
-The file \href{https://www.mcs.anl.gov/petsc/documentation//installation.html}{\trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}}
+The file \href{https://www.mcs.anl.gov/petsc/documentation/installation.html}{\trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}}
 provides detailed instructions for installing PETSc.
 You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} 
 to use the C++ complex type\footnote{Note that this option is not required to use PETSc with C++}.
