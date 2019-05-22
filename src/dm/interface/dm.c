@@ -3381,7 +3381,7 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
 
     Level: developer
 
-.seealso DMHasFunction(), DMCreateColoring()
+.seealso DMCreateColoring()
 
 @*/
 PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
@@ -3404,7 +3404,7 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMHasFunction(), DMCreateRestriction()
+.seealso DMCreateRestriction()
 
 @*/
 PetscErrorCode  DMHasCreateRestriction(DM dm,PetscBool  *flg)
@@ -3428,7 +3428,7 @@ PetscErrorCode  DMHasCreateRestriction(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMHasFunction(), DMCreateInjection()
+.seealso DMCreateInjection()
 
 @*/
 PetscErrorCode  DMHasCreateInjection(DM dm,PetscBool  *flg)
