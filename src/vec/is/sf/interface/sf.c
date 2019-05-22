@@ -998,7 +998,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
   ierr = PetscSFSetGraph(tmpsf,nroots,nleaves,NULL/*contiguous*/,PETSC_USE_POINTER,iremote,PETSC_USE_POINTER);CHKERRQ(ierr);
   ierr = PetscCalloc2(nroots,&rootdata,nleaves,&leafdata);CHKERRQ(ierr);
   for (i=0; i<nselected; ++i) {
-    if (selected[i] < 0 || selected[i] >= nroots) SETERRQ3(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_OUTOFRANGE,"Root index %D is not in [%D,%D)",selected[i],0,nroots);
+    if (selected[i] < 0 || selected[i] >= nroots) SETERRQ2(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_OUTOFRANGE,"Root index %D is not in [0,%D)",selected[i],nroots);
     rootdata[selected[i]] = 1;
   }
 
