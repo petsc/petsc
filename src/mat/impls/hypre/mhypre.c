@@ -3,6 +3,7 @@
     Creates hypre ijmatrix from PETSc matrix
 */
 
+#include <petscpkg_version.h>
 #include <petscmathypre.h>
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/hypre/mhypre.h>
@@ -59,7 +60,19 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
         nnz_o[i] = 0;
       }
     }
+#if PETSC_PKG_HYPRE_VERSION_GE(2,16,0)
+    { /* If we don't do this, the columns of the matrix will be all zeros! */
+      hypre_AuxParCSRMatrix *aux_matrix;
+      aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
+      hypre_AuxParCSRMatrixDestroy(aux_matrix);
+      hypre_IJMatrixTranslator(ij) = NULL;
+      PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(ij,(HYPRE_Int *)nnz_d,(HYPRE_Int *)nnz_o));
+      aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
+      hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 1;
+    }
+#else
     PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(ij,(HYPRE_Int *)nnz_d,(HYPRE_Int *)nnz_o));
+#endif
     ierr = PetscFree(nnz_d);CHKERRQ(ierr);
     ierr = PetscFree(nnz_o);CHKERRQ(ierr);
   }
@@ -201,14 +214,24 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   /* need to shift the diag column indices (hdiag->j) back to global numbering since hypre is expecting this */
   jj  = (PetscInt*)hdiag->j;
   pjj = (PetscInt*)pdiag->j;
+#if PETSC_PKG_HYPRE_VERSION_GE(2,16,0)
+  for (i=0; i<pdiag->nz; i++) jj[i] = pjj[i];
+#else
   for (i=0; i<pdiag->nz; i++) jj[i] = cstart + pjj[i];
+#endif
   ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
   ierr = PetscMemcpy(hoffd->i,poffd->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
   /* need to move the offd column indices (hoffd->j) back to global numbering since hypre is expecting this
      If we hacked a hypre a bit more we might be able to avoid this step */
+#if PETSC_PKG_HYPRE_VERSION_GE(2,16,0)
+  PetscStackCallStandard(hypre_CSRMatrixBigInitialize,(hoffd));
+  jj  = (PetscInt*) hoffd->big_j;
+#else
   jj  = (PetscInt*) hoffd->j;
+#endif
   pjj = (PetscInt*) poffd->j;
   for (i=0; i<poffd->nz; i++) jj[i] = garray[pjj[i]];
+
   ierr = PetscMemcpy(hoffd->data,poffd->a,poffd->nz*sizeof(PetscScalar));
 
   aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
@@ -1131,10 +1154,9 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
       vals += nc;
     }
   } else { /* INSERT_VALUES */
-
     PetscInt rst,ren;
-    ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
 
+    ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
     for (i=0;i<nr;i++) {
       if (rows[i] >= 0 && nzc) {
         PetscInt j;
@@ -1608,7 +1630,7 @@ static PetscErrorCode MatZeroRows_HYPRE(Mat A,PetscInt N,const PetscInt rows[],P
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (x || b) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Does not support to modify the solution and the right hand size \n");
+  if (x || b) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Does not support to modify the solution and the right hand size");
   /* retrieve the internal matrix */
   ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
   /* get locally owned rows */
@@ -1679,8 +1701,7 @@ static PetscErrorCode MatSetOption_HYPRE(Mat A,MatOption op,PetscBool flg)
   Mat_HYPRE *hA = (Mat_HYPRE*)A->data;
 
   PetscFunctionBegin;
-  switch (op)
-  {
+  switch (op) {
   case MAT_NO_OFF_PROC_ENTRIES:
     if (flg) {
       PetscStackCallStandard(HYPRE_IJMatrixSetMaxOffProcElmts,(hA->ij,0));
