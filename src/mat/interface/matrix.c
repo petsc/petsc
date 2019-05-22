@@ -9382,6 +9382,19 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatPtAP_fallback(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+{
+  Mat            AP;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo(A,"Using fallback PtAP implementation\n");CHKERRQ(ierr);
+  ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AP);CHKERRQ(ierr);
+  ierr = MatTransposeMatMult(P,AP,scall,fill,C);CHKERRQ(ierr);
+  ierr = MatDestroy(&AP);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatPtAP - Creates the matrix product C = P^T * A * P
 
@@ -9400,8 +9413,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
    Notes:
    C will be created and must be destroyed by the user with MatDestroy().
 
-   This routine is currently only implemented for pairs of sequential dense matrices, AIJ matrices and classes
-   which inherit from AIJ.
+   For matrix types without special implementation the function fallbacks to MatMatMult() followed by MatTransposeMatMult().
 
    Level: intermediate
 
@@ -9437,10 +9449,13 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
 
-    if (!(*C)->ops->ptapnumeric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"MatPtAPNumeric implementation is missing. You cannot use MAT_REUSE_MATRIX");
     ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-    ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+    if ((*C)->ops->ptapnumeric) {
+      ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+    } else {
+      ierr = MatPtAP_fallback(A,P,scall,fill,C);
+    }
     ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -9453,7 +9468,6 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   fP = P->ops->ptap;
   ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)P)->type_name,&sametype);CHKERRQ(ierr);
   if (fP == fA && sametype) {
-    if (!fA) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatPtAP not supported for A of type %s",((PetscObject)A)->type_name);
     ptap = fA;
   } else {
     /* dispatch based on the type of A and P from their PetscObject's PetscFunctionLists. */
@@ -9464,9 +9478,9 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     ierr = PetscStrlcat(ptapname,((PetscObject)P)->type_name,sizeof(ptapname));CHKERRQ(ierr);
     ierr = PetscStrlcat(ptapname,"_C",sizeof(ptapname));CHKERRQ(ierr); /* e.g., ptapname = "MatPtAP_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)P,ptapname,&ptap);CHKERRQ(ierr);
-    if (!ptap) SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s (Misses composed function %s)",((PetscObject)A)->type_name,((PetscObject)P)->type_name,ptapname);
   }
 
+  if (!ptap) ptap = MatPtAP_fallback;
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
   ierr = (*ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
