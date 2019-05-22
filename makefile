@@ -212,6 +212,52 @@ testx_build:
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed graphics test example"
 
+# Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD
+abitest:
+	@if [ "${PETSC_DIR_ABI_OLD}" == "" ] || [ "${PETSC_ARCH_ABI_OLD}" == "" ]; \
+		then printf "You must set environment variables PETSC_DIR_ABI_OLD and PETSC_ARCH_ABI_OLD to run abitest\n"; \
+		exit 1; \
+	fi;
+	-@echo "Comparing ABI/API of the following two PETSc versions (you must have already configured and built them using GCC and with -g):"
+	-@echo "========================================================================================="
+	-@echo "    Old: PETSC_DIR_ABI_OLD  = ${PETSC_DIR_ABI_OLD}"
+	-@echo "         PETSC_ARCH_ABI_OLD = ${PETSC_ARCH_ABI_OLD}"
+	-@pushd ${PETSC_DIR_ABI_OLD} >> /dev/null ; echo "         Branch             = "`git rev-parse --abbrev-ref HEAD`
+	-@echo "    New: PETSC_DIR          = ${PETSC_DIR}"
+	-@echo "         PETSC_ARCH         = ${PETSC_ARCH}"
+	-@echo "         Branch             = "`git rev-parse --abbrev-ref HEAD`
+	-@echo "========================================================================================="
+	-@$(PYTHON)	${PETSC_DIR}/lib/petsc/bin/maint/abicheck.py -old_dir ${PETSC_DIR_ABI_OLD} -old_arch ${PETSC_ARCH_ABI_OLD} -new_dir ${PETSC_DIR} -new_arch ${PETSC_ARCH} -report_format html
+
+# Compare ABI/API of current PETSC_ARCH/PETSC_DIR with a previous branch
+abitestcomplete:
+	-@if [[ -f "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/configure.log" ]]; then \
+          OPTIONS=`grep -h -m 1 "Configure Options: " ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/configure.log  | sed "s!Configure Options: --configModules=PETSc.Configure --optionsModule=config.compilerOptions!!g"` ;\
+echo $${OPTIONS} ;\
+        fi ; \
+        if [[ "${PETSC_DIR_ABI_OLD}" != "" ]]; then \
+          PETSC_DIR_OLD=${PETSC_DIR_ABI_OLD}; \
+        else \
+          PETSC_DIR_OLD=${PETSC_DIR}/../petsc-abi; \
+        fi ; \
+        echo "=================================================================================================" ;\
+        echo "Doing ABI/API comparison between" ${branch} " and " `git rev-parse --abbrev-ref HEAD` "using " $${OPTIONS} ;\
+        echo "=================================================================================================" ;\
+        if [[ ! -d $${PETSC_DIR_OLD} ]]; then \
+          git clone ${PETSC_DIR} $${PETSC_DIR_OLD} ; \
+        else \
+          cd $${PETSC_DIR_OLD} ; \
+          git pull ; \
+        fi ; \
+        cd $${PETSC_DIR_OLD} ; \
+        git checkout ${branch} ; \
+        PETSC_DIR=`pwd` PETSC_ARCH=arch-branch-`git rev-parse ${branch}` ./configure $${OPTIONS} ; \
+        PETSC_DIR=`pwd` PETSC_ARCH=arch-branch-`git rev-parse ${branch}` make all test ; \
+        cd ${PETSC_DIR} ; \
+        ./configure $${OPTIONS}; \
+        make all test ; \
+        PETSC_DIR_ABI_OLD=$${PETSC_DIR_OLD} PETSC_ARCH_ABI_OLD=arch-branch-`git rev-parse ${branch}` make abitest
+
 # Ranlib on the libraries
 ranlib:
 	${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}

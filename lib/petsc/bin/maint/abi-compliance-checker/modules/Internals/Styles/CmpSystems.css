@@ -1,0 +1,84 @@
+body {
+    font-family:Arial;
+    background-color:White;
+    color:Black;
+}
+hr {
+    color:Black;
+    background-color:Black;
+    height:1px;
+    border:0;
+}
+h1 {
+    margin-bottom:0px;
+    padding-bottom:0px;
+    font-size:1.625em;
+}
+table.summary, table.legend {
+    font-family:"DejaVu Sans Mono", "Monaco", monospace;
+    font-size:0.94em;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+table.summary tr, table.summary td, table.summary th, table.legend td
+{
+    border:1px solid #777777;
+    border-collapse:collapse;
+    padding:0.2em;
+    padding-left:7px;
+    padding-right:7px;
+    text-align:center;
+}
+table.summary th {
+    background:#f2f2f2;
+    white-space:nowrap;
+}
+table.summary td {
+    padding-top:20px;
+    padding-bottom:20px;
+    white-space:nowrap;
+}
+table.summary td.object {
+    text-align:left;
+    max-width:10em;
+    white-space:normal;
+    word-wrap:break-word;
+}
+table.summary td.ver, table.summary th.ver {
+    max-width:10em;
+    white-space:normal;
+    word-wrap:break-word;
+}
+td.passed {
+    background-color:#CCFFCC;
+}
+td.warning {
+    background-color:#F4F4AF;
+}
+td.failed {
+    background-color:#FFCCCC;
+}
+td.new {
+    background-color:#C6DEFF;
+}
+.compatible {
+    background-color:#CCFFCC;
+}
+.almost_compatible {
+    background-color:#FFDAA3;
+}
+.incompatible {
+    background-color:#FFCCCC;
+}
+a.default {
+    color:#336699;
+}
+th.severity {
+    width:55px;
+}
+sup {
+    font-size:0.625em;
+}
+.footer {
+    font-size:0.75em;
+}
