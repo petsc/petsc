@@ -169,13 +169,13 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(same,3);
   if (!obj) *same = PETSC_FALSE;
   else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
   else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
   else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
-    PetscValidPointer(same,3);
     ierr = PetscStrcmp((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -203,13 +203,13 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(same,3);
   if (!obj) *same = PETSC_FALSE;
   else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
   else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
   else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
-    PetscValidPointer(same,3);
     ierr = PetscStrbeginswith((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -243,6 +243,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
   va_list        Argp;
 
   PetscFunctionBegin;
+  PetscValidPointer(match,3);
   *match = PETSC_FALSE;
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {
