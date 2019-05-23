@@ -65,31 +65,12 @@ class Configure(config.package.Package):
     if 'known-cuda-align-double' in self.argDB:
       if not self.argDB['known-cuda-align-double']:
         raise RuntimeError('CUDA error: PETSC currently requires that CUDA double alignment match the C compiler')
-    elif not self.argDB['with-batch']:
-      self.pushLanguage('CUDA')
-      (outputCUDA,statusCUDA) = self.outputRun('#include <stdio.h>\n','''
-        struct {
-          double a;
-          int    b;
-          } teststruct;
-        printf("%d",sizeof(teststruct));
-        return 0;''')
-      self.popLanguage()
-      self.pushLanguage('C')
-      (outputC,statusC) = self.outputRun('#include <stdio.h>\n','''
-        struct {
-          double a;
-          int    b;
-          } teststruct;
-        printf("%d",sizeof(teststruct));
-        return 0;''')
-      self.popLanguage()
-      if (statusC or statusCUDA):
-        raise RuntimeError('Error compiling check for memory alignment in CUDA')
-      if outputC != outputCUDA:
-        raise RuntimeError('CUDA compiler error: memory alignment doesn\'t match C compiler (try adding -malign-double to compiler options)')
     else:
-      raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-align-double')
+      typedef = 'typedef struct {double a; int b;} teststruct;\n'
+      cuda_size = self.types.checkSizeof('teststruct', (16, 12), lang='CUDA', codeBegin=typedef, save=False)
+      c_size = self.types.checkSizeof('teststruct', (16, 12), lang='C', codeBegin=typedef, save=False)
+      if c_size != cuda_size:
+        raise RuntimeError('CUDA compiler error: memory alignment doesn\'t match C compiler (try adding -malign-double to compiler options)')
     return
 
   def configureLibrary(self):

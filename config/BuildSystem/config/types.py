@@ -203,7 +203,7 @@ void (*signal())();
       self.addDefine('const', '')
     return
 
-  def checkSizeof(self, typeName, typeSizes, otherInclude = None, lang='C', save=True):
+  def checkSizeof(self, typeName, typeSizes, otherInclude = None, lang='C', save=True, codeBegin=''):
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to be the size'''
     self.log.write('Checking for size of type: ' + typeName + '\n')
     typename = typeName.replace(' ', '-').replace('*', 'p')
@@ -229,7 +229,7 @@ void (*signal())();
       with self.Language(lang):
         for size in typeSizes:
           body = 'char assert_sizeof[(sizeof({})=={})*2-1];'.format(typeName, size)
-          if self.checkCompile(includes, body, codeBegin='', codeEnd='\n'):
+          if self.checkCompile(includes, body, codeBegin=codeBegin, codeEnd='\n'):
             break
     if size is None:
       raise RuntimeError('Size of type {} not found in sizes {}; specify --known-sizeof-{}'.format(typeName, typeSizes, typename))
