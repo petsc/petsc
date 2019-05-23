@@ -247,7 +247,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
         ierr = ISGetLocalSize(dm->probs[0].fields, &onf);CHKERRQ(ierr);
         ierr = ISGetIndices(dm->probs[0].fields, &ofld);CHKERRQ(ierr);
         ierr = PetscMalloc1(nf, &fidx);CHKERRQ(ierr);
-        for (f = 0, g = 0; f < onf; ++f) {
+        for (f = 0, g = 0; f < onf && g < nf; ++f) {
           if (ofld[f] == fld[g]) fidx[g++] = f;
         }
         ierr = ISRestoreIndices(dm->probs[0].fields, &ofld);CHKERRQ(ierr);
