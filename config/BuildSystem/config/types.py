@@ -203,12 +203,13 @@ void (*signal())();
       self.addDefine('const', '')
     return
 
-  def checkSizeof(self, typeName, typeSizes, otherInclude = None):
+  def checkSizeof(self, typeName, typeSizes, otherInclude = None, lang='C', save=True):
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to be the size'''
-    self.log.write('Checking for size of type: '+typeName+'\n')
+    self.log.write('Checking for size of type: ' + typeName + '\n')
     typename = typeName.replace(' ', '-').replace('*', 'p')
-    if 'known-sizeof-' + typename in self.argDB:
-      size = int(self.argDB['known-sizeof-' + typename])
+    argname = 'known-sizeof-' + typename
+    if argname in self.argDB:
+      size = int(self.argDB[argname])
     else:
       includes = '''
 #include <sys/types.h>
@@ -225,15 +226,16 @@ void (*signal())();
         if otherInclude == 'mpi.h':
           includes += mpiFix
         includes += '#include <' + otherInclude + '>\n'
-      with self.Language('C'):
+      with self.Language(lang):
         for size in typeSizes:
           body = 'char assert_sizeof[(sizeof({})=={})*2-1];'.format(typeName, size)
           if self.checkCompile(includes, body, codeBegin='', codeEnd='\n'):
             break
     if size is None:
       raise RuntimeError('Size of type {} not found in sizes {}; specify --known-sizeof-{}'.format(typeName, typeSizes, typename))
-    self.sizes['known-sizeof-'+typename] = size
-    self.addDefine('SIZEOF_'+typename.replace('-', '_').upper(), str(size))
+    if save:
+      self.sizes[argname] = size
+      self.addDefine('SIZEOF_'+typename.replace('-', '_').upper(), str(size))
     return size
 
   def checkBitsPerByte(self):
