@@ -415,6 +415,9 @@ int main(int argc, char **argv)
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
             -fieldsplit_field_pc_type lu \
             -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+TEST*/
+
+/* These tests will be active once tensor P^- is working
 
   test:
     suffix: 2d_bdmq1_p0_0
@@ -437,4 +440,4 @@ int main(int argc, char **argv)
             -fieldsplit_field_pc_type lu \
             -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
 
-TEST*/
+*/
