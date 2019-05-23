@@ -228,11 +228,7 @@ M*/
 #  error "cannot determine PetscInt64 type"
 #endif
 
-#if PETSC_SIZEOF_VOID_P == 4
-#  define MPIU_FORTRANADDR MPI_INT
-#else
-#  define MPIU_FORTRANADDR MPIU_INT64
-#endif
+PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #  define MPIU_INT MPIU_INT64

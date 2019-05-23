@@ -899,6 +899,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   MPIU_BOOL = MPI_INT;
   MPIU_ENUM = MPI_INT;
+  MPIU_FORTRANADDR = (sizeof(void*) == sizeof(int)) ? MPI_INT : MPIU_INT64;
 
   /*
      Initialized the global complex variable; this is because with

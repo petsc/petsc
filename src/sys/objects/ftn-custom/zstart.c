@@ -344,6 +344,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 
   MPIU_BOOL = MPI_INT;
   MPIU_ENUM = MPI_INT;
+  MPIU_FORTRANADDR = (sizeof(void*) == sizeof(int)) ? MPI_INT : MPIU_INT64;
 
 #if defined(PETSC_HAVE_COMPLEX)
   /*
