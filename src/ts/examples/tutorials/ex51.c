@@ -129,6 +129,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&U);CHKERRQ(ierr);
+  ierr = VecDestroy(&Uex);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
