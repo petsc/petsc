@@ -89,20 +89,21 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     import os
     import sys
     import hashlib
-    args = list(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:]))
-    args.sort()
-    hash = str(args) + '\n'
-    try: hash += os.environ['PATH'] + '\n'
-    except: pass
+    args = sorted(set(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:])))
+    hash = 'args:\n' + '\n'.join('    '+a for a in args) + '\n'
+    hash += 'PATH=' + os.environ.get('PATH', '') + '\n'
     try:
       for root, dirs, files in os.walk('config'):
+        if root == 'config':
+          dirs.remove('examples')
         for f in files:
-          if f.endswith('.pyc') or f.endswith('~') or f.startswith('.') or f.startswith('#'): continue
-          fname = os.path.join(root,f)
-          md5sum = hashlib.md5(open(fname,'rb').read()).hexdigest()
-          hash += md5sum + ' '+ fname + '\n'
+          if not f.endswith('.py') or f.startswith('.') or f.startswith('#'):
+            continue
+          fname = os.path.join(root, f)
+          with open(fname,'rb') as f:
+            hash += hashlib.sha256(f.read()).hexdigest() + '  ' + fname + '\n'
     except:
-      self.logPrint('Error generating file list/md5 from config directory for configure hash, forcing new configuration')
+      self.logPrint('Error generating file list/hash from config directory for configure hash, forcing new configuration')
       return
     if self.argDB['force']:
       self.makeDependency(hash)
