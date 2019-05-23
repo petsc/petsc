@@ -311,10 +311,10 @@ int main(int argc,char **args)
       ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
       if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatPtAP with A SeqDense and P SeqDense and MAT_REUSE_MATRIX: %g\n",(double)norm);
       ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
-      ierr = MatDestroy(&Cdensetest);CHKERRQ(ierr);
-      ierr = MatDestroy(&Pdense);CHKERRQ(ierr);
       ierr = MatDestroy(&Adense);CHKERRQ(ierr);
     }
+    ierr = MatDestroy(&Cdensetest);CHKERRQ(ierr);
+    ierr = MatDestroy(&Pdense);CHKERRQ(ierr);
 
     /* Test MatDuplicate() of C=PtAP and MatView(Cdup,...) */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
