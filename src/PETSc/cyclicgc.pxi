@@ -14,9 +14,6 @@ cdef extern from "Python.h":
        traverseproc tp_traverse
        inquiry      tp_clear
     PyTypeObject *Py_TYPE(PyObject *)
-    ctypedef struct PyGC_Head:
-       Py_ssize_t gc_refs"gc.gc_refs"
-    PyGC_Head *_Py_AS_GC(PyObject*)
 
 cdef int tp_traverse(PyObject *o, visitproc visit, void *arg):
     ## printf("%s.tp_traverse(%p)\n", Py_TYPE(o).tp_name, <void*>o)
@@ -24,8 +21,6 @@ cdef int tp_traverse(PyObject *o, visitproc visit, void *arg):
     if p == NULL: return 0
     cdef PyObject *d = <PyObject*>p.python_context
     if d == NULL: return 0
-    if arg == NULL and _Py_AS_GC(d).gc_refs == 0:
-        _Py_AS_GC(d).gc_refs = 1
     return visit(d, arg)
 
 cdef int tp_clear(PyObject *o):
