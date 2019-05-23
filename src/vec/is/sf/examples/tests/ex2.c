@@ -43,7 +43,7 @@ int main(int argc,char **argv)
 
   /* Check rootdata */
   if (rootdata[0] != 1 || rootdata[1] != 0) errors = 1;
-  ierr = MPI_Allreduce(MPI_IN_PLACE,&errors,1,MPIU_INT,MPIU_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(MPI_IN_PLACE,&errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   if (errors) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Unexpected rootdata on processors\n");CHKERRQ(ierr);}
 
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
