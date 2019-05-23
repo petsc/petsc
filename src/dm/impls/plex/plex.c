@@ -4525,32 +4525,81 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, Pets
   PetscFunctionReturn(0);
 }
 
+/* Compress out points not in the section */
+PETSC_STATIC_INLINE PetscErrorCode CompressPoints_Private(PetscSection section, PetscInt *numPoints, PetscInt points[])
+{
+  const PetscInt np = *numPoints;
+  PetscInt       pStart, pEnd, p, q;
+  PetscErrorCode ierr;
+
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = 0, q = 0; p < np; ++p) {
+    const PetscInt r = points[p*2];
+    if ((r >= pStart) && (r < pEnd)) {
+      points[q*2]   = r;
+      points[q*2+1] = points[p*2+1];
+      ++q;
+    }
+  }
+  *numPoints = q;
+  return 0;
+}
+
+static PetscErrorCode DMPlexTransitiveClosure_Hybrid_Internal(DM dm, PetscInt point, PetscInt np, PetscInt *numPoints, PetscInt **points)
+{
+  const PetscInt *cone, *ornt;
+  PetscInt       *pts,  *closure = NULL;
+  PetscInt        dim, coneSize, c, d, clSize, cl;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBeginHot;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
+  ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+  ierr = DMPlexGetConeOrientation(dm, point, &ornt);CHKERRQ(ierr);
+  ierr = DMPlexGetTransitiveClosure(dm, cone[0], PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, np*2, MPIU_INT, &pts);CHKERRQ(ierr);
+  c    = 0;
+  pts[c*2+0] = point;
+  pts[c*2+1] = 0;
+  ++c;
+  for (cl = 0; cl < clSize*2; cl += 2, ++c) {pts[c*2+0] = closure[cl]; pts[c*2+1] = closure[cl+1];}
+  ierr = DMPlexGetTransitiveClosure(dm, cone[1], PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
+  for (cl = 0; cl < clSize*2; cl += 2, ++c) {pts[c*2+0] = closure[cl]; pts[c*2+1] = closure[cl+1];}
+  ierr = DMPlexRestoreTransitiveClosure(dm, cone[0], PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
+  if (dim >= 2) {
+    for (d = 2; d < coneSize; ++d, ++c) {pts[c*2+0] = cone[d]; pts[c*2+1] = ornt[d];}
+  }
+  if (dim >= 3) {
+    for (d = 2; d < coneSize; ++d) {
+      const PetscInt  fpoint = cone[d];
+      const PetscInt *fcone;
+      PetscInt        fconeSize, fc, i;
+
+      ierr = DMPlexGetConeSize(dm, fpoint, &fconeSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, fpoint, &fcone);CHKERRQ(ierr);
+      for (fc = 0; fc < fconeSize; ++fc) {
+        for (i = 0; i < c; ++i) if (pts[i*2] == fcone[fc]) break;
+        if (i == c) {pts[c*2+0] = fcone[fc]; pts[c*2+1] = 0; ++c;}
+      }
+    }
+  }
+  if (c != np) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid closure for hybrid point %D, size %D != %D", point, c, np);
+  *numPoints = np;
+  *points    = pts;
+  PetscFunctionReturn(0);
+}
+
 /* Compressed closure does not apply closure permutation */
 PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
 {
-  const PetscInt *cla;
+  const PetscInt *cla = NULL;
   PetscInt       np, *pts = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
   ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, clSec, clPoints);CHKERRQ(ierr);
-  if (!*clPoints) {
-    PetscInt pStart, pEnd, p, q;
-
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &np, &pts);CHKERRQ(ierr);
-    /* Compress out points not in the section */
-    for (p = 0, q = 0; p < np; p++) {
-      PetscInt r = pts[2*p];
-      if ((r >= pStart) && (r < pEnd)) {
-        pts[q*2]   = r;
-        pts[q*2+1] = pts[2*p+1];
-        ++q;
-      }
-    }
-    np = q;
-    cla = NULL;
-  } else {
+  if (*clPoints) {
     PetscInt dof, off;
 
     ierr = PetscSectionGetDof(*clSec, point, &dof);CHKERRQ(ierr);
@@ -4558,11 +4607,28 @@ PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt 
     ierr = ISGetIndices(*clPoints, &cla);CHKERRQ(ierr);
     np   = dof/2;
     pts  = (PetscInt *) &cla[off];
+  } else {
+    /* Do not make the label if it does not exist */
+    if (!dm->celltypeLabel) {ct = DM_POLYTOPE_POINT;}
+    else                    {ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);}
+    switch (ct) {
+      case DM_POLYTOPE_SEG_PRISM_TENSOR:
+        ierr = DMPlexTransitiveClosure_Hybrid_Internal(dm, point, 9, &np, &pts);CHKERRQ(ierr);
+        break;
+      case DM_POLYTOPE_TRI_PRISM_TENSOR:
+        ierr = DMPlexTransitiveClosure_Hybrid_Internal(dm, point, 21, &np, &pts);CHKERRQ(ierr);
+        break;
+      case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+        ierr = DMPlexTransitiveClosure_Hybrid_Internal(dm, point, 27, &np, &pts);CHKERRQ(ierr);
+        break;
+      default:
+        ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &np, &pts);CHKERRQ(ierr);
+    }
+    ierr = CompressPoints_Private(section, &np, pts);CHKERRQ(ierr);
   }
   *numPoints = np;
   *points    = pts;
   *clp       = cla;
-
   PetscFunctionReturn(0);
 }
 
@@ -4729,7 +4795,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscScalar       *array;
   const PetscScalar *vArray;
   PetscInt          *points = NULL;
-  const PetscInt    *clp, *perm;
+  const PetscInt    *clp, *perm = NULL;
   PetscInt           depth, numFields, numPoints, size;
   PetscErrorCode     ierr;
 
@@ -5225,7 +5291,7 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   IS              clPoints;
   PetscScalar    *array;
   PetscInt       *points = NULL;
-  const PetscInt *clp, *clperm;
+  const PetscInt *clp, *clperm = NULL;
   PetscInt        depth, numFields, numPoints, p;
   PetscErrorCode  ierr;
 
