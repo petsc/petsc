@@ -211,6 +211,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->dim     = 2;
   options->simplex = PETSC_TRUE;
+  options->solType = SOL_LINEAR;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex24.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
@@ -289,11 +290,9 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_q, f1_q);CHKERRQ(ierr);
-  // Put in boundary integral
   ierr = PetscDSSetJacobian(prob, 0, 0, g0_qq, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL, g2_qu, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_uq, NULL, NULL);CHKERRQ(ierr);
-  //ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, 1, &id, user);CHKERRQ(ierr);
   switch (user->solType)
   {
     case SOL_LINEAR:
@@ -389,7 +388,7 @@ int main(int argc, char **argv)
     suffix: 2d_bdm1_p0_0
     requires: triangle
     args: -sol_type linear \
-          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
+          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate \
           -dmsnes_check -snes_error_if_not_converged \
           -ksp_rtol 1e-10 -ksp_error_if_not_converged \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
@@ -399,7 +398,7 @@ int main(int argc, char **argv)
     suffix: 2d_bdm1_p0_1
     requires: triangle
     args: -sol_type quadratic \
-          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
+          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate \
           -dmsnes_check -snes_error_if_not_converged \
           -ksp_rtol 1e-10 -ksp_error_if_not_converged \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
@@ -409,7 +408,7 @@ int main(int argc, char **argv)
     suffix: 2d_bdm1_p0_2
     requires: triangle
     args: -sol_type quartic \
-          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
+          -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate \
           -snes_error_if_not_converged \
           -ksp_rtol 1e-10 -ksp_error_if_not_converged \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
