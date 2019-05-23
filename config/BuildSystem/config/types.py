@@ -392,7 +392,7 @@ void (*signal())();
       #self.executeTest(self.checkFortranStar)
       self.executeTest(self.checkFortranKind)
     self.executeTest(self.checkConst)
-    self.executeTest(self.checkEndian)
+    #self.executeTest(self.checkEndian)
     for t in ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t']:
       self.executeTest(self.checkSizeof, t)
     self.executeTest(self.checkBitsPerByte)

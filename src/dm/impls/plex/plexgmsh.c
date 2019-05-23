@@ -479,10 +479,8 @@ static PetscErrorCode DMPlexCreateGmsh_ReadNodes_v40(GmshFile *gmsh, int shift, 
       for (node = 0; node < numNodes; ++node, ++v) {
         char *cnid = cbuf + node*nbytes, *cxyz = cnid + sizeof(int);
         double *xyz = coordinates + v*3;
-#if !defined(PETSC_WORDS_BIGENDIAN)
-        ierr = PetscByteSwap(cnid, PETSC_ENUM, 1);CHKERRQ(ierr);
-        ierr = PetscByteSwap(cxyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);
-#endif
+        if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(cnid, PETSC_ENUM, 1);CHKERRQ(ierr);}
+        if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(cxyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
         ierr = PetscMemcpy(&nid, cnid, sizeof(int));CHKERRQ(ierr);
         ierr = PetscMemcpy(xyz, cxyz, 3*sizeof(double));CHKERRQ(ierr);
         if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
