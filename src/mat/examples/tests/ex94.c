@@ -42,6 +42,7 @@ int main(int argc,char **args)
   MatInfo        info;
   PetscBool      seqaij;
   MatType        mattype;
+  Mat            Cdensetest,Pdense,Cdense,Adense;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -274,9 +275,6 @@ int main(int argc,char **args)
     }
 
     /* Test PtAP ops with P Dense and A either AIJ or SeqDense (it assumes MatPtAP_XAIJ_XAIJ is fine) */
-    Mat       Cdensetest,Pdense,Cdense,Adense;
-    PetscReal norm;
-
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
     if (seqaij) {
       ierr = MatConvert(C,MATSEQDENSE,MAT_INITIAL_MATRIX,&Cdensetest);CHKERRQ(ierr);
