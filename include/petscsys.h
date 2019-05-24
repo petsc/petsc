@@ -1842,13 +1842,8 @@ M*/
 M*/
 
 #if defined(PETSC_HAVE_MPIIO)
-#if !defined(PETSC_WORDS_BIGENDIAN)
 PETSC_EXTERN PetscErrorCode MPIU_File_write_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
 PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
-#else
-#define MPIU_File_write_all(a,b,c,d,e) MPI_File_write_all(a,b,c,d,e)
-#define MPIU_File_read_all(a,b,c,d,e) MPI_File_read_all(a,b,c,d,e)
-#endif
 #endif
 
 /* the following petsc_static_inline require petscerror.h */
@@ -2276,6 +2271,8 @@ PETSC_EXTERN PetscErrorCode PetscTestDirectory(const char[],char,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscMkdir(const char[]);
 PETSC_EXTERN PetscErrorCode PetscMkdtemp(char[]);
 PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
+
+PETSC_STATIC_INLINE PetscBool PetscBinaryBigEndian(void) {long _petsc_v = 1; return ((char*)&_petsc_v)[0] ? PETSC_FALSE : PETSC_TRUE;}
 
 PETSC_EXTERN PetscErrorCode PetscBinaryRead(int,void*,PetscInt,PetscInt*,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm,int,void*,PetscInt,PetscInt*,PetscDataType);

@@ -29,6 +29,7 @@ static PetscErrorCode DMDAGetFieldsNamed(DM da,PetscBool *fieldsnamed)
 
 static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 {
+  const char *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
 #if defined(PETSC_USE_REAL_SINGLE)
   const char precision[] = "Float32";
 #elif defined(PETSC_USE_REAL_DOUBLE)
@@ -72,11 +73,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
   ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
-#if defined(PETSC_WORDS_BIGENDIAN)
-  ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");CHKERRQ(ierr);
-#else
-  ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
-#endif
+  ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"  <StructuredGrid WholeExtent=\"%D %D %D %D %D %D\">\n",0,mx-1,0,my-1,0,mz-1);CHKERRQ(ierr);
 
   if (!rank) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
@@ -268,6 +265,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
 static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 {
+  const char *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
 #if defined(PETSC_USE_REAL_SINGLE)
   const char precision[] = "Float32";
 #elif defined(PETSC_USE_REAL_DOUBLE)
@@ -299,11 +297,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
   ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
-#if defined(PETSC_WORDS_BIGENDIAN)
-  ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");CHKERRQ(ierr);
-#else
-  ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
-#endif
+  ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"  <RectilinearGrid WholeExtent=\"%D %D %D %D %D %D\">\n",0,mx-1,0,my-1,0,mz-1);CHKERRQ(ierr);
 
   if (!rank) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}

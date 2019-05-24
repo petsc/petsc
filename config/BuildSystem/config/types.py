@@ -203,59 +203,6 @@ void (*signal())();
       self.addDefine('const', '')
     return
 
-  def checkEndian(self):
-    '''If the machine is big endian, defines WORDS_BIGENDIAN'''
-    if 'known-endian' in self.argDB:
-      endian = self.argDB['known-endian']
-    else:
-      # See if sys/param.h defines the BYTE_ORDER macro
-      includes = '#include <sys/types.h>\n#ifdef HAVE_SYS_PARAM_H\n  #include <sys/param.h>\n#endif\n'
-      body     = '''
-#if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
-  bogus endian macros
-#endif
-      '''
-      if self.checkCompile(includes, body):
-        # It does, so check whether it is defined to BIG_ENDIAN or not
-        body = '''
-#if BYTE_ORDER != BIG_ENDIAN
-  not big endian
-#endif
-        '''
-        if self.checkCompile(includes, body):
-          endian = 'big'
-        else:
-          endian = 'little'
-      else:
-        if not self.argDB['with-batch']:
-          body = '''
-          /* Are we little or big endian?  From Harbison&Steele. */
-          union
-          {
-            long l;
-            char c[sizeof(long)];
-          } u;
-          u.l = 1;
-          exit(u.c[sizeof(long) - 1] == 1);
-          '''
-          self.pushLanguage('C')
-          if self.checkRun('#include <stdlib.h>\n', body, defaultArg = 'isLittleEndian'):
-            endian = 'little'
-          else:
-            endian = 'big'
-          self.popLanguage()
-        else:
-          self.framework.addBatchBody(['{',
-                                       '  union {long l; char c[sizeof(long)];} u;',
-                                       '  u.l = 1;',
-                                       '  fprintf(output, " \'--known-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "big" : "little");',
-                                       '}'])
-          # Dummy value
-          endian = 'little'
-    if endian == 'big':
-      self.addDefine('WORDS_BIGENDIAN', 1)
-    return
-
   def checkSizeof(self, typeName, otherInclude = None):
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to be the size'''
     self.log.write('Checking for size of type: '+typeName+'\n')
@@ -392,7 +339,6 @@ void (*signal())();
       #self.executeTest(self.checkFortranStar)
       self.executeTest(self.checkFortranKind)
     self.executeTest(self.checkConst)
-    self.executeTest(self.checkEndian)
     for t in ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t']:
       self.executeTest(self.checkSizeof, t)
     self.executeTest(self.checkBitsPerByte)
