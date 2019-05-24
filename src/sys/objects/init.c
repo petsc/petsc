@@ -548,21 +548,6 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
-  ierr = PetscOptionsHasName(NULL,NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    struct cudaDeviceProp prop;
-    int                   devCount;
-    PetscInt              device;
-    cudaError_t           err = cudaSuccess;
-
-    err = cudaGetDeviceCount(&devCount);
-    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
-    for (device = 0; device < devCount; ++device) {
-      err = cudaGetDeviceProperties(&prop, (int)device);
-      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
-      ierr = PetscPrintf(comm, "CUDA device %D: %s\n", device, prop.name);CHKERRQ(ierr);
-    }
-  }
   if (!PetscCUDAInitialized) {
     PetscMPIInt size;
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -614,6 +599,26 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
     PetscCUDAInitialized = PETSC_TRUE;
   }
+  ierr = PetscOptionsHasName(NULL,NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    struct cudaDeviceProp prop;
+    int                   devCount;
+    PetscInt              device;
+    cudaError_t           err = cudaSuccess;
+
+    err = cudaGetDeviceCount(&devCount);
+    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
+    for (device = 0; device < devCount; ++device) {
+      err = cudaGetDeviceProperties(&prop, (int)device);
+      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
+      ierr = PetscPrintf(comm, "CUDA device %D: %s\n", device, prop.name);CHKERRQ(ierr);
+    }
+    err = cudaGetDevice(&device);
+    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDevice %s",cudaGetErrorString(err));
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Using CUDA device %d.\n",rank,device);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  }
+
 #endif
 
 
