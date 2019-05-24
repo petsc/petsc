@@ -967,8 +967,8 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 
    Input Arguments:
 +  sf - original star forest
-.  nroots - number of roots to select on this process
--  selected - selected roots on this process
+.  nselected  - number of selected roots on this process
+-  selected   - indices of the selected roots on this process
 
    Output Arguments:
 .  newsf - new star forest
@@ -981,40 +981,52 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 
 .seealso: PetscSFSetGraph(), PetscSFGetGraph()
 @*/
-PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt *selected,PetscSF *newsf)
+PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *newsf)
 {
-  PetscInt      *rootdata, *leafdata, *ilocal;
-  PetscSFNode   *iremote;
-  PetscInt       leafsize = 0, nleaves = 0, n, i;
-  PetscErrorCode ierr;
+  PetscInt          *rootdata,*leafdata,*new_ilocal;
+  PetscSFNode       *new_iremote;
+  const PetscInt    *ilocal;
+  const PetscSFNode *iremote;
+  PetscInt          nleaves,nroots,n,i,new_nleaves = 0;
+  PetscSF           tmpsf;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sf,1);
-  if (nroots) PetscValidPointer(selected,3);
+  if (nselected) PetscValidPointer(selected,3);
   PetscValidPointer(newsf,4);
   ierr = PetscLogEventBegin(PETSCSF_EmbedSF,sf,0,0,0);CHKERRQ(ierr);
-  leafsize = sf->maxleaf + 1;
-  ierr = PetscCalloc2(sf->nroots,&rootdata,leafsize,&leafdata);CHKERRQ(ierr);
-  for (i=0; i<nroots; ++i) rootdata[selected[i]] = 1;
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
-  for (i = 0; i < leafsize; ++i) nleaves += leafdata[i];
-  ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
-  for (i = 0, n = 0; i < sf->nleaves; ++i) {
-    const PetscInt lidx = sf->mine ? sf->mine[i] : i;
 
-    if (leafdata[lidx]) {
-      ilocal[n]        = lidx;
-      iremote[n].rank  = sf->remote[i].rank;
-      iremote[n].index = sf->remote[i].index;
+  /* Find out which leaves (not leaf data items) are still connected to roots in the embedded sf */
+  ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+  ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,&tmpsf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(tmpsf,nroots,nleaves,NULL/*contiguous*/,PETSC_USE_POINTER,iremote,PETSC_USE_POINTER);CHKERRQ(ierr);
+  ierr = PetscCalloc2(nroots,&rootdata,nleaves,&leafdata);CHKERRQ(ierr);
+  for (i=0; i<nselected; ++i) {
+    if (selected[i] < 0 || selected[i] >= nroots) SETERRQ2(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_OUTOFRANGE,"Root index %D is not in [0,%D)",selected[i],nroots);
+    rootdata[selected[i]] = 1;
+  }
+
+  ierr = PetscSFBcastBegin(tmpsf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(tmpsf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&tmpsf);CHKERRQ(ierr);
+
+  /* Build newsf with leaves that are still connected */
+  for (i = 0; i < nleaves; ++i) new_nleaves += leafdata[i];
+  ierr = PetscMalloc1(new_nleaves,&new_ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(new_nleaves,&new_iremote);CHKERRQ(ierr);
+  for (i = 0, n = 0; i < nleaves; ++i) {
+    if (leafdata[i]) {
+      new_ilocal[n]        = sf->mine ? sf->mine[i] : i;
+      new_iremote[n].rank  = sf->remote[i].rank;
+      new_iremote[n].index = sf->remote[i].index;
       ++n;
     }
   }
-  if (n != nleaves) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "There is a size mismatch in the SF embedding, %D != %D", n, nleaves);
-  ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,newsf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*newsf,sf->nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  if (n != new_nleaves) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"There is a size mismatch in the SF embedding, %D != %D",n,new_nleaves);
+  ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,newsf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*newsf,nroots,new_nleaves,new_ilocal,PETSC_OWN_POINTER,new_iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   ierr = PetscSFSetUp(*newsf);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_EmbedSF,sf,0,0,0);CHKERRQ(ierr);
