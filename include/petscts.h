@@ -814,6 +814,9 @@ typedef const char* TSRKType;
 #define TSRK5F    "5f"
 #define TSRK5DP   "5dp"
 #define TSRK5BS   "5bs"
+#define TSRK6VR   "6vr"
+#define TSRK7VR   "7vr"
+#define TSRK8VR   "8vr"
 
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);

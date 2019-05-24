@@ -320,4 +320,25 @@ int main(int argc,char **argv)
       args: -ts_trajectory_type memory -rhs-form -ts_type rk -ts_rk_type 5bs
       filter: sort -b
 
+   test:
+      suffix: h
+      nsize: 2
+      args: -ts_trajectory_type memory -rhs-form -ts_type rk -ts_rk_type 6vr
+      filter: sort -b
+      output_file: output/ex41_g.out
+
+   test:
+      suffix: i
+      nsize: 2
+      args: -ts_trajectory_type memory -rhs-form -ts_type rk -ts_rk_type 7vr
+      filter: sort -b
+      output_file: output/ex41_g.out
+
+   test:
+      suffix: j
+      nsize: 2
+      args: -ts_trajectory_type memory -rhs-form -ts_type rk -ts_rk_type 8vr
+      filter: sort -b
+      output_file: output/ex41_g.out
+
 TEST*/
