@@ -90,6 +90,35 @@ static PetscErrorCode  PCDeflationSetType_Deflation(PC pc,PCDeflationType type)
   PetscFunctionReturn(0);
 }
 
+/*@
+   PCDeflationSetType - Causes the deflation preconditioner to use only a special
+    initial gues or pre/post solve solution update
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  type - PC_DEFLATION_PRE, PC_DEFLATION_INIT, PC_DEFLATION_POST
+
+   Options Database Key:
+.  -pc_deflation_type <pre,init,post>
+
+   Level: intermediate
+
+   Concepts: Deflation preconditioner
+
+.seealso: PCDeflationGetType()
+@*/
+PetscErrorCode  PCDeflationSetType(PC pc,PCDeflationType type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCDeflationSetType_C",(PC,PCDeflationType),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode  PCDeflationGetType_Deflation(PC pc,PCDeflationType *type)
 {
   PC_Deflation *def = (PC_Deflation*)pc->data;
@@ -102,6 +131,33 @@ static PetscErrorCode  PCDeflationGetType_Deflation(PC pc,PCDeflationType *type)
   } else {
     *type = PC_DEFLATION_POST;
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationGetType - Gets how the diagonal matrix is produced for the preconditioner
+
+   Not Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+-  type - PC_DEFLATION_PRE, PC_DEFLATION_INIT, PC_DEFLATION_POST
+
+   Level: intermediate
+
+   Concepts: Deflation preconditioner
+
+.seealso: PCDeflationSetType()
+@*/
+PetscErrorCode  PCDeflationGetType(PC pc,PCDeflationType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCDeflationGetType_C",(PC,PCDeflationType*),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
