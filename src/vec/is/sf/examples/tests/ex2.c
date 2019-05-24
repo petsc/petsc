@@ -5,10 +5,10 @@ static const char help[] = "Test embedded sf with one leaf data item connnected 
 int main(int argc,char **argv)
 {
   PetscSF        sf,newsf;
-  PetscInt       i,nroots,nleaves,ilocal[2],leafdata,rootdata[2],nselected,selected;
+  PetscInt       i,nroots,nleaves,ilocal[2],leafdata,rootdata[2],nselected,selected,errors=0;
   PetscSFNode    iremote[2];
   PetscMPIInt    myrank,next,nproc;
-  PetscErrorCode ierr,errors = 0;
+  PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
