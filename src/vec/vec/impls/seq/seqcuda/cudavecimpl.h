@@ -8,7 +8,7 @@
 
 #include <cublas_v2.h>
 
-#define WaitForGPU() PetscCUDASynchronize ? cudaThreadSynchronize() : 0
+#define WaitForGPU() PetscCUDASynchronize ? cudaDeviceSynchronize() : 0
 
 #endif
 

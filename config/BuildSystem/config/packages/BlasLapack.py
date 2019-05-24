@@ -657,7 +657,7 @@ class Configure(config.package.Package):
                      } else {
                        sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''((const int*)&ione1,x1,(const int*)&ione1,x1,(const int*)&ione1);
                      }
-                  fprintf(output, "--known-sdot-returns-doubl=%d",sdotresult != 9);\n'''
+                  fprintf(output, "--known-sdot-returns-double=%d",sdotresult != 9);\n'''
     result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib,nobatch=1)
     if result:
       self.log.write('Checking for sdot return double: result ' +str(result)+'\n')
