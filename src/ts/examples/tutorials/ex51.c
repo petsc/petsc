@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   /* The adapative time step controller is forced to take constant time steps. */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptSetStepLimits(adapt,dt-PETSC_MACHINE_EPSILON,dt+PETSC_MACHINE_EPSILON);CHKERRQ(ierr);
+  ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
 
-  if(PetscAbsScalar(t-final_time)>5.*PETSC_MACHINE_EPSILON) {
+  if (PetscAbsReal(t-final_time)>100*PETSC_MACHINE_EPSILON) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Note: There is a difference of %g between the prescribed final time %g and the actual final time.\n",(double)(final_time-t),(double)final_time);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(U,&Uex);CHKERRQ(ierr);
