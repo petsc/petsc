@@ -844,14 +844,9 @@ typedef int MPI_Fint;
       MPIUNI_ARG(comm),\
       MPI_SUCCESS)
 #define MPI_Reduce_scatter(sendbuf,recvbuf,recvcounts,datatype,op,comm) \
-     (MPIUNI_ARG(sendbuf),\
-      MPIUNI_ARG(recvbuf),\
-      MPIUNI_ARG(recvcounts),\
-      MPIUNI_ARG(datatype),\
-      MPIUNI_ARG(op),\
+     (MPIUNI_ARG(op),\
       MPIUNI_ARG(comm),\
-      MPIUni_Abort(MPI_COMM_WORLD,0))
-
+      MPIUNI_Memcpy(recvbuf,sendbuf,(*recvcounts)*MPI_sizeof(datatype)))
 #define MPI_Op_create(function,commute,op) \
      (MPIUNI_ARG(function),\
       MPIUNI_ARG(commute),\
