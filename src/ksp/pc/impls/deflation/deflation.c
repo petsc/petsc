@@ -205,6 +205,38 @@ PetscErrorCode PCDeflationSetSpace(PC pc,Mat W,PetscBool transpose)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscInt max)
+{
+  PC_Deflation   *def = (PC_Deflation*)pc->data;
+
+  PetscFunctionBegin;
+  def->nestedlvl = current;
+  def->maxnestedlvl = max;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetMaxLvl - Set maximum level of deflation.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc  - the preconditioner context
+.  max - maximum deflation level
+
+   Level: intermediate
+
+.seealso: PCDEFLATION
+@*/
+PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(pc,max,2);
+  ierr = PetscTryMethod(pc,"PCDeflationSetLvl_C",(PC,PetscInt,PetscInt),(pc,0,max));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -344,7 +376,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = KSPSetType(innerksp,def->ksptype);CHKERRQ(ierr); /* TODO iherit from KSP */
       ierr = PCSetType(pcinner,PCDEFLATION);CHKERRQ(ierr); /* TODO create coarse preconditinoner M_c = WtMW ? */
       ierr = PCDeflationSetSpace(pcinner,nextDef,transp);CHKERRQ(ierr);
-      ierr = PCDeflationSetNestLvl_Deflation(pcinner,def->nestedlvl+1,def->maxnestedlvl);CHKERRQ(ierr);
+      ierr = PCDeflationSetLvl_Deflation(pcinner,def->nestedlvl+1,def->maxnestedlvl);CHKERRQ(ierr);
       /* inherit options TODO if not set */
       ((PC_Deflation*)(pcinner))->ksptype = def->ksptype;
       ((PC_Deflation*)(pcinner))->correct = def->correct;
@@ -515,6 +547,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetType_C",PCDeflationSetType_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetType_C",PCDeflationGetType_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
