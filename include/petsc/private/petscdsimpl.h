@@ -86,4 +86,6 @@ typedef struct {
   PetscInt dummy; /* */
 } PetscDS_Basic;
 
+PETSC_INTERN PetscErrorCode PetscDSIsFE_Internal(PetscDS, PetscInt, PetscBool *);
+
 #endif

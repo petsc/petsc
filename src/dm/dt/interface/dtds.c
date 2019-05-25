@@ -3121,6 +3121,25 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscDSIsFE_Internal(PetscDS ds, PetscInt f, PetscBool *isFE)
+{
+  PetscObject    obj;
+  PetscClassId   id;
+  PetscInt       Nf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(isFE, 3);
+  ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+  if (f >= Nf) SETERRQ2(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_SIZ, "Field %D must be in [0, %D)", f, Nf);
+  ierr = PetscDSGetDiscretization(ds, f, &obj);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+  if (id == PETSCFE_CLASSID) *isFE = PETSC_TRUE;
+  else                       *isFE = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 {
   PetscErrorCode      ierr;
