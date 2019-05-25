@@ -157,8 +157,8 @@ int main(int argc, char **argv)
             ierr = DMSetField(dm,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
             ierr = DMCreateDS(dm);CHKERRQ(ierr);
             ierr = DMCreateLocalVector(dm,&localCoords);CHKERRQ(ierr);
-            ierr = VecSetDM(localCoords,NULL);CHKERRQ(ierr);
             ierr = DMProjectFunctionLocal(dm,0,funcs,ctxs,INSERT_VALUES,localCoords);CHKERRQ(ierr);
+            ierr = VecSetDM(localCoords,NULL);CHKERRQ(ierr); /* This is necessary to prevent a reference loop */
             ierr = DMClone(dm,&dmCoord);CHKERRQ(ierr);
             ierr = DMSetField(dmCoord,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
             ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);

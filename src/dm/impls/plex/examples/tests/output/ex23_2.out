@@ -1,0 +1,414 @@
+Vec Object: Function Volumetric Primary 1 MPI processes
+  type: seq
+0.
+1.
+0.
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Function Volumetric Primary 1 MPI processes
+  type: seq
+0.
+1.
+0.
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Field Input Volumetric Primary 1 MPI processes
+  type: seq
+0.
+1.
+0.
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Field Volumetric Primary 1 MPI processes
+  type: seq
+0.
+1.
+-2.46519e-32
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Function Volumetric Primary and Volumetric Auxiliary 1 MPI processes
+  type: seq
+0.
+1.
+0.
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Function Volumetric Primary and Volumetric Auxiliary 1 MPI processes
+  type: seq
+0.
+1.
+0.
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Field Input Volumetric Primary and Volumetric Auxiliary 1 MPI processes
+  type: seq
+0.
+1.
+0.
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Field Volumetric Primary and Volumetric Auxiliary 1 MPI processes
+  type: seq
+0.
+1.
+-2.46519e-32
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Field Input Volumetric Auxiliary Update with Volumetric Primary 1 MPI processes
+  type: seq
+0.
+1.
+0.
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Field Volumetric Auxiliary Update with Volumetric Primary 1 MPI processes
+  type: seq
+0.
+1.
+-2.46519e-32
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Function Subdomain Primary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Function Subdomain Primary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Field Input Subdomain Primary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Field Subdomain Primary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Function Subdomain Primary and Subdomain Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Function Subdomain Primary and Subdomain Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Field Input Subdomain Primary and Subdomain Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Field Subdomain Primary and Subdomain Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Function Subdomain Primary and Volumetric Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Function Subdomain Primary and Volumetric Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Field Input Subdomain Primary and Volumetric Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Field Subdomain Primary and Volumetric Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Function Volumetric Primary and Subdomain Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Function Volumetric Primary and Subdomain Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Field Input Volumetric Primary and Subdomain Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
+Vec Object: Local Field Volumetric Primary and Subdomain Auxiliary 1 MPI processes
+  type: seq
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+1.
+1.5
+1.5
