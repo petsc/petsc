@@ -4,8 +4,8 @@
 #include <petscvec.h>
 #include <cublas_v2.h>
 
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayReadWrite(Vec v, PetscScalar **a);
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayReadWrite(Vec v, PetscScalar **a);
+PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a);
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a);
 
 PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a);
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a);

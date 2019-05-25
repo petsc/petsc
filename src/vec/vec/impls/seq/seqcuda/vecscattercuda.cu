@@ -269,7 +269,7 @@ PetscErrorCode VecScatterCUDA_StoS(Vec x,Vec y,PetscCUDAIndices ci,InsertMode ad
   ierr = VecCUDAAllocateCheck(x);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(y);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecCUDAGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUDAGetArray(y,&yarray);CHKERRQ(ierr);
   if (stos_scatter->n) {
     if (addv == INSERT_VALUES)
       VecScatterCUDA_StoS_Dispatcher(xarray,yarray,ci,mode,Insert());
@@ -282,6 +282,6 @@ PetscErrorCode VecScatterCUDA_StoS(Vec x,Vec y,PetscCUDAIndices ci,InsertMode ad
     err = cudaStreamSynchronize(stos_scatter->stream);CHKERRCUDA(err);
   }
   ierr = VecCUDARestoreArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecCUDARestoreArrayReadWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUDARestoreArray(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1396,7 +1396,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
   try {
     ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDAGetArrayReadWrite(zz,&zarray);CHKERRQ(ierr);
+    ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);
     dptr = cusparsestruct->workVector->size() == (thrust::detail::vector_base<PetscScalar, thrust::device_malloc_allocator<PetscScalar> >::size_type)(A->rmap->n) ? zarray : cusparsestruct->workVector->data().get();
     beta = (yy == zz && dptr == zarray) ? matstruct->beta_one : matstruct->beta_zero;
 
@@ -1443,7 +1443,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
                        VecCUDAPlusEquals());
     }
     ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDARestoreArrayReadWrite(zz,&zarray);CHKERRQ(ierr);
+    ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
   }
@@ -1479,7 +1479,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
   try {
     ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDAGetArrayReadWrite(zz,&zarray);CHKERRQ(ierr);
+    ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);
     zptr = thrust::device_pointer_cast(zarray);
 
     /* multiply add with matrix transpose */
@@ -1512,7 +1512,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
         VecCUDAPlusEquals());
 
     ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDARestoreArrayReadWrite(zz,&zarray);CHKERRQ(ierr);
+    ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);
 
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
