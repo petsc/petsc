@@ -118,6 +118,20 @@ typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_
 E*/
 typedef enum {DM_X, DM_Y, DM_Z} DMDirection;
 
+/*E
+  DMEnclosureType - The type of enclosure relation between one DM and another
+
+  Level: beginner
+
+  For example, one DM dmA may be the boundary of another dmB, in which case it would be labeled DM_ENC_SUBMESH. If
+  the situation is reversed, and dmA has boundary dmB, it would be labeled DM_ENC_SUPERMESH. Likewise, if dmA was
+  a subregion of dmB, it would be labeled DM_ENC_SUBMESH. If no relation can be determined, DM_ENC_NONE is used.
+  If a relation is not yet known, then DM_ENC_UNKNOWN is used.
+
+.seealso: DMGetEnclosureRelation()
+E*/
+typedef enum {DM_ENC_EQUALITY, DM_ENC_SUPERMESH, DM_ENC_SUBMESH, DM_ENC_NONE, DM_ENC_UNKNOWN} DMEnclosureType;
+
 /*S
   PetscPartitioner - PETSc object that manages a graph partitioner
 

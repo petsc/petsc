@@ -2000,6 +2000,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
                                                        PetscScalar *fintegral, void *user)
 {
   DM                 plex = NULL, plexA = NULL;
+  DMEnclosureType    encAux;
   PetscDS            prob, probAux = NULL;
   PetscSection       section, sectionAux = NULL;
   Vec                locA = NULL;
@@ -2037,6 +2038,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
     DM dmAux;
 
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
+    ierr = DMGetEnclosureRelation(dmAux, dm, &encAux);CHKERRQ(ierr);
     ierr = DMConvert(dmAux, DMPLEX, &plexA);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
@@ -2084,7 +2086,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
         ierr = DMPlexVecRestoreClosure(plex, section, locX, support[0], NULL, &x);CHKERRQ(ierr);
         if (locA) {
           PetscInt subp;
-          ierr = DMPlexGetSubpoint(plexA, support[0], &subp);CHKERRQ(ierr);
+          ierr = DMGetEnclosurePoint(plexA, dm, encAux, support[0], &subp);CHKERRQ(ierr);
           ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
           for (i = 0; i < totDimAux; ++i) a[f*totDimAux+i] = x[i];
           ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
@@ -3097,6 +3099,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
 {
   DM              plex, plexA = NULL;
+  DMEnclosureType encAux;
   PetscSection    section, sectionAux;
   PetscDS         prob;
   const PetscInt *cells;
@@ -3121,6 +3124,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
     PetscDS probAux;
 
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
+    ierr = DMGetEnclosureRelation(dmAux, dm, &encAux);CHKERRQ(ierr);
     ierr = DMPlexConvertPlex(dmAux, &plexA, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMGetLocalSection(dmAux, &sectionAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
@@ -3146,7 +3150,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
     }
     if (locA) {
       PetscInt subcell;
-      ierr = DMPlexGetAuxiliaryPoint(plex, plexA, cell, &subcell);CHKERRQ(ierr);
+      ierr = DMGetEnclosurePoint(plexA, dm, encAux, cell, &subcell);CHKERRQ(ierr);
       ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subcell, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) al[cind*totDimAux+i] = x[i];
       ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subcell, NULL, &x);CHKERRQ(ierr);

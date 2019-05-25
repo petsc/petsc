@@ -17,6 +17,7 @@
 #define PetscUnit           PetscEnum
 #define DMAdaptationStrategy PetscEnum
 #define DMDirection PetscEnum
+#define DMEnclosureType     PetscEnum
 
 #define DM               type(tDM)
 
