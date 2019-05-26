@@ -39,7 +39,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   PetscMPIInt       rank,size;
   char              buffer[256];
   PetscMatlabEngine e;
-  PetscBool         flg = PETSC_FALSE;
+  PetscBool         flg = PETSC_FALSE,mgiven = PETSC_TRUE;
 
   PetscFunctionBegin;
   if (MATLABENGINE_CLASSID == -1) {
@@ -49,13 +49,20 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
 
   ierr = PetscHeaderCreate(e,MATLABENGINE_CLASSID,"MatlabEngine","MATLAB Engine","Sys",comm,PetscMatlabEngineDestroy,NULL);CHKERRQ(ierr);
 
-  if (!machine) machine = "\0";
+  if (!machine) {
+    machine = "\0";
+    mgiven  = PETSC_FALSE;
+  }
   ierr = PetscStrncpy(buffer,PETSC_MATLAB_COMMAND,sizeof(buffer));CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscStrlcat(buffer," -nodisplay ",sizeof(buffer));CHKERRQ(ierr);
   }
-  ierr  = PetscStrlcat(buffer," -nojvm ",sizeof(buffer));CHKERRQ(ierr);
-  ierr  = PetscInfo2(0,"Starting MATLAB engine on %s with command %s\n",machine,buffer);CHKERRQ(ierr);
+  ierr  = PetscStrlcat(buffer," -nosplash ",sizeof(buffer));CHKERRQ(ierr);
+  if (mgiven) {
+    ierr  = PetscInfo2(0,"Starting MATLAB engine on %s with command %s\n",machine,buffer);CHKERRQ(ierr);
+  } else {
+    ierr  = PetscInfo1(0,"Starting MATLAB engine with command %s\n",buffer);CHKERRQ(ierr);
+  }
   e->ep = engOpen(buffer);
   if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine on %s",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
@@ -64,14 +71,17 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   sprintf(buffer,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);
   engEvalString(e->ep, buffer);
-  ierr = PetscInfo1(0,"Started MATLAB engine on %s\n",machine);CHKERRQ(ierr);
-
+  if (mgiven) {
+    ierr = PetscInfo1(0,"Started MATLAB engine on %s\n",machine);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo(0,"Started MATLAB engine\n");CHKERRQ(ierr);
+  }
   *mengine = e;
   PetscFunctionReturn(0);
 }
 
 /*@
-   PetscMatlabEngineDestroy - Destroys a vector.
+   PetscMatlabEngineDestroy - Shuts down a Matlab engine.
 
    Collective on PetscMatlabEngine
 
@@ -92,6 +102,10 @@ PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine *v)
   if (!*v) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*v,MATLABENGINE_CLASSID,1);
   if (--((PetscObject)(*v))->refct > 0) PetscFunctionReturn(0);
+  ierr = PetscInfo(0,"Stopping MATLAB engine\n");CHKERRQ(ierr);
+  ierr = engClose((*v)->ep);
+  if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error closing Matlab engine");
+  ierr = PetscInfo(0,"MATLAB engine stopped\n");CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
