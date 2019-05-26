@@ -833,7 +833,7 @@ struct _p_<class> {
 \end{lstlisting}
 Here \lstinline{<class>ops} is a function table (like the \lstinline{PetscOps} above) that
 contains the function pointers for the operations specific to that class.
-For example, the PETSc vector class object operations in \href{https://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/vecimple.h.html}{\trl{include/petsc/private/vecimpl.h}} include the following.
+For example, the PETSc vector class object operations in \href{https://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/vecimpl.h.html}{\trl{include/petsc/private/vecimpl.h}} include the following.
 
 \begin{lstlisting}[caption=Function table common to all PETSc-compatible vector objects (truncated)]
 typedef struct _VecOps* VecOps;
@@ -969,7 +969,7 @@ manner; but unless there is a specific reason, they should use the PETSc default
 not have to ``reinvent the wheel.''
 
 \subsection{Compose and Query Objects}
-In \href{https://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{\trl{src/sys/objects/olist.c}}, PETSc defines a C \lstinline{struct}
+In \href{https://www.mcs.anl.gov/petsc/petsc-master/src/sys/objects/olist.c.html}{\trl{src/sys/objects/olist.c}}, PETSc defines a C \lstinline{struct}
 \begin{lstlisting}
   typedef struct _PetscObjectList* PetscObjectList;
   struct _PetscObjectList {
