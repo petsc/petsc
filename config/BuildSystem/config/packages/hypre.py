@@ -17,7 +17,8 @@ class Configure(config.package.GNUPackage):
     # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
     self.downloadonWindows = 0
     self.precisions        = ['double']
-    self.complex           = 0
+    # HYPRE is supposed to work with complex number
+    #self.complex           = 0
     self.hastests          = 1
     self.hastestsdatafiles = 1
 
@@ -28,6 +29,7 @@ class Configure(config.package.GNUPackage):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mpi        = framework.require('config.packages.MPI',self)
     self.mathlib    = framework.require('config.packages.mathlib',self)
+    self.scalar     = framework.require('PETSc.options.scalarTypes',self)
     self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
 
   def formGNUConfigureArgs(self):
@@ -74,8 +76,13 @@ class Configure(config.package.GNUPackage):
     args.append('--without-mli')
     args.append('--without-fei')
     args.append('--without-superlu')
+
     if self.getDefaultIndexSize() == 64:
       args.append('--enable-bigint')
+
+    if self.scalar.scalartype == 'complex':
+      args.append('--enable-complex')
+
     # hypre configure assumes the AR flags are passed in with AR
     args = [arg for arg in args if not arg.startswith('AR')]
     args.append('AR="'+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'"')
