@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"x = x + MPI_Comm_rank;\n");
   ierr = PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_WORLD,(PetscObject)x);CHKERRQ(ierr);
 
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"whos\n");
+  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"whos\n");CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]The result is %s",rank,output);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
