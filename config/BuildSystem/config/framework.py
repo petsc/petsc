@@ -236,6 +236,17 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.log.write('\n')
     return
 
+  def saveHash(self):
+    '''Saves the hash for configure (created in arch.py)'''
+    if hasattr(self,'hash') and hasattr(self,'hashfile'):
+       self.logPrint('Attempting to save configure hash file: '+self.hashfile)
+       try:
+         with open(self.hashfile, 'w') as f:
+           f.write(self.hash)
+       except:
+         self.logPrint('Unable to save configure hash file: '+self.hashfile)
+
+
   def cleanup(self):
     self.actions.output(self.log)
     self.tmpDir = None
@@ -1087,5 +1098,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if self.argDB['with-batch']:
       self.configureBatch()
     self.dumpConfFiles()
+    self.saveHash()
     self.cleanup()
     return 1
