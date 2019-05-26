@@ -93,12 +93,13 @@ class Configure(config.package.GNUPackage):
     config.package.Package.configureLibrary(self)
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    # check integers
     if self.defaultIndexSize == 64:
-      code = '#if !defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT not defined!\n#endif'
-      msg  = '--with-64-bit-indices option requires Hypre built with --enable-bigint.\n'
+      code = '#if !defined(HYPRE_BIGINT) && !defined(HYPRE_MIXEDINT)\n#error HYPRE_BIGINT or HYPRE_MIXEDINT not defined!\n#endif'
+      msg  = '--with-64-bit-indices option requires Hypre built with --enable-bigint or --enable-mixedint.\n'
     else:
-      code = '#if defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT defined!\n#endif'
-      msg= 'Hypre with --enable-bigint appears to be specified for a default 32-bit-indices build of PETSc.\n'
+      code = '#if defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT defined!\n#endif\n#if defined(HYPRE_MIXEDINT)\n#error HYPRE_MIXEDINT defined!\n#endif\n'
+      msg  = 'Hypre with --enable-bigint/--enable-mixedint appears to be specified for a default 32-bit-indices build of PETSc.\n'
     if not self.checkCompile('#include "HYPRE_config.h"',code):
       raise RuntimeError('Hypre specified is incompatible!\n'+msg+'Suggest using --download-hypre for a compatible hypre')
     self.compilers.CPPFLAGS = oldFlags

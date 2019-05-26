@@ -14,6 +14,12 @@
 #include <_hypre_parcsr_ls.h>
 #include <_hypre_sstruct_ls.h>
 
+/* from version 2.16 on, HYPRE_BigInt is 64 bit for 64bit installations
+   and 32 bit for 32bit installations -> not the best name for a variable */
+#if PETSC_PKG_HYPRE_VERSION_LT(2,16,0)
+typedef PetscInt HYPRE_BigInt
+#endif
+
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat,Mat_HYPRE*);
@@ -30,7 +36,7 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
   PetscInt       i,n_d,n_o;
   const PetscInt *ia_d,*ia_o;
   PetscBool      done_d=PETSC_FALSE,done_o=PETSC_FALSE;
-  PetscInt       *nnz_d=NULL,*nnz_o=NULL;
+  HYPRE_Int      *nnz_d=NULL,*nnz_o=NULL;
 
   PetscFunctionBegin;
   if (A_d) { /* determine number of nonzero entries in local diagonal part */
@@ -66,12 +72,12 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
       aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
       hypre_AuxParCSRMatrixDestroy(aux_matrix);
       hypre_IJMatrixTranslator(ij) = NULL;
-      PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(ij,(HYPRE_Int *)nnz_d,(HYPRE_Int *)nnz_o));
+      PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(ij,nnz_d,nnz_o));
       aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
       hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 1;
     }
 #else
-    PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(ij,(HYPRE_Int *)nnz_d,(HYPRE_Int *)nnz_o));
+    PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(ij,nnz_d,nnz_o));
 #endif
     ierr = PetscFree(nnz_d);CHKERRQ(ierr);
     ierr = PetscFree(nnz_o);CHKERRQ(ierr);
@@ -149,7 +155,10 @@ static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&ncols,&cols,&values);CHKERRQ(ierr);
     if (ncols) {
-      PetscStackCallStandard(HYPRE_IJMatrixSetValues,(ij,1,(HYPRE_Int *)&ncols,(HYPRE_Int *)&i,(HYPRE_Int *)cols,values));
+      HYPRE_Int nc = (HYPRE_Int)ncols;
+
+      if ((PetscInt)nc != ncols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hypre overflow! number of columns %D for row %D",ncols,i);
+      PetscStackCallStandard(HYPRE_IJMatrixSetValues,(ij,1,&nc,(HYPRE_BigInt *)&i,(HYPRE_BigInt *)cols,values));
     }
     ierr = MatRestoreRow(A,i,&ncols,&cols,&values);CHKERRQ(ierr);
   }
@@ -164,6 +173,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
   hypre_CSRMatrix       *hdiag;
+  PetscBool             sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
 
   PetscFunctionBegin;
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(ij));
@@ -174,8 +184,15 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
   /*
        this is the Hack part where we monkey directly with the hypre datastructures
   */
-  ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(hdiag->j,pdiag->j,pdiag->nz*sizeof(PetscInt));CHKERRQ(ierr);
+  if (sameint) {
+    ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(hdiag->j,pdiag->j,pdiag->nz*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
+    PetscInt i;
+
+    for (i=0;i<A->rmap->n + 1;i++) hdiag->i[i] = (HYPRE_Int)pdiag->i[i];
+    for (i=0;i<pdiag->nz;i++)      hdiag->j[i] = (HYPRE_Int)pdiag->j[i];
+  }
   ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));CHKERRQ(ierr);
 
   aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
@@ -189,10 +206,11 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   Mat_MPIAIJ            *pA = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ            *pdiag,*poffd;
   PetscInt              i,*garray = pA->garray,*jj,cstart,*pjj;
-  HYPRE_Int             type;
+  HYPRE_Int             *hjj,type;
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
   hypre_CSRMatrix       *hdiag,*hoffd;
+  PetscBool             sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
 
   PetscFunctionBegin;
   pdiag = (Mat_SeqAIJ*) pA->A->data;
@@ -210,17 +228,26 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   /*
        this is the Hack part where we monkey directly with the hypre datastructures
   */
-  ierr = PetscMemcpy(hdiag->i,pdiag->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
+  if (sameint) {
+    ierr = PetscMemcpy(hdiag->i,pdiag->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
+  } else {
+    for (i=0; i<pA->A->rmap->n + 1; i++) hdiag->i[i] = (HYPRE_Int)(pdiag->i[i]);
+  }
   /* need to shift the diag column indices (hdiag->j) back to global numbering since hypre is expecting this */
-  jj  = (PetscInt*)hdiag->j;
-  pjj = (PetscInt*)pdiag->j;
+  hjj = hdiag->j;
+  pjj = pdiag->j;
 #if PETSC_PKG_HYPRE_VERSION_GE(2,16,0)
-  for (i=0; i<pdiag->nz; i++) jj[i] = pjj[i];
+  for (i=0; i<pdiag->nz; i++) hjj[i] = pjj[i];
 #else
-  for (i=0; i<pdiag->nz; i++) jj[i] = cstart + pjj[i];
+  for (i=0; i<pdiag->nz; i++) hjj[i] = cstart + pjj[i];
 #endif
   ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
-  ierr = PetscMemcpy(hoffd->i,poffd->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
+  if (sameint) {
+    ierr = PetscMemcpy(hoffd->i,poffd->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
+  } else {
+    for (i=0; i<pA->A->rmap->n + 1; i++) hoffd->i[i] = (HYPRE_Int)(poffd->i[i]);
+  }
+
   /* need to move the offd column indices (hoffd->j) back to global numbering since hypre is expecting this
      If we hacked a hypre a bit more we might be able to avoid this step */
 #if PETSC_PKG_HYPRE_VERSION_GE(2,16,0)
@@ -229,7 +256,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 #else
   jj  = (PetscInt*) hoffd->j;
 #endif
-  pjj = (PetscInt*) poffd->j;
+  pjj = poffd->j;
   for (i=0; i<poffd->nz; i++) jj[i] = garray[pjj[i]];
 
   ierr = PetscMemcpy(hoffd->data,poffd->a,poffd->nz*sizeof(PetscScalar));
@@ -249,7 +276,8 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   hypre_CSRMatrix        *hdiag,*hoffd;
   MPI_Comm               comm;
   PetscScalar            *hdd,*hod,*aa,*data;
-  HYPRE_Int              *col_map_offd,*hdi,*hdj,*hoi,*hoj;
+  HYPRE_BigInt           *col_map_offd;
+  HYPRE_Int              *hdi,*hdj,*hoi,*hoj;
   PetscInt               *ii,*jj,*iptr,*jptr;
   PetscInt               cum,dr,dc,oc,str,stc,nnz,i,jd,jo,M,N;
   HYPRE_Int              type;
@@ -390,6 +418,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
   PetscInt           i,dnnz,onnz,m,n;
   HYPRE_Int          type;
   PetscMPIInt        size;
+  PetscBool          sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -432,12 +461,23 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       ierr = MatSeqAIJGetArray(*B,&da);CHKERRQ(ierr);
     }
   } else { /* MAT_INPLACE_MATRIX */
-    dii = (PetscInt*)hypre_CSRMatrixI(hdiag);
-    djj = (PetscInt*)hypre_CSRMatrixJ(hdiag);
-    da  = hypre_CSRMatrixData(hdiag);
+    if (!sameint) {
+      ierr = PetscMalloc1(m+1,&dii);CHKERRQ(ierr);
+      ierr = PetscMalloc1(dnnz,&djj);CHKERRQ(ierr);
+    } else {
+      dii = (PetscInt*)hypre_CSRMatrixI(hdiag);
+      djj = (PetscInt*)hypre_CSRMatrixJ(hdiag);
+    }
+    da = hypre_CSRMatrixData(hdiag);
   }
-  ierr = PetscMemcpy(dii,hypre_CSRMatrixI(hdiag),(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(djj,hypre_CSRMatrixJ(hdiag),dnnz*sizeof(PetscInt));CHKERRQ(ierr);
+
+  if (!sameint) {
+    for (i=0;i<m+1;i++)  dii[i] = (PetscInt)(hypre_CSRMatrixI(hdiag)[i]);
+    for (i=0;i<dnnz;i++) djj[i] = (PetscInt)(hypre_CSRMatrixJ(hdiag)[i]);
+  } else {
+    ierr = PetscMemcpy(dii,hypre_CSRMatrixI(hdiag),(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(djj,hypre_CSRMatrixJ(hdiag),dnnz*sizeof(PetscInt));CHKERRQ(ierr);
+  }
   ierr = PetscMemcpy(da,hypre_CSRMatrixData(hdiag),dnnz*sizeof(PetscScalar));CHKERRQ(ierr);
   iptr = djj;
   aptr = da;
@@ -448,7 +488,8 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
     aptr += nc;
   }
   if (size > 1) {
-    HYPRE_Int *offdj,*coffd;
+    HYPRE_BigInt *coffd;
+    HYPRE_Int    *offdj;
 
     if (reuse == MAT_INITIAL_MATRIX) {
       ierr = PetscMalloc1(m+1,&oii);CHKERRQ(ierr);
@@ -464,11 +505,20 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       if (oii[nr] < onnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot reuse mat: invalid number of nonzeros in offdiag part! reuse %D hypre %D",oii[nr],onnz);
       ierr = MatSeqAIJGetArray(b->B,&oa);CHKERRQ(ierr);
     } else { /* MAT_INPLACE_MATRIX */
-      oii = (PetscInt*)hypre_CSRMatrixI(hoffd);
-      ojj = (PetscInt*)hypre_CSRMatrixJ(hoffd);
-      oa  = hypre_CSRMatrixData(hoffd);
+      if (!sameint) {
+        ierr = PetscMalloc1(m+1,&oii);CHKERRQ(ierr);
+        ierr = PetscMalloc1(onnz,&ojj);CHKERRQ(ierr);
+      } else {
+        oii = (PetscInt*)hypre_CSRMatrixI(hoffd);
+        ojj = (PetscInt*)hypre_CSRMatrixJ(hoffd);
+      }
+      oa = hypre_CSRMatrixData(hoffd);
     }
-    ierr  = PetscMemcpy(oii,hypre_CSRMatrixI(hoffd),(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    if (!sameint) {
+      for (i=0;i<m+1;i++) oii[i] = (PetscInt)(hypre_CSRMatrixI(hoffd)[i]);
+    } else {
+      ierr = PetscMemcpy(oii,hypre_CSRMatrixI(hoffd),(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    }
     offdj = hypre_CSRMatrixJ(hoffd);
     coffd = hypre_ParCSRMatrixColMapOffd(parcsr);
     for (i=0; i<onnz; i++) ojj[i] = coffd[offdj[i]];
@@ -496,12 +546,22 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       o->free_ij = PETSC_TRUE;
     } else if (reuse == MAT_INPLACE_MATRIX) {
       Mat T;
+
       ierr = MatCreateMPIAIJWithSplitArrays(comm,m,n,PETSC_DECIDE,PETSC_DECIDE,dii,djj,da,oii,ojj,oa,&T);CHKERRQ(ierr);
-      hypre_CSRMatrixI(hdiag)    = NULL;
-      hypre_CSRMatrixJ(hdiag)    = NULL;
+      if (sameint) { /* ownership of CSR pointers is transferred to PETSc */
+        hypre_CSRMatrixI(hdiag) = NULL;
+        hypre_CSRMatrixJ(hdiag) = NULL;
+        hypre_CSRMatrixI(hoffd) = NULL;
+        hypre_CSRMatrixJ(hoffd) = NULL;
+      } else { /* Hack MPIAIJ -> free ij but not a */
+        Mat_MPIAIJ *b = (Mat_MPIAIJ*)(T->data);
+        Mat_SeqAIJ *d = (Mat_SeqAIJ*)(b->A->data);
+        Mat_SeqAIJ *o = (Mat_SeqAIJ*)(b->B->data);
+
+        d->free_ij = PETSC_TRUE;
+        o->free_ij = PETSC_TRUE;
+      }
       hypre_CSRMatrixData(hdiag) = NULL;
-      hypre_CSRMatrixI(hoffd)    = NULL;
-      hypre_CSRMatrixJ(hoffd)    = NULL;
       hypre_CSRMatrixData(hoffd) = NULL;
       ierr = MatHeaderReplace(A,&T);CHKERRQ(ierr);
     }
@@ -511,6 +571,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
     oa   = NULL;
     if (reuse == MAT_INITIAL_MATRIX) {
       Mat_SeqAIJ* b;
+
       ierr = MatCreateSeqAIJWithArrays(comm,m,n,dii,djj,da,B);CHKERRQ(ierr);
       /* hack SeqAIJ */
       b          = (Mat_SeqAIJ*)((*B)->data);
@@ -518,24 +579,34 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       b->free_ij = PETSC_TRUE;
     } else if (reuse == MAT_INPLACE_MATRIX) {
       Mat T;
+
       ierr = MatCreateSeqAIJWithArrays(comm,m,n,dii,djj,da,&T);CHKERRQ(ierr);
-      hypre_CSRMatrixI(hdiag)    = NULL;
-      hypre_CSRMatrixJ(hdiag)    = NULL;
+      if (sameint) { /* ownership of CSR pointers is transferred to PETSc */
+        hypre_CSRMatrixI(hdiag) = NULL;
+        hypre_CSRMatrixJ(hdiag) = NULL;
+      } else { /* free ij but not a */
+        Mat_SeqAIJ* b = (Mat_SeqAIJ*)(T->data);
+
+        b->free_ij = PETSC_TRUE;
+      }
       hypre_CSRMatrixData(hdiag) = NULL;
       ierr = MatHeaderReplace(A,&T);CHKERRQ(ierr);
     }
   }
 
-  /* we have to use hypre_Tfree to free the arrays */
+  /* we have to use hypre_Tfree to free the HYPRE arrays
+     that PETSc now onws */
   if (reuse == MAT_INPLACE_MATRIX) {
-    void *ptrs[6] = {dii,djj,da,oii,ojj,oa};
-    const char *names[6] = {"_hypre_csr_dii",
+    PetscInt nh;
+    void *ptrs[6] = {da,oa,dii,djj,oii,ojj};
+    const char *names[6] = {"_hypre_csr_da",
+                            "_hypre_csr_oa",
+                            "_hypre_csr_dii",
                             "_hypre_csr_djj",
-                            "_hypre_csr_da",
                             "_hypre_csr_oii",
-                            "_hypre_csr_ojj",
-                            "_hypre_csr_oa"};
-    for (i=0; i<6; i++) {
+                            "_hypre_csr_ojj"};
+    nh = sameint ? 6 : 2;
+    for (i=0; i<nh; i++) {
       PetscContainer c;
 
       ierr = PetscContainerCreate(comm,&c);CHKERRQ(ierr);
@@ -553,9 +624,10 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   hypre_ParCSRMatrix *tA;
   hypre_CSRMatrix    *hdiag,*hoffd;
   Mat_SeqAIJ         *diag,*offd;
-  PetscInt           *garray,noffd,dnnz,onnz,*row_starts,*col_starts;
+  PetscInt           *garray,i,noffd,dnnz,onnz,*row_starts,*col_starts;
   MPI_Comm           comm = PetscObjectComm((PetscObject)A);
   PetscBool          ismpiaij,isseqaij;
+  PetscBool          sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -591,14 +663,24 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
     row_starts = A->rmap->range;
     col_starts = A->cmap->range;
   }
-  tA = hypre_ParCSRMatrixCreate(comm,A->rmap->N,A->cmap->N,(HYPRE_Int*)row_starts,(HYPRE_Int*)col_starts,noffd,dnnz,onnz);
+  tA = hypre_ParCSRMatrixCreate(comm,A->rmap->N,A->cmap->N,(HYPRE_BigInt*)row_starts,(HYPRE_BigInt*)col_starts,noffd,dnnz,onnz);
   hypre_ParCSRMatrixSetRowStartsOwner(tA,0);
   hypre_ParCSRMatrixSetColStartsOwner(tA,0);
 
   /* set diagonal part */
   hdiag = hypre_ParCSRMatrixDiag(tA);
-  hypre_CSRMatrixI(hdiag)           = (HYPRE_Int*)diag->i;
-  hypre_CSRMatrixJ(hdiag)           = (HYPRE_Int*)diag->j;
+  if (sameint) { /* reuse CSR pointers */
+    hypre_CSRMatrixI(hdiag) = (HYPRE_Int*)diag->i;
+    hypre_CSRMatrixJ(hdiag) = (HYPRE_Int*)diag->j;
+  } else { /* malloc CSR pointers */
+    HYPRE_Int *hi,*hj;
+
+    ierr = PetscMalloc2(A->rmap->n+1,&hi,dnnz,&hj);CHKERRQ(ierr);
+    for (i = 0; i < A->rmap->n+1; i++) hi[i] = (HYPRE_Int)(diag->i[i]);
+    for (i = 0; i < dnnz; i++)         hj[i] = (HYPRE_Int)(diag->j[i]);
+    hypre_CSRMatrixI(hdiag) = hi;
+    hypre_CSRMatrixJ(hdiag) = hj;
+  }
   hypre_CSRMatrixData(hdiag)        = diag->a;
   hypre_CSRMatrixNumNonzeros(hdiag) = diag->nz;
   hypre_CSRMatrixSetRownnz(hdiag);
@@ -607,14 +689,24 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   /* set offdiagonal part */
   hoffd = hypre_ParCSRMatrixOffd(tA);
   if (offd) {
-    hypre_CSRMatrixI(hoffd)           = (HYPRE_Int*)offd->i;
-    hypre_CSRMatrixJ(hoffd)           = (HYPRE_Int*)offd->j;
+    if (sameint) { /* reuse CSR pointers */
+      hypre_CSRMatrixI(hoffd) = (HYPRE_Int*)offd->i;
+      hypre_CSRMatrixJ(hoffd) = (HYPRE_Int*)offd->j;
+    } else { /* malloc CSR pointers */
+      HYPRE_Int *hi,*hj;
+
+      ierr = PetscMalloc2(A->rmap->n+1,&hi,onnz,&hj);CHKERRQ(ierr);
+      for (i = 0; i < A->rmap->n+1; i++) hi[i] = (HYPRE_Int)(offd->i[i]);
+      for (i = 0; i < onnz; i++)         hj[i] = (HYPRE_Int)(offd->j[i]);
+      hypre_CSRMatrixI(hoffd) = hi;
+      hypre_CSRMatrixJ(hoffd) = hj;
+    }
     hypre_CSRMatrixData(hoffd)        = offd->a;
     hypre_CSRMatrixNumNonzeros(hoffd) = offd->nz;
     hypre_CSRMatrixSetRownnz(hoffd);
     hypre_CSRMatrixSetDataOwner(hoffd,0);
     hypre_ParCSRMatrixSetNumNonzeros(tA);
-    hypre_ParCSRMatrixColMapOffd(tA) = (HYPRE_Int*)garray;
+    hypre_ParCSRMatrixColMapOffd(tA) = (HYPRE_BigInt*)garray;
   }
   *hA = tA;
   PetscFunctionReturn(0);
@@ -622,11 +714,26 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
 
 static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
 {
-  hypre_CSRMatrix    *hdiag,*hoffd;
+  hypre_CSRMatrix *hdiag,*hoffd;
+  PetscBool       sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   hdiag = hypre_ParCSRMatrixDiag(*hA);
   hoffd = hypre_ParCSRMatrixOffd(*hA);
+  /* free temporary memory allocated by PETSc */
+  if (!sameint) {
+    HYPRE_Int *hi,*hj;
+
+    hi = hypre_CSRMatrixI(hdiag);
+    hj = hypre_CSRMatrixJ(hdiag);
+    ierr = PetscFree2(hi,hj);CHKERRQ(ierr);
+    if (hoffd) {
+      hi = hypre_CSRMatrixI(hoffd);
+      hj = hypre_CSRMatrixJ(hoffd);
+      ierr = PetscFree2(hi,hj);CHKERRQ(ierr);
+    }
+  }
   /* set pointers to NULL before destroying tA */
   hypre_CSRMatrixI(hdiag)           = NULL;
   hypre_CSRMatrixJ(hdiag)           = NULL;
@@ -1147,9 +1254,12 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
   if (ins == ADD_VALUES) {
     for (i=0;i<nr;i++) {
       if (rows[i] >= 0 && nzc) {
-        PetscInt j;
+        PetscInt  j;
+        HYPRE_Int hnc = (HYPRE_Int)nzc;
+
+        if ((PetscInt)hnc != nzc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hypre overflow! number of columns %D for row %D",nzc,rows[i]);
         for (j=0;j<nzc;j++) sscr[j] = vals[cscr[1][j]];
-        PetscStackCallStandard(HYPRE_IJMatrixAddToValues,(hA->ij,1,(HYPRE_Int*)&nzc,(HYPRE_Int*)(rows+i),(HYPRE_Int*)cscr[0],sscr));
+        PetscStackCallStandard(HYPRE_IJMatrixAddToValues,(hA->ij,1,&hnc,(HYPRE_BigInt*)(rows+i),(HYPRE_BigInt*)cscr[0],sscr));
       }
       vals += nc;
     }
@@ -1159,12 +1269,15 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
     ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
     for (i=0;i<nr;i++) {
       if (rows[i] >= 0 && nzc) {
-        PetscInt j;
+        PetscInt  j;
+        HYPRE_Int hnc = (HYPRE_Int)nzc;
+
+        if ((PetscInt)hnc != nzc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hypre overflow! number of columns %D for row %D",nzc,rows[i]);
         for (j=0;j<nzc;j++) sscr[j] = vals[cscr[1][j]];
         /* nonlocal values */
         if (rows[i] < rst || rows[i] >= ren) { ierr = MatStashValuesRow_Private(&A->stash,rows[i],nzc,cscr[0],sscr,PETSC_FALSE);CHKERRQ(ierr); }
         /* local values */
-        else PetscStackCallStandard(HYPRE_IJMatrixSetValues,(hA->ij,1,(HYPRE_Int*)&nzc,(HYPRE_Int*)(rows+i),(HYPRE_Int*)cscr[0],sscr));
+        else PetscStackCallStandard(HYPRE_IJMatrixSetValues,(hA->ij,1,&hnc,(HYPRE_BigInt*)(rows+i),(HYPRE_BigInt*)cscr[0],sscr));
       }
       vals += nc;
     }
@@ -1194,10 +1307,10 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     PetscStackCallStandard(HYPRE_IJMatrixCreate,(hA->comm,rs,re-1,cs,ce-1,&hA->ij));
     PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(hA->ij,HYPRE_PARCSR));
   } else {
-    HYPRE_Int hrs,hre,hcs,hce;
+    HYPRE_BigInt hrs,hre,hcs,hce;
     PetscStackCallStandard(HYPRE_IJMatrixGetLocalRange,(hA->ij,&hrs,&hre,&hcs,&hce));
-    if (hre-hrs+1 != re -rs) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local rows: IJMatrix [%D,%D), PETSc [%D,%d)",hrs,hre+1,rs,re);
-    if (hce-hcs+1 != ce -cs) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local cols: IJMatrix [%D,%D), PETSc [%D,%d)",hcs,hce+1,cs,ce);
+    if (hre-hrs+1 != re -rs) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local rows: IJMatrix [%D,%D), PETSc [%D,%D)",hrs,hre+1,rs,re);
+    if (hce-hcs+1 != ce -cs) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local cols: IJMatrix [%D,%D), PETSc [%D,%D)",hcs,hce+1,cs,ce);
   }
   if (dnz == PETSC_DEFAULT || dnz == PETSC_DECIDE) dnz = 10*bs;
   if (onz == PETSC_DEFAULT || onz == PETSC_DECIDE) onz = 10*bs;
@@ -1391,14 +1504,14 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
 
       ierr = MatGetLayouts(T,NULL,&map);CHKERRQ(ierr);
       ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-      hypre_ParCSRMatrixColStarts(parcsr) = (HYPRE_Int*)(map->range + myid);
+      hypre_ParCSRMatrixColStarts(parcsr) = (HYPRE_BigInt*)(map->range + myid);
     }
     if (!hypre_ParCSRMatrixOwnsRowStarts(parcsr)) {
       PetscLayout map;
 
       ierr = MatGetLayouts(T,&map,NULL);CHKERRQ(ierr);
       ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-      hypre_ParCSRMatrixRowStarts(parcsr) = (HYPRE_Int*)(map->range + myid);
+      hypre_ParCSRMatrixRowStarts(parcsr) = (HYPRE_BigInt*)(map->range + myid);
     }
     /* prevent from freeing the pointer */
     if (copymode == PETSC_USE_POINTER) hA->inner_free = PETSC_FALSE;
@@ -1658,26 +1771,30 @@ static PetscErrorCode MatAssemblyBegin_HYPRE(Mat mat,MatAssemblyType mode)
 static PetscErrorCode MatGetRow_HYPRE(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   hypre_ParCSRMatrix  *parcsr;
+  HYPRE_Int           hnz;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   /* retrieve the internal matrix */
   ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
   /* call HYPRE API */
-  PetscStackCallStandard(HYPRE_ParCSRMatrixGetRow,(parcsr,row,(HYPRE_Int*)nz,(HYPRE_Int**)idx,v));
+  PetscStackCallStandard(HYPRE_ParCSRMatrixGetRow,(parcsr,row,&hnz,(HYPRE_BigInt**)idx,v));
+  if (nz) *nz = (PetscInt)hnz;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatRestoreRow_HYPRE(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   hypre_ParCSRMatrix  *parcsr;
+  HYPRE_Int           hnz;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   /* retrieve the internal matrix */
   ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
   /* call HYPRE API */
-  PetscStackCallStandard(HYPRE_ParCSRMatrixRestoreRow,(parcsr,row,(HYPRE_Int*)nz,(HYPRE_Int**)idx,v));
+  hnz = nz ? (HYPRE_Int)(*nz) : 0;
+  PetscStackCallStandard(HYPRE_ParCSRMatrixRestoreRow,(parcsr,row,&hnz,(HYPRE_BigInt**)idx,v));
   PetscFunctionReturn(0);
 }
 
@@ -1691,8 +1808,12 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A,PetscInt m,const PetscInt idxm[],
   /* Ignore negative row indices
    * And negative column indices should be automatically ignored in hypre
    * */
-  for (i=0; i<m; i++)
-    if (idxm[i] >= 0) PetscStackCallStandard(HYPRE_IJMatrixGetValues,(hA->ij,1,(HYPRE_Int*)&n,(HYPRE_Int*)&idxm[i],(HYPRE_Int*)idxn,&v[i*n]));
+  for (i=0; i<m; i++) {
+    if (idxm[i] >= 0) {
+      HYPRE_Int hn = (HYPRE_Int)n;
+      PetscStackCallStandard(HYPRE_IJMatrixGetValues,(hA->ij,1,&hn,(HYPRE_BigInt*)&idxm[i],(HYPRE_BigInt*)idxn,&v[i*n]));
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1792,7 +1913,8 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
   hypre_ParCSRMatrix *parcsr;
   hypre_CSRMatrix    *dmat;
   PetscScalar        *a,*data = NULL;
-  PetscInt           i,*diag = NULL;
+  HYPRE_Int          *diag = NULL;
+  PetscInt           i;
   PetscBool          cong;
   PetscErrorCode     ierr;
 
@@ -1810,7 +1932,7 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
   dmat = hypre_ParCSRMatrixDiag(parcsr);
   if (dmat) {
     ierr = VecGetArray(d,&a);CHKERRQ(ierr);
-    diag = (PetscInt*)(hypre_CSRMatrixI(dmat));
+    diag = hypre_CSRMatrixI(dmat);
     data = (PetscScalar*)(hypre_CSRMatrixData(dmat));
     for (i=0;i<A->rmap->n;i++) a[i] = data[diag[i]];
     ierr = VecRestoreArray(d,&a);CHKERRQ(ierr);

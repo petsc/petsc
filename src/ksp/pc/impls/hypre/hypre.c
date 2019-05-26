@@ -864,7 +864,7 @@ static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
-  PetscInt       oits;
+  HYPRE_Int      oits;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
@@ -873,7 +873,7 @@ static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,
   jac->applyrichardson = PETSC_TRUE;
   ierr                 = PCApply_HYPRE(pc,b,y);CHKERRQ(ierr);
   jac->applyrichardson = PETSC_FALSE;
-  PetscStackCallStandard(HYPRE_BoomerAMGGetNumIterations,(jac->hsolver,(HYPRE_Int *)&oits));
+  PetscStackCallStandard(HYPRE_BoomerAMGGetNumIterations,(jac->hsolver,&oits));
   *outits = oits;
   if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
   else             *reason = PCRICHARDSON_CONVERGED_RTOL;
@@ -2137,26 +2137,34 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
   PetscScalar       *yy;
   const PetscScalar *xx;
   PetscInt          ilower[3],iupper[3];
+  HYPRE_Int         hlower[3],hupper[3];
   Mat_HYPREStruct   *mx = (Mat_HYPREStruct*)(pc->pmat->data);
 
   PetscFunctionBegin;
-  ierr       = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
-  ierr       = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
   iupper[0] += ilower[0] - 1;
   iupper[1] += ilower[1] - 1;
   iupper[2] += ilower[2] - 1;
+  hlower[0]  = (HYPRE_Int)ilower[0];
+  hlower[1]  = (HYPRE_Int)ilower[1];
+  hlower[2]  = (HYPRE_Int)ilower[2];
+  hupper[0]  = (HYPRE_Int)iupper[0];
+  hupper[1]  = (HYPRE_Int)iupper[1];
+  hupper[2]  = (HYPRE_Int)iupper[2];
 
   /* copy x values over to hypre */
   PetscStackCallStandard(HYPRE_StructVectorSetConstantValues,(mx->hb,0.0));
   ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  PetscStackCallStandard(HYPRE_StructVectorSetBoxValues,(mx->hb,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,(PetscScalar*)xx));
+  PetscStackCallStandard(HYPRE_StructVectorSetBoxValues,(mx->hb,hlower,hupper,(PetscScalar*)xx));
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructVectorAssemble,(mx->hb));
   PetscStackCallStandard(HYPRE_StructPFMGSolve,(ex->hsolver,mx->hmat,mx->hb,mx->hx));
 
   /* copy solution values back to PETSc */
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-  PetscStackCallStandard(HYPRE_StructVectorGetBoxValues,(mx->hx,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,yy));
+  PetscStackCallStandard(HYPRE_StructVectorGetBoxValues,(mx->hx,hlower,hupper,yy));
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2165,7 +2173,7 @@ static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal r
 {
   PC_PFMG        *jac = (PC_PFMG*)pc->data;
   PetscErrorCode ierr;
-  PetscInt       oits;
+  HYPRE_Int      oits;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
@@ -2173,7 +2181,7 @@ static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal r
   PetscStackCallStandard(HYPRE_StructPFMGSetTol,(jac->hsolver,rtol));
 
   ierr = PCApply_PFMG(pc,b,y);CHKERRQ(ierr);
-  PetscStackCallStandard(HYPRE_StructPFMGGetNumIterations,(jac->hsolver,(HYPRE_Int *)&oits));
+  PetscStackCallStandard(HYPRE_StructPFMGGetNumIterations,(jac->hsolver,&oits));
   *outits = oits;
   if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
   else             *reason = PCRICHARDSON_CONVERGED_RTOL;
@@ -2334,6 +2342,7 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
   PetscScalar       *yy;
   const PetscScalar *xx;
   PetscInt          ilower[3],iupper[3];
+  HYPRE_Int         hlower[3],hupper[3];
   Mat_HYPRESStruct  *mx     = (Mat_HYPRESStruct*)(pc->pmat->data);
   PetscInt          ordering= mx->dofs_order;
   PetscInt          nvars   = mx->nvars;
@@ -2344,9 +2353,16 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr       = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
   ierr       = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
   iupper[0] += ilower[0] - 1;
   iupper[1] += ilower[1] - 1;
   iupper[2] += ilower[2] - 1;
+  hlower[0]  = (HYPRE_Int)ilower[0];
+  hlower[1]  = (HYPRE_Int)ilower[1];
+  hlower[2]  = (HYPRE_Int)ilower[2];
+  hupper[0]  = (HYPRE_Int)iupper[0];
+  hupper[1]  = (HYPRE_Int)iupper[1];
+  hupper[2]  = (HYPRE_Int)iupper[2];
 
   size = 1;
   for (i= 0; i< 3; i++) size *= (iupper[i]-ilower[i]+1);
@@ -2355,7 +2371,7 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
   if (ordering) {
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,(mx->ss_b,0.0));
     ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,i,(PetscScalar*)xx+(size*i)));
+    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,hlower,hupper,i,(PetscScalar*)xx+(size*i)));
     ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_SStructVectorAssemble,(mx->ss_b));
     PetscStackCallStandard(HYPRE_SStructMatrixMatvec,(1.0,mx->ss_mat,mx->ss_b,0.0,mx->ss_x));
@@ -2363,7 +2379,7 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
 
     /* copy solution values back to PETSc */
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,(mx->ss_x,part,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,i,yy+(size*i)));
+    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,(mx->ss_x,part,hlower,hupper,i,yy+(size*i)));
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   } else {      /* nodal ordering must be mapped to variable ordering for sys_pfmg */
     PetscScalar *z;
@@ -2378,14 +2394,14 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
       k= i*nvars;
       for (j= 0; j< nvars; j++) z[j*size+i]= xx[k+j];
     }
-    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,i,z+(size*i)));
+    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,hlower,hupper,i,z+(size*i)));
     ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_SStructVectorAssemble,(mx->ss_b));
     PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
 
     /* copy solution values back to PETSc */
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,(mx->ss_x,part,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,i,z+(size*i)));
+    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,(mx->ss_x,part,hlower,hupper,i,z+(size*i)));
     /* transform hypre's variable ordering for sys_pfmg to nodal ordering */
     for (i= 0; i< size; i++) {
       k= i*nvars;
@@ -2401,14 +2417,14 @@ static PetscErrorCode PCApplyRichardson_SysPFMG(PC pc,Vec b,Vec y,Vec w,PetscRea
 {
   PC_SysPFMG     *jac = (PC_SysPFMG*)pc->data;
   PetscErrorCode ierr;
-  PetscInt       oits;
+  HYPRE_Int      oits;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetMaxIter,(jac->ss_solver,its*jac->its));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetTol,(jac->ss_solver,rtol));
   ierr = PCApply_SysPFMG(pc,b,y);CHKERRQ(ierr);
-  PetscStackCallStandard(HYPRE_SStructSysPFMGGetNumIterations,(jac->ss_solver,(HYPRE_Int *)&oits));
+  PetscStackCallStandard(HYPRE_SStructSysPFMGGetNumIterations,(jac->ss_solver,&oits));
   *outits = oits;
   if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
   else             *reason = PCRICHARDSON_CONVERGED_RTOL;
