@@ -35,6 +35,7 @@ class Package(config.base.Configure):
     self.minversion       = ''   # minimum version of the package that is supported
     self.maxversion       = ''   # maximum version of the package that is supported
     self.foundversion     = ''   # version of the package actually found
+    self.version_tuple    = ''   # version of the package actually found (tuple)
 
     # These are specified for the package
     self.required               = 0    # 1 means the package is required
@@ -933,6 +934,7 @@ class Package(config.base.Configure):
       return
     version = version.strip().strip('\"')
     self.foundversion = self.versionToStandardForm(version)
+    self.version_tuple = self.versionToTuple(self.foundversion)
 
     # check for consistency of version numbering
     cnt = -1
