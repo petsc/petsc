@@ -584,11 +584,19 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
 
    Notes:
     x and y MUST be different vectors
+    This routine is optimized for alpha of 0.0, otherwise it calls the BLAS routine
+
+$    VecAXPY(y,alpha,x)                   y = alpha x           +      y
+$    VecAYPX(y,beta,x)                    y =       x           + beta y
+$    VecAXPBY(y,alpha,beta,x)             y = alpha x           + beta y
+$    VecWAXPY(w,alpha,x,y)                w = alpha x           +      y
+$    VecAXPBYPCZ(w,alpha,beta,gamma,x,y)  z = alpha x           + beta y + gamma z
+$    VecMAXPY(y,nv,alpha[],x[])           y = sum alpha[i] x[i] +      y
 
    Concepts: vector^BLAS
    Concepts: BLAS
 
-.seealso: VecAYPX(), VecMAXPY(), VecWAXPY()
+.seealso:  VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPBYPCZ(), VecAXPBY()
 @*/
 PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
 {
@@ -630,11 +638,12 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
 
    Notes:
     x and y MUST be different vectors
+    The implementation is optimized for alpha and/or beta values of 0.0 and 1.0
 
    Concepts: BLAS
    Concepts: vector^BLAS
 
-.seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY()
+.seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY(), VecAXPBYPCZ()
 @*/
 PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
 {
@@ -674,13 +683,12 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
 
    Notes:
     x, y and z must be different vectors
-
-   Developer Note:   alpha = 1 or gamma = 1 or gamma = 0.0 are handled as special cases
+    The implementation is optimized for alpha of 1.0 and gamma or 1.0 or 0.0
 
    Concepts: BLAS
    Concepts: vector^BLAS
 
-.seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY()
+.seealso:  VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY(), VecAXPBY()
 @*/
 PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec x,Vec y)
 {
@@ -711,12 +719,12 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
 }
 
 /*@
-   VecAYPX - Computes y = x + alpha y.
+   VecAYPX - Computes y = x + beta y.
 
    Logically Collective on Vec
 
    Input Parameters:
-+  alpha - the scalar
++  beta - the scalar
 -  x, y  - the vectors
 
    Output Parameter:
@@ -726,13 +734,14 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
 
    Notes:
     x and y MUST be different vectors
+    The implementation is optimized for beta of -1.0, 0.0, and 1.0
 
    Concepts: vector^BLAS
    Concepts: BLAS
 
-.seealso: VecAXPY(), VecWAXPY()
+.seealso:  VecMAXPY(), VecWAXPY(), VecAXPY(), VecAXPBYPCZ(), VecAXPBY()
 @*/
-PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
+PetscErrorCode  VecAYPX(Vec y,PetscScalar beta,Vec x)
 {
   PetscErrorCode ierr;
 
@@ -744,10 +753,10 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscCheckSameTypeAndComm(x,3,y,1);
   VecCheckSameSize(x,1,y,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  PetscValidLogicalCollectiveScalar(y,alpha,2);
+  PetscValidLogicalCollectiveScalar(y,beta,2);
 
   ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
-  ierr =  (*y->ops->aypx)(y,alpha,x);CHKERRQ(ierr);
+  ierr =  (*y->ops->aypx)(y,beta,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -770,11 +779,12 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
 
    Notes:
     w cannot be either x or y, but x and y can be the same
+    The implementation is optimzed for alpha of -1.0, 0.0, and 1.0
 
    Concepts: vector^BLAS
    Concepts: BLAS
 
-.seealso: VecAXPY(), VecAYPX(), VecAXPBY()
+.seealso: VecAXPY(), VecAYPX(), VecAXPBY(), VecMAXPY(), VecAXPBYPCZ()
 @*/
 PetscErrorCode  VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
 {
@@ -1195,7 +1205,7 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 }
 
 /*@
-   VecMAXPY - Computes y = y + sum alpha[j] x[j]
+   VecMAXPY - Computes y = y + sum alpha[i] x[i]
 
    Logically Collective on Vec
 
@@ -1212,7 +1222,7 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 
    Concepts: BLAS
 
-.seealso: VecAXPY(), VecWAXPY(), VecAYPX()
+.seealso:  VecAYPX(), VecWAXPY(), VecAXPY(), VecAXPBYPCZ(), VecAXPBY()
 @*/
 PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 {

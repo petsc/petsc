@@ -386,9 +386,8 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 #endif
   ierr = VecScale(y,1.0/h);CHKERRQ(ierr);
 
-  if ((ctx->vshift != 0.0) || (ctx->vscale != 1.0)) {
-    ierr = VecAXPBY(y,ctx->vshift,ctx->vscale,a);CHKERRQ(ierr);
-  }
+  ierr = VecAXPBY(y,ctx->vshift,ctx->vscale,a);CHKERRQ(ierr);
+
   if (ctx->dlscale) {
     ierr = VecPointwiseMult(y,ctx->dlscale,y);CHKERRQ(ierr);
   }
