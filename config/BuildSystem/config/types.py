@@ -203,55 +203,39 @@ void (*signal())();
       self.addDefine('const', '')
     return
 
-  def checkSizeof(self, typeName, otherInclude = None):
+  def checkSizeof(self, typeName, typeSizes, otherInclude = None, lang='C', save=True, codeBegin=''):
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to be the size'''
-    self.log.write('Checking for size of type: '+typeName+'\n')
-    filename = 'conftestval'
-    includes = '''
+    self.log.write('Checking for size of type: ' + typeName + '\n')
+    typename = typeName.replace(' ', '-').replace('*', 'p')
+    argname = 'known-sizeof-' + typename
+    if argname in self.argDB:
+      size = int(self.argDB[argname])
+    else:
+      includes = '''
 #include <sys/types.h>
 #if STDC_HEADERS
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
 #endif\n'''
-    mpiFix = '''
+      mpiFix = '''
 #define MPICH_IGNORE_CXX_SEEK
 #define MPICH_SKIP_MPICXX 1
 #define OMPI_SKIP_MPICXX 1\n'''
-    if otherInclude:
-      if otherInclude == 'mpi.h':
-        includes += mpiFix
-      includes += '#include <'+otherInclude+'>\n'
-    body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%lu\\n", (unsigned long)sizeof('+typeName+'));\n'
-    typename = typeName.replace(' ', '-').replace('*', 'p')
-    if not 'known-sizeof-'+typename in self.argDB:
-      if not self.argDB['with-batch']:
-        self.pushLanguage('C')
-        if self.checkRun(includes, body) and os.path.exists(filename):
-          f    = open(filename)
-          size = int(f.read())
-          f.close()
-          os.remove(filename)
-        elif not typename == 'long-long':
-          msg = 'Cannot run executable to determine size of '+typeName+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
-          raise RuntimeError(msg)
-        else:
-          self.log.write('Compiler does not support long long\n')
-          size = 0
-        self.popLanguage()
-      else:
-        self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>', '#include <sys/types.h>'])
-        if otherInclude:
-          if otherInclude == 'mpi.h':
-            self.framework.addBatchInclude(mpiFix)
-          self.framework.addBatchInclude('#include <'+otherInclude+'>')
-        self.framework.addBatchBody('fprintf(output, "  \'--known-sizeof-'+typename+'=%d\',\\n", (int)sizeof('+typeName+'));')
-        # dummy value
-        size = 4
-    else:
-      size = self.argDB['known-sizeof-'+typename]
-    self.sizes['known-sizeof-'+typename] = int(size)
-    self.addDefine('SIZEOF_'+typeName.replace(' ', '_').replace('*', 'p').upper(), size)
+      if otherInclude:
+        if otherInclude == 'mpi.h':
+          includes += mpiFix
+        includes += '#include <' + otherInclude + '>\n'
+      with self.Language(lang):
+        for size in typeSizes:
+          body = 'char assert_sizeof[(sizeof({})=={})*2-1];'.format(typeName, size)
+          if self.checkCompile(includes, body, codeBegin=codeBegin, codeEnd='\n'):
+            break
+    if size is None:
+      raise RuntimeError('Size of type {} not found in sizes {}; specify --known-sizeof-{}'.format(typeName, typeSizes, typename))
+    if save:
+      self.sizes[argname] = size
+      self.addDefine('SIZEOF_'+typename.replace('-', '_').upper(), str(size))
     return size
 
   def checkBitsPerByte(self):
@@ -339,8 +323,13 @@ void (*signal())();
       #self.executeTest(self.checkFortranStar)
       self.executeTest(self.checkFortranKind)
     self.executeTest(self.checkConst)
-    for t in ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t']:
-      self.executeTest(self.checkSizeof, t)
+    for t, sizes in {'void *': (8, 4),
+                     'short': (2, 4, 8),
+                     'int': (4, 8, 2),
+                     'long': (8, 4),
+                     'long long': (8,),
+                     'size_t': (8, 4)}.items():
+      self.executeTest(self.checkSizeof, args=[t, sizes])
     self.executeTest(self.checkBitsPerByte)
     self.executeTest(self.checkVisibility)
     return

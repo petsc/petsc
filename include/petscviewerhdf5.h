@@ -11,14 +11,14 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer,hid_t*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
 
 /* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
-#define PETSC_HDF5_INT_MAX  2147483647
-#define PETSC_HDF5_INT_MIN -2147483647
+#define PETSC_HDF5_INT_MAX  (~(hsize_t)0)
 
 PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_64BIT_INDICES) && (PETSC_SIZEOF_SIZE_T == 4)
-  if ((a) > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5");
+  if (a < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot convert negative size");
+#if defined(PETSC_USE_64BIT_INDICES) && (H5_SIZEOF_HSIZE_T == 4)
+  if (a > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5");
 #endif
   *b =  (hsize_t)(a);
   PetscFunctionReturn(0);

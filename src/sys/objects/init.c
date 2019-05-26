@@ -77,6 +77,8 @@ MPI_Datatype MPIU_2INT = 0;
 #endif
 MPI_Datatype MPIU_BOOL;
 MPI_Datatype MPIU_ENUM;
+MPI_Datatype MPIU_FORTRANADDR;
+MPI_Datatype MPIU_SIZE_T;
 
 /*
        Function that is called to display all error messages

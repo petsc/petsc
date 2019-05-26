@@ -135,14 +135,8 @@
 extern "C" {
 #endif
 
-/* MPI_Aint has to be an signed integral type large enough to hold a pointer */
-#if PETSC_SIZEOF_INT == PETSC_SIZEOF_VOID_P
-typedef int MPI_Aint;
-#elif PETSC_SIZEOF_LONG == PETSC_SIZEOF_VOID_P
-typedef long MPI_Aint;
-#else
+/* MPI_Aint has to be a signed integral type large enough to hold a pointer */
 typedef ptrdiff_t MPI_Aint;
-#endif
 
 /* old 32bit MS compiler does not support long long */
 #if defined(PETSC_SIZEOF_LONG_LONG)

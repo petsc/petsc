@@ -228,11 +228,7 @@ M*/
 #  error "cannot determine PetscInt64 type"
 #endif
 
-#if PETSC_SIZEOF_VOID_P == 4
-#  define MPIU_FORTRANADDR MPI_INT
-#else
-#  define MPIU_FORTRANADDR MPIU_INT64
-#endif
+PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #  define MPIU_INT MPIU_INT64
@@ -245,15 +241,7 @@ M*/
 /*
     For the rare cases when one needs to send a size_t object with MPI
 */
-#if (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_INT)
-#  define MPIU_SIZE_T MPI_UNSIGNED
-#elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG)
-#  define MPIU_SIZE_T MPI_UNSIGNED_LONG
-#elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG_LONG)
-#  define MPIU_SIZE_T MPI_UNSIGNED_LONG_LONG
-#else
-#  error "Unknown size for size_t! Send us a bugreport at petsc-maint@mcs.anl.gov"
-#endif
+PETSC_EXTERN MPI_Datatype MPIU_SIZE_T;
 
 /*
       You can use PETSC_STDOUT as a replacement of stdout. You can also change
