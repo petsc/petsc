@@ -33,7 +33,7 @@ plex = PETSc.DMPlex().createFromCellList(dim, cells, coords, comm=PETSc.COMM_WOR
 
 pStart, pEnd = plex.getChart()
 plex.view()
-print "pStart, pEnd: ", pStart, pEnd  
+print("pStart, pEnd: ", pStart, pEnd)
 
 # Create section with 1 field with 1 DoF per vertex, edge amd cell
 numComp = 1
@@ -46,6 +46,7 @@ numDof[1] = 1
 # Field defined on cells
 numDof[2] = 1
 
+plex.setNumFields(1)
 origSect = plex.createSection(numComp, numDof)
 origSect.setFieldName(0, 'TestField')
 origSect.setUp()
@@ -53,11 +54,12 @@ origSect.view()
 
 plex.setDefaultSection(origSect)
 origVec = plex.createGlobalVec()
-#origVec.view()
+origVec.view()
 
-if not PETSc.COMM_WORLD.rank:
-    origVec.setValues(range(pStart, pEnd), range(pStart, pEnd))
-    
+origVec.setValues(list(range(pStart, pEnd)),list(range(pStart,pEnd)))
+origVec.assemblyBegin()
+origVec.assemblyEnd()
+
 origVec.view()
 
 if PETSc.COMM_WORLD.size > 1:
@@ -69,6 +71,7 @@ if PETSc.COMM_WORLD.size > 1:
 else:
     newSect = origSect
     newVec = origVec
-            
+
 newSect.view()
 newVec.view()
+
