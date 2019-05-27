@@ -727,21 +727,21 @@ cdef class TS(Object):
         self.set_attr('__costintegrand__', context)
         CHKERR( TSSetCostIntegrand(self.ts, ival, vec, R, DRDY, DRDP, fwd, <void*>context) )
 
-    def adjointSetRHSJacobian(self, adjointjacobian, Mat A=None, args=None, kargs=None):
+    def setRHSJacobianP(self, rhsjacobianp, Mat A=None, args=None, kargs=None):
         cdef PetscMat Amat=NULL
         if A is not None: Amat = A.mat
-        if adjointjacobian is not None:
+        if rhsjacobianp is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
-            context = (adjointjacobian, args, kargs)
-            self.set_attr('__adjointrhsjacobian__', context)
-            CHKERR( TSAdjointSetRHSJacobian(self.ts, Amat, TSAdjoint_RHSJacobian, <void*>context) )
+            context = (rhsjacobianp, args, kargs)
+            self.set_attr('__rhsjacobianp__', context)
+            CHKERR( TSSetRHSJacobianP(self.ts, Amat, TS_RHSJacobianP, <void*>context) )
         else:
-            CHKERR( TSAdjointSetRHSJacobian(self.ts, Amat, NULL, NULL) )
+            CHKERR( TSSetRHSJacobianP(self.ts, Amat, NULL, NULL) )
 
-    def adjointComputeRHSJacobian(self, t, Vec x, Mat J):
+    def computeRHSJacobianP(self, t, Vec x, Mat J):
         cdef PetscReal rval = asReal(t)
-        CHKERR( TSAdjointComputeRHSJacobian(self.ts, rval, x.vec, J.mat) )
+        CHKERR( TSComputeRHSJacobianP(self.ts, rval, x.vec, J.mat) )
 
     def adjointSetSteps(self, adjoint_steps):
         cdef PetscInt ival = asInt(adjoint_steps)

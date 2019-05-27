@@ -198,11 +198,7 @@ cdef extern from * nogil:
     ctypedef int (*PetscTSAdjointR)(PetscTS,PetscReal,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscTSAdjointDRDY)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscTSAdjointDRDP)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscTSAdjointRHSJacobianFunction)(PetscTS,
-                                                      PetscReal,
-                                                      PetscVec,
-                                                      PetscMat,
-                                                      void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSRHSJacobianPFunction)(PetscTS,PetscReal,PetscVec,PetscMat,void*) except PETSC_ERR_PYTHON
 
 
     int TSSetSaveTrajectory(PetscTS)
@@ -211,9 +207,9 @@ cdef extern from * nogil:
     int TSGetCostIntegral(PetscTS,PetscVec*)
 
     int TSSetCostIntegrand(PetscTS,PetscInt,PetscVec,PetscTSAdjointR,PetscTSAdjointDRDY,PetscTSAdjointDRDP,PetscBool,void*)
-    int TSAdjointSetRHSJacobian(PetscTS,PetscMat,PetscTSAdjointRHSJacobianFunction,void*)
     int TSComputeCostIntegrand(PetscTS,PetscReal,PetscVec,PetscVec)
-    int TSAdjointComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat)
+    int TSSetRHSJacobianP(PetscTS,PetscMat,PetscTSRHSJacobianPFunction,void*)
+    int TSComputeRHSJacobianP(PetscTS,PetscReal,PetscVec,PetscMat)
 
     int TSAdjointSolve(PetscTS)
     int TSAdjointSetSteps(PetscTS,PetscInt)
@@ -517,7 +513,7 @@ cdef int TSAdjoint_CostIntegrand_DP(
     drdpfunction(Ts, toReal(t), Yvec, vecs, *args, **kargs)
     return 0
 
-cdef int TSAdjoint_RHSJacobian(
+cdef int TS_RHSJacobianP(
     PetscTS   ts,
     PetscReal t,
     PetscVec  x,
@@ -527,7 +523,7 @@ cdef int TSAdjoint_RHSJacobian(
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Mat Jmat = ref_Mat(J)
-    cdef object context = Ts.get_attr('__adjointrhsjacobian__')
+    cdef object context = Ts.get_attr('__rhsjacobianp__')
     if context is None and ctx != NULL: context = <object>ctx
     assert context is not None and type(context) is tuple # sanity check
     (adjointjacobian, args, kargs) = context
