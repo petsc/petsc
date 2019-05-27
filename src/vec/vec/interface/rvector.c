@@ -683,7 +683,7 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
 
    Notes:
     x, y and z must be different vectors
-    The implementation is optimized for alpha of 1.0 and gamma or 1.0 or 0.0
+    The implementation is optimized for alpha of 1.0 and gamma of 1.0 or 0.0
 
    Concepts: BLAS
    Concepts: vector^BLAS
