@@ -9382,13 +9382,13 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatPtAP_fallback(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+static PetscErrorCode MatPtAP_Basic(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   Mat            AP;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo(A,"Using fallback PtAP implementation\n");CHKERRQ(ierr);
+  ierr = PetscInfo2(A,"Mat types %s and %s using basic PtAP\n",((PetscObject)A)->type_name,((PetscObject)P)->type_name);CHKERRQ(ierr);
   ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AP);CHKERRQ(ierr);
   ierr = MatTransposeMatMult(P,AP,scall,fill,C);CHKERRQ(ierr);
   ierr = MatDestroy(&AP);CHKERRQ(ierr);
@@ -9454,7 +9454,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     if ((*C)->ops->ptapnumeric) {
       ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
     } else {
-      ierr = MatPtAP_fallback(A,P,scall,fill,C);
+      ierr = MatPtAP_Basic(A,P,scall,fill,C);
     }
     ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
@@ -9480,7 +9480,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     ierr = PetscObjectQueryFunction((PetscObject)P,ptapname,&ptap);CHKERRQ(ierr);
   }
 
-  if (!ptap) ptap = MatPtAP_fallback;
+  if (!ptap) ptap = MatPtAP_Basic;
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
   ierr = (*ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
