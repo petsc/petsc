@@ -216,7 +216,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex24.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex24.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-sol_type", "Type of exact solution", "ex24.c", SolTypeNames, (PetscEnum) options->solType, (PetscEnum *) &options->solType, NULL);
+  ierr = PetscOptionsEnum("-sol_type", "Type of exact solution", "ex24.c", SolTypeNames, (PetscEnum) options->solType, (PetscEnum *) &options->solType, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
