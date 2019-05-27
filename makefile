@@ -25,49 +25,22 @@ include ${PETSC_DIR}/lib/petsc/conf/test.common
 
 #
 # Basic targets to build PETSc libraries.
-# all: builds the c, fortran, and f90 libraries
+#
 all:
 	+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
 	@ln -sf ${PETSC_ARCH}/lib/petsc/conf/make.log make.log
-	+@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
-	   ${OMAKE_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-gnumake-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
-	elif [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log \
-		| egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'; \
-	 else \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log \
-                | ${GREP} -v "has no symbols"; \
-	 fi
+	+@${OMAKE_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;
 	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/lib/petsc/conf/make.log | tee ${PETSC_ARCH}/lib/petsc/conf/error.log > /dev/null
 	+@if test -s ${PETSC_ARCH}/lib/petsc/conf/error.log; then \
            printf ${PETSC_TEXT_HILIGHT}"**************************ERROR*************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
            echo "  Error during compile, check ${PETSC_ARCH}/lib/petsc/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
            echo "  Send it and ${PETSC_ARCH}/lib/petsc/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
            printf "********************************************************************"${PETSC_TEXT_NORMAL}"\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
-	 else \
-	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log ;\
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
 	@echo "Finishing make run at `date +'%a, %d %b %Y %H:%M:%S %z'`" >> ${PETSC_ARCH}/lib/petsc/conf/make.log
 	@if test -s ${PETSC_ARCH}/lib/petsc/conf/error.log; then exit 1; fi
 
-all-gnumake:
-	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
-          ${OMAKE_PRINTDIR}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all;\
-        else printf ${PETSC_TEXT_HILIGHT}"Build not configured for GNUMAKE. Quiting"${PETSC_TEXT_NORMAL}"\n"; exit 1; fi
-
-all-cmake:
-	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-          ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} MAKE_IS_GNUMAKE="" all;\
-        else printf ${PETSC_TEXT_HILIGHT}"Build not configured for CMAKE. Quiting"${PETSC_TEXT_NORMAL}"\n"; exit 1; fi
-
-all-legacy:
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" MAKE_IS_GNUMAKE="" all
-
-all-gnumake-local: info gnumake matlabbin mpi4py-build petsc4py-build libmesh-build slepc-build mfem-build
-
-all-cmake-local: info cmakegen cmake matlabbin mpi4py-build petsc4py-build
-
-all-legacy-local: chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py-build petsc4py-build
+all-local: info libs matlabbin mpi4py-build petsc4py-build libmesh-build slepc-build mfem-build
 
 #
 # Prints information about the system and version of PETSc being compiled
@@ -142,18 +115,6 @@ info:
 	-@echo "Using MAKEFLAGS: -j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)"
 	-@echo "=========================================="
 
-#
-# Builds the PETSc libraries
-# This target also builds fortran77 and f90 interface
-# files and compiles .F files
-#
-build:
-	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
-	-@echo "========================================="
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
-	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}  > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf;
-	-@echo "Completed building libraries"
-	-@echo "========================================="
 #
 # Build MatLab binaries
 #
@@ -268,32 +229,14 @@ echo $${OPTIONS} ;\
         make all test ; \
         PETSC_DIR_ABI_OLD=$${PETSC_DIR_OLD} PETSC_ARCH_ABI_OLD=arch-branch-`git rev-parse ${branch}` make abitest
 
-# Ranlib on the libraries
-ranlib:
-	${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
-
 # Deletes PETSc libraries
 deletelibs:
 	-${RM} -rf ${PETSC_LIB_DIR}/libpetsc*.*
 deletemods:
 	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
 
-# Cleans up build
-allclean-legacy: deletelibs deletemods
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean-legacy tree
-allclean-cmake:
-	-@cd ${PETSC_ARCH} && ${OMAKE} clean
-allclean-gnumake:
-	-@${OMAKE} -f gmakefile clean
-
 allclean:
-	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-gnumake; \
-	elif [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-cmake; \
-	else \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-legacy; \
-	fi
+	-@${OMAKE} -f gmakefile clean
 
 clean:: allclean
 
@@ -312,15 +255,6 @@ reconfigure:
 install:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
 	+${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install petsc4py-install libmesh-install slepc-install mfem-install
-
-newall:
-	-@cd src/sys;  @${PYTHON} ${PETSC_DIR}/config/builder.py
-	-@cd src/vec;  @${PYTHON} ${PETSC_DIR}/config/builder.py
-	-@cd src/mat;  @${PYTHON} ${PETSC_DIR}/config/builder.py
-	-@cd src/dm;   @${PYTHON} ${PETSC_DIR}/config/builder.py
-	-@cd src/ksp;  @${PYTHON} ${PETSC_DIR}/config/builder.py
-	-@cd src/snes; @${PYTHON} ${PETSC_DIR}/config/builder.py
-	-@cd src/ts;   @${PYTHON} ${PETSC_DIR}/config/builder.py
 
 streams:
 	-@echo "running streams in src/benchmarks/streams"
@@ -352,21 +286,6 @@ allfortranstubs:
 	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
-cmakegen:
-	-@${PYTHON} config/cmakegen.py
-#
-# These are here for the target allci and allco, and etags
-#
-
-BMAKEFILES = conf/variables conf/rules conf/test 
-SCRIPTS    = lib/petsc/bin/maint/builddist  lib/petsc/bin/maint/wwwman lib/petsc/bin/maint/xclude lib/petsc/bin/maint/bugReport.py lib/petsc/bin/maint/buildconfigtest lib/petsc/bin/maint/builddistlite \
-             lib/petsc/bin/maint/buildtest lib/petsc/bin/maint/checkBuilds.py lib/petsc/bin/maint/copylognightly lib/petsc/bin/maint/copylognightly.tao lib/petsc/bin/maint/countfiles lib/petsc/bin/maint/findbadfiles \
-             lib/petsc/bin/maint/fixinclude lib/petsc/bin/maint/getexlist lib/petsc/bin/maint/getpdflabels.py lib/petsc/bin/maint/helpindex.py lib/petsc/bin/maint/hosts.local lib/petsc/bin/maint/hosts.solaris  \
-             lib/petsc/bin/maint/lex.py  lib/petsc/bin/maint/mapnameslatex.py lib/petsc/bin/maint/startnightly lib/petsc/bin/maint/startnightly.tao lib/petsc/bin/maint/submitPatch.py \
-             lib/petsc/bin/maint/update-docs.py  lib/petsc/bin/maint/wwwindex.py lib/petsc/bin/maint/xcludebackup lib/petsc/bin/maint/xcludecblas lib/petsc/bin/maint/zap lib/petsc/bin/maint/zapall \
-             config/PETSc/Configure.py config/PETSc/Options.py \
-             config/PETSc/utilities/*.py
-
 
 # Builds all the documentation - should be done every night
 alldoc: allcite allpdf alldoc1 alldoc2 docsetdate
@@ -434,10 +353,14 @@ docsetdate: chk_petscdir
         export datestr; \
         gitver=`git describe --match "v*"`; \
         export gitver; \
-        find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
-          -type d -wholename config/BuildSystem/docs/website -prune -o -type d -wholename include/web -prune -o \
-          -type d -wholename 'arch-*' -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune ${DOCSETDATE_PRUNE_LIST} -o \
-          -type f -name \*.html \
+        find * -type d -wholename src/docs/website \
+          -prune -o -type d -wholename src/benchmarks/results \
+          -prune -o -type d -wholename config/BuildSystem/docs/website \
+          -prune -o -type d -wholename include/web \
+          -prune -o -type d -wholename 'arch-*' \
+          -prune -o -type d -wholename lib/petsc/bin/maint \
+          -prune -o -type d -wholename externalpackages \
+          -prune ${DOCSETDATE_PRUNE_LIST} -o -type f -name \*.html \
           -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>\n   <div id="bugreport" align=right><a href="mailto:petsc-maint\@mcs.anl.gov?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: $$ENV{petscversion} $$ENV{gitver} {} "><small>Report Typos and Errors</small></a></div>^i' {} \; \
           -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
         echo "Done fixing version number, date, canonical URL info"
@@ -495,12 +418,6 @@ update-web:
 	  ${PETSC_DIR}/src/docs/website/ petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc
 	@cd ${PETSC_DIR}/docs; /usr/bin/rsync -az developers.pdf petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/developers/
 	@cd ${PETSC_DIR}/src/docs/tex; /usr/bin/rsync -az petscapp.bib petsc.bib petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/publications
-
-#
-#  builds a single list of files for each PETSc library so they may all be built in parallel
-#  without a recursive set of make calls
-createfastbuild:
-	cd src/vec; ${RM} -f files; /bin/echo -n "SOURCEC = " > files; make tree ACTION=sourcelist BASE_DIR=${PETSC_DIR}/src/vec
 
 ###########################################################
 #
@@ -600,25 +517,7 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-.PHONY: info info_h all build ranlib deletelibs allclean update \
+.PHONY: info info_h all deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
-        allhtml allcleanhtml  allci allco allrcslabel countfortranfunctions \
+        allhtml allcleanhtml  countfortranfunctions \
         start_configure configure_petsc configure_clean matlabbin install
-
-petscao : petscmat petscao.f90.h
-petscdm : petscksp petscdm.f90.h
-petscdraw : petsc petscdraw.f90.h
-petscis : petsc petscis.f90.h
-petscksp : petscpc  petscksp.f90.h
-petsclog : petsc petsclog.f90.h
-petscmat : petscvec petscmat.f90.h
-petscmg : petscksp petscmg.f90.h
-petscpc : petscmat petscpc.f90.h
-petscsnes : petscksp petscsnes.f90.h
-petscsys : petsc petscsys.f90.h
-petscts : petscsnes petscts.f90.h
-petsc : petsc.f90.h
-petscvec : petscis petscvec.f90.h
-petscviewer : petsc petscviewer.f90.h
-petscmesh : petsc petscmesh.f90.h
-modules : petscao petscdm petscdraw petscis petscksp petsclog petscmat petscmg petscpc petscsnes petscsys petscts petsc petscvec petscviewer petscmesh

@@ -6,7 +6,6 @@ import sys
 import logging, time
 import types
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
 from collections import defaultdict
 from gmakegen import *
 

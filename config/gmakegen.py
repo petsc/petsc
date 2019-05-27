@@ -5,8 +5,67 @@ from distutils.sysconfig import parse_makefile
 import sys
 import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
 from collections import defaultdict
+
+AUTODIRS = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
+SKIPDIRS = set('benchmarks'.split())                     # Skip these during the build
+NOWARNDIRS = set('tests tutorials'.split())              # Do not warn about mismatch in these
+
+def pathsplit(path):
+    """Recursively split a path, returns a tuple"""
+    stem, basename = os.path.split(path)
+    if stem == '':
+        return (basename,)
+    if stem == path:            # fixed point, likely '/'
+        return (path,)
+    return pathsplit(stem) + (basename,)
+
+class Mistakes(object):
+    def __init__(self, log, verbose=False):
+        self.mistakes = []
+        self.verbose = verbose
+        self.log = log
+
+    def compareDirLists(self,root, mdirs, dirs):
+        if NOWARNDIRS.intersection(pathsplit(root)):
+            return
+        smdirs = set(mdirs)
+        sdirs  = set(dirs).difference(AUTODIRS)
+        if not smdirs.issubset(sdirs):
+            self.mistakes.append('Makefile contains directory not on filesystem: %s: %r' % (root, sorted(smdirs - sdirs)))
+        if not self.verbose: return
+        if smdirs != sdirs:
+            from sys import stderr
+            stderr.write('Directory mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r\n'
+                         % (root,
+                            'in makefile   ',sorted(smdirs),
+                            'on filesystem ',sorted(sdirs),
+                            'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
+
+    def compareSourceLists(self, root, msources, files):
+        if NOWARNDIRS.intersection(pathsplit(root)):
+            return
+        smsources = set(msources)
+        ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cu', '.cpp', '.F'])
+        if not smsources.issubset(ssources):
+            self.mistakes.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
+        if not self.verbose: return
+        if smsources != ssources:
+            from sys import stderr
+            stderr.write('Source mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r\n'
+                         % (root,
+                            'in makefile   ',sorted(smsources),
+                            'on filesystem ',sorted(ssources),
+                            'symmetric diff',sorted(smsources.symmetric_difference(ssources))))
+
+    def summary(self):
+        for m in self.mistakes:
+            self.log.write(m + '\n')
+        if self.mistakes:
+            raise RuntimeError('PETSc makefiles contain mistakes or files are missing on filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "hg revert filename" or "git checkout filename".\n\t2. Files were deleted from repository, but were not removed from makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot to "add" new files to the repository. Send mail to petsc-maint@mcs.anl.gov.' % ('\n'.join(self.mistakes)))
+
+def stripsplit(line):
+  return line[len('#requires'):].replace("'","").split()
 
 PetscPKGS = 'sys vec mat dm ksp snes ts tao'.split()
 LANGS = dict(c='C', cxx='CXX', cpp='CPP', cu='CU', F='F', F90='F90')

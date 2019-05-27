@@ -28,130 +28,19 @@ chk_c2html:
           echo "Require c2html for html docs. Please reconfigure with --download-c2html=1"; \
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
 
-lssrc:
-	@if [ "${SOURCEALL}" != "" ]; then \
-	  ls ${SOURCEALL} | cat;\
-	 fi
-
 chklib_dir:
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
 	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
 
-
-# 3. Check if the shared libs are out of date
-chkopts: chk_upgrade
-	@for LIBNAME in ${SHLIBS}; do \
-	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
-	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; \
-	flag=""; \
-	if [ -f $$library ]; then \
-	  if [ -f $$sharedlibrary ]; then \
-	    flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer $$sharedlibrary -print`; \
-	  fi; \
-	fi; \
-	if [ "$$flag" != "" ]; then \
-	  echo "Shared libs in ${INSTALL_LIB_DIR} are out of date, attempting to rebuild."; \
-	  if [ -w ${INSTALL_LIB_DIR} ]; then \
-	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} shared; \
-	  else \
-	    printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n"; \
-	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
-	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
-	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
-	    printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
-	    false; \
-	  fi; \
-	fi; \
-	done
-
-#
-# uses the cmake infrastructure to build/rebuild the libraries
-ccmake:
-	@echo "=========================================="
-	+@cd ${PETSC_DIR}/${PETSC_ARCH} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} VERBOSE=${VERBOSE}
-	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
-        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
-        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
-	@echo "========================================="
-
-cmake:
-	+@MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} ccmake VERBOSE=1
-
 gnumake:
+	+@echo "make gnumake is deprecated, use make libs"
+	+@make libs
+
+libs:
 	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
 
 # Does nothing; needed for some rules that require actions.
 foo:
-
-# Builds library
-lib:  ${SOURCE}
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chk_petscdir
-	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
-	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  speciallib;  \
-	  else \
-            if [ "${SOURCECU}" != "" ] ; then \
-              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcu; fi ; \
-            if [ "${SOURCEC}" != "" ] ; then \
-              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
-            if [ "${SOURCECXX}" != "" ] ; then \
-              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcxx; fi ; \
-            if [ "${SOURCEF}" != "" ] ; then \
-		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
-            if [ "${OBJS}" != " " ] ; then \
-		${RANLIB}  ${LIBNAME}; \
-		${RM} ${OBJS}; \
-	    fi;\
-          fi
-#
-#  Does not work for some machines with .F fortran files.
-#
-# Builds library - fast versiong
-
-libfast:  ${SOURCE}
-	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
-	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  specialfastlib;  \
-	else \
-	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libfastcompile;  \
-	fi
-
-libfastcompile:
-	-@if [ "${SOURCECU}" != "" ]; then \
-                    ${PETSC_CUCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCU}; \
-		    ${RM} ${OBJSCU} ${OBJSCU:.o=.lo}; \
-	    fi; \
-          if [ "${SOURCEC}" != "" ]; then \
-                    ${PETSC_COMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC}; \
-		    ${RM} ${OBJSC} ${OBJSC:.o=.lo}; \
-	    fi; \
-          if [ "${SOURCECXX}" != "" ]; then \
-                    ${PETSC_CXXCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCXX}; \
-		    ${RM} ${OBJSCXX} ${OBJSCXX:.o=.lo}; \
-	    fi; \
-	if [ "${SOURCEF}" != "" ]; then \
-                    ${PETSC_FCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF}; \
-		    ${RM} ${OBJSF}; \
-	    fi
-
-# Build f90 .mod from .F source, and add .o to the corresponding library
-buildmod:
-	-@${OMAKE} clean-legacy
-	@${OMAKE}  libf
-	@${OMAKE}  modcopy
-	@${OMAKE}  clean-legacy
-
-buildmodfast:
-	-@${OMAKE} clean-legacy
-	@${OMAKE}  libfastcompile
-	@${OMAKE}  modcopy
-	@${OMAKE}  clean-legacy
-
-# copy modules to the include dir
-modcopy:
-	@${CP} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
 
 # Removes garbage files
 clean-legacy:
@@ -162,15 +51,16 @@ clean-legacy:
                ex[0-9].exe ex[0-9][0-9].exe ex[0-9][0-9][0-9].exe \
                ex[0-9]f.exe ex[0-9][0-9]f.exe ex[0-9][0-9][0-9]f.exe \
                ex[0-9]f90.exe ex[0-9][0-9]f90.exe ex[0-9][0-9][0-9]f90.exe \
-	       PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
-	       trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
-	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
-	        *.cp_ *.cp__ *.c*.c pageform.txt \
+              PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
+              trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
+              output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
+               *.cp_ *.cp__ *.c*.c pageform.txt \
                *.dep *.proj ctoatmp PETScArena* *.L *.anl *.mod .mpi* *.d \
-	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
+              *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
 	@-${RM} -rf ${CLEANDIRS} *.dSYM AD_cache SunWS_cache
 
 clean:: clean-legacy
+
 #
 #  Checks if directory requires particular package or language
 # The makefile may contain
@@ -242,6 +132,7 @@ alltree_makefile: ${ACTION}
 	${OMAKE}  alltree_makefile ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
 	done
+
 # This target goes through all dirs specified by DIRS,EDIRS, and
 # excludes dirs specified by $XDIRS
 alltree: ${ACTION}
@@ -358,7 +249,7 @@ getautoconfargs:
 	  fi; \
 	fi
 
-.c.o .ad.o:
+.c.o:
 	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
@@ -375,24 +266,6 @@ getautoconfargs:
 #   Compiles CUDA code
 .cu.o:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
-
-.cu.a:
-	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
-	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
-	-${RM} $*.o $*.lo
-
-.c.a:
-	-${PETSC_COMPILE_SINGLE} `pwd`/$<
-	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
-	-${RM} $*.o $*.lo
-
-.cpp.a .cxx.a .cc.a .C.a:
-	-${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
-	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
-	-${RM} $*.o $*.lo
 
 #
 #  These rules are for compiling the test examples.
@@ -521,7 +394,6 @@ deleteshared:
           ${RM} ${INSTALL_LIB_DIR}/so_locations; \
 	fi
 
-noshared:
 # ---------------------------------------------------------------------------------------
 #   Rules for the automatic generation of documentation, tutorials etc
 # See rule for allmanualpages and allhtml in ${PETSC_DIR}/makefile
@@ -896,110 +768,6 @@ sourcelist:
 	-@for i in ${SOURCEALL}; do \
 	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
         done
-
-# Actions to rebuild an out-of-date shared library
-#   The library basename is given by LIBNAME
-
-# Obsolete rules, to be deleted
-shared_irix:
-	-@${PCC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
-
-shared_alpha:
-	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} >/dev/null 2>&1
-
-shared_freebsd:
-	-@${LD} -Bshareable --whole-archive ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
-
-shared_hpux:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
-
-shared_solaris_gnu:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
-	${LD}  -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
-
-shared_solaris:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${CC} -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} ${SYS_LIB} ${PETSC_EXTERNAL_LIB_BASIC}
-
-shared_libtool:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/lt_${LIBNAME}.${AR_LIB_SUFFIX}; \
-	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
-	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
-
-# Supported rules for building different shared libraries
-shared_none:
-
-shared_linux:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC} ${OTHERSHAREDLIBS}; \
-
-shared_darwin:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PETSC_EXTERNAL_LIB_BASIC}   ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
-        if [ "${LIBNAME}" = "libpetscsys" ]; then OTHERLIBS="  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
-        if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_SYS_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${MUMPS_LIB} ${SCALAPACK_LIB} ${BLACS_LIB} ${PARMETIS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${TRIANGLE_LIB} ${TETGEN_LIB} ${HYPRE_LIB} ${PETSC_MAT_LIB_BASIC} ${MPI_LIB}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_CHARACTERISTIC_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${SUNDIALS_LIB} ${PETSC_SNES_LIB_BASIC}"  ; fi;\
-        if [ "$${LIBNAME:0:8}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${SLEPC_EXTERNAL_LIB}"  ; fi;\
-        if [ "${LIBNAME}" = "libtao" ]; then OTHERLIBS="${PETSC_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libtaopetsc" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libtaofortran" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltaopetsc -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\
-        if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=`sw_vers -productVersion | cut -d . -f1,2`; export MACOSX_DEPLOYMENT_TARGET; fi;\
-        ${LD_SHARED} -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup ${DARWIN_COMMONS_USE_DYLIBS} -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  $$OTHERLIBS; \
-	${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}
-
-# This is the main target for building shared libraries. It takes the following actions
-#   a) Create 'tmp-petsc-shlib' in the library directory
-#   b) Loops over the shared libraries in $SHLIBS
-#   c) Checks that the corresponding archive or its libtool counterpart exists
-#   d) Checks whether an existing archive is newer than the shared library
-#   e) Executes target 'shared_arch' for any out-of-date library (The library basename is passed as LIBNAME)
-#   f) Removes 'tmp-petsc-shlib'
-# The 'shared_arch' target is passed
-#   a) LIBNAME (the library basename)
-#   b) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
-# and both the archive and shared library reside in INSTALL_LIB_DIR.
-
-shared: shared_nomesg
-	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \
-	    echo "Shared libraries disabled"; \
-          fi
-
-shared_nomesg:
-	-@if [ "${BUILDSHAREDLIB}" != "no" ]; then \
-	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
-            cwd=`pwd`; \
-	    for LIBNAME in ${SHLIBS}; \
-	    do \
-	      mkdir ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
-	      if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
-	        if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \
-	          flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
-	          if [ "$$flag" = "" ]; then \
-	            flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
-	          fi; \
-	        else \
-	          flag="build"; \
-	        fi; \
-	        if [ "$$flag" != "" ]; then \
-	          echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
-              ${RM} -f ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib/*; \
-	          cd ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
-	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
-	          cd $$cwd;\
-	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib shared_arch; \
-	        fi; \
-	      fi; \
-              ${RM} -rf ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
-	    done; \
-	    echo "========================================="; \
-	  fi
 
 #
 #  Remove trailing blanks from source code

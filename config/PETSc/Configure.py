@@ -17,13 +17,7 @@ class Configure(config.base.Configure):
     desc = []
     if not self.installed:
       desc.append('xxx=========================================================================xxx')
-      if self.make.getMakeMacro('MAKE_IS_GNUMAKE'):
-        build_type = 'gnumake build'
-      elif self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
-        build_type = 'cmake build'
-      else:
-        build_type = 'legacy build'
-      desc.append(' Configure stage complete. Now build PETSc libraries with (%s):' % build_type)
+      desc.append(' Configure stage complete. Now build PETSc libraries with:')
       desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
       desc.append('xxx=========================================================================xxx')
     else:
@@ -85,7 +79,6 @@ class Configure(config.base.Configure):
     self.atomics       = framework.require('config.atomics',            self)
     self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
-    self.cmake         = framework.require('config.packages.cmake',self)
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.mpi           = framework.require('config.packages.MPI',self)
 
@@ -505,159 +498,6 @@ prepend-path PATH "%s"
     fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (escape(self.setCompilers.CSharedLinkerFlag), escape(os.path.join(self.installdir.petscDir, self.installdir.petscArch, 'lib')), escape(os.path.join(self.installdir.petscDir, self.installdir.petscArch, 'lib')), escape(self.petsclib), escape(self.PETSC_EXTERNAL_LIB_BASIC)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.close()
-    return
-
-  def dumpCMakeConfig(self):
-    '''
-    Writes configuration-specific values to ${PETSC_ARCH}/lib/petsc/conf/PETScBuildInternal.cmake.
-    This file is private to PETSc and should not be included by third parties
-    (a suitable file can be produced later by CMake, but this is not it).
-    '''
-    def cmakeset(fd,key,val=True):
-      if val == True: val = 'YES'
-      if val == False: val = 'NO'
-      fd.write('set (' + key + ' ' + val + ')\n')
-    def ensurelist(a):
-      if isinstance(a,list):
-        return a
-      else:
-        return [a]
-    def libpath(lib):
-      'Returns a search path if that is what this item provides, else "" which will be cleaned out later'
-      if not isinstance(lib,str): return ''
-      if lib.startswith('-L'): return lib[2:]
-      if lib.startswith('-R'): return lib[2:]
-      if lib.startswith('-Wl,-rpath,'):
-        # This case occurs when an external package needs a specific system library that is normally provided by the compiler.
-        # In other words, the -L path is builtin to the wrapper or compiler, here we provide it so that CMake can locate the
-        # corresponding library.
-        return lib[len('-Wl,-rpath,'):]
-      if lib.startswith('-'): return ''
-      return os.path.dirname(lib)
-    def cleanlib(lib):
-      'Returns a library name if that is what this item provides, else "" which will be cleaned out later'
-      if not isinstance(lib,str): return ''
-      if lib.startswith('-l'):  return lib[2:]
-      if lib.startswith('-Wl') or lib.startswith('-L'): return ''
-      lib = os.path.splitext(os.path.basename(lib))[0]
-      if lib.startswith('lib'): return lib[3:]
-      return lib
-    def nub(lst):
-      'Return a list containing the first occurrence of each unique element'
-      unique = []
-      for elem in lst:
-        if elem not in unique and elem != '':
-          unique.append(elem)
-      return unique
-    def nublast(lst):
-      'Return a list containing the last occurrence of each unique entry in a list'
-      return reversed(nub(reversed(lst)))
-    def cmakeexpand(varname):
-      return r'"${' + varname + r'}"'
-    def uniqextend(lst,new):
-      for x in ensurelist(new):
-        if x not in lst:
-          lst.append(x)
-    def notstandardinclude(path):
-      return path not in '/usr/include'.split() # /usr/local/include is not automatically included on FreeBSD
-    def writeMacroDefinitions(fd):
-      if self.mpi.usingMPIUni:
-        cmakeset(fd,'PETSC_HAVE_MPIUNI')
-      for pkg in self.framework.packages:
-        if pkg.useddirectly:
-          cmakeset(fd,'PETSC_HAVE_' + pkg.PACKAGE.replace('-','_'))
-        for pair in pkg.defines.items():
-          if pair[0].startswith('HAVE_') and pair[1]:
-            cmakeset(fd, self.framework.getFullDefineName(pkg, pair[0]), pair[1])
-      for name,val in self.functions.defines.items():
-        cmakeset(fd,'PETSC_'+name,val)
-      for dct in [self.defines, self.libraryoptions.defines]:
-        for k,v in dct.items():
-          if k.startswith('USE_'):
-            cmakeset(fd,'PETSC_' + k, v)
-      cmakeset(fd,'PETSC_USE_COMPLEX', self.scalartypes.scalartype == 'complex')
-      cmakeset(fd,'PETSC_USE_REAL_' + self.scalartypes.precision.upper())
-      cmakeset(fd,'PETSC_CLANGUAGE_'+self.languages.clanguage)
-      if hasattr(self.compilers, 'FC'):
-        cmakeset(fd,'PETSC_HAVE_FORTRAN')
-        if self.compilers.fortranIsF90:
-          cmakeset(fd,'PETSC_USING_F90')
-        if self.compilers.fortranIsF2003:
-          cmakeset(fd,'PETSC_USING_F2003')
-      if hasattr(self.compilers, 'CXX'):
-        cmakeset(fd,'PETSC_HAVE_CXX')
-      if self.sharedlibraries.useShared:
-        cmakeset(fd,'BUILD_SHARED_LIBS')
-    def writeBuildFlags(fd):
-      def extendby(lib):
-        libs = ensurelist(lib)
-        lib_paths.extend(map(libpath,libs))
-        lib_libs.extend(map(cleanlib,libs))
-      lib_paths = []
-      lib_libs  = []
-      includes  = []
-      libvars   = []
-      for pkg in self.framework.packages:
-        if pkg.linkedbypetsc:
-          extendby(pkg.lib)
-          uniqextend(includes,pkg.include)
-      extendby(self.libraries.math)
-      extendby(self.libraries.rt)
-      extendby(self.compilers.flibs)
-      extendby(self.compilers.cxxlibs)
-      extendby(self.compilers.LIBS.split())
-      for libname in nublast(lib_libs):
-        libvar = 'PETSC_' + libname.upper() + '_LIB'
-        addpath = ''
-        for lpath in nublast(lib_paths):
-          addpath += '"' + str(lpath) + '" '
-        fd.write('find_library (' + libvar + ' ' + libname + ' HINTS ' + addpath + ')\n')
-        libvars.append(libvar)
-      fd.write('mark_as_advanced (' + ' '.join(libvars) + ')\n')
-      fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
-      includes = list(filter(notstandardinclude,includes))
-      fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',includes)) + ')\n')
-    fd = open(os.path.join(self.arch.arch,'lib','petsc','conf','PETScBuildInternal.cmake'), 'w')
-    writeMacroDefinitions(fd)
-    writeBuildFlags(fd)
-    fd.close()
-    return
-
-  def dumpCMakeLists(self):
-    import sys
-    if sys.version_info >= (2,4):
-      import cmakegen
-      try:
-        cmakegen.main(self.petscdir.dir, log=self.framework.log)
-      except (OSError) as e:
-        self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
-    else:
-      self.framework.logPrint('Skipping cmakegen due to old python version: ' +str(sys.version_info) )
-
-  def cmakeBoot(self):
-    import sys
-    self.cmakeboot_success = False
-    if sys.version_info >= (2,4) and hasattr(self.cmake,'cmake'):
-      oldRead = self.argDB.readonly
-      self.argDB.readonly = True
-      try:
-        import cmakeboot
-        self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
-      except (OSError) as e:
-        self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
-      except (ImportError, KeyError) as e:
-        self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
-      self.argDB.readonly = oldRead
-      if self.cmakeboot_success:
-        if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
-          self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
-        else:
-          self.framework.logPrint('CMake configured successfully, using as default build\n')
-          self.addMakeMacro('PETSC_BUILD_USING_CMAKE',1)
-      else:
-        self.framework.logPrint('CMake configuration was unsuccessful\n')
-    else:
-      self.framework.logPrint('Skipping cmakeboot due to old python version: ' +str(sys.version_info) )
     return
 
   def configurePrefetch(self):
@@ -1109,13 +949,10 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()
-    self.dumpCMakeConfig()
-    self.dumpCMakeLists()
     # need to save the current state of BuildSystem so that postProcess() packages can read it in and perhaps run make install
     self.framework.storeSubstitutions(self.framework.argDB)
     self.framework.argDB['configureCache'] = pickle.dumps(self.framework)
     self.framework.argDB.save(force = True)
-    self.cmakeBoot()
     self.DumpPkgconfig()
     self.DumpModule()
     self.postProcessPackages()
