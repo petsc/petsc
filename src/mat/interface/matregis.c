@@ -75,8 +75,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat);
 
   Level: advanced
 
-.keywords: KSP, register, all
-
 .seealso:  MatRegister()
 @*/
 PetscErrorCode  MatRegisterAll(void)

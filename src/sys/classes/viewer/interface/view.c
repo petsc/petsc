@@ -10,7 +10,6 @@ static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  PetscViewerFinalizePackage(void)
@@ -54,7 +53,6 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
 
   Level: developer
 
-.keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  PetscViewerInitializePackage(void)
@@ -232,8 +230,6 @@ PetscErrorCode  PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 
    Level: advanced
 
-.keywords: PetscViewer, set, options, prefix, database
-
 .seealso: PetscViewerSetFromOptions()
 @*/
 PetscErrorCode  PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix[])
@@ -261,8 +257,6 @@ PetscErrorCode  PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
-
-.keywords: PetscViewer, append, options, prefix, database
 
 .seealso: PetscViewerGetOptionsPrefix()
 @*/
@@ -294,8 +288,6 @@ PetscErrorCode  PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char pre
 
    Level: advanced
 
-.keywords: PetscViewer, get, options, prefix, database
-
 .seealso: PetscViewerAppendOptionsPrefix()
 @*/
 PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefix[])
@@ -321,8 +313,6 @@ PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefi
    PetscViewerSetUp(), since these actions will happen automatically.
 
    Level: advanced
-
-.keywords: PetscViewer, setup
 
 .seealso: PetscViewerCreate(), PetscViewerDestroy()
 @*/

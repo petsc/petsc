@@ -23,7 +23,6 @@ PetscBool PetscLogMemory = PETSC_FALSE;
 
   Level: developer
 
-.keywords: log, event, create
 .seealso: PetscEventRegLogDestroy(), PetscStageLogCreate()
 @*/
 PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *eventLog)
@@ -50,7 +49,6 @@ PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *eventLog)
 
   Level: developer
 
-.keywords: log, event, destroy
 .seealso: PetscEventRegLogCreate()
 @*/
 PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog eventLog)
@@ -77,7 +75,6 @@ PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog eventLog)
 
   Level: developer
 
-.keywords: log, event, create
 .seealso: PetscEventPerfLogDestroy(), PetscStageLogCreate()
 @*/
 PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
@@ -104,7 +101,6 @@ PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
 
   Level: developer
 
-.keywords: log, event, destroy
 .seealso: PetscEventPerfLogCreate()
 @*/
 PetscErrorCode PetscEventPerfLogDestroy(PetscEventPerfLog eventLog)
@@ -128,7 +124,6 @@ PetscErrorCode PetscEventPerfLogDestroy(PetscEventPerfLog eventLog)
 
   Level: developer
 
-.keywords: log, event, destroy
 .seealso: PetscEventPerfLogCreate()
 @*/
 PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
@@ -181,7 +176,6 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 
   Level: developer
 
-.keywords: log, event, copy
 .seealso: PetscEventPerfInfoClear()
 @*/
 PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo,PetscEventPerfInfo *outInfo)
@@ -204,7 +198,6 @@ PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo,PetscEventPe
 
   Level: developer
 
-.keywords: log, event, size, ensure
 .seealso: PetscEventPerfLogCreate()
 @*/
 PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog,int size)
@@ -284,7 +277,6 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event,int t,PetscObject o1,Pets
 
   Level: developer
 
-.keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), 
           PetscEventLogActivate(), PetscEventLogDeactivate()
 @*/
@@ -359,7 +351,6 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
 
   Level: developer
 
-.keywords: log, event, activate
 .seealso: PetscEventPerfLogDeactivate()
 @*/
 PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog,PetscLogEvent event)
@@ -392,7 +383,6 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog,PetscLogEven
 
   Level: developer
 
-.keywords: log, event, activate
 .seealso: PetscEventPerfLogActivate()
 @*/
 PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog,PetscLogEvent event)
@@ -469,7 +459,6 @@ PetscErrorCode PetscEventPerfLogDeactivateClass(PetscEventPerfLog eventLog,Petsc
 
   Level: developer
 
-.keywords: log, stage
 .seealso: PetscEventRegLogRegister()
 @*/
 PetscErrorCode  PetscEventRegLogGetEvent(PetscEventRegLog eventLog,const char name[],PetscLogEvent *event)
@@ -507,7 +496,6 @@ PetscErrorCode  PetscEventRegLogGetEvent(PetscEventRegLog eventLog,const char na
 
   Level: developer
 
-.keywords: log, visible, event
 .seealso: PetscEventPerfLogGetVisible(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
 @*/
 PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog,PetscLogEvent event,PetscBool isVisible)
@@ -534,7 +522,6 @@ PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog,PetscLogEv
 
   Level: developer
 
-.keywords: log, visible, event
 .seealso: PetscEventPerfLogSetVisible(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
 @*/
 PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog,PetscLogEvent event,PetscBool  *isVisible)
@@ -917,7 +904,6 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
 
   Level: developer
 
-.keywords: log, visible, event
 .seealso: PetscLogEventSetError(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
 @*/
 PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDouble dof)
@@ -954,7 +940,6 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
 
   Level: developer
 
-.keywords: log, visible, event
 .seealso: PetscLogEventSetDof(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
 @*/
 PetscErrorCode PetscLogEventSetError(PetscLogEvent event, PetscInt n, PetscLogDouble error)

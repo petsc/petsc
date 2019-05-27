@@ -150,7 +150,6 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 
   Level: developer
 
-.keywords: IS, register
 .seealso: ISRegisterAll(), ISRegisterDestroy(), ISRegister()
 
   Level: advanced

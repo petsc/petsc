@@ -1382,7 +1382,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 
  Level: developer
 
- .keywords: PC, PCGAMG, initialize, package
  .seealso: PetscInitialize()
 @*/
 PetscErrorCode PCGAMGInitializePackage(void)
@@ -1451,7 +1450,6 @@ PetscErrorCode PCGAMGInitializePackage(void)
 
  Level: developer
 
- .keywords: Petsc, destroy, package
  .seealso: PetscFinalize()
 @*/
 PetscErrorCode PCGAMGFinalizePackage(void)

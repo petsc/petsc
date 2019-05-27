@@ -2139,7 +2139,6 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: MatPermute()
 @*/
 PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSection *sectionNew)

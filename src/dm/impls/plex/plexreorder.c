@@ -69,7 +69,6 @@ $     MATORDERINGQMD - Quotient Minimum Degree
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: MatGetOrdering()
 @*/
 PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
@@ -153,7 +152,6 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: MatPermute()
 @*/
 PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)

@@ -351,7 +351,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 
   Level: beginner
 
-.keywords: DMNetwork, create
 @*/
 PetscErrorCode DMNetworkCreate(MPI_Comm comm, DM *network)
 {

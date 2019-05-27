@@ -146,7 +146,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
 
   Level: intermediate
 
-.keywords: PetscSpacePoint
 .seealso: PetscSpaceCreate(), PetscSpaceSetType()
 @*/
 PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
@@ -175,7 +174,6 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 
   Level: intermediate
 
-.keywords: PetscSpacePoint
 .seealso: PetscSpaceCreate(), PetscSpaceSetType()
 @*/
 PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)

@@ -138,8 +138,6 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
 
    Level: advanced
 
-.keywords: communicator
-
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetType(),PetscSubcommSetTypeGeneral()
 @*/
 PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
@@ -168,8 +166,6 @@ PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
 -  subcommtype - subcommunicator type, PETSC_SUBCOMM_CONTIGUOUS,PETSC_SUBCOMM_INTERLACED
 
    Level: advanced
-
-.keywords: communicator
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetTypeGeneral()
 @*/
@@ -200,8 +196,6 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
 -  subrank - rank in the subcommunicator
 
    Level: advanced
-
-.keywords: communicator, create
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetType()
 @*/
@@ -296,8 +290,6 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 .  psubcomm - location to store the PetscSubcomm context
 
    Level: advanced
-
-.keywords: communicator, create
 
 .seealso: PetscSubcommDestroy()
 @*/

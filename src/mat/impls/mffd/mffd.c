@@ -15,7 +15,6 @@ static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize(), MatCreateMFFD(), MatCreateSNESMF()
 @*/
 PetscErrorCode  MatMFFDFinalizePackage(void)
@@ -35,7 +34,6 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
 
   Level: developer
 
-.keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  MatMFFDInitializePackage(void)
@@ -184,8 +182,6 @@ static PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
 $     MatMFFDSetType(mfctx,"my_h")
    or at runtime via the option
 $     -mat_mffd_type my_h
-
-.keywords: MatMFFD, register
 
 .seealso: MatMFFDRegisterAll(), MatMFFDRegisterDestroy()
  @*/
@@ -571,8 +567,6 @@ static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 
    Level: advanced
 
-.keywords: SNES, matrix-free, parameters
-
 .seealso: MatSetFromOptions(), MatCreateSNESMF(), MatCreateMFFD()
 @*/
 PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
@@ -795,8 +789,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 .  -mat_mffd_unim <umin> - Sets umin (for default PETSc routine that computes h only)
 -  -mat_mffd_check_positivity
 
-.keywords: default, matrix-free, create, matrix
-
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
           MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian()
@@ -827,8 +819,6 @@ PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
 .  h - the differencing step size
 
    Level: advanced
-
-.keywords: SNES, matrix-free, parameters
 
 .seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), MatCreateMFFD(), MATMFFD, MatMFFDResetHHistory()
 @*/
@@ -873,8 +863,6 @@ $     func (void *funcctx, Vec x, Vec f)
 
     If this is not set then it will use the function set with SNESSetFunction() if MatCreateSNESMF() was used.
 
-.keywords: SNES, matrix-free, function
-
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD,
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
 @*/
@@ -904,8 +892,6 @@ PetscErrorCode  MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec)
     matrix inside your compute Jacobian routine.
     This function is necessary to compute the diagonal of the matrix.
     funci must not contain any MPI call as it is called inside a loop on the local portion of the vector.
-
-.keywords: SNES, matrix-free, function
 
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction(), MatGetDiagonal()
 
@@ -937,8 +923,6 @@ PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscI
     This function is necessary to compute the diagonal of the matrix.
 
 
-.keywords: SNES, matrix-free, function
-
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction(), MatGetDiagonal()
 @*/
@@ -966,8 +950,6 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
 
    Level: advanced
 
-
-.keywords: SNES, matrix-free, parameters
 
 .seealso: MatCreateSNESMF(),MatMFFDGetH(),
           MatMFFDSetHHistory(), MatMFFDResetHHistory()
@@ -1007,8 +989,6 @@ PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
        = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
 .ve
 
-.keywords: SNES, matrix-free, parameters
-
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
           MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
@@ -1040,8 +1020,6 @@ PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
    Notes:
    Use MatMFFDResetHHistory() to reset the history counter and collect
    a new batch of differencing parameters, h.
-
-.keywords: SNES, matrix-free, h history, differencing history
 
 .seealso: MatMFFDGetH(), MatCreateSNESMF(),
           MatMFFDResetHHistory(), MatMFFDSetFunctionError()
@@ -1078,8 +1056,6 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
 
    Notes:
    Use MatMFFDSetHHistory() to create the original history counter.
-
-.keywords: SNES, matrix-free, h history, differencing history
 
 .seealso: MatMFFDGetH(), MatCreateSNESMF(),
           MatMFFDSetHHistory(), MatMFFDSetFunctionError()

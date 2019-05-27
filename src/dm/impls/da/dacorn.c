@@ -55,8 +55,6 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
 
   Level: intermediate
 
-.keywords: distributed array, get, component name
-
 .seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldNames(), DMSetUp()
 @*/
 PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
@@ -88,8 +86,6 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 
    Not supported from Fortran, use DMDAGetFieldName()
 
-.keywords: distributed array, get, component name
-
 .seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldName(), DMDASetFieldNames()
 @*/
 PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
@@ -116,8 +112,6 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
    Level: intermediate
 
    Not supported from Fortran, use DMDASetFieldName()
-
-.keywords: distributed array, get, component name
 
 .seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldName(), DMSetUp()
 @*/
@@ -157,8 +151,6 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
 
   Level: intermediate
 
-.keywords: distributed array, get, component name
-
 .seealso: DMDASetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMSetUp()
 @*/
 PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
@@ -191,8 +183,6 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   Level: intermediate
 
   Not supported from Fortran
-
-.keywords: distributed array, get, component name
 
 .seealso: DMDAGetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMSetUp()
 @*/
@@ -229,8 +219,6 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
   Level: intermediate
 
   Not supported from Fortran
-
-.keywords: distributed array, get, component name
 
 .seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMSetUp()
 @*/
@@ -271,8 +259,6 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 
   Level: beginner
 
-.keywords: distributed array, get, corners, nodes, local indices
-
 .seealso: DMDAGetGhostCorners(), DMDAGetOwnershipRanges()
 @*/
 PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
@@ -310,8 +296,6 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
   Level: beginner
 
   Not supported from Fortran
-
-.keywords: distributed array, get, coordinates
 
 .seealso: DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetBoundingBox()
 @*/
@@ -368,8 +352,6 @@ PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
 
   Level: beginner
 
-.keywords: distributed array, get, coordinates
-
 .seealso: DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetLocalBoundingBox()
 @*/
 PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
@@ -414,8 +396,6 @@ PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 .  nda - the new DMDA
 
   Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 
 .seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates()
 @*/
@@ -487,8 +467,6 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 
   Not supported from Fortran
 
-.keywords: distributed array, get, component name
-
 .seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMDARestoreCoordinateArray()
 @*/
 PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
@@ -517,8 +495,6 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
   Level: intermediate
 
   Not supported from Fortran
-
-.keywords: distributed array, get, component name
 
 .seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMDAGetCoordinateArray()
 @*/

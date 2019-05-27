@@ -3064,7 +3064,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
  Level: developer
 
- .keywords: PC, PCBDDC, initialize, package
  .seealso: PetscInitialize()
 @*/
 PetscErrorCode PCBDDCInitializePackage(void)
@@ -3118,7 +3117,6 @@ PetscErrorCode PCBDDCInitializePackage(void)
 
  Level: developer
 
- .keywords: Petsc, destroy, package
  .seealso: PetscFinalize()
 @*/
 PetscErrorCode PCBDDCFinalizePackage(void)

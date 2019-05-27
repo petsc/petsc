@@ -1001,7 +1001,6 @@ static PetscErrorCode DMPlexMapToLocalPoint(PetscHMapIJ roothash, const PetscInt
 
    Note: All debugging for this process can be turned on with the options: -dm_interp_pre_view -petscsf_interp_pre_view -petscsection_interp_candidate_view -petscsection_interp_candidate_remote_view -petscsection_interp_claim_view -petscsf_interp_pre_view -dmplex_interp_debug
 
-.keywords: mesh
 .seealso: DMPlexInterpolate(), DMPlexUninterpolate()
 @*/
 PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
@@ -1329,7 +1328,6 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   Notes:
     It does not copy over the coordinates.
 
-.keywords: mesh
 .seealso: DMPlexUninterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
@@ -1399,7 +1397,6 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
   Note: This is typically used when adding pieces other than vertices to a mesh
 
-.keywords: mesh
 .seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
@@ -1521,7 +1518,6 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Notes:
     It does not copy over the coordinates.
 
-.keywords: mesh
 .seealso: DMPlexInterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)

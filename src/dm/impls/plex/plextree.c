@@ -455,7 +455,6 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 
   Level: intermediate
 
-.keywords: reference cell
 .seealso: DMPlexSetReferenceTree(), DMPlexGetReferenceTree()
 @*/
 PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *ref)

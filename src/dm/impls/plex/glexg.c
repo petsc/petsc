@@ -22,8 +22,6 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM, double*, DM*);
 
   Level: advanced
 
-.keywords: DMPlexGenerate, register, all
-
 .seealso:  DMPlexGenerateRegisterDestroy()
 @*/
 PetscErrorCode  DMPlexGenerateRegisterAll(void)

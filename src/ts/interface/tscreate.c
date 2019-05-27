@@ -34,7 +34,6 @@ const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
                     in TSView(). TSSetFromOptions() does call SNESSetFromOptions() which can lead to users being confused
                     by help messages about meaningless SNES options.
 
-.keywords: TS, create
 .seealso: TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
 @*/
 PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)

@@ -416,7 +416,6 @@ PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes,PetscBool *flg)
     Notes:
     The default line search used is the L2 line search and it requires two additional function evaluations.
 
-.keywords: SNES, SNESNGMRES, restart, type, set SNESLineSearch
 @*/
 PetscErrorCode SNESNGMRESSetRestartType(SNES snes,SNESNGMRESRestartType rtype)
 {
@@ -451,7 +450,6 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes,SNESNGMRESRestartType rtype)
     Notes:
     The default line search used is the L2 line search and it requires two additional function evaluations.
 
-.keywords: SNES, SNESNGMRES, selection, type, set SNESLineSearch
 @*/
 PetscErrorCode SNESNGMRESSetSelectType(SNES snes,SNESNGMRESSelectType stype)
 {

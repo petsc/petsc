@@ -76,8 +76,6 @@ PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 
    Level: intermediate
 
-.keywords: PC, set, factorization, direct, fill
-
 .seealso: PCFactorSetShiftType(), PCFactorSetShiftAmount()
 @*/
 PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
@@ -106,8 +104,6 @@ PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
 
    Level: intermediate
 
-.keywords: PC, set, factorization,
-
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftAmount()
 @*/
 PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
@@ -135,8 +131,6 @@ PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
 .  -pc_factor_shift_amount <shiftamount> - Sets shift amount or PETSC_DECIDE for the default
 
    Level: intermediate
-
-.keywords: PC, set, factorization,
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftType()
 @*/
@@ -172,7 +166,6 @@ PetscErrorCode  PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
       There are NO default values for the 3 parameters, you must set them with reasonable values for your
       matrix. We don't know how to compute reasonable values.
 
-.keywords: PC, levels, reordering, factorization, incomplete, ILU
 */
 PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
 {
@@ -277,7 +270,6 @@ PetscErrorCode  PCFactorGetShiftType(PC pc,MatFactorShiftType *type)
 
    Level: intermediate
 
-.keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
 PetscErrorCode  PCFactorGetLevels(PC pc,PetscInt *levels)
 {
@@ -303,7 +295,6 @@ PetscErrorCode  PCFactorGetLevels(PC pc,PetscInt *levels)
 
    Level: intermediate
 
-.keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
 PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 {
@@ -334,8 +325,6 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
    Does not apply with 0 fill.
 
    Level: intermediate
-
-.keywords: PC, levels, fill, factorization, incomplete, ILU
 
 .seealso: PCFactorGetAllowDiagonalFill()
 
@@ -370,8 +359,6 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
 
    Level: intermediate
 
-.keywords: PC, levels, fill, factorization, incomplete, ILU
-
 .seealso: PCFactorSetAllowDiagonalFill()
 
 @*/
@@ -398,8 +385,6 @@ PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
 .  -pc_factor_nonzeros_along_diagonal <tol>
 
    Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
 
 .seealso: PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetZeroPivot(), MatReorderForNonzeroDiagonal()
 @*/
@@ -432,8 +417,6 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
      By default this will use the PETSc factorization if it exists
 
 
-.keywords: PC, set, factorization, direct, fill
-
 .seealso: MatGetFactor(), MatSolverType, PCFactorGetMatSolverType()
 
 @*/
@@ -460,8 +443,6 @@ PetscErrorCode  PCFactorSetMatSolverType(PC pc,MatSolverType stype)
 
    Level: intermediate
 
-
-.keywords: PC, set, factorization, direct, fill
 
 .seealso: MatGetFactor(), MatSolverType, PCFactorGetMatSolverType()
 
@@ -505,8 +486,6 @@ PetscErrorCode  PCFactorGetMatSolverType(PC pc,MatSolverType *stype)
    This parameter has NOTHING to do with the levels-of-fill of ILU(). That is set with PCFactorSetLevels() or -pc_factor_levels.
 
 
-.keywords: PC, set, factorization, direct, fill
-
 @*/
 PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 {
@@ -546,8 +525,6 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 
    Level: intermediate
 
-.keywords: PC, set, factorization, direct, inplace, in-place, LU
-
 .seealso: PCFactorGetUseInPlace()
 @*/
 PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
@@ -572,8 +549,6 @@ PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
 .  flg - PETSC_TRUE to enable, PETSC_FALSE to disable
 
    Level: intermediate
-
-.keywords: PC, set, factorization, direct, inplace, in-place, LU
 
 .seealso: PCFactorSetUseInPlace()
 @*/
@@ -691,8 +666,6 @@ PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool pivot)
 .  -pc_factor_reuse_fill - Activates PCFactorSetReuseFill()
 
    Level: intermediate
-
-.keywords: PC, levels, reordering, factorization, incomplete, Cholesky
 
 .seealso: PCFactorSetReuseOrdering()
 @*/

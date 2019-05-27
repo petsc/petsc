@@ -1074,8 +1074,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 
    Level: intermediate
 
-.keywords: matrix, MKL, sparse, parallel
-
 .seealso: MatCreate(), MatCreateMPIAIJMKL(), MatSetValues()
 @*/
 PetscErrorCode  MatCreateSeqAIJMKL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)

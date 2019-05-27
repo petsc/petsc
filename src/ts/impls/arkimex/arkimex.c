@@ -248,8 +248,6 @@ M*/
 
   Level: advanced
 
-.keywords: TS, TSARKIMEX, register, all
-
 .seealso:  TSARKIMEXRegisterDestroy()
 @*/
 PetscErrorCode TSARKIMEXRegisterAll(void)
@@ -472,7 +470,6 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
 
    Level: advanced
 
-.keywords: TSARKIMEX, register, destroy
 .seealso: TSARKIMEXRegister(), TSARKIMEXRegisterAll()
 @*/
 PetscErrorCode TSARKIMEXRegisterDestroy(void)
@@ -500,7 +497,6 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
 
   Level: developer
 
-.keywords: TS, TSARKIMEX, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode TSARKIMEXInitializePackage(void)
@@ -521,7 +517,6 @@ PetscErrorCode TSARKIMEXInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode TSARKIMEXFinalizePackage(void)
@@ -559,8 +554,6 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
    Several ARK IMEX methods are provided, this function is only needed to create new methods.
 
    Level: advanced
-
-.keywords: TS, register
 
 .seealso: TSARKIMEX
 @*/

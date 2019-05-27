@@ -17,7 +17,6 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal,PetscReal*,PetscRea
 
     Level: advanced
 
-.keywords: KSP, QCG, set, trust region radius
 @*/
 PetscErrorCode  KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 {

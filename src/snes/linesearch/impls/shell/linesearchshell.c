@@ -45,8 +45,6 @@ $  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL);CHKERRQ(ie
 
    Level: advanced
 
-   .keywords: SNESLineSearch, Shell, user, function, set
-
    .seealso: SNESLineSearchShellGetUserFunc(), SNESLINESEARCHSHELL
 @*/
 PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx)
@@ -78,8 +76,6 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 -    ctx   - the user function context; can be NULL if you do not want it
 
    Level: advanced
-
-   .keywords: SNESLineSearch, get, Shell, user, function
 
    .seealso: SNESLineSearchShellSetUserFunc()
 @*/

@@ -61,7 +61,6 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *
 
    Level: advanced
 
-.keywords: Tao, linesearch
 @*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {

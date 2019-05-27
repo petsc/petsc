@@ -26,7 +26,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_CUDA(Vec);
 
   Level: advanced
 
-.keywords: Vec, register, all
 .seealso:  VecRegister(), VecRegisterDestroy(), VecRegister()
 @*/
 PetscErrorCode VecRegisterAll(void)

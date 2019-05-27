@@ -45,8 +45,6 @@ typedef struct {
     The routine to be called here to compute the timestep should be
     set by calling TSPseudoSetTimeStep().
 
-.keywords: timestep, pseudo, compute
-
 .seealso: TSPseudoTimeStepDefault(), TSPseudoSetTimeStep()
 @*/
 PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
@@ -83,8 +81,6 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
    This routine always returns a flag of 1, indicating an acceptable
    timestep.
 
-.keywords: timestep, pseudo, default, verify
-
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
 PetscErrorCode  TSPseudoVerifyTimeStepDefault(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscBool  *flag)
@@ -113,8 +109,6 @@ PetscErrorCode  TSPseudoVerifyTimeStepDefault(TS ts,Vec update,void *dtctx,Petsc
     Notes:
     The routine to be called here to compute the timestep should be
     set by calling TSPseudoSetVerifyTimeStep().
-
-.keywords: timestep, pseudo, verify
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStepDefault()
 @*/
@@ -392,8 +386,6 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
    The routine set here will be called by TSPseudoVerifyTimeStep()
    during the timestepping process.
 
-.keywords: timestep, pseudo, set, verify
-
 .seealso: TSPseudoVerifyTimeStepDefault(), TSPseudoVerifyTimeStep()
 @*/
 PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscBool*),void *ctx)
@@ -420,8 +412,6 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void
 .    -ts_pseudo_increment <increment>
 
     Level: advanced
-
-.keywords: timestep, pseudo, set, increment
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
@@ -450,8 +440,6 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 .    -ts_pseudo_max_dt <increment>
 
     Level: advanced
-
-.keywords: timestep, pseudo, set
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
@@ -482,8 +470,6 @@ $         dt = current_dt*previous_fnorm/current_fnorm.
 .    -ts_pseudo_increment_dt_from_initial_dt
 
     Level: advanced
-
-.keywords: timestep, pseudo, set, increment
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
@@ -522,8 +508,6 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
    The routine set here will be called by TSPseudoComputeTimeStep()
    during the timestepping process.
    If not set then TSPseudoTimeStepDefault() is automatically used
-
-.keywords: timestep, pseudo, set
 
 .seealso: TSPseudoTimeStepDefault(), TSPseudoComputeTimeStep()
 @*/
@@ -696,8 +680,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 .  newdt - the timestep to use for the next step
 
    Level: advanced
-
-.keywords: timestep, pseudo, default
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
 @*/

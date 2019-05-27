@@ -4362,8 +4362,6 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
    The contents of the sizes[] array should not be changed.
    NULL may be passed for information not requested.
 
-.keywords: matrix, seqaij, get, inode
-
 .seealso: MatGetInfo()
 @*/
 PetscErrorCode  MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)

@@ -816,7 +816,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
   Level: intermediate
 
-.keywords: KSP, default, monitor, residual
 .seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorDefault()
 @*/
 static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
@@ -896,7 +895,6 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, vo
 
   Level: intermediate
 
-.keywords: SNES, nonlinear, default, monitor, norm
 .seealso: SNESMonitorDefault(), SNESMonitorSet(), SNESMonitorSolution()
 @*/
 static PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *ctx)

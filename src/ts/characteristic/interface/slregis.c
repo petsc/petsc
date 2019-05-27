@@ -7,7 +7,6 @@ static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, finalize
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode CharacteristicFinalizePackage(void)
@@ -28,7 +27,6 @@ PetscErrorCode CharacteristicFinalizePackage(void)
 
   Level: developer
 
-.keywords: Characteristic, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode CharacteristicInitializePackage(void)

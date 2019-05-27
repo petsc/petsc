@@ -1013,8 +1013,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 
    For matrices containing parallel submatrices and variable block sizes, see MATNEST.
 
-.keywords: matrix, bmat, create
-
 .seealso: MATBLOCKMAT, MatCreateNest()
 @*/
 PetscErrorCode  MatCreateBlockMat(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt bs,PetscInt nz,PetscInt *nnz, Mat *A)

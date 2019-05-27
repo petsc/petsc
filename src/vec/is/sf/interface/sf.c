@@ -111,8 +111,6 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 
   Level: intermediate
 
-.keywords: PetscSF, set, type
-
 .seealso: PetscSFType, PetscSFCreate()
 @*/
 PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
@@ -150,7 +148,6 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
 
   Level: intermediate
 
-.keywords: PetscSF, get, type
 .seealso: PetscSFSetType(), PetscSFCreate()
 @*/
 PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
@@ -229,8 +226,6 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 -  -sf_rank_order - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
 
    Level: intermediate
-
-.keywords: KSP, set, from, options, database
 
 .seealso: PetscSFWindowSetSyncType()
 @*/

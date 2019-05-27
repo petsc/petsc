@@ -23,8 +23,6 @@
 
    Contributed by: Denis Vanderstraeten
 
-.keywords: matrix, column, get
-
 .seealso: MatGetRow(), MatGetDiagonal()
 
 @*/

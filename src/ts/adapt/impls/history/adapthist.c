@@ -78,7 +78,6 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
 
    Level: advanced
 
-.keywords: TSAdapt
 .seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetTrajectory(), TSADAPTHISTORY
 @*/
 PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t, PetscReal *dt)
@@ -113,7 +112,6 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
 
    Level: advanced
 
-.keywords: TSAdapt
 .seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetTrajectory(), TSADAPTHISTORY
 @*/
 PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal hist[], PetscBool backward)
@@ -151,7 +149,6 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
 
    Level: advanced
 
-.keywords: TSAdapt
 .seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetHistory(), TSADAPTHISTORY
 @*/
 PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, PetscBool backward)

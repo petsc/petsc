@@ -25,8 +25,6 @@ $     MatColoringSetType(part,"my_color")
    or at runtime via the option
 $     -mat_coloring_type my_color
 
-.keywords: matrix, Coloring, register
-
 .seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
 @*/
 PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function)(MatColoring))
@@ -65,8 +63,6 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
           (see MatFDColoringCreate()).
 
           Some coloring types only support distance two colorings
-
-.keywords: Coloring, Matrix
 
 .seealso: MatColoring, MatColoringApply(), MatFDColoringCreate()
 @*/
@@ -107,8 +103,6 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 
    Level: beginner
 
-.keywords: Coloring, destroy
-
 .seealso: MatColoringCreate(), MatColoringApply()
 @*/
 PetscErrorCode MatColoringDestroy(MatColoring *mc)
@@ -140,8 +134,6 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
     Possible types include the sequential types MATCOLORINGLF,
    MATCOLORINGSL, and MATCOLORINGID from the MINPACK package as well
    as a parallel MATCOLORINGMIS algorithm.
-
-.keywords: Coloring, type
 
 .seealso: MatColoringCreate(), MatColoringApply()
 @*/
@@ -186,8 +178,6 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 .   -mat_coloring_view - print information about the coloring and the produced index sets
 
    Level: beginner
-
-.keywords: Coloring, Matrix
 
 .seealso: MatColoring, MatColoringApply()
 @*/
@@ -247,8 +237,6 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
    coloring, where no two vertices of the same color are adjacent.
    distance-2 colorings are useful for the computation of Jacobians.
 
-.keywords: Coloring, distance, Jacobian
-
 .seealso: MatColoringGetDistance(), MatColoringApply()
 @*/
 PetscErrorCode MatColoringSetDistance(MatColoring mc,PetscInt dist)
@@ -271,8 +259,6 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc,PetscInt dist)
 .  dist - the current distance being used for the coloring.
 
    Level: beginner
-
-.keywords: Coloring, distance
 
 .seealso: MatColoringSetDistance(), MatColoringApply()
 @*/
@@ -302,8 +288,6 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
    not in a color are set to have color maxcolors+1, which is not
    a valid color as they may be adjacent.
 
-.keywords: Coloring
-
 .seealso: MatColoringGetMaxColors(), MatColoringApply()
 @*/
 PetscErrorCode MatColoringSetMaxColors(MatColoring mc,PetscInt maxcolors)
@@ -326,8 +310,6 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc,PetscInt maxcolors)
 .  maxcolors - the current maximum number of colors to produce
 
    Level: beginner
-
-.keywords: Coloring
 
 .seealso: MatColoringSetMaxColors(), MatColoringApply()
 @*/
@@ -353,8 +335,6 @@ PetscErrorCode MatColoringGetMaxColors(MatColoring mc,PetscInt *maxcolors)
 .  coloring - the ISColoring instance containing the coloring
 
    Level: beginner
-
-.keywords: Coloring, Apply
 
 .seealso: MatColoring, MatColoringCreate()
 @*/
@@ -407,8 +387,6 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
 
    Level: beginner
 
-.keywords: Coloring, view
-
 .seealso: MatColoring, MatColoringApply()
 @*/
 PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
@@ -447,8 +425,6 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
 +  wt - the weight type
 
    Level: beginner
-
-.keywords: Coloring, view
 
 .seealso: MatColoring, MatColoringWeightType
 @*/

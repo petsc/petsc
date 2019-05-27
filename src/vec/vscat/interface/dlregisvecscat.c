@@ -10,7 +10,6 @@ static PetscBool  VecScatterPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode VecScatterFinalizePackage(void)
@@ -32,7 +31,6 @@ PetscErrorCode VecScatterFinalizePackage(void)
 
   Developers Note: this does not seem to get called directly when useing dynamic libraries.
 
-.keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode VecScatterInitializePackage(void)
@@ -73,7 +71,6 @@ PetscErrorCode VecScatterInitializePackage(void)
 
   Level: advanced
 
-.keywords: Vec, register, all
 .seealso:  VecScatterRegister(), VecScatterRegisterDestroy(), VecScatterRegister()
 @*/
 PetscErrorCode VecScatterRegisterAll(void)

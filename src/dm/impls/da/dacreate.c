@@ -482,7 +482,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   Developers Note: 
   Since there exists DMDACreate1/2/3d() should this routine even exist?
 
-.keywords: DMDA, create
 .seealso:  DMDASetSizes(), DMClone(),  DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
 PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)

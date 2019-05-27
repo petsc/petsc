@@ -1201,7 +1201,6 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 
 .seealso:  VecLog(), VecAbs(), VecSqrtAbs(), VecReciprocal()
 
-.keywords: vector, sqrt, square root
 @*/
 PetscErrorCode  VecExp(Vec v)
 {
@@ -1237,7 +1236,6 @@ PetscErrorCode  VecExp(Vec v)
 
 .seealso:  VecExp(), VecAbs(), VecSqrtAbs(), VecReciprocal()
 
-.keywords: vector, sqrt, square root
 @*/
 PetscErrorCode  VecLog(Vec v)
 {
@@ -1275,7 +1273,6 @@ PetscErrorCode  VecLog(Vec v)
 
 .seealso: VecLog(), VecExp(), VecReciprocal(), VecAbs()
 
-.keywords: vector, sqrt, square root
 @*/
 PetscErrorCode  VecSqrtAbs(Vec v)
 {
@@ -1317,7 +1314,6 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
 
-.keywords: vector, sqrt, square root
 @*/
 PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 {
@@ -1542,7 +1538,6 @@ PetscErrorCode  VecAbs(Vec v)
   Note: This function does not yet support parallel Index Sets with non-local permutations
 
 .seealso: MatPermute()
-.keywords: vec, permute
 @*/
 PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 {

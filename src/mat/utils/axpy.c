@@ -48,8 +48,6 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y,PetscScalar a,Mat X,MatStru
 
    Level: intermediate
 
-.keywords: matrix, add
-
 .seealso: MatAYPX()
  @*/
 PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
@@ -269,8 +267,6 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
    Developers Note: If the local "diagonal part" of the matrix Y has no entries then the local diagonal part is
     preallocated with 1 nonzero per row for the to be added values. This allows for fast shifting of an empty matrix.
 
-.keywords: matrix, add, shift
-
 .seealso: MatDiagonalSet(), MatScale(), MatDiagonalScale()
  @*/
 PetscErrorCode  MatShift(Mat Y,PetscScalar a)
@@ -336,8 +332,6 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 
    Level: intermediate
 
-.keywords: matrix, add, shift, diagonal
-
 .seealso: MatShift(), MatScale(), MatDiagonalScale()
 @*/
 PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
@@ -372,8 +366,6 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 -  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
 
    Level: intermediate
-
-.keywords: matrix, add
 
 .seealso: MatAXPY()
  @*/
@@ -414,7 +406,6 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 
     Level: advanced
 
-.keywords: Mat, compute, explicit, operator
 @*/
 PetscErrorCode  MatComputeOperator(Mat inmat,MatType mattype,Mat *mat)
 {
@@ -446,7 +437,6 @@ PetscErrorCode  MatComputeOperator(Mat inmat,MatType mattype,Mat *mat)
 
     Level: advanced
 
-.keywords: Mat, compute, explicit, operator
 @*/
 PetscErrorCode  MatComputeOperatorTranspose(Mat inmat,MatType mattype,Mat *mat)
 {

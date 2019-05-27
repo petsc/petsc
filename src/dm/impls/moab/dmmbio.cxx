@@ -52,8 +52,6 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
   Level: intermediate
 
-.keywords: discretization manager, set, component solution
-
 .seealso: DMMoabLoadFromFile(), DMMoabSetGlobalFieldVector()
 @*/
 PetscErrorCode DMMoabOutput(DM dm, const char* filename, const char* usrwriteopts)

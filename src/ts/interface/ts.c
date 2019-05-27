@@ -116,8 +116,6 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 
    Level: beginner
 
-.keywords: TS, timestep, set, options, database
-
 .seealso: TSGetType()
 @*/
 PetscErrorCode  TSSetFromOptions(TS ts)
@@ -450,7 +448,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
 .seealso: TSGetTrajectory(), TSAdjointSolve(), TSTrajectory, TSTrajectoryCreate()
 
-.keywords: TS, set, checkpoint,
 @*/
 PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 {
@@ -481,7 +478,6 @@ Note: This routine should be called after all TS options have been set
 
 .seealso: TSGetTrajectory(), TSAdjointSolve()
 
-.keywords: TS, set, checkpoint,
 @*/
 PetscErrorCode  TSSetSaveTrajectory(TS ts)
 {
@@ -507,7 +503,6 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
 
 .seealso: TSGetTrajectory(), TSAdjointSolve()
 
-.keywords: TS, set, checkpoint,
 @*/
 PetscErrorCode  TSResetTrajectory(TS ts)
 {
@@ -546,8 +541,6 @@ PetscErrorCode  TSResetTrajectory(TS ts)
    flag parameter.
 
    Level: developer
-
-.keywords: SNES, compute, Jacobian, matrix
 
 .seealso:  TSSetRHSJacobian(), KSPSetOperators()
 @*/
@@ -668,8 +661,6 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
 
    Level: developer
 
-.keywords: TS, compute
-
 .seealso: TSSetRHSFunction(), TSComputeIFunction()
 @*/
 PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
@@ -721,8 +712,6 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
 
    Level: developer
 
-.keywords: TS, compute
-
 .seealso: TSSetSolutionFunction(), TSSetRHSFunction(), TSComputeIFunction()
 @*/
 PetscErrorCode TSComputeSolutionFunction(TS ts,PetscReal t,Vec U)
@@ -762,8 +751,6 @@ PetscErrorCode TSComputeSolutionFunction(TS ts,PetscReal t,Vec U)
    is used internally within the nonlinear solvers.
 
    Level: developer
-
-.keywords: TS, compute
 
 .seealso: TSSetSolutionFunction(), TSSetRHSFunction(), TSComputeIFunction()
 @*/
@@ -875,8 +862,6 @@ PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
 
    Level: developer
 
-.keywords: TS, compute
-
 .seealso: TSSetIFunction(), TSComputeRHSFunction()
 @*/
 PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBool imex)
@@ -951,8 +936,6 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
    is used internally within the nonlinear solvers.
 
    Level: developer
-
-.keywords: TS, compute, Jacobian, matrix
 
 .seealso:  TSSetIJacobian()
 @*/
@@ -1086,8 +1069,6 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
     Notes:
     You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
 
-.keywords: TS, timestep, set, right-hand-side, function
-
 .seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSSetIFunction()
 @*/
 PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
@@ -1144,8 +1125,6 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 
     Level: beginner
 
-.keywords: TS, timestep, set, right-hand-side, function
-
 .seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetForcingFunction(), TSSetSolution(), TSGetSolution(), TSMonitorLGError(), TSMonitorDrawError()
 @*/
 PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
@@ -1192,8 +1171,6 @@ $     func (TS ts,PetscReal t,Vec f,void *ctx);
 
     Level: beginner
 
-.keywords: TS, timestep, set, right-hand-side, function
-
 .seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetSolutionFunction()
 @*/
 PetscErrorCode  TSSetForcingFunction(TS ts,TSForcingFunction func,void *ctx)
@@ -1238,8 +1215,6 @@ $     func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
    You should not assume the values are the same in the next call to f() as you set them in the previous call.
 
    Level: beginner
-
-.keywords: TS, timestep, set, right-hand-side, Jacobian
 
 .seealso: SNESComputeJacobianDefaultColor(), TSSetRHSFunction(), TSRHSJacobianSetReuse(), TSSetIJacobian()
 
@@ -1307,8 +1282,6 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 
    Level: beginner
 
-.keywords: TS, timestep, set, DAE, Jacobian
-
 .seealso: TSSetRHSJacobian(), TSSetRHSFunction(), TSSetIJacobian()
 @*/
 PetscErrorCode  TSSetIFunction(TS ts,Vec r,TSIFunction f,void *ctx)
@@ -1350,8 +1323,6 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec r,TSIFunction f,void *ctx)
 
    Level: advanced
 
-.keywords: TS, nonlinear, get, function
-
 .seealso: TSSetIFunction(), SNESGetFunction()
 @*/
 PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
@@ -1383,8 +1354,6 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
 -  ctx - the function context (or NULL)
 
    Level: advanced
-
-.keywords: TS, nonlinear, get, function
 
 .seealso: TSSetRHSFunction(), SNESGetFunction()
 @*/
@@ -1446,8 +1415,6 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
    You should not assume the values are the same in the next call to f() as you set them in the previous call.
 
    Level: beginner
-
-.keywords: TS, timestep, DAE, Jacobian
 
 .seealso: TSSetIFunction(), TSSetRHSJacobian(), SNESComputeJacobianDefaultColor(), SNESComputeJacobianDefault(), TSSetRHSFunction()
 
@@ -1519,8 +1486,6 @@ $  fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
 
    Level: beginner
 
-.keywords: TS, timestep, set, ODE, DAE, Function
-
 .seealso: TSSetI2Jacobian()
 @*/
 PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
@@ -1551,8 +1516,6 @@ PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
 - ctx - the function context (or NULL)
 
   Level: advanced
-
-.keywords: TS, nonlinear, get, function
 
 .seealso: TSSetI2Function(), SNESGetFunction()
 @*/
@@ -1607,8 +1570,6 @@ $  jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat J,Ma
 
    Level: beginner
 
-.keywords: TS, timestep, set, ODE, DAE, Jacobian
-
 .seealso: TSSetI2Function()
 @*/
 PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
@@ -1647,7 +1608,6 @@ PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 
 .seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
-.keywords: TS, timestep, get, matrix, Jacobian
 @*/
 PetscErrorCode  TSGetI2Jacobian(TS ts,Mat *J,Mat *P,TSI2Jacobian *jac,void **ctx)
 {
@@ -1684,8 +1644,6 @@ PetscErrorCode  TSGetI2Jacobian(TS ts,Mat *J,Mat *P,TSI2Jacobian *jac,void **ctx
   is used internally within the nonlinear solvers.
 
   Level: developer
-
-.keywords: TS, compute, function, vector
 
 .seealso: TSSetI2Function()
 @*/
@@ -1758,8 +1716,6 @@ PetscErrorCode TSComputeI2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F)
 
   Level: developer
 
-.keywords: TS, compute, Jacobian, matrix
-
 .seealso:  TSSetI2Jacobian()
 @*/
 PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal shiftV,PetscReal shiftA,Mat J,Mat P)
@@ -1818,7 +1774,6 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
 
    Level: beginner
 
-.keywords: TS, timestep, set, solution, initial conditions
 @*/
 PetscErrorCode  TS2SetSolution(TS ts,Vec u,Vec v)
 {
@@ -1854,7 +1809,6 @@ PetscErrorCode  TS2SetSolution(TS ts,Vec u,Vec v)
 
 .seealso: TS2SetSolution(), TSGetTimeStep(), TSGetTime()
 
-.keywords: TS, timestep, get, solution
 @*/
 PetscErrorCode  TS2GetSolution(TS ts,Vec *u,Vec *v)
 {
@@ -1953,8 +1907,6 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
     PetscViewerASCIIOpen() - output to a specified file.
 
     Level: beginner
-
-.keywords: TS, timestep, view
 
 .seealso: PetscViewerASCIIOpen()
 @*/
@@ -2113,8 +2065,6 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 
    Level: intermediate
 
-.keywords: TS, timestep, set, application, context
-
 .seealso: TSGetApplicationContext()
 @*/
 PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
@@ -2143,8 +2093,6 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
 
     Level: intermediate
 
-.keywords: TS, timestep, get, application, context
-
 .seealso: TSSetApplicationContext()
 @*/
 PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
@@ -2168,7 +2116,6 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 
    Level: intermediate
 
-.keywords: TS, timestep, get, iteration, number
 .seealso: TSGetTime(), TSGetTimeStep(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSSetPostStep()
 @*/
 PetscErrorCode TSGetStepNumber(TS ts,PetscInt *steps)
@@ -2201,7 +2148,6 @@ PetscErrorCode TSGetStepNumber(TS ts,PetscInt *steps)
 
    Level: advanced
 
-.keywords: TS, timestep, set, iteration, number
 .seealso: TSGetStepNumber(), TSSetTime(), TSSetTimeStep(), TSSetSolution()
 @*/
 PetscErrorCode TSSetStepNumber(TS ts,PetscInt steps)
@@ -2228,7 +2174,6 @@ PetscErrorCode TSSetStepNumber(TS ts,PetscInt steps)
 
 .seealso: TSGetTimeStep(), TSSetTime()
 
-.keywords: TS, set, timestep
 @*/
 PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 {
@@ -2312,7 +2257,6 @@ PetscErrorCode TSGetExactFinalTime(TS ts,TSExactFinalTimeOption *eftopt)
 
 .seealso: TSSetTimeStep(), TSGetTime()
 
-.keywords: TS, get, timestep
 @*/
 PetscErrorCode  TSGetTimeStep(TS ts,PetscReal *dt)
 {
@@ -2344,7 +2288,6 @@ PetscErrorCode  TSGetTimeStep(TS ts,PetscReal *dt)
 
 .seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime(), TSGetSolutionComponents(), TSSetSolutionFunction()
 
-.keywords: TS, timestep, get, solution
 @*/
 PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 {
@@ -2376,7 +2319,6 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .seealso: TSGetSolution()
 
-.keywords: TS, timestep, get, solution
 @*/
 PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
 {
@@ -2405,7 +2347,6 @@ PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
 
 .seealso: TSGetSolution()
 
-.keywords: TS, timestep, get, solution
 @*/
 PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
 {
@@ -2438,7 +2379,6 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
 
 .seealso: TSGetSolution(), TSSetTimeError()
 
-.keywords: TS, timestep, get, error
 @*/
 PetscErrorCode  TSGetTimeError(TS ts,PetscInt n,Vec *v)
 {
@@ -2469,7 +2409,6 @@ PetscErrorCode  TSGetTimeError(TS ts,PetscInt n,Vec *v)
 
 .seealso: TSSetSolution(), TSGetTimeError)
 
-.keywords: TS, timestep, get, error
 @*/
 PetscErrorCode  TSSetTimeError(TS ts,Vec v)
 {
@@ -2501,7 +2440,6 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
 
    Level: beginner
 
-.keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
 PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type)
@@ -2537,7 +2475,6 @@ PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type)
 
    Level: beginner
 
-.keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
 PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
@@ -2566,8 +2503,6 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
    and optional routines of the form TSSetXXX(), but before TSStep() and TSSolve().
 
    Level: advanced
-
-.keywords: TS, timestep, setup
 
 .seealso: TSCreate(), TSStep(), TSDestroy(), TSSolve()
 @*/
@@ -2676,8 +2611,6 @@ PetscErrorCode  TSSetUp(TS ts)
 
    Level: beginner
 
-.keywords: TS, timestep, reset
-
 .seealso: TSCreate(), TSSetup(), TSDestroy()
 @*/
 PetscErrorCode  TSReset(TS ts)
@@ -2736,8 +2669,6 @@ PetscErrorCode  TSReset(TS ts)
 
    Level: beginner
 
-.keywords: TS, timestepper, destroy
-
 .seealso: TSCreate(), TSSetUp(), TSSolve()
 @*/
 PetscErrorCode  TSDestroy(TS *ts)
@@ -2795,7 +2726,6 @@ PetscErrorCode  TSDestroy(TS *ts)
 
    Level: beginner
 
-.keywords: timestep, get, SNES
 @*/
 PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 {
@@ -2833,7 +2763,6 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 
    Level: developer
 
-.keywords: timestep, set, SNES
 @*/
 PetscErrorCode TSSetSNES(TS ts,SNES snes)
 {
@@ -2878,7 +2807,6 @@ PetscErrorCode TSSetSNES(TS ts,SNES snes)
 
    Level: beginner
 
-.keywords: timestep, get, KSP
 @*/
 PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
 {
@@ -2914,8 +2842,6 @@ PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
 
    Level: intermediate
 
-.keywords: TS, timestep, set, maximum, steps
-
 .seealso: TSGetMaxSteps(), TSSetMaxTime(), TSSetExactFinalTime()
 @*/
 PetscErrorCode TSSetMaxSteps(TS ts,PetscInt maxsteps)
@@ -2940,8 +2866,6 @@ PetscErrorCode TSSetMaxSteps(TS ts,PetscInt maxsteps)
 .  maxsteps - maximum number of steps to use
 
    Level: advanced
-
-.keywords: TS, timestep, get, maximum, steps
 
 .seealso: TSSetMaxSteps(), TSGetMaxTime(), TSSetMaxTime()
 @*/
@@ -2971,8 +2895,6 @@ PetscErrorCode TSGetMaxSteps(TS ts,PetscInt *maxsteps)
 
    Level: intermediate
 
-.keywords: TS, timestep, set, maximum, time
-
 .seealso: TSGetMaxTime(), TSSetMaxSteps(), TSSetExactFinalTime()
 @*/
 PetscErrorCode TSSetMaxTime(TS ts,PetscReal maxtime)
@@ -2996,8 +2918,6 @@ PetscErrorCode TSSetMaxTime(TS ts,PetscReal maxtime)
 .  maxtime - final time to step to
 
    Level: advanced
-
-.keywords: TS, timestep, get, maximum, time
 
 .seealso: TSSetMaxTime(), TSGetMaxSteps(), TSSetMaxSteps()
 @*/
@@ -3092,8 +3012,6 @@ PetscErrorCode TSGetTotalSteps(TS ts,PetscInt *steps) { return TSGetStepNumber(t
 
    Level: beginner
 
-.keywords: TS, timestep, set, solution, initial values
-
 .seealso: TSSetSolutionFunction(), TSGetSolution(), TSCreate()
 @*/
 PetscErrorCode  TSSetSolution(TS ts,Vec u)
@@ -3128,7 +3046,6 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 
   Level: intermediate
 
-.keywords: TS, timestep
 .seealso: TSSetPreStage(), TSSetPostStage(), TSSetPostStep(), TSStep(), TSRestartStep()
 @*/
 PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
@@ -3153,7 +3070,6 @@ PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 
   Level: developer
 
-.keywords: TS, timestep
 .seealso: TSSetPreStep(), TSPreStage(), TSPostStage(), TSPostStep()
 @*/
 PetscErrorCode  TSPreStep(TS ts)
@@ -3195,7 +3111,6 @@ PetscErrorCode  TSPreStep(TS ts)
   The time step number being computed can be queried using TSGetStepNumber() and the total size of the step being
   attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
 
-.keywords: TS, timestep
 .seealso: TSSetPostStage(), TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
 @*/
 PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
@@ -3226,7 +3141,6 @@ PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
   The time step number being computed can be queried using TSGetStepNumber() and the total size of the step being
   attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
 
-.keywords: TS, timestep
 .seealso: TSSetPreStage(), TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
 @*/
 PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscInt,Vec*))
@@ -3259,7 +3173,6 @@ PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscI
   solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step
   with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
 
-.keywords: TS, timestep
 .seealso: TSSetPreStage(), TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
 @*/
 PetscErrorCode  TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS))
@@ -3285,7 +3198,6 @@ PetscErrorCode  TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS))
 
   Level: developer
 
-.keywords: TS, timestep
 .seealso: TSPostStage(), TSSetPreStep(), TSPreStep(), TSPostStep()
 @*/
 PetscErrorCode  TSPreStage(TS ts, PetscReal stagetime)
@@ -3316,7 +3228,6 @@ PetscErrorCode  TSPreStage(TS ts, PetscReal stagetime)
 
   Level: developer
 
-.keywords: TS, timestep
 .seealso: TSPreStage(), TSSetPreStep(), TSPreStep(), TSPostStep()
 @*/
 PetscErrorCode  TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec *Y)
@@ -3343,7 +3254,6 @@ PetscErrorCode  TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec
 
   Level: developer
 
-.keywords: TS, timestep
 .seealso: TSSetPostEvaluate(), TSSetPreStep(), TSPreStep(), TSPostStep()
 @*/
 PetscErrorCode  TSPostEvaluate(TS ts)
@@ -3385,7 +3295,6 @@ $ func (TS ts);
 
   Level: intermediate
 
-.keywords: TS, timestep
 .seealso: TSSetPreStep(), TSSetPreStage(), TSSetPostEvaluate(), TSGetTimeStep(), TSGetStepNumber(), TSGetTime(), TSRestartStep()
 @*/
 PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
@@ -3410,7 +3319,6 @@ PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 
   Level: developer
 
-.keywords: TS, timestep
 @*/
 PetscErrorCode  TSPostStep(TS ts)
 {
@@ -3465,8 +3373,6 @@ $    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx
 
    Level: intermediate
 
-.keywords: TS, timestep, set, monitor
-
 .seealso: TSMonitorDefault(), TSMonitorCancel()
 @*/
 PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void**))
@@ -3501,8 +3407,6 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
 
    Level: intermediate
 
-.keywords: TS, timestep, set, monitor
-
 .seealso: TSMonitorDefault(), TSMonitorSet()
 @*/
 PetscErrorCode  TSMonitorCancel(TS ts)
@@ -3525,8 +3429,6 @@ PetscErrorCode  TSMonitorCancel(TS ts)
    TSMonitorDefault - The Default monitor, prints the timestep and time for each step
 
    Level: intermediate
-
-.keywords: TS, set, monitor
 
 .seealso:  TSMonitorSet()
 @*/
@@ -3574,8 +3476,6 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
 
    Level: intermediate
 
-.keywords: TS, set, monitor
-
 .seealso:  TSMonitorSet()
 @*/
 PetscErrorCode TSMonitorExtreme(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscViewerAndFormat *vf)
@@ -3618,8 +3518,6 @@ PetscErrorCode TSMonitorExtreme(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
    Developer Notes:
    TSInterpolate() and the storing of previous steps/stages should be generalized to support delay differential equations and continuous adjoints.
 
-.keywords: TS, set
-
 .seealso: TSSetExactFinalTime(), TSSolve()
 @*/
 PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
@@ -3653,8 +3551,6 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 
    This may over-step the final time provided in TSSetMaxTime() depending on the time-step used. TSSolve() interpolates to exactly the
    time provided in TSSetMaxTime(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
-
-.keywords: TS, timestep, solve
 
 .seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSInterpolate()
 @*/
@@ -3797,8 +3693,6 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
    held state accessible by TSGetSolution() and TSGetTime() because the method may have
    stepped over the final time.
 
-.keywords: TS, timestep, solve
-
 .seealso: TSCreate(), TSSetSolution(), TSStep(), TSGetTime(), TSGetSolveTime()
 @*/
 PetscErrorCode TSSolve(TS ts,Vec u)
@@ -3934,7 +3828,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
    Level: developer
 
-.keywords: TS, timestep
 @*/
 PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 {
@@ -3996,8 +3889,6 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 
    Level: intermediate
 
-.keywords: TS, monitor, line graph, residual
-
 .seealso: TSMonitorLGTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError(), TSMonitorDefault(), VecView(),
            TSMonitorLGCtxCreate(), TSMonitorLGCtxSetVariableNames(), TSMonitorLGCtxGetVariableNames(),
            TSMonitorLGSetVariableNames(), TSMonitorLGGetVariableNames(), TSMonitorLGSetDisplayVariables(), TSMonitorLGCtxSetDisplayVariables(),
@@ -4056,8 +3947,6 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,voi
 .  ctx - the monitor context
 
    Level: intermediate
-
-.keywords: TS, monitor, line graph, destroy
 
 .seealso: TSMonitorLGCtxCreate(),  TSMonitorSet(), TSMonitorLGTimeStep();
 @*/
@@ -4134,7 +4023,6 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 
 .seealso:  TSGetSolveTime(), TSSetTime(), TSGetTimeStep()
 
-.keywords: TS, get, time
 @*/
 PetscErrorCode  TSGetTime(TS ts,PetscReal *t)
 {
@@ -4160,7 +4048,6 @@ PetscErrorCode  TSGetTime(TS ts,PetscReal *t)
 
 .seealso: TSGetTime(), TSGetSolveTime(), TSGetTimeStep()
 
-.keywords: TS, get, time
 @*/
 PetscErrorCode  TSGetPrevTime(TS ts,PetscReal *t)
 {
@@ -4184,7 +4071,6 @@ PetscErrorCode  TSGetPrevTime(TS ts,PetscReal *t)
 
 .seealso: TSGetTime(), TSSetMaxSteps()
 
-.keywords: TS, set, time
 @*/
 PetscErrorCode  TSSetTime(TS ts, PetscReal t)
 {
@@ -4211,8 +4097,6 @@ PetscErrorCode  TSSetTime(TS ts, PetscReal t)
    hyphen.
 
    Level: advanced
-
-.keywords: TS, set, options, prefix, database
 
 .seealso: TSSetFromOptions()
 
@@ -4246,8 +4130,6 @@ PetscErrorCode  TSSetOptionsPrefix(TS ts,const char prefix[])
    hyphen.
 
    Level: advanced
-
-.keywords: TS, append, options, prefix, database
 
 .seealso: TSGetOptionsPrefix()
 
@@ -4283,8 +4165,6 @@ PetscErrorCode  TSAppendOptionsPrefix(TS ts,const char prefix[])
 
    Level: intermediate
 
-.keywords: TS, get, options, prefix, database
-
 .seealso: TSAppendOptionsPrefix()
 @*/
 PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
@@ -4319,7 +4199,6 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 
 .seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
-.keywords: TS, timestep, get, matrix, Jacobian
 @*/
 PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,void **ctx)
 {
@@ -4359,7 +4238,6 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,v
 
 .seealso: TSGetTimeStep(), TSGetRHSJacobian(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
-.keywords: TS, timestep, get, matrix, Jacobian
 @*/
 PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **ctx)
 {
@@ -4398,8 +4276,6 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **c
        will look bad
 
    Level: intermediate
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
@@ -4457,8 +4333,6 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
 -  dummy - either a viewer or NULL
 
    Level: intermediate
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
@@ -4519,8 +4393,6 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
 
    Level: intermediate
 
-.keywords: TS,  vector, monitor, view
-
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorDrawSolution(), TSMonitorDrawError()
 @*/
 PetscErrorCode  TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
@@ -4549,8 +4421,6 @@ PetscErrorCode  TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
 .   -ts_monitor_draw_solution_initial - show initial solution as well as current solution
 
    Level: intermediate
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorDrawCtx()
 @*/
@@ -4589,8 +4459,6 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 
    Level: intermediate
 
-.keywords: TS,  vector, monitor, view
-
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
 PetscErrorCode  TSMonitorDrawSolutionFunction(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
@@ -4625,8 +4493,6 @@ PetscErrorCode  TSMonitorDrawSolutionFunction(TS ts,PetscInt step,PetscReal ptim
 .  -ts_monitor_draw_error - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
 
    Level: intermediate
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
@@ -4959,8 +4825,6 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,Petsc
 
    Level: beginner
 
-.keywords: TS, equation type
-
 .seealso: TSSetEquationType(), TSEquationType
 @*/
 PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
@@ -4982,8 +4846,6 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 -  equation_type - see TSEquationType
 
    Level: advanced
-
-.keywords: TS, equation type
 
 .seealso: TSGetEquationType(), TSEquationType
 @*/
@@ -5012,8 +4874,6 @@ PetscErrorCode  TSSetEquationType(TS ts,TSEquationType equation_type)
    Notes:
    Can only be called after the call to TSSolve() is complete.
 
-.keywords: TS, nonlinear, set, convergence, test
-
 .seealso: TSSetConvergenceTest(), TSConvergedReason
 @*/
 PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
@@ -5040,8 +4900,6 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
    Notes:
    Can only be called during TSSolve() is active.
 
-.keywords: TS, nonlinear, set, convergence, test
-
 .seealso: TSConvergedReason
 @*/
 PetscErrorCode  TSSetConvergedReason(TS ts,TSConvergedReason reason)
@@ -5067,8 +4925,6 @@ PetscErrorCode  TSSetConvergedReason(TS ts,TSConvergedReason reason)
 
    Notes:
    Can only be called after the call to TSSolve() is complete.
-
-.keywords: TS, nonlinear, set, convergence, test
 
 .seealso: TSSetConvergenceTest(), TSConvergedReason
 @*/
@@ -5098,8 +4954,6 @@ PetscErrorCode  TSGetSolveTime(TS ts,PetscReal *ftime)
 
    Level: intermediate
 
-.keywords: TS, get, number, nonlinear, iterations
-
 .seealso:  TSGetKSPIterations()
 @*/
 PetscErrorCode TSGetSNESIterations(TS ts,PetscInt *nits)
@@ -5128,8 +4982,6 @@ PetscErrorCode TSGetSNESIterations(TS ts,PetscInt *nits)
 
    Level: intermediate
 
-.keywords: TS, get, number, linear, iterations
-
 .seealso:  TSGetSNESIterations(), SNESGetKSPIterations()
 @*/
 PetscErrorCode TSGetKSPIterations(TS ts,PetscInt *lits)
@@ -5157,8 +5009,6 @@ PetscErrorCode TSGetKSPIterations(TS ts,PetscInt *lits)
 
    Level: intermediate
 
-.keywords: TS, get, number
-
 .seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxStepRejections(), TSGetSNESFailures(), TSSetMaxSNESFailures(), TSSetErrorIfStepFails()
 @*/
 PetscErrorCode TSGetStepRejections(TS ts,PetscInt *rejects)
@@ -5185,8 +5035,6 @@ PetscErrorCode TSGetStepRejections(TS ts,PetscInt *rejects)
    This counter is reset to zero for each successive call to TSSolve().
 
    Level: intermediate
-
-.keywords: TS, get, number
 
 .seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSSetMaxSNESFailures()
 @*/
@@ -5216,8 +5064,6 @@ PetscErrorCode TSGetSNESFailures(TS ts,PetscInt *fails)
 
    Level: intermediate
 
-.keywords: TS, set, maximum, number
-
 .seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxSNESFailures(), TSGetStepRejections(), TSGetSNESFailures(), TSSetErrorIfStepFails(), TSGetConvergedReason()
 @*/
 PetscErrorCode TSSetMaxStepRejections(TS ts,PetscInt rejects)
@@ -5245,8 +5091,6 @@ PetscErrorCode TSSetMaxStepRejections(TS ts,PetscInt rejects)
 
    Level: intermediate
 
-.keywords: TS, set, maximum, number
-
 .seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSGetSNESFailures(), SNESGetConvergedReason(), TSGetConvergedReason()
 @*/
 PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
@@ -5271,8 +5115,6 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
 
    Level: intermediate
 
-.keywords: TS, set, error
-
 .seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSGetSNESFailures(), TSSetErrorIfStepFails(), TSGetConvergedReason()
 @*/
 PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
@@ -5296,8 +5138,6 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
 -  vf - viewer and its format
 
    Level: intermediate
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
@@ -5332,8 +5172,6 @@ PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,Pets
 
    This function is normally passed as an argument to TSMonitorSet() along with TSMonitorSolutionVTKDestroy().
 
-.keywords: TS,  vector, monitor, view
-
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
 PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec u,void *filenametemplate)
@@ -5363,8 +5201,6 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
    Note:
    This function is normally passed to TSMonitorSet() along with TSMonitorSolutionVTK().
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorSolutionVTK()
 @*/
@@ -6323,8 +6159,6 @@ typedef struct {char *funcname; mxArray *ctx;} TSMatlabContext;
 
    Level: developer
 
-.keywords: TS, nonlinear, compute, function
-
 .seealso: TSSetFunction(), TSGetFunction()
 */
 PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec u,Vec udot,Vec y, void *ctx)
@@ -6383,8 +6217,6 @@ $    func (TS ts,PetscReal time,Vec u,Vec udot,Vec f,void *ctx);
 
    Level: beginner
 
-.keywords: TS, nonlinear, set, function
-
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
 PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
@@ -6420,8 +6252,6 @@ PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
 -  ctx - user context
 
    Level: developer
-
-.keywords: TS, nonlinear, compute, function
 
 .seealso: TSSetFunction(), TSGetFunction()
 @*/
@@ -6485,8 +6315,6 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,Pet
 $    flag = func (TS ts,PetscReal time,Vec u,Vec udot,Mat A,Mat B,void *ctx);
 
    Level: developer
-
-.keywords: TS, nonlinear, set, function
 
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
@@ -6554,8 +6382,6 @@ PetscErrorCode  TSMonitor_Matlab(TS ts,PetscInt it, PetscReal time,Vec u, void *
 
    Level: developer
 
-.keywords: TS, nonlinear, set, function
-
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
 PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
@@ -6599,8 +6425,6 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
    Notes:
     Each process in a parallel run displays its component solutions in a separate window
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGCtxCreate(), TSMonitorLGCtxSetVariableNames(), TSMonitorLGCtxGetVariableNames(),
            TSMonitorLGSetVariableNames(), TSMonitorLGGetVariableNames(), TSMonitorLGSetDisplayVariables(), TSMonitorLGCtxSetDisplayVariables(),
@@ -6709,8 +6533,6 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
    Notes:
     If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
-.keywords: TS,  vector, monitor, view
-
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables(), TSMonitorLGCtxSetVariableNames()
 @*/
 PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
@@ -6738,8 +6560,6 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
 -  names - the names of the components, final string must be NULL
 
    Level: intermediate
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables(), TSMonitorLGSetVariableNames()
 @*/
@@ -6769,8 +6589,6 @@ PetscErrorCode  TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx,const char * c
    Notes:
     If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
-.keywords: TS,  vector, monitor, view
-
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables()
 @*/
 PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
@@ -6799,8 +6617,6 @@ PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
 .  displaynames - the names of the components, final string must be NULL
 
    Level: intermediate
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
 @*/
@@ -6848,8 +6664,6 @@ PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char 
 
    Level: intermediate
 
-.keywords: TS,  vector, monitor, view
-
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
 @*/
 PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *displaynames)
@@ -6883,8 +6697,6 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
 
    Level: intermediate
 
-.keywords: TS,  vector, monitor, view
-
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames(), TSMonitorLGCtxSetTransform()
 @*/
 PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
@@ -6913,8 +6725,6 @@ PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,
 -  ctx - optional context used by transform function
 
    Level: intermediate
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames(), TSMonitorLGSetTransform()
 @*/
@@ -6949,8 +6759,6 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 
    Options Database Keys:
 .  -ts_monitor_lg_error - create a graphical monitor of error history
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
@@ -7012,7 +6820,6 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 
    Level: intermediate
 
-.keywords: TS,  vector, monitor, view, swarm
 @*/
 PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
 {
@@ -7083,8 +6890,6 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
 
    Options Database Keys:
 .  -ts_monitor_error - create a graphical monitor of error history
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
@@ -7180,8 +6985,6 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
 
    Level: developer
 
-.keywords: TS, compute
-
 .seealso: TSSetRHSFunction(), TSComputeIFunction()
 @*/
 PetscErrorCode TSComputeLinearStability(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
@@ -7208,8 +7011,6 @@ PetscErrorCode TSComputeLinearStability(TS ts,PetscReal xr,PetscReal xi,PetscRea
 .  ctx - the context
 
    Level: intermediate
-
-.keywords: TS, monitor, line graph, residual, seealso
 
 .seealso: TSMonitorLGTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError()
 
@@ -7242,8 +7043,6 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
 
    Notes:
     after a solve you can use TSMonitorEnvelopeGetBounds() to access the envelope
-
-.keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorEnvelopeGetBounds(), TSMonitorEnvelopeCtxCreate()
 @*/
@@ -7282,8 +7081,6 @@ PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void
 
    Level: intermediate
 
-.keywords: TS,  vector, monitor, view
-
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables()
 @*/
 PetscErrorCode  TSMonitorEnvelopeGetBounds(TS ts,Vec *max,Vec *min)
@@ -7313,8 +7110,6 @@ PetscErrorCode  TSMonitorEnvelopeGetBounds(TS ts,Vec *max,Vec *min)
 .  ctx - the monitor context
 
    Level: intermediate
-
-.keywords: TS, monitor, line graph, destroy
 
 .seealso: TSMonitorLGCtxCreate(),  TSMonitorSet(), TSMonitorLGTimeStep()
 @*/
@@ -7347,8 +7142,6 @@ PetscErrorCode  TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
    discontinuities in callback routines (e.g. prestep and poststep routines, or implicit/rhs function routines with
    discontinuous source terms).
 
-.keywords: TS, timestep, restart
-
 .seealso: TSSolve(), TSSetPreStep(), TSSetPostStep()
 @*/
 PetscErrorCode TSRestartStep(TS ts)
@@ -7368,8 +7161,6 @@ PetscErrorCode TSRestartStep(TS ts)
 .  ts - the TS context obtained from TSCreate()
 
    Level: advanced
-
-.keywords: TS, timestep, rollback
 
 .seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSInterpolate()
 @*/
@@ -7403,8 +7194,6 @@ PetscErrorCode  TSRollBack(TS ts)
    Level: advanced
 
    Notes: Both ns and Y can be NULL.
-
-.keywords: TS, getstages
 
 .seealso: TSCreate()
 @*/
@@ -7456,7 +7245,6 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns,Vec **Y)
   routine, then it will try to get the coloring from the matrix.  This requires that the
   matrix have nonzero entries precomputed.
 
-.keywords: TS, finite differences, Jacobian, coloring, sparse
 .seealso: TSSetIJacobian(), MatFDColoringCreate(), MatFDColoringSetFunction()
 @*/
 PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shift,Mat J,Mat B,void *ctx)
@@ -7518,7 +7306,6 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
 
     Level: intermediate
 
-.keywords: TS, state, domain
 .seealso: TSAdaptCheckStage(), TSFunctionDomainError()
 @*/
 
@@ -7576,7 +7363,6 @@ PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* 
 
   Level: developer
 
-.keywords: TS, clone
 .seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
 @*/
 PetscErrorCode  TSClone(TS tsin, TS *tsout)

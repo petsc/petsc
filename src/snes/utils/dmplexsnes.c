@@ -942,7 +942,6 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 
   Level: intermediate
 
-.keywords: SNES, nonlinear, default, monitor, norm
 .seealso: SNESMonitorSet(), SNESMonitorDefault()
 @*/
 PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)

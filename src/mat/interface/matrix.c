@@ -743,8 +743,6 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
 
    Level: advanced
 
-.keywords: Mat, set, options, prefix, database
-
 .seealso: MatSetFromOptions()
 @*/
 PetscErrorCode MatSetOptionsPrefix(Mat A,const char prefix[])
@@ -772,8 +770,6 @@ PetscErrorCode MatSetOptionsPrefix(Mat A,const char prefix[])
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
-
-.keywords: Mat, append, options, prefix, database
 
 .seealso: MatGetOptionsPrefix()
 @*/
@@ -805,8 +801,6 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A,const char prefix[])
 
    Level: advanced
 
-.keywords: Mat, get, options, prefix, database
-
 .seealso: MatAppendOptionsPrefix()
 @*/
 PetscErrorCode MatGetOptionsPrefix(Mat A,const char *prefix[])
@@ -832,8 +826,6 @@ PetscErrorCode MatGetOptionsPrefix(Mat A,const char *prefix[])
    Currently support MPIAIJ and SEQAIJ.
 
    Level: beginner
-
-.keywords: Mat, ResetPreallocation
 
 .seealso: MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatXAIJSetPreallocation()
 @*/
@@ -865,8 +857,6 @@ PetscErrorCode MatResetPreallocation(Mat A)
    See the Performance chapter of the PETSc users manual for how to preallocate matrices
 
    Level: beginner
-
-.keywords: Mat, setup
 
 .seealso: MatCreate(), MatDestroy()
 @*/
@@ -1211,8 +1201,6 @@ $    save example.mat A b -v7.3
 
    References:
 1. MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
-
-.keywords: matrix, load, binary, input, HDF5
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerSetType(), MatView(), VecLoad()
 
@@ -2736,7 +2724,6 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
    Level: beginner
 
-.keywords: matrix, multiply, matrix-vector product, constraint
 .seealso: MatMult(), MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
 PetscErrorCode MatMultConstrained(Mat mat,Vec x,Vec y)
@@ -2782,7 +2769,6 @@ PetscErrorCode MatMultConstrained(Mat mat,Vec x,Vec y)
 
    Level: beginner
 
-.keywords: matrix, multiply, matrix-vector product, constraint
 .seealso: MatMult(), MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
 PetscErrorCode MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
@@ -7523,8 +7509,6 @@ PetscErrorCode MatSetBlockSizesFromMats(Mat mat,Mat fromRow,Mat fromCol)
 
    Level: developer
 
-.keywords: MG, default, multigrid, residual
-
 .seealso: PCMGSetResidual()
 @*/
 PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
@@ -10709,7 +10693,6 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
 
 .seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplyDenToSp()
 
-.keywords: coloring
 @*/
 PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,Mat Btdense)
 {
@@ -10747,7 +10730,6 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,
 
 .seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplySpToDen()
 
-.keywords: coloring
 @*/
 PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat Cden,Mat Csp)
 {
@@ -10932,8 +10914,6 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[
 
    Level: developer
 
-.keywords: MG, multigrid, Galerkin
-
 .seealso: MatPtAP(), MatMatMatMult()
 @*/
 PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse, PetscReal fill, Mat *A)
@@ -11003,8 +10983,6 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
     This routine is distinct from MatShellSetOperation() in that it can be called on any matrix type.
 
-.keywords: matrix, set, operation
-
 .seealso: MatGetOperation(), MatCreateShell(), MatShellSetContext(), MatShellSetOperation()
 @*/
 PetscErrorCode MatSetOperation(Mat mat,MatOperation op,void (*f)(void))
@@ -11044,8 +11022,6 @@ $      ierr = MatGetOperation(A,MATOP_MULT,(void(**)(void))&usermult);
 
     This routine is distinct from MatShellGetOperation() in that it can be called on any matrix type.
 
-.keywords: matrix, get, operation
-
 .seealso: MatSetOperation(), MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/
 PetscErrorCode MatGetOperation(Mat mat,MatOperation op,void(**f)(void))
@@ -11076,8 +11052,6 @@ PetscErrorCode MatGetOperation(Mat mat,MatOperation op,void(**f)(void))
    operations, which all have the form MATOP_<OPERATION>, where
    <OPERATION> is the name (in all capital letters) of the
    user-level routine.  E.g., MatNorm() -> MATOP_NORM.
-
-.keywords: matrix, has, operation
 
 .seealso: MatCreateShell()
 @*/
@@ -11124,8 +11098,6 @@ PetscErrorCode MatHasOperation(Mat mat,MatOperation op,PetscBool *has)
 
    Notes:
 
-.keywords: matrix, has
-
 .seealso: MatCreate(), MatSetSizes()
 @*/
 PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
@@ -11163,8 +11135,6 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
    Level: advanced
 
    Notes:
-
-.keywords: matrix
 
 .seealso: MatPtAP(), MatMatMult()
 @*/

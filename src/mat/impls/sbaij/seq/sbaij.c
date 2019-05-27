@@ -2051,8 +2051,6 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
    MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
    block column and the second index is over columns within a block.
 
-.keywords: matrix, block, aij, compressed row, sparse
-
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValuesBlocked(), MatSeqSBAIJSetPreallocation(), MATSEQSBAIJ
 @*/
 PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])

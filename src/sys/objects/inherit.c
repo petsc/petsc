@@ -1031,7 +1031,6 @@ PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 
    Level: beginner
 
-.keywords: set, options, database
 .seealso: PetscObjectSetOptionsPrefix(), PetscObjectGetOptionsPrefix()
 @*/
 PetscErrorCode  PetscObjectSetFromOptions(PetscObject obj)
@@ -1054,7 +1053,6 @@ PetscErrorCode  PetscObjectSetFromOptions(PetscObject obj)
 
    Level: advanced
 
-.keywords: setup
 .seealso: PetscObjectDestroy()
 @*/
 PetscErrorCode  PetscObjectSetUp(PetscObject obj)

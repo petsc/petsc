@@ -51,8 +51,6 @@ static PetscErrorCode KSPSetupMonitor_Private(KSP ksp, PetscViewer viewer, Petsc
 
    Level: advanced
 
-.keywords: KSP, set, options, prefix, database
-
 .seealso: KSPAppendOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
 PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
@@ -83,8 +81,6 @@ PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 
    Level: advanced
 
-.keywords: KSP, append, options, prefix, database
-
 .seealso: KSPSetOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
 PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
@@ -113,8 +109,6 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 
    Level: advanced
-
-.keywords: KSP, set, options, prefix, database
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetGuess(), KSPGetGuess()
 @*/
@@ -151,8 +145,6 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
           This increases the reference count of the guess object, you must destroy the object with KSPGuessDestroy()
           before the end of the program.
 
-.keywords: KSP, set, options, prefix, database
-
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPGetGuess()
 @*/
 PetscErrorCode  KSPSetGuess(KSP ksp,KSPGuess guess)
@@ -181,8 +173,6 @@ PetscErrorCode  KSPSetGuess(KSP ksp,KSPGuess guess)
 .   guess - the object
 
    Level: developer
-
-.keywords: KSP, set, options, prefix, database
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetGuess()
 @*/
@@ -224,8 +214,6 @@ PetscErrorCode  KSPGetGuess(KSP ksp,KSPGuess *guess)
    sufficient length to hold the prefix.
 
    Level: advanced
-
-.keywords: KSP, set, options, prefix, database
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix()
 @*/
@@ -320,8 +308,6 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
    or consult Users-Manual: ch_ksp
 
    Level: beginner
-
-.keywords: KSP, set, from, options, database
 
 .seealso: KSPSetOptionsPrefix(), KSPResetFromOptions(), KSPSetUseFischerGuess()
 
@@ -649,8 +635,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 .  ksp - the KSP context
 
    Level: beginner
-
-.keywords: KSP, linear, set, options, database
 
 .seealso: KSPSetFromOptions(), KSPSetOptionsPrefix()
 @*/

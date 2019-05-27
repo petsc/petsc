@@ -25,7 +25,6 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, create
 .seealso: PetscConvEstDestroy(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
@@ -51,7 +50,6 @@ PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, destroy
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
@@ -81,7 +79,6 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, options
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
@@ -107,7 +104,6 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, view
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
@@ -133,7 +129,6 @@ PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
 
   Level: intermediate
 
-.keywords: PetscConvEst, convergence
 .seealso: PetscConvEstSetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, SNES *snes)
@@ -158,7 +153,6 @@ PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, SNES *snes)
 
   Note: The solver MUST have an attached DM/DS, so that we know the exact solution
 
-.keywords: PetscConvEst, convergence
 .seealso: PetscConvEstGetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, SNES snes)
@@ -183,7 +177,6 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, SNES snes)
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, setup
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
@@ -228,7 +221,6 @@ and then fit the result to our model above using linear regression.
 
   Level: intermediate
 
-.keywords: PetscConvEst, convergence
 .seealso: PetscConvEstSetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])

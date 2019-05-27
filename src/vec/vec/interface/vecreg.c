@@ -24,7 +24,6 @@ PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.keywords: vector, set, type
 .seealso: VecGetType(), VecCreate()
 @*/
 PetscErrorCode VecSetType(Vec vec, VecType method)
@@ -66,7 +65,6 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
 
   Level: intermediate
 
-.keywords: vector, get, type, name
 .seealso: VecSetType(), VecCreate()
 @*/
 PetscErrorCode VecGetType(Vec vec, VecType *type)
@@ -112,8 +110,6 @@ PetscErrorCode VecGetType(Vec vec, VecType *type)
 .ve
 
   Level: advanced
-
-.keywords: Vec, register
 
 .seealso: VecRegisterAll(), VecRegisterDestroy()
 @*/

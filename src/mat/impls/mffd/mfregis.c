@@ -11,8 +11,6 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD);
 
   Level: developer
 
-.keywords: MatMFFD, register, all
-
 .seealso:  MatMFFDRegisterDestroy(), MatMFFDRegister(), MatCreateMFFD(),
            MatMFFDSetType()
 @*/

@@ -18,7 +18,6 @@
 
   Level: beginner
 
-.keywords: vector, create
 .seealso: VecSetType(), VecSetSizes(), VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(),
           VecDuplicateVecs(), VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/

@@ -2016,7 +2016,6 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
 
   Level: beginner
 
-.keywords: DMPlexComputeCellGeometryFEM()
 @*/
 PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
 {

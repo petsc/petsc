@@ -2817,8 +2817,6 @@ static PetscErrorCode  PCFieldSplitSetBlockSize_FieldSplit(PC pc,PetscInt bs)
 
    Level: Intermediate
 
-.keywords: PC, set, type, composite preconditioner, additive, multiplicative
-
 .seealso: PCCompositeSetType()
 
 @*/
@@ -2845,7 +2843,6 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 
   Level: Intermediate
 
-.keywords: PC, set, type, composite preconditioner, additive, multiplicative
 .seealso: PCCompositeSetType()
 @*/
 PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
@@ -2872,8 +2869,6 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 .  -pc_fieldsplit_dm_splits
 
    Level: Intermediate
-
-.keywords: PC, DM, composite preconditioner, additive, multiplicative
 
 .seealso: PCFieldSplitGetDMSplits()
 
@@ -2907,8 +2902,6 @@ PetscErrorCode  PCFieldSplitSetDMSplits(PC pc,PetscBool flg)
 .  flg  - boolean indicating whether to use field splits defined by the DM
 
    Level: Intermediate
-
-.keywords: PC, DM, composite preconditioner, additive, multiplicative
 
 .seealso: PCFieldSplitSetDMSplits()
 

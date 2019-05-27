@@ -2807,8 +2807,6 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
    MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
    block column and the second index is over columns within a block.
 
-.keywords: matrix, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ, MatCreateMPIBAIJWithArrays(), MPIBAIJ
 @*/
 PetscErrorCode  MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
@@ -3178,8 +3176,6 @@ M*/
 
    Level: intermediate
 
-.keywords: matrix, block, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateBAIJ(), MatMPIBAIJSetPreallocationCSR(), PetscSplitOwnership()
 @*/
 PetscErrorCode  MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -3286,8 +3282,6 @@ PetscErrorCode  MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const
    matrices.
 
    Level: intermediate
-
-.keywords: matrix, block, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateBAIJ(), MatMPIBAIJSetPreallocation(), MatMPIBAIJSetPreallocationCSR()
 @*/
@@ -3661,8 +3655,6 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
   Notes:
    This can also be set by the command line option: -mat_use_hash_table <fact>
 
-.keywords: matrix, hashtable, factor, HT
-
 .seealso: MatSetOption()
 @*/
 PetscErrorCode  MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
@@ -3882,8 +3874,6 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
      with column-major ordering within blocks.
 
        The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
-
-.keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()

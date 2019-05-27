@@ -29,8 +29,6 @@ $     b-Ax
 
    Level: developer
 
-.keywords: KSP, residual
-
 .seealso:  KSPMonitor()
 @*/
 
@@ -94,8 +92,6 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
    the left, nothing is done.
 
    Level: advanced
-
-.keywords: KSP, unwind, preconditioner
 
 .seealso: KSPSetPCSide()
 @*/

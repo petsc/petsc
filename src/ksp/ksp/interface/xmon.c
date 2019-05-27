@@ -27,8 +27,6 @@
 
    Level: intermediate
 
-.keywords: KSP, monitor, line graph, residual, create
-
 .seealso: KSPMonitorSet(), KSPMonitorLGTrueResidualCreate()
 @*/
 PetscErrorCode  KSPMonitorLGResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *lgctx)
@@ -166,8 +164,6 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
    Use PetscDrawLGDestroy() to destroy this line graph.
 
    Level: intermediate
-
-.keywords: KSP, monitor, line graph, residual, create, true
 
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate()
 @*/

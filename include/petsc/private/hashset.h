@@ -20,7 +20,6 @@
 
   Concepts: hash table, set
 
-.keywords: hash table, set
 .seealso: PetscHSetT, PetscHSetTCreate()
 M*/
 
@@ -34,7 +33,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set
 .seealso:  PETSC_HASH_SET(), PetscHSetTCreate()
 S*/
 
@@ -52,7 +50,6 @@ S*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, create
 .seealso: PetscHSetTDestroy()
 M*/
 
@@ -70,7 +67,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, destroy
 .seealso: PetscHSetTCreate()
 M*/
 
@@ -88,7 +84,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, reset
 .seealso: PetscHSetTClear()
 M*/
 
@@ -109,7 +104,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, duplicate
 .seealso: PetscHSetTCreate()
 M*/
 
@@ -131,7 +125,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, duplicate
 .seealso: PetscHSetTCreate(), PetscHSetTDuplicate()
 M*/
 
@@ -149,7 +142,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, reset
 .seealso: PetscHSetTReset()
 M*/
 
@@ -188,7 +180,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, resize
 .seealso: PetscHSetTResize()
 M*/
 
@@ -209,7 +200,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, resize
 .seealso: PetscHSetTResize(), PetscHSetTGetSize()
 M*/
 
@@ -231,7 +221,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, query
 .seealso:  PetscHSetTAdd(), PetscHSetTDel()
 M*/
 
@@ -250,7 +239,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, add
 .seealso: PetscHSetTDel(), PetscHSetTHas()
 M*/
 
@@ -269,7 +257,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, del
 .seealso: PetscHSetTAdd(), PetscHSetTHas()
 M*/
 
@@ -291,7 +278,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, query, set
 .seealso: PetscHSetTQueryDel(), PetscHSetTAdd()
 M*/
 
@@ -313,7 +299,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, query, del
 .seealso: PetscHSetTQueryAdd(), PetscHSetTDel()
 M*/
 
@@ -337,7 +322,6 @@ M*/
 
   Concepts: hash table, set
 
-.keywords: hash table, set, array
 .seealso: PetscHSetTGetSize()
 M*/
 

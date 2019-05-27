@@ -35,8 +35,6 @@ typedef struct {
 
   Level: advanced
 
-.keywords: SNES, SNESMS, register, all
-
 .seealso:  SNESMSRegisterDestroy()
 @*/
 PetscErrorCode SNESMSRegisterAll(void)
@@ -110,7 +108,6 @@ PetscErrorCode SNESMSRegisterAll(void)
 
    Level: advanced
 
-.keywords: TSRosW, register, destroy
 .seealso: TSRosWRegister(), TSRosWRegisterAll(), TSRosWRegister()
 @*/
 PetscErrorCode SNESMSRegisterDestroy(void)
@@ -137,7 +134,6 @@ PetscErrorCode SNESMSRegisterDestroy(void)
 
   Level: developer
 
-.keywords: SNES, SNESMS, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode SNESMSInitializePackage(void)
@@ -159,7 +155,6 @@ PetscErrorCode SNESMSInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode SNESMSFinalizePackage(void)
@@ -190,8 +185,6 @@ PetscErrorCode SNESMSFinalizePackage(void)
    The notation is described in Ketcheson (2010) Runge-Kutta methods with minimum storage implementations.
 
    Level: advanced
-
-.keywords: SNES, register
 
 .seealso: SNESMS
 @*/

@@ -30,7 +30,6 @@ PetscBool         VecScatterRegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.keywords: vector scatter, set, type
 .seealso: VecScatterGetType(), VecScatterCreate()
 @*/
 PetscErrorCode VecScatterSetType(VecScatter vscat, VecScatterType type)
@@ -69,7 +68,6 @@ PetscErrorCode VecScatterSetType(VecScatter vscat, VecScatterType type)
 
   Level: intermediate
 
-.keywords: vector scatter, get, type, name
 .seealso: VecScatterSetType(), VecScatterCreate()
 @*/
 PetscErrorCode VecScatterGetType(VecScatter vscat, VecScatterType *type)
@@ -101,7 +99,6 @@ PetscErrorCode VecScatterGetType(VecScatter vscat, VecScatterType *type)
   Concepts: vectorscatter^setting options
   Concepts: vectorscatter^setting type
 
-.keywords: VecScatter, set, options, database
 .seealso: VecScatterCreate(), VecScatterDestroy(), VecScatterSetUp()
 @*/
 PetscErrorCode VecScatterSetFromOptions(VecScatter vscat)
@@ -172,8 +169,6 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter vscat)
 .ve
 
   Level: advanced
-
-.keywords: VecScatter, Register
 
 .seealso: VecScatterRegisterAll(), VecScatterRegisterDestroy()
 @*/

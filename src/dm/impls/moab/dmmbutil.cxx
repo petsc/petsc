@@ -504,7 +504,6 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMSetType(), DMCreate(), DMMoabLoadFromFile()
 @*/
 PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSimplex, const PetscReal* bounds, PetscInt nele, PetscInt nghost, DM *dm)
@@ -814,8 +813,6 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 
   Level: beginner
 
-.keywords: DM, create
-
 .seealso: DMSetType(), DMCreate(), DMMoabCreateBoxMesh()
 @*/
 PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, const char* filename, const char* usrreadopts, DM *dm)
@@ -902,8 +899,6 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
 + dm  - The DM object
 
   Level: advanced
-
-.keywords: DM, reorder
 
 .seealso: DMSetUp(), DMCreate()
 @*/

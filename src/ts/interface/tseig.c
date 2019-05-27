@@ -41,8 +41,6 @@ struct _n_TSMonitorSPEigCtx {
 
    Level: intermediate
 
-.keywords: TS, monitor, line graph, residual, seealso
-
 .seealso: TSMonitorSPEigTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError()
 
 @*/
@@ -190,8 +188,6 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
 .  ctx - the monitor context
 
    Level: intermediate
-
-.keywords: TS, monitor, line graph, destroy
 
 .seealso: TSMonitorSPEigCtxCreate(),  TSMonitorSet(), TSMonitorSPEig();
 @*/

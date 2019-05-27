@@ -1473,8 +1473,6 @@ M*/
 
    Level: intermediate
 
-.keywords: matrix,dense, parallel
-
 .seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
 @*/
 PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
@@ -1569,8 +1567,6 @@ PetscErrorCode  MatDenseResetArray(Mat mat)
    (possibly both).
 
    Level: intermediate
-
-.keywords: matrix,dense, parallel
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
 @*/

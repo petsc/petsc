@@ -368,8 +368,6 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
 
    Level: intermediate
 
-.keywords: KSP, FCG, truncation
-
 .seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGGetNprealloc(), KSPFCGSetMmax()
 @*/
 
@@ -423,8 +421,6 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 .  nprealloc - the number of directions preallocated
 
    Level: advanced
-
-.keywords: KSP, FCG, truncation
 
 .seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGSetNprealloc()
 @*/
@@ -480,8 +476,6 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 .  truncstrat - the strategy type
 
    Level: intermediate
-
-.keywords: KSP, FCG, truncation
 
 .seealso: KSPFCG, KSPFCGSetTruncationType, KSPFCDTruncationType
 @*/

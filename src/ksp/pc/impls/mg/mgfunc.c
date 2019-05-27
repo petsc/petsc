@@ -17,8 +17,6 @@
 
    Level: developer
 
-.keywords: MG, default, multigrid, residual
-
 .seealso: PCMGSetResidual()
 @*/
 PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
@@ -42,8 +40,6 @@ PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
 .  ksp - the coarse grid solver context
 
    Level: advanced
-
-.keywords: MG, multigrid, get, coarse grid
 
 .seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetSmoother()
 @*/
@@ -72,8 +68,6 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
 -  mat      - matrix associated with residual
 
    Level: advanced
-
-.keywords:  MG, set, multigrid, residual, level
 
 .seealso: PCMGResidualDefault()
 @*/
@@ -114,8 +108,6 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
-.keywords:  multigrid, set, interpolate, level
-
 .seealso: PCMGSetRestriction()
 @*/
 PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
@@ -149,8 +141,6 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 .  mat - the interpolation matrix, can be NULL
 
    Level: advanced
-
-.keywords: MG, get, multigrid, interpolation, level
 
 .seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale()
 @*/
@@ -196,8 +186,6 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
          If you do not set this, the transpose of the Mat set with PCMGSetInterpolation()
     is used.
 
-.keywords: MG, set, multigrid, restriction, level
-
 .seealso: PCMGSetInterpolation(), PCMGetSetInjection()
 @*/
 PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
@@ -232,8 +220,6 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 .  mat - the restriction matrix
 
    Level: advanced
-
-.keywords: MG, get, multigrid, restriction, level
 
 .seealso: PCMGGetInterpolation(), PCMGSetRestriction(), PCMGGetRScale(), PCMGGetInjection()
 @*/
@@ -271,8 +257,6 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
    Notes:
        When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.  It is preferable to use PCMGSetInjection() to control moving primal vectors.
 
-.keywords: MG, set, multigrid, restriction, level
-
 .seealso: PCMGSetInterpolation(), PCMGSetRestriction(), PCMGGetRScale(), PCMGSetInjection()
 @*/
 PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
@@ -306,8 +290,6 @@ PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
 
    Notes:
        When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.  It is preferable to use PCMGGetInjection() to control moving primal vectors.
-
-.keywords: MG, set, multigrid, restriction, level
 
 .seealso: PCMGSetInterpolation(), PCMGGetRestriction(), PCMGGetInjection()
 @*/
@@ -357,8 +339,6 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
 
    Level: advanced
 
-.keywords: MG, set, multigrid, restriction, injection, level
-
 .seealso: PCMGSetRestriction()
 @*/
 PetscErrorCode  PCMGSetInjection(PC pc,PetscInt l,Mat mat)
@@ -393,8 +373,6 @@ PetscErrorCode  PCMGSetInjection(PC pc,PetscInt l,Mat mat)
 .  mat - the restriction matrix (may be NULL if no injection is available).
 
    Level: advanced
-
-.keywords: MG, get, multigrid, restriction, injection, level
 
 .seealso: PCMGSetInjection(), PCMGetGetRestriction()
 @*/
@@ -434,8 +412,6 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
 
    Level: advanced
 
-.keywords: MG, get, multigrid, level, smoother, pre-smoother, post-smoother
-
 .seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetCoarseSolve()
 @*/
 PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
@@ -467,8 +443,6 @@ PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
    Notes:
     calling this will result in a different pre and post smoother so you may need to
          set options on the pre smoother also
-
-.keywords: MG, multigrid, get, smoother, up, post-smoother, level
 
 .seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown()
 @*/
@@ -539,8 +513,6 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     calling this will result in a different pre and post smoother so you may need to
          set options on the post smoother also
 
-.keywords: MG, multigrid, get, smoother, down, pre-smoother, level
-
 .seealso: PCMGGetSmootherUp(), PCMGGetSmoother()
 @*/
 PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
@@ -570,8 +542,6 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 -  c  - either PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Level: advanced
-
-.keywords: MG, multigrid, set, cycles, V-cycle, W-cycle, level
 
 .seealso: PCMGSetCycleType()
 @*/
@@ -607,8 +577,6 @@ PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
 
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.
-
-.keywords: MG, multigrid, set, right-hand-side, rhs, level
 
 .seealso: PCMGSetX(), PCMGSetR()
 @*/
@@ -648,8 +616,6 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.
 
-.keywords: MG, multigrid, set, solution, level
-
 .seealso: PCMGSetRhs(), PCMGSetR()
 @*/
 PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
@@ -688,7 +654,6 @@ PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.
 
-.keywords: MG, multigrid, set, residual, level
 @*/
 PetscErrorCode  PCMGSetR(PC pc,PetscInt l,Vec c)
 {

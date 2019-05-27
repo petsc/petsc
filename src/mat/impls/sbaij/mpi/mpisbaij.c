@@ -2475,8 +2475,6 @@ M*/
 
    Level: intermediate
 
-.keywords: matrix, block, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateBAIJ(), PetscSplitOwnership()
 @*/
 PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -2589,8 +2587,6 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
    matrices.
 
    Level: intermediate
-
-.keywords: matrix, block, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateBAIJ()
 @*/
@@ -2985,8 +2981,6 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   Notes:
    This can also be set by the command line option: -mat_use_hash_table fact
 
-.keywords: matrix, hashtable, factor, HT
-
 .seealso: MatSetOption()
 @XXXXX*/
 
@@ -3281,8 +3275,6 @@ PetscErrorCode MatSOR_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType
 
        The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
 
-.keywords: matrix, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()
 @*/
@@ -3316,8 +3308,6 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
 -  v - optional values in the matrix
 
    Level: developer
-
-.keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ
 @*/

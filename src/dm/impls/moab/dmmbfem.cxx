@@ -127,7 +127,6 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal (PetscReal *inmat, PetscReal *
 
   Level: advanced
 
-.keywords: DMMoab, FEM, 1-D
 @*/
 PetscErrorCode Compute_Lagrange_Basis_1D_Internal ( const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts,
     PetscReal *jxw, PetscReal *phi, PetscReal *dphidx,
@@ -264,7 +263,6 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal ( const PetscInt nverts, const
 
   Level: advanced
 
-.keywords: DMMoab, FEM, 2-D
 @*/
 PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts,
     PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy,
@@ -443,7 +441,6 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const
 
   Level: advanced
 
-.keywords: DMMoab, FEM, 3-D
 @*/
 PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts,
     PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *dphidz,
@@ -698,7 +695,6 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
 
   Level: advanced
 
-.keywords: DMMoab, FEM, 3-D
 @*/
 PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, 
                                        PetscReal *phypts, PetscReal *jacobian_quadrature_weight_product, 
@@ -767,7 +763,6 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
 
   Level: advanced
 
-.keywords: DMMoab, Quadrature, PetscDT
 @*/
 PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const PetscInt nverts, PetscQuadrature *quadrature )
 {
@@ -1072,7 +1067,6 @@ PetscErrorCode FEMComputeBasis_JandF ( const PetscInt dim, const PetscInt nverts
 
   Level: advanced
 
-.keywords: DMMoab, Mapping, FEM
 @*/
 PetscErrorCode DMMoabPToRMapping( const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal* xphy, PetscReal* natparam, PetscReal* phi)
 {

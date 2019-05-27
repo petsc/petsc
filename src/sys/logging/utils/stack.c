@@ -17,7 +17,6 @@
 
   Level: developer
 
-.keywords: log, stack, destroy
 .seealso: PetscIntStackCreate(), PetscIntStackEmpty(), PetscIntStackPush(), PetscIntStackPop(), PetscIntStackTop()
 @*/
 PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
@@ -43,7 +42,6 @@ PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
 
   Level: developer
 
-.keywords: log, stack, empty
 .seealso: PetscIntStackCreate(), PetscIntStackDestroy(), PetscIntStackPush(), PetscIntStackPop(), PetscIntStackTop()
 @*/
 PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool  *empty)
@@ -68,7 +66,6 @@ PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool  *empty)
 
   Level: developer
 
-.keywords: log, stack, top
 .seealso: PetscIntStackCreate(), PetscIntStackDestroy(), PetscIntStackEmpty(), PetscIntStackPush(), PetscIntStackPop()
 @*/
 PetscErrorCode PetscIntStackTop(PetscIntStack stack, int *top)
@@ -90,7 +87,6 @@ PetscErrorCode PetscIntStackTop(PetscIntStack stack, int *top)
 
   Level: developer
 
-.keywords: log, stack, push
 .seealso: PetscIntStackCreate(), PetscIntStackDestroy(), PetscIntStackEmpty(), PetscIntStackPop(), PetscIntStackTop()
 @*/
 PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
@@ -125,7 +121,6 @@ PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
 
   Level: developer
 
-.keywords: log, stack, pop
 .seealso: PetscIntStackCreate(), PetscIntStackDestroy(), PetscIntStackEmpty(), PetscIntStackPush(), PetscIntStackTop()
 @*/
 PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
@@ -147,7 +142,6 @@ PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
 
   Level: developer
 
-.keywords: log, stack, pop
 .seealso: PetscIntStackDestroy(), PetscIntStackEmpty(), PetscIntStackPush(), PetscIntStackPop(), PetscIntStackTop()
 @*/
 PetscErrorCode PetscIntStackCreate(PetscIntStack *stack)

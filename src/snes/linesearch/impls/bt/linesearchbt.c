@@ -447,8 +447,6 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOpt
    This line search is taken from "Numerical Methods for Unconstrained
    Optimization and Nonlinear Equations" by Dennis and Schnabel, page 325.
 
-.keywords: SNES, SNESLineSearch, damping
-
 .seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)

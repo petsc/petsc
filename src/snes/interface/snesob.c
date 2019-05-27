@@ -37,8 +37,6 @@ M*/
 
          If not provided then this defaults to the two norm of the function evaluation (set with SNESSetFunction())
 
-.keywords: SNES, nonlinear, set, objective
-
 .seealso: SNESGetObjective(), SNESComputeObjective(), SNESSetFunction(), SNESSetJacobian(), SNESObjectiveFunction
 @*/
 PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscReal*,void*),void *ctx)
@@ -67,8 +65,6 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscR
 
    Level: advanced
 
-.keywords: SNES, nonlinear, get, objective
-
 .seealso: SNESSetObjective(), SNESGetSolution()
 @*/
 PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscReal*,void*),void **ctx)
@@ -96,8 +92,6 @@ PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscR
 .  ob   - the objective value
 
    Level: advanced
-
-.keywords: SNES, nonlinear, compute, objective
 
 .seealso: SNESSetObjective(), SNESGetSolution()
 @*/
@@ -149,8 +143,6 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
    Note that this uses quadratic interpolation of the objective to form each value in the function.
 
    Level: advanced
-
-.keywords: SNES, objective, debugging, finite differences, function
 
 .seealso: SNESSetFunction(), SNESComputeObjective(), SNESComputeJacobianDefault()
 @*/

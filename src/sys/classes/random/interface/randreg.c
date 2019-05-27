@@ -22,7 +22,6 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.keywords: random, set, type
 .seealso: PetscRandomGetType(), PetscRandomCreate()
 @*/
 
@@ -65,7 +64,6 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 
   Level: intermediate
 
-.keywords: random, get, type, name
 .seealso: PetscRandomSetType(), PetscRandomCreate()
 @*/
 PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
@@ -110,8 +108,6 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
   Level: advanced
 
-.keywords: PetscRandom, register
-
 .seealso: PetscRandomRegisterAll(), PetscRandomRegisterDestroy(), PetscRandomRegister()
 @*/
 PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
@@ -145,7 +141,6 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom);
 
   Level: advanced
 
-.keywords: PetscRandom, register, all
 .seealso:  PetscRandomRegister(), PetscRandomRegisterDestroy()
 @*/
 PetscErrorCode  PetscRandomRegisterAll(void)

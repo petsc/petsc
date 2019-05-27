@@ -27,8 +27,6 @@
 
    VecStride*() operations can be useful when using DM with dof > 1
 
-.keywords: distributed array, create, local, vector
-
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMCreateLocalVector(), DMRestoreLocalVector(),
@@ -72,8 +70,6 @@ alldone:
 -  g - the local vector
 
    Level: beginner
-
-.keywords: distributed array, create, local, vector
 
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
@@ -131,8 +127,6 @@ alldone:
 
    VecStride*() operations can be useful when using DM with dof > 1
 
-.keywords: distributed array, create, Global, vector
-
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMCreateLocalVector(), DMRestoreLocalVector()
@@ -176,8 +170,6 @@ alldone:
 
    Level: developer
 
-.keywords: distributed array, create, Global, vector
-
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMCreateLocalVector(), DMRestoreLocalVector()
@@ -210,8 +202,6 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
 .  dm - the distributed array
 
    Level: developer
-
-.keywords: distributed array, create, Local, vector
 
 .seealso: DMCreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMLocalToLocalBegin(),
@@ -248,8 +238,6 @@ PetscErrorCode  DMClearLocalVectors(DM dm)
 -  g - the global vector
 
    Level: beginner
-
-.keywords: distributed array, create, global, vector
 
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToGlobalBegin(),

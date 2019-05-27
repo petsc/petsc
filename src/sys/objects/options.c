@@ -1609,7 +1609,6 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **n
 
    Level: intermediate
 
-.keywords: set, options, database
 @*/
 PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
 {
@@ -1647,8 +1646,6 @@ PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
 -  ctx - an ASCII viewer
 
    Level: intermediate
-
-.keywords: PetscOptions, default, monitor
 
 .seealso: PetscOptionsMonitorSet()
 @*/
@@ -1707,8 +1704,6 @@ $     monitor (const char name[], const char value[], void *mctx)
 
    Level: beginner
 
-.keywords: PetscOptions, set, monitor
-
 .seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorCancel()
 @*/
 PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
@@ -1734,8 +1729,6 @@ PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[
     but does not cancel those set via the options database.
 
    Level: intermediate
-
-.keywords: PetscOptions, set, monitor
 
 .seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorSet()
 @*/

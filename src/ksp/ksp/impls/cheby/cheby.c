@@ -102,7 +102,6 @@ static PetscErrorCode KSPChebyshevEstEigSetUseNoisy_Chebyshev(KSP ksp,PetscBool 
 
    Level: intermediate
 
-.keywords: KSP, Chebyshev, set, eigenvalues
 @*/
 PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
@@ -148,7 +147,6 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
 
    Level: intermediate
 
-.keywords: KSP, Chebyshev, set, eigenvalues, PCMG
 @*/
 PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {

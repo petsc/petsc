@@ -15,8 +15,6 @@
 
   Level: intermediate
 
-.keywords: discretization manager, set, component solution
-
 .seealso: DMMoabGetFieldName(), DMMoabSetGlobalFieldVector()
 @*/
 PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
@@ -76,8 +74,6 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 . fvec - the global Vector solution corresponding to all the fields managed by DM
 
   Level: intermediate
-
-.keywords: discretization manager, set, component solution
 
 .seealso: DMMoabGetFieldName(), DMMoabSetFieldVector()
 @*/
@@ -161,8 +157,6 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 
   Level: intermediate
 
-.keywords: discretization manager, set, component name
-
 .seealso: DMMoabGetFieldName(), DMMoabSetFieldName()
 @*/
 PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields[])
@@ -212,8 +206,6 @@ PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields
 
   Level: intermediate
 
-.keywords: discretization manager, get, component name
-
 .seealso: DMMoabSetFieldName(), DMMoabSetFields()
 @*/
 PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
@@ -243,8 +235,6 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
   Level: intermediate
   Notes:
     Can only be called after DMMoabSetFields supplied with correct numFields
-
-.keywords: discretization manager, set, component name
 
 .seealso: DMMoabGetFieldName(), DMMoabSetFields()
 @*/
@@ -284,8 +274,6 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
 
   Level: beginner
 
-.keywords: discretization manager, get, global degree of freedom
-
 .seealso: DMMoabGetFieldDofs(), DMMoabGetFieldDofsLocal()
 @*/
 PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field, PetscInt* dof)
@@ -318,8 +306,6 @@ PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field
 + dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: intermediate
-
-.keywords: discretization manager, get, global degrees of freedom
 
 .seealso: DMMoabGetFieldDof(), DMMoabGetFieldDofsLocal()
 @*/
@@ -365,8 +351,6 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHan
 
   Level: intermediate
 
-.keywords: discretization manager, get, local degrees of freedom
-
 .seealso: DMMoabGetFieldDof(), DMMoabGetFieldDofs()
 @*/
 PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt field, PetscInt* dof)
@@ -410,8 +394,6 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::Enti
 + dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: intermediate
-
-.keywords: discretization manager, get, global degrees of freedom
 
 .seealso: DMMoabGetFieldDofs(), DMMoabGetDofsLocal(), DMMoabGetDofsBlocked()
 @*/
@@ -457,8 +439,6 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* 
 + dof - the local degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: intermediate
-
-.keywords: discretization manager, get, global degrees of freedom
 
 .seealso: DMMoabGetFieldDofs(), DMMoabGetDofs(), DMMoabGetDofsBlocked()
 @*/
@@ -507,8 +487,6 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHan
 
   Level: intermediate
 
-.keywords: discretization manager, get, global degrees of freedom
-
 .seealso: DMMoabGetDofsLocal(), DMMoabGetDofs(), DMMoabGetDofsBlockedLocal()
 @*/
 PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt* dof)
@@ -550,8 +528,6 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
 
   Level: intermediate
 
-.keywords: discretization manager, get, global degrees of freedom
-
 .seealso: DMMoabGetDofsLocal(), DMMoabGetDofs(), DMMoabGetDofsBlockedLocal()
 @*/
 PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt* dof)
@@ -590,8 +566,6 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::En
 
   Level: intermediate
 
-.keywords: discretization manager, get, blocked degrees of freedom
-
 .seealso: DMMoabGetVertexDofsBlockedLocal(), DMMoabGetDofsBlocked(), DMMoabGetDofsBlockedLocal()
 @*/
 PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt** dof)
@@ -621,8 +595,6 @@ PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt** dof)
 + dof - the blocked local degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
 
   Level: intermediate
-
-.keywords: discretization manager, get, blocked degrees of freedom
 
 .seealso: DMMoabGetVertexDofsBlocked(), DMMoabGetDofsBlocked(), DMMoabGetDofsBlockedLocal()
 @*/

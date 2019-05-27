@@ -763,7 +763,6 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
 
 .seealso: PetscFunctionReturn(), PetscFunctionBeginHot(), PetscFunctionBeginUser()
 
-.keywords: traceback, error handling
 M*/
 #define PetscFunctionBegin do {                                        \
     PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_TRUE,PETSC_FALSE); \
@@ -794,7 +793,6 @@ M*/
 
 .seealso: PetscFunctionBegin, PetscFunctionReturn()
 
-.keywords: traceback, error handling
 M*/
 #define PetscFunctionBeginHot do {                                     \
     PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_TRUE,PETSC_TRUE);  \
@@ -829,7 +827,6 @@ M*/
 
 .seealso: PetscFunctionReturn(), PetscFunctionBegin, PetscFunctionBeginHot
 
-.keywords: traceback, error handling
 M*/
 #define PetscFunctionBeginUser                                          \
   do {                                                                  \
@@ -874,7 +871,6 @@ M*/
 
 .seealso: PetscFunctionBegin()
 
-.keywords: traceback, error handling
 M*/
 #define PetscFunctionReturn(a) \
   do {                                                                \

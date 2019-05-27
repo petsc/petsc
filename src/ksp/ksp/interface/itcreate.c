@@ -97,8 +97,6 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 
    Level: beginner
 
-.keywords: KSP, view
-
 .seealso: PCView(), PetscViewerASCIIOpen()
 @*/
 PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
@@ -260,8 +258,6 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
    Level: advanced
 
-.keywords: KSP, create, context, norms
-
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration(), KSPSetPCSide(), KSPGetPCSide(), KSPNormType
 @*/
 PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
@@ -291,8 +287,6 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
    On steps where the norm is not computed, the previous norm is still in the variable, so if you run with, for example,
     -ksp_monitor the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
    Level: advanced
-
-.keywords: KSP, create, context, norms
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetNormType()
 @*/
@@ -327,8 +321,6 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 
    If you lag the norm and run with, for example, -ksp_monitor, the residual norm reported will be the lagged one.
    Level: advanced
-
-.keywords: KSP, create, context, norms
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetNormType(), KSPSetCheckNormIteration()
 @*/
@@ -420,8 +412,6 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,PetscBool errorifnotsupported,KSPNo
 
    Level: advanced
 
-.keywords: KSP, create, context, norms
-
 .seealso: KSPNormType, KSPSetNormType(), KSPConvergedSkip()
 @*/
 PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
@@ -503,8 +493,6 @@ $           set size, type, etc of mat and pmat
     Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
     it can be created for you?
 
-.keywords: KSP, set, operators, matrix, preconditioner, linear system
-
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators(), KSPSetComputeOperators(), KSPSetComputeInitialGuess(), KSPSetComputeRHS()
 @*/
 PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
@@ -541,8 +529,6 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
    Notes:
     DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
-.keywords: KSP, set, get, operators, matrix, preconditioner, linear system
-
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPSetOperators(), KSPGetOperatorsSet()
 @*/
 PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat)
@@ -570,8 +556,6 @@ PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat)
 -  pmat - matrix associated with the preconditioner was set, usually the same
 
    Level: intermediate
-
-.keywords: KSP, get, operators, matrix, linear system
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators(), PCGetOperatorsSet()
 @*/
@@ -606,8 +590,6 @@ $  func(KSP ksp,Vec rhs,Vec x,void *ctx)
 
    Level: developer
 
-.keywords: KSP, create, context
-
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP, KSPSetPostSolve()
 @*/
 PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,void*),void *prectx)
@@ -639,8 +621,6 @@ $  func(KSP ksp,Vec rhs,Vec x,void *ctx)
 .  x - the solution vector
 -  ctx - optional user-provided context
 
-.keywords: KSP, create, context
-
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP, KSPSetPreSolve()
 @*/
 PetscErrorCode  KSPSetPostSolve(KSP ksp,PetscErrorCode (*postsolve)(KSP,Vec,Vec,void*),void *postctx)
@@ -668,8 +648,6 @@ PetscErrorCode  KSPSetPostSolve(KSP ksp,PetscErrorCode (*postsolve)(KSP,Vec,Vec,
    orthogonalization.
 
    Level: beginner
-
-.keywords: KSP, create, context
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP
 @*/
@@ -764,8 +742,6 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   Developer Note: KSPRegister() is used to add Krylov types to KSPList from which they
   are accessed by KSPSetType().
 
-.keywords: KSP, set, method
-
 .seealso: PCSetType(), KSPType, KSPRegister(), KSPCreate()
 
 @*/
@@ -816,8 +792,6 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 
    Level: intermediate
 
-.keywords: KSP, get, method, name
-
 .seealso: KSPSetType()
 @*/
 PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
@@ -852,8 +826,6 @@ $     KSPSetType(ksp,"my_solver")
 $     -ksp_type my_solver
 
    Level: advanced
-
-.keywords: KSP, register
 
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
 

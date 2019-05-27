@@ -21,8 +21,6 @@
 
    Level: intermediate
 
-.keywords: SNES, nonlinear, gauss-seidel, set, convergence, tolerances
-
 .seealso: SNESSetTrustRegionTolerance()
 @*/
 PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit)
@@ -69,8 +67,6 @@ PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,P
 
    Level: intermediate
 
-.keywords: SNES, nonlinear, get, convergence, tolerances
-
 .seealso: SNESSetTolerances()
 @*/
 PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,PetscInt *maxit)
@@ -95,8 +91,6 @@ PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,P
 
    Level: intermediate
 
-.keywords: SNES, nonlinear, set, Gauss-Siedel
-
 .seealso: SNESSetNGS(), SNESGetNGS(), SNESSetNPC(), SNESNGSGetSweeps()
 @*/
 
@@ -120,8 +114,6 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 .  sweeps  - the number of sweeps of GS to perform.
 
    Level: intermediate
-
-.keywords: SNES, nonlinear, set, Gauss-Siedel
 
 .seealso: SNESSetNGS(), SNESGetNGS(), SNESSetNPC(), SNESNGSSetSweeps()
 @*/

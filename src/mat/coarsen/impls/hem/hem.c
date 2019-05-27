@@ -1116,8 +1116,6 @@ static PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
 
    Level: beginner
 
-.keywords: Coarsen, create, context
-
 .seealso: MatCoarsenSetType(), MatCoarsenType, MatCoarsenCreate()
 
 M*/

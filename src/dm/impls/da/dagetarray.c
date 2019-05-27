@@ -35,8 +35,6 @@
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
           DMDAVecGetArrayDOF()
 @*/
@@ -93,8 +91,6 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
 
   Fortran Notes:
     From Fortran use DMDAVecRestoreArrayF90()
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray()
 @*/
@@ -160,8 +156,6 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF()
 @*/
 PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
@@ -207,8 +201,6 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 -  array - the array
 
   Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF()
 @*/
@@ -277,8 +269,6 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
           DMDAVecGetArrayDOF()
 @*/
@@ -335,8 +325,6 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
 
   Fortran Notes:
     From Fortran use DMDAVecRestoreArrayReadF90()
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray()
 @*/
@@ -402,8 +390,6 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF()
 @*/
 PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
@@ -449,8 +435,6 @@ PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
 -  array - the array
 
   Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF()
 @*/

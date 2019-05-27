@@ -712,8 +712,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
 
    Level: intermediate
 
-.keywords: matrix, cray, sparse, parallel
-
 .seealso: MatCreate(), MatCreateMPIAIJPERM(), MatSetValues()
 @*/
 PetscErrorCode  MatCreateSeqAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)

@@ -19,7 +19,6 @@
 
   Level: beginner
 
-.keywords: DMMoab, create, refinement
 @*/
 PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegrees)
 {
@@ -96,7 +95,6 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
 
   Level: beginner
 
-.keywords: DMMoab, generate, refinement
 @*/
 PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM dmf[])
 {
@@ -127,7 +125,6 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM 
 
   Level: beginner
 
-.keywords: DMMoab, generate, coarsening
 @*/
 PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM dmc[])
 {
@@ -162,7 +159,6 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, 
 
   Level: developer
 
-.keywords: DMMoab, create, refinement
 @*/
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* interpl, Vec* vec)
 {
@@ -404,7 +400,6 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
 
   Level: beginner
 
-.keywords: DMMoab, create, refinement
 @*/
 PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter* ctx)
 {
@@ -526,7 +521,6 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
 
   Level: developer
 
-.keywords: DMMoab, create, refinement
 @*/
 PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
 {
@@ -557,7 +551,6 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
 
   Level: developer
 
-.keywords: DMMoab, create, coarsening
 @*/
 PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM* dmc)
 {

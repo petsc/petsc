@@ -289,7 +289,6 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptionItems *PetscOptio
 
    Level: advanced
 
-.keywords: PC, redistribute solve
 @*/
 PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
 {

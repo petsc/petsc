@@ -19,7 +19,6 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
     Level: advanced
 
-.keywords: KSP, GLTR, get, minimum eigenvalue
 @*/
 PetscErrorCode  KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
@@ -42,7 +41,6 @@ PetscErrorCode  KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 
     Level: advanced
 
-.keywords: KSP, GLTR, get, multiplier
 @*/
 PetscErrorCode  KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {

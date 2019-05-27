@@ -14,8 +14,6 @@
 
    Level: intermediate
 
-.keywords: Mat, Python
-
 .seealso: MatCreate(), MatSetType(), MATPYTHON, PetscPythonInitialize()
 @*/
 PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
@@ -47,8 +45,6 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 .  A - the matrix
 
    Level: intermediate
-
-.keywords: Mat, Python
 
 .seealso: MATPYTHON, MatPythonSetType(), PetscPythonInitialize()
 

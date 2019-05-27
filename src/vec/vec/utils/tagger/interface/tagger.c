@@ -71,8 +71,6 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm,VecTagger *tagger)
 
   Level: advanced
 
-.keywords: VecTagger, set, type
-
 .seealso: VecTaggerType, VecTaggerCreate()
 @*/
 PetscErrorCode VecTaggerSetType(VecTagger tagger,VecTaggerType type)
@@ -113,7 +111,6 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger,VecTaggerType type)
 
   Level: advanced
 
-.keywords: VecTagger, get, type, name
 .seealso: VecTaggerSetType(), VecTaggerCreate()
 @*/
 PetscErrorCode  VecTaggerGetType(VecTagger tagger, VecTaggerType *type)
@@ -192,7 +189,6 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 
    Level: advanced
 
-.keywords: tagging, set, from, options, database
 @*/
 PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 {

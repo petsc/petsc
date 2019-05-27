@@ -25,8 +25,6 @@
     Note:
     By default, the matrix is assumed to be complex, Hermitian.
 
-.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
-
 .seealso: KSP, KSPCG
 @*/
 PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
@@ -61,8 +59,6 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 
      See also KSPPIPECG, KSPPIPECR, and KSPGROPPCG that use non-blocking reductions.
 
-.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
-
 .seealso: KSP, KSPCG, KSPGMRES
 @*/
 PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
@@ -86,8 +82,6 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 -   radius - the trust region radius (Infinity is the default)
 
     Level: advanced
-
-.keywords:  set, trust region radius
 
 .seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/
@@ -114,8 +108,6 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 
     Level: advanced
 
-.keywords:  get, norm direction
-
 .seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/
 PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
@@ -138,8 +130,6 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 -   o_fcn - the objective function value
 
     Level: advanced
-
-.keywords:  get, objective function
 
 .seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/

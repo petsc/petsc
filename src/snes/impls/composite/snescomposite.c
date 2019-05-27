@@ -588,7 +588,6 @@ static PetscErrorCode  SNESCompositeGetSNES_Composite(SNES snes,PetscInt n,SNES 
 
    Level: Developer
 
-.keywords: SNES, set, type, composite preconditioner, additive, multiplicative
 @*/
 PetscErrorCode  SNESCompositeSetType(SNES snes,SNESCompositeType type)
 {
@@ -612,7 +611,6 @@ PetscErrorCode  SNESCompositeSetType(SNES snes,SNESCompositeType type)
 
    Level: Developer
 
-.keywords: SNES, composite preconditioner, add
 @*/
 PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
 {
@@ -636,8 +634,6 @@ PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
 .  subsnes - the SNES requested
 
    Level: Developer
-
-.keywords: SNES, get, composite preconditioner, sub preconditioner
 
 .seealso: SNESCompositeAddSNES()
 @*/
@@ -665,7 +661,6 @@ PetscErrorCode  SNESCompositeGetSNES(SNES snes,PetscInt n,SNES *subsnes)
 
    Level: Developer
 
-.keywords: SNES, composite preconditioner
 @*/
 PetscErrorCode  SNESCompositeGetNumber(SNES snes,PetscInt *n)
 {
@@ -712,8 +707,6 @@ static PetscErrorCode  SNESCompositeSetDamping_Composite(SNES snes,PetscInt n,Pe
 -  dmp - the damping
 
    Level: Developer
-
-.keywords: SNES, get, composite preconditioner, sub preconditioner
 
 .seealso: SNESCompositeAddSNES()
 @*/

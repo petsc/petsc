@@ -154,7 +154,6 @@ static PetscErrorCode  PCKSPSetKSP_KSP(PC pc,KSP ksp)
 
    Level: advanced
 
-.keywords:  PC, KSP, set, context
 @*/
 PetscErrorCode  PCKSPSetKSP(PC pc,KSP ksp)
 {
@@ -197,7 +196,6 @@ static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 
    Level: advanced
 
-.keywords:  PC, KSP, get, context
 @*/
 PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
 {

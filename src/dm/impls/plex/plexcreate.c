@@ -21,7 +21,6 @@
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simplex, PetscBool interpolate, PetscBool refinementUniform, PetscReal refinementLimit, DM *newdm)
@@ -170,7 +169,6 @@ $ 12--0-13--1--14
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMPlexCreateBoxMesh(), DMPlexCreateCubeBoundary(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
@@ -306,7 +304,6 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMPlexCreateBoxMesh(), DMPlexCreateSquareBoundary(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
@@ -1039,7 +1036,6 @@ $  8----4----9----5----10
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMPlexCreateFromFile(), DMPlexCreateHexCylinderMesh(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
@@ -1092,7 +1088,6 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMPlexCreateHexCylinderMesh(), DMPlexCreateWedgeCylinderMesh(), DMPlexExtrude(), DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool ordExt, PetscBool interpolate, DM *dm)
@@ -1157,7 +1152,6 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
 
   Level: advanced
 
-.keywords: DM, create
 .seealso: DMPlexCreateWedgeCylinderMesh(), DMPlexCreateWedgeBoxMesh(), DMPlexSetHybridBounds(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBool ordExt, PetscBool interpolate, DM* dm)
@@ -1387,7 +1381,6 @@ $       20-----15
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DMBoundaryType periodicZ, DM *dm)
@@ -1655,7 +1648,6 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMPlexCreateHexCylinderMesh(), DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBool interpolate, DM *dm)
@@ -1767,7 +1759,6 @@ PETSC_STATIC_INLINE PetscReal DotReal(PetscInt dim, const PetscReal x[], const P
 
   Level: beginner
 
-.keywords: DM, create
 .seealso: DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *dm)
@@ -2606,7 +2597,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   Level: beginner
 
-.keywords: DMPlex, create
 @*/
 PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 {
@@ -3322,7 +3312,6 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
 
   Level: intermediate
 
-.keywords: reference cell
 .seealso:
 @*/
 PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *refdm)

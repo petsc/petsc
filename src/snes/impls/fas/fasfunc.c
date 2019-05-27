@@ -74,8 +74,6 @@ PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
      If the number of levels is one then the multigrid uses the -fas_levels prefix
   for setting the level options rather than the -fas_coarse prefix.
 
-.keywords: FAS, MG, set, levels, multigrid
-
 .seealso: SNESFASGetLevels()
 @*/
 PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
@@ -141,8 +139,6 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
 
    Level: advanced
 
-.keywords: MG, get, levels, multigrid
-
 .seealso: SNESFASSetLevels(), PCMGGetLevels()
 @*/
 PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
@@ -165,8 +161,6 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 -  lsnes   - whether to use the nonlinear smoother or not
 
    Level: advanced
-
-.keywords: FAS, MG, set, cycles, Gauss-Seidel, multigrid
 
 .seealso: SNESFASSetLevels(), SNESFASGetLevels()
 @*/
@@ -203,8 +197,6 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
 
    Level: advanced
 
-.keywords: FAS, MG, smooth, down, pre-smoothing, steps, multigrid
-
 .seealso: SNESFASSetNumberSmoothDown()
 @*/
 PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
@@ -240,8 +232,6 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
 .  -snes_fas_smoothdown <n> - Sets number of pre-smoothing steps
 
    Level: advanced
-
-.keywords: FAS, MG, smooth, down, pre-smoothing, steps, multigrid
 
 .seealso: SNESFASSetNumberSmoothUp()
 @*/
@@ -280,8 +270,6 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 
    Notes:
     This sets the prefix on the upsweep smoothers to -fas_continuation
-
-.keywords: FAS, MG, smoother, continuation
 
 .seealso: SNESFAS
 @*/
@@ -325,8 +313,6 @@ PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
 
    Level: advanced
 
-.keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
-
 .seealso: SNESFASSetCyclesOnLevel()
 @*/
 PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
@@ -360,8 +346,6 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 -  flg    - monitor or not
 
    Level: advanced
-
-.keywords: FAS, monitor
 
 .seealso: SNESFASSetCyclesOnLevel()
 @*/
@@ -403,8 +387,6 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
 -  flg    - monitor or not
 
    Level: advanced
-
-.keywords: FAS, logging
 
 .seealso: SNESFASSetMonitor()
 @*/
@@ -498,8 +480,6 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 
    Level: advanced
 
-.keywords: SNES, FAS, set, cycles, V-cycle, W-cycle, multigrid
-
 .seealso: SNESFASSetCycles()
 @*/
 PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
@@ -526,8 +506,6 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 .  smooth - the smoother
 
    Level: advanced
-
-.keywords: SNES, FAS, get, smoother, multigrid
 
 .seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmootherDown()
 @*/
@@ -558,8 +536,6 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 
    Level: advanced
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetSmoother(), SNESFASCycleGetSmootherDown()
 @*/
 PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
@@ -586,8 +562,6 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 .  smoothd - the smoother
 
    Level: advanced
-
-.keywords: SNES, FAS, get, smoother, multigrid
 
 .seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
 @*/
@@ -619,8 +593,6 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 
    Level: advanced
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
 @*/
 PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
@@ -646,8 +618,6 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 .  mat    - the interpolation operator on this level
 
    Level: developer
-
-.keywords: SNES, FAS, get, smoother, multigrid
 
 .seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
 @*/
@@ -676,8 +646,6 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 
    Level: developer
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASGetRestriction(), SNESFASCycleGetInterpolation()
 @*/
 PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
@@ -705,8 +673,6 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 
    Level: developer
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASGetInjection(), SNESFASCycleGetRestriction()
 @*/
 PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
@@ -733,8 +699,6 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 
    Level: developer
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetRestriction(), SNESFASGetRScale()
 @*/
 PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
@@ -760,8 +724,6 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 .  flg - indicates if this is the fine level or not
 
    Level: advanced
-
-.keywords: SNES, FAS
 
 .seealso: SNESFASSetLevels()
 @*/
@@ -797,8 +759,6 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
-.keywords:  FAS, multigrid, set, interpolate, level
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction(), SNESFASSetRScale()
 @*/
 PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
@@ -829,8 +789,6 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
 .  mat       - the interpolation operator
 
    Level: advanced
-
-.keywords:  FAS, multigrid, get, interpolate, level
 
 .seealso: SNESFASSetInterpolation(), SNESFASGetInjection(), SNESFASGetRestriction(), SNESFASGetRScale()
 @*/
@@ -868,8 +826,6 @@ PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
          If you do not set this, the transpose of the Mat set with SNESFASSetInterpolation()
     is used.
 
-.keywords: FAS, MG, set, multigrid, restriction, level
-
 .seealso: SNESFASSetInterpolation(), SNESFASSetInjection()
 @*/
 PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
@@ -901,8 +857,6 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
 
    Level: advanced
 
-.keywords:  FAS, multigrid, get, restrict, level
-
 .seealso: SNESFASSetRestriction(), SNESFASGetInjection(), SNESFASGetInterpolation(), SNESFASGetRScale()
 @*/
 PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
@@ -933,8 +887,6 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
    Notes:
          If you do not set this, the restriction and rscale is used to
    project the solution instead.
-
-.keywords: FAS, MG, set, multigrid, restriction, level
 
 .seealso: SNESFASSetInterpolation(), SNESFASSetRestriction()
 @*/
@@ -968,8 +920,6 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
 
    Level: advanced
 
-.keywords:  FAS, multigrid, get, restrict, level
-
 .seealso: SNESFASSetInjection(), SNESFASGetRestriction(), SNESFASGetInterpolation(), SNESFASGetRScale()
 @*/
 PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
@@ -998,8 +948,6 @@ PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
 
    Notes:
          This is only used in the case that the injection is not set.
-
-.keywords: FAS, MG, set, multigrid, restriction, level
 
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
@@ -1031,8 +979,6 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
 
    Level: advanced
 
-.keywords: FAS, MG, get, multigrid, smoother, level
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
@@ -1062,8 +1008,6 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
    smooth  - the smoother
 
    Level: advanced
-
-.keywords: FAS, MG, get, multigrid, smoother, level
 
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
@@ -1099,8 +1043,6 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
 
    Level: advanced
 
-.keywords: FAS, MG, get, multigrid, smoother, level
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
@@ -1134,7 +1076,6 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
 
   Level: advanced
 
-.keywords: FAS, MG, get, multigrid, solver, coarse
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
@@ -1167,8 +1108,6 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 .  -snes_fas_full_downsweep - Sets number of pre-smoothing steps
 
    Level: advanced
-
-.keywords: FAS, MG, smooth, down, pre-smoothing, steps, multigrid
 
 .seealso: SNESFASSetNumberSmoothUp()
 @*/

@@ -37,8 +37,6 @@ PetscFunctionList PetscDrawList = 0;
 
    Level: beginner
 
-.keywords: PetscDraw, view
-
 .seealso: PCView(), PetscViewerASCIIOpen()
 @*/
 PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
@@ -326,8 +324,6 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 -  prefix - the prefix to prepend to all option names
 
    Level: advanced
-
-.keywords: PetscDraw, set, options, prefix, database
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate()
 @*/

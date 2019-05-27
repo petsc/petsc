@@ -190,8 +190,6 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
    Developer Notes:
     A better name for this method might be SNESLINESEARCHSECANT, L2 is not descriptive
 
-.keywords: SNES, nonlinear, line search, norm, secant
-
 .seealso: SNESLINESEARCHBT, SNESLINESEARCHCP, SNESLineSearch, SNESLineSearchCreate(), SNESLineSearchSetType()
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)

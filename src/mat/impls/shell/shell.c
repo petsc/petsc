@@ -239,8 +239,6 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
     To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.keywords: matrix, shell, get, context
-
 .seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
 @*/
 PetscErrorCode  MatShellGetContext(Mat mat,void *ctx)
@@ -1112,8 +1110,6 @@ $
    Calling MatAssemblyBegin()/MatAssemblyEnd() on a MATSHELL removes any previously supplied shift and scales that were provided
    with MatDiagonalSet(), MatShift(), MatScale(), or MatDiagonalScale().
 
-.keywords: matrix, shell, create
-
 .seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext(), MatShellSetContext(), MATSHELL, MatShellSetManageScalingShifts()
 @*/
 PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *A)
@@ -1375,8 +1371,6 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
     Use MatSetOperation() to set an operation for any matrix type
 
-.keywords: matrix, shell, set, operation
-
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext(), MatSetOperation(), MatShellSetManageScalingShifts()
 @*/
 PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
@@ -1477,8 +1471,6 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
     Within each user-defined routine, the user should call
     MatShellGetContext() to obtain the user-defined context that was
     set by MatCreateShell().
-
-.keywords: matrix, shell, set, operation
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation(), MatShellSetContext()
 @*/

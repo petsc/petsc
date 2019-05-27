@@ -1861,8 +1861,6 @@ $     -islocaltoglobalmapping_type my_mapper
 
    Level: advanced
 
-.keywords: ISLocalToGlobalMappingType, register
-
 .seealso: ISLocalToGlobalMappingRegisterAll(), ISLocalToGlobalMappingRegisterDestroy(), ISLOCALTOGLOBALMAPPINGBASIC, ISLOCALTOGLOBALMAPPINGHASH
 
 @*/
@@ -1901,8 +1899,6 @@ PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode
   Developer Note: ISLocalToGlobalMappingRegister() is used to add new types to ISLocalToGlobalMappingList from which they
   are accessed by ISLocalToGlobalMappingSetType().
 
-.keywords: ISLocalToGlobalMapping, set, method
-
 .seealso: PCSetType(), ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate()
 
 @*/
@@ -1939,7 +1935,6 @@ PetscBool ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.keywords: IS, register, all
 .seealso:  ISRegister(),  ISLocalToGlobalRegister()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRegisterAll(void)

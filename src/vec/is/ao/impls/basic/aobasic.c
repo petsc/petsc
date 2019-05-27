@@ -301,8 +301,6 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
     the arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
            in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
 
-.keywords: AO, create
-
 .seealso: AOCreateBasicIS(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
 @*/
 PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
@@ -344,8 +342,6 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
     Notes:
     the index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
            that is there cannot be any "holes"
-
-.keywords: AO, create
 
 .seealso: AOCreateBasic(),  AODestroy()
 @*/

@@ -36,8 +36,6 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 
    Level: intermediate
 
-.keywords: TS, set, type
-
 .seealso: TS, TSSolve(), TSCreate(), TSSetFromOptions(), TSDestroy(), TSType
 
 @*/
@@ -82,7 +80,6 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
 
   Level: intermediate
 
-.keywords: TS, timestepper, get, type, name
 .seealso TSSetType()
 @*/
 PetscErrorCode  TSGetType(TS ts, TSType *type)
@@ -125,8 +122,6 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 .ve
 
   Level: advanced
-
-.keywords: TS, register
 
 .seealso: TSRegisterAll(), TSRegisterDestroy()
 @*/

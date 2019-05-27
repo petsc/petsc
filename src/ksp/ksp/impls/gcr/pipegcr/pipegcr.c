@@ -576,8 +576,6 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
 
    Level: intermediate
 
-.keywords: KSP, PIPEGCR, truncation
-
 .seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRGetNprealloc(), KSPPIPEGCRSetMmax()
 @*/
 
@@ -633,8 +631,6 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
 . -ksp_pipegcr_nprealloc <N>
 
    Level: advanced
-
-.keywords: KSP, PIPEGCR, truncation
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRSetNprealloc()
 @*/
@@ -696,8 +692,6 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 . -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
    Level: intermediate
-
-.keywords: KSP, PIPEGCR, truncation
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
 @*/

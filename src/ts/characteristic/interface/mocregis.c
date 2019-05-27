@@ -9,8 +9,6 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 
   Level: advanced
 
-.keywords: Characteristic, register, all
-
 .seealso:  CharacteristicRegisterDestroy()
 @*/
 PetscErrorCode CharacteristicRegisterAll(void)

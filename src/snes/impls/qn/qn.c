@@ -655,7 +655,6 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 .   SNES_QN_RESTART_POWELL - restart based upon descent criteria
 -   SNES_QN_RESTART_PERIODIC - restart after a fixed number of iterations
 
-.keywords: SNES, SNESQN, restart, type, set SNESLineSearch, SNESQNRestartType
 @*/
 PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 {
@@ -687,8 +686,6 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 .   SNES_QN_SCALE_LINESEARCH - scale based upon line search lambda
 -   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration
                              of QN and at ever restart.
-
-.keywords: scaling type
 
 .seealso: SNES, SNESQN, SNESLineSearch, SNESQNScaleType, SNESetJacobian()
 @*/
@@ -740,7 +737,6 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 .   SNES_QN_BROYDEN - Broyden variant
 -   SNES_QN_BADBROYDEN - Bad Broyden variant
 
-.keywords: SNES, SNESQN, type, set, SNESQNType
 @*/
 
 PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)

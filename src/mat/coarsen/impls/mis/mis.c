@@ -328,8 +328,6 @@ PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
 
    Level: beginner
 
-.keywords: Coarsen, create, context
-
 .seealso: MatCoarsenSetType(), MatCoarsenType
 
 M*/

@@ -379,8 +379,6 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
    Notes:
     See https://www-users.cs.umn.edu/~karypis/metis/
 
-.keywords: Partitioning, create, context
-
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
 M*/

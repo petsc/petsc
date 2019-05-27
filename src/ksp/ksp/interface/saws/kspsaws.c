@@ -72,8 +72,6 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 
    Level: advanced
 
-.keywords: KSP, CG, monitor, SAWs, singular values
-
 .seealso: KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), PetscViewerSAWsOpen()
 @*/
 PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)

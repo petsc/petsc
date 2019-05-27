@@ -587,8 +587,6 @@ PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool s)
    Notes:
     These return the number since the creation of the TS object
 
-.keywords: non-linear iterations, linear iterations
-
 .seealso: TSSundialsSetType(), TSSundialsSetMaxl(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(),
@@ -614,8 +612,6 @@ PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 -    type   - one of  SUNDIALS_ADAMS or SUNDIALS_BDF
 
    Level: intermediate
-
-.keywords: Adams, backward differentiation formula
 
 .seealso: TSSundialsGetIterations(),  TSSundialsSetMaxl(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
@@ -644,8 +640,6 @@ PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 -    maxl - number of direction vectors (the dimension of Krylov subspace).
 
    Level: advanced
-
-.keywords: GMRES
 
 .seealso: TSSundialsGetIterations(), TSSundialsSetType(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
@@ -677,8 +671,6 @@ PetscErrorCode  TSSundialsSetMaxl(TS ts,PetscInt maxl)
 
    Level: advanced
 
-.keywords: GMRES, linear convergence tolerance, SUNDIALS
-
 .seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetMaxl(),
           TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(),
@@ -707,8 +699,6 @@ PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,double tol)
 -    type - either SUNDIALS_MODIFIED_GS or SUNDIALS_CLASSICAL_GS
 
    Level: advanced
-
-.keywords: Sundials, orthogonalization
 
 .seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetMaxl(),
           TSSundialsSetLinearTolerance(),  TSSundialsSetTolerance(),
@@ -741,8 +731,6 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
     these regulate the size of the error for a SINGLE timestep.
 
    Level: intermediate
-
-.keywords: Sundials, tolerance
 
 .seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESMaxl(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(),

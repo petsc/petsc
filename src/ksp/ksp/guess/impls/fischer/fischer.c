@@ -257,8 +257,6 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess,PetscViewer viewer)
 
    Level: advanced
 
-.keywords: set, options, prefix, database
-
 .seealso: KSPGuess, KSPGuessCreate(), KSPSetUseFischerGuess(), KSPSetGuess(), KSPGetGuess(), KSP
 @*/
 PetscErrorCode  KSPGuessFischerSetModel(KSPGuess guess,PetscInt model,PetscInt size)

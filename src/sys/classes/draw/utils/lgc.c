@@ -563,7 +563,6 @@ PetscErrorCode  PetscDrawLGSave(PetscDrawLG lg)
 
 .seealso: PetscDrawLGCreate()
 
-.keywords:  draw, line, graph
 @*/
 PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 {
@@ -601,8 +600,6 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 -  prefix - the prefix to prepend to all option names
 
    Level: advanced
-
-.keywords: PetscDrawLG, set, options, prefix, database
 
 .seealso: PetscDrawLGSetFromOptions(), PetscDrawLGCreate()
 @*/

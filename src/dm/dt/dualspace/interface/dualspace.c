@@ -101,7 +101,6 @@ PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt len, Pet
 
   Level: advanced
 
-.keywords: PetscDualSpace, register
 .seealso: PetscDualSpaceRegisterAll(), PetscDualSpaceRegisterDestroy()
 
 @*/
@@ -128,7 +127,6 @@ PetscErrorCode PetscDualSpaceRegister(const char sname[], PetscErrorCode (*funct
 
   Level: intermediate
 
-.keywords: PetscDualSpace, set, type
 .seealso: PetscDualSpaceGetType(), PetscDualSpaceCreate()
 @*/
 PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
@@ -168,7 +166,6 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
 
   Level: intermediate
 
-.keywords: PetscDualSpace, get, type, name
 .seealso: PetscDualSpaceSetType(), PetscDualSpaceCreate()
 @*/
 PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name)
@@ -702,7 +699,6 @@ PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace sp, PetscSection *sect
 
   Level: advanced
 
-.keywords: PetscDualSpace, reference cell
 .seealso: PetscDualSpaceCreate(), DMPLEX
 @*/
 PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim, PetscBool simplex, DM *refdm)

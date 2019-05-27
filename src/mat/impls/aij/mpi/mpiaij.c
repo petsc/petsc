@@ -4013,8 +4013,6 @@ $        i =  {0,3}    [size = nrow+1  = 1+1]
 $        j =  {0,1,2}  [size = 3]
 $        v =  {4,5,6}  [size = 3]
 
-.keywords: matrix, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatCreateAIJ(), MATMPIAIJ,
           MatCreateSeqAIJWithArrays(), MatCreateMPIAIJWithSplitArrays()
 @*/
@@ -4153,8 +4151,6 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
 
    Level: intermediate
 
-.keywords: matrix, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateAIJ(), MatMPIAIJSetPreallocationCSR(),
           MATMPIAIJ, MatGetInfo(), PetscSplitOwnership()
 @*/
@@ -4217,8 +4213,6 @@ $     Process1 [P1]: rows_owned=[2]
 $        i =  {0,3}    [size = nrow+1  = 1+1]
 $        j =  {0,1,2}  [size = 3]
 $        v =  {4,5,6}  [size = 3]
-
-.keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()
@@ -4409,8 +4403,6 @@ $     MatMPIAIJSetPreallocation(A,...);
    hence pre-allocation is perfect.
 
    Level: intermediate
-
-.keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MATMPIAIJ, MatCreateMPIAIJWithArrays()
@@ -5735,8 +5727,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
        the resulting assembly is easier to implement, will work with any matrix format, and the user does not have to
        keep track of the underlying array. Use MatSetOption(A,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) to disable all
        communication if it is known that only local entries will be set.
-
-.keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithArrays()

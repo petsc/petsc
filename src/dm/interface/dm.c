@@ -111,7 +111,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
   Level: beginner
 
-.keywords: DM, topology, create
 @*/
 PetscErrorCode DMClone(DM dm, DM *newdm)
 {
@@ -462,8 +461,6 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 
    Level: advanced
 
-.keywords: DM, set, options, prefix, database
-
 .seealso: DMSetFromOptions()
 @*/
 PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
@@ -498,8 +495,6 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 
    Level: advanced
 
-.keywords: DM, append, options, prefix, database
-
 .seealso: DMSetOptionsPrefix(), DMGetOptionsPrefix()
 @*/
 PetscErrorCode  DMAppendOptionsPrefix(DM dm,const char prefix[])
@@ -529,8 +524,6 @@ PetscErrorCode  DMAppendOptionsPrefix(DM dm,const char prefix[])
    sufficient length to hold the prefix.
 
    Level: advanced
-
-.keywords: DM, set, options, prefix, database
 
 .seealso: DMSetOptionsPrefix(), DMAppendOptionsPrefix()
 @*/
@@ -2715,7 +2708,6 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DM originating vectors.
 
-.keywords: DM, local-to-local, begin
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateLocalVector(), DMCreateGlobalVector(), DMCreateInterpolation(), DMLocalToLocalEnd(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 
 @*/
@@ -2753,7 +2745,6 @@ PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DM originating vectors.
 
-.keywords: DM, local-to-local, end
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateLocalVector(), DMCreateGlobalVector(), DMCreateInterpolation(), DMLocalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 
 @*/
@@ -3207,8 +3198,6 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
 
    Level: intermediate
 
-.keywords: interpolation, restriction, multigrid
-
 .seealso: DMRefine(), DMCreateInjection(), DMCreateInterpolation()
 @*/
 PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest)
@@ -3490,7 +3479,6 @@ PetscBool         DMRegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.keywords: DM, set, type
 .seealso: DMGetType(), DMCreate()
 @*/
 PetscErrorCode  DMSetType(DM dm, DMType method)
@@ -3530,7 +3518,6 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
 
   Level: intermediate
 
-.keywords: DM, get, type, name
 .seealso: DMSetType(), DMCreate()
 @*/
 PetscErrorCode  DMGetType(DM dm, DMType *type)
@@ -3683,7 +3670,6 @@ foundconv:
 
   Level: advanced
 
-.keywords: DM, register
 .seealso: DMRegisterAll(), DMRegisterDestroy()
 
 @*/
@@ -5295,7 +5281,6 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
 
   Level: intermediate
 
-.keywords: point, Hasse Diagram, dimension
 .seealso: DMPLEX, DMPlexGetDepthStratum(), DMPlexGetHeightStratum()
 @*/
 PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
@@ -5327,7 +5312,6 @@ PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *p
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM()
 @*/
 PetscErrorCode DMSetCoordinates(DM dm, Vec c)
@@ -5364,7 +5348,6 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMGetCoordinatesLocal(), DMSetCoordinates(), DMGetCoordinates(), DMGetCoordinateDM()
 @*/
 PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
@@ -5404,7 +5387,6 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMSetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM()
 @*/
 PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
@@ -5446,7 +5428,6 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
 
   Level: advanced
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMGetCoordinatesLocalNoncollective()
 @*/
 PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
@@ -5497,7 +5478,6 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMSetCoordinatesLocal(), DMGetCoordinates(), DMSetCoordinates(), DMGetCoordinateDM(), DMGetCoordinatesLocalNoncollective()
 @*/
 PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
@@ -5525,7 +5505,6 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
 
   Level: advanced
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMGetCoordinatesLocalSetUp(), DMGetCoordinatesLocal(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMSetCoordinates(), DMGetCoordinateDM()
 @*/
 PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
@@ -5563,7 +5542,6 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
 
   Level: advanced
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMSetCoordinatesLocal(), DMGetCoordinatesLocal(), DMGetCoordinatesLocalNoncollective(), DMGetCoordinatesLocalSetUp(), DMGetCoordinates(), DMSetCoordinates(), DMGetCoordinateDM()
 @*/
 PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSection, Vec *pCoord)
@@ -5642,7 +5620,6 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMSetCoordinateDM(), DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
 @*/
 PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
@@ -5677,7 +5654,6 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMGetCoordinateDM(), DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
 @*/
 PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
@@ -5706,7 +5682,6 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
 
   Level: intermediate
 
-.keywords: mesh, coordinates
 .seealso: DMSetCoordinateDim(), DMGetCoordinateSection(), DMGetCoordinateDM(), DMGetSection(), DMSetSection()
 @*/
 PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
@@ -5732,7 +5707,6 @@ PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
 
   Level: intermediate
 
-.keywords: mesh, coordinates
 .seealso: DMGetCoordinateDim(), DMSetCoordinateSection(), DMGetCoordinateSection(), DMGetSection(), DMSetSection()
 @*/
 PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
@@ -5761,7 +5735,6 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
 
   Level: intermediate
 
-.keywords: mesh, coordinates
 .seealso: DMGetCoordinateDM(), DMGetSection(), DMSetSection()
 @*/
 PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
@@ -5789,7 +5762,6 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
 
   Level: intermediate
 
-.keywords: mesh, coordinates
 .seealso: DMGetCoordinateSection(), DMGetSection(), DMSetSection()
 @*/
 PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
@@ -6277,7 +6249,6 @@ $    PetscSFGetGraph(cellSF,NULL,&nFound,&found,&cells);
   Where cells[i].rank is the rank of the cell containing point found[i] (or i if found == NULL), and cells[i].index is
   the index of the cell in its rank's local numbering.
 
-.keywords: point location, mesh
 .seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMPointLocationType
 @*/
 PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *cellSF)
@@ -6503,7 +6474,6 @@ PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: DMLabelCreate(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMCreateLabel(DM dm, const char name[])
@@ -6549,7 +6519,6 @@ PetscErrorCode DMCreateLabel(DM dm, const char name[])
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelGetValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMGetLabelValue(DM dm, const char name[], PetscInt point, PetscInt *value)
@@ -6581,7 +6550,6 @@ PetscErrorCode DMGetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelSetValue(), DMGetStratumIS(), DMClearLabelValue()
 @*/
 PetscErrorCode DMSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
@@ -6616,7 +6584,6 @@ PetscErrorCode DMSetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelClearValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
@@ -6647,7 +6614,6 @@ PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, Petsc
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelGetNumValues(), DMSetLabelValue()
 @*/
 PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
@@ -6680,7 +6646,6 @@ PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelGetValueIS(), DMGetLabelSize()
 @*/
 PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
@@ -6718,7 +6683,6 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelGetStratumSize(), DMGetLabelSize(), DMGetLabelIds()
 @*/
 PetscErrorCode DMGetStratumSize(DM dm, const char name[], PetscInt value, PetscInt *size)
@@ -6752,7 +6716,6 @@ PetscErrorCode DMGetStratumSize(DM dm, const char name[], PetscInt value, PetscI
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelGetStratumIS(), DMGetStratumSize()
 @*/
 PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *points)
@@ -6784,7 +6747,6 @@ PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *poin
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelSetStratumIS(), DMGetStratumSize()
 @*/
 PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS points)
@@ -6816,7 +6778,6 @@ PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS point
 
   Level: beginner
 
-.keywords: mesh
 .seealso: DMLabelClearStratum(), DMSetLabelValue(), DMGetStratumIS(), DMClearLabelValue()
 @*/
 PetscErrorCode DMClearLabelStratum(DM dm, const char name[], PetscInt value)
@@ -6846,7 +6807,6 @@ PetscErrorCode DMClearLabelStratum(DM dm, const char name[], PetscInt value)
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
@@ -6876,7 +6836,6 @@ PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
@@ -6913,7 +6872,6 @@ PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: DMCreateLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
@@ -6950,7 +6908,6 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
@@ -6991,7 +6948,6 @@ PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
@@ -7024,7 +6980,6 @@ PetscErrorCode DMGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
 
   Level: developer
 
-.keywords: mesh
 .seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMAddLabel(DM dm, DMLabel label)
@@ -7061,7 +7016,6 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 
   Level: developer
 
-.keywords: mesh
 .seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
@@ -7112,7 +7066,6 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 
   Level: developer
 
-.keywords: mesh
 .seealso: DMSetLabelOutput(), DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
@@ -7148,7 +7101,6 @@ PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 
   Level: developer
 
-.keywords: mesh
 .seealso: DMGetLabelOutput(), DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
 @*/
 PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
@@ -7187,7 +7139,6 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 
   Note: This is typically used when interpolating or otherwise adding to a mesh
 
-.keywords: mesh
 .seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMCopyLabels(DM dmA, DM dmB)

@@ -659,7 +659,6 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
 
   Level: advanced
 
-.keywords: PetscPartitioner, register
 .seealso: PetscPartitionerRegisterAll(), PetscPartitionerRegisterDestroy()
 
 @*/
@@ -686,7 +685,6 @@ PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*fun
 
   Level: intermediate
 
-.keywords: PetscPartitioner, set, type
 .seealso: PetscPartitionerGetType(), PetscPartitionerCreate()
 @*/
 PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerType name)
@@ -727,7 +725,6 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
 
   Level: intermediate
 
-.keywords: PetscPartitioner, get, type, name
 .seealso: PetscPartitionerSetType(), PetscPartitionerCreate()
 @*/
 PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerType *name)

@@ -119,7 +119,6 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 
   Level: intermediate
 
-.keywords: PetscRandom, set, options, database, type
 .seealso: PetscRandomSetFromOptions(), PetscRandomSetType()
 */
 static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,PetscRandom rnd)
@@ -165,7 +164,6 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *Pe
 
   Level: beginner
 
-.keywords: PetscRandom, set, options, database
 .seealso: PetscRandomCreate(), PetscRandomSetType()
 @*/
 PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)

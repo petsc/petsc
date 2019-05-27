@@ -31,8 +31,6 @@ $    i.e. the size of Krylov space minus one
 
    Level: intermediate
 
-.keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
-
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType(), KSPGMRESSetOrthogonalization(),
           KSPGMRESModifiedGramSchmidtOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType()
 @*/
@@ -77,8 +75,6 @@ $    i.e. the size of Krylov space minus one
 -  -ksp_gmres_modifiedgramschmidt - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
 
    Level: intermediate
-
-.keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType(), KSPGMRESSetOrthogonalization(),
           KSPGMRESModifiedGramSchmidtOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType()
