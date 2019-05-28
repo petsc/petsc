@@ -655,11 +655,10 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
   PetscValidType(x,4);
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,4,y,1);
-  VecCheckSameSize(x,1,y,4);
+  VecCheckSameSize(y,1,x,4);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   PetscValidLogicalCollectiveScalar(y,beta,3);
-
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpby)(y,alpha,beta,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
