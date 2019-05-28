@@ -60,6 +60,8 @@ class Configure(config.package.GNUPackage):
     args.append('--with-lapack=no')
     if self.openmp.found:
       args.append('--with-openmp')
+      self.usesopenmp = 1
+      # use OMP_NUM_THREADS to control the number of threads used
 
     # explicitly tell hypre BLAS/LAPACK mangling since it may not match Fortran mangling
     if self.blasLapack.mangling == 'underscore':

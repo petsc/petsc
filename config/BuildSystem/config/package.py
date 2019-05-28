@@ -77,6 +77,7 @@ class Package(config.base.Configure):
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
     self.requirec99flag         = 0  # package must be compiled with C99 flags
+    self.usesopenmp             = 0  # package is built to use OpenMP
 
     # Outside coupling
     self.defaultInstallDir      = os.path.abspath('externalpackages')
@@ -104,6 +105,7 @@ class Package(config.base.Configure):
         if self.version: output += '  Version:  '+self.version+'\n'
       if self.include: output += '  Includes: '+self.headers.toStringNoDupes(self.include)+'\n'
       if self.lib:     output += '  Library:  '+self.libraries.toStringNoDupes(self.lib)+'\n'
+      if self.usesopenmp: output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> to control the number of threads\n'
     return output
 
   def setupDependencies(self, framework):

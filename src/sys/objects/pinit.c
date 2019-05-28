@@ -651,6 +651,9 @@ int64_t Petsc_adios_group;
 #if defined(PETSC_HAVE_ADIOS2)
 #include <adios2_c.h>
 #endif
+#if defined(PETSC_HAVE_OPENMP)
+#include <omp.h>
+#endif
 
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI.
@@ -1011,7 +1014,27 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscInfo1(0,"PETSc successfully started: number of processors = %d\n",size);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_OPENMP)
+  if (PetscLogPrintInfo) {
+    char *threads = getenv("OMP_NUM_THREADS");
 
+    if (threads) {
+      ierr = PetscInfo1(0,"Number of OpenMP threads %s (given by OMP_NUM_THREADS)\n",threads);
+    } else {
+#define NMAX  10000
+      int         i,nth;
+      PetscScalar *x;
+      ierr = PetscMalloc1(NMAX,&x);CHKERRQ(ierr);
+#pragma omp parallel for
+      for (i=0; i<NMAX; i++) {
+        x[i] = 0.0;
+        nth  = omp_get_num_threads();
+      }
+      ierr = PetscFree(x);CHKERRQ(ierr);
+      ierr = PetscInfo1(0,"Number of OpenMP threads %d (number not set with OMP_NUM_THREADS)\n",nth);
+    }
+  }
+#endif
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(NULL);CHKERRQ(ierr);
