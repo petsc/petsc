@@ -297,9 +297,9 @@ shared libraries and flag it with --known-mpi-shared-libraries=1')
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
     self.framework.addBatchLib(self.lib)
-    self.types.checkSizeof('MPI_Comm', 'mpi.h')
+    self.types.checkSizeof('MPI_Comm',(4,8),'mpi.h')
     if 'HAVE_MPI_FINT' in self.defines:
-      self.types.checkSizeof('MPI_Fint', 'mpi.h')
+      self.types.checkSizeof('MPI_Fint',(4,8),'mpi.h')
     self.compilers.CPPFLAGS = oldFlags
     return
 
