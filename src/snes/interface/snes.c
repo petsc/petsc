@@ -308,6 +308,8 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 #include <petscviewersaws.h>
 #endif
 
+PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
+
 /*@C
    SNESView - Prints the SNES data structure.
 
@@ -367,6 +369,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     DM               dm;
     PetscErrorCode   (*cJ)(SNES,Vec,Mat,Mat,void*);
     void             *ctx;
+    const char       *pre = "";
 
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer);CHKERRQ(ierr);
     if (!snes->setupcalled) {
@@ -408,10 +411,25 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     }
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     ierr = DMSNESGetJacobian(dm,&cJ,&ctx);CHKERRQ(ierr);
+    if (snes->mf_operator) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is applied matrix-free with differencing\n");CHKERRQ(ierr);
+      pre  = "Preconditioning ";
+    }
     if (cJ == SNESComputeJacobianDefault) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is built using finite differences one column at a time\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  %sJacobian is built using finite differences one column at a time\n",pre);CHKERRQ(ierr);
     } else if (cJ == SNESComputeJacobianDefaultColor) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is built using finite differences with coloring\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  %sJacobian is built using finite differences with coloring\n",pre);CHKERRQ(ierr);
+    /* it slightly breaks data encapsulation for access the DMDA information directly */
+    } else if (cJ == SNESComputeJacobian_DMDA) {
+      MatFDColoring fdcoloring;
+      ierr = PetscObjectQuery((PetscObject)dm,"DMDASNES_FDCOLORING",(PetscObject*)&fdcoloring);CHKERRQ(ierr);
+      if (fdcoloring) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %sJacobian is built using colored finite differences on a DMDA\n",pre);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %sJacobian is built using a DMDA local Jacobian\n",pre);CHKERRQ(ierr);
+      }
+    } else if (snes->mf) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is applied matrix-free with differencing, no explict Jacobian\n");CHKERRQ(ierr);
     }
   } else if (isstring) {
     const char *type;
@@ -532,9 +550,6 @@ PETSC_INTERN PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
 static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperator, PetscInt version)
 {
   Mat            J;
-  KSP            ksp;
-  PC             pc;
-  PetscBool      match;
   PetscErrorCode ierr;
   MatNullSpace   nullsp;
 
@@ -579,15 +594,19 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     if ((snes->npcside== PC_LEFT) && snes->npc) {
       if (!snes->jacobian){ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);}
     } else {
+      KSP       ksp;
+      PC        pc;
+      PetscBool match;
+
       ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,0);CHKERRQ(ierr);
-    }
-    /* Force no preconditioner */
-    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&match);CHKERRQ(ierr);
-    if (!match) {
-      ierr = PetscInfo(snes,"Setting default matrix-free preconditioner routines\nThat is no preconditioner is being used\n");CHKERRQ(ierr);
-      ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+      /* Force no preconditioner */
+      ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&match);CHKERRQ(ierr);
+      if (!match) {
+        ierr = PetscInfo(snes,"Setting default matrix-free preconditioner routines\nThat is no preconditioner is being used\n");CHKERRQ(ierr);
+        ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+      }
     }
   }
   ierr = MatDestroy(&J);CHKERRQ(ierr);

@@ -13,6 +13,7 @@ SNES Object: 1 MPI processes
   total number of linear solver iterations=2
   total number of function evaluations=3
   norm schedule ALWAYS
+  Jacobian is built using colored finite differences on a DMDA
   SNESLineSearch Object: 1 MPI processes
     type: bt
       interpolation: cubic
@@ -32,62 +33,62 @@ SNES Object: 1 MPI processes
     type: fieldsplit
       FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = 2
       Solver info for each split is in the following KSP objects:
-      Split number 0 Fields  0, 1
-      KSP Object: (fieldsplit_0_) 1 MPI processes
-        type: preonly
-        maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-        left preconditioning
-        using NONE norm type for convergence test
-      PC Object: (fieldsplit_0_) 1 MPI processes
-        type: lu
-          out-of-place factorization
-          tolerance for zero pivot 2.22045e-14
-          matrix ordering: nd
-          factor fill ratio given 5., needed 2.5576
-            Factored matrix follows:
-              Mat Object: 1 MPI processes
-                type: seqaij
-                rows=196, cols=196, bs=2
-                package used to perform factorization: petsc
-                total: nonzeros=8880, allocated nonzeros=8880
-                total number of mallocs used during MatSetValues calls =0
-                  using I-node routines: found 49 nodes, limit used is 5
-        linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_0_) 1 MPI processes
-          type: seqaij
-          rows=196, cols=196, bs=2
-          total: nonzeros=3472, allocated nonzeros=3472
-          total number of mallocs used during MatSetValues calls =0
-            using I-node routines: found 49 nodes, limit used is 5
-      Split number 1 Fields  0, 1
-      KSP Object: (fieldsplit_1_) 1 MPI processes
-        type: preonly
-        maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-        left preconditioning
-        using NONE norm type for convergence test
-      PC Object: (fieldsplit_1_) 1 MPI processes
-        type: lu
-          out-of-place factorization
-          tolerance for zero pivot 2.22045e-14
-          matrix ordering: nd
-          factor fill ratio given 5., needed 2.5576
-            Factored matrix follows:
-              Mat Object: 1 MPI processes
-                type: seqaij
-                rows=196, cols=196, bs=2
-                package used to perform factorization: petsc
-                total: nonzeros=8880, allocated nonzeros=8880
-                total number of mallocs used during MatSetValues calls =0
-                  using I-node routines: found 49 nodes, limit used is 5
-        linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_1_) 1 MPI processes
-          type: seqaij
-          rows=196, cols=196, bs=2
-          total: nonzeros=3472, allocated nonzeros=3472
-          total number of mallocs used during MatSetValues calls =0
-            using I-node routines: found 49 nodes, limit used is 5
+    Split number 0 Fields  0, 1
+    KSP Object: (fieldsplit_0_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_0_) 1 MPI processes
+      type: lu
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5., needed 2.5576
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=196, cols=196, bs=2
+              package used to perform factorization: petsc
+              total: nonzeros=8880, allocated nonzeros=8880
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 49 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_0_) 1 MPI processes
+        type: seqaij
+        rows=196, cols=196, bs=2
+        total: nonzeros=3472, allocated nonzeros=3472
+        total number of mallocs used during MatSetValues calls =0
+          using I-node routines: found 49 nodes, limit used is 5
+    Split number 1 Fields  0, 1
+    KSP Object: (fieldsplit_1_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_1_) 1 MPI processes
+      type: lu
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5., needed 2.5576
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=196, cols=196, bs=2
+              package used to perform factorization: petsc
+              total: nonzeros=8880, allocated nonzeros=8880
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 49 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_1_) 1 MPI processes
+        type: seqaij
+        rows=196, cols=196, bs=2
+        total: nonzeros=3472, allocated nonzeros=3472
+        total number of mallocs used during MatSetValues calls =0
+          using I-node routines: found 49 nodes, limit used is 5
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij

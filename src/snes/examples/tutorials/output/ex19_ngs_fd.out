@@ -20,4 +20,5 @@ SNES Object: 1 MPI processes
   tolerances: relative=0.0001, absolute=1e-50, solution=1e-08
   total number of function evaluations=14
   norm schedule ALWAYS
+  Jacobian is built using a DMDA local Jacobian
 Number of SNES iterations = 13

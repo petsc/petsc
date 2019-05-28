@@ -8,6 +8,8 @@ SNES Object: 2 MPI processes
   total number of linear solver iterations=16
   norm schedule ALWAYS
   total number of grid sequence refinements=2
+  Jacobian is applied matrix-free with differencing
+  Preconditioning Jacobian is built using a DMDA local Jacobian
   SNESLineSearch Object: 2 MPI processes
     type: bt
       interpolation: cubic
