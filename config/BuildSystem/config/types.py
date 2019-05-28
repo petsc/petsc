@@ -228,11 +228,11 @@ void (*signal())();
         includes += '#include <' + otherInclude + '>\n'
       with self.Language(lang):
         for size in typeSizes:
-          body = 'char assert_sizeof[(sizeof({})=={})*2-1];'.format(typeName, size)
+          body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(typeName, size)
           if self.checkCompile(includes, body, codeBegin=codeBegin, codeEnd='\n'):
             break
     if size is None:
-      raise RuntimeError('Size of type {} not found in sizes {}; specify --known-sizeof-{}'.format(typeName, typeSizes, typename))
+      raise RuntimeError('Size of type {0} not found in sizes {1}; specify --known-sizeof-{2}'.format(typeName, typeSizes, typename))
     if save:
       self.sizes[argname] = size
       self.addDefine('SIZEOF_'+typename.replace('-', '_').upper(), str(size))
