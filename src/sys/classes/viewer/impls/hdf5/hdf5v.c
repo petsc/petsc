@@ -403,6 +403,7 @@ PetscErrorCode  PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileM
   ierr = PetscViewerSetType(*hdf5v, PETSCVIEWERHDF5);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*hdf5v, type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*hdf5v, name);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(*hdf5v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
