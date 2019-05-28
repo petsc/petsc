@@ -238,51 +238,26 @@ void (*signal())();
       self.addDefine('SIZEOF_'+typename.replace('-', '_').upper(), str(size))
     return size
 
-  def checkBitsPerByte(self):
-    '''Determine the nubmer of bits per byte and define BITS_PER_BYTE'''
-    filename = 'conftestval'
-    includes = '''
-#if STDC_HEADERS
-#include <stdlib.h>
-#include <stdio.h>
-#endif\n'''
-    body     = 'FILE *f = fopen("'+filename+'", "w");\n'+'''
-    char val[2];
-    int i = 0;
-
-    if (!f) exit(1);
-    val[0]=\'\\1\';
-    val[1]=\'\\0\';
-    while(val[0]) {val[0] <<= 1; i++;}
-    fprintf(f, "%d\\n", i);\n
-    '''
+  def checkBitsPerByte(self, lang='C'):
+    '''Determine the number of bits per byte and define BITS_PER_BYTE'''
     if 'known-bits-per-byte' in self.argDB:
       bits = self.argDB['known-bits-per-byte']
-    elif not self.argDB['with-batch']:
-      if self.checkRun(includes, body) and os.path.exists(filename):
-        f    = open(filename)
-        bits = int(f.read())
-        f.close()
-        os.remove(filename)
-      else:
-         msg = 'Cannot run executable to determine bits per bit. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
-         raise RuntimeError(msg)
+      bits = int(bits)
     else:
-      self.framework.addBatchBody(['{',
-                                   '  int i = 0;',
-                                   '  char val[2];',
-                                   '  val[0]=\'\\1\';',
-                                   '  val[1]=\'\\0\';',
-                                   '  while(val[0]) {val[0] <<= 1; i++;}',
-                                   '  fprintf(output, "  \'--known-bits-per-byte=%d\',\\n", i);',
-                                   '}'])
-      # dummy value
-      bits = 8
-
-    self.bits_per_byte = int(bits)
+      bits = None
+      values = (8, 6, 7, 9)
+      with self.Language(lang):
+        includes = ''
+        for val in values:
+          body = 'char assert_char_bit[((int)((unsigned char)-1)==((1<<{0})-1))*2-1];'.format(val)
+          if self.checkCompile(includes, body, codeBegin='', codeEnd='\n'):
+            bits = val
+            break
+      if bits is None:
+        raise RuntimeError('Number of bits per byte not found in {0}; specify --known-bits-per-byte'.format(values))
+    self.bits_per_byte = bits
     self.addDefine('BITS_PER_BYTE', bits)
     return
-
 
   def checkVisibility(self):
     if not self.argDB['with-shared-libraries']:
