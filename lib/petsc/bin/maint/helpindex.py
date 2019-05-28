@@ -12,30 +12,23 @@ from __future__ import print_function
 import os
 import glob
 import posixpath
-from exceptions import *
 from sys import *
-from string import *
 
 # dict[prim_key][sec_key][link_title] = filename
-
-def comptxt(a,b):
-      a = lower(a)
-      b = lower(b)
-      return cmp(a,b)
 
 def gethelpstring(PETSC_DIR,filename):
       filename = PETSC_DIR + '/' + filename
       fd = open(filename,'r')
 
       for line in fd.readlines():
-            tmp = find(line,'help[]')
+            tmp = line.find('help[]')
             if not tmp == -1:
-                  tmp1 = find(line,'"')
-                  tmp2 = find(line,'.')
+                  tmp1 = line.find('"')
+                  tmp2 = line.find('.')
                   if tmp1 == -1 or tmp2 == -1:
                         return "PetscNoHelp"
-                  buf = strip(split(line,'"')[1])
-                  buf = strip(split(buf,'.')[0])
+                  buf = line.split('"')[1].strip()
+                  buf = buf.split('.')[0].strip()
                   fd.close()
                   return buf
       return "PetscNoHelp"
@@ -45,28 +38,28 @@ def gethelpstring(PETSC_DIR,filename):
 # Scan and extract format information from each line
 def updatedata(PETSC_DIR,dict,line):
       # The first filed is the name of the file which will be used for link
-      filename     = split(line," ")[0]
-      concept_list = join(split(line," ")[1:]," ")
-      concept_list = strip(concept_list)
+      filename     = line.split()[0]
+      concept_list = ' '.join(line.split()[1:])
+      concept_list = concept_list.strip()
 
       #check for a man page - html suffix
-      if split(filename,'.')[-1] == 'html':
-            link_title = split(split(filename,'/')[-1],'.')[0]
+      if os.path.splitext(filename)[-1] == '.html':
+            link_title = os.path.splitext(os.path.basename(filename))[0]
       else:
             # should be an example file
             help_str = gethelpstring(PETSC_DIR,filename)
             if not help_str == "PetscNoHelp":
                   link_title = help_str
             else:
-                  link_title = replace(filename,'src/','')
-                  link_title = replace(link_title,'examples/','')
-                  link_title = replace(link_title,'tutorials/','')
+                  link_title = (filename.replace('src/', '')
+                    .replace('examples/', '')
+                    .replace('tutorials/', ''))
 
       # ';' is a field separator
-      keys = split(concept_list,";")
+      keys = concept_list.split(";")
       for key in keys:
             # '^' is a subsection separator
-            prim_sub_keys = split(key,"^")
+            prim_sub_keys = key.split("^")
             if len(prim_sub_keys) == 1:
                   prim_key = prim_sub_keys[0]
                   sub_key  = "PetscNoKey"
@@ -78,8 +71,8 @@ def updatedata(PETSC_DIR,dict,line):
                   sub_key  = prim_sub_keys[1]
                   print("Error! more than 2 levels if keys specified "  + filename)
                   print(line)
-            prim_key = strip(prim_key)
-            sub_key  = strip(sub_key)
+            prim_key = prim_key.strip()
+            sub_key  = sub_key.strip()
             if prim_key == '':
                   continue
             if prim_key not in dict:
@@ -100,19 +93,17 @@ def printdata(LOC,fd,dict):
       # Put the Table Header
       fd.write("<H1><center> PETSc Help Index</center></H1>\n")
 
-      prim_keys = dict.keys()
-      prim_keys.sort(comptxt)
+      prim_keys = sorted(dict.keys(), key=str.lower)
 
       alphabet_index = {}
       for key in prim_keys:
-            alphabet_index[upper(key[0])] = 'junk'
-      alphabet_keys = alphabet_index.keys()
-      alphabet_keys.sort()
+            alphabet_index[key[0].upper()] = 'junk'
+      alphabet_keys = sorted(alphabet_index.keys())
 
       a_key_tmp = ''
       for prim_key in prim_keys:
             # First check and print the alphabet index
-            a_key = upper(prim_key[0])
+            a_key = prim_key[0].upper()
             if not a_key == a_key_tmp:
                   a_key_tmp = a_key
                   # Print the HTML tag for this section
@@ -121,24 +112,22 @@ def printdata(LOC,fd,dict):
                   fd.write('<H3> <CENTER> | ')
                   for key_tmp in alphabet_keys:
                         if a_key == key_tmp:
-                              fd.write( '<FONT COLOR="#CC3333">' + upper(key_tmp) + '</FONT> | \n' )
+                              fd.write( '<FONT COLOR="#CC3333">' + key_tmp.upper() + '</FONT> | \n' )
                         else:
                               fd.write('<A HREF="help.html#' + key_tmp + '"> ' + \
-                                       upper(key_tmp) + ' </A> | \n')
+                                       key_tmp.upper() + ' </A> | \n')
                   fd.write('</CENTER></H3> \n')
 
             # Precheck the sub_keys so that if it has 'PetscNoKey', then start printing
             # the filename (data) in the same column
-            sub_keys = dict[prim_key].keys()
-            sub_keys.sort(comptxt)
+            sub_keys = sorted(dict[prim_key].keys(), key=str.lower)
             # Now move 'PetscNoKey' to the begining of this list
             if not sub_keys.count('PetscNoKey') == 0:
                   sub_keys.remove('PetscNoKey')
                   sub_keys.insert(0,'PetscNoKey')
 
             if  sub_keys[0] == 'PetscNoKey':
-                  link_names = dict[prim_key]['PetscNoKey'].keys()
-                  link_names.sort(comptxt)
+                  link_names = sorted(dict[prim_key]['PetscNoKey'].keys(), key=str.lower)
                   link_name  = link_names[0]
                   filename = dict[prim_key]['PetscNoKey'][link_name]
                   del dict[prim_key]['PetscNoKey'][link_name]
@@ -147,9 +136,9 @@ def printdata(LOC,fd,dict):
                   fd.write("<TABLE>\n")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=260 ><B><FONT SIZE=4>")
-        	  # If prim_key exists in the concepts directory,
-        	  # create a link to it.
-                  concept_filename = replace(lower(prim_key)," ","_")
+                  # If prim_key exists in the concepts directory,
+                  # create a link to it.
+                  concept_filename = prim_key.lower().replace(' ', '_')
                   concept_filename = "concepts/" + concept_filename + ".html"
 
                   #if os.access(concept_filename,os.F_OK):
@@ -161,7 +150,7 @@ def printdata(LOC,fd,dict):
                         fd.write("\">")
                         fd.write(prim_key)
                         fd.write("</A>")
- 	          else:
+                  else:
                         fd.write(prim_key)
                   fd.write("</FONT></B></TD>")
                   fd.write("<TD WIDTH=500>")
@@ -174,9 +163,9 @@ def printdata(LOC,fd,dict):
                   fd.write("<TABLE>")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=300 ><B><FONT SIZE=4>")
-        	  # If prim_key exists in the concepts directory,
-        	  # create a link to it.
-                  concept_filename = replace(lower(prim_key)," ","_")
+                  # If prim_key exists in the concepts directory,
+                  # create a link to it.
+                  concept_filename = prim_key.lower().replace(' ', '_')
                   concept_filename = "concepts/" + concept_filename + ".html"
 
                   #if os.access(concept_filename,os.F_OK):
@@ -188,7 +177,7 @@ def printdata(LOC,fd,dict):
                         fd.write("\">")
                         fd.write(prim_key)
                         fd.write("</A>")
- 	          else:
+                  else:
                         fd.write(prim_key)
                   fd.write("</FONT></B></TD>")
                   fd.write("</TR>\n")
@@ -197,8 +186,7 @@ def printdata(LOC,fd,dict):
 
 
             for sub_key in sub_keys:
-                  link_names = dict[prim_key][sub_key].keys()
-                  link_names.sort(comptxt)
+                  link_names = sorted(dict[prim_key][sub_key].keys(), key=str.lower)
 
                   if not sub_key == 'PetscNoKey':
                         # Extract the first element from link_names
@@ -252,7 +240,7 @@ def main():
       fd1 = open( LOC + '/docs/exampleconcepts','r')
 
       for line in fd1.readlines():
-            updatedata(PETSC_DIR,dict,strip(line))
+            updatedata(PETSC_DIR,dict,line.strip())
 
       fd1.close()
       #make sure there is no problem re-writing to this file
