@@ -226,10 +226,12 @@ void (*signal())();
         if otherInclude == 'mpi.h':
           includes += mpiFix
         includes += '#include <' + otherInclude + '>\n'
+      size = None
       with self.Language(lang):
-        for size in typeSizes:
-          body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(typeName, size)
+        for s in typeSizes:
+          body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(typeName, s)
           if self.checkCompile(includes, body, codeBegin=codeBegin, codeEnd='\n'):
+            size = s
             break
     if size is None:
       raise RuntimeError('Size of type {0} not found in sizes {1}; specify --known-sizeof-{2}'.format(typeName, typeSizes, typename))
