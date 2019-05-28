@@ -1,6 +1,6 @@
 #include <petsc/private/petscimpl.h>
 #include <petsctao.h>      /*I "petsctao.h" I*/
-
+#include <petscsys.h>
 
 PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
 {
@@ -464,3 +464,68 @@ PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscReal ST_InternalPN(PetscScalar in, PetscReal lb, PetscReal ub)
+{
+  return PetscMax(0,(PetscReal)PetscRealPart(in)-ub) - PetscMax(0,-(PetscReal)PetscRealPart(in)-PetscAbsReal(lb));
+}
+
+PETSC_STATIC_INLINE PetscReal ST_InternalNN(PetscScalar in, PetscReal lb, PetscReal ub)
+{
+  return PetscMax(0,(PetscReal)PetscRealPart(in) + PetscAbsReal(ub)) - PetscMax(0,-(PetscReal)PetscRealPart(in) - PetscAbsReal(lb));
+}
+
+PETSC_STATIC_INLINE PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscReal ub)
+{
+  return PetscMax(0, (PetscReal)PetscRealPart(in)-ub) + PetscMin(0, (PetscReal)PetscRealPart(in) - lb);
+}
+
+/*@
+   TaoSoftThreshold - Calculates soft thresholding routine with input vector
+   and given lower and upper bound and returns it to output vector.
+
+   Input Parameters:
++  in - input vector to be thresholded
+.  lb - lower bound
+.  ub - upper bound
+
+   Output Parameters:
+.  out - Soft thresholded output vector
+
+   Notes:
+   Soft thresholding is defined as
+   \[ S(input,lb,ub) =
+     \begin{cases}
+    input - ub  \text{input > ub} \\
+    0           \text{lb =< input <= ub} \\
+    input + lb  \text{input < lb} \\
+   \]
+
+   Level: developer
+
+@*/
+PetscErrorCode TaoSoftThreshold(Vec in, PetscReal lb, PetscReal ub, Vec out)
+{
+  PetscErrorCode ierr;
+  PetscInt       i, nlocal, mlocal;
+  PetscScalar   *inarray, *outarray;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPair(in, out, &inarray, &outarray);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(in, &nlocal);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(in, &mlocal);CHKERRQ(ierr);
+
+  if (nlocal != mlocal) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Input and output vectors need to be of same size.");
+  if (lb == ub) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Lower bound and upper bound need to be different.");
+  if (lb > ub) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Lower bound needs to be lower than upper bound.");
+
+  if (ub >= 0 && lb < 0){
+    for (i=0; i<nlocal; i++) outarray[i] = ST_InternalPN(inarray[i], lb, ub);
+  } else if (ub < 0 && lb < 0){
+    for (i=0; i<nlocal; i++) outarray[i] = ST_InternalNN(inarray[i], lb, ub);
+  } else {
+    for (i=0; i<nlocal; i++) outarray[i] = ST_InternalPP(inarray[i], lb, ub);
+  }
+
+  ierr = VecRestoreArrayPair(in, out, &inarray, &outarray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
