@@ -346,7 +346,7 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
    Collective on PetscViewer
 
    Input Parameters:
-+  v - the viewer
++  v - the viewer to be viewed
 -  viewer - visualization context
 
   Notes:
