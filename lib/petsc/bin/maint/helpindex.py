@@ -250,15 +250,11 @@ def main():
 
       # open and read in the input files
       fd1 = open( LOC + '/docs/exampleconcepts','r')
-#      fd2 = open( PETSC_DIR + '/docs/manconcepts','r')
 
       for line in fd1.readlines():
             updatedata(PETSC_DIR,dict,strip(line))
-#      for line in fd2.readlines():
-#            updatedata(PETSC_DIR,dict,strip(line))
 
       fd1.close()
-#      fd2.close()
       #make sure there is no problem re-writing to this file
       os.system('/bin/rm -f ' + LOC + '/docs/manualpages/help.html')
       fd = open( LOC + '/docs/manualpages/help.html','w')
