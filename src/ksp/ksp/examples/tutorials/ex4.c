@@ -1,5 +1,5 @@
 
-static char help[] = "Solves a linear system in parallel with KSP amd HMG.\n\
+static char help[] = "Solves a linear system in parallel with KSP and HMG.\n\
 Input parameters include:\n\
   -view_exact_sol    : write exact solution vector to stdout\n\
   -m  <mesh_x>       : number of mesh points in x-direction\n\
@@ -29,6 +29,7 @@ int main(int argc,char **args)
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
@@ -113,16 +114,50 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-      requires: !complex !single hypre
+      requires: !complex !single
 
    test:
-      suffix: hmg
+      suffix: hypre
       nsize: 2
-      args: -ksp_monitor -pc_type hmg
+      requires: hypre
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type hypre
 
    test:
-      suffix: hmg_block
+      suffix: hypre_bs4
       nsize: 2
-      args: -ksp_monitor -pc_type hmg -bs 2
+      requires: hypre
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type hypre -bs 4 -pc_hmg_use_subspace_coarsening 1
+
+   test:
+      suffix: hypre_asm
+      nsize: 2
+      requires: hypre
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type hypre -bs 4 -pc_hmg_use_subspace_coarsening 1 -mg_levels_3_pc_type asm
+
+   test:
+      suffix: hypre_fieldsplit
+      nsize: 2
+      requires: hypre
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type hypre -bs 4 -mg_levels_4_pc_type fieldsplit
+
+   test:
+      suffix: gamg
+      nsize: 2
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type gamg
+
+   test:
+      suffix: gamg_bs4
+      nsize: 2
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type gamg -bs 4 -pc_hmg_use_subspace_coarsening 1
+
+   test:
+      suffix: gamg_asm
+      nsize: 2
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type gamg -bs 4 -pc_hmg_use_subspace_coarsening 1 -mg_levels_1_pc_type asm
+
+   test:
+      suffix: gamg_fieldsplit
+      nsize: 2
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type gamg -bs 4 -mg_levels_1_pc_type fieldsplit
 
 TEST*/

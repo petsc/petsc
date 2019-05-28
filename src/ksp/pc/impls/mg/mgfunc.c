@@ -127,7 +127,24 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PCMGSetOperators(PC pc,PetscInt l,Mat mat)
+/*@
+   PCMGSetInterpolation - Sets operator and preconditioning matrix for lth level
+
+   Logically Collective on PC and Mat
+
+   Input Parameters:
++  pc  - the multigrid context
+.  Amat - the operator
+.  pmat - the preconditioning operator
+-  l   - the level (0 is coarsest) to supply
+
+   Level: advanced
+
+.keywords:  multigrid, set, interpolate, level
+
+.seealso: PCMGSetRestriction(), PCMGSetInterpolation()
+@*/
+PetscErrorCode  PCMGSetOperators(PC pc,PetscInt l,Mat Amat,Mat Pmat)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
@@ -135,8 +152,10 @@ PetscErrorCode  PCMGSetOperators(PC pc,PetscInt l,Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(Amat,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(Pmat,MAT_CLASSID,4);
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  ierr = KSPSetOperators(mglevels[l]->smoothd,mat,mat);CHKERRQ(ierr);
+  ierr = KSPSetOperators(mglevels[l]->smoothd,Amat,Pmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -173,6 +192,94 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
     ierr = PCMGSetInterpolation(pc,l,mglevels[l]->restrct);CHKERRQ(ierr);
   }
   if (mat) *mat = mglevels[l]->interpolate;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCMGGetInterpolations - Gets interpolation matrices for all levels (except level 0)
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context
+
+   Output Parameter:
+-  num_levels - the number of levels
+.  interpolations - the interpolation matrices (size of num_levels-1)
+
+   Notes:
+   No new matrices are created, and the interpolations are the references to the original ones
+
+   Level: advanced
+
+.keywords: MG, get, multigrid, interpolation, level
+
+.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale(), PCMGGetInterpolation()
+@*/
+PetscErrorCode  PCMGGetInterpolations(PC pc,PetscInt *num_levels,Mat *interpolations[])
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  Mat            *mat;
+  PetscInt       l;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(num_levels,2);
+  PetscValidPointer(interpolations,3);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = PetscMalloc1(mg->nlevels,&mat);CHKERRQ(ierr);
+  for (l=1; l< mg->nlevels; l++) {
+    mat[l-1] = mglevels[l]->interpolate;
+    ierr = PetscObjectReference((PetscObject)mat[l-1]);CHKERRQ(ierr);
+  }
+  *num_levels = mg->nlevels;
+  *interpolations = mat;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCMGGetCoarseOperators - Gets coarse operator matrices for all levels (except the finest level)
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context
+
+   Output Parameter:
+-  num_levels - the number of levels
+.  coarseOperators - the coarse operator matrices (size of num_levels-1)
+
+   Notes:
+   No new matrices are created, and the coarse operator matrices are the references to the original ones
+
+   Level: advanced
+
+.keywords: MG, get, multigrid, interpolation, level
+
+.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale(), PCMGGetInterpolation(), PCMGGetInterpolations()
+@*/
+PetscErrorCode  PCMGGetCoarseOperators(PC pc,PetscInt *num_levels,Mat *coarseOperators[])
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscInt       l;
+  Mat            *mat;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(num_levels,2);
+  PetscValidPointer(coarseOperators,3);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = PetscMalloc1(mg->nlevels,&mat);CHKERRQ(ierr);
+  for (l=0; l<mg->nlevels-1; l++) {
+    ierr = KSPGetOperators(mglevels[l]->smoothd,NULL,&(mat[l]));CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)mat[l]);CHKERRQ(ierr);
+  }
+  *num_levels = mg->nlevels;
+  *coarseOperators = mat;
   PetscFunctionReturn(0);
 }
 

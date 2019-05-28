@@ -1,78 +1,118 @@
-
 #include <petscdm.h>
 #include <petscctable.h>
 #include <petsc/private/matimpl.h>
-/* Need to access the hypre private data */
-#include <_hypre_parcsr_ls.h>
 #include <petsc/private/pcmgimpl.h>
 #include <petsc/private/pcimpl.h>      /*I "petscpc.h" I*/
 
 typedef struct {
-  PC          hypre;
-  PetscBool   reuseinterp;
-  PetscInt    blocksize;
+  PC               innerpc;            /* A MG inner PC (Hypre or PCGAMG) to setup interpolations and coarse operators  */
+  char*            innerpctype;        /* PCGAMG or PCHYPRE */
+  PetscBool        reuseinterp;        /* A flag indicates if or not to reuse the interpolations */
+  PetscBool        subcoarsening;
+  PetscErrorCode   (*getoperators)(PC,PetscInt*,Mat**);
+  PetscErrorCode   (*getinterpolations)(PC,PetscInt*,Mat**);
+  PetscErrorCode   (*setfromoptions)(PetscOptionItems*,PC);
 } PC_HMG;
 
-PetscErrorCode MatConvert_ParCSRMatrix_AIJ(MPI_Comm, hypre_ParCSRMatrix*, MatType, MatReuse, Mat*);
 PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems*,PC);
-PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems*,PC);
 PetscErrorCode PCReset_MG(PC);
-PetscErrorCode PCHYPREGetSolver(PC,HYPRE_Solver*);
+#if PETSC_HAVE_HYPRE
+PetscErrorCode PCHYPREBoomerAMGGetCoarseOperators(PC,PetscInt*,Mat**);
+PetscErrorCode PCHYPREBoomerAMGGetInterpolations(PC,PetscInt*,Mat**);
+PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems*,PC);
+#endif
+PetscErrorCode PCMGGetCoarseOperators(PC,PetscInt*,Mat**);
+PetscErrorCode PCMGGetInterpolations(PC,PetscInt*,Mat **);
+PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems*,PC);
 
-static PetscErrorCode PCHMGExtractSubMatrix_HMG(Mat pmat,Mat *submat,MatReuse reuse,PetscInt blocksize)
+static PetscErrorCode PCHMGSetInnerPCFromOptions_Private(PC pc,PetscOptionItems *PetscOptionsObject)
+{
+  PetscErrorCode     ierr;
+  PC_MG              *mg   = (PC_MG*)pc->data;
+  PC_HMG             *hmg   = (PC_HMG*) mg->innerctx;
+
+  PetscFunctionBegin;
+  if (hmg->setfromoptions) {
+    ierr = (*hmg->setfromoptions)(PetscOptionsObject,hmg->innerpc);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NULL,"Inner PC does not support SetFromOptions\n");
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHMGGetInnerPCCoarseOperators_Private(PC pc,PetscInt *nlevels,Mat **operators)
+{
+  PetscErrorCode     ierr;
+  PC_MG              *mg   = (PC_MG*)pc->data;
+  PC_HMG             *hmg   = (PC_HMG*) mg->innerctx;
+
+  PetscFunctionBegin;
+  if (hmg->getoperators) {
+    ierr = (*hmg->getoperators)(hmg->innerpc,nlevels,operators);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NULL,"Inner PC does not support GetOperators\n");
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHMGGetInnerPCInterpolations_Private(PC pc,PetscInt *nlevels,Mat *interpolations[])
+{
+  PetscErrorCode     ierr;
+  PC_MG              *mg   = (PC_MG*)pc->data;
+  PC_HMG             *hmg   = (PC_HMG*) mg->innerctx;
+
+  PetscFunctionBegin;
+  if (hmg->getinterpolations) {
+    ierr = (*hmg->getinterpolations)(hmg->innerpc,nlevels,interpolations);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NULL,"Inner PC does not support GetInterpolation\n");
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReuse reuse,PetscInt blocksize)
 {
   IS             isrow;
   PetscErrorCode ierr;
-  PetscInt       rstart,rend, row,subsize, *rowsindices;
+  PetscInt       rstart,rend;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pmat,&comm);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(pmat,&rstart,&rend);CHKERRQ(ierr);
   if ((rend-rstart)%blocksize != 0) SETERRQ3(comm,PETSC_ERR_ARG_INCOMP,"Block size %d is inconsisent for [%d, %d) \n",blocksize,rstart,rend);
-  subsize = (rend-rstart)/blocksize;
-  ierr = PetscCalloc1(subsize,&rowsindices);CHKERRQ(ierr);
-  subsize = 0;
-  for (row=rstart; row<rend; row+=blocksize){
-    rowsindices[subsize++]=row;
-  }
-  ierr = ISCreateGeneral(comm,subsize,rowsindices,PETSC_OWN_POINTER,&isrow);CHKERRQ(ierr);
+  ierr = ISCreateStride(comm,(rend-rstart)/blocksize,rstart,blocksize,&isrow);
   ierr = MatCreateSubMatrix(pmat,isrow,isrow,reuse,submat);CHKERRQ(ierr);
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHMGExpandInterpolation_HMG(MPI_Comm comm,hypre_ParCSRMatrix *subinterp, Mat *interp, PetscInt blocksize)
+static PetscErrorCode PCHMGExpandInterpolation_Private(Mat subinterp, Mat *interp, PetscInt blocksize)
 {
-  PetscInt        subrstart,subrend,subrowsize,subcolsize,subcstart,subcend,rowsize,colsize;
-  PetscInt        subrow,row,*idx,nz,*d_nnz,*o_nnz,i,j,dnz,onz,max_nz,*indices;
-  PetscScalar     *values;
-  PetscErrorCode  ierr;
+  PetscInt              subrstart,subrend,subrowsize,subcolsize,subcstart,subcend,rowsize,colsize;
+  PetscInt              subrow,row,nz,*d_nnz,*o_nnz,i,j,dnz,onz,max_nz,*indices;
+  const PetscInt        *idx;
+  const PetscScalar     *values;
+  PetscErrorCode        ierr;
+  MPI_Comm              comm;
 
   PetscFunctionBegin;
-  subrstart = hypre_ParCSRMatrixFirstRowIndex(subinterp);
-  subrend = hypre_ParCSRMatrixLastRowIndex(subinterp);
-  subrowsize = subrend-subrstart+1;
+  ierr = PetscObjectGetComm((PetscObject)subinterp,&comm);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(subinterp,&subrstart,&subrend);CHKERRQ(ierr);
+  subrowsize = subrend-subrstart;
   rowsize = subrowsize*blocksize;
-  subcstart = hypre_ParCSRMatrixFirstColDiag(subinterp);
-  subcend = hypre_ParCSRMatrixLastColDiag(subinterp);
-  subcolsize = subcend-subcstart+1;
-  colsize = subcolsize*blocksize;
   ierr = PetscCalloc2(rowsize,&d_nnz,rowsize,&o_nnz);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(subinterp,&subcstart,&subcend);CHKERRQ(ierr);
+  subcolsize = subcend - subcstart;
+  colsize    = subcolsize*blocksize;
   max_nz = 0;
-  for(subrow=subrstart; subrow<=subrend; subrow++){
-    HYPRE_ParCSRMatrixGetRow(subinterp,subrow,(HYPRE_Int*)&nz,(HYPRE_Int**)&idx,NULL);
+  for (subrow=subrstart;subrow<subrend;subrow++) {
+    ierr = MatGetRow(subinterp,subrow,&nz,&idx,NULL);CHKERRQ(ierr);
     if (max_nz<nz) max_nz = nz;
     dnz = 0; onz = 0;
-    for(i=0;i<nz;i++){
-      if(idx[i]<subcstart || idx[i]>subcend) onz++;
-      else dnz++;
+    for (i=0;i<nz;i++) {
+      if(idx[i]>=subcstart && idx[i]<subcend) dnz++;
+      else onz++;
     }
-    for(i=0;i<blocksize;i++){
+    for (i=0;i<blocksize;i++) {
       d_nnz[(subrow-subrstart)*blocksize+i] = dnz;
       o_nnz[(subrow-subrstart)*blocksize+i] = onz;
     }
-    HYPRE_ParCSRMatrixRestoreRow(subinterp,subrow,(HYPRE_Int*)&nz,(HYPRE_Int**)&idx,NULL);
+    ierr = MatRestoreRow(subinterp,subrow,&nz,&idx,NULL);CHKERRQ(ierr);
   }
   ierr = MatCreateAIJ(comm,rowsize,colsize,PETSC_DETERMINE,PETSC_DETERMINE,0,d_nnz,0,o_nnz,interp);CHKERRQ(ierr);
   ierr = MatSetOption(*interp,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
@@ -83,16 +123,16 @@ static PetscErrorCode PCHMGExpandInterpolation_HMG(MPI_Comm comm,hypre_ParCSRMat
   ierr = MatSetUp(*interp);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
   ierr = PetscCalloc1(max_nz,&indices);CHKERRQ(ierr);
-  for(subrow=subrstart; subrow<=subrend; subrow++){
-    HYPRE_ParCSRMatrixGetRow(subinterp,subrow,(HYPRE_Int*)&nz,(HYPRE_Int**)&idx,&values);
-    for(i=0;i<blocksize;i++){
+  for (subrow=subrstart; subrow<subrend; subrow++) {
+    ierr = MatGetRow(subinterp,subrow,&nz,&idx,&values);CHKERRQ(ierr);
+    for (i=0;i<blocksize;i++) {
       row = subrow*blocksize+i;
-      for (j=0;j<nz;j++){
+      for (j=0;j<nz;j++) {
         indices[j] = idx[j]*blocksize+i;
       }
       ierr = MatSetValues(*interp,1,&row,nz,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
-    HYPRE_ParCSRMatrixRestoreRow(subinterp,subrow,(HYPRE_Int*)&nz,(HYPRE_Int**)&idx,&values);
+    ierr = MatRestoreRow(subinterp,subrow,&nz,&idx,&values);CHKERRQ(ierr);
   }
   ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*interp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -108,82 +148,83 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   PC_HMG             *hmg   = (PC_HMG*) mg->innerctx;
   MPI_Comm           comm;
   PetscInt           level;
-  hypre_ParCSRMatrix **P_array, **A_array;
-  HYPRE_Solver       hsolver;
-  hypre_ParAMGData   *amg_data;
   PetscInt           num_levels;
-  PetscReal          global_nonzeros, num_rows;
-  PetscReal          *sparse;
+  PetscBool          same;
+  Mat                *operators,*interpolations;
+  PetscInt           blocksize;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-
-  if(pc->setupcalled){
+  if (pc->setupcalled) {
+   /* Only reuse interpolations when nonzero pattern does not change */
    if (pc->flag == SAME_NONZERO_PATTERN && hmg->reuseinterp) {
-    ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT);CHKERRQ(ierr);
-    ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-   }else {
+     ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT);CHKERRQ(ierr);
+     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
+     PetscFunctionReturn(0);
+    } else {
      ierr = PCReset_MG(pc);CHKERRQ(ierr);
      pc->setupcalled = PETSC_FALSE;
-   }
+    }
   }
 
-  if (!hmg->hypre){
-    ierr = PCCreate(comm,&hmg->hypre);CHKERRQ(ierr);
-    ierr = PCSetType(hmg->hypre,PCHYPRE);CHKERRQ(ierr);
-    ierr = PCHYPRESetType(hmg->hypre,"boomeramg");CHKERRQ(ierr);
+  /* Create an inner PC (GAMG or HYPRE) */
+  if (!hmg->innerpc) {
+    ierr = PCCreate(comm,&hmg->innerpc);CHKERRQ(ierr);
+    ierr = PCSetType(hmg->innerpc,hmg->innerpctype);CHKERRQ(ierr);
+    ierr = PetscStrcmp(hmg->innerpctype,"hypre",&same);CHKERRQ(ierr);
+    if (same) {
+      ierr = PCHYPRESetType(hmg->innerpc,"boomeramg");CHKERRQ(ierr);
+    }
   }
   ierr = PCGetOperators(pc,NULL,&PA);CHKERRQ(ierr);
-  if(hmg->blocksize>1) {
-    ierr = PCHMGExtractSubMatrix_HMG(PA,&submat,MAT_INITIAL_MATRIX,hmg->blocksize);CHKERRQ(ierr);
+  /* Users need to correctly set a block size of matrix in order to use subspace coarsening */
+  ierr = MatGetBlockSize(PA,&blocksize);CHKERRQ(ierr);
+  if (blocksize<=1) hmg->subcoarsening = PETSC_FALSE;
+  /* Extract a submatrix for constructing subinterpolations */
+  if (hmg->subcoarsening) {
+    ierr = PCHMGExtractSubMatrix_Private(PA,&submat,MAT_INITIAL_MATRIX,blocksize);CHKERRQ(ierr);
     PA = submat;
   }
-  ierr = PCSetOperators(hmg->hypre,PA,PA);CHKERRQ(ierr);
-  if (hmg->blocksize>1){
+  ierr = PCSetOperators(hmg->innerpc,PA,PA);CHKERRQ(ierr);
+  if (hmg->subcoarsening) {
    ierr = MatDestroy(&PA);CHKERRQ(ierr);
   }
-  ierr = PCSetUseAmat(hmg->hypre,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)hmg->hypre);CHKERRQ(ierr);
-  ierr = PCSetFromOptions_HYPRE(PetscOptionsObject,hmg->hypre);CHKERRQ(ierr);
+  /* Setup inner PC correctly. During this step, matrix will be coarsened */
+  ierr = PCSetUseAmat(hmg->innerpc,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)hmg->innerpc);CHKERRQ(ierr);
+  ierr = PCHMGSetInnerPCFromOptions_Private(pc,PetscOptionsObject);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PCSetUp(hmg->hypre);
+  ierr = PCSetUp(hmg->innerpc);
 
-  ierr = PCHYPREGetSolver(hmg->hypre,&hsolver);CHKERRQ(ierr);
-  amg_data = (hypre_ParAMGData*) (hsolver);
-
-  if (!amg_data) SETERRQ(comm,PETSC_ERR_ARG_BADPTR,"Fails to setup Hypre \n");
-
-  num_levels = hypre_ParAMGDataNumLevels(amg_data);
-  ierr = PetscCalloc1(num_levels,&sparse);CHKERRQ(ierr);
-
-  A_array= hypre_ParAMGDataAArray(amg_data);
-  P_array = hypre_ParAMGDataPArray(amg_data);
-  for(level=0;level<num_levels;level++){
-    global_nonzeros = (PetscReal) hypre_ParCSRMatrixDNumNonzeros(A_array[level]);
-    num_rows = (PetscReal) hypre_ParCSRMatrixGlobalNumRows(A_array[level]);
-    sparse[num_levels-1-level] =global_nonzeros/(num_rows*num_rows);
+  /* Obtain interpolations IN PLACE. For BoomerAMG, (I,J,data) is reused to avoid memory overhead */
+  ierr = PCHMGGetInnerPCInterpolations_Private(pc,&num_levels,&interpolations);CHKERRQ(ierr);
+  /* We can reuse the coarse operators when we do the full space coarsening */
+  if (!hmg->subcoarsening) {
+    ierr = PCHMGGetInnerPCCoarseOperators_Private(pc,&num_levels,&operators);CHKERRQ(ierr);
   }
-  ierr = PCMGSetLevels_MG(pc,num_levels,NULL);CHKERRQ(ierr);
-  ierr = PetscFree(sparse);CHKERRQ(ierr);
 
-  for(level=num_levels-1;level>0;level--){
+  ierr = PCDestroy(&hmg->innerpc);CHKERRQ(ierr);
+  hmg->innerpc = 0;
+  ierr = PCMGSetLevels_MG(pc,num_levels,NULL);CHKERRQ(ierr);
+  /* Set coarse matrices and interpolations to PCMG */
+  for (level=num_levels-1; level>0; level--) {
     Mat P=0, pmat=0;
     Vec b, x,r;
-    if (hmg->blocksize>1){
-     ierr = PCHMGExpandInterpolation_HMG(comm,P_array[num_levels-1-level],&P,hmg->blocksize);CHKERRQ(ierr);
-    }else{
-     ierr = MatConvert_ParCSRMatrix_AIJ(comm, P_array[num_levels-1-level],MATAIJ, MAT_INPLACE_MATRIX,&P);CHKERRQ(ierr);
+    if (hmg->subcoarsening) {
+      /* Grow interpolation. In the future, we should use MAIJ */
+      ierr = PCHMGExpandInterpolation_Private(interpolations[level-1],&P,blocksize);CHKERRQ(ierr);
+      ierr = MatDestroy(&interpolations[level-1]);CHKERRQ(ierr);
+    } else {
+      P = interpolations[level-1];
     }
-    /*ierr = MatView(P,NULL);CHKERRQ(ierr);*/
     ierr = MatCreateVecs(P,&b,&r);CHKERRQ(ierr);
     ierr = PCMGSetInterpolation(pc,level,P);CHKERRQ(ierr);
     ierr = PCMGSetRestriction(pc,level,P);CHKERRQ(ierr);
     ierr = MatDestroy(&P);CHKERRQ(ierr);
-    if ((level-1)>=0 && hmg->blocksize<=1) {
-      ierr = MatConvert_ParCSRMatrix_AIJ(comm, A_array[num_levels-level],MATAIJ, MAT_INPLACE_MATRIX,&pmat);CHKERRQ(ierr);
-      ierr = PCMGSetOperators(pc,level-1,pmat);CHKERRQ(ierr);
+    /* We reuse the matrices when we do not do subspace coarsening */
+    if ((level-1)>=0 && !hmg->subcoarsening) {
+      pmat = operators[level-1];
+      ierr = PCMGSetOperators(pc,level-1,pmat,pmat);CHKERRQ(ierr);
       ierr = MatDestroy(&pmat);CHKERRQ(ierr);
     }
     ierr = PCMGSetRhs(pc,level-1,b);CHKERRQ(ierr);
@@ -196,9 +237,12 @@ PetscErrorCode PCSetUp_HMG(PC pc)
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
-  ierr = PCDestroy(&hmg->hypre);CHKERRQ(ierr);
-  hmg->hypre = 0;
-  ierr = PCMGSetGalerkin(pc,(hmg->blocksize>1) ? PC_MG_GALERKIN_PMAT:PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
+  ierr = PetscFree(interpolations);CHKERRQ(ierr);
+  if (!hmg->subcoarsening) {
+    ierr = PetscFree(operators);CHKERRQ(ierr);
+  }
+  /* Turn Galerkin off when we already have coarse operators */
+  ierr = PCMGSetGalerkin(pc,hmg->subcoarsening ? PC_MG_GALERKIN_PMAT:PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
   ierr = PCSetDM(pc,NULL);CHKERRQ(ierr);
   ierr = PCSetUseAmat(pc,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
@@ -212,11 +256,12 @@ PetscErrorCode PCDestroy_HMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg  = (PC_MG*)pc->data;
-  PC_HMG         *ctx = (PC_HMG*) mg->innerctx;
+  PC_HMG         *hmg = (PC_HMG*) mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PCDestroy(&ctx->hypre);CHKERRQ(ierr);
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  ierr = PCDestroy(&hmg->innerpc);CHKERRQ(ierr);
+  ierr = PetscFree(hmg->innerpctype);CHKERRQ(ierr);
+  ierr = PetscFree(hmg);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -224,31 +269,160 @@ PetscErrorCode PCDestroy_HMG(PC pc)
 PetscErrorCode PCView_HMG(PC pc,PetscViewer viewer)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
-  PC_HMG         *ctx = (PC_HMG*) mg->innerctx;
+  PC_HMG         *hmg = (PC_HMG*) mg->innerctx;
   PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer," Reuse interpolation %d\n",ctx->reuseinterp);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," Matrix block size %D \n",ctx->blocksize);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Reuse interpolation: %s\n",hmg->reuseinterp? "true":"false");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Use subspace coarsening: %s\n",hmg->subcoarsening? "true":"false");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Inner PC type: %s \n",hmg->innerpctype);CHKERRQ(ierr);
   }
   ierr = PCView_MG(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#if PETSC_HAVE_HYPRE
+static const char *InnerPCType[]   = {"gamg","hypre"};
+#else
+static const char *InnerPCType[]   = {"gamg"};
+#endif
+
 PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
-  PC_HMG         *ctx = (PC_HMG*) mg->innerctx;
+  PC_HMG         *hmg = (PC_HMG*) mg->innerctx;
+  PetscBool      flg;
+  PetscInt       indx;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HMG");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_hmg_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",ctx->reuseinterp,&ctx->reuseinterp,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hmg_pmat_blocksize","Block size for each grid point","hmg",ctx->blocksize,&ctx->blocksize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hmg_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",hmg->reuseinterp,&hmg->reuseinterp,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hmg_use_subspace_coarsening","Use the subspace coarsening to compute the interpolations","None",hmg->subcoarsening,&hmg->subcoarsening,NULL);CHKERRQ(ierr);
+#if PETSC_HAVE_HYPRE
+  indx = 1;
+#else
+  indx = 0;
+#endif
+  ierr = PetscOptionsEList("-pc_hmg_inner_pc_type","Inner PC type",NULL,InnerPCType,2,"gamg",&indx,&flg);CHKERRQ(ierr);
+ if (indx == 0) {
+   hmg->getinterpolations = PCMGGetInterpolations;
+   hmg->getoperators      = PCMGGetCoarseOperators;
+   hmg->setfromoptions    = PCSetFromOptions_GAMG;
+   ierr = PetscStrallocpy(PCGAMG,&(hmg->innerpctype));CHKERRQ(ierr);
+  }
+#if PETSC_HAVE_HYPRE
+ else if (indx == 1) {
+    hmg->getinterpolations = PCHYPREBoomerAMGGetInterpolations;
+    hmg->getoperators      = PCHYPREBoomerAMGGetCoarseOperators;
+    hmg->setfromoptions    = PCSetFromOptions_HYPRE;
+    ierr = PetscStrallocpy(PCHYPRE,&(hmg->innerpctype));CHKERRQ(ierr);
+  }
+#endif
+  else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown inner PC type");
+
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*MC
+   PCHMGSetReuseInterpolation - Reuse interpolation matrices in HMG
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the HMG context
+-  reuse - True indicates that HMG will reuse the interpolations
+
+   Options Database Keys:
++  -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
+
+   Level: beginner
+
+.keywords: HMG, multigrid, interpolation, reuse, set
+
+.seealso: PCHMG
+M*/
+PetscErrorCode PCHMGSetReuseInterpolation(PC pc, PetscBool reuse)
+{
+  PC_MG          *mg;
+  PC_HMG         *hmg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  mg = (PC_MG*)pc->data;
+  hmg = (PC_HMG*) mg->innerctx;
+  hmg->reuseinterp = reuse;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+   PCHMGSetUseSubspaceCoarsening - Use subspace coarsening in HMG
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the HMG context
+-  reuse - True indicates that HMG will use the subspace coarsening
+
+   Options Database Keys:
++  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
+
+   Level: beginner
+
+.keywords: HMG, multigrid, interpolation, subspace, coarsening
+
+.seealso: PCHMG
+M*/
+PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC pc, PetscBool subspace)
+{
+  PC_MG          *mg;
+  PC_HMG         *hmg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  mg = (PC_MG*)pc->data;
+  hmg = (PC_HMG*) mg->innerctx;
+  hmg->subcoarsening = subspace;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+   PCHMGSetInnerPCType - Set an inner PC type
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the HMG context
+-  type - <hypre, gamg> coarsening algorithm
+
+   Options Database Keys:
++  -pc_hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
+
+   Level: beginner
+
+.keywords: HMG, multigrid, interpolation, coarsening
+
+.seealso: PCHMG, PCType
+M*/
+PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
+{
+  PC_MG           *mg;
+  PC_HMG          *hmg;
+  PetscBool       hypre,gamg;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  mg = (PC_MG*)pc->data;
+  hmg = (PC_HMG*) mg->innerctx;
+  ierr = PetscStrcmp(type,"hypre",&hypre);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,"gamg",&gamg);CHKERRQ(ierr);
+  if (!hypre && !gamg) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Does not support PC type %s \n",type);
+  ierr = PetscStrallocpy(type,&(hmg->innerpctype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -258,8 +432,9 @@ PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
            PETSc preconditioners can be chosen as smoothers and the coarse solver.
 
    Options Database Keys:
-+  -pc_hmg_reuse_interpolation <true | false> - Whether or not or not to reuse the interpolations. If true, it potentially save the compute time.
-.  -pc_hmg_pmat_blocksize - Block size of the underlying matrix.
++  -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
+.  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
+.  -pc_hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
 
 
    Notes:
@@ -269,14 +444,14 @@ PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
 
    Level: beginner
 
-   Concepts: additive Schwarz method
+   Concepts: Hybrid of ASM and MG, Subspace Coarsening
 
     References:
 +   1. - Fande Kong, Yaqi Wang, Derek R Gaston, Cody J Permann, Andrew E Slaughter, Alexander D Lindsay, Richard C Martineau, A highly parallel multilevel
     Newton-Krylov-Schwarz method with subspace-based coarsening and partition-based balancing for the multigroup neutron transport equations on
     3D unstructured meshes, arXiv preprint arXiv:1903.03659, 2019
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMG, PCHYPRE
+.seealso:  PCCreate(), PCSetType(), PCType, PC, PCMG, PCHYPRE, PCHMG, PCHYPREBoomerAMGGetCoarseOperators(), PCHYPREBoomerAMGGetInterpolations(), PCMGGetInterpolations(), PCMGGetCoarseOperators()
 
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
@@ -292,7 +467,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
     pc->data = 0;
   }
   ierr = PetscFree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
-  ((PetscObject)pc)->type_name = 0;
 
   ierr         = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr         = PetscNew(&hmg);CHKERRQ(ierr); \
@@ -300,7 +474,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
   mg                      = (PC_MG*) pc->data;
   mg->innerctx            = hmg;
   hmg->reuseinterp        = PETSC_FALSE;
-  hmg->blocksize          = 1;
+  hmg->subcoarsening      = PETSC_FALSE;
+  hmg->innerpc            = NULL;
 
   pc->ops->setfromoptions = PCSetFromOptions_HMG;
   pc->ops->view           = PCView_HMG;

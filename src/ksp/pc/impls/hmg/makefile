@@ -1,6 +1,3 @@
-
-#requirespackage  'PETSC_HAVE_HYPRE'
-
 ALL: lib
 
 CFLAGS    = ${HYPRE_INCLUDE}

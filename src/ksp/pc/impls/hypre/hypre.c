@@ -12,6 +12,7 @@
 #include <../src/mat/impls/hypre/mhypre.h>
 #include <../src/dm/impls/da/hypre/mhyp.h>
 #include <_hypre_parcsr_ls.h>
+#include <petscmathypre.h>
 
 static PetscBool cite = PETSC_FALSE;
 static const char hypreCitation[] = "@manual{hypre-web-page,\n  title  = {{\\sl hypre}: High Performance Preconditioners},\n  organization = {Lawrence Livermore National Laboratory},\n  note  = {\\url{https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods}}\n}\n";
@@ -127,6 +128,106 @@ PetscErrorCode PCHYPREGetSolver(PC pc,HYPRE_Solver *hsolver)
 
   PetscFunctionBegin;
   *hsolver = jac->hsolver;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCHYPREBoomerAMGGetCoarseOperators - Gets coarse operator matrices for all levels (except the finest level)
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context (BoomerAMG)
+
+   Output Parameter:
+-  num_levels - the number of levels
+.  operators - the coarse operator matrices (size of num_levels-1)
+
+   Notes:
+   Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
+   is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
+   It is used in PCHMG. Other users should avoid using this function.
+
+   Level: developer
+
+.keywords: MG, get, multigrid, interpolation, level
+
+.seealso: PCMGGetInterpolation(), PCMGGetInterpolations(), PCHYPREBoomerAMGGetInterpolations()
+@*/
+PetscErrorCode PCHYPREBoomerAMGGetCoarseOperators(PC pc,PetscInt *nlevels,Mat *operators[])
+{
+  PC_HYPRE             *jac  = (PC_HYPRE*)pc->data;
+  PetscBool            same = PETSC_FALSE;
+  PetscErrorCode       ierr;
+  PetscInt             num_levels,l;
+  Mat                  *mattmp;
+  hypre_ParCSRMatrix   **A_array;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(nlevels,2);
+  PetscValidIntPointer(operators,3);
+  ierr = PetscStrcmp(jac->hypre_type,"boomeramg",&same);CHKERRQ(ierr);
+  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NOTSAMETYPE,"Hypre type is not BoomerAMG \n");
+  num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData*) (jac->hsolver));
+  ierr = PetscMalloc1(num_levels,&mattmp);CHKERRQ(ierr);
+  A_array    = hypre_ParAMGDataAArray((hypre_ParAMGData*) (jac->hsolver));
+  for (l=1; l<num_levels; l++) {
+    ierr = MatCreateFromParCSR(A_array[l],MATAIJ,PETSC_OWN_POINTER, &(mattmp[num_levels-1-l]));CHKERRQ(ierr);
+    /* We want to own the data, and HYPRE can not touch this matrix any more */
+    A_array[l] = NULL;
+  }
+  *nlevels = num_levels;
+  *operators = mattmp;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCHYPREBoomerAMGGetInterpolations - Gets interpolation matrices for all levels (except level 0)
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context (BoomerAMG)
+
+   Output Parameter:
+-  num_levels - the number of levels
+.  interpolations - the interpolation matrices (size of num_levels-1)
+
+   Notes:
+   Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
+   is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
+   It is used in PCHMG. Other users should avoid using this function.
+
+   Level: developer
+
+.keywords: MG, get, multigrid, interpolation, level
+
+.seealso: PCMGGetInterpolations(), PCHYPREBoomerAMGGetCoarseOperators()
+@*/
+PetscErrorCode PCHYPREBoomerAMGGetInterpolations(PC pc,PetscInt *nlevels,Mat *interpolations[])
+{
+  PC_HYPRE             *jac  = (PC_HYPRE*)pc->data;
+  PetscBool            same = PETSC_FALSE;
+  PetscErrorCode       ierr;
+  PetscInt             num_levels,l;
+  Mat                  *mattmp;
+  hypre_ParCSRMatrix   **P_array;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(nlevels,2);
+  PetscValidIntPointer(interpolations,3);
+  ierr = PetscStrcmp(jac->hypre_type,"boomeramg",&same);CHKERRQ(ierr);
+  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NOTSAMETYPE,"Hypre type is not BoomerAMG \n");
+  num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData*) (jac->hsolver));
+  ierr = PetscMalloc1(num_levels,&mattmp);CHKERRQ(ierr);
+  P_array  = hypre_ParAMGDataPArray((hypre_ParAMGData*) (jac->hsolver));
+  for (l=1; l<num_levels; l++) {
+    ierr = MatCreateFromParCSR(P_array[num_levels-1-l],MATAIJ,PETSC_OWN_POINTER, &(mattmp[l-1]));CHKERRQ(ierr);
+    /* We want to own the data, and HYPRE can not touch this matrix any more */
+    P_array[num_levels-1-l] = NULL;
+  }
+  *nlevels = num_levels;
+  *interpolations = mattmp;
   PetscFunctionReturn(0);
 }
 
