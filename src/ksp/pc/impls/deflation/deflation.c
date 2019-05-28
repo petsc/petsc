@@ -76,93 +76,6 @@ typedef struct {
   PetscBool            extendsp;
 } PC_Deflation;
 
-static PetscErrorCode  PCDeflationSetType_Deflation(PC pc,PCDeflationType type)
-{
-  PC_Deflation *def = (PC_Deflation*)pc->data;
-
-  PetscFunctionBegin;
-  def->init = PETSC_FALSE;
-  def->pre = PETSC_FALSE;
-  if (type == PC_DEFLATION_INIT) {
-    def->init = PETSC_TRUE;
-    def->pre  = PETSC_TRUE;
-  } else if (type == PC_DEFLATION_PRE) {
-    def->pre  = PETSC_TRUE;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-   PCDeflationSetType - Causes the deflation preconditioner to use only a special
-    initial gues or pre/post solve solution update
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  type - PC_DEFLATION_PRE, PC_DEFLATION_INIT, PC_DEFLATION_POST
-
-   Options Database Key:
-.  -pc_deflation_type <pre,init,post>
-
-   Level: intermediate
-
-   Concepts: Deflation preconditioner
-
-.seealso: PCDeflationGetType()
-@*/
-PetscErrorCode  PCDeflationSetType(PC pc,PCDeflationType type)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCDeflationSetType_C",(PC,PCDeflationType),(pc,type));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode  PCDeflationGetType_Deflation(PC pc,PCDeflationType *type)
-{
-  PC_Deflation *def = (PC_Deflation*)pc->data;
-
-  PetscFunctionBegin;
-  if (def->init) {
-    *type = PC_DEFLATION_INIT;
-  } else if (def->pre) {
-    *type = PC_DEFLATION_PRE;
-  } else {
-    *type = PC_DEFLATION_POST;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-   PCDeflationGetType - Gets how the diagonal matrix is produced for the preconditioner
-
-   Not Collective on PC
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Output Parameter:
--  type - PC_DEFLATION_PRE, PC_DEFLATION_INIT, PC_DEFLATION_POST
-
-   Level: intermediate
-
-   Concepts: Deflation preconditioner
-
-.seealso: PCDeflationSetType()
-@*/
-PetscErrorCode  PCDeflationGetType(PC pc,PCDeflationType *type)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCDeflationGetType_C",(PC,PCDeflationType*),(pc,type));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transpose)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;
@@ -240,13 +153,38 @@ PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
 }
 
 /*
-   PCSetUp_Deflation - Prepares for the use of the Deflation preconditioner
-                    by setting data structures and options.
+  TODO CP corection?
+  x <- x + W*(W'*A*W)^{-1}*W'*r  = x + Q*r
+*/
+static PetscErrorCode PCPreSolve_Deflation(PC pc,KSP ksp,Vec b, Vec x)
+{
+  PC_Deflation     *def = (PC_Deflation*)pc->data;
+  Mat              A;
+  Vec              r,w1,w2;
+  PetscBool        nonzero;
+  PetscErrorCode   ierr;
 
-   Input Parameter:
-.  pc - the preconditioner context
+  PetscFunctionBegin;
+  w1 = def->workcoarse[0];
+  w2 = def->workcoarse[1];
+  r  = def->work;
+  ierr = PCGetOperators(pc,NULL,&A);CHKERRQ(ierr);
 
-   Application Interface Routine: PCSetUp()
+  ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+  if (nonzero) {
+    ierr = MatMult(A,x,r);CHKERRQ(ierr);               /*    r  <- b - Ax              */
+    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(b,r);CHKERRQ(ierr);                 /*    r  <- b (x is 0)          */
+  }
+
+  ierr = MatMultTranspose(def->W,r,w1);CHKERRQ(ierr);  /*    w1 <- W'*r                */
+  ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);   /*    w2 <- (W'*A*W)^{-1}*w1    */
+  ierr = MatMult(def->W,w2,r);CHKERRQ(ierr);           /*    r  <- W*w2                */
+  ierr = VecAYPX(x,1.0,r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*
   if (def->correct) {
@@ -282,6 +220,100 @@ static PetscErrorCode PCApply_Deflation(PC pc,Vec r, Vec z)
   ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);           /*    w2 <- (W'*A*W)^{-1}*w1    */
   ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                   /*    u  <- W*w2                */
   ierr = VecWAXPY(z,-1.0,u,r);CHKERRQ(ierr);                   /*    z  <- r - u               */
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PCDeflationSetType_Deflation(PC pc,PCDeflationType type)
+{
+  PC_Deflation *def = (PC_Deflation*)pc->data;
+
+  PetscFunctionBegin;
+  def->init = PETSC_FALSE;
+  def->pre = PETSC_FALSE;
+  if (type == PC_DEFLATION_POST) {
+    //pc->ops->postsolve = PCPostSolve_Deflation;
+    pc->ops->presolve = 0;
+  } else {
+    pc->ops->presolve = PCPreSolve_Deflation;
+    pc->ops->postsolve = 0;
+    if (type == PC_DEFLATION_INIT) {
+      def->init = PETSC_TRUE;
+      pc->ops->apply = 0;
+    } else {
+      def->pre  = PETSC_TRUE;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetType - Causes the deflation preconditioner to use only a special
+    initial gues or pre/post solve solution update
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  type - PC_DEFLATION_PRE, PC_DEFLATION_INIT, PC_DEFLATION_POST
+
+   Options Database Key:
+.  -pc_deflation_type <pre,init,post>
+
+   Level: intermediate
+
+   Concepts: Deflation preconditioner
+
+.seealso: PCDeflationGetType()
+@*/
+PetscErrorCode  PCDeflationSetType(PC pc,PCDeflationType type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCDeflationSetType_C",(PC,PCDeflationType),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PCDeflationGetType_Deflation(PC pc,PCDeflationType *type)
+{
+  PC_Deflation *def = (PC_Deflation*)pc->data;
+
+  PetscFunctionBegin;
+  if (def->init) {
+    *type = PC_DEFLATION_INIT;
+  } else if (def->pre) {
+    *type = PC_DEFLATION_PRE;
+  } else {
+    *type = PC_DEFLATION_POST;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationGetType - Gets how the diagonal matrix is produced for the preconditioner
+
+   Not Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+-  type - PC_DEFLATION_PRE, PC_DEFLATION_INIT, PC_DEFLATION_POST
+
+   Level: intermediate
+
+   Concepts: Deflation preconditioner
+
+.seealso: PCDeflationSetType()
+@*/
+PetscErrorCode  PCDeflationGetType(PC pc,PCDeflationType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCDeflationGetType_C",(PC,PCDeflationType*),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -551,6 +583,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   */
   pc->ops->apply               = PCApply_Deflation;
   pc->ops->applytranspose      = PCApply_Deflation;
+  pc->ops->presolve            = PCPreSolve_Deflation;
+  pc->ops->postsolve           = 0;
   pc->ops->setup               = PCSetUp_Deflation;
   pc->ops->reset               = PCReset_Deflation;
   pc->ops->destroy             = PCDestroy_Deflation;
