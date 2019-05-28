@@ -620,7 +620,7 @@ class Configure(config.package.Package):
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
       result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
-      if result:
+      if result is not None:
         self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
         result = int(result)
         if result:
