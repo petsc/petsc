@@ -17,12 +17,8 @@ typedef struct {
 PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems*,PC);
 PetscErrorCode PCReset_MG(PC);
 #if PETSC_HAVE_HYPRE
-PetscErrorCode PCHYPREBoomerAMGGetCoarseOperators(PC,PetscInt*,Mat**);
-PetscErrorCode PCHYPREBoomerAMGGetInterpolations(PC,PetscInt*,Mat**);
 PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems*,PC);
 #endif
-PetscErrorCode PCMGGetCoarseOperators(PC,PetscInt*,Mat**);
-PetscErrorCode PCMGGetInterpolations(PC,PetscInt*,Mat **);
 PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems*,PC);
 
 static PetscErrorCode PCHMGSetInnerPCFromOptions_Private(PC pc,PetscOptionItems *PetscOptionsObject)
