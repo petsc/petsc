@@ -66,7 +66,8 @@ typedef struct {
   Mat       W,Wt,AW,WtAW;    /* deflation space, coarse problem mats */
   KSP       WtAWinv;         /* deflation coarse problem */
   KSPType   ksptype;
-  Vec       *work;
+  Vec       work;
+  Vec       *workcoarse;
 
   PCDeflationSpaceType spacetype;
   PetscInt             spacesize;
@@ -238,7 +239,6 @@ PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_Deflation - Prepares for the use of the Deflation preconditioner
                     by setting data structures and options.
@@ -248,10 +248,43 @@ PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
-   The interface routine PCSetUp() is not usually called directly by
-   the user, but instead is called by PCApply() if necessary.
+/*
+  if (def->correct) {
+    z <- r - W*(W'*A*W)^{-1}*W'*(A*r -r) = (P-Q)*r
+  } else {
+    z <- r - W*(W'*A*W)^{-1}*W'*A*r = P*r
+  }
 */
+static PetscErrorCode PCApply_Deflation(PC pc,Vec r, Vec z)
+{
+  PC_Deflation     *def = (PC_Deflation*)pc->data;
+  Mat              A;
+  Vec              u,w1,w2;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  w1 = def->workcoarse[0];
+  w2 = def->workcoarse[1];
+  u  = def->work;
+  ierr = PCGetOperators(pc,NULL,&A);CHKERRQ(ierr);
+
+  if (!def->AW) {
+    ierr = MatMult(A,r,u);CHKERRQ(ierr);                       /*    u  <- A*r                 */
+    if (def->correct) ierr = VecAXPY(u,-1.0,r);CHKERRQ(ierr);  /*    u  <- A*r -r              */
+    ierr = MatMultTranspose(def->W,u,w1);CHKERRQ(ierr);        /*    w1 <- W'*u                */
+  } else {
+    ierr = MatMultTranspose(def->AW,u,w1);CHKERRQ(ierr);       /*    u  <- A*r                 */
+    if (def->correct) {
+      ierr = MatMultTranspose(def->W,r,w2);CHKERRQ(ierr);      /*    w2 <- W'*u                */
+      ierr = VecAXPY(w1,-1.0,w2);CHKERRQ(ierr);                /*    w1 <- w1 - w2             */
+    }
+  }
+  ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);           /*    w2 <- (W'*A*W)^{-1}*w1    */
+  ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                   /*    u  <- W*w2                */
+  ierr = VecWAXPY(z,-1.0,u,r);CHKERRQ(ierr);                   /*    z  <- r - u               */
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCSetUp_Deflation(PC pc)
 {
   PC_Deflation     *def = (PC_Deflation*)pc->data;
@@ -268,6 +301,9 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   PetscFunctionBegin;
   if (pc->setupcalled) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,NULL,&Amat);CHKERRQ(ierr);
+
+  /* compute a deflation space */
   if (def->W || def->Wt) {
     def->spacetype = PC_DEFLATION_SPACE_USER;
   } else {
@@ -321,7 +357,6 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   if (!def->WtAWinv) {
     ierr = MatGetSize(def->W,NULL,&m);CHKERRQ(ierr); /* TODO works for W MatTranspose? */
     if (!def->WtAW) {
-      ierr = PCGetOperators(pc,&Amat,NULL);CHKERRQ(ierr); /* using Amat! */
       /* TODO add implicit product version ? */
       if (!def->AW) {
         ierr = MatPtAP(Amat,def->W,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtAW);CHKERRQ(ierr);
@@ -412,28 +447,9 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     ierr = KSPSetUp(def->WtAWinv);CHKERRQ(ierr);
   }
 
-  ierr = KSPCreateVecs(def->WtAWinv,2,&def->work,0,NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-/*
-   PCApply_Deflation - Applies the Deflation preconditioner to a vector.
-
-   Input Parameters:
-.  pc - the preconditioner context
-.  x - input vector
-
-   Output Parameter:
-.  y - output vector
-
-   Application Interface Routine: PCApply()
- */
-static PetscErrorCode PCApply_Deflation(PC pc,Vec x,Vec y)
-{
-  PC_Deflation      *jac = (PC_Deflation*)pc->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
+  /* create work vecs */
+  ierr = MatCreateVecs(Amat,NULL,&def->work);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(def->WtAWinv,2,&def->workcoarse,0,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
