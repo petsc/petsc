@@ -128,7 +128,7 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 }
 
 /*@
-   PCMGSetInterpolation - Sets operator and preconditioning matrix for lth level
+   PCMGSetOperators - Sets operator and preconditioning matrix for lth level
 
    Logically Collective on PC and Mat
 
@@ -136,7 +136,7 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 +  pc  - the multigrid context
 .  Amat - the operator
 .  pmat - the preconditioning operator
--  l   - the level (0 is coarsest) to supply
+-  l   - the level (0 is the coarsest) to supply
 
    Level: advanced
 
