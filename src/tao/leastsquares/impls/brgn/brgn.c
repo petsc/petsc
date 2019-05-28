@@ -2,10 +2,11 @@
 
 #define BRGN_REGULARIZATION_USER    0
 #define BRGN_REGULARIZATION_L2PROX  1
-#define BRGN_REGULARIZATION_L1DICT  2
-#define BRGN_REGULARIZATION_TYPES   3
+#define BRGN_REGULARIZATION_L2PURE  2
+#define BRGN_REGULARIZATION_L1DICT  3
+#define BRGN_REGULARIZATION_TYPES   4
 
-static const char *BRGN_REGULARIZATION_TABLE[64] = {"user","l2prox","l1dict"};
+static const char *BRGN_REGULARIZATION_TABLE[64] = {"user","l2prox","l1dict","l2pure"};
 
 static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
 {
@@ -20,6 +21,9 @@ static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
   case BRGN_REGULARIZATION_USER:
     ierr = MatMult(gn->Hreg,in,gn->x_work);CHKERRQ(ierr);
     ierr = VecAXPY(out,gn->lambda,gn->x_work);CHKERRQ(ierr);
+    break;
+  case BRGN_REGULARIZATION_L2PURE:
+    ierr = VecAXPY(out,gn->lambda,in);CHKERRQ(ierr);
     break;
   case BRGN_REGULARIZATION_L2PROX:
     ierr = VecAXPY(out,gn->lambda,in);CHKERRQ(ierr);
@@ -67,6 +71,13 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
     *fcn += gn->lambda*f_reg;
     ierr = VecAXPY(G,gn->lambda,gn->x_work);CHKERRQ(ierr);
     break;
+  case BRGN_REGULARIZATION_L2PURE:
+    /* compute f = f + lambda*0.5*xk'*xk */
+	ierr = VecDot(X,X,&f_reg);CHKERRQ(ierr);
+    *fcn += gn->lambda*0.5*f_reg;
+    /* compute G = G + lambda*xk */
+	ierr = VecAXPY(G,gn->lambda,X);CHKERRQ(ierr);
+	break;
   case BRGN_REGULARIZATION_L2PROX:
     /* compute f = f + lambda*0.5*(xk - xkm1)'*(xk - xkm1) */
     ierr = VecAXPBYPCZ(gn->x_work,1.0,-1.0,0.0,X,gn->x_old);CHKERRQ(ierr); 
@@ -112,6 +123,8 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
   switch (gn->reg_type) {
   case BRGN_REGULARIZATION_USER:
     ierr = (*gn->regularizerhessian)(tao,X,gn->Hreg,gn->reg_hess_ctx);CHKERRQ(ierr);
+    break;
+  case BRGN_REGULARIZATION_L2PURE:
     break;
   case BRGN_REGULARIZATION_L2PROX:
     break;
