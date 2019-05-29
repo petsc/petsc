@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC   = deflation.c
+SOURCEC   = deflation.c deflationspace.c
 SOURCEF   =
 SOURCEH   = deflation.h
 LIBBASE   = libpetscksp

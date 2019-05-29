@@ -315,7 +315,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   if (def->W || def->Wt) {
     def->spacetype = PC_DEFLATION_SPACE_USER;
   } else {
-    //ierr = KSPDCGComputeDeflationSpace(ksp);CHKERRQ(ierr);
+    ierr = PCDeflationComputeSpace(pc);CHKERRQ(ierr);
   }
 
   /* nested deflation */
