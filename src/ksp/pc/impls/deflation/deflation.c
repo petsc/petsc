@@ -48,33 +48,9 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 
-#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/deflation/deflation.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
 
 const char *const PCDeflationTypes[]    = {"INIT","PRE","POST","PCDeflationType","PC_DEFLATION_",0};
-
-/*
-   Private context (data structure) for the deflation preconditioner.
-*/
-typedef struct {
-  PetscBool init;            /* do only init step - error correction of direction is omitted */
-  PetscBool pre;             /* start with x0 being the solution in the deflation space */
-  PetscBool correct;         /* add CP (Qr) correction to descent direction */
-  PetscBool truenorm;
-  PetscBool adaptiveconv;
-  PetscReal adaptiveconst;
-  PetscInt  reductionfact;
-  Mat       W,Wt,AW,WtAW;    /* deflation space, coarse problem mats */
-  KSP       WtAWinv;         /* deflation coarse problem */
-  KSPType   ksptype;
-  Vec       work;
-  Vec       *workcoarse;
-
-  PCDeflationSpaceType spacetype;
-  PetscInt             spacesize;
-  PetscInt             nestedlvl;
-  PetscInt             maxnestedlvl;
-  PetscBool            extendsp;
-} PC_Deflation;
 
 static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transpose)
 {
