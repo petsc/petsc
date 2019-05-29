@@ -73,11 +73,11 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
     break;
   case BRGN_REGULARIZATION_L2PURE:
     /* compute f = f + lambda*0.5*xk'*xk */
-	ierr = VecDot(X,X,&f_reg);CHKERRQ(ierr);
+    ierr = VecDot(X,X,&f_reg);CHKERRQ(ierr);
     *fcn += gn->lambda*0.5*f_reg;
     /* compute G = G + lambda*xk */
-	ierr = VecAXPY(G,gn->lambda,X);CHKERRQ(ierr);
-	break;
+    ierr = VecAXPY(G,gn->lambda,X);CHKERRQ(ierr);
+    break;
   case BRGN_REGULARIZATION_L2PROX:
     /* compute f = f + lambda*0.5*(xk - xkm1)'*(xk - xkm1) */
     ierr = VecAXPBYPCZ(gn->x_work,1.0,-1.0,0.0,X,gn->x_old);CHKERRQ(ierr); 
@@ -528,3 +528,4 @@ PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao,Mat Hreg,PetscErrorCo
   }
   PetscFunctionReturn(0);
 }
+
