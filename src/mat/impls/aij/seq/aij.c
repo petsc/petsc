@@ -3903,8 +3903,6 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 
    The i,j,v values are COPIED with this routine; to avoid the copy use MatCreateSeqAIJWithArrays()
 
-.keywords: matrix, aij, compressed row, sparse, sequential
-
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatSeqAIJSetPreallocation(), MatCreateSeqAIJ(), MATSEQAIJ
 @*/
 PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[],const PetscScalar v[])
@@ -4798,8 +4796,6 @@ PetscFunctionList MatSeqAIJList = NULL;
 
   Level: intermediate
 
-.keywords: Mat, MatType, set, method
-
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
 PetscErrorCode  MatSeqAIJSetType(Mat mat, MatType matype)
@@ -4837,8 +4833,6 @@ $     -mat_seqaij_type my_mat
 
    Level: advanced
 
-.keywords: Mat, register
-
 .seealso: MatSeqAIJRegisterAll()
 
 
@@ -4864,8 +4858,6 @@ PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
   Level: advanced
 
   Developers Note: CUSP and CUSPARSE do not yet support the  MatConvert_SeqAIJ..() paradigm and thus cannot be registered here
-
-.keywords: KSP, register, all
 
 .seealso:  MatRegisterAll(), MatSeqAIJRegister()
 @*/

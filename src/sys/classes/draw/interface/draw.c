@@ -14,7 +14,6 @@ static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  PetscDrawFinalizePackage(void)
@@ -35,7 +34,6 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
 
   Level: developer
 
-.keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  PetscDrawInitializePackage(void)

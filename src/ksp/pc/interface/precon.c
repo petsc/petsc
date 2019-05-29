@@ -64,8 +64,6 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
    Notes:
     This allows a PC to be reused for a different sized linear system but using the same options that have been previously set in the PC
 
-.keywords: PC, destroy
-
 .seealso: PCCreate(), PCSetUp()
 @*/
 PetscErrorCode  PCReset(PC pc)
@@ -95,8 +93,6 @@ PetscErrorCode  PCReset(PC pc)
 .  pc - the preconditioner context
 
    Level: developer
-
-.keywords: PC, destroy
 
 .seealso: PCCreate(), PCSetUp()
 @*/
@@ -138,8 +134,6 @@ PetscErrorCode  PCDestroy(PC *pc)
 $           D M A D^{-1} y = D M b  for left preconditioning or
 $           D A M D^{-1} z = D b for right preconditioning
 
-.keywords: PC
-
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCSetDiagonalScale()
 @*/
 PetscErrorCode  PCGetDiagonalScale(PC pc,PetscBool  *flag)
@@ -169,8 +163,6 @@ $           D M A D^{-1} y = D M b  for left preconditioning or
 $           D A M D^{-1} z = D b for right preconditioning
 
    PCDiagonalScaleLeft() scales a vector by D. PCDiagonalScaleRight() scales a vector by D^{-1}.
-
-.keywords: PC
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCGetDiagonalScale()
 @*/
@@ -215,8 +207,6 @@ $           D A M D^{-1} z = D b for right preconditioning
 
    If diagonal scaling is turned off and in is not out then in is copied to out
 
-.keywords: PC
-
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleSet(), PCDiagonalScaleRight(), PCDiagonalScale()
 @*/
 PetscErrorCode  PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
@@ -255,8 +245,6 @@ $           D A M D^{-1} z = D b for right preconditioning
    PCDiagonalScaleLeft() scales a vector by D. PCDiagonalScaleRight() scales a vector by D^{-1}.
 
    If diagonal scaling is turned off and in is not out then in is copied to out
-
-.keywords: PC
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleSet(), PCDiagonalScale()
 @*/
@@ -324,8 +312,6 @@ PetscErrorCode  PCSetUseAmat(PC pc,PetscBool flg)
 
     This is propagated into KSPs used by this PC, which then propagate it into PCs used by those KSPs
 
-.keywords: PC, set, initial guess, nonzero
-
 .seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll()
 @*/
 PetscErrorCode  PCSetErrorIfFailure(PC pc,PetscBool flg)
@@ -383,8 +369,6 @@ PetscErrorCode  PCGetUseAmat(PC pc,PetscBool *flg)
 
    Level: developer
 
-.keywords: PC, create, context
-
 .seealso: PCSetUp(), PCApply(), PCDestroy()
 @*/
 PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
@@ -431,8 +415,6 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 .  y - output vector
 
    Level: developer
-
-.keywords: PC, apply
 
 .seealso: PCApplyTranspose(), PCApplyBAorAB()
 @*/
@@ -483,8 +465,6 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
 
    Level: developer
 
-.keywords: PC, apply, symmetric, left
-
 .seealso: PCApply(), PCApplySymmetricRight()
 @*/
 PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
@@ -524,8 +504,6 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
-
-.keywords: PC, apply, symmetric, right
 
 .seealso: PCApply(), PCApplySymmetricLeft()
 @*/
@@ -570,8 +548,6 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
 
    Level: developer
 
-.keywords: PC, apply, transpose
-
 .seealso: PCApply(), PCApplyBAorAB(), PCApplyBAorABTranspose(), PCApplyTransposeExists()
 @*/
 PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
@@ -608,8 +584,6 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
 
    Level: developer
 
-.keywords: PC, apply, transpose
-
 .seealso: PCApplyTranspose()
 @*/
 PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
@@ -641,8 +615,6 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
    Notes:
     If the PC has had PCSetDiagonalScale() set then D M A D^{-1} for left preconditioning or  D A M D^{-1} is actually applied. Note that the
    specific KSPSolve() method must also be written to handle the post-solve "correction" for the diagonal scaling.
-
-.keywords: PC, apply, operator
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorABTranspose()
 @*/
@@ -724,8 +696,6 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
     Level: developer
 
-.keywords: PC, apply, operator, transpose
-
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorAB()
 @*/
 PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
@@ -775,8 +745,6 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
    Level: developer
 
-.keywords: PC, apply, Richardson, exists
-
 .seealso: PCApplyRichardson()
 @*/
 PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
@@ -820,8 +788,6 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 
    Level: developer
 
-.keywords: PC, apply, Richardson
-
 .seealso: PCApplyRichardsonExists()
 @*/
 PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
@@ -853,8 +819,6 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
    Level: advanced
 
-.keywords: PC, setup
-
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
 PetscErrorCode PCGetFailedReason(PC pc,PCFailedReason *reason)
@@ -880,8 +844,6 @@ PetscErrorCode PCGetFailedReason(PC pc,PCFailedReason *reason)
 .  pc - the preconditioner context
 
    Level: developer
-
-.keywords: PC, setup
 
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
@@ -948,8 +910,6 @@ PetscErrorCode  PCSetUp(PC pc)
 
    Level: developer
 
-.keywords: PC, setup, blocks
-
 .seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
 @*/
 PetscErrorCode  PCSetUpOnBlocks(PC pc)
@@ -1000,8 +960,6 @@ $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
    Level: advanced
 
-.keywords: PC, set, modify, submatrices
-
 .seealso: PCModifySubMatrices(), PCASMGetSubMatrices()
 @*/
 PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void *ctx)
@@ -1046,8 +1004,6 @@ PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,
 
    Level: developer
 
-.keywords: PC, modify, submatrices
-
 .seealso: PCSetModifySubMatrices()
 @*/
 PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
@@ -1088,8 +1044,6 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
    zero all elements of a matrix.
 
    Level: intermediate
-
-.keywords: PC, set, operators, matrix, linear system
 
 .seealso: PCGetOperators(), MatZeroEntries()
  @*/
@@ -1229,8 +1183,6 @@ $           set size, type, etc of Amat and Pmat
     it can be created for you?
 
 
-.keywords: PC, get, operators, matrix, linear system
-
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
 PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat)
@@ -1287,8 +1239,6 @@ PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat)
 
    Level: intermediate
 
-.keywords: PC, get, operators, matrix, linear system
-
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators()
 @*/
 PetscErrorCode  PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscBool  *pmat)
@@ -1318,7 +1268,6 @@ PetscErrorCode  PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscBool  *pmat)
    Notes:
     Does not increase the reference count for the matrix so DO NOT destroy it
 
-.keywords: PC, get, factored, matrix
 @*/
 PetscErrorCode  PCFactorGetMatrix(PC pc,Mat *mat)
 {
@@ -1350,8 +1299,6 @@ PetscErrorCode  PCFactorGetMatrix(PC pc,Mat *mat)
 
    Level: advanced
 
-.keywords: PC, set, options, prefix, database
-
 .seealso: PCAppendOptionsPrefix(), PCGetOptionsPrefix()
 @*/
 PetscErrorCode  PCSetOptionsPrefix(PC pc,const char prefix[])
@@ -1380,8 +1327,6 @@ PetscErrorCode  PCSetOptionsPrefix(PC pc,const char prefix[])
    hyphen.
 
    Level: advanced
-
-.keywords: PC, append, options, prefix, database
 
 .seealso: PCSetOptionsPrefix(), PCGetOptionsPrefix()
 @*/
@@ -1412,8 +1357,6 @@ PetscErrorCode  PCAppendOptionsPrefix(PC pc,const char prefix[])
    sufficient length to hold the prefix.
 
    Level: advanced
-
-.keywords: PC, get, options, prefix, database
 
 .seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
 @*/
@@ -1470,8 +1413,6 @@ PETSC_INTERN PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
 
    KSPSolve() calls this directly, so is rarely called by the user.
 
-.keywords: PC, pre-solve
-
 .seealso: PCPostSolve()
 @*/
 PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
@@ -1515,8 +1456,6 @@ PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
    KSPSolve() calls this routine directly, so it is rarely called by the user.
 
    Level: developer
-
-.keywords: PC, post-solve
 
 .seealso: PCPreSolve(), KSPSolve()
 @*/
@@ -1611,8 +1550,6 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
    PetscViewerASCIIOpen() (output to a specified file).
 
    Level: developer
-
-.keywords: PC, view
 
 .seealso: KSPView(), PetscViewerASCIIOpen()
 @*/
@@ -1754,8 +1691,6 @@ $     -pc_type my_solver
 
    Level: advanced
 
-.keywords: PC, register
-
 .seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
 PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
@@ -1797,8 +1732,6 @@ static PetscErrorCode MatMult_PC(Mat A,Vec X,Vec Y)
     Currently, this routine uses a dense matrix format when mattype == NULL
 
     Level: advanced
-
-.keywords: PC, compute, explicit, operator
 
 .seealso: KSPComputeOperator(), MatType
 

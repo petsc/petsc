@@ -23,8 +23,6 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);
  do not wish to register.  Make sure that the replacement routine is
   linked before libpetscmat.a.
 
- .keywords: matrix, Coarsen, register, all
-
  .seealso: MatCoarsenRegister(), MatCoarsenRegisterDestroy()
  @*/
 PetscErrorCode  MatCoarsenRegisterAll(void)

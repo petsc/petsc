@@ -15,8 +15,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch);
 
    Level: advanced
 
-.keywords: SNESLineSearch, register, all
-
 .seealso:  SNESLineSearchRegisterDestroy()
 @*/
 PetscErrorCode SNESLineSearchRegisterAll(void)

@@ -11,8 +11,6 @@
 
    Level: advanced
 
-.keywords: FAS, galerkin
-
 .seealso: SNESFASSetLevels(), SNESFASSetGalerkin()
 @*/
 PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
@@ -32,8 +30,6 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 .  flg - the status of the galerkin problem
 
    Level: advanced
-
-.keywords: FAS, galerkin
 
 .seealso: SNESFASSetLevels(), SNESFASGetGalerkin()
 @*/
@@ -64,8 +60,6 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 $  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
 
    Level: developer
-
-.keywords: FAS, galerkin
 
 .seealso: SNESFASGetGalerkin(), SNESFASSetGalerkin()
 @*/

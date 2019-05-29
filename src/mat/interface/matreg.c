@@ -29,8 +29,6 @@ PetscFunctionList MatList = 0;
 
   Level: intermediate
 
-.keywords: Mat, MatType, set, method
-
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
 PetscErrorCode  MatSetType(Mat mat, MatType matype)
@@ -112,8 +110,6 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 
    Level: intermediate
 
-.keywords: Mat, MatType, get, method, name
-
 .seealso: MatSetType()
 @*/
 PetscErrorCode  MatGetType(Mat mat,MatType *type)
@@ -149,8 +145,6 @@ $     MatSetType(Mat,"my_mat")
 $     -mat_type my_mat
 
    Level: advanced
-
-.keywords: Mat, register
 
 .seealso: MatRegisterAll()
 

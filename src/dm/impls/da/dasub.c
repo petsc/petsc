@@ -23,7 +23,6 @@
    Notes:
    All processors that share the DMDA must call this with the same coordinate value
 
-.keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,PetscScalar z,PetscInt *II,PetscInt *JJ,PetscInt *KK,PetscScalar *X,PetscScalar *Y,PetscScalar *Z)
 {
@@ -95,7 +94,6 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
    Notes:
    All processors that share the DMDA must call this with the same gp value
 
-.keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecScatter *scatter)
 {
@@ -192,7 +190,6 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
 
    Not supported from Fortran
 
-.keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_Comm *comm)
 {
@@ -263,7 +260,6 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
 
    Not supported from Fortran
 
-.keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subcomm)
 {

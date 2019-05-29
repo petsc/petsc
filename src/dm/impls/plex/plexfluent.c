@@ -223,7 +223,6 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 
   Level: beginner
 
-.keywords: mesh, fluent, case
 .seealso: DMPLEX, DMCreate()
 @*/
 PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)

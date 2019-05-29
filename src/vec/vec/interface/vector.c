@@ -996,8 +996,6 @@ $      ierr = VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview);CHKERRQ(ierr
 
     This function is not currently available from Fortran.
 
-.keywords: vector, set, operation
-
 .seealso: VecCreate(), MatShellSetOperation()
 @*/
 PetscErrorCode VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
@@ -1202,7 +1200,6 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
      like a Vec (one is an operator and one is an element of a vector space, yeah yeah dual blah blah blah) so
      this routine should not exist.
 
-.keywords: Vec, set, options, database
 .seealso: VecCreate(),  VecSetOptionsPrefix(), VecSet(), VecSetValues()
 @*/
 PetscErrorCode  VecZeroEntries(Vec vec)
@@ -1225,7 +1222,6 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 
   Level: intermediate
 
-.keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
 */
 static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,Vec vec)
@@ -1271,7 +1267,6 @@ static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptio
   Concepts: vectors^setting options
   Concepts: vectors^setting type
 
-.keywords: Vec, set, options, database
 .seealso: VecCreate(), VecSetOptionsPrefix()
 @*/
 PetscErrorCode  VecSetFromOptions(Vec vec)
@@ -1414,8 +1409,6 @@ PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
 
    Level: advanced
 
-.keywords: Vec, set, options, prefix, database
-
 .seealso: VecSetFromOptions()
 @*/
 PetscErrorCode  VecSetOptionsPrefix(Vec v,const char prefix[])
@@ -1443,8 +1436,6 @@ PetscErrorCode  VecSetOptionsPrefix(Vec v,const char prefix[])
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
-
-.keywords: Vec, append, options, prefix, database
 
 .seealso: VecGetOptionsPrefix()
 @*/
@@ -1476,8 +1467,6 @@ PetscErrorCode  VecAppendOptionsPrefix(Vec v,const char prefix[])
 
    Level: advanced
 
-.keywords: Vec, get, options, prefix, database
-
 .seealso: VecAppendOptionsPrefix()
 @*/
 PetscErrorCode  VecGetOptionsPrefix(Vec v,const char *prefix[])
@@ -1503,8 +1492,6 @@ PetscErrorCode  VecGetOptionsPrefix(Vec v,const char *prefix[])
    VecSetUp(), since these actions will happen automatically.
 
    Level: advanced
-
-.keywords: Vec, setup
 
 .seealso: VecCreate(), VecDestroy()
 @*/

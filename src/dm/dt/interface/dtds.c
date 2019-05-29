@@ -49,7 +49,6 @@ PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
    Not available from Fortran
 
-.keywords: PetscDS, register
 .seealso: PetscDSRegisterAll(), PetscDSRegisterDestroy()
 
 @*/
@@ -78,7 +77,6 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
 
    Not available from Fortran
 
-.keywords: PetscDS, set, type
 .seealso: PetscDSGetType(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
@@ -120,7 +118,6 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
 
    Not available from Fortran
 
-.keywords: PetscDS, get, type, name
 .seealso: PetscDSSetType(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)

@@ -17,7 +17,6 @@
 
   Level: developer
 
-.keywords: log, class, create
 .seealso: PetscClassRegLogDestroy(), PetscStageLogCreate()
 @*/
 PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog)
@@ -47,7 +46,6 @@ PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog)
 
   Level: developer
 
-.keywords: log, event, destroy
 .seealso: PetscClassRegLogCreate()
 @*/
 PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog)
@@ -74,7 +72,6 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog)
 
   Level: developer
 
-.keywords: log, class, destroy
 .seealso: PetscStageLogDestroy(), EventLogDestroy()
 @*/
 PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c)
@@ -96,7 +93,6 @@ PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c)
 
   Level: developer
 
-.keywords: log, class, create
 .seealso: PetscClassPerfLogDestroy(), PetscStageLogCreate()
 @*/
 PetscErrorCode PetscClassPerfLogCreate(PetscClassPerfLog *classLog)
@@ -126,7 +122,6 @@ PetscErrorCode PetscClassPerfLogCreate(PetscClassPerfLog *classLog)
 
   Level: developer
 
-.keywords: log, event, destroy
 .seealso: PetscClassPerfLogCreate()
 @*/
 PetscErrorCode PetscClassPerfLogDestroy(PetscClassPerfLog classLog)
@@ -150,7 +145,6 @@ PetscErrorCode PetscClassPerfLogDestroy(PetscClassPerfLog classLog)
 
   Level: developer
 
-.keywords: log, class, destroy
 .seealso: PetscClassPerfLogCreate()
 @*/
 PetscErrorCode PetscClassPerfInfoClear(PetscClassPerfInfo *classInfo)
@@ -175,7 +169,6 @@ PetscErrorCode PetscClassPerfInfoClear(PetscClassPerfInfo *classInfo)
 
   Level: developer
 
-.keywords: log, class, size, ensure
 .seealso: PetscClassPerfLogCreate()
 @*/
 PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
@@ -213,7 +206,6 @@ PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
 
   Level: developer
 
-.keywords: log, class, register
 .seealso: PetscClassIdRegister()
 @*/
 PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cname[], PetscClassId classid)
@@ -256,7 +248,6 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
 
   Level: developer
 
-.keywords: log, class, register
 .seealso: PetscClassIdRegister(), PetscLogObjCreateDefault(), PetscLogObjDestroyDefault()
 @*/
 PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog classLog, PetscClassId classid, int *oclass)

@@ -28,7 +28,6 @@
 
   Level: beginner
 
-.keywords: mesh,ExodusII
 .seealso: EXOGetVarIndex(),DMPlexView_ExodusII_Internal(),VecViewPlex_ExodusII_Nodal_Internal(),VecLoadNodal_PlexEXO(),VecLoadZonal_PlexEXO()
 */
 static PetscErrorCode EXOGetVarIndex_Private(int exoid, ex_entity_type obj_type, const char name[], int *varIndex)
@@ -90,7 +89,6 @@ static PetscErrorCode EXOGetVarIndex_Private(int exoid, ex_entity_type obj_type,
   This function will only handle TRI, TET, QUAD and HEX cells.
   Level: beginner
 
-.keywords: mesh, ExodusII
 .seealso: EXOGetVarIndex_Private(), VecViewPlex_ExodusII_Nodal_Internal(), VecLoadNodal_PlexEXO(), VecViewZonal_PlexEXO(), VecLoadZonal_PlexEXO()
 */
 PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
@@ -501,7 +499,6 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
 
   Level: beginner
 
-.keywords: mesh,ExodusII
 .seealso: EXOGetVarIndex_Private(),DMPlexView_ExodusII_Internal(),VecLoadNodal_PlexEXO(),VecViewZonal_PlexEXO(),VecLoadZonal_PlexEXO()
 @*/
 PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
@@ -580,7 +577,6 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
 
   Level: beginner
 
-.keywords: mesh, ExodusII
 .seealso: EXOGetVarIndex_Private(), DMPlexView_ExodusII_Internal(), VecViewPlex_ExodusII_Nodal_Internal(), VecViewZonal_PlexEXO(), VecLoadZonal_PlexEXO()
 */
 PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
@@ -656,7 +652,6 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
 
   Level: beginner
 
-.keywords: mesh,ExodusII
 .seealso: EXOGetVarIndex_Private(),DMPlexView_ExodusII_Internal(),VecViewPlex_ExodusII_Nodal_Internal(),VecLoadPlex_ExodusII_Nodal_Internal(),VecLoadPlex_ExodusII_Zonal_Internal()
 */
 PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
@@ -759,7 +754,6 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
 
   Level: beginner
 
-.keywords: mesh,ExodusII
 .seealso: EXOGetVarIndex_Private(), DMPlexView_ExodusII_Internal(), VecViewPlex_ExodusII_Nodal_Internal(), VecLoadPlex_ExodusII_Nodal_Internal(), VecLoadPlex_ExodusII_Zonal_Internal()
 */
 PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
@@ -859,7 +853,6 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
 
   Level: beginner
 
-.keywords: mesh,ExodusII
 .seealso: DMPLEX, DMCreate(), DMPlexCreateExodus()
 @*/
 PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
@@ -902,7 +895,6 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
 
   Level: beginner
 
-.keywords: mesh,ExodusII
 .seealso: DMPLEX, DMCreate()
 @*/
 PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)

@@ -30,7 +30,6 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts,const char splitname[],TS_RHSS
 
 .seealso: TSRHSSplitGetIS()
 
-.keywords: TS, TSRHSSplit
 @*/
 PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
 {
@@ -81,7 +80,6 @@ PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
 
 .seealso: TSRHSSplitSetIS()
 
-.keywords: TS, TSRHSSplit
 @*/
 PetscErrorCode TSRHSSplitGetIS(TS ts,const char splitname[],IS *is)
 {
@@ -119,7 +117,6 @@ $  rhsfunc(TS ts,PetscReal t,Vec u,Vec f,ctx);
 
  Level: beginner
 
-.keywords: TS, timestep, set, ODE, Hamiltonian, Function
 @*/
 PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHSFunction rhsfunc,void *ctx)
 {

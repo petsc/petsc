@@ -68,8 +68,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC);
 
    Level: advanced
 
-.keywords: PC, register, all
-
 .seealso: PCRegister(), PCRegisterDestroy()
 @*/
 PetscErrorCode  PCRegisterAll(void)

@@ -141,8 +141,6 @@ M*/
 
   Level: advanced
 
-.keywords: TS, TSGLEE, register, all
-
 .seealso:  TSGLEERegisterDestroy()
 @*/
 PetscErrorCode TSGLEERegisterAll(void)
@@ -364,7 +362,6 @@ PetscErrorCode TSGLEERegisterAll(void)
 
    Level: advanced
 
-.keywords: TSGLEE, register, destroy
 .seealso: TSGLEERegister(), TSGLEERegisterAll()
 @*/
 PetscErrorCode TSGLEERegisterDestroy(void)
@@ -395,7 +392,6 @@ PetscErrorCode TSGLEERegisterDestroy(void)
 
   Level: developer
 
-.keywords: TS, TSGLEE, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode TSGLEEInitializePackage(void)
@@ -417,7 +413,6 @@ PetscErrorCode TSGLEEInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode TSGLEEFinalizePackage(void)
@@ -458,8 +453,6 @@ PetscErrorCode TSGLEEFinalizePackage(void)
    Several GLEE methods are provided, this function is only needed to create new methods.
 
    Level: advanced
-
-.keywords: TS, register
 
 .seealso: TSGLEE
 @*/

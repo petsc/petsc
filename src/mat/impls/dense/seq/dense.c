@@ -2557,8 +2557,6 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
 
    Level: intermediate
 
-.keywords: dense, matrix, LAPACK, BLAS
-
 .seealso: MatCreate(), MatCreateDense(), MatSetValues()
 @*/
 PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScalar *data,Mat *A)
@@ -2588,8 +2586,6 @@ PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScala
    need not call this routine.
 
    Level: intermediate
-
-.keywords: dense, matrix, LAPACK, BLAS
 
 .seealso: MatCreate(), MatCreateDense(), MatSetValues(), MatSeqDenseSetLDA()
 
@@ -2693,8 +2689,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype
   of Blas and Lapack fame) larger than M, the first dimension of the matrix.
 
   Level: intermediate
-
-.keywords: dense, matrix, LAPACK, BLAS
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSeqDenseSetPreallocation(), MatSetMaximumSize()
 

@@ -286,8 +286,6 @@ PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
      If the number of levels is one then the multigrid uses the -mg_levels prefix
   for setting the level options rather than the -mg_coarse prefix.
 
-.keywords: MG, set, levels, multigrid
-
 .seealso: PCMGSetType(), PCMGGetLevels()
 @*/
 PetscErrorCode PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
@@ -945,8 +943,6 @@ PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels)
 
    Level: advanced
 
-.keywords: MG, get, levels, multigrid
-
 .seealso: PCMGSetLevels()
 @*/
 PetscErrorCode PCMGGetLevels(PC pc,PetscInt *levels)
@@ -978,8 +974,6 @@ PetscErrorCode PCMGGetLevels(PC pc,PetscInt *levels)
 
    Level: advanced
 
-.keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
-
 .seealso: PCMGSetLevels()
 @*/
 PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
@@ -1010,8 +1004,6 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
 
    Level: advanced
 
-.keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
-
 .seealso: PCMGSetLevels()
 @*/
 PetscErrorCode  PCMGGetType(PC pc,PCMGType *type)
@@ -1038,8 +1030,6 @@ PetscErrorCode  PCMGGetType(PC pc,PCMGType *type)
 .  -pc_mg_cycle_type <v,w> - provide the cycle desired
 
    Level: advanced
-
-.keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
 
 .seealso: PCMGSetCycleTypeOnLevel()
 @*/
@@ -1075,8 +1065,6 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 
    Notes:
     This is not associated with setting a v or w cycle, that is set with PCMGSetCycleType()
-
-.keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
 
 .seealso: PCMGSetCycleTypeOnLevel(), PCMGSetCycleType()
 @*/
@@ -1119,8 +1107,6 @@ PetscErrorCode PCMGSetGalerkin_MG(PC pc,PCMGGalerkinType use)
     Some codes that use PCMG such as PCGAMG use Galerkin internally while constructing the hierarchy and thus do not
      use the PCMG construction of the coarser grids.
 
-.keywords: MG, set, Galerkin
-
 .seealso: PCMGGetGalerkin(), PCMGGalerkinType
 
 @*/
@@ -1147,8 +1133,6 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PCMGGalerkinType use)
 .  galerkin - one of PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE, or PC_MG_GALERKIN_EXTERNAL
 
    Level: intermediate
-
-.keywords: MG, set, Galerkin
 
 .seealso: PCMGSetGalerkin(), PCMGGalerkinType
 
@@ -1182,8 +1166,6 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PCMGGalerkinType  *galerkin)
    Notes:
     this does not set a value on the coarsest grid, since we assume that
     there is no separate smooth up on the coarsest grid.
-
-.keywords: MG, smooth, up, post-smoothing, steps, multigrid
 
 .seealso: PCMGSetDistinctSmoothUp()
 @*/
@@ -1226,8 +1208,6 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
    Notes:
     this does not set a value on the coarsest grid, since we assume that
     there is no separate smooth up on the coarsest grid.
-
-.keywords: MG, smooth, up, post-smoothing, steps, multigrid
 
 .seealso: PCMGSetNumberSmooth()
 @*/

@@ -82,7 +82,6 @@ PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.keywords: PetscFE, register
 .seealso: PetscFERegisterAll(), PetscFERegisterDestroy()
 
 @*/
@@ -109,7 +108,6 @@ PetscErrorCode PetscFERegister(const char sname[], PetscErrorCode (*function)(Pe
 
   Level: intermediate
 
-.keywords: PetscFE, set, type
 .seealso: PetscFEGetType(), PetscFECreate()
 @*/
 PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
@@ -149,7 +147,6 @@ PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
 
   Level: intermediate
 
-.keywords: PetscFE, get, type, name
 .seealso: PetscFESetType(), PetscFECreate()
 @*/
 PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
@@ -1542,7 +1539,6 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 
   Level: beginner
 
-.keywords: PetscFE, finite element
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/
 PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
@@ -1619,7 +1615,6 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
 
   Level: beginner
 
-.keywords: PetscFE, finite element
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/
 PetscErrorCode PetscFESetName(PetscFE fe, const char name[])

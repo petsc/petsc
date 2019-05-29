@@ -133,8 +133,6 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
    Note:
    Use NULL (NULL_INTEGER in Fortran) in place of any output parameter that is not of interest.
 
-.keywords: distributed array, get, information
-
 .seealso: DMView(), DMDAGetCorners(), DMDAGetLocalInfo()
 @*/
 PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMBoundaryType *bx,DMBoundaryType *by,DMBoundaryType *bz,DMDAStencilType *st)
@@ -189,8 +187,6 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 
    Developer Notes:
     Not sure why the Fortran function has a F90() in the name since it does not utilize F90 constructs.
-
-.keywords: distributed array, get, information
 
 .seealso: DMDAGetInfo(), DMDAGetCorners(), DMDALocalInfo
 @*/

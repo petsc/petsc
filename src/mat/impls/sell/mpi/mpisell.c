@@ -1403,8 +1403,6 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin,MatDuplicateOption cpvalues,Mat *n
 
    Level: intermediate
 
-.keywords: matrix, sell, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqSELL(), MatSetValues(), MatCreatesell(),
           MATMPISELL, MatGetInfo(), PetscSplitOwnership()
 @*/
@@ -1575,8 +1573,6 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
    the allocation is always done according to rlenmax.
 
    Level: intermediate
-
-.keywords: matrix, sell, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqSELL(), MatSetValues(), MatMPISELLSetPreallocation(), MatMPISELLSetPreallocationSELL(),
           MATMPISELL, MatCreateMPISELLWithArrays()

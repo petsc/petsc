@@ -363,8 +363,6 @@ static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, 
 
    Level: advanced
 
-.keywords:  block, Jacobi, get, sub, KSP, context
-
 .seealso: PCBJacobiGetSubKSP()
 @*/
 PetscErrorCode  PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
@@ -397,8 +395,6 @@ PetscErrorCode  PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local
 
    Level: intermediate
 
-.keywords:  set, number, Jacobi, global, total, blocks
-
 .seealso: PCSetUseAmat(), PCBJacobiSetLocalBlocks()
 @*/
 PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
@@ -426,8 +422,6 @@ PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt len
 -  lens - integer array containing the size of each block
 
    Level: intermediate
-
-.keywords:  get, number, Jacobi, global, total, blocks
 
 .seealso: PCSetUseAmat(), PCBJacobiGetLocalBlocks()
 @*/
@@ -461,8 +455,6 @@ PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
    Level: intermediate
 
-.keywords: PC, set, number, Jacobi, local, blocks
-
 .seealso: PCSetUseAmat(), PCBJacobiSetTotalBlocks()
 @*/
 PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
@@ -491,8 +483,6 @@ PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt len
    Currently only a limited number of blocking configurations are supported.
 
    Level: intermediate
-
-.keywords: PC, get, number, Jacobi, local, blocks
 
 .seealso: PCSetUseAmat(), PCBJacobiGetTotalBlocks()
 @*/

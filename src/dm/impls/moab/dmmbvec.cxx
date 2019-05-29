@@ -33,8 +33,6 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface,c
 
   Level: beginner
 
-.keywords: Vec, create
-
 .seealso: VecCreate()
 @*/
 PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range* range, PetscBool is_global_vec, PetscBool destroy_tag, Vec *vec)
@@ -59,8 +57,6 @@ PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range* range
 . tag - Tag associated with this Vec. NULL if vec is a native PETSc Vec.
 
   Level: beginner
-
-.keywords: DMMoab, MOAB tag
 
 .seealso: DMMoabCreateVector(), DMMoabGetVecRange()
 @*/
@@ -92,8 +88,6 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
 . range - Entities associated with this Vec. NULL if vec is a native PETSc Vec.
 
   Level: beginner
-
-.keywords: DMMoab, MOAB range
 
 .seealso: DMMoabCreateVector(), DMMoabGetVecTag()
 @*/
@@ -128,8 +122,6 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
 . array           - The local data array
 
   Level: intermediate
-
-.keywords: MOAB, distributed array
 
 .seealso: DMMoabVecRestoreArray(), DMMoabVecGetArrayRead(), DMMoabVecRestoreArrayRead()
 @*/
@@ -215,8 +207,6 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
 
   Level: intermediate
 
-.keywords: MOAB, distributed array
-
 .seealso: DMMoabVecGetArray(), DMMoabVecGetArrayRead(), DMMoabVecRestoreArrayRead()
 @*/
 PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
@@ -301,8 +291,6 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
 
   Level: intermediate
 
-.keywords: MOAB, distributed array
-
 .seealso: DMMoabVecRestoreArrayRead(), DMMoabVecGetArray(), DMMoabVecRestoreArray()
 @*/
 PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
@@ -382,8 +370,6 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
 . array           - The local data array
 
   Level: intermediate
-
-.keywords: MOAB, distributed array
 
 .seealso: DMMoabVecGetArrayRead(), DMMoabVecGetArray(), DMMoabVecRestoreArray()
 @*/

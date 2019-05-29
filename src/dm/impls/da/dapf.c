@@ -18,8 +18,6 @@
 
    Not supported from Fortran
 
-.keywords:  distributed array, grid function
-
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMCreateGlobalVector()
 @*/
 PetscErrorCode  DMDACreatePF(DM da,PF *pf)

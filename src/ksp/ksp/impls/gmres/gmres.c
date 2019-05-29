@@ -546,8 +546,6 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
     A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
    Level: intermediate
 
-.keywords: KSP, nonlinear, vector, monitor, view, Krylov space
-
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), KSPViewersCreate(), KSPViewersDestroy()
 @*/
 PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
@@ -699,8 +697,6 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinement
 
    Level: intermediate
 
-.keywords: KSP, GMRES, iterative refinement
-
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType(),
           KSPGMRESGetOrthogonalization()
 @*/
@@ -732,8 +728,6 @@ PetscErrorCode  KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType t
 
    Level: intermediate
 
-.keywords: KSP, GMRES, iterative refinement
-
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType(),
           KSPGMRESGetOrthogonalization()
 @*/
@@ -764,8 +758,6 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *
 
    Level: intermediate
 
-.keywords: KSP, GMRES, restart, iterations
-
 .seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESGetRestart()
 @*/
 PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
@@ -793,8 +785,6 @@ PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
     Note: The default value is 30.
 
    Level: intermediate
-
-.keywords: KSP, GMRES, restart, iterations
 
 .seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetRestart()
 @*/
@@ -824,8 +814,6 @@ PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
          things can happen hence very occasionally you may need to set this value to detect this condition
 
    Level: intermediate
-
-.keywords: KSP, GMRES, tolerance
 
 .seealso: KSPSetTolerances()
 @*/

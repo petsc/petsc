@@ -171,8 +171,6 @@ M*/
 
   Level: advanced
 
-.keywords: TS, TSRK, register, all
-
 .seealso:  TSRKRegisterDestroy()
 @*/
 PetscErrorCode TSRKRegisterAll(void)
@@ -333,7 +331,6 @@ PetscErrorCode TSRKRegisterAll(void)
 
    Level: advanced
 
-.keywords: TSRK, register, destroy
 .seealso: TSRKRegister(), TSRKRegisterAll()
 @*/
 PetscErrorCode TSRKRegisterDestroy(void)
@@ -361,7 +358,6 @@ PetscErrorCode TSRKRegisterDestroy(void)
 
   Level: developer
 
-.keywords: TS, TSRK, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode TSRKInitializePackage(void)
@@ -382,7 +378,6 @@ PetscErrorCode TSRKInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode TSRKFinalizePackage(void)
@@ -415,8 +410,6 @@ PetscErrorCode TSRKFinalizePackage(void)
    Several RK methods are provided, this function is only needed to create new methods.
 
    Level: advanced
-
-.keywords: TS, register
 
 .seealso: TSRK
 @*/

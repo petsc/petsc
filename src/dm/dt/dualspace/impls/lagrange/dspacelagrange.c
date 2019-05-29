@@ -628,7 +628,6 @@ static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpac
 
   Level: intermediate
 
-.keywords: PetscDualSpace, Lagrange, continuous, discontinuous
 .seealso: PetscDualSpaceLagrangeSetContinuity()
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool *continuous)
@@ -656,7 +655,6 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 
   Level: intermediate
 
-.keywords: PetscDualSpace, Lagrange, continuous, discontinuous
 .seealso: PetscDualSpaceLagrangeGetContinuity()
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool continuous)

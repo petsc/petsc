@@ -15,8 +15,6 @@ PetscBool         PetscSFRegisterAllCalled;
 
    Level: advanced
 
-.keywords: PetscSF, register, all
-
 .seealso:  PetscSFRegisterDestroy()
 @*/
 PetscErrorCode  PetscSFRegisterAll(void)
@@ -56,8 +54,6 @@ $     PetscSFSetType(sf,"my_impl")
 $     -sf_type my_impl
 
    Level: advanced
-
-.keywords: PetscSF, register
 
 .seealso: PetscSFRegisterAll(), PetscSFInitializePackage()
 @*/

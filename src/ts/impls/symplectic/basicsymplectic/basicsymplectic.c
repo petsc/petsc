@@ -48,8 +48,6 @@ M*/
 
   Level: advanced
 
-.keywords: TS, TSBASICSYMPLECTIC, register, all
-
 .seealso:  TSBasicSymplecticRegisterDestroy()
 @*/
 PetscErrorCode TSBasicSymplecticRegisterAll(void)
@@ -86,7 +84,6 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void)
 
    Level: advanced
 
-.keywords: TSBasicSymplectic, register, destroy
 .seealso: TSBasicSymplecticRegister(), TSBasicSymplecticRegisterAll()
 @*/
 PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
@@ -112,7 +109,6 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
 
   Level: developer
 
-.keywords: TS, TSBasicSymplectic, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode TSBasicSymplecticInitializePackage(void)
@@ -133,7 +129,6 @@ PetscErrorCode TSBasicSymplecticInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode TSBasicSymplecticFinalizePackage(void)
@@ -162,8 +157,6 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
    Several symplectic methods are provided, this function is only needed to create new methods.
 
    Level: advanced
-
-.keywords: TS, register
 
 .seealso: TSBasicSymplectic
 @*/

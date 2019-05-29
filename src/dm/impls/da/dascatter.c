@@ -25,9 +25,6 @@ extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
    The output contexts are valid only as long as the input da is valid.
    If you delete the da, the scatter contexts will become invalid.
 
-.keywords: distributed array, get, scatter, context, global-to-local,
-           local-to-global, local-to-local
-
 .seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
 PetscErrorCode  DMDAGetScatter(DM da,VecScatter *gtol,VecScatter *ltol)

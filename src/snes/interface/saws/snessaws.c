@@ -67,8 +67,6 @@ PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
 
    Level: advanced
 
-.keywords: SNES, monitor, SAWs
-
 .seealso: PetscViewerSAWsOpen()
 @*/
 PetscErrorCode SNESMonitorSAWs(SNES snes,PetscInt n,PetscReal rnorm,void *ctx)

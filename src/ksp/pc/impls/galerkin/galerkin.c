@@ -169,8 +169,6 @@ static PetscErrorCode  PCGalerkinSetComputeSubmatrix_Galerkin(PC pc,PetscErrorCo
 
    Level: Intermediate
 
-.keywords: PC, set, Galerkin preconditioner
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCGALERKIN,
            PCGalerkinSetInterpolation(), PCGalerkinGetKSP()
 
@@ -198,8 +196,6 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
     Either this or PCGalerkinSetRestriction() or both must be called
 
    Level: Intermediate
-
-.keywords: PC, set, Galerkin preconditioner
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCGALERKIN,
            PCGalerkinSetRestriction(), PCGalerkinGetKSP()
@@ -247,8 +243,6 @@ $    computeAsub(PC pc,Mat A, Mat Ap, Mat *cAP,void *ctx);
     If the user does not call this routine nor call PCGalerkinGetKSP() and KSPSetOperators() then PCGalerkin could
                     could automatically compute the submatrix via calls to MatGalerkin() or MatRARt()
 
-.keywords: PC, get, Galerkin preconditioner, sub preconditioner
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCGALERKIN,
            PCGalerkinSetRestriction(), PCGalerkinSetInterpolation(), PCGalerkinGetKSP()
 
@@ -279,8 +273,6 @@ PetscErrorCode  PCGalerkinSetComputeSubmatrix(PC pc,PetscErrorCode (*computeAsub
    Notes:
     Once you have called this routine you can call KSPSetOperators() on the resulting ksp to provide the operator for the Galerkin problem,
           an alternative is to use PCGalerkinSetComputeSubmatrix() to provide a routine that computes the submatrix as needed.
-
-.keywords: PC, get, Galerkin preconditioner, sub preconditioner
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCGALERKIN,
            PCGalerkinSetRestriction(), PCGalerkinSetInterpolation(), PCGalerkinSetComputeSubmatrix()

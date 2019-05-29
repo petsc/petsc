@@ -14,7 +14,6 @@ extern PetscFunctionList ISLocalToGlobalMappingList;
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  ISFinalizePackage(void)
@@ -38,7 +37,6 @@ PetscErrorCode  ISFinalizePackage(void)
 
   Level: developer
 
-.keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  ISInitializePackage(void)
@@ -143,7 +141,6 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  VecInitializePackage(void)
@@ -258,7 +255,6 @@ PetscErrorCode  VecInitializePackage(void)
 
   Level: developer
 
-.keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  VecFinalizePackage(void)

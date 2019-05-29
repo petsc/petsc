@@ -33,8 +33,6 @@
 
    Level: intermediate
 
-.keywords: SNES, finite differences, Jacobian
-
 .seealso: SNESSetJacobian(), SNESComputeJacobianDefaultColor(), MatCreateSNESMF()
 @*/
 PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ctx)

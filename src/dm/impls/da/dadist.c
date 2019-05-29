@@ -68,8 +68,6 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
    The number of local entries in the vector on each process is the same
    as in a vector created with DMCreateGlobalVector().
 
-.keywords: distributed array, create, global, distributed, vector
-
 .seealso: DMCreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMDALocalToGlobalBegin()

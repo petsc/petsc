@@ -208,7 +208,6 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
    Notes:
    PRP is the default, and the only one that tolerates generalized search directions.
 
-.keywords: SNES, SNESNCG, selection, type, set
 @*/
 PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
 {

@@ -1564,8 +1564,6 @@ static PetscErrorCode MatISSetUpSF_IS(Mat B)
 
    Notes:
 
-.keywords: matrix
-
 .seealso: MatCreate(), MatCreateIS(), MatISSetPreallocation(), MatPtAP()
 @*/
 PetscErrorCode  MatISStoreL2L(Mat A, PetscBool store)
@@ -1605,8 +1603,6 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store)
    Level: advanced
 
    Notes: When fix is true, new local matrices and l2g maps are generated during the final assembly process.
-
-.keywords: matrix
 
 .seealso: MatCreate(), MatCreateIS(), MatISSetPreallocation(), MatAssemblyEnd(), MAT_FINAL_ASSEMBLY
 @*/
@@ -1662,8 +1658,6 @@ static PetscErrorCode MatISFixLocalEmpty_IS(Mat A, PetscBool fix)
     This function has the same interface as the MPIAIJ preallocation routine in order to simplify the transition
           from the asssembled format to the unassembled one. It overestimates the preallocation of MATIS local
           matrices; for exact preallocation, the user should set the preallocation directly on local matrix objects.
-
-.keywords: matrix
 
 .seealso: MatCreate(), MatCreateIS(), MatMPIAIJSetPreallocation(), MatISGetLocalMat(), MATIS
 @*/

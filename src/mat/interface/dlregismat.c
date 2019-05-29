@@ -43,7 +43,6 @@ static PetscBool MatPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  MatFinalizePackage(void)
@@ -139,7 +138,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 
   Level: developer
 
-.keywords: Mat, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  MatInitializePackage(void)

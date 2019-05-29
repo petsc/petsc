@@ -29,8 +29,6 @@ struct _n_TaoShell
 
    Level: advanced
 
-.keywords: Tao, shell, set, user-provided
-
 .seealso: TAOSHELL, TaoShellSetContext(), TaoShellGetContext()
 @*/
 PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve) (Tao))
@@ -58,8 +56,6 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve) (Tao))
 
     Notes:
     This routine is intended for use within various shell routines
-
-.keywords: Tao, shell, get, context
 
 .seealso: TaoCreateShell(), TaoShellSetContext()
 @*/

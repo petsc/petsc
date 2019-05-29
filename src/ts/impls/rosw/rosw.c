@@ -297,8 +297,6 @@ M*/
 
   Level: advanced
 
-.keywords: TS, TSRosW, register, all
-
 .seealso:  TSRosWRegisterDestroy()
 @*/
 PetscErrorCode TSRosWRegisterAll(void)
@@ -603,7 +601,6 @@ PetscErrorCode TSRosWRegisterAll(void)
 
    Level: advanced
 
-.keywords: TSRosW, register, destroy
 .seealso: TSRosWRegister(), TSRosWRegisterAll()
 @*/
 PetscErrorCode TSRosWRegisterDestroy(void)
@@ -632,7 +629,6 @@ PetscErrorCode TSRosWRegisterDestroy(void)
 
   Level: developer
 
-.keywords: TS, TSRosW, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode TSRosWInitializePackage(void)
@@ -653,7 +649,6 @@ PetscErrorCode TSRosWInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode TSRosWFinalizePackage(void)
@@ -686,8 +681,6 @@ PetscErrorCode TSRosWFinalizePackage(void)
    Several Rosenbrock W methods are provided, this function is only needed to create new methods.
 
    Level: advanced
-
-.keywords: TS, register
 
 .seealso: TSRosW
 @*/
@@ -816,8 +809,6 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
    It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
 
    Level: developer
-
-.keywords: TS, register
 
 .seealso: TSRosW, TSRosWRegister()
 @*/

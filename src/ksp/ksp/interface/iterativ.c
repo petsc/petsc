@@ -22,8 +22,6 @@
 
    Level: intermediate
 
-.keywords: KSP, get, residual norm
-
 .seealso: KSPBuildResidual()
 @*/
 PetscErrorCode  KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
@@ -52,8 +50,6 @@ PetscErrorCode  KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 
    Notes:
       During the ith iteration this returns i-1
-.keywords: KSP, get, residual norm
-
 .seealso: KSPBuildResidual(), KSPGetResidualNorm(), KSPGetTotalIterations()
 @*/
 PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
@@ -81,8 +77,6 @@ PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
    Notes:
     Use KSPGetIterationNumber() to get the count for the most recent solve only
    If this is called within a linear solve (such as in a KSPMonitor routine) then it does not include iterations within that current solve
-
-.keywords: KSP, get, residual norm
 
 .seealso: KSPBuildResidual(), KSPGetResidualNorm(), KSPGetIterationNumber()
 @*/
@@ -116,8 +110,6 @@ PetscErrorCode  KSPGetTotalIterations(KSP ksp,PetscInt *its)
     not currently compute singular values.
 
     Level: intermediate
-
-.keywords: KSP, CG, default, monitor, extreme, singular values, Lanczos, Arnoldi
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/
@@ -162,8 +154,6 @@ PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,Petsc
     For some Krylov methods such as GMRES constructing the solution at
   each iteration is expensive, hence using this will slow the code.
 
-.keywords: KSP, nonlinear, vector, monitor, view
-
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView()
 @*/
 PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *dummy)
@@ -194,8 +184,6 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,PetscVi
 -  dummy - an ASCII PetscViewer
 
    Level: intermediate
-
-.keywords: KSP, default, monitor, residual
 
 .seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate()
 @*/
@@ -236,8 +224,6 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewer
    When using right preconditioning, these values are equivalent.
 
    Level: intermediate
-
-.keywords: KSP, default, monitor, residual
 
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(),KSPMonitorTrueResidualMaxNorm()
 @*/
@@ -286,8 +272,6 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,Pe
    This could be implemented (better) with a flag in ksp.
 
    Level: intermediate
-
-.keywords: KSP, default, monitor, residual
 
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(),KSPMonitorTrueResidualNorm()
 @*/
@@ -357,8 +341,6 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
 
    Level: intermediate
 
-.keywords: KSP, default, monitor, residual
-
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate()
 @*/
 PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,PetscViewerAndFormat *dummy)
@@ -408,8 +390,6 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,PetscViewerA
    convergence of the outer iterations.
 
    Level: advanced
-
-.keywords: KSP, inner tolerance
 
 .seealso: KSPMonitorDynamicToleranceDestroy()
 @*/
@@ -529,8 +509,6 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,Pets
 
    Level: advanced
 
-.keywords: KSP, default, convergence, residual
-
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetNormType()
 @*/
 PetscErrorCode  KSPConvergedSkip(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
@@ -553,8 +531,6 @@ PetscErrorCode  KSPConvergedSkip(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverged
 .  ctx - convergence context
 
    Level: intermediate
-
-.keywords: KSP, default, convergence, residual
 
 .seealso: KSPConvergedDefault(), KSPConvergedDefaultDestroy(), KSPSetConvergenceTest(), KSPSetTolerances(),
           KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm()
@@ -596,8 +572,6 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
 
    Level: intermediate
 
-.keywords: KSP, default, convergence, residual
-
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUMIRNorm()
 @*/
 PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
@@ -631,8 +605,6 @@ PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
    are defined in petscksp.h.
 
    Level: intermediate
-
-.keywords: KSP, default, convergence, residual
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm()
 @*/
@@ -688,8 +660,6 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
    Use KSPSetConvergenceTest() to provide your own test instead of using this one.
 
    Level: intermediate
-
-.keywords: KSP, default, convergence, residual
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
           KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy()
@@ -790,8 +760,6 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
 
    Level: intermediate
 
-.keywords: KSP, default, convergence, residual
-
 .seealso: KSPConvergedDefault(), KSPConvergedDefaultCreate(), KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(),
           KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm()
 @*/
@@ -819,8 +787,6 @@ PetscErrorCode  KSPConvergedDefaultDestroy(void *ctx)
    Level: advanced
 
    Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
-
-.keywords:  KSP, build, solution, default
 
 .seealso: KSPGetSolution(), KSPBuildResidualDefault()
 */
@@ -873,8 +839,6 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp,Vec v,Vec *V)
    Level: advanced
 
    Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
-
-.keywords:  KSP, build, residual, default
 
 .seealso: KSPBuildSolutionDefault()
 */
@@ -1071,8 +1035,6 @@ $  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned
 
    Level: intermediate
 
-.keywords: KSP, nonlinear, set, convergence, test
-
 .seealso: KSPSetConvergenceTest(), KSPConvergedDefault(), KSPSetTolerances(), KSPConvergedReason
 @*/
 PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
@@ -1203,8 +1165,6 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 
    Level: intermediate
 
-.keywords: KSP, set, application, context
-
 .seealso: KSPGetApplicationContext()
 @*/
 PetscErrorCode  KSPSetApplicationContext(KSP ksp,void *usrP)
@@ -1237,8 +1197,6 @@ PetscErrorCode  KSPSetApplicationContext(KSP ksp,void *usrP)
 
    Level: intermediate
 
-.keywords: KSP, get, application, context
-
 .seealso: KSPSetApplicationContext()
 @*/
 PetscErrorCode  KSPGetApplicationContext(KSP ksp,void *usrP)
@@ -1267,8 +1225,6 @@ PetscErrorCode  KSPGetApplicationContext(KSP ksp,void *usrP)
    Level: developer
 
    Developer Note: this is used to manage returning from preconditioners whose inner KSP solvers have failed in some way
-
-.keywords: KSP, PC, divergence, convergence
 
 .seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckNorm(), KSPCheckDot()
 @*/

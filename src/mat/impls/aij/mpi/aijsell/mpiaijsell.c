@@ -74,8 +74,6 @@
 
    Level: intermediate
 
-.keywords: matrix, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqAIJSELL(), MatSetValues()
 @*/
 PetscErrorCode  MatCreateMPIAIJSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)

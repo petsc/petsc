@@ -926,8 +926,6 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
 
     Level: advanced
 
-.keywords: PC, ASM, set, local, subdomains, additive Schwarz
-
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains(), PCASMType, PCASMSetType()
 @*/
@@ -974,8 +972,6 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
     The IS numbering is in the parallel, global numbering of the vector for both is and is_local
 
     Level: advanced
-
-.keywords: PC, ASM, set, total, global, subdomains, additive Schwarz
 
 .seealso: PCASMSetLocalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D()
@@ -1027,8 +1023,6 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
 
     Level: intermediate
 
-.keywords: PC, ASM, set, overlap
-
 .seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains(), MatIncreaseOverlap()
 @*/
@@ -1068,8 +1062,6 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
 
     Level: intermediate
 
-.keywords: PC, ASM, set, type
-
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMType, PCASMSetLocalType(), PCASMGetLocalType()
 @*/
@@ -1107,8 +1099,6 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
 .   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
     Level: intermediate
-
-.keywords: PC, ASM, set, type
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMType, PCASMSetType(), PCASMSetLocalType(), PCASMGetLocalType()
@@ -1198,8 +1188,6 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
 
     Level: intermediate
 
-.keywords: PC, ASM, set, type
-
 .seealso: PCASMSetLocalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D()
 @*/
@@ -1238,8 +1226,6 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
    The output argument 'ksp' must be an array of sufficient length or PETSC_NULL_KSP. The latter can be used to learn the necessary length.
 
    Level: advanced
-
-.keywords: PC, ASM, additive Schwarz, get, sub, KSP, context
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap(),
           PCASMCreateSubdomains2D(),
@@ -1369,8 +1355,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
     from these if you use PCASMSetLocalSubdomains()
 
     In the Fortran version you must provide the array outis[] already allocated of length n.
-
-.keywords: PC, ASM, additive Schwarz, create, subdomains, unstructured grid
 
 .seealso: PCASMSetLocalSubdomains(), PCASMDestroySubdomains()
 @*/
@@ -1542,8 +1526,6 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 
    Level: advanced
 
-.keywords: PC, ASM, additive Schwarz, create, subdomains, unstructured grid
-
 .seealso: PCASMCreateSubdomains(), PCASMSetLocalSubdomains()
 @*/
 PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
@@ -1589,8 +1571,6 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
    PCASMSetTotalSubdomains() and PCASMSetLocalSubdomains().
 
    Level: advanced
-
-.keywords: PC, ASM, additive Schwarz, create, subdomains, 2D, regular grid
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubKSP(),
           PCASMSetOverlap()
@@ -1670,8 +1650,6 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
 
     Level: advanced
 
-.keywords: PC, ASM, set, local, subdomains, additive Schwarz
-
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubmatrices()
 @*/
@@ -1712,8 +1690,6 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
     Call after PCSetUp() (or KSPSetUp()) but before PCApply() (or KSPApply()) and before PCSetUpOnBlocks())
 
            Usually one would use PCSetModifySubmatrices() to change the submatrices in building the preconditioner.
-
-.keywords: PC, ASM, set, local, subdomains, additive Schwarz, block Jacobi
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains(), PCSetModifySubmatrices()
@@ -1759,8 +1735,6 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
     PCASMSetTotalSubdomains() and PCASMSetOverlap() take precedence over PCASMSetDMSubdomains(),
     so setting either of the first two effectively turns the latter off.
 
-.keywords: PC, ASM, DM, set, subdomains, additive Schwarz
-
 .seealso: PCASMGetDMSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap()
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains()
 @*/
@@ -1792,8 +1766,6 @@ PetscErrorCode  PCASMSetDMSubdomains(PC pc,PetscBool flg)
 .   flg - boolean indicating whether to use subdomains defined by the DM
 
     Level: intermediate
-
-.keywords: PC, ASM, DM, set, subdomains, additive Schwarz
 
 .seealso: PCASMSetDMSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap()
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains()
@@ -1827,8 +1799,6 @@ PetscErrorCode  PCASMGetDMSubdomains(PC pc,PetscBool* flg)
 
    Level: advanced
 
-.keywords: PC, PCASM, MatType, set
-
 .seealso: PCASMSetSubMatType(), PCASM, PCSetType(), VecSetType(), MatType, Mat
 @*/
 PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type){
@@ -1854,8 +1824,6 @@ PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type){
    See "${PETSC_DIR}/include/petscmat.h" for available types
 
   Level: advanced
-
-.keywords: PC, PCASM, MatType, set
 
 .seealso: PCASMGetSubMatType(), PCASM, PCSetType(), VecSetType(), MatType, Mat
 @*/

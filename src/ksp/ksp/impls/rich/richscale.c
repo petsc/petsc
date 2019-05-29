@@ -16,7 +16,6 @@
 
     Level: intermediate
 
-.keywords: KSP, Richardson, set, scale
 @*/
 PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 {
@@ -51,7 +50,6 @@ PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
     Could also minimize the 2-norm of the true residual with one less work vector
 
 
-.keywords: KSP, Richardson, set, scale
 @*/
 PetscErrorCode  KSPRichardsonSetSelfScale(KSP ksp,PetscBool scale)
 {

@@ -38,8 +38,6 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-.keywords: TSAdapt, register
-
 .seealso: TSAdaptRegisterAll()
 @*/
 PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TSAdapt))
@@ -58,8 +56,6 @@ PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TS
   Not Collective
 
   Level: advanced
-
-.keywords: TSAdapt, register, all
 
 .seealso: TSAdaptRegisterDestroy()
 @*/
@@ -85,7 +81,6 @@ PetscErrorCode  TSAdaptRegisterAll(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  TSAdaptFinalizePackage(void)
@@ -105,7 +100,6 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
 
   Level: developer
 
-.keywords: TSAdapt, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  TSAdaptInitializePackage(void)
@@ -134,8 +128,6 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 . -ts_adapt_type <basic or dsp or none> - to set the adapter type
 
   Level: intermediate
-
-.keywords: TSAdapt, create
 
 .seealso: TSGetAdapt(), TSAdaptDestroy(), TSAdaptType, TSAdaptGetType()
 @*/
@@ -171,7 +163,6 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 
   Level: intermediate
 
-.keywords: TSAdapt, get, type
 .seealso TSAdaptSetType()
 @*/
 PetscErrorCode TSAdaptGetType(TSAdapt adapt,TSAdaptType *type)
@@ -671,8 +662,6 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt,PetscReal *hmin,PetscReal *hma
    Notes:
    This function is automatically called by TSSetFromOptions()
 
-.keywords: TS, TSGetAdapt(), TSAdaptSetType(), TSAdaptSetStepLimits()
-
 .seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptSetAlwaysAccept(), TSAdaptSetSafety(),
           TSAdaptSetClip(), TSAdaptSetStepLimits(), TSAdaptSetMonitor()
 */
@@ -1014,7 +1003,6 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
   Notes:
   TSAdapt creation is handled by TS, so users should not need to call this function.
 
-.keywords: TSAdapt, create
 .seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptDestroy()
 @*/
 PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)

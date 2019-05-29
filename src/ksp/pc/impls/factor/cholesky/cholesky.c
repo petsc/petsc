@@ -229,8 +229,6 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 
    Level: intermediate
 
-.keywords: PC, levels, reordering, factorization, incomplete, LU
-
 .seealso: PCFactorSetReuseFill()
 @*/
 PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool flag)

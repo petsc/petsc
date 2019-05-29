@@ -456,8 +456,6 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
    Notes:
     See http://www.labri.fr/perso/pelegrin/scotch/
 
-.keywords: Partitioning, create, context
-
 .seealso: MatPartitioningSetType(), MatPartitioningType
 M*/
 

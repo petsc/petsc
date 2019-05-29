@@ -213,8 +213,6 @@ static PetscErrorCode  PCSORGetIterations_SOR(PC pc,PetscInt *its,PetscInt *lits
 
    Level: intermediate
 
-.keywords: PC, SOR, SSOR, set, relaxation, sweep, forward, backward, symmetric
-
 .seealso: PCEisenstatSetOmega(), PCSORSetIterations(), PCSORSetOmega(), PCSORSetSymmetric()
 @*/
 PetscErrorCode  PCSORGetSymmetric(PC pc,MatSORType *flag)
@@ -243,8 +241,6 @@ PetscErrorCode  PCSORGetSymmetric(PC pc,MatSORType *flag)
 .  -pc_sor_omega <omega> - Sets omega
 
    Level: intermediate
-
-.keywords: PC, SOR, SSOR, set, relaxation, omega
 
 .seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega(), PCSORSetOmega()
 @*/
@@ -279,8 +275,6 @@ PetscErrorCode  PCSORGetOmega(PC pc,PetscReal *omega)
 
    Notes:
     When run on one processor the number of smoothings is lits*its
-
-.keywords: PC, SOR, SSOR, set, iterations
 
 .seealso: PCSORSetOmega(), PCSORSetSymmetric(), PCSORSetIterations()
 @*/
@@ -327,8 +321,6 @@ PetscErrorCode  PCSORGetIterations(PC pc,PetscInt *its,PetscInt *lits)
 
    Level: intermediate
 
-.keywords: PC, SOR, SSOR, set, relaxation, sweep, forward, backward, symmetric
-
 .seealso: PCEisenstatSetOmega(), PCSORSetIterations(), PCSORSetOmega()
 @*/
 PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
@@ -356,8 +348,6 @@ PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
 .  -pc_sor_omega <omega> - Sets omega
 
    Level: intermediate
-
-.keywords: PC, SOR, SSOR, set, relaxation, omega
 
 .seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega()
 @*/
@@ -391,8 +381,6 @@ PetscErrorCode  PCSORSetOmega(PC pc,PetscReal omega)
 
    Notes:
     When run on one processor the number of smoothings is lits*its
-
-.keywords: PC, SOR, SSOR, set, iterations
 
 .seealso: PCSORSetOmega(), PCSORSetSymmetric()
 @*/

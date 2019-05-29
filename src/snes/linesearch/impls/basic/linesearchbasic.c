@@ -82,8 +82,6 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
    Level: advanced
 
-.keywords: SNES, SNESLineSearch, damping
-
 .seealso: SNESLineSearchCreate(), SNESLineSearchSetType(), SNESLineSearchSetDamping(), SNESLineSearchSetComputeNorms()
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch)

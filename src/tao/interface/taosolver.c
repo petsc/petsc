@@ -1190,8 +1190,6 @@ PetscErrorCode TaoGetKSP(Tao tao, KSP *ksp)
 
    Level: intermediate
 
-.keywords: TAO
-
 .seealso:  TaoGetKSP()
 @*/
 PetscErrorCode  TaoGetLinearSolveIterations(Tao tao,PetscInt *lits)
@@ -1356,8 +1354,6 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 . step - The current step of the iteration
 
   Level: advanced
-
-.keywords: Tao, update
 
 .seealso TaoSolve()
 @*/
@@ -2227,8 +2223,6 @@ PetscErrorCode TaoRegisterDestroy(void)
 
    Level: intermediate
 
-.keywords: Tao, nonlinear, get, iteration, number,
-
 .seealso:   TaoGetLinearSolveIterations(), TaoGetResidualNorm(), TaoGetObjective()
 @*/
 PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
@@ -2253,8 +2247,6 @@ PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
 .  value - the current value
 
    Level: intermediate
-
-.keywords: Tao, nonlinear, get, iteration, number,
 
 .seealso:   TaoGetLinearSolveIterations(), TaoGetIterationNumber(), TaoGetResidualNorm()
 @*/
@@ -2284,8 +2276,6 @@ PetscErrorCode  TaoGetObjective(Tao tao,PetscReal *value)
    Developer Note: This is the 2-norm of the residual, we cannot use TaoGetGradientNorm() because that has
                    a different meaning. For some reason Tao sometimes calls the gradient the residual.
 
-.keywords: Tao, nonlinear, get, iteration, number,
-
 .seealso:   TaoGetLinearSolveIterations(), TaoGetIterationNumber(), TaoGetObjective()
 @*/
 PetscErrorCode  TaoGetResidualNorm(Tao tao,PetscReal *value)
@@ -2307,8 +2297,6 @@ PetscErrorCode  TaoGetResidualNorm(Tao tao,PetscReal *value)
 .  iter - iteration number
 
    Level: developer
-
-.keywords: Tao, nonlinear, set, iteration, number,
 
 .seealso:   TaoGetLinearSolveIterations()
 @*/
@@ -2343,8 +2331,6 @@ PetscErrorCode  TaoSetIterationNumber(Tao tao,PetscInt iter)
 
    Level: intermediate
 
-.keywords: Tao, nonlinear, get, iteration, number,
-
 .seealso:   TaoGetLinearSolveIterations()
 @*/
 PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
@@ -2366,8 +2352,6 @@ PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
 .  iter - iteration number
 
    Level: developer
-
-.keywords: Tao, nonlinear, set, iteration, number,
 
 .seealso:   TaoGetLinearSolveIterations()
 @*/
@@ -2828,8 +2812,6 @@ PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal 
 
    Level: intermediate
 
-.keywords: Tao,  vector, monitor, view
-
 .seealso: TaoMonitorSet(), TaoMonitorDefault(), VecView(), TaoMonitorDrawCtx()
 @*/
 PetscErrorCode  TaoMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TaoMonitorDrawCtx *ctx)
@@ -2853,8 +2835,6 @@ PetscErrorCode  TaoMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const ch
 .    ctx - the monitor context
 
    Level: intermediate
-
-.keywords: Tao,  vector, monitor, view
 
 .seealso: TaoMonitorSet(), TaoMonitorDefault(), VecView(), TaoMonitorDrawSolution()
 @*/

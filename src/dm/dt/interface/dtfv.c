@@ -44,7 +44,6 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
 
   Level: advanced
 
-.keywords: PetscLimiter, register
 .seealso: PetscLimiterRegisterAll(), PetscLimiterRegisterDestroy()
 
 @*/
@@ -71,7 +70,6 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
 
   Level: intermediate
 
-.keywords: PetscLimiter, set, type
 .seealso: PetscLimiterGetType(), PetscLimiterCreate()
 @*/
 PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
@@ -111,7 +109,6 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
 
   Level: intermediate
 
-.keywords: PetscLimiter, get, type, name
 .seealso: PetscLimiterSetType(), PetscLimiterCreate()
 @*/
 PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
@@ -929,7 +926,6 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.keywords: PetscFV, register
 .seealso: PetscFVRegisterAll(), PetscFVRegisterDestroy()
 
 @*/
@@ -956,7 +952,6 @@ PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(Pe
 
   Level: intermediate
 
-.keywords: PetscFV, set, type
 .seealso: PetscFVGetType(), PetscFVCreate()
 @*/
 PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
@@ -996,7 +991,6 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
 
   Level: intermediate
 
-.keywords: PetscFV, get, type, name
 .seealso: PetscFVSetType(), PetscFVCreate()
 @*/
 PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)

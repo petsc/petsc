@@ -359,8 +359,6 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
    Developer Note:
    this is used to manage returning from KSP solvers whose preconditioners have failed in some way
 
-.keywords: KSP, PC, divergence, convergence
-
 .seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckNorm(), KSPCheckSolve()
 M*/
 #define KSPCheckDot(ksp,beta) do { \
@@ -399,8 +397,6 @@ M*/
 
    Developer Note:
    this is used to manage returning from KSP solvers whose preconditioners have failed in some way
-
-.keywords: KSP, PC, divergence, convergence
 
 .seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckDot(), KSPCheckSolve()
 M*/

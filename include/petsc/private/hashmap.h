@@ -22,7 +22,6 @@
 
   Concepts: hash table, map
 
-.keywords: hash table, map
 .seealso: PetscHMapT, PetscHMapTCreate()
 M*/
 
@@ -36,7 +35,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map
 .seealso:  PETSC_HASH_MAP(), PetscHMapTCreate()
 S*/
 
@@ -54,7 +52,6 @@ S*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, create
 .seealso: PetscHMapTDestroy()
 M*/
 
@@ -72,7 +69,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, destroy
 .seealso: PetscHMapTCreate()
 M*/
 
@@ -90,7 +86,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, reset
 .seealso: PetscHMapTClear()
 M*/
 
@@ -111,7 +106,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, duplicate
 .seealso: PetscHMapTCreate()
 M*/
 
@@ -129,7 +123,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, reset
 .seealso: PetscHMapTReset()
 M*/
 
@@ -168,7 +161,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, resize
 .seealso: PetscHMapTResize()
 M*/
 
@@ -189,7 +181,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, resize
 .seealso: PetscHMapTResize(), PetscHMapTGetSize()
 M*/
 
@@ -211,7 +202,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, query
 .seealso:  PetscHMapTGet(), PetscHMapTSet(), PetscHMapTFind()
 M*/
 
@@ -233,7 +223,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, get
 .seealso:  PetscHMapTSet(), PetscHMapTIterGet()
 M*/
 
@@ -253,7 +242,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, set
 .seealso: PetscHMapTGet(), PetscHMapTIterSet()
 M*/
 
@@ -272,7 +260,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, del
 .seealso: PetscHMapTHas(), PetscHMapTIterDel()
 M*/
 
@@ -295,7 +282,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, query, set
 .seealso: PetscHMapTQueryDel(), PetscHMapTSet()
 M*/
 
@@ -317,7 +303,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, query, del
 .seealso: PetscHMapTQuerySet(), PetscHMapTDel()
 M*/
 
@@ -340,7 +325,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, iterator, find
 .seealso: PetscHMapTIterGet(), PetscHMapTIterDel()
 M*/
 
@@ -363,7 +347,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, iterator, put
 .seealso: PetscHMapTIterSet(), PetscHMapTQuerySet(), PetscHMapTSet()
 M*/
 
@@ -385,7 +368,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, iterator, get
 .seealso: PetscHMapTFind(), PetscHMapTGet()
 M*/
 
@@ -405,7 +387,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, iterator, set
 .seealso: PetscHMapTPut(), PetscHMapTQuerySet(), PetscHMapTSet()
 M*/
 
@@ -424,7 +405,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, iterator, del
 .seealso: PetscHMapTFind(), PetscHMapTQueryDel(), PetscHMapTDel()
 M*/
 
@@ -448,7 +428,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, array
 .seealso: PetscHSetTGetSize(), PetscHMapTGetVals()
 M*/
 
@@ -472,7 +451,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, array
 .seealso: PetscHSetTGetSize(), PetscHMapTGetKeys()
 M*/
 
@@ -498,7 +476,6 @@ M*/
 
   Concepts: hash table, map
 
-.keywords: hash table, map, array
 .seealso: PetscHSetTGetSize(), PetscHMapTGetKeys(), PetscHMapTGetVals()
 M*/
 

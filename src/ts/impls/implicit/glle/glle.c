@@ -620,7 +620,6 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
 
    Level: intermediate
 
-.keywords: TS, TSGLLE, set, type
 @*/
 PetscErrorCode  TSGLLESetType(TS ts,TSGLLEType type)
 {
@@ -1236,8 +1235,6 @@ $     -ts_gl_type my_scheme
 
    Level: advanced
 
-.keywords: TSGLLE, register
-
 .seealso: TSGLLERegisterAll()
 @*/
 PetscErrorCode  TSGLLERegister(const char sname[],PetscErrorCode (*function)(TS))
@@ -1274,8 +1271,6 @@ $     -ts_gl_accept_type my_scheme
 
    Level: advanced
 
-.keywords: TSGLLE, TSGLLEAcceptType, register
-
 .seealso: TSGLLERegisterAll()
 @*/
 PetscErrorCode  TSGLLEAcceptRegister(const char sname[],TSGLLEAcceptFunction function)
@@ -1293,8 +1288,6 @@ PetscErrorCode  TSGLLEAcceptRegister(const char sname[],TSGLLEAcceptFunction fun
   Not Collective
 
   Level: advanced
-
-.keywords: TS, TSGLLE, register, all
 
 .seealso:  TSGLLERegisterDestroy()
 @*/
@@ -1317,7 +1310,6 @@ PetscErrorCode  TSGLLERegisterAll(void)
 
   Level: developer
 
-.keywords: TS, TSGLLE, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  TSGLLEInitializePackage(void)
@@ -1338,7 +1330,6 @@ PetscErrorCode  TSGLLEInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  TSGLLEFinalizePackage(void)

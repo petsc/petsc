@@ -316,8 +316,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
 
    Level: intermediate
 
-.keywords: matrix, sparse
-
 .seealso: MatCreate(), MatCreateMPIAIJSELL(), MatSetValues()
 @*/
 PetscErrorCode  MatCreateSeqAIJSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)

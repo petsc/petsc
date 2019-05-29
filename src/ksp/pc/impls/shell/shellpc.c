@@ -44,8 +44,6 @@ typedef struct {
     To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.keywords: PC, shell, get, context
-
 .seealso: PCShellSetContext()
 @*/
 PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
@@ -439,8 +437,6 @@ static PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
 
    Level: developer
 
-.keywords: PC, shell, set, destroy, user-provided
-
 .seealso: PCShellSetApply(), PCShellSetContext()
 @*/
 PetscErrorCode  PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
@@ -475,8 +471,6 @@ PetscErrorCode  PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
     the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
-
-.keywords: PC, shell, set, setup, user-provided
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetApply(), PCShellSetContext()
 @*/
@@ -513,8 +507,6 @@ PetscErrorCode  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC))
 
    Level: developer
 
-.keywords: PC, shell, set, apply, user-provided
-
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose()
 @*/
 PetscErrorCode  PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
@@ -549,8 +541,6 @@ PetscErrorCode  PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
     the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
-
-.keywords: PC, shell, set, apply, user-provided
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext(), PCShellSetApplyBA(), PCShellSetApplySymmetricRight(),PCShellSetApplySymmetricLeft()
 @*/
@@ -587,8 +577,6 @@ PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 
    Level: developer
 
-.keywords: PC, shell, set, apply, user-provided
-
 .seealso: PCShellSetApply(), PCShellSetApplySymmetricLeft(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext()
 @*/
 PetscErrorCode  PCShellSetApplySymmetricLeft(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
@@ -624,8 +612,6 @@ PetscErrorCode  PCShellSetApplySymmetricLeft(PC pc,PetscErrorCode (*apply)(PC,Ve
 
    Level: developer
 
-.keywords: PC, shell, set, apply, user-provided
-
 .seealso: PCShellSetApply(), PCShellSetApplySymmetricLeft(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext()
 @*/
 PetscErrorCode  PCShellSetApplySymmetricRight(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
@@ -660,8 +646,6 @@ PetscErrorCode  PCShellSetApplySymmetricRight(PC pc,PetscErrorCode (*apply)(PC,V
     the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
-
-.keywords: PC, shell, set, apply, user-provided
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext(), PCShellSetApply()
 @*/
@@ -701,8 +685,6 @@ PetscErrorCode  PCShellSetApplyBA(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,
    Notes:
    Uses the same context variable as PCShellSetApply().
 
-.keywords: PC, shell, set, apply, user-provided
-
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApply(), PCSetContext(), PCShellSetApplyBA()
 @*/
 PetscErrorCode  PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(PC,Vec,Vec))
@@ -739,8 +721,6 @@ PetscErrorCode  PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(
     the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
-
-.keywords: PC, shell, set, apply, user-provided
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetPostSolve(), PCShellSetContext()
 @*/
@@ -779,8 +759,6 @@ PetscErrorCode  PCShellSetPreSolve(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,V
 
    Level: developer
 
-.keywords: PC, shell, set, apply, user-provided
-
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetPreSolve(), PCShellSetContext()
 @*/
 PetscErrorCode  PCShellSetPostSolve(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec))
@@ -804,8 +782,6 @@ PetscErrorCode  PCShellSetPostSolve(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec
 -  name - character string describing shell preconditioner
 
    Level: developer
-
-.keywords: PC, shell, set, name, user-provided
 
 .seealso: PCShellGetName()
 @*/
@@ -832,8 +808,6 @@ PetscErrorCode  PCShellSetName(PC pc,const char name[])
 .  name - character string describing shell preconditioner (you should not free this)
 
    Level: developer
-
-.keywords: PC, shell, get, name, user-provided
 
 .seealso: PCShellSetName()
 @*/
@@ -876,8 +850,6 @@ PetscErrorCode  PCShellGetName(PC pc,const char *name[])
     the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
-
-.keywords: PC, shell, set, apply, Richardson, user-provided
 
 .seealso: PCShellSetApply(), PCShellSetContext()
 @*/

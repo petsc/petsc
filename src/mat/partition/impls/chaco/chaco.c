@@ -699,8 +699,6 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
    Notes:
     See http://www.cs.sandia.gov/CRF/chac.html
 
-.keywords: Partitioning, create, context
-
 .seealso: MatPartitioningSetType(), MatPartitioningType
 M*/
 

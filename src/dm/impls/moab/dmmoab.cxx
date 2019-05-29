@@ -63,7 +63,6 @@ PETSC_EXTERN PetscErrorCode DMLocatePoints_Moab(DM dm, Vec v, IS *cellIS);
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 {
@@ -94,7 +93,6 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 
   Level: intermediate
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::Tag *ltog_tag, moab::Range *range, DM *dmb)
 {
@@ -181,7 +179,6 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 {
@@ -205,7 +202,6 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 {
@@ -236,7 +232,6 @@ PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 {
@@ -262,7 +257,6 @@ PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 {
@@ -316,7 +310,6 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
 {
@@ -342,7 +335,6 @@ PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetLocalVertices(DM dm, const moab::Range **owned, const moab::Range **ghost)
 {
@@ -366,7 +358,6 @@ PetscErrorCode DMMoabGetLocalVertices(DM dm, const moab::Range **owned, const mo
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
 {
@@ -388,7 +379,6 @@ PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 {
@@ -428,7 +418,6 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm, moab::Tag ltogtag)
 {
@@ -452,7 +441,6 @@ PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm, moab::Tag ltogtag)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 {
@@ -474,7 +462,6 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabSetBlockSize(DM dm, PetscInt bs)
 {
@@ -498,7 +485,6 @@ PetscErrorCode DMMoabSetBlockSize(DM dm, PetscInt bs)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
 {
@@ -523,7 +509,6 @@ PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
 {
@@ -551,7 +536,6 @@ PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *nel, PetscInt *neg, PetscInt *nvl, PetscInt *nvg)
 {
@@ -578,7 +562,6 @@ PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *nel, PetscInt *neg, PetscInt 
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *offset)
 {
@@ -602,7 +585,6 @@ PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *offset)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
 {
@@ -627,7 +609,6 @@ PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
 
   Level: beginner
 
-.keywords: DMMoab, multigrid
 @*/
 PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 {
@@ -652,7 +633,6 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 
   Level: beginner
 
-.keywords: DMMoab, create
 @*/
 PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, PetscInt *mat)
 {
@@ -1299,8 +1279,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
   Level: beginner
 
-.keywords: DM, create vertices
-
 .seealso: DMMoabCreateSubmesh(), DMMoabCreateElement()
 @*/
 PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal* coords, PetscInt nverts, moab::Range* overts)
@@ -1340,8 +1318,6 @@ PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal* coords, PetscInt nve
 
   Level: beginner
 
-.keywords: DM, create element
-
 .seealso: DMMoabCreateSubmesh(), DMMoabCreateVertices()
 @*/
 PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moab::EntityHandle* conn, PetscInt nverts, moab::EntityHandle* oelem)
@@ -1379,8 +1355,6 @@ PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moa
 . newdm  - The sub DM object with updated set information
 
   Level: advanced
-
-.keywords: DM, sub-DM
 
 .seealso: DMCreate(), DMMoabCreateVertices(), DMMoabCreateElement()
 @*/

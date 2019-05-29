@@ -112,8 +112,6 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
 
   Level: advanced
 
-.keywords: DMField, set, type
-
 .seealso: DMFieldType,
 @*/
 PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
@@ -154,7 +152,6 @@ PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
 
   Level: advanced
 
-.keywords: DMField, get, type, name
 .seealso: DMFieldSetType()
 @*/
 PetscErrorCode  DMFieldGetType(DMField field, DMFieldType *type)

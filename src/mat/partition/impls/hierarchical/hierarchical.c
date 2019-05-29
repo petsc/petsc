@@ -557,8 +557,6 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
       A general-purpose hierarchical mesh partitioning method with node balancing strategies for large-scale numerical simulations,
       arXiv preprint arXiv:1809.02666CoRR, 2018.
 
-.keywords: Partitioning, create, context
-
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
 M*/

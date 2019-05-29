@@ -74,7 +74,6 @@ PetscErrorCode  PetscInfoAllow(PetscBool flag, const char filename[])
 
   Level: developer
 
-.keywords: allow, information, printing, monitoring
 .seealso: PetscInfoActivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
 PetscErrorCode  PetscInfoDeactivateClass(PetscClassId classid)
@@ -98,7 +97,6 @@ PetscErrorCode  PetscInfoDeactivateClass(PetscClassId classid)
 
   Level: developer
 
-.keywords: allow, information, printing, monitoring
 .seealso: PetscInfoDeactivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
 PetscErrorCode  PetscInfoActivateClass(PetscClassId classid)

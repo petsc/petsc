@@ -31,7 +31,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS);
 
   Level: advanced
 
-.keywords: TS, timestepper, register, all
 .seealso: TSCreate(), TSRegister(), TSRegisterDestroy()
 @*/
 PetscErrorCode  TSRegisterAll(void)

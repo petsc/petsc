@@ -46,8 +46,6 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-.keywords: TSGLLEAdapt, register
-
 .seealso: TSGLLEAdaptRegisterAll()
 @*/
 PetscErrorCode  TSGLLEAdaptRegister(const char sname[],PetscErrorCode (*function)(TSGLLEAdapt))
@@ -66,8 +64,6 @@ PetscErrorCode  TSGLLEAdaptRegister(const char sname[],PetscErrorCode (*function
   Not Collective
 
   Level: advanced
-
-.keywords: TSGLLEAdapt, register, all
 
 .seealso: TSGLLEAdaptRegisterDestroy()
 @*/
@@ -90,7 +86,6 @@ PetscErrorCode  TSGLLEAdaptRegisterAll(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  TSGLLEAdaptFinalizePackage(void)
@@ -110,7 +105,6 @@ PetscErrorCode  TSGLLEAdaptFinalizePackage(void)
 
   Level: developer
 
-.keywords: TSGLLEAdapt, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  TSGLLEAdaptInitializePackage(void)

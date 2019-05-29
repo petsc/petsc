@@ -123,7 +123,6 @@ PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
 
   Level: advanced
 
-.keywords: log, begin
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin(), PetscLogDefaultBegin()
 @*/
 PetscErrorCode PetscLogNestedBegin(void)
@@ -436,7 +435,6 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
 
   Level: advanced
 
-.keywords: log, begin
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin(), PetscLogDefaultBegin(),
           PetscLogNestedBegin()
 @*/

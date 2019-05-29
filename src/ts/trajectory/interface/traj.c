@@ -21,8 +21,6 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_GetVecs;
 
   Level: developer
 
-.keywords: TS, trajectory, timestep, register
-
 .seealso: TSTrajectoryRegisterAll()
 @*/
 PetscErrorCode TSTrajectoryRegister(const char sname[],PetscErrorCode (*function)(TSTrajectory,TS))
@@ -49,8 +47,6 @@ PetscErrorCode TSTrajectoryRegister(const char sname[],PetscErrorCode (*function
   Level: developer
 
   Notes: Usually one does not call this routine, it is called automatically during TSSolve()
-
-.keywords: TS, trajectory, create
 
 .seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory(), TSTrajectoryGet(), TSTrajectoryGetVecs()
 @*/
@@ -93,8 +89,6 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
   Level: developer
 
-.keywords: TS, trajectory, create
-
 .seealso: TSTrajectorySet()
 @*/
 PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
@@ -124,8 +118,6 @@ PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
   Level: developer
 
   Notes: Usually one does not call this routine, it is called automatically during TSSolve()
-
-.keywords: TS, trajectory, create
 
 .seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory(), TSTrajectorySet(), TSTrajectoryGetVecs(), TSGetSolution()
 @*/
@@ -173,8 +165,6 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
   Notes: If the step number is PETSC_DECIDE, the time argument is used to inquire the trajectory.
          If the requested time does not match any in the trajectory, Lagrangian interpolations are returned.
-
-.keywords: TS, trajectory, create
 
 .seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory(), TSTrajectorySet(), TSTrajectoryGet()
 @*/
@@ -304,8 +294,6 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj,TS ts,PetscInt stepnum,PetscR
 
     Level: developer
 
-.keywords: TS, trajectory, timestep, view
-
 .seealso: PetscViewerASCIIOpen()
 @*/
 PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
@@ -349,8 +337,6 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
 
    Note: Fortran interface is not possible because of the string array argument
 
-.keywords: TS, TSTrajectory, vector, monitor, view
-
 .seealso: TSTrajectory, TSGetTrajectory()
 @*/
 PetscErrorCode  TSTrajectorySetVariableNames(TSTrajectory ctx,const char * const *names)
@@ -377,8 +363,6 @@ PetscErrorCode  TSTrajectorySetVariableNames(TSTrajectory ctx,const char * const
 -  ctx - optional context used by transform function
 
    Level: intermediate
-
-.keywords: TSTrajectory,  vector, monitor, view
 
 .seealso:  TSTrajectorySetVariableNames(), TSTrajectory, TSMonitorLGSetTransform()
 @*/
@@ -407,8 +391,6 @@ PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transf
 
   Notes:
     Usually one does not call this routine, it is called automatically when one calls TSSetSaveTrajectory().
-
-.keywords: TS, trajectory, create
 
 .seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory(), TSTrajectorySetKeepFiles()
 @*/
@@ -466,8 +448,6 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 
    Level: developer
 
-.keywords: TS, trajectory, timestep, set, type
-
 .seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy(), TSTrajectoryGetType()
 
 @*/
@@ -510,8 +490,6 @@ PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,TSTrajectoryType type)
 
   Level: developer
 
-.keywords: TS, trajectory, timestep, get, type
-
 .seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy(), TSTrajectorySetType()
 
 @*/
@@ -534,8 +512,6 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory,TS);
   Not Collective
 
   Level: developer
-
-.keywords: TS, trajectory, register, all
 
 .seealso: TSTrajectoryRegister()
 @*/
@@ -563,8 +539,6 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
 .  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 
    Level: developer
-
-.keywords: TS, trajectory, timestep, reset
 
 .seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
 @*/
@@ -594,8 +568,6 @@ PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
 .  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 
    Level: developer
-
-.keywords: TS, trajectory, timestep, destroy
 
 .seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
 @*/
@@ -648,8 +620,6 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 
   Level: developer
 
-.keywords: TS, trajectory, set, options, type
-
 .seealso: TSTrajectorySetFromOptions(), TSTrajectorySetType()
 */
 static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,TSTrajectory tj,TS ts)
@@ -687,8 +657,6 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 
    Level: advanced
 
-.keywords: TS, trajectory, set, TSHistory
-
 .seealso: TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetUp()
 @*/
 PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj,PetscBool flg)
@@ -713,8 +681,6 @@ PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj,PetscBool flg)
 .  -ts_trajectory_monitor - print TSTrajectory information
 
    Level: developer
-
-.keywords: TS, trajectory, set, monitor
 
 .seealso: TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetUp()
 @*/
@@ -745,8 +711,6 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 
    Level: advanced
 
-.keywords: TS, trajectory, set, monitor
-
 .seealso: TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetUp(), TSTrajectorySetMonitor()
 @*/
 PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
@@ -774,8 +738,6 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
     The final location of the files is determined by dirname/filetemplate where filetemplate was provided by TSTrajectorySetFiletemplate()
 
    Level: developer
-
-.keywords: TS, trajectory, set
 
 .seealso: TSTrajectorySetFiletemplate(),TSTrajectorySetUp()
 @*/
@@ -814,8 +776,6 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
    timestep counter
 
    Level: developer
-
-.keywords: TS, trajectory, set
 
 .seealso: TSTrajectorySetDirname(),TSTrajectorySetUp()
 @*/
@@ -860,8 +820,6 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetempla
 
    Notes:
     This is not normally called directly by users
-
-.keywords: TS, trajectory, timestep, set, options, database
 
 .seealso: TSSetSaveTrajectory(), TSTrajectorySetUp()
 @*/
@@ -916,8 +874,6 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 
    Level: developer
 
-.keywords: TS, trajectory, setup
-
 .seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy()
 @*/
 PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
@@ -963,8 +919,6 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
 
    Level: developer
 
-.keywords: trajectory
-
 .seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectoryGetSolutionOnly()
 @*/
 PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_only)
@@ -988,8 +942,6 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_on
 -  flg - the boolean flag
 
    Level: developer
-
-.keywords: trajectory
 
 .seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetSolutionOnly()
 @*/
@@ -1021,8 +973,6 @@ PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj,PetscBool *solution_o
    Notes: The vectors are interpolated if time does not match any time step stored in the TSTrajectory(). Pass NULL to not request a vector.
           This function differs from TSTrajectoryGetVecs since the vectors obtained cannot be modified, and they need to be returned by
           calling TSTrajectoryRestoreUpdatedHistoryVecs().
-
-.keywords: trajectory
 
 .seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectoryRestoreUpdatedHistoryVecs(), TSTrajectoryGetVecs()
 @*/
@@ -1071,8 +1021,6 @@ PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscRe
 -  Udot - time-derivative vector at given time (can be interpolated)
 
    Level: developer
-
-.keywords: trajectory
 
 .seealso: TSTrajectoryGetUpdatedHistoryVecs()
 @*/

@@ -15,8 +15,6 @@ PetscFunctionList VecTaggerList;
 
    Level: advanced
 
-.keywords: VecTagger, register, all
-
 .seealso:  VecTaggerRegisterDestroy()
 @*/
 PetscErrorCode  VecTaggerRegisterAll(void)
@@ -57,8 +55,6 @@ $     VecTaggerSetType(tagger,"my_impl")
 $     -snes_type my_solver
 
    Level: advanced
-
-.keywords: VecTagger, register
 
 .seealso: VecTaggerRegisterAll(), VecTaggerRegisterDestroy()
 @*/

@@ -36,7 +36,6 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.keywords: PetscSpace, register
 .seealso: PetscSpaceRegisterAll(), PetscSpaceRegisterDestroy()
 
 @*/
@@ -63,7 +62,6 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 
   Level: intermediate
 
-.keywords: PetscSpace, set, type
 .seealso: PetscSpaceGetType(), PetscSpaceCreate()
 @*/
 PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
@@ -104,7 +102,6 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
 
   Level: intermediate
 
-.keywords: PetscSpace, get, type, name
 .seealso: PetscSpaceSetType(), PetscSpaceCreate()
 @*/
 PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)

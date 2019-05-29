@@ -16,8 +16,6 @@
 
     Level: intermediate
 
-.keywords: GMRES, preallocate, vectors
-
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization()
 @*/
 PetscErrorCode  KSPGMRESSetPreAllocateVectors(KSP ksp)

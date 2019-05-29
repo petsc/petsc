@@ -410,7 +410,6 @@ static PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 
    Level: Developer
 
-.keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
 PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
 {
@@ -439,7 +438,6 @@ PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
 
    Level: Developer
 
-.keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
 PetscErrorCode  PCCompositeGetType(PC pc,PCCompositeType *type)
 {
@@ -463,7 +461,6 @@ PetscErrorCode  PCCompositeGetType(PC pc,PCCompositeType *type)
 
    Level: Developer
 
-.keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
 PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 {
@@ -487,7 +484,6 @@ PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 
    Level: Developer
 
-.keywords: PC, composite preconditioner, add
 @*/
 PetscErrorCode  PCCompositeAddPC(PC pc,PCType type)
 {
@@ -511,8 +507,6 @@ PetscErrorCode  PCCompositeAddPC(PC pc,PCType type)
 .  num - the number of sub pcs
 
    Level: Developer
-
-.keywords: PC, get, composite preconditioner, sub preconditioner
 
 .seealso: PCCompositeGetPC()
 @*/
@@ -544,8 +538,6 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
     Notes:
     To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
             call PCSetOperators() on that PC.
-
-.keywords: PC, get, composite preconditioner, sub preconditioner
 
 .seealso: PCCompositeAddPC(), PCCompositeGetNumberPC(), PCSetOperators()
 @*/

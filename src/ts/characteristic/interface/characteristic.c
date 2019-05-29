@@ -150,8 +150,6 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 
   Level: intermediate
 
-.keywords: Characteristic, set, method
-
 .seealso: CharacteristicType
 
 @*/
@@ -192,8 +190,6 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 .  ksp   - iterative context obtained from CharacteristicCreate()
 
    Level: developer
-
-.keywords: Characteristic, setup
 
 .seealso: CharacteristicCreate(), CharacteristicSolve(), CharacteristicDestroy()
 @*/
@@ -245,8 +241,6 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 
    Notes:
    CharacteristicRegister() may be called multiple times to add several user-defined solvers.
-
-.keywords: Characteristic, register
 
 .seealso: CharacteristicRegisterAll(), CharacteristicRegisterDestroy()
 

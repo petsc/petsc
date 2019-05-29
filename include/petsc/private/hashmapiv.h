@@ -26,7 +26,6 @@ PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
 
   Concepts: hash table, map
 
-.keywords: hash table, map, set
 .seealso: PetscHMapTGet(), PetscHMapTIterSet(), PetscHMapIVSet()
 M*/
 PETSC_STATIC_INLINE

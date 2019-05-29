@@ -186,7 +186,6 @@ PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 
   Level: intermediate
 
-.keywords: Viewer, file, get, pointer
 .seealso: PetscViewerASCIISetMode()
 @*/
 PetscErrorCode  PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
@@ -210,7 +209,6 @@ PetscErrorCode  PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 
   Level: advanced
 
-.keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
 PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
@@ -236,7 +234,6 @@ PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
 
   Level: advanced
 
-.keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
 PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
@@ -261,7 +258,6 @@ PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
 
   Level: intermediate
 
-.keywords: Viewer, print, deferred
 .seealso: PetscViewerVUFlushDeferred()
 @*/
 PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
@@ -300,7 +296,6 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
 
   Level: intermediate
 
-.keywords: Viewer, flush, deferred
 .seealso: PetscViewerVUPrintDeferred()
 @*/
 PetscErrorCode  PetscViewerVUFlushDeferred(PetscViewer viewer)

@@ -202,8 +202,6 @@ $  -snes_mf_compute_err
 $  -snes_mf_freq_err <freq>
 $  -snes_mf_jorge
 
-.keywords: SNES, default, matrix-free, create, matrix
-
 .seealso: MatDestroy(), MatMFFDSetFunctionError()
 @*/
 PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
@@ -298,8 +296,6 @@ $
    Notes:
    If the user sets the parameter h directly, then this value will be used
    instead of the default computation indicated above.
-
-.keywords: SNES, matrix-free, parameters
 
 .seealso: MatCreateSNESMF()
 @*/

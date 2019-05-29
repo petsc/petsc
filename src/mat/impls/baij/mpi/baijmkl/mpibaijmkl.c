@@ -132,8 +132,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,Mat
 
    Level: intermediate
 
-.keywords: matrix, block, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqBAIJMKL(), MatSetValues(), MatCreateBAIJMKL(), MatMPIBAIJSetPreallocation(), MatMPIBAIJSetPreallocationCSR()
 @*/
 

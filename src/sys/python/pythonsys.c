@@ -163,7 +163,6 @@ static PetscBool PetscBeganPython = PETSC_FALSE;
 
   Level: intermediate
 
-.keywords: Python
 @*/
 PetscErrorCode  PetscPythonFinalize(void)
 {
@@ -181,8 +180,6 @@ PetscErrorCode  PetscPythonFinalize(void)
 -  pylib - full path to the Python dynamic library, or NULL.
 
   Level: intermediate
-
-.keywords: Python
 
 @*/
 PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
@@ -257,8 +254,6 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
 
   Level: developer
 
-.keywords: Python
-
 @*/
 PetscErrorCode  PetscPythonPrintError(void)
 {
@@ -285,8 +280,6 @@ PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]) = NULL;
   PetscPythonMonitorSet - Set Python monitor
 
   Level: developer
-
-.keywords: Python
 
 @*/
 PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])

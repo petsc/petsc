@@ -53,8 +53,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
 
   Level: advanced
 
-.keywords: KSP, register, all
-
 .seealso:  KSPRegisterDestroy()
 @*/
 PetscErrorCode  KSPRegisterAll(void)

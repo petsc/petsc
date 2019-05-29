@@ -2808,7 +2808,6 @@ PetscErrorCode DMPlexStratify(DM dm)
 
   The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
-.keywords: mesh
 .seealso: DMPlexRestoreJoin(), DMPlexGetMeet()
 @*/
 PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
@@ -2879,7 +2878,6 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: DMPlexGetJoin(), DMPlexGetFullJoin(), DMPlexGetMeet()
 @*/
 PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
@@ -2918,7 +2916,6 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: DMPlexGetJoin(), DMPlexRestoreJoin(), DMPlexGetMeet()
 @*/
 PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
@@ -3027,7 +3024,6 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
-.keywords: mesh
 .seealso: DMPlexRestoreMeet(), DMPlexGetJoin()
 @*/
 PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints)
@@ -3098,7 +3094,6 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 
   The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
-.keywords: mesh
 .seealso: DMPlexGetMeet(), DMPlexGetFullMeet(), DMPlexGetJoin()
 @*/
 PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
@@ -3137,7 +3132,6 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 
   The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
-.keywords: mesh
 .seealso: DMPlexGetMeet(), DMPlexRestoreMeet(), DMPlexGetJoin()
 @*/
 PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
@@ -3239,7 +3233,6 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   Notes:
   We are not solving graph isomorphism, so we do not permutation.
 
-.keywords: mesh
 .seealso: DMPlexGetCone()
 @*/
 PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
@@ -3389,7 +3382,6 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 
   Level: developer
 
-.keywords: mesh, points
 .seealso: DMPlexGetDepth(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
 @*/
 PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
@@ -3417,7 +3409,6 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 
   Level: developer
 
-.keywords: mesh, points
 .seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
@@ -3455,7 +3446,6 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
   Level: developer
 
-.keywords: mesh, points
 .seealso: DMPlexGetHeightStratum(), DMPlexGetDepth()
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
@@ -3501,7 +3491,6 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 
   Level: developer
 
-.keywords: mesh, points
 .seealso: DMPlexGetDepthStratum(), DMPlexGetDepth()
 @*/
 PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)

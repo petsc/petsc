@@ -884,8 +884,6 @@ static PetscErrorCode PCSetFromOptions_GASM(PetscOptionItems *PetscOptionsObject
 
     Level: beginner
 
-.keywords: PC, ASM, DM, set, subdomains, additive Schwarz
-
 .seealso: PCGASMSetSubdomains(), PCGASMSetOverlap()
           PCGASMCreateSubdomains2D()
 @*/
@@ -1068,8 +1066,6 @@ static PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KS
 
     Level: advanced
 
-.keywords: PC, GASM, set, subdomains, additive Schwarz
-
 .seealso: PCGASMSetNumSubdomains(), PCGASMSetOverlap(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D(), PCGASMGetSubdomains()
 @*/
@@ -1118,8 +1114,6 @@ PetscErrorCode  PCGASMSetSubdomains(PC pc,PetscInt n,IS iis[],IS ois[])
 
     Level: intermediate
 
-.keywords: PC, GASM, set, overlap
-
 .seealso: PCGASMSetSubdomains(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D(), PCGASMGetSubdomains()
 @*/
@@ -1157,8 +1151,6 @@ PetscErrorCode  PCGASMSetOverlap(PC pc,PetscInt ovl)
 
     Level: intermediate
 
-.keywords: PC, GASM, set, type
-
 .seealso: PCGASMSetSubdomains(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D()
 @*/
@@ -1183,8 +1175,6 @@ PetscErrorCode  PCGASMSetType(PC pc,PCGASMType type)
 -   doSort - sort the subdomain indices
 
     Level: intermediate
-
-.keywords: PC, GASM, set, type
 
 .seealso: PCGASMSetSubdomains(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D()
@@ -1224,8 +1214,6 @@ PetscErrorCode  PCGASMSetSortIndices(PC pc,PetscBool doSort)
    You must call KSPSetUp() before calling PCGASMGetSubKSP().
 
    Level: advanced
-
-.keywords: PC, GASM, additive Schwarz, get, sub, KSP, context
 
 .seealso: PCGASMSetSubdomains(), PCGASMSetOverlap(),
           PCGASMCreateSubdomains2D(),
@@ -1518,8 +1506,6 @@ PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscInt N,P
 	 overlap; this is currently supported only with local subdomains.
 
 
-.keywords: PC, GASM, additive Schwarz, create, subdomains, unstructured grid
-
 .seealso: PCGASMSetSubdomains(), PCGASMDestroySubdomains()
 @*/
 PetscErrorCode  PCGASMCreateSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
@@ -1560,8 +1546,6 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
     this is merely a convenience subroutine that walks each list,
    destroys each IS on the list, and then frees the list. At the end the
    list pointers are set to NULL.
-
-.keywords: PC, GASM, additive Schwarz, create, subdomains, unstructured grid
 
 .seealso: PCGASMCreateSubdomains(), PCGASMSetSubdomains()
 @*/
@@ -1645,8 +1629,6 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
 
 
    Level: advanced
-
-.keywords: PC, GASM, additive Schwarz, create, subdomains, 2D, regular grid
 
 .seealso: PCGASMSetSubdomains(), PCGASMGetSubKSP(), PCGASMSetOverlap()
 @*/
@@ -1824,8 +1806,6 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
 
     Level: advanced
 
-.keywords: PC, GASM, get, subdomains, additive Schwarz
-
 .seealso: PCGASMSetOverlap(), PCGASMGetSubKSP(), PCGASMCreateSubdomains2D(),
           PCGASMSetSubdomains(), PCGASMGetSubmatrices()
 @*/
@@ -1875,8 +1855,6 @@ PetscErrorCode  PCGASMGetSubdomains(PC pc,PetscInt *n,IS *iis[],IS *ois[])
            used to define subdomains in PCGASMSetSubdomains()
     Level: advanced
 
-.keywords: PC, GASM, set, local, subdomains, additive Schwarz, block Jacobi
-
 .seealso: PCGASMSetOverlap(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D(), PCGASMSetSubdomains(), PCGASMGetSubdomains()
 @*/
@@ -1917,8 +1895,6 @@ PetscErrorCode  PCGASMGetSubmatrices(PC pc,PetscInt *n,Mat *mat[])
     so setting PCGASMSetSubdomains() with nontrivial subdomain ISs or any of PCGASMSetTotalSubdomains() and PCGASMSetOverlap()
     automatically turns the latter off.
 
-.keywords: PC, ASM, DM, set, subdomains, additive Schwarz
-
 .seealso: PCGASMGetUseDMSubdomains(), PCGASMSetSubdomains(), PCGASMSetOverlap()
           PCGASMCreateSubdomains2D()
 @*/
@@ -1952,8 +1928,6 @@ PetscErrorCode  PCGASMSetUseDMSubdomains(PC pc,PetscBool flg)
 .   flg - boolean indicating whether to use subdomains defined by the DM
 
     Level: intermediate
-
-.keywords: PC, ASM, DM, set, subdomains, additive Schwarz
 
 .seealso: PCGASMSetUseDMSubdomains(), PCGASMSetOverlap()
           PCGASMCreateSubdomains2D()

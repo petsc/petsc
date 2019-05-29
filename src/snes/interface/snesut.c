@@ -20,8 +20,6 @@
 
    Level: intermediate
 
-.keywords: SNES, nonlinear, vector, monitor, view
-
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
 PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
@@ -55,8 +53,6 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 .  -snes_monitor_residual [ascii binary draw][:filename][:viewer format] - plots residual (not its norm) at each iteration
 
    Level: intermediate
-
-.keywords: SNES, nonlinear, vector, monitor, view
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
@@ -92,8 +88,6 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 
    Level: intermediate
 
-.keywords: SNES, nonlinear, vector, monitor, view
-
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
 PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
@@ -123,8 +117,6 @@ PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnor
 -  dummy - unused monitor context
 
    Level: intermediate
-
-.keywords: KSP, default, monitor, residual
 
 .seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate()
 @*/
@@ -183,8 +175,6 @@ PetscErrorCode  KSPMonitorSNES(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
    Use KSPMonitorSNESLGResidualNormDestroy() to destroy this line graph; do not use PetscDrawLGDestroy().
 
    Level: intermediate
-
-.keywords: KSP, monitor, line graph, residual, create
 
 .seealso: KSPMonitorSNESLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorSNESLGTrueResidualCreate()
 @*/
@@ -254,8 +244,6 @@ PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
 
    Level: intermediate
 
-.keywords: KSP, monitor, line graph, destroy
-
 .seealso: KSPMonitorSNESLGResidualNormCreate(), KSPMonitorSNESLGTrueResidualDestroy(), KSPMonitorSet()
 @*/
 PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
@@ -284,8 +272,6 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
    This routine prints the residual norm at each iteration.
 
    Level: intermediate
-
-.keywords: SNES, nonlinear, default, monitor, norm
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution()
 @*/
@@ -319,8 +305,6 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
    This routine prints the largest value in each row of the Jacobian 
 
    Level: intermediate
-
-.keywords: SNES, nonlinear, default, monitor, norm
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution()
 @*/
@@ -450,8 +434,6 @@ PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 
    Level: intermediate
 
-.keywords: SNES, default, monitor, residual
-
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), SNESMonitorLGCreate()
 @*/
 PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscViewerAndFormat *vf)
@@ -493,8 +475,6 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscView
 
    Notes:
     Insure that SNESMonitorRatio() is called when you set this monitor
-.keywords: SNES, nonlinear, monitor, norm
-
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorRatio()
 @*/
 PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
@@ -529,8 +509,6 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscVi
 -   viewer - the PetscViewer object (ignored)
 
    Level: intermediate
-
-.keywords: SNES, nonlinear, monitor, norm
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorRatio()
 @*/
@@ -594,7 +572,6 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
 
   Level: intermediate
 
-.keywords: SNES, nonlinear, field, monitor, norm
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
 @*/
 PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
@@ -669,8 +646,6 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 
    Level: intermediate
 
-.keywords: SNES, nonlinear, default, converged, convergence
-
 .seealso: SNESSetConvergenceTest()
 @*/
 PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
@@ -736,8 +711,6 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
    Convergence is then declared after a fixed number of iterations have been used.
 
    Level: advanced
-
-.keywords: SNES, nonlinear, skip, converged, convergence
 
 .seealso: SNESSetConvergenceTest()
 @*/

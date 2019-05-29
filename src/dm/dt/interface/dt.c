@@ -35,7 +35,6 @@ const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
 
   Level: beginner
 
-.keywords: PetscQuadrature, quadrature, create
 .seealso: PetscQuadratureDestroy(), PetscQuadratureGetData()
 @*/
 PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
@@ -68,7 +67,6 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 
   Level: beginner
 
-.keywords: PetscQuadrature, quadrature, clone
 .seealso: PetscQuadratureCreate(), PetscQuadratureDestroy(), PetscQuadratureGetData()
 @*/
 PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
@@ -102,7 +100,6 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
 
   Level: beginner
 
-.keywords: PetscQuadrature, quadrature, destroy
 .seealso: PetscQuadratureCreate(), PetscQuadratureGetData()
 @*/
 PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
@@ -236,7 +233,6 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
   Fortran Notes:
     From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
 
-.keywords: PetscQuadrature, quadrature
 .seealso: PetscQuadratureCreate(), PetscQuadratureSetData()
 @*/
 PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, const PetscReal *points[], const PetscReal *weights[])
@@ -283,7 +279,6 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
 
   Level: intermediate
 
-.keywords: PetscQuadrature, quadrature
 .seealso: PetscQuadratureCreate(), PetscQuadratureGetData()
 @*/
 PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt Nc, PetscInt npoints, const PetscReal points[], const PetscReal weights[])
@@ -346,7 +341,6 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
 
   Level: beginner
 
-.keywords: PetscQuadrature, quadrature, view
 .seealso: PetscQuadratureCreate(), PetscQuadratureGetData()
 @*/
 PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)

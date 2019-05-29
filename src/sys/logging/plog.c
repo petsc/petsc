@@ -234,7 +234,6 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
 
   Level: advanced
 
-.keywords: log, begin
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin()
 @*/
 PetscErrorCode  PetscLogDefaultBegin(void)
@@ -271,7 +270,6 @@ PetscErrorCode  PetscLogDefaultBegin(void)
 
   Level: advanced
 
-.keywords: log, all, begin
 .seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogTraceBegin()
 @*/
 PetscErrorCode  PetscLogAllBegin(void)
@@ -334,7 +332,6 @@ PetscErrorCode  PetscLogTraceBegin(FILE *file)
   Options Database Keys:
 . -log_exclude_actions - Turns off actions logging
 
-.keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
 PetscErrorCode  PetscLogActions(PetscBool flag)
@@ -360,7 +357,6 @@ PetscErrorCode  PetscLogActions(PetscBool flag)
   Options Database Keys:
 . -log_exclude_objects - Turns off objects logging
 
-.keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
 PetscErrorCode  PetscLogObjects(PetscBool flag)
@@ -384,7 +380,6 @@ PetscErrorCode  PetscLogObjects(PetscBool flag)
 
   Level: intermediate
 
-.keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
 PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
@@ -433,7 +428,6 @@ PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
 
   Level: intermediate
 
-.keywords: log, push, stage
 .seealso: PetscLogStagePop(), PetscLogStageRegister(), PetscBarrier()
 @*/
 PetscErrorCode  PetscLogStagePush(PetscLogStage stage)
@@ -472,7 +466,6 @@ PetscErrorCode  PetscLogStagePush(PetscLogStage stage)
 
   Level: intermediate
 
-.keywords: log, pop, stage
 .seealso: PetscLogStagePush(), PetscLogStageRegister(), PetscBarrier()
 @*/
 PetscErrorCode  PetscLogStagePop(void)
@@ -664,7 +657,6 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 
   Level: intermediate
 
-.keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
           PetscLogEventActivate(), PetscLogEventDeactivate(), PetscClassIdRegister()
 @*/
@@ -701,7 +693,6 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
 
   Level: developer
 
-.keywords: log, event, collective
 .seealso: PetscLogEventRegister()
 @*/
 PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event,PetscBool collective)
@@ -728,7 +719,6 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event,PetscBool collecti
 
   Level: developer
 
-.keywords: log, event, include, class
 .seealso: PetscLogEventActivateClass(),PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventIncludeClass(PetscClassId classid)
@@ -755,7 +745,6 @@ PetscErrorCode  PetscLogEventIncludeClass(PetscClassId classid)
 
   Level: developer
 
-.keywords: log, event, exclude, class
 .seealso: PetscLogEventDeactivateClass(),PetscLogEventActivateClass(),PetscLogEventDeactivate(),PetscLogEventActivate()
 @*/
 PetscErrorCode  PetscLogEventExcludeClass(PetscClassId classid)
@@ -794,7 +783,6 @@ PetscErrorCode  PetscLogEventExcludeClass(PetscClassId classid)
 
   Level: advanced
 
-.keywords: log, event, activate
 .seealso: PlogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
@@ -832,7 +820,6 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
 
   Level: advanced
 
-.keywords: log, event, deactivate
 .seealso: PlogEventActivate()
 @*/
 PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
@@ -859,7 +846,6 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
 
   Level: advanced
 
-.keywords: log, event, activate
 .seealso: PlogEventActivate(),PlogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive)
@@ -890,7 +876,6 @@ PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActiv
 
   Level: developer
 
-.keywords: log, event, activate, class
 .seealso: PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
@@ -916,7 +901,6 @@ PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
 
   Level: developer
 
-.keywords: log, event, deactivate, class
 .seealso: PetscLogEventActivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
@@ -963,7 +947,6 @@ PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
 
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 
-.keywords: log, event, synchronization
 M*/
 
 /*MC
@@ -1002,7 +985,6 @@ M*/
 
 .seealso: PetscLogEventRegister(), PetscLogEventEnd(), PetscLogFlops()
 
-.keywords: log, event, begin
 M*/
 
 /*MC
@@ -1041,7 +1023,6 @@ M*/
 
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogFlops()
 
-.keywords: log, event, end
 M*/
 
 /*@C
@@ -1098,7 +1079,6 @@ $    Log.<rank>
 
   Level: advanced
 
-.keywords: log, dump
 .seealso: PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogView()
 @*/
 PetscErrorCode  PetscLogDump(const char sname[])
@@ -1842,7 +1822,6 @@ $    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-acce
 
   Level: beginner
 
-.keywords: log, dump, print
 .seealso: PetscLogDefaultBegin(), PetscLogDump()
 @*/
 PetscErrorCode  PetscLogView(PetscViewer viewer)
@@ -1927,8 +1906,6 @@ PetscErrorCode PetscLogViewFromOptions(void)
 
    Level: intermediate
 
-.keywords: log, flops, floating point operations
-
 .seealso: PetscTime(), PetscLogFlops()
 @*/
 PetscErrorCode  PetscGetFlops(PetscLogDouble *flops)
@@ -1985,7 +1962,6 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscGetFlops()
 
-.keywords: log, flops, floating point operations
 M*/
 
 /*MC
@@ -2118,8 +2094,6 @@ PetscClassId PETSC_OBJECT_CLASSID  = 0;
 . oclass - The class id or classid
 
   Level: developer
-
-.keywords: log, class, register
 
 @*/
 PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass)
@@ -2272,7 +2246,6 @@ static const char *PetscLogMPERGBColors[PETSC_RGB_COLORS_MAX] = {
 
   Level: developer
 
-.keywords: log, mpe , color
 .seealso: PetscLogEventRegister
 @*/
 PetscErrorCode  PetscLogMPEGetRGBColor(const char *str[])

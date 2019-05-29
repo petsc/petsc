@@ -70,7 +70,6 @@ PetscErrorCode DMPlexInvertCell(PetscInt dim, PetscInt numCorners, int cone[])
 
   Level: developer
 
-.keywords: mesh, points
 .seealso: DMPlexTetgenSetOptions(), DMPlexGenerate()
 @*/
 PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
@@ -97,7 +96,6 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 
   Level: developer
 
-.keywords: mesh, points
 .seealso: DMPlexTriangleSetOptions(), DMPlexGenerate()
 @*/
 PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
@@ -141,7 +139,6 @@ struct _n_PetscFunctionList {
 
   Level: intermediate
 
-.keywords: mesh, elements
 .seealso: DMPlexCreate(), DMRefine()
 @*/
 PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpolate, DM *mesh)
@@ -208,8 +205,6 @@ $     DMPlexGenerate(dm,"my_generator",...)
 $     -dm_plex_generator my_generator
 
    Level: advanced
-
-.keywords: DMPlexGenerate, register
 
 .seealso: DMPlexGenerateRegisterAll(), DMPlexGenerate(), DMPlexGenerateRegisterDestroy()
 

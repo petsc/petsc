@@ -189,8 +189,6 @@ $     MatPartitioningSetType(part,"my_part")
    or at runtime via the option
 $     -mat_partitioning_type my_part
 
-.keywords: matrix, partitioning, register
-
 .seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
 @*/
 PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*function)(MatPartitioning))
@@ -219,7 +217,6 @@ PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*func
 
    Not Collective
 
-.keywords: Partitioning, get, method, name, type
 @*/
 PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *type)
 {
@@ -245,8 +242,6 @@ PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,MatPartition
 
    Not Collective
 
-.keywords: Partitioning, set
-
 .seealso: MatPartitioningCreate(), MatPartitioningApply()
 @*/
 PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
@@ -271,8 +266,6 @@ PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
    Level: beginner
 
    The user can define additional partitionings; see MatPartitioningRegister().
-
-.keywords: matrix, get, partitioning
 
 .seealso:  MatPartitioningRegister(), MatPartitioningCreate(),
            MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
@@ -319,8 +312,6 @@ $    -mat_partitioning_view
    Level: beginner
 
    The user can define additional partitionings; see MatPartitioningRegister().
-
-.keywords: matrix, get, partitioning
 
 .seealso:  MatPartitioningRegister(), MatPartitioningCreate(),
            MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
@@ -383,8 +374,6 @@ $    -mat_partitioning_improve
    Level: beginner
 
 
-.keywords: matrix, improve, partitioning
-
 .seealso:  MatPartitioningApply(), MatPartitioningCreate(),
            MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
            ISPartitioningCount()
@@ -421,8 +410,6 @@ PetscErrorCode  MatPartitioningImprove(MatPartitioning matp,IS *partitioning)
 $    -mat_partitioning_view_balance
 
    Level: beginner
-
-.keywords: matrix, imbalance, partitioning
 
 .seealso:  MatPartitioningApply(), MatPartitioningView()
 @*/
@@ -471,8 +458,6 @@ PetscErrorCode  MatPartitioningViewImbalance(MatPartitioning matp, IS partitioni
 
    Level: beginner
 
-.keywords: Partitioning, adjacency
-
 .seealso: MatPartitioningCreate()
 @*/
 PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
@@ -493,8 +478,6 @@ PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 .  part - the partitioning context
 
    Level: beginner
-
-.keywords: Partitioning, destroy, context
 
 .seealso: MatPartitioningCreate()
 @*/
@@ -531,8 +514,6 @@ PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
       The array weights is freed by PETSc so the user should not free the array. In C/C++
    the array must be obtained with a call to PetscMalloc(), not malloc().
 
-.keywords: Partitioning, destroy, context
-
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetPartitionWeights()
 @*/
 PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const PetscInt weights[])
@@ -568,8 +549,6 @@ PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const Petsc
       The array weights is freed by PETSc so the user should not free the array. In C/C++
    the array must be obtained with a call to PetscMalloc(), not malloc().
 
-.keywords: Partitioning, destroy, context
-
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetVertexWeights()
 @*/
 PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const PetscReal weights[])
@@ -597,8 +576,6 @@ PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const Pe
 .  newp - location to put the context
 
    Level: beginner
-
-.keywords: Partitioning, create, context
 
 .seealso: MatPartitioningSetType(), MatPartitioningApply(), MatPartitioningDestroy(),
           MatPartitioningSetAdjacency()
@@ -647,8 +624,6 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
    The user can open alternative visualization contexts with
 .     PetscViewerASCIIOpen() - output to a specified file
 
-.keywords: Partitioning, view
-
 .seealso: PetscViewerASCIIOpen()
 @*/
 PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
@@ -694,8 +669,6 @@ $      Use -help for a list of available methods
 $      (for instance, parmetis)
 
    Level: intermediate
-
-.keywords: partitioning, set, method, type
 
 .seealso: MatPartitioningCreate(), MatPartitioningApply(), MatPartitioningType
 
@@ -752,7 +725,6 @@ $  -mat_partitioning_nparts - number of subgraphs
 
    Level: beginner
 
-.keywords: partitioning, set, method, type
 @*/
 PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
 {

@@ -15,7 +15,6 @@ static PetscBool DMPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  DMFinalizePackage(void)
@@ -43,7 +42,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 
   Level: developer
 
-.keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  DMInitializePackage(void)
@@ -148,7 +146,6 @@ static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: PetscFE, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PetscFEFinalizePackage(void)
@@ -173,7 +170,6 @@ PetscErrorCode PetscFEFinalizePackage(void)
 
   Level: developer
 
-.keywords: PetscFE, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PetscFEInitializePackage(void)
@@ -220,7 +216,6 @@ static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: PetscFV, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PetscFVFinalizePackage(void)
@@ -243,7 +238,6 @@ PetscErrorCode PetscFVFinalizePackage(void)
 
   Level: developer
 
-.keywords: PetscFV, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PetscFVInitializePackage(void)
@@ -291,7 +285,6 @@ static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: PetscDS, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PetscDSFinalizePackage(void)
@@ -312,7 +305,6 @@ PetscErrorCode PetscDSFinalizePackage(void)
 
   Level: developer
 
-.keywords: PetscDS, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PetscDSInitializePackage(void)

@@ -69,8 +69,6 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
 +   sec_matcreate
 -   chapter_matrices
 
-.keywords: matrix, create
-
 .seealso: MatCreateSeqAIJ(), MatCreateAIJ(),
           MatCreateSeqDense(), MatCreateDense(),
           MatCreateSeqBAIJ(), MatCreateBAIJ(),
@@ -109,8 +107,6 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
 -  flg - PETSC_TRUE indicates you want the error generated
 
    Level: advanced
-
-.keywords: Mat, set, initial guess, nonzero
 
 .seealso: PCSetErrorIfFailure()
 @*/
@@ -197,8 +193,6 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
    for additional format-specific options.
 
    Level: beginner
-
-.keywords: matrix, create
 
 .seealso: MatCreateSeqAIJ((), MatCreateAIJ(),
           MatCreateSeqDense(), MatCreateDense(),

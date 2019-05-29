@@ -219,8 +219,6 @@ M*/
 
   Level: advanced
 
-.keywords: TS, TSMPRK, register, all
-
 .seealso:  TSMPRKRegisterDestroy()
 @*/
 PetscErrorCode TSMPRKRegisterAll(void)
@@ -391,7 +389,6 @@ PetscErrorCode TSMPRKRegisterAll(void)
 
    Level: advanced
 
-.keywords: TSMPRK, register, destroy
 .seealso: TSMPRKRegister(), TSMPRKRegisterAll()
 @*/
 PetscErrorCode TSMPRKRegisterDestroy(void)
@@ -422,7 +419,6 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
 
   Level: developer
 
-.keywords: TS, TSMPRK, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode TSMPRKInitializePackage(void)
@@ -443,7 +439,6 @@ PetscErrorCode TSMPRKInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode TSMPRKFinalizePackage(void)
@@ -478,8 +473,6 @@ PetscErrorCode TSMPRKFinalizePackage(void)
    Several MPRK methods are provided, this function is only needed to create new methods.
 
    Level: advanced
-
-.keywords: TS, register
 
 .seealso: TSMPRK
 @*/

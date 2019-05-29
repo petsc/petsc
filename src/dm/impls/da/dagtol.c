@@ -82,8 +82,6 @@ extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
     This is an internal routine called by DMDAGlobalToNatural() to
      create the scatter context.
 
-.keywords: distributed array, global to local, begin
-
 .seealso: DMDAGlobalToNaturalBegin(), DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 */
@@ -139,8 +137,6 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
    You must call DMDACreateNaturalVector() before using this routine
 
-.keywords: distributed array, global to local, begin
-
 .seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
@@ -184,8 +180,6 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec n)
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
-.keywords: distributed array, global to local, end
-
 .seealso: DMDAGlobalToNaturalBegin(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
@@ -225,8 +219,6 @@ PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec n)
    obtained from DMCreateGlobalVector() and DMDACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
-
-.keywords: distributed array, global to local, begin
 
 .seealso: DMDAGlobalToNaturalEnd(), DMDAGlobalToNaturalBegin(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
@@ -270,8 +262,6 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec n,InsertMode mode,Vec g)
    obtained from DMCreateGlobalVector() and DMDACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
-
-.keywords: distributed array, global to local, end
 
 .seealso: DMDAGlobalToNaturalBegin(), DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()

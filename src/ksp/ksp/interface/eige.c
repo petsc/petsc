@@ -41,8 +41,6 @@ static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
 
     Level: advanced
 
-.keywords: KSP, compute, explicit, operator
-
 .seealso: KSPComputeEigenvaluesExplicitly(), PCComputeOperator(), KSPSetDiagonalScale(), KSPSetNullSpace(), MatType
 @*/
 PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
@@ -93,8 +91,6 @@ PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
    KSPSetOperators()
 
    Level: advanced
-
-.keywords: KSP, compute, eigenvalues, explicitly
 
 .seealso: KSPComputeEigenvalues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/

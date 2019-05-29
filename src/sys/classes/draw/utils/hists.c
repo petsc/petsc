@@ -437,7 +437,6 @@ PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
 
 .seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw()
 
-.keywords:  draw, histogram
 @*/
 PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
 {
@@ -585,8 +584,6 @@ PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscRea
 
   Level: intermediate
 
-.keywords:  draw, histogram, statistics
-
 .seealso:  PetscDrawHGCreate(), PetscDrawHGAddValue(), PetscDrawHGView(), PetscDrawHGDraw()
 
 @*/
@@ -609,8 +606,6 @@ PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
 - ints - Flag for integer width bins
 
   Level: intermediate
-
-.keywords:  draw, histogram, statistics
 
 .seealso:  PetscDrawHGCreate(), PetscDrawHGAddValue(), PetscDrawHGView(), PetscDrawHGDraw(), PetscDrawHGSetColor()
 

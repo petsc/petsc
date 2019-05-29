@@ -14,8 +14,6 @@
 
    Level: intermediate
 
-.keywords: PC, Python
-
 .seealso: PCCreate(), PCSetType(), PCPYTHON, PetscPythonInitialize()
 @*/
 PetscErrorCode  PCPythonSetType(PC pc,const char pyname[])

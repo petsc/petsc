@@ -23,8 +23,6 @@
 
    Level: advanced
 
-.keywords: distributed array, global to local, begin, coarse problem
-
 .seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 @*/
@@ -70,8 +68,6 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 .  scatter - the scatter context
 
    Level: advanced
-
-.keywords: distributed array, global to local, begin, coarse problem
 
 .seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
