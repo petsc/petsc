@@ -238,27 +238,6 @@ void (*signal())();
       self.addDefine('SIZEOF_'+typename.replace('-', '_').upper(), str(size))
     return size
 
-  def checkBitsPerByte(self, lang='C'):
-    '''Determine the number of bits per byte and define BITS_PER_BYTE'''
-    if 'known-bits-per-byte' in self.argDB:
-      bits = self.argDB['known-bits-per-byte']
-      bits = int(bits)
-    else:
-      bits = None
-      values = (8, 6, 7, 9)
-      with self.Language(lang):
-        includes = ''
-        for val in values:
-          body = 'char assert_char_bit[((int)((unsigned char)-1)==((1<<{0})-1))*2-1];'.format(val)
-          if self.checkCompile(includes, body, codeBegin='', codeEnd='\n'):
-            bits = val
-            break
-      if bits is None:
-        raise RuntimeError('Number of bits per byte not found in {0}; specify --known-bits-per-byte'.format(values))
-    self.bits_per_byte = bits
-    self.addDefine('BITS_PER_BYTE', bits)
-    return
-
   def checkVisibility(self):
     if not self.argDB['with-shared-libraries']:
       self.argDB['with-visibility'] = 0
@@ -305,6 +284,5 @@ void (*signal())();
                      'long long': (8,),
                      'size_t': (8, 4)}.items():
       self.executeTest(self.checkSizeof, args=[t, sizes])
-    self.executeTest(self.checkBitsPerByte)
     self.executeTest(self.checkVisibility)
     return

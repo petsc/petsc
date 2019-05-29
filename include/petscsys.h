@@ -2087,11 +2087,14 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 #  undef hz
 #endif
 
+#include <limits.h>
+
+/* The number of bits in a byte */
+
+#define PETSC_BITS_PER_BYTE CHAR_BIT
+
 /*  For arrays that contain filenames or paths */
 
-#if defined(PETSC_HAVE_LIMITS_H)
-#  include <limits.h>
-#endif
 #if defined(PETSC_HAVE_SYS_PARAM_H)
 #  include <sys/param.h>
 #endif
