@@ -414,11 +414,20 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = MatGetOption(def->WtAW,MAT_SPD,&flgspd);CHKERRQ(ierr);
     }
     /* TODO use MATINV */
+    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     ierr = KSPCreate(comm,&def->WtAWinv);CHKERRQ(ierr);
     ierr = KSPSetOperators(def->WtAWinv,def->WtAW,def->WtAW);CHKERRQ(ierr);
     ierr = KSPSetType(def->WtAWinv,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(def->WtAWinv,&pcinner);CHKERRQ(ierr);
     ierr = PCSetType(pcinner,PCTELESCOPE);CHKERRQ(ierr);
+    /* ugly hack to not have overwritten PCTELESCOPE */
+    if (prefix) {
+      ierr = KSPSetOptionsPrefix(def->WtAWinv,prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(def->WtAWinv,"tel_");CHKERRQ(ierr);
+    } else {
+      ierr = KSPSetOptionsPrefix(def->WtAWinv,"tel_");CHKERRQ(ierr);
+    }
+    ierr = PCSetFromOptions(pcinner);CHKERRQ(ierr);
     /* Reduction factor choice */
     red = def->reductionfact;
     if (red < 0) {
@@ -429,45 +438,47 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = PetscInfo1(pc,"Auto choosing reduction factor %D\n",red);CHKERRQ(ierr); /* TODO add level? */
     }
     ierr = PCTelescopeSetReductionFactor(pcinner,red);CHKERRQ(ierr);
+    ierr = PCSetUp(pcinner);CHKERRQ(ierr);
     ierr = PCTelescopeGetKSP(pcinner,&innerksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(innerksp,&pcinner);CHKERRQ(ierr);
-    /* Setup KSP and PC */
-    if (nextDef) { /* next level for multilevel deflation */
-      /* set default KSPtype */
-      if (!def->ksptype) {
-        def->ksptype = KSPFGMRES;
-        if (flgspd) { /* SPD system */
-          def->ksptype = KSPFCG;
+    if (innerksp) {
+      ierr = KSPGetPC(innerksp,&pcinner);CHKERRQ(ierr);
+      /* Setup KSP and PC */
+      if (nextDef) { /* next level for multilevel deflation */
+        /* set default KSPtype */
+        if (!def->ksptype) {
+          def->ksptype = KSPFGMRES;
+          if (flgspd) { /* SPD system */
+            def->ksptype = KSPFCG;
+          }
+        }
+        ierr = KSPSetType(innerksp,def->ksptype);CHKERRQ(ierr); /* TODO iherit from KSP */
+        ierr = PCSetType(pcinner,PCDEFLATION);CHKERRQ(ierr); /* TODO create coarse preconditinoner M_c = WtMW ? */
+        ierr = PCDeflationSetSpace(pcinner,nextDef,transp);CHKERRQ(ierr);
+        ierr = PCDeflationSetLvl_Deflation(pcinner,def->nestedlvl+1,def->maxnestedlvl);CHKERRQ(ierr);
+        /* inherit options TODO if not set */
+        ((PC_Deflation*)(pcinner))->ksptype = def->ksptype;
+        ((PC_Deflation*)(pcinner))->correct = def->correct;
+        ((PC_Deflation*)(pcinner))->adaptiveconv = def->adaptiveconv;
+        ((PC_Deflation*)(pcinner))->adaptiveconst = def->adaptiveconst;
+        ierr = MatDestroy(&nextDef);CHKERRQ(ierr);
+      } else { /* the last level */
+        ierr = KSPSetType(innerksp,KSPGMRES);CHKERRQ(ierr);
+        /* TODO Cholesky if flgspd? */
+        ierr = PCSetType(pcinner,PCLU);CHKERRQ(ierr);
+        //TODO remove explicit matSolverPackage
+        if (commsize == red) {
+          ierr = PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU);CHKERRQ(ierr);
+        } else {
+          ierr = PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
         }
       }
-      ierr = KSPSetType(innerksp,def->ksptype);CHKERRQ(ierr); /* TODO iherit from KSP */
-      ierr = PCSetType(pcinner,PCDEFLATION);CHKERRQ(ierr); /* TODO create coarse preconditinoner M_c = WtMW ? */
-      ierr = PCDeflationSetSpace(pcinner,nextDef,transp);CHKERRQ(ierr);
-      ierr = PCDeflationSetLvl_Deflation(pcinner,def->nestedlvl+1,def->maxnestedlvl);CHKERRQ(ierr);
-      /* inherit options TODO if not set */
-      ((PC_Deflation*)(pcinner))->ksptype = def->ksptype;
-      ((PC_Deflation*)(pcinner))->correct = def->correct;
-      ((PC_Deflation*)(pcinner))->adaptiveconv = def->adaptiveconv;
-      ((PC_Deflation*)(pcinner))->adaptiveconst = def->adaptiveconst;
-      ierr = MatDestroy(&nextDef);CHKERRQ(ierr);
-    } else { /* the last level */
-      ierr = KSPSetType(innerksp,KSPPREONLY);CHKERRQ(ierr);
-      /* TODO Cholesky if flgspd? */
-      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-      //TODO remove explicit matSolverPackage
-      if (commsize == red) {
-        ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+      /* TODO use def_[lvl]_ if lvl > 0? */
+      if (prefix) {
+        ierr = KSPSetOptionsPrefix(innerksp,prefix);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
       } else {
-        ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
       }
-    }
-    /* TODO use def_[lvl]_ if lvl > 0? */
-    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    if (prefix) {
-      ierr = KSPSetOptionsPrefix(innerksp,prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
-    } else {
-      ierr = KSPSetOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
     }
     /* TODO: check if WtAWinv is KSP and move following from this if */
     ierr = KSPSetFromOptions(def->WtAWinv);CHKERRQ(ierr);
