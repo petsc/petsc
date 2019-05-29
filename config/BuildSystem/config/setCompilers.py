@@ -1630,12 +1630,12 @@ if (dlclose(handle)) {
           if (opt in self.argDB  and self.argDB[opt] != '0'):
             # check if corresponding mpi wrapper exists
             for cplr in cplrs:
-              mpicplr = os.path.join(self.argDB['with-mpi-dir'], 'bin', cplr)
-              if os.path.exists(mpicplr):
-                msg = '--'+opt+'='+self.argDB[opt]+' is specified along with --with-mpi-dir='+self.argDB['with-mpi-dir']+' which implies using '+mpicplr+'.\n\
+              for mpicplr in [os.path.join(self.argDB['with-mpi-dir'], 'bin', cplr),os.path.join(self.argDB['with-mpi-dir'], 'intel64', 'bin', cplr)]:
+                if os.path.exists(mpicplr):
+                  msg = '--'+opt+'='+self.argDB[opt]+' is specified along with --with-mpi-dir='+self.argDB['with-mpi-dir']+' which implies using '+mpicplr+'.\n\
   configure is confused and does not know which compiler to select and use! Please specify either [mpi] compilers or --with-mpi-dir - but not both!\n\
   In most cases, specifying --with-mpi-dir - and not explicitly listing compilers could be preferable.'
-                raise RuntimeError(msg)
+                  raise RuntimeError(msg)
     return
 
   def requireMpiLdPath(self):
