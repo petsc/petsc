@@ -1217,6 +1217,7 @@ The BRGN implementation adds a regularization term $\beta(x)$ such that
 where $\lambda$ is the scalar weight of the regularizer. BRGN provides two default implementations 
 for $\beta(x)$:
 \begin{itemize}
+  \item \textbf{L2-norm} - $\beta(x) = \frac{1}{2}||x_k||_2^2$
   \item \textbf{L2-norm Proximal Point} - $\beta(x) = \frac{1}{2}||x_k - x_{k-1}||_2^2$
   \item \textbf{L1-norm with Dictionary} - $\beta(x) = ||Dx||_1 \approx \sum_{i} \sqrt{y_i^2 + \epsilon^2}-\epsilon$ 
         where $y = Dx$ and $\epsilon$ is the smooth approximation parameter.
@@ -1229,7 +1230,7 @@ is provided, the dictionary is assumed to be an identity matrix and the regulari
 sparse solution term.
 
 The regularization selection can be made using the command line option \texttt{-tao\_brgn\_regularization\_type} 
-{\tt <l2prox, l1dict, user>} where the ``user'' option allows the user to define a custom 
+{\tt <l2pure, l2prox, l1dict, user>} where the ``user'' option allows the user to define a custom 
 $\mathcal{C}2$-continuous regularization term. This custom term can be defined by using the 
 interface functions:
 \begin{itemize} 

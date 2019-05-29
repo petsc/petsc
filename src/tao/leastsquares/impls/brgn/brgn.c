@@ -336,13 +336,13 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
   TAOBRGN - Bounded Regularized Gauss-Newton method for solving nonlinear least-squares 
             problems with bound constraints. This algorithm is a thin wrapper around TAOBNTL 
             that constructs the Gauss-Newton problem with the user-provided least-squares 
-            residual and Jacobian. The algorithm offers both an L2-norm proximal point ("l2prox") 
-            regularizer, and a L1-norm dictionary regularizer ("l1dict"), where we approximate the 
+            residual and Jacobian. The algorithm offers an L2-norm ("l2pure"), L2-norm proximal point ("l2prox") 
+            regularizer, and L1-norm dictionary regularizer ("l1dict"), where we approximate the 
             L1-norm ||x||_1 by sum_i(sqrt(x_i^2+epsilon^2)-epsilon) with a small positive number epsilon.
             The user can also provide own regularization function.
 
   Options Database Keys:
-  + -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l1dict") (default "l2prox")
+  + -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l2pure", "l1dict") (default "l2prox")
   . -tao_brgn_regularizer_weight  - regularizer weight (default 1e-4)
   - -tao_brgn_l1_smooth_epsilon   - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
 
