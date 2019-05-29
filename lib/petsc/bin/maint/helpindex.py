@@ -1,8 +1,7 @@
 #! /usr/bin/env python
 #!/bin/env python
 #
-# reads in docs/exampleconcepts,manconcepts, and create
-# the file help.html
+# reads in docs/exampleconcepts and creates the file help.html
 #
 #
 #  Usage:
