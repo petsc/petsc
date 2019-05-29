@@ -298,7 +298,7 @@ int main(int argc,char **args)
 
    # Test handling failing VecLoad without abort
    testset:
-     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: double !complex !define(PETSC_USE_64BIT_INDICES)
      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
      test:
         suffix: 3
