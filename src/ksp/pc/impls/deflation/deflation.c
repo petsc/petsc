@@ -471,13 +471,20 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   ierr = KSPCreateVecs(def->WtAWinv,2,&def->workcoarse,0,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 static PetscErrorCode PCReset_Deflation(PC pc)
 {
-  PC_Deflation      *jac = (PC_Deflation*)pc->data;
-  PetscErrorCode ierr;
+  PC_Deflation      *def = (PC_Deflation*)pc->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = VecDestroy(&def->work);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(2,&def->workcoarse);CHKERRQ(ierr);
+  ierr = MatDestroy(&def->W);CHKERRQ(ierr);
+  ierr = MatDestroy(&def->Wt);CHKERRQ(ierr);
+  ierr = MatDestroy(&def->AW);CHKERRQ(ierr);
+  ierr = MatDestroy(&def->WtAW);CHKERRQ(ierr);
+  ierr = KSPDestroy(&def->WtAWinv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -496,10 +503,6 @@ static PetscErrorCode PCDestroy_Deflation(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_Deflation(pc);CHKERRQ(ierr);
-
-  /*
-      Free the private data structure that was hanging off the PC
-  */
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
