@@ -131,30 +131,12 @@ PetscErrorCode PCHYPREGetSolver(PC pc,HYPRE_Solver *hsolver)
   PetscFunctionReturn(0);
 }
 
-/*@
-   PCHYPREBoomerAMGGetCoarseOperators - Gets coarse operator matrices for all levels (except the finest level)
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - the multigrid context (BoomerAMG)
-
-   Output Parameter:
--  num_levels - the number of levels
-.  operators - the coarse operator matrices (size of num_levels-1)
-
-   Notes:
-   Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
-   is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
-   It is used in PCHMG. Other users should avoid using this function.
-
-   Level: developer
-
-.keywords: MG, get, multigrid, interpolation, level
-
-.seealso: PCMGGetInterpolation(), PCMGGetInterpolations(), PCHYPREBoomerAMGGetInterpolations()
-@*/
-PetscErrorCode PCHYPREBoomerAMGGetCoarseOperators(PC pc,PetscInt *nlevels,Mat *operators[])
+/*
+  Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
+  is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
+  It is used in PCHMG. Other users should avoid using this function.
+*/
+static PetscErrorCode PCGetCoarseOperators_BoomerAMG(PC pc,PetscInt *nlevels,Mat *operators[])
 {
   PC_HYPRE             *jac  = (PC_HYPRE*)pc->data;
   PetscBool            same = PETSC_FALSE;
@@ -181,30 +163,12 @@ PetscErrorCode PCHYPREBoomerAMGGetCoarseOperators(PC pc,PetscInt *nlevels,Mat *o
   PetscFunctionReturn(0);
 }
 
-/*@
-   PCHYPREBoomerAMGGetInterpolations - Gets interpolation matrices for all levels (except level 0)
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - the multigrid context (BoomerAMG)
-
-   Output Parameter:
--  num_levels - the number of levels
-.  interpolations - the interpolation matrices (size of num_levels-1)
-
-   Notes:
-   Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
-   is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
-   It is used in PCHMG. Other users should avoid using this function.
-
-   Level: developer
-
-.keywords: MG, get, multigrid, interpolation, level
-
-.seealso: PCMGGetInterpolations(), PCHYPREBoomerAMGGetCoarseOperators()
-@*/
-PetscErrorCode PCHYPREBoomerAMGGetInterpolations(PC pc,PetscInt *nlevels,Mat *interpolations[])
+/*
+  Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
+  is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
+  It is used in PCHMG. Other users should avoid using this function.
+*/
+static PetscErrorCode PCGetInterpolations_BoomerAMG(PC pc,PetscInt *nlevels,Mat *interpolations[])
 {
   PC_HYPRE             *jac  = (PC_HYPRE*)pc->data;
   PetscBool            same = PETSC_FALSE;
@@ -539,6 +503,8 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetConstantEdgeVectors_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1813,6 +1779,8 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     pc->ops->view            = PCView_HYPRE_BoomerAMG;
     pc->ops->applytranspose  = PCApplyTranspose_HYPRE_BoomerAMG;
     pc->ops->applyrichardson = PCApplyRichardson_HYPRE_BoomerAMG;
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",PCGetInterpolations_BoomerAMG);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",PCGetCoarseOperators_BoomerAMG);CHKERRQ(ierr);
     jac->destroy             = HYPRE_BoomerAMGDestroy;
     jac->setup               = HYPRE_BoomerAMGSetup;
     jac->solve               = HYPRE_BoomerAMGSolve;

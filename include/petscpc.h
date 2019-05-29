@@ -98,6 +98,9 @@ PETSC_EXTERN PetscErrorCode PCSetDiagonalScale(PC,Vec);
 PETSC_EXTERN PetscErrorCode PCSetDM(PC,DM);
 PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
 
+PETSC_EXTERN PetscErrorCode PCGetInterpolations(PC,PetscInt*,Mat*[]);
+PETSC_EXTERN PetscErrorCode PCGetCoarseOperators(PC pc,PetscInt*,Mat*[]);
+
 PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
@@ -233,8 +236,6 @@ PETSC_EXTERN PetscErrorCode PCHYPRESetInterpolations(PC,PetscInt,Mat,Mat[],Mat,M
 PETSC_EXTERN PetscErrorCode PCHYPRESetEdgeConstantVectors(PC,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC,Mat);
-PETSC_EXTERN PetscErrorCode PCHYPREBoomerAMGGetCoarseOperators(PC,PetscInt*,Mat*[]);
-PETSC_EXTERN PetscErrorCode PCHYPREBoomerAMGGetInterpolations(PC,PetscInt*,Mat*[]);
 
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetFields(PC,const char[],PetscInt,const PetscInt*,const PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetType(PC,PCCompositeType);
@@ -370,8 +371,6 @@ PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
-PETSC_EXTERN PetscErrorCode PCMGGetInterpolations(PC,PetscInt*,Mat*[]);
-PETSC_EXTERN PetscErrorCode PCMGGetCoarseOperators(PC,PetscInt*,Mat*[]);
 
 
 PETSC_EXTERN PetscErrorCode PCHMGSetReuseInterpolation(PC,PetscBool);

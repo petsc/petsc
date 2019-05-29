@@ -9,56 +9,10 @@ typedef struct {
   char*            innerpctype;        /* PCGAMG or PCHYPRE */
   PetscBool        reuseinterp;        /* A flag indicates if or not to reuse the interpolations */
   PetscBool        subcoarsening;
-  PetscErrorCode   (*getoperators)(PC,PetscInt*,Mat**);
-  PetscErrorCode   (*getinterpolations)(PC,PetscInt*,Mat**);
-  PetscErrorCode   (*setfromoptions)(PetscOptionItems*,PC);
 } PC_HMG;
 
 PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems*,PC);
 PetscErrorCode PCReset_MG(PC);
-#if PETSC_HAVE_HYPRE
-PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems*,PC);
-#endif
-PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems*,PC);
-
-static PetscErrorCode PCHMGSetInnerPCFromOptions_Private(PC pc,PetscOptionItems *PetscOptionsObject)
-{
-  PetscErrorCode     ierr;
-  PC_MG              *mg   = (PC_MG*)pc->data;
-  PC_HMG             *hmg   = (PC_HMG*) mg->innerctx;
-
-  PetscFunctionBegin;
-  if (hmg->setfromoptions) {
-    ierr = (*hmg->setfromoptions)(PetscOptionsObject,hmg->innerpc);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NULL,"Inner PC does not support SetFromOptions\n");
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PCHMGGetInnerPCCoarseOperators_Private(PC pc,PetscInt *nlevels,Mat **operators)
-{
-  PetscErrorCode     ierr;
-  PC_MG              *mg   = (PC_MG*)pc->data;
-  PC_HMG             *hmg   = (PC_HMG*) mg->innerctx;
-
-  PetscFunctionBegin;
-  if (hmg->getoperators) {
-    ierr = (*hmg->getoperators)(hmg->innerpc,nlevels,operators);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NULL,"Inner PC does not support GetOperators\n");
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PCHMGGetInnerPCInterpolations_Private(PC pc,PetscInt *nlevels,Mat *interpolations[])
-{
-  PetscErrorCode     ierr;
-  PC_MG              *mg   = (PC_MG*)pc->data;
-  PC_HMG             *hmg   = (PC_HMG*) mg->innerctx;
-
-  PetscFunctionBegin;
-  if (hmg->getinterpolations) {
-    ierr = (*hmg->getinterpolations)(hmg->innerpc,nlevels,interpolations);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NULL,"Inner PC does not support GetInterpolation\n");
-  PetscFunctionReturn(0);
-}
 
 static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReuse reuse,PetscInt blocksize)
 {
@@ -145,9 +99,9 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   MPI_Comm           comm;
   PetscInt           level;
   PetscInt           num_levels;
-  PetscBool          same;
   Mat                *operators,*interpolations;
   PetscInt           blocksize;
+  const char         *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
@@ -166,11 +120,16 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   /* Create an inner PC (GAMG or HYPRE) */
   if (!hmg->innerpc) {
     ierr = PCCreate(comm,&hmg->innerpc);CHKERRQ(ierr);
-    ierr = PCSetType(hmg->innerpc,hmg->innerpctype);CHKERRQ(ierr);
-    ierr = PetscStrcmp(hmg->innerpctype,"hypre",&same);CHKERRQ(ierr);
-    if (same) {
-      ierr = PCHYPRESetType(hmg->innerpc,"boomeramg");CHKERRQ(ierr);
+    /* If users do not set an inner pc type, we need to set a default value */
+    if (!hmg->innerpctype) {
+    /* If hypre is available, use hypre, otherwise, use gamg */
+#if PETSC_HAVE_HYPRE
+      ierr = PetscStrallocpy(PCHYPRE,&(hmg->innerpctype));CHKERRQ(ierr);
+#else
+      ierr = PetscStrallocpy(PCGAMG,&(hmg->innerpctype));CHKERRQ(ierr);
+#endif
     }
+    ierr = PCSetType(hmg->innerpc,hmg->innerpctype);CHKERRQ(ierr);
   }
   ierr = PCGetOperators(pc,NULL,&PA);CHKERRQ(ierr);
   /* Users need to correctly set a block size of matrix in order to use subspace coarsening */
@@ -187,16 +146,17 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   }
   /* Setup inner PC correctly. During this step, matrix will be coarsened */
   ierr = PCSetUseAmat(hmg->innerpc,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)hmg->innerpc);CHKERRQ(ierr);
-  ierr = PCHMGSetInnerPCFromOptions_Private(pc,PetscOptionsObject);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)pc,&prefix);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)hmg->innerpc,prefix);CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)hmg->innerpc,"hmg_inner_");CHKERRQ(ierr);
+  ierr = PCSetFromOptions(hmg->innerpc);CHKERRQ(ierr);
   ierr = PCSetUp(hmg->innerpc);
 
   /* Obtain interpolations IN PLACE. For BoomerAMG, (I,J,data) is reused to avoid memory overhead */
-  ierr = PCHMGGetInnerPCInterpolations_Private(pc,&num_levels,&interpolations);CHKERRQ(ierr);
+  ierr = PCGetInterpolations(hmg->innerpc,&num_levels,&interpolations);CHKERRQ(ierr);
   /* We can reuse the coarse operators when we do the full space coarsening */
   if (!hmg->subcoarsening) {
-    ierr = PCHMGGetInnerPCCoarseOperators_Private(pc,&num_levels,&operators);CHKERRQ(ierr);
+    ierr = PCGetCoarseOperators(hmg->innerpc,&num_levels,&operators);CHKERRQ(ierr);
   }
 
   ierr = PCDestroy(&hmg->innerpc);CHKERRQ(ierr);
@@ -228,7 +188,7 @@ PetscErrorCode PCSetUp_HMG(PC pc)
     ierr = PCMGSetR(pc,level,r);CHKERRQ(ierr);
     ierr = VecDestroy(&r);CHKERRQ(ierr);
 
-    ierr = VecDuplicate(b,&x);
+    ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
     ierr = PCMGSetX(pc,level-1,x);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -259,6 +219,10 @@ PetscErrorCode PCDestroy_HMG(PC pc)
   ierr = PetscFree(hmg->innerpctype);CHKERRQ(ierr);
   ierr = PetscFree(hmg);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetReuseInterpolation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetUseSubspaceCoarsening_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetInnerPCType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -280,47 +244,30 @@ PetscErrorCode PCView_HMG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if PETSC_HAVE_HYPRE
-static const char *InnerPCType[]   = {"gamg","hypre"};
-#else
-static const char *InnerPCType[]   = {"gamg"};
-#endif
-
 PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_HMG         *hmg = (PC_HMG*) mg->innerctx;
-  PetscBool      flg;
-  PetscInt       indx;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HMG");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_hmg_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",hmg->reuseinterp,&hmg->reuseinterp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_hmg_use_subspace_coarsening","Use the subspace coarsening to compute the interpolations","None",hmg->subcoarsening,&hmg->subcoarsening,NULL);CHKERRQ(ierr);
-#if PETSC_HAVE_HYPRE
-  indx = 1;
-#else
-  indx = 0;
-#endif
-  ierr = PetscOptionsEList("-pc_hmg_inner_pc_type","Inner PC type",NULL,InnerPCType,2,"gamg",&indx,&flg);CHKERRQ(ierr);
- if (indx == 0) {
-   hmg->getinterpolations = PCMGGetInterpolations;
-   hmg->getoperators      = PCMGGetCoarseOperators;
-   hmg->setfromoptions    = PCSetFromOptions_GAMG;
-   ierr = PetscStrallocpy(PCGAMG,&(hmg->innerpctype));CHKERRQ(ierr);
-  }
-#if PETSC_HAVE_HYPRE
- else if (indx == 1) {
-    hmg->getinterpolations = PCHYPREBoomerAMGGetInterpolations;
-    hmg->getoperators      = PCHYPREBoomerAMGGetCoarseOperators;
-    hmg->setfromoptions    = PCSetFromOptions_HYPRE;
-    ierr = PetscStrallocpy(PCHYPRE,&(hmg->innerpctype));CHKERRQ(ierr);
-  }
-#endif
-  else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown inner PC type");
-
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
+{
+  PC_MG          *mg;
+  PC_HMG         *hmg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  mg = (PC_MG*)pc->data;
+  hmg = (PC_HMG*) mg->innerctx;
+  hmg->reuseinterp = reuse;
   PetscFunctionReturn(0);
 }
 
@@ -344,6 +291,16 @@ PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
 M*/
 PetscErrorCode PCHMGSetReuseInterpolation(PC pc, PetscBool reuse)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCHMGSetReuseInterpolation_C",(PC,PetscBool),(pc,reuse));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspace)
+{
   PC_MG          *mg;
   PC_HMG         *hmg;
 
@@ -351,7 +308,7 @@ PetscErrorCode PCHMGSetReuseInterpolation(PC pc, PetscBool reuse)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   mg = (PC_MG*)pc->data;
   hmg = (PC_HMG*) mg->innerctx;
-  hmg->reuseinterp = reuse;
+  hmg->subcoarsening = subspace;
   PetscFunctionReturn(0);
 }
 
@@ -375,14 +332,26 @@ PetscErrorCode PCHMGSetReuseInterpolation(PC pc, PetscBool reuse)
 M*/
 PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC pc, PetscBool subspace)
 {
-  PC_MG          *mg;
-  PC_HMG         *hmg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCHMGSetUseSubspaceCoarsening_C",(PC,PetscBool),(pc,subspace));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
+{
+  PC_MG           *mg;
+  PC_HMG          *hmg;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(type,2);
   mg = (PC_MG*)pc->data;
   hmg = (PC_HMG*) mg->innerctx;
-  hmg->subcoarsening = subspace;
+  ierr = PetscStrallocpy(type,&(hmg->innerpctype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -396,7 +365,7 @@ PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC pc, PetscBool subspace)
 -  type - <hypre, gamg> coarsening algorithm
 
    Options Database Keys:
-+  -pc_hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
++  -hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
 
    Level: beginner
 
@@ -406,31 +375,23 @@ PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC pc, PetscBool subspace)
 M*/
 PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
 {
-  PC_MG           *mg;
-  PC_HMG          *hmg;
-  PetscBool       hypre,gamg;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  mg = (PC_MG*)pc->data;
-  hmg = (PC_HMG*) mg->innerctx;
-  ierr = PetscStrcmp(type,"hypre",&hypre);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,"gamg",&gamg);CHKERRQ(ierr);
-  if (!hypre && !gamg) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Does not support PC type %s \n",type);
-  ierr = PetscStrallocpy(type,&(hmg->innerpctype));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCHMGSetInnerPCType_C",(PC,PCType),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*MC
-   PCHMG - Hybrid of PETSc preconditioners (such as ASM, BJacobi, SOR, etc.) and Hypre BoomerAMG. BoomerAMG is used to coarsen matrix and generate
-           a sequence of coarse matrices and interpolations. The matrices and interpolations are employed to construct PCMG, and then any available
-           PETSc preconditioners can be chosen as smoothers and the coarse solver.
+   PCHMG - Hybrid of PETSc preconditioners (such as ASM, BJacobi, SOR, etc.) and Hypre BoomerAMG, GAMG or other multilevel methods. BoomerAMG, GAMG
+           or other multilevel methods is used to coarsen matrix and generate a sequence of coarse matrices and interpolations. The matrices and
+           interpolations are employed to construct PCMG, and then any available PETSc preconditioners can be chosen as smoothers and the coarse solver.
 
    Options Database Keys:
 +  -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
 .  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
-.  -pc_hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
+.  -hmg_inner_pc_type <hypre, gamg, ...> - What method is used to coarsen matrix
 
 
    Notes:
@@ -447,7 +408,8 @@ PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
     Newton-Krylov-Schwarz method with subspace-based coarsening and partition-based balancing for the multigroup neutron transport equations on
     3D unstructured meshes, arXiv preprint arXiv:1903.03659, 2019
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC, PCMG, PCHYPRE, PCHMG, PCHYPREBoomerAMGGetCoarseOperators(), PCHYPREBoomerAMGGetInterpolations(), PCMGGetInterpolations(), PCMGGetCoarseOperators()
+.seealso:  PCCreate(), PCSetType(), PCType, PC, PCMG, PCHYPRE, PCHMG, PCGetCoarseOperators(), PCGetInterpolations(), PCHMGSetReuseInterpolation(), PCHMGSetUseSubspaceCoarsening(),
+           PCHMGSetInnerPCType()
 
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
@@ -464,8 +426,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
   }
   ierr = PetscFree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
 
-  ierr         = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  ierr         = PetscNew(&hmg);CHKERRQ(ierr); \
+  ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
+  ierr = PetscNew(&hmg);CHKERRQ(ierr);
 
   mg                      = (PC_MG*) pc->data;
   mg->innerctx            = hmg;
@@ -477,5 +439,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
   pc->ops->view           = PCView_HMG;
   pc->ops->destroy        = PCDestroy_HMG;
   pc->ops->setup          = PCSetUp_HMG;
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetReuseInterpolation_C",PCHMGSetReuseInterpolation_HMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetUseSubspaceCoarsening_C",PCHMGSetUseSubspaceCoarsening_HMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetInnerPCType_C",PCHMGSetInnerPCType_HMG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

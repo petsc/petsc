@@ -195,28 +195,8 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-/*@
-   PCMGGetInterpolations - Gets interpolation matrices for all levels (except level 0)
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - the multigrid context
-
-   Output Parameter:
--  num_levels - the number of levels
-.  interpolations - the interpolation matrices (size of num_levels-1)
-
-   Notes:
-   No new matrices are created, and the interpolations are the references to the original ones
-
-   Level: advanced
-
-.keywords: MG, get, multigrid, interpolation, level
-
-.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale(), PCMGGetInterpolation()
-@*/
-PetscErrorCode  PCMGGetInterpolations(PC pc,PetscInt *num_levels,Mat *interpolations[])
+/* No new matrices are created, and the coarse operator matrices are the references to the original ones */
+PetscErrorCode  PCGetInterpolations_MG(PC pc,PetscInt *num_levels,Mat *interpolations[])
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
@@ -239,28 +219,8 @@ PetscErrorCode  PCMGGetInterpolations(PC pc,PetscInt *num_levels,Mat *interpolat
   PetscFunctionReturn(0);
 }
 
-/*@
-   PCMGGetCoarseOperators - Gets coarse operator matrices for all levels (except the finest level)
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - the multigrid context
-
-   Output Parameter:
--  num_levels - the number of levels
-.  coarseOperators - the coarse operator matrices (size of num_levels-1)
-
-   Notes:
-   No new matrices are created, and the coarse operator matrices are the references to the original ones
-
-   Level: advanced
-
-.keywords: MG, get, multigrid, interpolation, level
-
-.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale(), PCMGGetInterpolation(), PCMGGetInterpolations()
-@*/
-PetscErrorCode  PCMGGetCoarseOperators(PC pc,PetscInt *num_levels,Mat *coarseOperators[])
+/* No new matrices are created, and the coarse operator matrices are the references to the original ones */
+PetscErrorCode  PCGetCoarseOperators_MG(PC pc,PetscInt *num_levels,Mat *coarseOperators[])
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;

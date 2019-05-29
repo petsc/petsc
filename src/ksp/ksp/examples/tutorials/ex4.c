@@ -120,44 +120,44 @@ int main(int argc,char **args)
       suffix: hypre
       nsize: 2
       requires: hypre
-      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type hypre
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre
 
    test:
       suffix: hypre_bs4
       nsize: 2
       requires: hypre
-      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type hypre -bs 4 -pc_hmg_use_subspace_coarsening 1
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre -bs 4 -pc_hmg_use_subspace_coarsening 1
 
    test:
       suffix: hypre_asm
       nsize: 2
       requires: hypre
-      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type hypre -bs 4 -pc_hmg_use_subspace_coarsening 1 -mg_levels_3_pc_type asm
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre -bs 4 -pc_hmg_use_subspace_coarsening 1 -mg_levels_3_pc_type asm
 
    test:
       suffix: hypre_fieldsplit
       nsize: 2
       requires: hypre
-      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type hypre -bs 4 -mg_levels_4_pc_type fieldsplit
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre -bs 4 -mg_levels_4_pc_type fieldsplit
 
    test:
       suffix: gamg
       nsize: 2
-      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type gamg
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type gamg
 
    test:
       suffix: gamg_bs4
       nsize: 2
-      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type gamg -bs 4 -pc_hmg_use_subspace_coarsening 1
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type gamg -bs 4 -pc_hmg_use_subspace_coarsening 1
 
    test:
       suffix: gamg_asm
       nsize: 2
-      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type gamg -bs 4 -pc_hmg_use_subspace_coarsening 1 -mg_levels_1_pc_type asm
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type gamg -bs 4 -pc_hmg_use_subspace_coarsening 1 -mg_levels_1_pc_type asm
 
    test:
       suffix: gamg_fieldsplit
       nsize: 2
-      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -pc_hmg_inner_pc_type gamg -bs 4 -mg_levels_1_pc_type fieldsplit
+      args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type gamg -bs 4 -mg_levels_1_pc_type fieldsplit
 
 TEST*/
