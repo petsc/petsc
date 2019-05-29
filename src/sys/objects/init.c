@@ -553,7 +553,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     if (size>1) {
       int         devCount;
-      PetscInt    device;
+      int         device;
       PetscMPIInt rank;
       cudaError_t err = cudaSuccess;
 
@@ -599,7 +599,10 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
     PetscCUDAInitialized = PETSC_TRUE;
   }
-  ierr = PetscOptionsHasName(NULL,NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"CUDA options",NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsDeprecated("-cuda_show_devices","-cuda_view","3.12",NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-cuda_view","Display CUDA device information and assignments",NULL,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg1) {
     struct cudaDeviceProp prop;
     int                   devCount;
@@ -611,7 +614,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     for (device = 0; device < devCount; ++device) {
       err = cudaGetDeviceProperties(&prop, (int)device);
       if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
-      ierr = PetscPrintf(comm, "CUDA device %D: %s\n", device, prop.name);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
     }
     err = cudaGetDevice(&device);
     if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDevice %s",cudaGetErrorString(err));
