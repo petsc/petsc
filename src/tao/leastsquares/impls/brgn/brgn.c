@@ -6,7 +6,7 @@
 #define BRGN_REGULARIZATION_L1DICT  3
 #define BRGN_REGULARIZATION_TYPES   4
 
-static const char *BRGN_REGULARIZATION_TABLE[64] = {"user","l2prox","l1dict","l2pure"};
+static const char *BRGN_REGULARIZATION_TABLE[64] = {"user","l2prox","l2pure","l1dict"};
 
 static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
 {
