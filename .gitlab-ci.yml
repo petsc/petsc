@@ -137,9 +137,10 @@ opensolaris-cmplx-pkgs-dbg:
 .status:
   image: jedbrown/alpine-curl
   variables:
-    GIT_DEPTH: 1
+    GIT_STRATEGY: none
   script:
-    - BUILD_KEY=push BITBUCKET_NAMESPACE=petsc ./.gitlab-build-status.sh
+    - curl -s -O https://gitlab.com/jedbrown/petsc/raw/jed/gitlab-ci/.gitlab-build-status.sh
+    - BUILD_KEY=push BITBUCKET_NAMESPACE=petsc /bin/sh .gitlab-build-status.sh
 
 inprogress:
   stage: ci-begin
