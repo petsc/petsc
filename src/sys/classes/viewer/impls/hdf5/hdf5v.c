@@ -66,6 +66,20 @@ static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscViewerView_HDF5(PetscViewer v,PetscViewer viewer)
+{
+  PetscViewer_HDF5  *hdf5 = (PetscViewer_HDF5*)v->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (hdf5->filename) {
+    ierr = PetscViewerASCIIPrintf(viewer,"Filename: %s\n",hdf5->filename);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"Vectors with blocksize 1 saved as 2D datasets: %s\n",PetscBools[hdf5->basedimension2]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Enforce single precision storage: %s\n",PetscBools[hdf5->spoutput]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)viewer->data;
@@ -347,6 +361,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   v->ops->destroy        = PetscViewerDestroy_HDF5;
   v->ops->setfromoptions = PetscViewerSetFromOptions_HDF5;
   v->ops->setup          = PetscViewerSetUp_HDF5;
+  v->ops->view           = PetscViewerView_HDF5;
   v->ops->flush          = 0;
   hdf5->btype            = (PetscFileMode) -1;
   hdf5->filename         = 0;
@@ -403,6 +418,7 @@ PetscErrorCode  PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileM
   ierr = PetscViewerSetType(*hdf5v, PETSCVIEWERHDF5);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*hdf5v, type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*hdf5v, name);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(*hdf5v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
