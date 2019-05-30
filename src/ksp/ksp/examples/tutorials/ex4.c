@@ -19,13 +19,16 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its,bs=1,II,JJ,jj;
   PetscErrorCode ierr;
-  PetscBool      flg;
+  PetscBool      flg,test=PETSC_FALSE,reuse=PETSC_FALSE;
   PetscScalar    v;
+  PC             pc;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_hmg_interface",&test,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_reuse_interpolation",&reuse,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs);CHKERRQ(ierr);
@@ -94,9 +97,27 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
+  if (test) {
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCHMG);CHKERRQ(ierr);
+    ierr = PCHMGSetInnerPCType(pc,PCGAMG);CHKERRQ(ierr);
+    ierr = PCHMGSetReuseInterpolation(pc,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCHMGSetUseSubspaceCoarsening(pc,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+
+  if (reuse) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  }
+
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -159,5 +180,15 @@ int main(int argc,char **args)
       suffix: gamg_fieldsplit
       nsize: 2
       args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type gamg -bs 4 -mg_levels_1_pc_type fieldsplit
+
+   test:
+      suffix: interface
+      nsize: 2
+      args: -ksp_monitor -ksp_rtol 1e-6 -test_hmg_interface 1 -bs 4
+
+   test:
+      suffix: reuse
+      nsize: 2
+      args: -ksp_monitor -ksp_rtol 1e-6   -pc_type hmg -pc_hmg_reuse_interpolation 1 -test_reuse_interpolation 1 -hmg_inner_pc_type gamg
 
 TEST*/

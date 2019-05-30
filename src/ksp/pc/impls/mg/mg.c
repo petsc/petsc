@@ -1237,6 +1237,48 @@ PetscErrorCode  PCMGSetDistinctSmoothUp(PC pc)
   PetscFunctionReturn(0);
 }
 
+/* No new matrices are created, and the coarse operator matrices are the references to the original ones */
+PetscErrorCode  PCGetInterpolations_MG(PC pc,PetscInt *num_levels,Mat *interpolations[])
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  Mat            *mat;
+  PetscInt       l;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = PetscMalloc1(mg->nlevels,&mat);CHKERRQ(ierr);
+  for (l=1; l< mg->nlevels; l++) {
+    mat[l-1] = mglevels[l]->interpolate;
+    ierr = PetscObjectReference((PetscObject)mat[l-1]);CHKERRQ(ierr);
+  }
+  *num_levels = mg->nlevels;
+  *interpolations = mat;
+  PetscFunctionReturn(0);
+}
+
+/* No new matrices are created, and the coarse operator matrices are the references to the original ones */
+PetscErrorCode  PCGetCoarseOperators_MG(PC pc,PetscInt *num_levels,Mat *coarseOperators[])
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscInt       l;
+  Mat            *mat;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = PetscMalloc1(mg->nlevels,&mat);CHKERRQ(ierr);
+  for (l=0; l<mg->nlevels-1; l++) {
+    ierr = KSPGetOperators(mglevels[l]->smoothd,NULL,&(mat[l]));CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)mat[l]);CHKERRQ(ierr);
+  }
+  *num_levels = mg->nlevels;
+  *coarseOperators = mat;
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------------------------------------*/
 
 /*MC

@@ -60,8 +60,6 @@ PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsOb
 PETSC_INTERN PetscErrorCode PCView_MG(PC,PetscViewer);
 PETSC_INTERN PetscErrorCode PCMGGetLevels_MG(PC,PetscInt *);
 PETSC_INTERN PetscErrorCode PCMGSetLevels_MG(PC,PetscInt,MPI_Comm *);
-PETSC_INTERN PetscErrorCode PCGetInterpolations_MG(PC,PetscInt*,Mat*[]);
-PETSC_INTERN PetscErrorCode PCGetCoarseOperators_MG(PC,PetscInt*,Mat*[]);
 PETSC_DEPRECATED_FUNCTION("Use PCMGResidualDefault() (since version 3.5)") PETSC_STATIC_INLINE PetscErrorCode PCMGResidual_Default(Mat A,Vec b,Vec x,Vec r) {
   return PCMGResidualDefault(A,b,x,r);
 }

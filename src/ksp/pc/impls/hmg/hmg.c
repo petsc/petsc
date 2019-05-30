@@ -102,12 +102,18 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   Mat                *operators,*interpolations;
   PetscInt           blocksize;
   const char         *prefix;
+  PCMGGalerkinType   galerkin;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (pc->setupcalled) {
-   /* Only reuse interpolations when nonzero pattern does not change */
+   /* Only reuse interpolations when nonzero pattern does not change
+    * since coarse matrices are already allocated.
+    * */
    if (pc->flag == SAME_NONZERO_PATTERN && hmg->reuseinterp) {
+     /* If we did not use Galerkin in the last call, we have to build from scratch */
+     ierr = PCMGGetGalerkin(pc,&galerkin);CHKERRQ(ierr);
+     if (galerkin == PC_MG_GALERKIN_NONE) pc->setupcalled = PETSC_FALSE;
      ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT);CHKERRQ(ierr);
      ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
      PetscFunctionReturn(0);
@@ -260,13 +266,10 @@ PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
 
 static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
 {
-  PC_MG          *mg;
-  PC_HMG         *hmg;
+  PC_MG          *mg  = (PC_MG*)pc->data;
+  PC_HMG         *hmg = (PC_HMG*) mg->innerctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  mg = (PC_MG*)pc->data;
-  hmg = (PC_HMG*) mg->innerctx;
   hmg->reuseinterp = reuse;
   PetscFunctionReturn(0);
 }
@@ -301,13 +304,10 @@ PetscErrorCode PCHMGSetReuseInterpolation(PC pc, PetscBool reuse)
 
 static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspace)
 {
-  PC_MG          *mg;
-  PC_HMG         *hmg;
+  PC_MG          *mg  = (PC_MG*)pc->data;
+  PC_HMG         *hmg = (PC_HMG*) mg->innerctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  mg = (PC_MG*)pc->data;
-  hmg = (PC_HMG*) mg->innerctx;
   hmg->subcoarsening = subspace;
   PetscFunctionReturn(0);
 }
@@ -342,15 +342,11 @@ PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC pc, PetscBool subspace)
 
 static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
 {
-  PC_MG           *mg;
-  PC_HMG          *hmg;
+  PC_MG           *mg  = (PC_MG*)pc->data;
+  PC_HMG          *hmg = (PC_HMG*) mg->innerctx;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(type,2);
-  mg = (PC_MG*)pc->data;
-  hmg = (PC_HMG*) mg->innerctx;
   ierr = PetscStrallocpy(type,&(hmg->innerpctype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
