@@ -1346,6 +1346,10 @@ static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 #endif
 }
 
+#if defined(PETSC_HAVE_OPENMP)
+extern PetscInt PetscNumOMPThreads;
+#endif
+
 PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 {
   FILE               *fd;
@@ -1399,7 +1403,9 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   } else {
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
   }
-
+#if defined(PETSC_HAVE_OPENMP)
+  ierr = PetscFPrintf(comm,fd,"Using %D OpenMP threads\n", PetscNumOMPThreads);CHKERRQ(ierr);
+#endif
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */

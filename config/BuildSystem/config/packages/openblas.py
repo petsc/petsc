@@ -66,7 +66,7 @@ class Configure(config.package.Package):
     cmdline += " MAKE_NB_JOBS="+str(self.make.make_np)+" "
     if self.openmp.found:
       cmdline += " USE_OPENMP=1 "
-      self.usesopenmp = 1
+      self.usesopenmp = 'yes'
       # use the environmental variable OMP_NUM_THREADS to control the number of threads used
     else:
       cmdline += " USE_OPENMP=0 "

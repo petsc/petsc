@@ -653,6 +653,7 @@ int64_t Petsc_adios_group;
 #endif
 #if defined(PETSC_HAVE_OPENMP)
 #include <omp.h>
+PetscInt PetscNumOMPThreads;
 #endif
 
 /*@C
@@ -1016,13 +1017,12 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_OPENMP)
   {
-    PetscInt  ompthreads;
     PetscBool omp_view_flag;
     char      *threads = getenv("OMP_NUM_THREADS");
 
    if (threads) {
      ierr = PetscInfo1(0,"Number of OpenMP threads %s (given by OMP_NUM_THREADS)\n",threads);CHKERRQ(ierr);
-     (void) sscanf(threads, "%" PetscInt_FMT,&ompthreads);
+     (void) sscanf(threads, "%" PetscInt_FMT,&PetscNumOMPThreads);
    } else {
 #define NMAX  10000
      int          i;
@@ -1031,21 +1031,21 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #pragma omp parallel for
       for (i=0; i<NMAX; i++) {
         x[i] = 0.0;
-        ompthreads  = (PetscInt) omp_get_num_threads();
+        PetscNumOMPThreads  = (PetscInt) omp_get_num_threads();
       }
       ierr = PetscFree(x);CHKERRQ(ierr);
-      ierr = PetscInfo1(0,"Number of OpenMP threads %D (number not set with OMP_NUM_THREADS, chosen by system)\n",ompthreads);CHKERRQ(ierr);
+      ierr = PetscInfo1(0,"Number of OpenMP threads %D (number not set with OMP_NUM_THREADS, chosen by system)\n",PetscNumOMPThreads);CHKERRQ(ierr);
     }
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"OpenMP options","Sys");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-omp_num_threads","Number of OpenMP threads to use (can also use environmental variable OMP_NUM_THREADS","None",ompthreads,&ompthreads,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-omp_num_threads","Number of OpenMP threads to use (can also use environmental variable OMP_NUM_THREADS","None",PetscNumOMPThreads,&PetscNumOMPThreads,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsName("-omp_view","Display OpenMP number of threads",NULL,&omp_view_flag);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscInfo1(0,"Number of OpenMP theads %D (given by -omp_num_threads)\n",ompthreads);CHKERRQ(ierr);
-      omp_set_num_threads((int)ompthreads);
+      ierr = PetscInfo1(0,"Number of OpenMP theads %D (given by -omp_num_threads)\n",PetscNumOMPThreads);CHKERRQ(ierr);
+      omp_set_num_threads((int)PetscNumOMPThreads);
     }
     if (omp_view_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"OpenMP: number of threads %D\n",ompthreads);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"OpenMP: number of threads %D\n",PetscNumOMPThreads);CHKERRQ(ierr);
     }
   }
 #endif
