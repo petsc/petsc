@@ -33,8 +33,6 @@ $     SETERRQ(comm,number,p,mess)
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscMPIAbortErrorHandler()
 
-   Concepts: error handler^traceback
-   Concepts: traceback^generating
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
@@ -167,8 +165,6 @@ $     SETERRQ(comm,number,n,mess)
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscMPIAbortErrorHandler()
 
-   Concepts: error handler^traceback
-   Concepts: traceback^generating
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler()

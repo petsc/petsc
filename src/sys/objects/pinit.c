@@ -449,8 +449,6 @@ PetscErrorCode  PetscGetProgramName(char name[],size_t len)
 
       The first argument contains the program name as is normal for C arguments.
 
-   Concepts: command line arguments
-
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
 
 @*/
@@ -476,8 +474,6 @@ PetscErrorCode  PetscGetArgs(int *argc,char ***args)
 
    Notes:
       This does NOT start with the program name and IS null terminated (final arg is void)
-
-   Concepts: command line arguments
 
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscFreeArguments()
 
@@ -507,8 +503,6 @@ PetscErrorCode  PetscGetArguments(char ***args)
 .  args - the command line arguments
 
    Level: intermediate
-
-   Concepts: command line arguments
 
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscGetArguments()
 
@@ -757,8 +751,6 @@ $       call PetscInitialize(file,ierr)
 
    If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
    calling PetscInitialize().
-
-   Concepts: initializing PETSc
 
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
 

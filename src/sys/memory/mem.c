@@ -52,8 +52,6 @@
 
 .seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetMaximumUsage(), PetscMallocGetCurrentUsage(), PetscMemorySetGetMaximumUsage(), PetscMemoryView()
 
-   Concepts: resident set size
-   Concepts: memory usage
 
 @*/
 PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
@@ -142,8 +140,6 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
 .seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(), PetscMallocGetCurrentUsage(),
           PetscMemorySetGetMaximumUsage()
 
-   Concepts: resident set size
-   Concepts: memory usage
 
 @*/
 PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
@@ -169,8 +165,6 @@ PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
 .seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(), PetscMallocGetCurrentUsage(),
           PetscMemoryGetMaximumUsage()
 
-   Concepts: resident set size
-   Concepts: memory usage
 
 @*/
 PetscErrorCode  PetscMemorySetGetMaximumUsage(void)

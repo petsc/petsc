@@ -148,8 +148,6 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Note:
    This PetscViewer should be destroyed with PetscViewerDestroy().
 
-   Concepts: ADIOS files
-   Concepts: PetscViewerADIOS^creating
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5Open(),
           VecView(), MatView(), VecLoad(), PetscViewerSetType(), PetscViewerFileSetMode(), PetscViewerFileSetName()

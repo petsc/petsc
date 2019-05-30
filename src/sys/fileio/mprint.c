@@ -596,8 +596,6 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
     Fortran Note:
     This routine is not supported in Fortran.
 
-   Concepts: printing^in parallel
-   Concepts: printf^in parallel
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
@@ -639,8 +637,6 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
     The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
-   Concepts: printing^in parallel
-   Concepts: printf^in parallel
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/

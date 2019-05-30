@@ -21,8 +21,6 @@
 
    Level: intermediate
 
-   Concepts: index sets^difference
-   Concepts: IS^difference
 
 .seealso: ISDestroy(), ISView(), ISSum(), ISExpand()
 
@@ -110,8 +108,6 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISExpand()
 
-   Concepts: index sets^union
-   Concepts: IS^union
 
 @*/
 PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
@@ -240,8 +236,6 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISSum()
 
-   Concepts: index sets^difference
-   Concepts: IS^difference
 
 @*/
 PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
@@ -327,8 +321,6 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISSum(), ISExpand()
 
-   Concepts: index sets^intersection
-   Concepts: IS^intersection
 
 @*/
 PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
@@ -447,8 +439,6 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 
 .seealso: ISDifference(), ISSum(), ISExpand()
 
-   Concepts: index sets^concatenation
-   Concepts: IS^concatenation
 
 @*/
 PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS *isout)

@@ -222,8 +222,6 @@ PetscErrorCode VecCreate_CUDA(Vec v)
 
    Level: intermediate
 
-   Concepts: vectors^creating with array
-
 .seealso: VecCreateSeqCUDAWithArray(), VecCreateMPIWithArray(), VecCreateSeqWithArray(),
           VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()

@@ -60,8 +60,6 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 
    Level: intermediate
 
-   Concepts: random numbers^seed
-
 .seealso: PetscRandomCreate(), PetscRandomSetSeed(), PetscRandomSeed()
 @*/
 PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
@@ -92,8 +90,6 @@ PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
 
       PetscRandomSeed(r) without a call to PetscRandomSetSeed() re-initializes
         the seed. The random numbers generated will be the same as before.
-
-   Concepts: random numbers^seed
 
 .seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSeed()
 @*/
@@ -317,8 +313,6 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
       PetscRandomDestroy(&r);
 .ve
 
-   Concepts: random numbers^creating
-
 .seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomSetInterval(),
           PetscRandomDestroy(), VecSetRandom(), PetscRandomType
 @*/
@@ -364,8 +358,6 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 
       PetscRandomSeed(r) without a call to PetscRandomSetSeed() re-initializes
         the seed. The random numbers generated will be the same as before.
-
-   Concepts: random numbers^seed
 
 .seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSetSeed()
 @*/

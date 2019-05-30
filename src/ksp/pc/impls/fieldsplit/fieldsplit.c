@@ -3053,8 +3053,6 @@ $              (  0   S  )
      for example, page 294 in "Principles of Computational Fluid Dynamics" by Pieter Wesseling. Note that one can also use PCFIELDSPLIT
      inside a smoother resulting in "Distributive Smoothers".
 
-   Concepts: physics based preconditioners, block preconditioners
-
    There is a nice discussion of block preconditioners in
 
 [El08] A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations

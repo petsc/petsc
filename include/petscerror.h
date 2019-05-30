@@ -88,8 +88,6 @@
 
     Experienced users can set the error handler with PetscPushErrorHandler().
 
-   Concepts: error^setting condition
-
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
 #define SETERRQ(comm,ierr,s) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s)
@@ -113,8 +111,6 @@ M*/
    Notes:
     This macro is FOR USE IN MPI CALLBACK FUNCTIONS ONLY, such as those passed to MPI_Comm_create_keyval(). It always returns the error code PETSC_MPI_ERROR_CODE
     which is registered with MPI_Add_error_code() when PETSc is initialized.
-
-   Concepts: error^setting condition
 
 .seealso: SETERRQ(), CHKERRQ(), CHKERRMPI(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
@@ -142,8 +138,6 @@ M*/
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
-   Concepts: error^setting condition
-
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ(), SETERRQ2(), SETERRQ3()
 M*/
 #define SETERRQ1(comm,ierr,s,a1) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1)
@@ -170,8 +164,6 @@ M*/
     Once the error handler is called the calling function is then returned from with the given error code.
 
    Experienced users can set the error handler with PetscPushErrorHandler().
-
-   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ3()
 M*/
@@ -203,8 +195,6 @@ M*/
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
-   Concepts: error^setting condition
-
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
 #define SETERRQ3(comm,ierr,s,a1,a2,a3) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3)
@@ -235,8 +225,6 @@ M*/
     There are also versions for 4, 5, 6 and 7 arguments.
 
    Experienced users can set the error handler with PetscPushErrorHandler().
-
-   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
@@ -270,8 +258,6 @@ M*/
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
-   Concepts: error^setting condition
-
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
 #define SETERRQ5(comm,ierr,s,a1,a2,a3,a4,a5) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
@@ -304,8 +290,6 @@ M*/
     There are also versions for 4, 5, 6 and 7 arguments.
 
    Experienced users can set the error handler with PetscPushErrorHandler().
-
-   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
@@ -341,8 +325,6 @@ M*/
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
-   Concepts: error^setting condition
-
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
 #define SETERRQ7(comm,ierr,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
@@ -377,8 +359,6 @@ M*/
     There are also versions for 4, 5, 6 and 7 arguments.
 
    Experienced users can set the error handler with PetscPushErrorHandler().
-
-   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
@@ -416,8 +396,6 @@ M*/
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
-   Concepts: error^setting condition
-
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
 #define SETERRQ9(comm,ierr,s,a1,a2,a3,a4,a5,a6,a7,a8,a9) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7,a8,a9)
@@ -440,8 +418,6 @@ M*/
 
    Notes:
     This function just calls MPI_Abort().
-
-   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
@@ -477,8 +453,6 @@ M*/
     where you may pass back a NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
     MPI_Abort() returned immediately.
 
-   Concepts: error^setting condition
-
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
 #define CHKERRQ(ierr)          do {if (PetscUnlikely(ierr)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");} while (0)
@@ -505,8 +479,6 @@ M*/
     This macro is FOR USE IN MPI CALLBACK FUNCTIONS ONLY, such as those passed to MPI_Comm_create_keyval(). It always returns the error code PETSC_MPI_ERROR_CODE
     which is registered with MPI_Add_error_code() when PETSc is initialized.
 
-   Concepts: error^setting condition
-
 .seealso: CHKERRQ(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
 #define CHKERRMPI(ierr)        do {if (PetscUnlikely(ierr)) return (PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," "),PETSC_MPI_ERROR_CODE);} while (0)
@@ -532,8 +504,6 @@ M*/
 
     You can use CHKERRV() which returns without an error code (bad idea since the error is ignored)
     or CHKERRABORT(comm,n) to have MPI_Abort() returned immediately.
-
-   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
 M*/
@@ -566,8 +536,6 @@ M*/
     By defaults prints location where memory that is corrupted was allocated.
 
     Use CHKMEMA for functions that return void
-
-   Concepts: memory corruption
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(),
           PetscMallocValidate()
@@ -646,8 +614,6 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can 
     Fortran Note:
     This routine is not supported in Fortran.
 
-    Concepts: error messages^printing
-    Concepts: printing^error messages
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscPushErrorHandler(), PetscVFPrintf(), PetscHelpPrintf()
 M*/

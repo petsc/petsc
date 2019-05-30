@@ -23,10 +23,6 @@
 
    Level: intermediate
 
-   Concepts: sleeping
-   Concepts: pause
-   Concepts: waiting
-
 @*/
 PetscErrorCode  PetscSleep(PetscReal s)
 {

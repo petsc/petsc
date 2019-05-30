@@ -6,8 +6,6 @@
 
   Level: intermediate
 
-  Concepts: finite volume, limiter
-
 .seealso: PetscLimiterCreate(), PetscLimiterSetType(), PetscLimiterType
 S*/
 typedef struct _p_PetscLimiter *PetscLimiter;
@@ -16,8 +14,6 @@ typedef struct _p_PetscLimiter *PetscLimiter;
   PetscFV - PETSc object that manages a finite volume discretization
 
   Level: intermediate
-
-  Concepts: finite volume
 
 .seealso: PetscFVCreate(), PetscFVSetType(), PetscFVType
 S*/
@@ -32,8 +28,6 @@ typedef struct _p_PetscFV *PetscFV;
 $  PetscReal   normal[3]   - Area-scaled normals
 $  PetscReal   centroid[3] - Location of centroid (quadrature point)
 $  PetscScalar grad[2][3]  - Face contribution to gradient in left and right cell
-
-  Concepts: finite volume; geometry; unstructured mesh
 
 .seealso: DMPlexComputeGeometryFVM()
 S*/
@@ -51,8 +45,6 @@ typedef struct {
   Note: The components are
 $  PetscReal   centroid[3] - The cell centroid
 $  PetscReal   volume      - The cell volume
-
-  Concepts: finite volume; geometry; unstructured mesh
 
 .seealso: DMPlexComputeGeometryFVM()
 S*/

@@ -13,8 +13,6 @@ PETSC_EXTERN PetscFunctionList MatCoarsenList;
   Notes:
     This is used by the PCGAMG to generate coarser representations of an algebraic problem
 
-  Concepts: coarsen
-
 .seealso:  MatCoarsenCreate(), MatCoarsenType
 S*/
 typedef struct _p_MatCoarsen* MatCoarsen;

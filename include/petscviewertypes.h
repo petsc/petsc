@@ -11,8 +11,6 @@
 
    Level: beginner
 
-  Concepts: viewing
-
 .seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
 S*/
 typedef struct _p_PetscViewer* PetscViewer;

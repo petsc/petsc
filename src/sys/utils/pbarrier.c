@@ -48,8 +48,6 @@ PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm comm,PetscMPIInt ctn,int line
     You may pass PETSC_NULL_VEC or any other PETSc null object, such as PETSC_NULL_MAT, to indicate the barrier should be
     across MPI_COMM_WORLD.
 
-   Concepts: barrier
-
 @*/
 PetscErrorCode  PetscBarrier(PetscObject obj)
 {

@@ -1152,8 +1152,6 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
 
    Level: intermediate
 
-  Concepts: multigrid
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType,
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), MPSetCycles(), PCMGSetDistinctSmoothUp(),
            PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),

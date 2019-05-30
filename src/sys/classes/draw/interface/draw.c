@@ -399,10 +399,6 @@ PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
 
    Level: intermediate
 
-   Concepts: drawing^double buffer
-   Concepts: graphics^double buffer
-   Concepts: double buffer
-
 @*/
 PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
 {

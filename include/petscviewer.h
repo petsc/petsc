@@ -371,8 +371,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectViewSAWs(PetscObject,PetscViewer);
 
    Level: intermediate
 
-  Concepts: viewing
-
 .seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType, PetscViewer, PetscViewersCreate(),
            PetscViewersGetViewer()
 S*/

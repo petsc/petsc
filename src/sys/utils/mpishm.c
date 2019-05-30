@@ -47,8 +47,6 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm comm,PetscMPIInt keyv
 
            When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
-    Concepts: MPI subcomm^numbering
-
 @*/
 PetscErrorCode PetscShmCommGet(MPI_Comm globcomm,PetscShmComm *pshmcomm)
 {
@@ -108,8 +106,6 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm,PetscShmComm *pshmcomm)
 
     It may be better to rewrite this to map multiple global ranks to local in the same function call
 
-    Concepts: MPI subcomm^numbering
-
 @*/
 PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm,PetscMPIInt grank,PetscMPIInt *lrank)
 {
@@ -152,7 +148,6 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm,PetscMPIInt grank
 
     Level: developer
 
-    Concepts: MPI subcomm^numbering
 @*/
 PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm,PetscMPIInt lrank,PetscMPIInt *grank)
 {

@@ -68,8 +68,6 @@ PetscErrorCode  VecScatterGetMerged(VecScatter ctx,PetscBool  *flg)
    single processor.  Similarly, if y is parallel and x sequential, the
    routine can scatter from one processor to many processors.
 
-   Concepts: scatter^between vectors
-   Concepts: gather^between vectors
 
 .seealso: VecScatterCreate(), VecScatterEnd()
 @*/

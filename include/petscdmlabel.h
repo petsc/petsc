@@ -7,8 +7,6 @@
 
   Level: developer
 
-  Concepts: grids, grid refinement
-
 .seealso:  DM, DMPlexCreate(), DMPlexCreateLabel()
 S*/
 typedef struct _p_DMLabel *DMLabel;

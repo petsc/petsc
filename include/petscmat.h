@@ -11,8 +11,6 @@
 
    Level: beginner
 
-  Concepts: matrix; linear operator
-
 .seealso:  MatCreate(), MatType, MatSetType(), MatDestroy()
 S*/
 typedef struct _p_Mat*           Mat;
@@ -335,8 +333,6 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat,PetscRandom);
 
    Level: beginner
 
-  Concepts: matrix; linear operator
-
 .seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil(), DMDAVecGetArray(), DMDAVecGetArrayF90()
 S*/
 typedef struct {
@@ -505,8 +501,6 @@ PETSC_EXTERN PetscErrorCode MatRestoreColumnIJ(Mat,PetscInt,PetscBool ,PetscBool
    In Fortran this is simply a double precision array of dimension MAT_INFO_SIZE
 
    Level: intermediate
-
-  Concepts: matrix^nonzero information
 
 .seealso:  MatGetInfo(), MatInfoType
 S*/
@@ -708,8 +702,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
 
    This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
 
-  Concepts: preallocation^Matrix
-
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
           MatPreallocateInitializeSymmetric(), MatPreallocateSymmetricSetLocalBlock()
 M*/
@@ -748,8 +740,6 @@ do { \
     See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
-
-  Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
           MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocalRemoveDups()
@@ -790,8 +780,6 @@ do {\
     See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
-
-  Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
           MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
@@ -834,8 +822,6 @@ do {\
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-  Concepts: preallocation^Matrix
-
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
           MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock()
 M*/
@@ -874,8 +860,6 @@ do {\
     See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
-
-  Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet()
           MatPreallocateInitialize(),  MatPreallocateSetLocal()
@@ -918,8 +902,6 @@ do {\
 
    This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
 
-  Concepts: preallocation^Matrix
-
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
           MatPreallocateInitialize(), MatPreallocateSetLocal()
 M*/
@@ -960,8 +942,6 @@ do { PetscInt __i; \
 
    This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
 
-  Concepts: preallocation^Matrix
-
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(),  MatPreallocateInitialize(),
           MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
 M*/
@@ -999,8 +979,6 @@ do { PetscInt __i; \
 
    This is a MACRO not a function because it uses a bunch of variables private to the MatPreallocation.... routines.
 
-  Concepts: preallocation^Matrix
-
 .seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
           MatPreallocateSymmetricSetLocalBlock()
 M*/
@@ -1029,8 +1007,6 @@ M*/
    Do not malloc or free dnz and onz that is handled internally by these routines
 
    This is a MACRO not a function because it closes the { started in MatPreallocateInitialize().
-
-  Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
           MatPreallocateSymmetricSetLocalBlock()
@@ -1230,8 +1206,6 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
 
    Level: beginner
 
-  Concepts: matrix, coloring
-
 .seealso:  MatFDColoringCreate() ISColoring MatFDColoring
 S*/
 typedef struct _p_MatColoring* MatColoring;
@@ -1293,8 +1267,6 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat,ISColoring);
 
    Level: beginner
 
-  Concepts: coloring, sparse Jacobian, finite differences
-
 .seealso:  MatFDColoringCreate()
 S*/
 typedef struct _p_MatFDColoring* MatFDColoring;
@@ -1318,8 +1290,6 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring,PetscInt,Pet
 
    Level: beginner
 
-  Concepts: coloring, sparse matrix product
-
 .seealso:  MatTransposeColoringCreate()
 S*/
 typedef struct _p_MatTransposeColoring* MatTransposeColoring;
@@ -1338,8 +1308,6 @@ PETSC_EXTERN PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring*);
      MatPartitioning - Object for managing the partitioning of a matrix or graph
 
    Level: beginner
-
-  Concepts: partitioning
 
 .seealso:  MatPartitioningCreate(), MatPartitioningType
 S*/
@@ -1632,8 +1600,6 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use the MatConvert() interface (since ve
          orthogonalizes the vector to a subsapce
 
    Level: advanced
-
-  Concepts: matrix; linear operator, null space
 
   Users manual sections:
 .   sec_singular

@@ -47,8 +47,6 @@ struct _p_PetscDrawBar {
 
    Level: intermediate
 
-   Concepts: bar graph^creating
-
 .seealso: PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP, PetscDrawHGCreate(), PetscDrawHG, PetscDrawBarDestroy(), PetscDrawBarSetData(),
           PetscDrawBar, PetscDrawBarDraw(), PetscDrawBarSave(), PetscDrawBarSetColor(), PetscDrawBarSort(), PetscDrawBarSetLimits(), PetscDrawBarGetAxis(), PetscDrawAxis,
           PetscDrawBarGetDraw(), PetscDrawBarSetFromOptions() 
@@ -262,8 +260,6 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
 
   Level: intermediate
 
-  Concepts: bar graph^saving
-
 .seealso:  PetscDrawBarCreate(), PetscDrawBarGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawBarSetData()
 @*/
 PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
@@ -311,8 +307,6 @@ PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
 
   Level: intermediate
 
-  Concepts: bar graph^setting axis
-
 .seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarSetData(), PetscDrawBarSetColor(), PetscDrawBarDraw(), PetscDrawBarGetAxis()
 @*/
 PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tolerance)
@@ -336,8 +330,6 @@ PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tol
 - y_min,y_max - The limits
 
   Level: intermediate
-
-  Concepts: bar graph^setting axis
 
 .seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarGetAxis(), PetscDrawBarSetData(), PetscDrawBarDraw()
 @*/

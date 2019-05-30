@@ -258,8 +258,6 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
 
    Level: intermediate
 
-   Concepts: identity mapping
-   Concepts: index sets^is identity
 
 .seealso: ISSetIdentity()
 @*/
@@ -288,8 +286,6 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 
    Level: intermediate
 
-   Concepts: identity mapping
-   Concepts: index sets^is identity
 
 .seealso: ISIdentity()
 @*/
@@ -319,8 +315,6 @@ PetscErrorCode  ISSetIdentity(IS is)
 -  contig - PETSC_TRUE if the index set refers to contiguous entries on this process, else PETSC_FALSE
 
    Level: developer
-
-   Concepts: index sets^is contiguous
 
 .seealso: ISGetLocalSize(), VecGetOwnershipRange()
 @*/
@@ -355,8 +349,6 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
 
    Level: intermediate
 
-  Concepts: permutation
-  Concepts: index sets^is permutation
 
 .seealso: ISSetPermutation()
 @*/
@@ -379,8 +371,6 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 
    Level: intermediate
 
-  Concepts: permutation
-  Concepts: index sets^permutation
 
    The debug version of the libraries (./configure --with-debugging=1) checks if the
   index set is actually a permutation. The optimized version just believes you.
@@ -475,9 +465,6 @@ PetscErrorCode  ISDestroy(IS *is)
     For parallel index sets this does the complete parallel permutation, but the
     code is not efficient for huge index sets (10,000,000 indices).
 
-   Concepts: inverse permutation
-   Concepts: permutation^inverse
-   Concepts: index sets^inverting
 @*/
 PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 {
@@ -509,8 +496,6 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 
    Level: beginner
 
-   Concepts: size^of index set
-   Concepts: index sets^size
 
 @*/
 PetscErrorCode  ISGetSize(IS is,PetscInt *size)
@@ -536,10 +521,6 @@ PetscErrorCode  ISGetSize(IS is,PetscInt *size)
 .  size - the local size
 
    Level: beginner
-
-   Concepts: size^of index set
-   Concepts: local size^of index set
-   Concepts: index sets^local size
 
 @*/
 PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
@@ -593,8 +574,6 @@ $          call ISGetIndicesF90(i,array,ierr)
 
    Level: intermediate
 
-   Concepts: index sets^getting indices
-   Concepts: indices of index set
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
@@ -627,8 +606,6 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
     Empty index sets return min=PETSC_MAX_INT and max=PETSC_MIN_INT.
     In parallel, it returns the min and max of the local portion of the IS
 
-   Concepts: index sets^getting indices
-   Concepts: indices of index set
 
 .seealso: ISGetIndices(), ISRestoreIndices(), ISGetIndicesF90()
 @*/
@@ -789,7 +766,6 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
      (use ISGetIndices() and ISGetNonlocalIndices() to retrieve just the local and just
       the nonlocal part (complement), respectively).
 
-   Concepts: index sets^getting nonlocal indices
 .seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices(), ISGetSize()
 @*/
 PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
@@ -823,8 +799,6 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 
    Level: intermediate
 
-   Concepts: index sets^getting nonlocal indices
-   Concepts: index sets^restoring nonlocal indices
 .seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices()
 @*/
 PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
@@ -865,7 +839,6 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
           The same scalability considerations as those for ISGetTotalIndices
           apply here.
 
-   Concepts: index sets^getting nonlocal indices
 .seealso: ISGetTotalIndices(), ISRestoreNonlocalIndices(), ISGetSize(), ISGetLocalSize().
 @*/
 PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
@@ -904,8 +877,6 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 
    Level: intermediate
 
-   Concepts: index sets^getting nonlocal indices
-   Concepts: index sets^restoring nonlocal indices
 .seealso: ISGetTotalIndices(), ISGetNonlocalIndices(), ISRestoreTotalIndices()
 @*/
 PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
@@ -938,7 +909,6 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
           Therefore scalability issues similar to ISGetNonlocalIndices apply.
           The resulting IS must be restored using ISRestoreNonlocalIS().
 
-   Concepts: index sets^getting nonlocal indices
 .seealso: ISGetNonlocalIndices(), ISRestoreNonlocalIndices(),  ISAllGather(), ISGetSize()
 @*/
 PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
@@ -978,8 +948,6 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
    Level: intermediate
 
 
-   Concepts: index sets^getting nonlocal indices
-   Concepts: index sets^restoring nonlocal indices
 .seealso: ISGetNonlocalIS(), ISGetNonlocalIndices(), ISRestoreNonlocalIndices()
 @*/
 PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
@@ -1043,8 +1011,6 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
   that was stored in the file using PetscObjectSetName(). Otherwise you will
   get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
 
-  Concepts: index set^loading from file
-
 .seealso: PetscViewerBinaryOpen(), ISView(), MatLoad(), VecLoad()
 @*/
 PetscErrorCode ISLoad(IS is, PetscViewer viewer)
@@ -1073,8 +1039,6 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 
    Level: intermediate
 
-   Concepts: index sets^sorting
-   Concepts: sorting^index set
 
 .seealso: ISSortRemoveDups(), ISSorted()
 @*/
@@ -1098,8 +1062,6 @@ PetscErrorCode  ISSort(IS is)
 
   Level: intermediate
 
-  Concepts: index sets^sorting
-  Concepts: sorting^index set
 
 .seealso: ISSort(), ISSorted()
 @*/
@@ -1123,8 +1085,6 @@ PetscErrorCode ISSortRemoveDups(IS is)
 
    Level: intermediate
 
-   Concepts: index sets^sorting
-   Concepts: sorting^index set
 
 .seealso: ISSorted()
 @*/
@@ -1185,8 +1145,6 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 
    Level: beginner
 
-   Concepts: index sets^duplicating
-
 .seealso: ISCreateGeneral(), ISCopy()
 @*/
 PetscErrorCode  ISDuplicate(IS is,IS *newIS)
@@ -1214,8 +1172,6 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
 .  isy - the copy of the index set
 
    Level: beginner
-
-   Concepts: index sets^copying
 
 .seealso: ISDuplicate()
 @*/
@@ -1317,8 +1273,6 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 
    Level: intermediate
 
-   Concepts: IS^block size
-   Concepts: index sets^block size
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISCreateBlock(), ISSetBlockSize()
 @*/
@@ -1375,8 +1329,6 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 
 .seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
-  Concepts: index sets^getting indices in f90
-  Concepts: indices of index set in f90
 
 M*/
 
@@ -1441,10 +1393,6 @@ M*/
 
 .seealso:  ISBlockRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices(),
            ISRestoreIndices()
-
-  Concepts: index sets^getting block indices in f90
-  Concepts: indices of index set in f90
-  Concepts: block^ indices of index set in f90
 
 M*/
 

@@ -317,8 +317,6 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
 
    Level: beginner
 
-  Concepts: point block Jacobi
-
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCJACOBI
 

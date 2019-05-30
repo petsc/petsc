@@ -64,8 +64,6 @@ $     VecGhostRestoreLocalForm(x,&xlocal);
 
     Level: advanced
 
-   Concepts: vectors^ghost point access
-
 .seealso: VecCreateGhost(), VecGhostRestoreLocalForm(), VecCreateGhostWithArray()
 
 @*/
@@ -108,8 +106,6 @@ PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
 .   flg - PETSC_TRUE if local vector is local form
 
     Level: advanced
-
-   Concepts: vectors^ghost point access
 
 .seealso: VecCreateGhost(), VecGhostRestoreLocalForm(), VecCreateGhostWithArray(), VecGhostGetLocalForm()
 

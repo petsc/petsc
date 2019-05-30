@@ -85,8 +85,6 @@ PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 .seealso: PetscSequentialPhaseEnd()
 
-   Concepts: sequential stage
-
 @*/
 PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 {
@@ -130,8 +128,6 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
    See PetscSequentialPhaseBegin() for more details.
 
 .seealso: PetscSequentialPhaseBegin()
-
-   Concepts: sequential stage
 
 @*/
 PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)

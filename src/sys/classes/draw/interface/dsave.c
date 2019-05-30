@@ -25,8 +25,6 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 
    Level: intermediate
 
-   Concepts: X windows^graphics
-
    Notes:
     You should call this BEFORE creating your image and calling PetscDrawSave().
    The supported image types are .png, .gif, .jpg, and .ppm (PETSc chooses the default in that order).
@@ -92,8 +90,6 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
 
    Level: intermediate
 
-   Concepts: X windows^graphics
-
    Notes:
     You should call this AFTER calling PetscDrawSetSave() and BEFORE creating your image with PetscDrawSave().
    The ffmpeg utility must be in your path to make the movie.
@@ -131,8 +127,6 @@ PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
 .  -draw_save_final_image  <filename> - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
 
    Level: intermediate
-
-   Concepts: X windows^graphics
 
    Notes:
     You should call this BEFORE creating your image and calling PetscDrawSave().

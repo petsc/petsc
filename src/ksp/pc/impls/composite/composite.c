@@ -564,8 +564,6 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 
    Level: intermediate
 
-   Concepts: composing solvers
-
    Notes:
     To use a Krylov method inside the composite preconditioner, set the PCType of one or more
           inner PCs to be PCKSP.

@@ -84,8 +84,6 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
    Returns info on stride index set. This is a pseudo-public function that
    should not be needed by most users.
 
-   Concepts: index sets^getting information
-   Concepts: IS^getting information
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
@@ -343,10 +341,6 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
    Level: beginner
 
-  Concepts: IS^stride
-  Concepts: index sets^stride
-  Concepts: stride^index set
-
 .seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/
 PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
@@ -404,10 +398,6 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
    distributed sets of indices and thus certain operations on them are collective.
 
    Level: beginner
-
-  Concepts: IS^stride
-  Concepts: index sets^stride
-  Concepts: stride^index set
 
 .seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/

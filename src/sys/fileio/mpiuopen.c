@@ -28,8 +28,6 @@
     Fortran Note:
     This routine is not supported in Fortran.
 
-    Concepts: opening ASCII file
-    Concepts: files^opening ASCII
 
 .seealso: PetscFClose(), PetscSynchronizedFGets(), PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
           PetscFPrintf()
@@ -81,8 +79,6 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
     Fortran Note:
     This routine is not supported in Fortran.
 
-    Concepts: files^closing ASCII
-    Concepts: closing file
 
 .seealso: PetscFOpen()
 @*/

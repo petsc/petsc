@@ -24,8 +24,6 @@
 
    Level: intermediate
 
-   Concepts: vectors^creating parallel
-
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPIWithArray(), VecCreateGhostWithArray(), VecMPISetGhost()
 

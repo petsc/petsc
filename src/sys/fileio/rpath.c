@@ -28,8 +28,6 @@
 
    Level: developer
 
-   Concepts: relative path
-   Concepts: path^relative
 
 .seealso: PetscGetFullPath()
 @*/

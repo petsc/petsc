@@ -18,8 +18,6 @@
 
    Level: advanced
 
-   Concepts: drawing^in subset of window
-   Concepts: graphics^in subset of window
 
 @*/
 PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
@@ -53,8 +51,6 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
 
    Level: advanced
 
-   Concepts: drawing^in subset of window
-   Concepts: graphics^in subset of window
 
 @*/
 PetscErrorCode  PetscDrawGetViewPort(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
@@ -82,8 +78,6 @@ PetscErrorCode  PetscDrawGetViewPort(PetscDraw draw,PetscReal *xl,PetscReal *yl,
 .  draw - the drawing context
 
    Level: advanced
-
-   Concepts: drawing^in subset of window
 
 .seealso: PetscDrawDivideViewPort(), PetscDrawSetViewPort()
 
@@ -147,8 +141,6 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 .  -draw_ports - display multiple fields in the same window with PetscDrawPorts instead of in seperate windows
 
    Level: advanced
-
-   Concepts: drawing^in subset of window
 
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
 
@@ -228,8 +220,6 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
 .  ports - a PetscDrawViewPorts context (C structure)
 
    Level: advanced
-
-   Concepts: drawing^in subset of window
 
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
 
@@ -334,8 +324,6 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 -  port - the port number, from 0 to nports-1
 
    Level: advanced
-
-   Concepts: drawing^in subset of window
 
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsDestroy(), PetscDrawViewPortsCreate()
 

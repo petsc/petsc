@@ -11,8 +11,6 @@
 
    Level: beginner
 
-  Concepts: ODE solvers
-
 .seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC, TSDestroy()
 S*/
 typedef struct _p_TS* TS;
@@ -287,8 +285,6 @@ PETSC_EXTERN PetscErrorCode TSGetCostHessianProducts(TS,PetscInt*,Vec**,Vec**,Ve
      TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/DAE at each time step)
 
    Level: advanced
-
-  Concepts: ODE solvers, trajectory
 
 .seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectorySetType(), TSTrajectoryDestroy(), TSTrajectoryReset()
 S*/

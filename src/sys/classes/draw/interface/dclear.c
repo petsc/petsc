@@ -14,8 +14,6 @@
 
    Level: intermediate
 
-   Concepts: clear^window
-
 @*/
 PetscErrorCode  PetscDrawClear(PetscDraw draw)
 {

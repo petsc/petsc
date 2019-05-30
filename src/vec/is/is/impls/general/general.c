@@ -642,8 +642,6 @@ PetscErrorCode ISSetUp_General(IS is)
 
    Level: beginner
 
-  Concepts: index sets^creating
-  Concepts: IS^creating
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISAllGather(), PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER, PetscCopyMode
 @*/
@@ -671,8 +669,6 @@ PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],Pe
 
    Level: beginner
 
-  Concepts: index sets^creating
-  Concepts: IS^creating
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/

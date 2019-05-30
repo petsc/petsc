@@ -23,8 +23,6 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
    Level: beginner
 
-  Concepts: index sets^creating
-  Concepts: IS^creating
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/

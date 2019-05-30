@@ -50,8 +50,6 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],Pet
    Notes:
    On output i is unchanged and idx[i] is the position of the i-th smallest index in i.
 
-   Concepts: sorting^ints with permutation
-
 .seealso: PetscSortInt(), PetscSortRealWithPermutation(), PetscSortIntWithArray()
  @*/
 PetscErrorCode  PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscInt idx[])
@@ -118,8 +116,6 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],P
 
    Notes:
    i is unchanged on output.
-
-   Concepts: sorting^doubles with permutation
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
  @*/
@@ -189,8 +185,6 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscI
 
    Notes:
    i is unchanged on output.
-
-   Concepts: sorting^ints with permutation
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/

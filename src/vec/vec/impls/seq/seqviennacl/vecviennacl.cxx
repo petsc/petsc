@@ -986,8 +986,6 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 
    Level: intermediate
 
-   Concepts: vectors^creating sequential
-
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
 PetscErrorCode  VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)

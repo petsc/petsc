@@ -53,8 +53,6 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 
     Level: intermediate
 
-   Concepts: drawing^accessing PetscDraw context from PetscViewer
-   Concepts: graphics
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
@@ -123,8 +121,6 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
 
     Level: developer
 
-   Concepts: drawing^accessing PetscDraw context from PetscViewer
-   Concepts: graphics
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PetscViewerDrawBaseSet()
 @*/
@@ -157,8 +153,6 @@ PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
 
     Level: developer
 
-   Concepts: drawing^accessing PetscDraw context from PetscViewer
-   Concepts: graphics
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PetscViewerDrawBaseAdd()
 @*/
@@ -195,8 +189,6 @@ PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
 .   draw - the draw line graph object
 
     Level: intermediate
-
-  Concepts: line graph^accessing context
 
 .seealso: PetscViewerDrawGetDraw(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
@@ -242,8 +234,6 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
 .   drawaxis - the draw axis object
 
     Level: advanced
-
-  Concepts: line graph^accessing context
 
 .seealso: PetscViewerDrawGetDraw(), PetscViewerDrawGetLG(), PetscViewerDrawOpen()
 @*/
@@ -416,8 +406,6 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
    correct for character data!  Thus, PETSC_NULL_CHARACTER can be
    used for the display and title input parameters.
 
-  Concepts: graphics^opening PetscViewer
-  Concepts: drawing^opening PetscViewer
 
 
 .seealso: PetscDrawCreate(), PetscViewerDestroy(), PetscViewerDrawGetDraw(), PetscViewerCreate(), PETSC_VIEWER_DRAW_,
@@ -808,8 +796,6 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
       bounds are moved to the bound value before plotting. In this way the color index from color to physical value remains the same for all plots generated with
       this viewer. Otherwise the color to physical value meaning changes with each new image if this is not set.
 
-   Concepts: drawing^accessing PetscDraw context from PetscViewer
-   Concepts: graphics
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
@@ -847,8 +833,6 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
 
     Level: intermediate
 
-   Concepts: drawing^accessing PetscDraw context from PetscViewer
-   Concepts: graphics
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawSetBounds()
 @*/

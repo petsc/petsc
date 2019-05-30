@@ -35,8 +35,6 @@
 
    Level: developer
 
-   Concepts: working directory
-
 @*/
 PetscErrorCode  PetscGetWorkingDirectory(char path[],size_t len)
 {

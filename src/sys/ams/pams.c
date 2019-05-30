@@ -15,8 +15,6 @@
 
    Level: advanced
 
-   Concepts: publishing object
-
 .seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsGrantAccess()
 
 @*/
@@ -40,8 +38,6 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
          PetscObjectSetName((PetscObject)mat,name);
 
    Level: advanced
-
-   Concepts: publishing object
 
 .seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
 
@@ -98,8 +94,6 @@ PetscErrorCode  PetscSAWsBlock(void)
 
    Level: advanced
 
-   Concepts: publishing object
-
 .seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock()
 
 @*/
@@ -127,8 +121,6 @@ PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
 -  flg - whether it should block
 
    Level: advanced
-
-   Concepts: publishing object
 
 .seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsBlock()
 

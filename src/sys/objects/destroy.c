@@ -53,10 +53,6 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 
    Level: beginner
 
-    Concepts: destroying object
-    Concepts: freeing object
-    Concepts: deleting object
-
 @*/
 PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
 {
@@ -159,10 +155,6 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
 
 .seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
 
-   Concepts: comparing^object types
-   Concepts: types^comparing
-   Concepts: object type^comparpeing
-
 @*/
 PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
 {
@@ -231,10 +223,6 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
    Level: intermediate
 
 .seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare()
-
-   Concepts: comparing^object types
-   Concepts: types^comparing
-   Concepts: object type^comparing
 
 @*/
 PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)

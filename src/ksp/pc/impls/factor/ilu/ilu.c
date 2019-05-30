@@ -252,8 +252,6 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 
    Level: beginner
 
-  Concepts: incomplete factorization
-
    Notes:
     Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
 

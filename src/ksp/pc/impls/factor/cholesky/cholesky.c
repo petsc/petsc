@@ -258,8 +258,6 @@ PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool flag)
 
    Level: beginner
 
-   Concepts: Cholesky factorization, direct solver
-
    Notes:
     Usually this will compute an "exact" solution in one iteration and does
           not need a Krylov method (i.e. you can use -ksp_type preonly, or

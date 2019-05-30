@@ -36,8 +36,6 @@ int       PetscInfoFlags[]  = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 
     Level: advanced
 
-   Concepts: debugging^detailed runtime information
-   Concepts: dumping detailed runtime information
 
 .seealso: PetscInfo()
 @*/
@@ -146,8 +144,6 @@ $     Mat A
 $     double alpha
 $     PetscInfo1(A,"Matrix uses parameter alpha=%g\n",alpha);
 $
-
-   Concepts: runtime information
 
 .seealso: PetscInfoAllow()
 M*/

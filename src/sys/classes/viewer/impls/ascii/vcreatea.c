@@ -211,12 +211,6 @@ $     PetscViewerFileSetName(lab,name);
      MatView(matrix,viewer);
 .ve
 
-  Concepts: PetscViewerASCII^creating
-  Concepts: printf
-  Concepts: printing
-  Concepts: accessing remote file
-  Concepts: remote file
-
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerBinaryOpen(), PetscViewerASCIIRead()
           PetscViewerASCIIGetPointer(), PetscViewerPushFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
           PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF,
@@ -307,12 +301,6 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
    If a multiprocessor communicator is used (such as PETSC_COMM_WORLD),
    then only the first processor in the group uses the file.  All other
    processors send their data to the first processor to print.
-
-  Concepts: PetscViewerASCII^creating
-  Concepts: printf
-  Concepts: printing
-  Concepts: accessing remote file
-  Concepts: remote file
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerBinaryOpen(),
           PetscViewerASCIIGetPointer(), PetscViewerPushFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,

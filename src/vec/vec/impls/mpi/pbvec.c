@@ -612,8 +612,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
 
    Level: intermediate
 
-   Concepts: vectors^creating with array
-
 .seealso: VecCreateSeqWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
@@ -657,8 +655,6 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
 
    Level: advanced
 
-   Concepts: vectors^creating with array
-   Concepts: vectors^ghosted
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
@@ -740,8 +736,6 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 
    Level: advanced
 
-   Concepts: vectors^ghosted
-
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd(),
@@ -777,8 +771,6 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
    You must call this AFTER you have set the type of the vector (with VecSetType()) and the size (with VecSetSizes()).
 
    Level: advanced
-
-   Concepts: vectors^ghosted
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
@@ -871,8 +863,6 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 
    Level: advanced
 
-   Concepts: vectors^creating ghosted
-   Concepts: vectors^creating with array
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
@@ -959,8 +949,6 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
    portion is bs*nghost
 
    Level: advanced
-
-   Concepts: vectors^ghosted
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),

@@ -6,8 +6,6 @@
 
   Level: intermediate
 
-  Concepts: problem
-
 .seealso: PetscDSCreate(), PetscDSSetType(), PetscDSType, PetscFECreate(), PetscFVCreate()
 S*/
 typedef struct _p_PetscDS *PetscDS;

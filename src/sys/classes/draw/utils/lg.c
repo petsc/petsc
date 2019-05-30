@@ -17,8 +17,6 @@
    Note: You must call PetscDrawLGDraw() to display any added points
          Call PetscDrawLGReset() to remove all points
 
-   Concepts: line graph^adding points
-
 .seealso: PetscDrawLGCreate(), PetscDrawLGAddPoints(), PetscDrawLGAddPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/
 PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const PetscReal *y)
@@ -68,8 +66,6 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
          Call PetscDrawLGReset() to remove all points
 
    Level: intermediate
-
-   Concepts: line graph^adding points
 
 .seealso: PetscDrawLGCreate(), PetscDrawLGAddPoints(), PetscDrawLGAddCommonPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/
@@ -127,8 +123,6 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
 
    Note: You must call PetscDrawLGDraw() to display any added points
          Call PetscDrawLGReset() to remove all points
-
-   Concepts: line graph^adding points
 
 .seealso: PetscDrawLGCreate(), PetscDrawLGAddPoint(), PetscDrawLGAddCommonPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/

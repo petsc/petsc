@@ -947,8 +947,6 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 
    Level: intermediate
 
-   Concepts: vectors^creating with array
-
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/

@@ -260,8 +260,6 @@ $    FILE_MODE_APPEND - open existing file for binary output (not currently supp
    Note:
    This PetscViewer should be destroyed with PetscViewerDestroy().
 
-   Concepts: VTK files
-   Concepts: PetscViewer^creating
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(),
@@ -296,8 +294,6 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
    Notes:
     If PetscScalar is __float128 then the binary files are written in double precision
 
-   Concepts: VTK files
-   Concepts: PetscViewer^creating
 
 .seealso: DMDAVTKWriteAll(), DMComplexVTKWriteAll(), PetscViewerPushFormat(), PetscViewerVTKOpen(), PetscBinaryWrite()
 @*/

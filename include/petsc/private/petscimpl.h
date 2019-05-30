@@ -448,8 +448,6 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 
    seealso: PetscObjectStateGet()
 
-   Concepts: state
-
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
 

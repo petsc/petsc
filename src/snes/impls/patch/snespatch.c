@@ -354,8 +354,6 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
 
   Level: intermediate
 
-  Concepts: composing solvers
-
 .seealso:  SNESCreate(), SNESSetType(), SNESType (for list of available types), SNES,
            PCPATCH
 

@@ -421,8 +421,6 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 
    Level: beginner
 
-   Concepts: binary files, ascii files
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer

@@ -19,8 +19,6 @@ PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 
    Level: beginner
 
-  Concepts: preconditioners
-
   Notes:
     This is implemented by a VecCopy()
 

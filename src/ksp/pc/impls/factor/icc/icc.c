@@ -144,8 +144,6 @@ extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,Petsc
 
    Level: beginner
 
-  Concepts: incomplete Cholesky factorization
-
    Notes:
     Only implemented for some matrix formats. Not implemented in parallel.
 

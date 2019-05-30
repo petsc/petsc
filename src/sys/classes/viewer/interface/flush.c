@@ -12,8 +12,6 @@
 
    Level: intermediate
 
-   Concepts: flushing^Viewer data
-   Concepts: redrawing^flushing
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerCreate(), PetscViewerDestroy(),
           PetscViewerSetType()

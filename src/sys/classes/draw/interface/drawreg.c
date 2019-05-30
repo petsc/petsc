@@ -106,8 +106,6 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 
    Level: beginner
 
-   Concepts: graphics^creating context
-   Concepts: drawing^creating context
 
 .seealso: PetscDrawSetType(), PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType(), PetscDrawLGCreate(), PetscDrawSPCreate(),
           PetscDrawViewPortsCreate(), PetscDrawViewPortsSet(), PetscDrawAxisCreate(), PetscDrawHGCreate(), PetscDrawBarCreate(),
@@ -191,10 +189,6 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
    Notes:
    See "petsc/include/petscdraw.h" for available methods (for instance,
    PETSC_DRAW_X, PETSC_DRAW_TIKZ or PETSC_DRAW_IMAGE)
-
-   Concepts: drawing^X windows
-   Concepts: X windows^graphics
-   Concepts: drawing^Microsoft Windows
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy(), PetscDrawType
 @*/
@@ -298,8 +292,6 @@ $     PetscDrawSetType(ksp,"my_draw_type")
    or at runtime via the option
 $     -draw_type my_draw_type
 
-   Concepts: graphics^registering new draw classes
-   Concepts: PetscDraw^registering new draw classes
 
 .seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy(), PetscDrawType, PetscDrawSetType()
 @*/
@@ -363,8 +355,6 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
    Notes:
     Must be called after PetscDrawCreate() before the PetscDraw is used.
 
-   Concepts: drawing^setting options
-   Concepts: graphics^setting options
 
 .seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave(), PetscDrawSetSaveFinalImage(), PetscDrawPause(), PetscDrawSetPause()
 

@@ -20,8 +20,6 @@
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapT, PetscHMapTCreate()
 M*/
 
@@ -32,8 +30,6 @@ M*/
   typedef khash_t(HMapT) *PetscHMapT;
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso:  PETSC_HASH_MAP(), PetscHMapTCreate()
 S*/
@@ -50,8 +46,6 @@ S*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTDestroy()
 M*/
 
@@ -67,8 +61,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTCreate()
 M*/
 
@@ -83,8 +75,6 @@ M*/
 . ht - The hash table
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHMapTClear()
 M*/
@@ -104,8 +94,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTCreate()
 M*/
 
@@ -120,8 +108,6 @@ M*/
 . ht - The hash table
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHMapTReset()
 M*/
@@ -138,8 +124,6 @@ M*/
 - nb - The number of buckets
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHMapTCreate()
 M*/
@@ -159,8 +143,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTResize()
 M*/
 
@@ -178,8 +160,6 @@ M*/
 . n - The capacity
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHMapTResize(), PetscHMapTGetSize()
 M*/
@@ -200,8 +180,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso:  PetscHMapTGet(), PetscHMapTSet(), PetscHMapTFind()
 M*/
 
@@ -221,8 +199,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso:  PetscHMapTSet(), PetscHMapTIterGet()
 M*/
 
@@ -240,8 +216,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTGet(), PetscHMapTIterSet()
 M*/
 
@@ -257,8 +231,6 @@ M*/
 - key - The key
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHMapTHas(), PetscHMapTIterDel()
 M*/
@@ -280,8 +252,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTQueryDel(), PetscHMapTSet()
 M*/
 
@@ -300,8 +270,6 @@ M*/
 . present - Boolean indicating whether the key was present
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHMapTQuerySet(), PetscHMapTDel()
 M*/
@@ -323,8 +291,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTIterGet(), PetscHMapTIterDel()
 M*/
 
@@ -345,8 +311,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTIterSet(), PetscHMapTQuerySet(), PetscHMapTSet()
 M*/
 
@@ -366,8 +330,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTFind(), PetscHMapTGet()
 M*/
 
@@ -385,8 +347,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTPut(), PetscHMapTQuerySet(), PetscHMapTSet()
 M*/
 
@@ -402,8 +362,6 @@ M*/
 - iter - The iterator
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHMapTFind(), PetscHMapTQueryDel(), PetscHMapTDel()
 M*/
@@ -426,8 +384,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHSetTGetSize(), PetscHMapTGetVals()
 M*/
 
@@ -448,8 +404,6 @@ M*/
 - array - Array filled with the hash table values
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHSetTGetSize(), PetscHMapTGetKeys()
 M*/
@@ -473,8 +427,6 @@ M*/
 - varray - Array filled with the hash table values
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHSetTGetSize(), PetscHMapTGetKeys(), PetscHMapTGetVals()
 M*/

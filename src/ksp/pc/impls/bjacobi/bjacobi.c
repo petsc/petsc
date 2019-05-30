@@ -527,8 +527,6 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
    Level: beginner
 
-   Concepts: block Jacobi
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCASM, PCSetUseAmat(), PCGetUseAmat(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),
            PCBJacobiSetLocalBlocks(), PCSetModifySubmatrices()
