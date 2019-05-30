@@ -63,6 +63,7 @@ PetscErrorCode VecCUDACopyToGPU(Vec v)
     veccuda=(Vec_CUDA*)v->spptr;
     varray=veccuda->GPUarray;
     err = cudaMemcpy(varray,((Vec_Seq*)v->data)->array,v->map->n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(err);
+    ierr = PetscLogCpuToGpu((v->map->n)*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_OFFLOAD_BOTH;
   }
@@ -127,6 +128,7 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
     veccuda=(Vec_CUDA*)v->spptr;
     varray=veccuda->GPUarray;
     err = cudaMemcpy(((Vec_Seq*)v->data)->array,varray,v->map->n*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
+    ierr = PetscLogGpuToCpu((v->map->n)*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_OFFLOAD_BOTH;
   }
