@@ -116,7 +116,7 @@ typedef struct _p_PetscOptionItems {
     #include <petscoptions.h>
     PetscErrorCode PetscOptionsBegin(MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
 
-    Collective on MPI_Comm
+    Collective
 
   Input Parameters:
 +   comm - communicator that shares GUI
@@ -127,23 +127,23 @@ typedef struct _p_PetscOptionItems {
   Level: intermediate
 
   Notes:
-    Needs to be ended by a call the PetscOptionsEnd()
-         Can add subheadings with PetscOptionsHead()
+    The set of queries needs to be ended by a call to PetscOptionsEnd().
+
+    One can add subheadings with PetscOptionsHead().
 
   Developer Notes:
-    PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
-$             loop between PetscOptionsBegin() and PetscOptionsEnd() is run THREE times with PetscOptionsPublishCount of values -1,0,1 otherwise
-$             the loop is run ONCE with a PetscOptionsPublishCount of 1.
-$             = -1 : The PetscOptionsInt() etc just call the PetscOptionsGetInt() etc
-$             = 0  : The GUI objects are created in PetscOptionsInt() etc and displayed in PetscOptionsEnd() and the options
-$                    database updated updated with user changes; PetscOptionsGetInt() etc are also called
-$             = 1 : The PetscOptionsInt() etc again call the PetscOptionsGetInt() etc (possibly getting new values), in addition the help message and
-$                   default values are printed if -help was given.
-$           When PetscOptionsObject.changedmethod is set this causes PetscOptionsPublishCount to be reset to -2 (so in the next loop iteration it is -1)
-$           and the whole process is repeated. This is to handle when, for example, the KSPType is changed thus changing the list of
-$           options available so they need to be redisplayed so the user can change the. Chaning PetscOptionsObjects.changedmethod is never
-$           currently set.
-
+      PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
+      loop between PetscOptionsBegin() and PetscOptionsEnd() is run THREE times with PetscOptionsPublishCount of values -1,0,1.
+      Otherwise the loop is run ONCE with a PetscOptionsPublishCount of 1.
++      \-1 - PetscOptionsInt() etc. just call PetscOptionsGetInt() etc.
+.      0  - The GUI objects are created in PetscOptionsInt() etc. and displayed in PetscOptionsEnd() and the options
+               database updated with user changes; PetscOptionsGetInt() etc. are also called.
+-      1 - PetscOptionsInt() etc. again call PetscOptionsGetInt() etc. (possibly getting new values), in addition the help message and
+              default values are printed if -help was given.
+      When PetscOptionsObject.changedmethod is set this causes PetscOptionsPublishCount to be reset to -2 (so in the next loop iteration it is -1)
+      and the whole process is repeated. This is to handle when, for example, the KSPType is changed thus changing the list of
+      options available so they need to be redisplayed so the user can change the. Changing PetscOptionsObjects.changedmethod is never
+      currently set.
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
