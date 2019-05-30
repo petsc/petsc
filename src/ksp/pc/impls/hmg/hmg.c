@@ -107,13 +107,12 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (pc->setupcalled) {
-   /* Only reuse interpolations when nonzero pattern does not change
-    * since coarse matrices are already allocated.
-    * */
-   if (pc->flag == SAME_NONZERO_PATTERN && hmg->reuseinterp) {
-     /* If we did not use Galerkin in the last call, we have to build from scratch */
+   if (hmg->reuseinterp) {
+     /* If we did not use Galerkin in the last call or we have a different sparsity pattern now,
+      * we have to build from scratch
+      * */
      ierr = PCMGGetGalerkin(pc,&galerkin);CHKERRQ(ierr);
-     if (galerkin == PC_MG_GALERKIN_NONE) pc->setupcalled = PETSC_FALSE;
+     if (galerkin == PC_MG_GALERKIN_NONE || pc->flag != SAME_NONZERO_PATTERN) pc->setupcalled = PETSC_FALSE;
      ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT);CHKERRQ(ierr);
      ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
      PetscFunctionReturn(0);

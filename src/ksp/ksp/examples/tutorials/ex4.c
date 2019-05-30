@@ -116,6 +116,18 @@ int main(int argc,char **args)
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+    /* Make sparsity pattern different and reuse interpolation */
+    ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatGetSize(A,&m,NULL);CHKERRQ(ierr);
+    n = 0;
+    v = 0;
+    m--;
+    /* Connect the last element to the first element */
+    ierr = MatSetValue(A,m,n,v,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   }
 
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
@@ -125,8 +137,10 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;
