@@ -597,12 +597,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsEnum("-ksp_pc_side","KSP preconditioner side","KSPSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPSetPCSide(ksp,pcside);CHKERRQ(ierr);}
 
-  ierr = PetscOptionsBool("-ksp_compute_singularvalues","Compute singular values of preconditioned operator","KSPSetComputeSingularValues",ksp->calc_sings,&flg,&set);CHKERRQ(ierr);
-  if (set) { ierr = KSPSetComputeSingularValues(ksp,flg);CHKERRQ(ierr); }
-  ierr = PetscOptionsBool("-ksp_compute_eigenvalues","Compute eigenvalues of preconditioned operator","KSPSetComputeSingularValues",ksp->calc_sings,&flg,&set);CHKERRQ(ierr);
-  if (set) { ierr = KSPSetComputeSingularValues(ksp,flg);CHKERRQ(ierr); }
-  ierr = PetscOptionsBool("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set) { ierr = KSPSetComputeSingularValues(ksp,flg);CHKERRQ(ierr); }
+  if (ksp->viewEV || ksp->viewSV) {
+    ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
+  }
 
 #if defined(PETSC_HAVE_SAWS)
   {
