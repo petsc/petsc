@@ -2439,12 +2439,23 @@ PetscErrorCode SNESTestJacobian(SNES snes)
     ierr = PetscViewerPushFormat(mviewer,format);CHKERRQ(ierr);
   }
 
-  /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
-  ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
-
   ierr = PetscObjectTypeCompare((PetscObject)snes->jacobian,MATMFFD,&flg);CHKERRQ(ierr);
   if (!flg) jacobian = snes->jacobian;
   else jacobian = snes->jacobian_pre;
+
+  if (!x) {
+    ierr = MatCreateVecs(jacobian, &x, NULL);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject) x);CHKERRQ(ierr);
+  }
+  if (!f) {
+    ierr = VecDuplicate(x, &f);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject) f);CHKERRQ(ierr);
+  }
+  /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
+  ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
+  ierr = VecDestroy(&f);CHKERRQ(ierr);
 
   while (jacobian) {
     ierr = PetscObjectTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
@@ -2526,6 +2537,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
     }
     else jacobian = NULL;
   }
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   if (complete_print) {
     ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
   }
