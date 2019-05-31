@@ -10,6 +10,9 @@
 #include <petsc/private/petscimpl.h>
 #include <petscvalgrind.h>
 #include <petscviewer.h>
+#if defined(PETSC_USE_LOG)
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
+#endif
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
@@ -19,6 +22,7 @@
 #endif
 #if defined(PETSC_HAVE_CUDA)
 #include <cuda_runtime.h>
+extern PetscErrorCode PetscCUBLASInitializeHandle(void);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
@@ -552,9 +556,19 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
+  /*
+     If collecting logging information, by default, wait for GPU to complete its operations
+     before returning to the CPU in order to get accurate timings of each event
+  */
+  ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&PetscCUDASynchronize);CHKERRQ(ierr);
+  if (!PetscCUDASynchronize) {
+    ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&PetscCUDASynchronize);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsBegin(comm,NULL,"CUDA options","Sys");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-cuda_set_device","Set all MPI ranks to use the specified CUDA device",NULL,deviceOpt,&deviceOpt,&flg1);CHKERRQ(ierr);
   device = (int)deviceOpt;
+  ierr = PetscOptionsBool("-cuda_synchronize","Wait for the GPU to complete operations before returning to the CPU",NULL,PetscCUDASynchronize,&PetscCUDASynchronize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsDeprecated("-cuda_show_devices","-cuda_view","3.12",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsName("-cuda_view","Display CUDA device information and assignments",NULL,&cuda_view_flag);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -604,6 +618,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
     }
 
+    ierr = PetscCUBLASInitializeHandle();CHKERRQ(ierr);
     PetscCUDAInitialized = PETSC_TRUE;
   }
   if (cuda_view_flag) {
@@ -703,23 +718,23 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
   }
 
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (!flg3) {
     ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
   }
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsGetBool(NULL,NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscViennaCLSynchronize = flg3;
-#endif
-#if defined(PETSC_HAVE_CUDA)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_synchronize",&flg3,NULL);CHKERRQ(ierr);
-  PetscCUDASynchronize = flg3;
+  ierr = PetscViennaCLInit();CHKERRQ(ierr);
 #endif
 
-#if defined(PETSC_HAVE_VIENNACL)
-  ierr = PetscViennaCLInit();CHKERRQ(ierr);
+  /*
+     Creates the logging data structures; this is enabled even if logging is not turned on
+     This is the last thing we do before returning to the user code to prevent having the
+     logging numbers contaminated by any startup time associated with MPI and the GPUs
+  */
+#if defined(PETSC_USE_LOG)
+  ierr = PetscLogInitialize();CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

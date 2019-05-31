@@ -1186,6 +1186,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
   cudaError_t                  err;
 
   PetscFunctionBegin;
+  if (A->pinnedtocpu) PetscFunctionReturn(0);
   if (A->valid_GPU_matrix == PETSC_OFFLOAD_UNALLOCATED || A->valid_GPU_matrix == PETSC_OFFLOAD_CPU) {
     ierr = PetscLogEventBegin(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
     if (A->assembled && A->nonzerostate == cusparsestruct->nonzerostate && cusparsestruct->format == MAT_CUSPARSE_CSR) {
@@ -1638,10 +1639,8 @@ static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpval
     ((Mat_SeqAIJCUSPARSE*)C->spptr)->workVector   = 0;
     ((Mat_SeqAIJCUSPARSE*)C->spptr)->format       = MAT_CUSPARSE_CSR;
     ((Mat_SeqAIJCUSPARSE*)C->spptr)->stream       = 0;
-    ((Mat_SeqAIJCUSPARSE*)C->spptr)->handle       = 0;
     stat = cusparseCreate(&handle);CHKERRCUDA(stat);
     ((Mat_SeqAIJCUSPARSE*)C->spptr)->handle       = handle;
-    ((Mat_SeqAIJCUSPARSE*)C->spptr)->stream       = 0;
     ((Mat_SeqAIJCUSPARSE*)C->spptr)->nonzerostate = 0;
   } else {
     /* NEXT, set the pointers to the triangular factors */
@@ -1695,10 +1694,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat B)
     ((Mat_SeqAIJCUSPARSE*)B->spptr)->workVector   = 0;
     ((Mat_SeqAIJCUSPARSE*)B->spptr)->format       = MAT_CUSPARSE_CSR;
     ((Mat_SeqAIJCUSPARSE*)B->spptr)->stream       = 0;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->handle       = 0;
     stat = cusparseCreate(&handle);CHKERRCUDA(stat);
     ((Mat_SeqAIJCUSPARSE*)B->spptr)->handle       = handle;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->stream       = 0;
     ((Mat_SeqAIJCUSPARSE*)B->spptr)->nonzerostate = 0;
   } else {
     /* NEXT, set the pointers to the triangular factors */
@@ -1710,7 +1707,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat B)
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->rpermIndices            = 0;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->cpermIndices            = 0;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->workVector              = 0;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->handle                  = 0;
     stat = cusparseCreate(&handle);CHKERRCUDA(stat);
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->handle                  = handle;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->nnz                     = 0;

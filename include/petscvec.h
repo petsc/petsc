@@ -357,6 +357,16 @@ PETSC_EXTERN PetscErrorCode VecRestoreArray2d(Vec,PetscInt,PetscInt,PetscInt,Pet
 PETSC_EXTERN PetscErrorCode VecGetArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode VecRestoreArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
 
+PETSC_EXTERN PetscErrorCode VecGetArray4dWrite(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
+PETSC_EXTERN PetscErrorCode VecGetArray4dWrite(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
+PETSC_EXTERN PetscErrorCode VecRestoreArray4dWrite(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
+PETSC_EXTERN PetscErrorCode VecGetArray3dWrite(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
+PETSC_EXTERN PetscErrorCode VecRestoreArray3dWrite(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
+PETSC_EXTERN PetscErrorCode VecGetArray2dWrite(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
+PETSC_EXTERN PetscErrorCode VecRestoreArray2dWrite(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
+PETSC_EXTERN PetscErrorCode VecGetArray1dWrite(Vec,PetscInt,PetscInt,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode VecRestoreArray1dWrite(Vec,PetscInt,PetscInt,PetscScalar *[]);
+
 PETSC_EXTERN PetscErrorCode VecGetArray4dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
 PETSC_EXTERN PetscErrorCode VecRestoreArray4dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
 PETSC_EXTERN PetscErrorCode VecGetArray3dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
@@ -436,8 +446,10 @@ typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES,VEC_SUBSET
 PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );
 
 PETSC_EXTERN PetscErrorCode VecGetArray(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecGetArrayWrite(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArray(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayWrite(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);

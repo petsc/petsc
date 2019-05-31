@@ -1083,7 +1083,6 @@ static PetscErrorCode VecPinToCPU_SeqAIJViennaCL(Vec V,PetscBool flg)
     V->ops->placearray      = VecPlaceArray_Seq;
     V->ops->replacearray    = VecReplaceArray_Seq;
     V->ops->resetarray      = VecResetArray_Seq;
-    V->ops->destroy         = VecDestroy_Seq;
     V->ops->duplicate       = VecDuplicate_Seq;
   } else {
     V->ops->dot             = VecDot_SeqViennaCL;

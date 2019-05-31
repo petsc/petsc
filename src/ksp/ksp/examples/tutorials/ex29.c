@@ -52,6 +52,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       bc;
   Vec            b,x;
+  PetscBool      testsolver = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -69,6 +70,7 @@ int main(int argc,char **argv)
   bc          = (PetscInt)DIRICHLET;
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
+  ierr        = PetscOptionsBool("-testsolver", "Run solver multiple times, useful for performance studies of solver", "ex29.c", testsolver, &testsolver, NULL);CHKERRQ(ierr);
   ierr        = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
@@ -77,8 +79,23 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
-  ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
-  ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
+
+  if (testsolver) {
+    ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
+    ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
+    KSPSetDMActive(ksp,PETSC_FALSE);
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+    {
+      PetscLogStage stage;
+      PetscInt      i,n = 20;
+      PetscLogStageRegister("Solve only",&stage);
+      PetscLogStagePush(stage);
+      for (i=0; i<n; i++) {
+        ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+      }
+      PetscLogStagePop();
+    }
+  }
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);

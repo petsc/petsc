@@ -209,7 +209,7 @@ PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
     err = cudaMemcpy(yarray,xarray,bn*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(err);
   } else if (alpha == (PetscScalar)1.0) {
     cberr = cublasXaxpy(cublasv2handle,bn,&alpha,xarray,one,yarray,one);CHKERRCUBLAS(cberr);
-    ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*yin->map->n);CHKERRQ(ierr);
   } else {
     cberr = cublasXscal(cublasv2handle,bn,&alpha,yarray,one);CHKERRCUBLAS(cberr);
     cberr = cublasXaxpy(cublasv2handle,bn,&sone,xarray,one,yarray,one);CHKERRCUBLAS(cberr);
