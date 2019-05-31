@@ -247,7 +247,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
       if (isAffine) {
         CoordinatesRefToReal(dE, dim, fegeom.xi, fgeom->v, fegeom.J, &points[q*dim], x);
       } else {
-        fegeom.v    = &fegeom.v[tp*dE];
+        fegeom.v    = &fgeom->v[tp*dE];
         fegeom.J    = &fgeom->J[tp*dE*dE];
         fegeom.invJ = &fgeom->invJ[tp*dE*dE];
         fegeom.detJ = &fgeom->detJ[tp];
