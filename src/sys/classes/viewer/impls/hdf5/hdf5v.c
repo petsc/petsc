@@ -55,6 +55,7 @@ static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOpti
 static PetscErrorCode PetscViewerView_HDF5(PetscViewer v,PetscViewer viewer)
 {
   PetscViewer_HDF5  *hdf5 = (PetscViewer_HDF5*)v->data;
+  PetscBool         flg;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -63,6 +64,8 @@ static PetscErrorCode PetscViewerView_HDF5(PetscViewer v,PetscViewer viewer)
   }
   ierr = PetscViewerASCIIPrintf(viewer,"Vectors with blocksize 1 saved as 2D datasets: %s\n",PetscBools[hdf5->basedimension2]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Enforce single precision storage: %s\n",PetscBools[hdf5->spoutput]);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetCollective(v,&flg);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"MPI-IO transfer mode: %s\n",flg ? "collective" : "independent");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
