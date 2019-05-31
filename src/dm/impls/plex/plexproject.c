@@ -214,6 +214,10 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
   }
   /* Get values for closure */
   isAffine = fgeom->isAffine;
+  fegeom.n  = 0;
+  fegeom.J  = 0;
+  fegeom.v  = 0;
+  fegeom.xi = 0;
   if (isAffine) {
     fegeom.v    = x;
     fegeom.xi   = fgeom->xi;

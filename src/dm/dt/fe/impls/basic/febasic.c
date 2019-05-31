@@ -321,7 +321,10 @@ PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0]; /* Local face number in cell */
-
+    fegeom.n = 0;
+    fegeom.v = 0;
+    fegeom.J = 0;
+    fegeom.detJ = 0;
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = fgeom->xi;
@@ -540,7 +543,10 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscInt field, Pets
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
-
+    fegeom.n = 0;
+    fegeom.v = 0;
+    fegeom.J = 0;
+    fegeom.detJ = 0;
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = fgeom->xi;
@@ -816,7 +822,10 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, Pet
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
-
+    fegeom.n = 0;
+    fegeom.v = 0;
+    fegeom.J = 0;
+    fegeom.detJ = 0;
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = fgeom->xi;
