@@ -4,18 +4,18 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.minversion     = '1.8.0'
+    self.minversion     = '1.8'
     self.versionname    = 'H5_VERSION'
     self.download       = ['https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.5/src/hdf5-1.10.5.tar.gz',
                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.10.5.tar.gz']
 # David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
 #   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
-    self.functions = ['H5T_init']
-    self.includes  = ['hdf5.h']
-    self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
-    self.complex          = 1
-    self.hastests         = 1
-    self.precisions       = ['single','double'];
+    self.functions      = ['H5T_init']
+    self.includes       = ['hdf5.h']
+    self.liblist        = [['libhdf5_hl.a', 'libhdf5.a']]
+    self.complex        = 1
+    self.hastests       = 1
+    self.precisions     = ['single','double'];
     return
 
   def setupDependencies(self, framework):
@@ -27,6 +27,10 @@ class Configure(config.package.GNUPackage):
     self.deps           = [self.mpi,self.mathlib]
     self.odeps          = [self.zlib,self.szlib]
     return
+
+  def versionToStandardForm(self,ver):
+    '''HDF5 indicates patches by appending a -patch<n> after the regular part of the version'''
+    return ver.replace('-patch','.')
 
   def formGNUConfigureArgs(self):
     ''' Add HDF5 specific --enable-parallel flag and enable Fortran if available '''
