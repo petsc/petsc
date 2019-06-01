@@ -2,10 +2,11 @@
 
 #define BRGN_REGULARIZATION_USER    0
 #define BRGN_REGULARIZATION_L2PROX  1
-#define BRGN_REGULARIZATION_L1DICT  2
-#define BRGN_REGULARIZATION_TYPES   3
+#define BRGN_REGULARIZATION_L2PURE  2
+#define BRGN_REGULARIZATION_L1DICT  3
+#define BRGN_REGULARIZATION_TYPES   4
 
-static const char *BRGN_REGULARIZATION_TABLE[64] = {"user","l2prox","l1dict"};
+static const char *BRGN_REGULARIZATION_TABLE[64] = {"user","l2prox","l2pure","l1dict"};
 
 static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
 {
@@ -20,6 +21,9 @@ static PetscErrorCode GNHessianProd(Mat H,Vec in,Vec out)
   case BRGN_REGULARIZATION_USER:
     ierr = MatMult(gn->Hreg,in,gn->x_work);CHKERRQ(ierr);
     ierr = VecAXPY(out,gn->lambda,gn->x_work);CHKERRQ(ierr);
+    break;
+  case BRGN_REGULARIZATION_L2PURE:
+    ierr = VecAXPY(out,gn->lambda,in);CHKERRQ(ierr);
     break;
   case BRGN_REGULARIZATION_L2PROX:
     ierr = VecAXPY(out,gn->lambda,in);CHKERRQ(ierr);
@@ -67,6 +71,13 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
     *fcn += gn->lambda*f_reg;
     ierr = VecAXPY(G,gn->lambda,gn->x_work);CHKERRQ(ierr);
     break;
+  case BRGN_REGULARIZATION_L2PURE:
+    /* compute f = f + lambda*0.5*xk'*xk */
+    ierr = VecDot(X,X,&f_reg);CHKERRQ(ierr);
+    *fcn += gn->lambda*0.5*f_reg;
+    /* compute G = G + lambda*xk */
+    ierr = VecAXPY(G,gn->lambda,X);CHKERRQ(ierr);
+    break;
   case BRGN_REGULARIZATION_L2PROX:
     /* compute f = f + lambda*0.5*(xk - xkm1)'*(xk - xkm1) */
     ierr = VecAXPBYPCZ(gn->x_work,1.0,-1.0,0.0,X,gn->x_old);CHKERRQ(ierr); 
@@ -112,6 +123,8 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
   switch (gn->reg_type) {
   case BRGN_REGULARIZATION_USER:
     ierr = (*gn->regularizerhessian)(tao,X,gn->Hreg,gn->reg_hess_ctx);CHKERRQ(ierr);
+    break;
+  case BRGN_REGULARIZATION_L2PURE:
     break;
   case BRGN_REGULARIZATION_L2PROX:
     break;
@@ -323,13 +336,13 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
   TAOBRGN - Bounded Regularized Gauss-Newton method for solving nonlinear least-squares 
             problems with bound constraints. This algorithm is a thin wrapper around TAOBNTL 
             that constructs the Gauss-Newton problem with the user-provided least-squares 
-            residual and Jacobian. The algorithm offers both an L2-norm proximal point ("l2prox") 
-            regularizer, and a L1-norm dictionary regularizer ("l1dict"), where we approximate the 
+            residual and Jacobian. The algorithm offers an L2-norm ("l2pure"), L2-norm proximal point ("l2prox") 
+            regularizer, and L1-norm dictionary regularizer ("l1dict"), where we approximate the 
             L1-norm ||x||_1 by sum_i(sqrt(x_i^2+epsilon^2)-epsilon) with a small positive number epsilon.
             The user can also provide own regularization function.
 
   Options Database Keys:
-  + -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l1dict") (default "l2prox")
+  + -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l2pure", "l1dict") (default "l2prox")
   . -tao_brgn_regularizer_weight  - regularizer weight (default 1e-4)
   - -tao_brgn_l1_smooth_epsilon   - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
 
@@ -515,3 +528,4 @@ PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao,Mat Hreg,PetscErrorCo
   }
   PetscFunctionReturn(0);
 }
+
