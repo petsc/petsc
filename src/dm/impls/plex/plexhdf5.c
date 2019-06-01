@@ -420,8 +420,12 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
     PetscInt           nroots, nleaves;
 
     ierr = PetscSFGetGraph(sfPoint, &nroots, &nleaves, &ilocal, &iremote);CHKERRQ(ierr);
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject) sfPoint), &sfPoint);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sfPoint, nroots+vExtra, nleaves, ilocal, PETSC_USE_POINTER, iremote, PETSC_USE_POINTER);CHKERRQ(ierr);
+    if (nleaves < 0) {
+      ierr = PetscObjectReference((PetscObject) sfPoint);CHKERRQ(ierr);      
+    } else {
+      ierr = PetscSFCreate(PetscObjectComm((PetscObject) sfPoint), &sfPoint);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(sfPoint, nroots+vExtra, nleaves, ilocal, PETSC_USE_POINTER, iremote, PETSC_USE_POINTER);CHKERRQ(ierr);
+    }
   } else {
     ierr = PetscObjectReference((PetscObject) sfPoint);CHKERRQ(ierr);
   }
@@ -774,7 +778,7 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
     case PETSC_VIEWER_HDF5_XDMF:
       xdmf_topo   = PETSC_TRUE;
       break;
-    case PETSC_VIEWER_HDF5_PETSC: 
+    case PETSC_VIEWER_HDF5_PETSC:
       petsc_topo  = PETSC_TRUE;
       break;
     case PETSC_VIEWER_DEFAULT:
