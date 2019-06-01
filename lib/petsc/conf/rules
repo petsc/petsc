@@ -32,6 +32,9 @@ chklib_dir:
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
 	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
 
+chkopts:
+	-@echo "Warning: chkopts target is deprecated and can be removed from user makefiles"
+
 gnumake:
 	+@echo "make gnumake is deprecated, use make libs"
 	+@make libs
