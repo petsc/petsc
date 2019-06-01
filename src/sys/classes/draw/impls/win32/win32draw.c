@@ -522,7 +522,7 @@ void PopMessageLoopThread_Win32(PetscDraw popdraw)
   PetscDraw_Win32 *pop = (PetscDraw_Win32*)popdraw->data;
   MSG             msg;
   HWND            hWnd = NULL;
-  char            PopClassName [MAX_LOADSTRING + 1];
+  const char      PopClassName[] = "PETSc Window Pop Class";
   RECT            r;
   int             width,height;
   WNDCLASSEX      myclass;
@@ -566,7 +566,7 @@ void PopMessageLoopThread_Win32(PetscDraw popdraw)
   pop->h = height;
 
   if (!hWnd) {
-    lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
+    lpMsgBuf = (LPVOID)"Window Not Successfully Created";
     MessageBox(NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION);
     LocalFree(lpMsgBuf);
     exit(0);
@@ -599,7 +599,7 @@ void MessageLoopThread_Win32(PetscDraw draw)
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   MSG             msg;
   HWND            hWnd = NULL;
-  char            classname[MAX_LOADSTRING + 1];
+  const char      classname[] = "PETSc Window Class";
   WNDCLASSEX      wclass;
   LPVOID          lpMsgBuf;
 
@@ -635,7 +635,7 @@ void MessageLoopThread_Win32(PetscDraw draw)
                         NULL);
 
   if (!hWnd) {
-    lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
+    lpMsgBuf = (LPVOID)"Window Not Successfully Created";
     MessageBox(NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION);
     LocalFree(lpMsgBuf);
     exit(0);
