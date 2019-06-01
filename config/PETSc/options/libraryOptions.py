@@ -98,16 +98,16 @@ class Configure(config.base.Configure):
     if self.isColorValueType != 'char' and self.isColorValueType != 'short':
       raise RuntimeError('Incorrect --with-is-color-value-type value specified. Can be either char or short. Specified value is :'+self.isColorValueType)
     if self.isColorValueType == 'char':
-      max = pow(2,self.types.sizes['known-sizeof-char']*self.types.bits_per_byte)-1
+      max_value = 'UCHAR_MAX'
       mpi_type = 'MPI_UNSIGNED_CHAR'
       type_f = 'integer1'
     else:
-      max = pow(2,self.types.sizes['known-sizeof-short']*self.types.bits_per_byte)-1
+      max_value = 'USHRT_MAX'
       mpi_type = 'MPI_UNSIGNED_SHORT'
       type_f = 'integer2'
 
     self.framework.addDefine('MPIU_COLORING_VALUE',mpi_type)
-    self.framework.addDefine('IS_COLORING_MAX',max)
+    self.framework.addDefine('IS_COLORING_MAX',max_value)
     self.addDefine('IS_COLOR_VALUE_TYPE', self.isColorValueType)
     self.addDefine('IS_COLOR_VALUE_TYPE_F', type_f)
     return

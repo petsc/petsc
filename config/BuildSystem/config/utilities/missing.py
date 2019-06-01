@@ -52,17 +52,6 @@ class Configure(config.base.Configure):
 '''
     return features
 
-#-------------------------------------------------------
-  def configureMissingDefines(self):
-    '''Checks for limits'''
-    if not self.checkCompile('#ifdef PETSC_HAVE_LIMITS_H\n  #include <limits.h>\n#endif\n', 'int i=INT_MAX;\n\nif (i);\n'):
-      self.addDefine('INT_MIN', '(-INT_MAX - 1)')
-      self.addDefine('INT_MAX', 2147483647)
-    if not self.checkCompile('#ifdef PETSC_HAVE_FLOAT_H\n  #include <float.h>\n#endif\n', 'double d=DBL_MAX;\n\nif (d);\n'):
-      self.addDefine('DBL_MIN', 2.2250738585072014e-308)
-      self.addDefine('DBL_MAX', 1.7976931348623157e+308)
-    return
-
   def configureMissingUtypeTypedefs(self):
     ''' Checks if u_short is undefined '''
     if not self.checkCompile('#include <sys/types.h>\n', 'u_short foo;\n'):
@@ -156,7 +145,6 @@ if (drand48_ptr() > 0.5) return 1;
     return
 
   def configure(self):
-    self.executeTest(self.configureMissingDefines)
     self.executeTest(self.configureMissingUtypeTypedefs)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
