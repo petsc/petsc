@@ -17,8 +17,6 @@
     If this routine is not called then the object may end up being name by PetscObjectName().
    Level: advanced
 
-   Concepts: object name^setting
-
 .seealso: PetscObjectGetName(), PetscObjectName()
 @*/
 PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
@@ -104,8 +102,6 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
          PetscObjectName((PetscObject)mat,name);
 
    Level: developer
-
-   Concepts: object name^setting default
 
    Notes:
     This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.

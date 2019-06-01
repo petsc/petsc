@@ -6,8 +6,6 @@
 
    Level: beginner
 
-  Concepts: indexing, stride
-
 .seealso:  ISCreateGeneral(), ISCreateBlock(), ISCreateStride(), ISGetIndices(), ISDestroy()
 S*/
 typedef struct _p_IS* IS;

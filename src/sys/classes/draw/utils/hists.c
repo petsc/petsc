@@ -51,8 +51,6 @@ struct _p_PetscDrawHG {
 
    Level: intermediate
 
-   Concepts: histogram^creating
-
 .seealso: PetscDrawHGDestroy(), PetscDrawHG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP,
           PetscDrawHGSetNumberBins(), PetscDrawHGReset(), PetscDrawHGAddValue(), PetscDrawHGDraw(), PetscDrawHGSave(), PetscDrawHGView(), PetscDrawHGSetColor(),
           PetscDrawHGSetLimits(), PetscDrawHGCalcStats(), PetscDrawHGIntegerBins(), PetscDrawHGGetAxis(), PetscDrawAxis, PetscDrawHGGetDraw() 
@@ -112,8 +110,6 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 
    Level: intermediate
 
-   Concepts: histogram^setting number of bins
-
 .seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGIntegerBins()
 
 @*/
@@ -144,8 +140,6 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
 . hist - The histogram context.
 
   Level: intermediate
-
-  Concepts: histogram^resetting
 
 .seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGAddValue()
 
@@ -202,8 +196,6 @@ PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 - value - The value
 
   Level: intermediate
-
-  Concepts: histogram^adding values
 
 .seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGAddValue(), PetscDrawHGReset()
 @*/
@@ -411,8 +403,6 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 
   Level: intermediate
 
-  Concepts: histogram^saving
-
 .seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw()
 @*/
 PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
@@ -555,8 +545,6 @@ PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist,int color)
 - x_min,x_max,y_min,y_max - The limits
 
   Level: intermediate
-
-  Concepts: histogram^setting axis
 
 .seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw(), PetscDrawHGGetAxis()
 

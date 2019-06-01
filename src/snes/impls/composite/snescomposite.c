@@ -854,8 +854,6 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 
    Level: intermediate
 
-   Concepts: composing solvers
-
 .seealso:  SNESCreate(), SNESSetType(), SNESType (for list of available types), SNES,
            SNESSHELL, SNESCompositeSetType(), SNESCompositeSpecialSetAlpha(), SNESCompositeAddSNES(),
            SNESCompositeGetSNES()

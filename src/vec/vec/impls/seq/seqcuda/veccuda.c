@@ -270,8 +270,6 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 
  Level: intermediate
 
- Concepts: vectors^creating sequential
-
  .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
  @*/
 PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm,PetscInt n,Vec *v)
@@ -338,8 +336,6 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
    The user should not free the array until the vector is destroyed.
 
    Level: intermediate
-
-   Concepts: vectors^creating with array
 
 .seealso: VecCreateMPICUDAWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
           VecCreateGhost(), VecCreateSeq(), VecCUDAPlaceArray(), VecCreateSeqWithArray(),

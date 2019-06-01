@@ -16,10 +16,6 @@
 
    Level: beginner
 
-   Concepts: drawing^triangle
-   Concepts: graphics^triangle
-   Concepts: triangle
-
 .seealso: PetscDrawLine(), PetscDrawRectangle(), PetscDrawEllipse(), PetscDrawMarker(), PetscDrawPoint(), PetscDrawArrow()
 @*/
 PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,int c1,int c2,int c3)
@@ -136,8 +132,6 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 
    Level: intermediate
 
-   Concepts: contour plot
-   Concepts: drawing^contour plot
 
 .seealso: PetscDrawTensorContourPatch(), PetscDrawScalePopup()
 
@@ -223,8 +217,6 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
    Note:
    This is a lower level support routine, usually the user will call
    PetscDrawTensorContour().
-
-   Concepts: contour plot
 
 .seealso: PetscDrawTensorContour()
 

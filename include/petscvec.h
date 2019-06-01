@@ -14,8 +14,6 @@
 
    Level: beginner
 
-  Concepts: field variables, unknowns, arrays
-
 .seealso:  VecCreate(), VecType, VecSetType()
 S*/
 typedef struct _p_Vec*         Vec;
@@ -25,8 +23,6 @@ typedef struct _p_Vec*         Vec;
        between vectors in parallel. Manages both scatters and gathers
 
    Level: beginner
-
-  Concepts: scatter
 
 .seealso:  VecScatterCreate(), VecScatterBegin(), VecScatterEnd()
 S*/
@@ -606,8 +602,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);
 
     This is faked by storing a single vector that has enough array space for
     n vectors
-
-  Concepts: parallel decomposition
 
 S*/
         struct _n_Vecs  {PetscInt n; Vec v;};

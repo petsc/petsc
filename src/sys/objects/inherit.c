@@ -279,8 +279,6 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
 
    Level: advanced
 
-   Concepts: options database^printing
-
 @*/
 PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 {
@@ -351,8 +349,6 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 
    Level: advanced
 
-   Concepts: options database^printing
-
 @*/
 PetscErrorCode  PetscObjectsView(PetscViewer viewer)
 {
@@ -381,8 +377,6 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
 .   obj - the object or null if there is no object
 
    Level: advanced
-
-   Concepts: options database^printing
 
 @*/
 PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **classname)
@@ -722,8 +716,6 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
    PetscContainerCreate() for info on how to create an object from a
    user-provided pointer that may then be composed with PETSc objects.
 
-   Concepts: objects^composing
-   Concepts: composing objects
 
 .seealso: PetscObjectQuery(), PetscContainerCreate()
 @*/
@@ -757,10 +749,6 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
 
    The reference count of neither object is increased in this call
 
-   Concepts: objects^composing
-   Concepts: composing objects
-   Concepts: objects^querying
-   Concepts: querying objects
 
 .seealso: PetscObjectCompose()
 @*/
@@ -800,12 +788,6 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
    PetscObjectComposeFunction() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object.
 
-   Concepts: objects^composing functions
-   Concepts: composing functions
-   Concepts: functions^querying
-   Concepts: objects^querying
-   Concepts: querying objects
-
 .seealso: PetscObjectQueryFunction(), PetscContainerCreate()
 M*/
 
@@ -838,12 +820,6 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
 .  fptr - function pointer
 
    Level: advanced
-
-   Concepts: objects^composing functions
-   Concepts: composing functions
-   Concepts: functions^querying
-   Concepts: objects^querying
-   Concepts: querying objects
 
 .seealso: PetscObjectComposeFunction(), PetscFunctionListFind()
 M*/

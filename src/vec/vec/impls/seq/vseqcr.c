@@ -23,8 +23,6 @@
 
    Level: intermediate
 
-   Concepts: vectors^creating sequential
-
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
 PetscErrorCode  VecCreateSeq(MPI_Comm comm,PetscInt n,Vec *v)

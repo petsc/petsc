@@ -59,8 +59,6 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 
    Level: advanced
 
-   Concepts: publishing object
-
    Developer Note: Currently this is called only on rank zero of PETSC_COMM_WORLD
 
    The object must have already been named before calling this routine since naming an

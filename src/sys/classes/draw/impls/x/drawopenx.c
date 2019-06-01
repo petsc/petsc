@@ -54,8 +54,6 @@
    correct for character data!  Thus, PETSC_NULL_CHARACTER can be
    used for the display and title input parameters.
 
-   Concepts: X windows^drawing to
-
 .seealso: PetscDrawFlush(), PetscDrawDestroy(), PetscDrawCreate(), PetscDrawOpnOpenGL()
 @*/
 PetscErrorCode  PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *draw)

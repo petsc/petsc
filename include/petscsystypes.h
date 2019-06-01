@@ -472,8 +472,6 @@ typedef struct _p_PetscContainer*  PetscContainer;
 
    Level: intermediate
 
-  Concepts: random numbers
-
 .seealso:  PetscRandomCreate(), PetscRandomGetValue(), PetscRandomType
 S*/
 typedef struct _p_PetscRandom*   PetscRandom;
@@ -583,8 +581,6 @@ $     PetscSubcommContiguousParent() returns a parent communitor but with all ch
 
    Level: advanced
 
-   Concepts: communicator, create
-
    Notes:
 $   PETSC_SUBCOMM_GENERAL - similar to MPI_Comm_split() each process sets the new communicator (color) they will belong to and the order within that communicator
 $   PETSC_SUBCOMM_CONTIGUOUS - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
@@ -609,8 +605,6 @@ typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_I
      PetscHeap - A simple class for managing heaps
 
    Level: intermediate
-
-  Concepts: random numbers
 
 .seealso:  PetscHeapCreate(), PetscHeapAdd(), PetscHeapPop(), PetscHeapPeek(), PetscHeapStash(), PetscHeapUnstash(), PetscHeapView(), PetscHeapDestroy()
 S*/

@@ -610,29 +610,6 @@ exampleconcepts:
             fi; \
 	  done; \
         fi
-#
-#   Goes through all manual pages removing the Concepts: field and adding the
-# concepts to the manconcepts file
-#
-manconcepts:
-	-@${RM} ${LOC}/docs/manconcepts ${LOC}/docs/exampleconcepts
-	-@for i in docs/manualpages/*/*.html ; do \
-              ${RM} ltmp; \
-              grep Concepts: $$i | sed s?Concepts:??g > ltmp;  \
-              line=`cat ltmp | wc -l`; \
-              line=`expr $$line - 1` ; \
-              line=`expr $$line + 1` ; \
-              if [ $$line -gt 0 ] ; then \
-                while [ $$line -gt 0 ] ; do \
-                  a=`head -$$line ltmp | tail -1`; \
-                  echo $$i $$a >> ${LOC}/docs/manconcepts; \
-                  line=`expr $$line - 1` ; \
-                done; \
-                grep -v Concepts: $$i | sed "s/PETSC[A-Z]*_DLLEXPORT//g" > tmp; \
-                mv tmp $$i; \
-              fi; \
-              ${RM} ltmp; \
-          done
 
 #
 #    Goes through all manual pages adding links to implementations of the method

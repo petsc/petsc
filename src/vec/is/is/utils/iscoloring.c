@@ -613,10 +613,6 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
 
     Level: intermediate
 
-    Concepts: gather^index sets
-    Concepts: index sets^gathering to all processors
-    Concepts: IS^gathering to all processors
-
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock()
 @*/
 PetscErrorCode  ISAllGather(IS is,IS *isout)
@@ -683,10 +679,6 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
 
     Level: intermediate
 
-    Concepts: gather^index sets
-    Concepts: index sets^gathering to all processors
-    Concepts: IS^gathering to all processors
-
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
 PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lindices,PetscInt *outN,ISColoringValue *outindices[])
@@ -737,10 +729,6 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
     call this routine.
 
     Level: intermediate
-
-    Concepts: gather^index sets
-    Concepts: index sets^gathering to all processors
-    Concepts: IS^gathering to all processors
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/

@@ -379,10 +379,6 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 
    Level: advanced
 
-   Concepts: graphics^creating PetscViewer
-   Concepts: file input/output^creating PetscViewer
-   Concepts: sockets^creating PetscViewer
-
 .seealso: PetscViewerDestroy(), PetscViewerSetType(), PetscViewerType
 
 @*/
@@ -472,8 +468,6 @@ $     PetscViewerSetType(viewer,"my_viewer_type")
    or at runtime via the option
 $     -viewer_type my_viewer_type
 
-  Concepts: registering^Viewers
-
 .seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
  @*/
 PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)(PetscViewer))
@@ -499,8 +493,6 @@ PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)
 
    Notes:
     Must be called after PetscViewerCreate() before the PetscViewer is used.
-
-  Concepts: PetscViewer^setting options
 
 .seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
 

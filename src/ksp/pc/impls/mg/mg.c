@@ -1266,8 +1266,6 @@ PetscErrorCode  PCMGSetDistinctSmoothUp(PC pc)
 
    Level: intermediate
 
-   Concepts: multigrid/multilevel
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, PCEXOTIC, PCGAMG, PCML, PCHYPRE
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(),
            PCMGSetDistinctSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),

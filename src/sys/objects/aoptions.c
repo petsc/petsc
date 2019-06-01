@@ -660,8 +660,6 @@ $                 if (flg) {
 
    Level: beginner
 
-   Concepts: options database
-
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -726,8 +724,6 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject,co
    There must be no intervening spaces between the values.
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
-
-   Concepts: options database^array of enums
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
@@ -795,8 +791,6 @@ $                 if (flg) {
 
    Level: beginner
 
-   Concepts: options database^has int
-
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -849,8 +843,6 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
-
-   Concepts: options database^has int
 
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
@@ -916,8 +908,6 @@ $                 if (flg) {
 
    Level: beginner
 
-   Concepts: options database^has int
-
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -976,8 +966,6 @@ $                 if (flg) {
 
    Level: beginner
 
-   Concepts: options database^has int
-
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -1017,8 +1005,6 @@ PetscErrorCode  PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject,
 .  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
-
-   Concepts: options database^has int
 
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
@@ -1086,8 +1072,6 @@ $                 if (flg) {
 
    Developer Note: This cannot check for invalid selection because of things like MATAIJ that are not included in the list
 
-   Concepts: options database^list
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1144,8 +1128,6 @@ $                 if (flg) {
 
    See PetscOptionsFList() for when the choices are given in a PetscFunctionList()
 
-   Concepts: options database^list
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1199,8 +1181,6 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject,c
 
    Must be followed by 0 or more PetscOptionsBoolGroup()s and PetscOptionsBoolGroupEnd()
 
-    Concepts: options database^logical group
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1250,8 +1230,6 @@ PetscErrorCode  PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOption
 
    Must follow a PetscOptionsBoolGroupBegin() and preceded a PetscOptionsBoolGroupEnd()
 
-    Concepts: options database^logical group
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1299,8 +1277,6 @@ PetscErrorCode  PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObje
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Must follow a PetscOptionsBoolGroupBegin()
-
-    Concepts: options database^logical group
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
@@ -1355,8 +1331,6 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
      you should ALWAYS initialize the flg if you access it without first checking if the set flag is true.
 
    Level: beginner
-
-   Concepts: options database^logical
 
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
@@ -1416,8 +1390,6 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject,co
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of strings
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1476,8 +1448,6 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
    The user should pass in an array of doubles
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
-
-   Concepts: options database^array of strings
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
@@ -1543,8 +1513,6 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of ints
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1608,8 +1576,6 @@ PetscErrorCode  PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObjec
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of strings
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1661,8 +1627,6 @@ PetscErrorCode  PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsOb
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of strings
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1713,8 +1677,6 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObje
 
    Level: beginner
 
-   Concepts: options database^has int
-
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -1763,8 +1725,6 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject,
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
           Can be followed by a call to PetscOptionsTail() in the same function.
-
-   Concepts: options database^subheading
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),

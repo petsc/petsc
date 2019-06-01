@@ -16,8 +16,6 @@
 
    Level: beginner
 
-   Concepts: drawing^string
-   Concepts: string^drawing
 
 .seealso: PetscDrawStringVertical(), PetscDrawStringCentered(), PetscDrawStringBoxed(), PetscDrawStringBoxed(), PetscDrawStringSetSize(),
           PetscDrawStringGetSize(), PetscDrawLine(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
@@ -48,8 +46,6 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
 -  text - the text to draw
 
    Level: beginner
-
-   Concepts: string^drawing vertical
 
 .seealso: PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringBoxed(), PetscDrawStringBoxed(), PetscDrawStringSetSize(),
           PetscDrawStringGetSize()
@@ -91,8 +87,6 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
 
    Level: beginner
 
-   Concepts: drawing^string
-   Concepts: string^drawing
 
 .seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringBoxed(), PetscDrawStringBoxed(), PetscDrawStringSetSize(),
           PetscDrawStringGetSize()
@@ -133,8 +127,6 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
 
    Level: beginner
 
-   Concepts: drawing^string
-   Concepts: string^drawing
 
 .seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringBoxed(), PetscDrawStringSetSize(),
           PetscDrawStringGetSize()
@@ -206,8 +198,6 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
    Note:
    Only a limited range of sizes are available.
 
-   Concepts: string^drawing size
-
 .seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringBoxed(), PetscDrawStringBoxed(),
           PetscDrawStringGetSize()
 
@@ -236,8 +226,6 @@ PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal 
 -  height - the character height
 
    Level: advanced
-
-   Concepts: string^drawing size
 
 .seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringBoxed(), PetscDrawStringBoxed(),
           PetscDrawStringSetSize()

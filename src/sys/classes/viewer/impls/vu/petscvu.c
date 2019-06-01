@@ -159,8 +159,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 
   Level: intermediate
 
-  Concepts: PetscViewer^file pointer
-  Concepts: file pointer^getting from PetscViewer
 
 .seealso: PetscViewerASCIIGetPointer()
 @*/

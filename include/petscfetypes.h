@@ -6,8 +6,6 @@
 
   Level: intermediate
 
-  Concepts: finite element
-
 .seealso: PetscSpaceCreate(), PetscDualSpaceCreate(), PetscSpaceSetType(), PetscSpaceType
 S*/
 typedef struct _p_PetscSpace *PetscSpace;
@@ -35,8 +33,6 @@ PETSC_EXTERN const char * const PetscSpacePolynomialTypes[];
   PetscDualSpace - PETSc object that manages the dual space to a linear space, e.g. the space of evaluation functionals at the vertices of a triangle
 
   Level: intermediate
-
-  Concepts: finite element
 
 .seealso: PetscDualSpaceCreate(), PetscSpaceCreate(), PetscDualSpaceSetType(), PetscDualSpaceType
 S*/
@@ -74,8 +70,6 @@ typedef enum {IDENTITY_TRANSFORM, COVARIANT_PIOLA_TRANSFORM, CONTRAVARIANT_PIOLA
   PetscFE - PETSc object that manages a finite element space, e.g. the P_1 Lagrange element
 
   Level: intermediate
-
-  Concepts: finite element
 
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate(), PetscFESetType(), PetscFEType
 S*/

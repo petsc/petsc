@@ -12,8 +12,6 @@
 
    Level: intermediate
 
-  Concepts: global numbering
-
 .seealso:  AOCreateBasic(), AOCreateBasicIS(), AOPetscToApplication(), AOView(), AOApplicationToPetsc()
 S*/
 typedef struct _p_AO* AO;

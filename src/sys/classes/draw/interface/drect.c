@@ -111,10 +111,6 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,int i,int j,PetscReal *
 
    Level: beginner
 
-   Concepts: drawing^rectangle
-   Concepts: graphics^rectangle
-   Concepts: rectangle
-
 .seealso: PetscDrawLine(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawPoint(), PetscDrawString(), PetscDrawPoint(), PetscDrawArrow()
 

@@ -132,8 +132,6 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
 
     Use PetscViewerBinaryAddMPIIOOffset() to increase this value after you have written a view.
 
-  Concepts: file descriptor^getting
-  Concepts: PetscViewerBinary^accessing file descriptor
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryAddMPIIOOffset()
 @*/
@@ -162,8 +160,6 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *of
 
     Use PetscViewerBinaryGetMPIIOOffset() to get the value that you should pass to MPI_File_set_view()
 
-  Concepts: file descriptor^getting
-  Concepts: PetscViewerBinary^accessing file descriptor
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
@@ -192,8 +188,6 @@ PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer,MPI_Offset off
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: file descriptor^getting
-  Concepts: PetscViewerBinary^accessing file descriptor
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
@@ -241,8 +235,6 @@ static PetscErrorCode PetscViewerBinaryGetUseMPIIO_Binary(PetscViewer viewer,Pet
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: file descriptor^getting
-  Concepts: PetscViewerBinary^accessing file descriptor
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
@@ -350,8 +342,6 @@ PetscErrorCode  PetscViewerBinarySetFlowControl(PetscViewer viewer,PetscInt fc)
     the source code that this may be trigger a PetscViewerSetUp() call if it was not previously triggered.
 
 
-  Concepts: file descriptor^getting
-  Concepts: PetscViewerBinary^accessing file descriptor
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
@@ -387,8 +377,6 @@ PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
     The .info contains meta information about the data in the binary file, for example the block size if it was
     set for a vector or matrix.
 
-   Concepts: PetscViewerBinary^accessing info file
-
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySetSkipOptions(),
           PetscViewerBinaryGetSkipOptions(), PetscViewerBinaryGetSkipInfo()
 @*/
@@ -422,8 +410,6 @@ static PetscErrorCode PetscViewerBinarySetSkipInfo_Binary(PetscViewer viewer,Pet
 .   -viewer_binary_skip_info
 
     Level: advanced
-
-    Concepts: PetscViewerBinary^accessing info file
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySetSkipOptions(),
           PetscViewerBinaryGetSkipOptions(), PetscViewerBinaryGetSkipInfo()
@@ -461,8 +447,6 @@ static PetscErrorCode PetscViewerBinaryGetSkipInfo_Binary(PetscViewer viewer,Pet
 
     Notes:
     This must be called after PetscViewerSetType()
-
-    Concepts: PetscViewerBinary^accessing info file
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinarySetSkipOptions(), PetscViewerBinarySetSkipInfo()
@@ -502,8 +486,6 @@ static PetscErrorCode PetscViewerBinarySetSkipOptions_Binary(PetscViewer viewer,
     Notes:
     This must be called after PetscViewerSetType()
 
-   Concepts: PetscViewerBinary^accessing info file
-
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinaryGetSkipOptions()
 @*/
@@ -542,8 +524,6 @@ static PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,
 
     Notes:
     This must be called after PetscViewerSetType()
-
-   Concepts: PetscViewerBinary^accessing info file
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinarySetSkipOptions()
@@ -677,8 +657,6 @@ static PetscErrorCode PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,
 
     Fortran Note:
     This routine is not supported in Fortran.
-
-  Concepts: PetscViewerBinary^accessing info file
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
 @*/
@@ -818,12 +796,6 @@ $    FILE_MODE_APPEND - open existing file for binary output
     node 0 does not have the file it generates an error even if other nodes
     do have the file.
 
-   Concepts: binary files
-   Concepts: PetscViewerBinary^creating
-   Concepts: gzip
-   Concepts: accessing remote file
-   Concepts: remote file
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead(), PetscViewerBinarySetUseMPIIO(),
@@ -888,8 +860,6 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
 
    Level: beginner
 
-   Concepts: binary files
-
    Developer Note: Since count is always set to num it is not clear what purpose the output argument count serves.
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
@@ -931,8 +901,6 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,
    Notes:
     because byte-swapping may be done on the values in data it cannot be declared const
 
-   Concepts: binary files
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(), PetscDataType
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
@@ -967,8 +935,6 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt cou
 
 
    Level: intermediate
-
-   Concepts: binary files
 
     Notes:
     array of strings is null terminated
@@ -1013,8 +979,6 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,const char *
 .  data - location of the array of strings
 
    Level: intermediate
-
-   Concepts: binary files
 
     Notes:
     array of strings is null terminated

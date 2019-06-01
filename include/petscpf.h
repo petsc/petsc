@@ -31,8 +31,6 @@ typedef const char* PFType;
 
    Level: beginner
 
-  Concepts: functions
-
 .seealso:  PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec(), PFSet(), PFType
 S*/
 typedef struct _p_PF* PF;

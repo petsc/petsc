@@ -252,8 +252,6 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
    file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
    is used.
 
-   Concepts: files^reading binary
-   Concepts: binary files^reading
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
@@ -375,8 +373,6 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
 
    Because byte-swapping may be done on the values in data it cannot be declared const
 
-   Concepts: files^writing binary
-   Concepts: binary files^writing
 
 .seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
@@ -488,8 +484,6 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 
    Level: advanced
 
-  Concepts: files^opening binary
-  Concepts: binary files^opening
 
    Notes:
     Files access with PetscBinaryRead() and PetscBinaryWrite() are ALWAYS written in
@@ -568,8 +562,6 @@ PetscErrorCode  PetscBinaryClose(int fd)
    binary file may be read on any machine. Hence you CANNOT use sizeof()
    to determine the offset or location.
 
-   Concepts: files^binary seeking
-   Concepts: binary files^seeking
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
@@ -621,8 +613,6 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
 
-   Concepts: files^synchronized reading of binary files
-   Concepts: binary files^reading, synchronized
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedSeek()
@@ -696,8 +686,6 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
    WARNING: This is NOT like PetscSynchronizedFPrintf()! This routine ignores calls on all but process 0,
    while PetscSynchronizedFPrintf() has all processes print their strings in order.
 
-   Concepts: files^synchronized writing of binary files
-   Concepts: binary files^reading, synchronized
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
@@ -738,8 +726,6 @@ PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscI
    binary file may be read on any machine. Hence you CANNOT use sizeof()
    to determine the offset or location.
 
-   Concepts: binary files^seeking
-   Concepts: files^seeking in binary
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()

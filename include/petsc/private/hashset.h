@@ -18,8 +18,6 @@
 
   Level: developer
 
-  Concepts: hash table, set
-
 .seealso: PetscHSetT, PetscHSetTCreate()
 M*/
 
@@ -30,8 +28,6 @@ M*/
   typedef khash_t(HSetT) *PetscHSetT;
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso:  PETSC_HASH_SET(), PetscHSetTCreate()
 S*/
@@ -48,8 +44,6 @@ S*/
 
   Level: developer
 
-  Concepts: hash table, set
-
 .seealso: PetscHSetTDestroy()
 M*/
 
@@ -65,8 +59,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, set
-
 .seealso: PetscHSetTCreate()
 M*/
 
@@ -81,8 +73,6 @@ M*/
 . ht - The hash table
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso: PetscHSetTClear()
 M*/
@@ -101,8 +91,6 @@ M*/
 . ht - The duplicated hash table
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso: PetscHSetTCreate()
 M*/
@@ -123,8 +111,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, set
-
 .seealso: PetscHSetTCreate(), PetscHSetTDuplicate()
 M*/
 
@@ -139,8 +125,6 @@ M*/
 . ht - The hash table
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso: PetscHSetTReset()
 M*/
@@ -157,8 +141,6 @@ M*/
 - nb - The number of buckets
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso: PetscHSetTCreate()
 M*/
@@ -178,8 +160,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, set
-
 .seealso: PetscHSetTResize()
 M*/
 
@@ -197,8 +177,6 @@ M*/
 . n - The capacity
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso: PetscHSetTResize(), PetscHSetTGetSize()
 M*/
@@ -219,8 +197,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, set
-
 .seealso:  PetscHSetTAdd(), PetscHSetTDel()
 M*/
 
@@ -237,8 +213,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, set
-
 .seealso: PetscHSetTDel(), PetscHSetTHas()
 M*/
 
@@ -254,8 +228,6 @@ M*/
 - key - The entry
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso: PetscHSetTAdd(), PetscHSetTHas()
 M*/
@@ -276,8 +248,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, set
-
 .seealso: PetscHSetTQueryDel(), PetscHSetTAdd()
 M*/
 
@@ -296,8 +266,6 @@ M*/
 . present - Boolean indicating whether the entry was present
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso: PetscHSetTQueryAdd(), PetscHSetTDel()
 M*/
@@ -319,8 +287,6 @@ M*/
 - array - Array filled with the hash table entries
 
   Level: developer
-
-  Concepts: hash table, set
 
 .seealso: PetscHSetTGetSize()
 M*/

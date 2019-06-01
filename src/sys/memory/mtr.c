@@ -484,8 +484,6 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 
     Level: intermediate
 
-    Concepts: memory usage
-
 .seealso: PetscMallocDump(), PetscMemoryGetCurrentUsage(), PetscMemorySetGetMaximumUsage()
  @*/
 PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
@@ -564,8 +562,6 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
 
     Level: intermediate
 
-    Concepts: memory usage
-
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMemoryGetMaximumUsage()
  @*/
@@ -587,8 +583,6 @@ PetscErrorCode  PetscMallocGetCurrentUsage(PetscLogDouble *space)
 
     Level: intermediate
 
-    Concepts: memory usage
-
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMallocPushMaximumUsage()
  @*/
@@ -608,8 +602,6 @@ PetscErrorCode  PetscMallocGetMaximumUsage(PetscLogDouble *space)
 .   event - an event id; this is just for error checking
 
     Level: developer
-
-    Concepts: memory usage
 
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMallocPopMaximumUsage()
@@ -635,8 +627,6 @@ PetscErrorCode  PetscMallocPushMaximumUsage(int event)
 .   mu - maximum amount of memory malloced during this event; high water mark relative to the beginning of the event
 
     Level: developer
-
-    Concepts: memory usage
 
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMallocPushMaximumUsage()
@@ -708,10 +698,6 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
    Notes:
     uses MPI_COMM_WORLD, because this may be called in PetscFinalize() after PETSC_COMM_WORLD
           has been freed.
-
-   Concepts: memory usage
-   Concepts: memory bleeding
-   Concepts: bleeding memory
 
 .seealso:  PetscMallocGetCurrentUsage(), PetscMallocDumpLog()
 @*/

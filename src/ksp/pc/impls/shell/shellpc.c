@@ -869,8 +869,6 @@ PetscErrorCode  PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,V
 
    Level: advanced
 >
-   Concepts: providing your own preconditioner
-
   Usage:
 $             extern PetscErrorCode apply(PC,Vec,Vec);
 $             extern PetscErrorCode applyba(PC,PCSide,Vec,Vec,Vec);

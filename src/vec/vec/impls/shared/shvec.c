@@ -183,8 +183,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 
    Level: advanced
 
-   Concepts: vectors^creating with shared memory
-
 .seealso: VecCreateSeq(), VecCreate(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(),
           VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
 

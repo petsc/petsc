@@ -24,8 +24,6 @@ PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
 
   Level: developer
 
-  Concepts: hash table, map
-
 .seealso: PetscHMapTGet(), PetscHMapTIterSet(), PetscHMapIVSet()
 M*/
 PETSC_STATIC_INLINE

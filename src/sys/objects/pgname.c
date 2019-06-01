@@ -17,8 +17,6 @@
 
    Level: intermediate
 
-   Concepts: object name
-
 .seealso: PetscObjectSetName(), PetscObjectName()
 @*/
 PetscErrorCode  PetscObjectGetName(PetscObject obj,const char *name[])

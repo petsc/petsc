@@ -56,8 +56,6 @@ static void PetscSignalHandler_Private(int sig)
 +  sig - signal value
 -  ptr - unused pointer
 
-   Concepts: signal handler^default
-
 @*/
 PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
 {
@@ -170,8 +168,6 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
 -  ctx - optional context needed by the routine
 
   Level: developer
-
-   Concepts: signal handler^setting
 
 .seealso: PetscPopSignalHandler(), PetscSignalHandlerDefault(), PetscPushErrorHandler()
 
@@ -323,8 +319,6 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
    Not Collective
 
   Level: developer
-
-   Concepts: signal handler^setting
 
 .seealso: PetscPushSignalHandler()
 

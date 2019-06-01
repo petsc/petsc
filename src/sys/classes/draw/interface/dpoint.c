@@ -16,8 +16,6 @@
 
    Level: beginner
 
-   Concepts: point^drawing
-   Concepts: drawing^point
 
 .seealso: PetscDrawPointPixel(), PetscDrawPointSetSize(), PetscDrawLine(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawString(), PetscDrawArrow()
@@ -46,8 +44,6 @@ PetscErrorCode  PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 
    Level: beginner
 
-   Concepts: point^drawing
-   Concepts: drawing^point
 
 .seealso: PetscDrawPoint(), PetscDrawPointSetSize()
 
@@ -78,8 +74,6 @@ PetscErrorCode  PetscDrawPointPixel(PetscDraw draw,int x,int y,int c)
 
    Note:
    Even a size of zero insures that a single pixel is colored.
-
-   Concepts: point^drawing size
 
 .seealso: PetscDrawPoint(), PetscDrawMarker()
 @*/

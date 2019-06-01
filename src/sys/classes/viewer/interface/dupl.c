@@ -33,8 +33,6 @@
     the calls to PetscViewerGetSubViewer() and PetscViewerRestoreSubViewer(). If the user does there
     could be errors in the viewing that go undetected or crash the code.
 
-   Concepts: PetscViewer^sequential version
-
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerRestoreSubViewer()
 @*/
 PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)

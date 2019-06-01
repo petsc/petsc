@@ -40,8 +40,6 @@ typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
 
    Level: beginner
 
-  Concepts: distributed array
-
   Fortran Notes - This should be declared as
 $    DMDALocalInfo :: info(DMDA_LOCAL_INFO_SIZE)
      and the entries accessed via

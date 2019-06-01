@@ -412,8 +412,6 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 
    Level: beginner
 
-  Concepts: SOR, preconditioners, Gauss-Seidel
-
    Notes:
     Only implemented for the AIJ  and SeqBAIJ matrix formats.
           Not a true parallel SOR, in parallel this implementation corresponds to block

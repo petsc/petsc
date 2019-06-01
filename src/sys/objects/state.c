@@ -28,8 +28,6 @@
 
    seealso: PetscObjectStateIncrease(), PetscObjectStateSet()
 
-   Concepts: state
-
 @*/
 PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
 {
@@ -61,8 +59,6 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
    Level: advanced
 
    seealso: PetscObjectStateGet(),PetscObjectStateIncrease()
-
-   Concepts: state
 
 @*/
 PetscErrorCode PetscObjectStateSet(PetscObject obj,PetscObjectState state)

@@ -19,7 +19,6 @@
 
    Level: advanced
 
-   Concepts: object type
 @*/
 PetscErrorCode  PetscObjectGetType(PetscObject obj, const char *type[])
 {
@@ -45,7 +44,6 @@ PetscErrorCode  PetscObjectGetType(PetscObject obj, const char *type[])
 
    Level: advanced
 
-   Concepts: object type
 @*/
 PetscErrorCode  PetscObjectSetType(PetscObject obj, const char type[])
 {

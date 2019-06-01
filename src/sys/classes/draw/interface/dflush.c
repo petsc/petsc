@@ -13,8 +13,6 @@
 
    Level: beginner
 
-   Concepts: flushing^graphics
-
 .seealso: PetscDrawClear()
 @*/
 PetscErrorCode  PetscDrawFlush(PetscDraw draw)

@@ -49,8 +49,6 @@ PetscErrorCode  PetscViewersDestroy(PetscViewers *v)
 
    Level: intermediate
 
-   Concepts: PetscViewer^array of
-
 .seealso: PetscViewerCreate(), PetscViewersDestroy()
 
 @*/
@@ -80,8 +78,6 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 .  viewer - the PetscViewer
 
    Level: intermediate
-
-   Concepts: PetscViewer^array of
 
 .seealso: PetscViewersCreate(), PetscViewersDestroy()
 

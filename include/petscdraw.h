@@ -215,8 +215,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawZoom(PetscDraw,PetscErrorCode (*)(PetscDraw
 
    Level: intermediate
 
-  Concepts: graphics
-
 .seealso:  PetscDrawViewPortsCreate(), PetscDrawViewPortsSet()
 S*/
 typedef struct {

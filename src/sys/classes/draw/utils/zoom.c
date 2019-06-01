@@ -13,10 +13,6 @@
 
   Level: advanced
 
-  Concepts: graphics^zooming
-  Concepts: drawing^zooming
-  Concepts: zooming^in graphics
-
 .seealso:
 @*/
 PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void*),void *ctx)

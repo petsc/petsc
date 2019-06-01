@@ -6,8 +6,6 @@
 
    Level: intermediate
 
-  Concepts: grids, grid refinement
-
    Notes:
     The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
 
@@ -115,8 +113,6 @@ typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_
   PetscPartitioner - PETSc object that manages a graph partitioner
 
   Level: intermediate
-
-  Concepts: partition, mesh
 
 .seealso: PetscPartitionerCreate(), PetscPartitionerSetType(), PetscPartitionerType
 S*/

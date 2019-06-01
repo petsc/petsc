@@ -2004,10 +2004,6 @@ M*/
 
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadEnd(), PetscPreLoadStage()
 
-   Concepts: preloading
-   Concepts: timing^accurate
-   Concepts: paging^eliminating effects of
-
 
 M*/
 
@@ -2140,8 +2136,6 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,Pe
 
    Level: advanced
 
-   Concepts: logging^MPE
-   Concepts: logging^message passing
 
 .seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogEventActivate(),
           PetscLogEventDeactivate()

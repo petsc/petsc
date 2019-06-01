@@ -39,8 +39,6 @@ static PetscBool Xterm = PETSC_TRUE;
    Fortran Note:
    This routine is not supported in Fortran.
 
-   Concepts: debugger^setting
-
 .seealso: PetscSetDebugger()
 @*/
 PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
@@ -71,8 +69,6 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
 
    Fortran Note:
    This routine is not supported in Fortran.
-
-  Concepts: debugger^setting
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
@@ -180,8 +176,6 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
    Not Collective
 
    Level: advanced
-
-   Concepts: debugger^starting from program
 
    Developer Notes:
     Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
@@ -433,8 +427,6 @@ $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
    or you may write your own.
 
-   Concepts: debugger^error handler
-   Concepts: error handler^attach debugger
 
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(),
            PetscAbortErrorHandler()
@@ -468,8 +460,6 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
 
    Developer Notes:
     Since this can be called by the error handler, should it be calling SETERRQ() and CHKERRQ()?
-
-   Concepts: debugger^waiting for attachment
 
 .seealso: PetscSetDebugger(), PetscAttachDebugger()
 @*/

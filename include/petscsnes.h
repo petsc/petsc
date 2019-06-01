@@ -13,8 +13,6 @@
 
    Level: beginner
 
-  Concepts: nonlinear solvers
-
 .seealso:  SNESCreate(), SNESSetType(), SNESType, TS, KSP, KSP, PC, SNESDestroy()
 S*/
 typedef struct _p_SNES* SNES;
@@ -517,8 +515,6 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec))
      SNESLineSearch - Abstract PETSc object that manages line-search operations
 
    Level: beginner
-
-  Concepts: nonlinear solvers, line search
 
 .seealso:  SNESLineSearchCreate(), SNESLineSearchSetType(), SNES
 S*/

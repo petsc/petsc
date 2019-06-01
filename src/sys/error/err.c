@@ -48,8 +48,6 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
    Developer Note:
    Since this is an error handler it cannot call CHKERRQ(); thus we just return if an error is detected.
 
-   Concepts: emacs^going to on error
-   Concepts: error handler^going to line in emacs
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler()
@@ -139,8 +137,6 @@ PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,in
 
    Level: intermediate
 
-   Concepts: error handler^setting
-
 .seealso: PetscPushErrorHandler()
 @*/
 PetscErrorCode  PetscPopErrorHandler(void)
@@ -187,8 +183,6 @@ $     SETERRQ(comm,number,mess)
    Use PetscPushErrorHandler() to set the desired error handler.  The
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscAbortErrorHandler()
-
-   Concepts: error handler
 
 .seealso:  PetscPushErrorHandler(), PetscPopErrorHandler().
  @*/
@@ -259,8 +253,6 @@ static const char *PetscErrorStrings[] = {
 -  specific - the specific error message that was set with SETERRxxx() or PetscError().  (NULL if not desired)
 
    Level: developer
-
-   Concepts: error handler^messages
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscError(), SETERRQ(), CHKERRQ() 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
@@ -334,8 +326,6 @@ $    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
    Developer Note: Since this is called after an error condition it should not be calling any error handlers (currently it ignores any error codes)
    BUT this routine does call regular PETSc functions that may call error handlers, this is problematic and could be fixed by never calling other PETSc routines
    but this annoying.
-
-   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), PetscErrorMessage()
 @*/

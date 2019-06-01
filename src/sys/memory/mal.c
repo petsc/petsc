@@ -195,8 +195,6 @@ PetscBool petscsetmallocvisited = PETSC_FALSE;
 
    Level: developer
 
-   Concepts: malloc
-   Concepts: memory^allocation
 
 @*/
 PetscErrorCode PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],void**),

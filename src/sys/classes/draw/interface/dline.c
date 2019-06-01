@@ -137,8 +137,6 @@ PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
 
    Level: beginner
 
-   Concepts: line^drawing
-   Concepts: drawing^line
 
 .seealso: PetscDrawArrow(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawPoint()
@@ -167,8 +165,6 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
 
    Level: beginner
 
-   Concepts: line^drawing
-   Concepts: drawing^line
 
 .seealso: PetscDrawLine(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawPoint()
@@ -197,8 +193,6 @@ PetscErrorCode  PetscDrawArrow(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRea
 -  width - the width in user coordinates
 
    Level: advanced
-
-   Concepts: line^width
 
 .seealso:  PetscDrawLineGetWidth(), PetscDrawLine(), PetscDrawArrow()
 @*/
@@ -231,8 +225,6 @@ PetscErrorCode  PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 
    Notes:
    Not currently implemented.
-
-   Concepts: line^width
 
 .seealso:  PetscDrawLineSetWidth(), PetscDrawLine(), PetscDrawArrow()
 @*/

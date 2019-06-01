@@ -35,8 +35,6 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-   Concepts: printing^to string
-
 .seealso: PetscViewerStringOpen(), PetscViewerStringGetStringRead(), PetscViewerStringSetString(), PETSCVIEWERSTRING
 @*/
 PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
@@ -87,8 +85,6 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
 
     Fortran Note:
     This routine is not supported in Fortran.
-
-  Concepts: PetscViewerString^creating
 
 .seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PetscViewerStringGetStringRead(), PetscViewerStringSetString(), PETSCVIEWERSTRING
 @*/

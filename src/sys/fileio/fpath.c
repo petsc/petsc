@@ -16,8 +16,6 @@
 
    Level: developer
 
-   Concepts: full path
-   Concepts: path^full
 
 .seealso: PetscGetRelativePath()
 @*/

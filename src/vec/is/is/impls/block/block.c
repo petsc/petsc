@@ -382,10 +382,6 @@ static struct _ISOps myops = { ISGetSize_Block,
 
    Level: beginner
 
-  Concepts: IS^block
-  Concepts: index sets^block
-  Concepts: block^index set
-
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
 PetscErrorCode  ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
@@ -476,10 +472,6 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
 
    Level: beginner
 
-  Concepts: IS^block
-  Concepts: index sets^block
-  Concepts: block^index set
-
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
 PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
@@ -526,10 +518,6 @@ static PetscErrorCode  ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
 
    Level: intermediate
 
-   Concepts: IS^block
-   Concepts: index sets^getting indices
-   Concepts: index sets^block
-
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
 PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
@@ -553,10 +541,6 @@ PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 .  idx - the integer indices
 
    Level: intermediate
-
-   Concepts: IS^block
-   Concepts: index sets^getting indices
-   Concepts: index sets^block
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
@@ -582,8 +566,6 @@ PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 
    Level: intermediate
 
-   Concepts: IS^block sizes
-   Concepts: index sets^block sizes
 
 .seealso: ISGetBlockSize(), ISBlockGetSize(), ISGetSize(), ISCreateBlock()
 @*/
@@ -621,8 +603,6 @@ static PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
 
    Level: intermediate
 
-   Concepts: IS^block sizes
-   Concepts: index sets^block sizes
 
 .seealso: ISGetBlockSize(), ISBlockGetLocalSize(), ISGetSize(), ISCreateBlock()
 @*/

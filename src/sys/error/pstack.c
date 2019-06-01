@@ -15,8 +15,6 @@ static PetscBool amsmemstack = PETSC_FALSE;
 
    Level: developer
 
-   Concepts: publishing object
-
    Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
 .seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
@@ -36,8 +34,6 @@ void  PetscStackSAWsGrantAccess(void)
    Collective on PETSC_COMM_WORLD?
 
    Level: developer
-
-   Concepts: publishing object
 
    Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 

@@ -14,8 +14,6 @@ PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
 
    Level: beginner
 
-  Concepts: Method of characteristics
-
 .seealso:  CharacteristicCreate(), CharacteristicSetType(), CharacteristicType, SNES, TS, PC, KSP
 S*/
 typedef struct _p_Characteristic *Characteristic;

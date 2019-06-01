@@ -25,8 +25,6 @@ extern MPI_Op MPIU_MININDEX_OP;
 
    Level: advanced
 
-   Concepts: scale^on stride of vector
-   Concepts: stride^scale
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
@@ -75,8 +73,6 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
 
    Level: advanced
 
-   Concepts: scale^on stride of vector
-   Concepts: stride^scale
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
@@ -134,8 +130,6 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 
    Level: advanced
 
-   Concepts: norm^on stride of vector
-   Concepts: stride^norm
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -211,8 +205,6 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
    Level: advanced
 
-   Concepts: maximum^on stride of vector
-   Concepts: stride^maximum
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
@@ -291,8 +283,6 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
    This will only work if the desire subvector is a stride subvector.
 
-   Concepts: minimum^on stride of vector
-   Concepts: stride^minimum
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
@@ -363,8 +353,6 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    Level: advanced
 
-   Concepts: scale^on stride of vector
-   Concepts: stride^scale
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -417,8 +405,6 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 
    Level: advanced
 
-   Concepts: norm^on stride of vector
-   Concepts: stride^norm
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -497,8 +483,6 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 
    Level: advanced
 
-   Concepts: maximum^on stride of vector
-   Concepts: stride^maximum
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
@@ -560,8 +544,6 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
 
    The dimension of nrm must be the same as the vector block size
 
-   Concepts: minimum^on stride of vector
-   Concepts: stride^minimum
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
@@ -629,8 +611,6 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
    Not optimized; could be easily
 
    Level: advanced
-
-   Concepts: gather^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
@@ -725,8 +705,6 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
    Not optimized; could be easily
 
    Level: advanced
-
-   Concepts:  scatter^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
@@ -824,8 +802,6 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 
    Level: advanced
 
-   Concepts: gather^into strided vector
-
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
 @*/
@@ -866,8 +842,6 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
    Not optimized; could be easily
 
    Level: advanced
-
-   Concepts: scatter^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll(), VecStrideSubSetScatter(), VecStrideSubSetGather()
@@ -913,8 +887,6 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 
    Level: advanced
 
-   Concepts: gather^into strided vector
-
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideGather(), VecStrideSubSetScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
 @*/
@@ -955,8 +927,6 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
    Not optimized; could be easily
 
    Level: advanced
-
-   Concepts: scatter^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideGather(), VecStrideGather(), VecStrideSubSetGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
@@ -1374,8 +1344,6 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 
    Level: beginner
 
-   Concepts: sum^of vector entries
-
 .seealso: VecNorm()
 @*/
 PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
@@ -1465,8 +1433,6 @@ PetscErrorCode  VecRealPart(Vec v)
 
    Level: intermediate
 
-   Concepts: vector^adding constant
-
 @*/
 PetscErrorCode  VecShift(Vec v,PetscScalar shift)
 {
@@ -1500,8 +1466,6 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
 .  v - the vector
 
    Level: intermediate
-
-   Concepts: vector^absolute value
 
 @*/
 PetscErrorCode  VecAbs(Vec v)
@@ -1585,8 +1549,6 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 
    Level: intermediate
 
-   Concepts: equal^two vectors
-   Concepts: vector^equality
 
 @*/
 PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)

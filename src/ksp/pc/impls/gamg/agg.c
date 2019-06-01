@@ -27,8 +27,6 @@ typedef struct {
 
    Level: intermediate
 
-   Concepts: Aggregation AMG preconditioner
-
 .seealso: ()
 @*/
 PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
@@ -65,8 +63,6 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 .  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation
 
    Level: intermediate
-
-   Concepts: Aggregation AMG preconditioner
 
 .seealso: PCGAMGSetSquareGraph()
 @*/
@@ -107,8 +103,6 @@ static PetscErrorCode PCGAMGSetSymGraph_AGG(PC pc, PetscBool n)
    Squaring the graph increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
 
    Level: intermediate
-
-   Concepts: Aggregation AMG preconditioner
 
 .seealso: PCGAMGSetSymGraph(), PCGAMGSetThreshold()
 @*/

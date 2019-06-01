@@ -6,8 +6,6 @@
 
    Level: beginner
 
-  Concepts: preconditioners
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
 S*/
 typedef struct _p_PC* PC;

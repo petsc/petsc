@@ -235,8 +235,6 @@ static PetscErrorCode PCSetFromOptions_KSP(PetscOptionItems *PetscOptionsObject,
 
    Level: intermediate
 
-   Concepts: inner iteration
-
    Notes:
     Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the other Krylov method

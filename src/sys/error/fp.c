@@ -143,8 +143,6 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    On certain machines, in particular the IBM rs6000, floating point
    trapping is VERY slow!
 
-   Concepts: floating point exceptions^trapping
-   Concepts: divide by zero
 
 .seealso: PetscFPTrapPush(), PetscFPTrapPop()
 @*/

@@ -13,8 +13,6 @@ PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
    Level: beginner
 
-  Concepts: Krylov methods
-
         Notes:
     When a direct solver is used but no Krylov solver is used the KSP object is still used by with a
        KSPType of KSPPREONLY (meaning application of the preconditioner is only used as the linear solver).
@@ -662,8 +660,6 @@ PETSC_EXTERN PetscErrorCode PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec
      KSPGuess - Abstract PETSc object that manages all initial guess methods in Krylov methods.
 
    Level: beginner
-
-  Concepts: Krylov methods
 
 .seealso:  KSPCreate(), KSPSetGuessType(), KSPGuessType
 S*/

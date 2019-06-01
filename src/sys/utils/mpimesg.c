@@ -19,8 +19,6 @@
 
   Level: developer
 
-  Concepts: mpi utility
-
   Notes:
   With this info, the correct message lengths can be determined using
   PetscGatherMessageLengths()
@@ -80,8 +78,6 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 - olengths  - corresponding message lengths
 
   Level: developer
-
-  Concepts: mpi utility
 
   Notes:
   With this info, the correct MPI_Irecv() can be posted with the correct
@@ -151,8 +147,6 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 - olengths1, olengths2 - corresponding message lengths
 
   Level: developer
-
-  Concepts: mpi utility
 
   Notes:
   With this info, the correct MPI_Irecv() can be posted with the correct

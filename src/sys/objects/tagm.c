@@ -30,10 +30,6 @@
 
     Level: developer
 
-    Concepts: tag^getting
-    Concepts: message tag^getting
-    Concepts: MPI message tag^getting
-
 .seealso: PetscCommGetNewTag()
 @*/
 PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
@@ -60,10 +56,6 @@ PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
 .   tag - the new tag
 
     Level: developer
-
-    Concepts: tag^getting
-    Concepts: message tag^getting
-    Concepts: MPI message tag^getting
 
 .seealso: PetscObjectGetNewTag(), PetscCommDuplicate()
 @*/
@@ -116,8 +108,6 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   level MPI_Comm that may be performing communication for the user or other library and so IS NOT used by PETSc.
 
   Level: developer
-
-  Concepts: communicator^duplicate
 
 .seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy()
 @*/
@@ -196,8 +186,6 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
 
    Level: developer
 
-   Concepts: communicator^destroy
-
 .seealso:   PetscCommDuplicate()
 @*/
 PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
@@ -260,8 +248,6 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 
 
     Level: developer
-
-    Concepts: MPI subcomm^numbering
 
 @*/
 PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, PetscObject *objlist, PetscInt *count, PetscInt *numbering)

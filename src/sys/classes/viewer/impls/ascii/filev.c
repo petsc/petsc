@@ -203,8 +203,6 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewer^file pointer
-  Concepts: file pointer^getting from PetscViewer
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerCreate(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush()
@@ -256,8 +254,6 @@ PETSC_INTERN FILE *petsc_history;
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIGetTab(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -291,8 +287,6 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^retrieval
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISetTab(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -325,8 +319,6 @@ PetscErrorCode  PetscViewerASCIIGetTab(PetscViewer viewer,PetscInt *tabs)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -359,8 +351,6 @@ PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer viewer,PetscInt tabs)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -389,8 +379,6 @@ PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
 
     Level: intermediate
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscViewerASCIIPopSynchronized(), PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -420,8 +408,6 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 
     Level: intermediate
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscViewerASCIIPushSynchronized(), PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -458,8 +444,6 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -492,8 +476,6 @@ PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPushTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -529,8 +511,6 @@ PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPushTab(), PetscViewerASCIIOpen(),
@@ -573,10 +553,6 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool flg)
     Fortran Note:
     The call sequence is PetscViewerASCIIPrintf(PetscViewer, character(*), int ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
-
-  Concepts: PetscViewerASCII^printing
-  Concepts: printing^to file
-  Concepts: printf
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerASCIIPushTab(), PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(),
@@ -1038,8 +1014,6 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 .  count - number of items of data actually read, or NULL
 
    Level: beginner
-
-   Concepts: ascii files
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetName()
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),

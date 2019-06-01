@@ -10,8 +10,6 @@
 
   Level: intermediate
 
-  Concepts: grids, grid refinement
-
 .seealso:  DM, DMPatchCreate()
 S*/
 PETSC_EXTERN PetscErrorCode DMPatchCreate(MPI_Comm, DM*);

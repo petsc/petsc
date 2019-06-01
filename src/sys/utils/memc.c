@@ -65,8 +65,6 @@ PetscErrorCode  PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBo
 
    Since b can overlap with a, b cannot be declared as const
 
-   Concepts: memory^copying with overlap
-   Concepts: copying^memory with overlap
 
 .seealso: PetscMemcpy()
 @*/
