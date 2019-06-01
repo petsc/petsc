@@ -143,7 +143,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
       MatCreateSeqUSFFT - Creates a matrix object that provides sequential USFFT
   via the external package FFTW
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +   da - geometry of the domain encoded by a DMDA

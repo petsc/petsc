@@ -154,7 +154,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatRe
    important to preallocate matrix storage in order to get good assembly
    performance.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF

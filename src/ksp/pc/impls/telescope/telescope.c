@@ -44,7 +44,7 @@ static const char citation[] =
 */
 
 /*
-  Collective on MPI_Comm[comm_f]
+  Collective[comm_f]
   Notes
    * Using comm_f = MPI_COMM_NULL will result in an error
    * Using comm_c = MPI_COMM_NULL is valid. If all instances of comm_c are NULL the subcomm is not valid.

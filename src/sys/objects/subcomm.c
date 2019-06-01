@@ -130,7 +130,7 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
 /*@C
   PetscSubcommSetNumber - Set total number of subcommunicators.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  psubcomm - PetscSubcomm context
@@ -159,7 +159,7 @@ PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
 /*@C
   PetscSubcommSetType - Set type of subcommunicators.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  psubcomm - PetscSubcomm context
@@ -188,7 +188,7 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
 /*@C
   PetscSubcommSetTypeGeneral - Set a PetscSubcomm from user's specifications
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  psubcomm - PetscSubcomm context
@@ -281,7 +281,7 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 /*@C
   PetscSubcommCreate - Create a PetscSubcomm context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator

@@ -69,7 +69,7 @@ PetscErrorCode  PFDestroy(PF *pf)
 /*@C
    PFCreate - Creates a mathematical function context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  comm - MPI communicator

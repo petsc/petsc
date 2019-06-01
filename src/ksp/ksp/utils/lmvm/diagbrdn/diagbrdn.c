@@ -577,7 +577,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
    (via MatLMVMUpdate) in one's favored solver implementation. 
    This allows for MPI compatibility.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF

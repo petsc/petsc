@@ -20,7 +20,7 @@
 /*@C
    DMSwarmSetPointsUniformCoordinates - Set point coordinates in a DMSwarm on a regular (ijk) grid
  
-   Collective on DM
+   Collective on dm
  
    Input parameters:
 +  dm - the DMSwarm
@@ -192,7 +192,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
 /*@C
    DMSwarmSetPointCoordinates - Set point coordinates in a DMSwarm from a user defined list
  
-   Collective on DM
+   Collective on dm
  
    Input parameters:
 +  dm - the DMSwarm
@@ -456,7 +456,7 @@ extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,Petsc
 /*@C
    DMSwarmProjectFields - Project a set of swarm fields onto the cell DM
  
-   Collective on Vec
+   Collective on dm
  
    Input parameters:
 +  dm - the DMSwarm

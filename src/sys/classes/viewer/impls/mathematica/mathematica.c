@@ -322,7 +322,7 @@ PetscErrorCode  PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode)
 /*@C
   PetscViewerMathematicaOpen - Communicates with Mathemtica using MathLink.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm    - The MPI communicator

@@ -813,7 +813,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 /*@C
    MatMPIAdjToSeq - Converts an parallel MPIAdj matrix to complete MPIAdj on each process (needed by sequential preconditioners)
 
-   Logically Collective on MPI_Comm
+   Logically Collective
 
    Input Parameter:
 .  A - the matrix
@@ -837,7 +837,7 @@ PetscErrorCode  MatMPIAdjToSeq(Mat A,Mat *B)
 /*@C
    MatMPIAdjSetPreallocation - Sets the array used for storing the matrix elements
 
-   Logically Collective on MPI_Comm
+   Logically Collective
 
    Input Parameters:
 +  A - the matrix
@@ -864,7 +864,7 @@ PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt
    The matrix does not have numerical values associated with it, but is
    intended for ordering (to reduce bandwidth etc) and partitioning.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

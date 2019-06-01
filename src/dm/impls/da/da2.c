@@ -745,7 +745,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
    DMDACreate2d -  Creates an object that will manage the communication of  two-dimensional
    regular array data that is distributed across some processors.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

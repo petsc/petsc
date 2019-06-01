@@ -644,7 +644,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 /*@
   PetscDualSpaceLagrangeSetContinuity - Indicate whether the element is continuous
 
-  Logically Collective on PetscDualSpace
+  Logically Collective on sp
 
   Input Parameters:
 + sp         - the PetscDualSpace

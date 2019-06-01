@@ -116,7 +116,7 @@ PetscErrorCode PetscDualSpaceRegister(const char sname[], PetscErrorCode (*funct
 /*@C
   PetscDualSpaceSetType - Builds a particular PetscDualSpace
 
-  Collective on PetscDualSpace
+  Collective on sp
 
   Input Parameters:
 + sp   - The PetscDualSpace object
@@ -212,7 +212,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 /*@
   PetscDualSpaceView - Views a PetscDualSpace
 
-  Collective on PetscDualSpace
+  Collective on sp
 
   Input Parameter:
 + sp - the PetscDualSpace object to view
@@ -239,7 +239,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 /*@
   PetscDualSpaceSetFromOptions - sets parameters in a PetscDualSpace from the options database
 
-  Collective on PetscDualSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscDualSpace object to set options for
@@ -302,7 +302,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 /*@
   PetscDualSpaceSetUp - Construct a basis for the PetscDualSpace
 
-  Collective on PetscDualSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscDualSpace object to setup
@@ -327,7 +327,7 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
 /*@
   PetscDualSpaceDestroy - Destroys a PetscDualSpace object
 
-  Collective on PetscDualSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscDualSpace object to destroy
@@ -364,7 +364,7 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
 /*@
   PetscDualSpaceCreate - Creates an empty PetscDualSpace object. The type can then be set with PetscDualSpaceSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscDualSpace object
@@ -401,7 +401,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
 /*@
   PetscDualSpaceDuplicate - Creates a duplicate PetscDualSpace object, however it is not setup.
 
-  Collective on PetscDualSpace
+  Collective on sp
 
   Input Parameter:
 . sp - The original PetscDualSpace
@@ -687,7 +687,7 @@ PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace sp, PetscSection *sect
 /*@
   PetscDualSpaceCreateReferenceCell - Create a DMPLEX with the appropriate FEM reference cell
 
-  Collective on PetscDualSpace
+  Collective on sp
 
   Input Parameters:
 + sp      - The PetscDualSpace

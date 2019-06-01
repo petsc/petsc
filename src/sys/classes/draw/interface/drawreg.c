@@ -91,7 +91,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 /*@C
    PetscDrawCreate - Creates a graphics context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  comm - MPI communicator

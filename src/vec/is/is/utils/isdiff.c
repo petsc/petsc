@@ -422,7 +422,7 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
    ISConcatenate - Forms a new IS by locally concatenating the indices from an IS list without reordering.
 
 
-   Collective on comm.
+   Collective.
 
    Input Parameter:
 +  comm    - communicator of the concatenated IS.
@@ -487,7 +487,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
                         mapped to j.
 
 
-  Collective on comm.
+  Collective.
 
   Input arguments:
 + comm    -  MPI_Comm

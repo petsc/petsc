@@ -441,7 +441,7 @@ PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScala
 /*
   DMPlexComputeGridHash_Internal - Create a grid hash structure covering the Plex
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The Plex
@@ -1564,7 +1564,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
 /*@C
   DMPlexComputeCellGeometryAffineFEM - Assuming an affine map, compute the Jacobian, inverse Jacobian, and Jacobian determinant for a given cell
 
-  Collective on DM
+  Collective on dm
 
   Input Arguments:
 + dm   - the DM
@@ -1685,7 +1685,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
 /*@C
   DMPlexComputeCellGeometryFEM - Compute the Jacobian, inverse Jacobian, and Jacobian determinant at each quadrature point in the given cell
 
-  Collective on DM
+  Collective on dm
 
   Input Arguments:
 + dm   - the DM
@@ -1956,7 +1956,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
 /*@C
   DMPlexComputeCellGeometryFVM - Compute the volume for a given cell
 
-  Collective on DM
+  Collective on dm
 
   Input Arguments:
 + dm   - the DM
@@ -2428,7 +2428,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
 /*@
   DMPlexComputeGradientFVM - Compute geometric factors for gradient reconstruction, which are stored in the geometry data, and compute layout for gradient data
 
-  Collective on DM
+  Collective on dm
 
   Input Arguments:
 + dm  - The DM
@@ -2484,7 +2484,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
 /*@
   DMPlexGetDataFVM - Retrieve precomputed cell geometry
 
-  Collective on DM
+  Collective on dm
 
   Input Arguments:
 + dm  - The DM

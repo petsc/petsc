@@ -41,7 +41,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
 /*@C
    PetscGetTmp - Gets the name of the tmp directory
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI_Communicator that may share /tmp
@@ -84,7 +84,7 @@ PetscErrorCode  PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
    PetscSharedTmp - Determines if all processors in a communicator share a
          /tmp or have different ones.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI_Communicator that may share /tmp
@@ -210,7 +210,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
    PetscSharedWorkingDirectory - Determines if all processors in a communicator share a
          working directory or have different ones.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI_Communicator that may share working directory
@@ -326,7 +326,7 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
     PetscFileRetrieve - Obtains a file from a URL or compressed
         and copies into local disk space as uncompressed.
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameter:
 +   comm     - processors accessing the file

@@ -28,7 +28,7 @@ static PetscErrorCode DMHasCreateInjection_Default(DM dm, PetscBool *flg)
    If you never  call DMSetType()  it will generate an
    error when you try to use the vector.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DM object
@@ -101,7 +101,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 /*@
   DMClone - Creates a DM object with the same topology as the original.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . dm - The original DM object
@@ -184,7 +184,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 /*@C
        DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
 
-   Logically Collective on DM
+   Logically Collective on da
 
    Input Parameter:
 +  da - initial distributed array
@@ -211,7 +211,7 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 /*@C
        DMGetVecType - Gets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
 
-   Logically Collective on DM
+   Logically Collective on da
 
    Input Parameter:
 .  da - initial distributed array
@@ -286,7 +286,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 /*@C
        DMSetISColoringType - Sets the type of coloring, global or local, that is created by the DM
 
-   Logically Collective on DM
+   Logically Collective on dm
 
    Input Parameters:
 +  dm - the DM context
@@ -311,7 +311,7 @@ PetscErrorCode  DMSetISColoringType(DM dm,ISColoringType ctype)
 /*@C
        DMGetISColoringType - Gets the type of coloring, global or local, that is created by the DM
 
-   Logically Collective on DM
+   Logically Collective on dm
 
    Input Parameter:
 .  dm - the DM context
@@ -338,7 +338,7 @@ PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
 /*@C
        DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
 
-   Logically Collective on DM
+   Logically Collective on dm
 
    Input Parameters:
 +  dm - the DM context
@@ -365,7 +365,7 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 /*@C
        DMGetMatType - Gets the type of matrix created with DMCreateMatrix()
 
-   Logically Collective on DM
+   Logically Collective on dm
 
    Input Parameter:
 .  dm - the DM context
@@ -449,7 +449,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
    DMSetOptionsPrefix - Sets the prefix used for searching for all
    DM options in the database.
 
-   Logically Collective on DM
+   Logically Collective on dm
 
    Input Parameter:
 +  da - the DM context
@@ -483,7 +483,7 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
    DMAppendOptionsPrefix - Appends to the prefix used for searching for all
    DM options in the database.
 
-   Logically Collective on DM
+   Logically Collective on dm
 
    Input Parameters:
 +  dm - the DM context
@@ -603,7 +603,7 @@ PetscErrorCode DMDestroyLabelLinkList(DM dm)
 /*@
     DMDestroy - Destroys a vector packer or DM.
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 .   dm - the DM object to destroy
@@ -793,7 +793,7 @@ PetscErrorCode  DMDestroy(DM *dm)
 /*@
     DMSetUp - sets up the data structures inside a DM object
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 .   dm - the DM object to setup
@@ -820,7 +820,7 @@ PetscErrorCode  DMSetUp(DM dm)
 /*@
     DMSetFromOptions - sets parameters in a DM from the options database
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 .   dm - the DM object to set options for
@@ -870,7 +870,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
 /*@C
     DMView - Views a DM
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 +   dm - the DM object to view
@@ -916,7 +916,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
 /*@
     DMCreateGlobalVector - Creates a global vector from a DM object
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 .   dm - the DM object
@@ -968,7 +968,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 /*@
    DMGetLocalToGlobalMapping - Accesses the local-to-global mapping in a DM.
 
-   Collective on DM
+   Collective on dm
 
    Input Parameter:
 .  dm - the DM that provides the mapping
@@ -1074,7 +1074,7 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 /*@
     DMCreateInterpolation - Gets interpolation matrix between two DM objects
 
-    Collective on DM
+    Collective on dm1
 
     Input Parameter:
 +   dm1 - the DM object
@@ -1115,7 +1115,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 /*@
     DMCreateRestriction - Gets restriction matrix between two DM objects
 
-    Collective on DM
+    Collective on dm1
 
     Input Parameter:
 +   dm1 - the DM object
@@ -1152,7 +1152,7 @@ PetscErrorCode  DMCreateRestriction(DM dm1,DM dm2,Mat *mat)
 /*@
     DMCreateInjection - Gets injection matrix between two DM objects
 
-    Collective on DM
+    Collective on dm1
 
     Input Parameter:
 +   dm1 - the DM object
@@ -1185,7 +1185,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
 /*@
   DMCreateMassMatrix - Gets mass matrix between two DM objects, M_ij = \int \phi_i \psi_j
 
-  Collective on DM
+  Collective on dm1
 
   Input Parameter:
 + dm1 - the DM object
@@ -1212,7 +1212,7 @@ PetscErrorCode DMCreateMassMatrix(DM dm1, DM dm2, Mat *mat)
 /*@
     DMCreateColoring - Gets coloring for a DM
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 +   dm - the DM object
@@ -1240,7 +1240,7 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
 /*@
     DMCreateMatrix - Gets empty Jacobian for a DM
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 .   dm - the DM object
@@ -1302,7 +1302,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   DMSetMatrixPreallocateOnly - When DMCreateMatrix() is called the matrix will be properly
     preallocated but the nonzero structure and zero values will not be set.
 
-  Logically Collective on DM
+  Logically Collective on dm
 
   Input Parameter:
 + dm - the DM
@@ -1323,7 +1323,7 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
   DMSetMatrixStructureOnly - When DMCreateMatrix() is called, the matrix structure will be created
     but the array for values will not be allocated.
 
-  Logically Collective on DM
+  Logically Collective on dm
 
   Input Parameter:
 + dm - the DM
@@ -1850,7 +1850,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
 /*@
   DMRefine - Refines a DM object
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 + dm   - the DM object
@@ -2258,7 +2258,7 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
 /*@
     DMGlobalToLocal - update local vectors from global vector
 
-    Neighbor-wise Collective on DM
+    Neighbor-wise Collective on dm
 
     Input Parameters:
 +   dm - the DM object
@@ -2288,7 +2288,7 @@ PetscErrorCode DMGlobalToLocal(DM dm,Vec g,InsertMode mode,Vec l)
 /*@
     DMGlobalToLocalBegin - Begins updating local vectors from global vector
 
-    Neighbor-wise Collective on DM
+    Neighbor-wise Collective on dm
 
     Input Parameters:
 +   dm - the DM object
@@ -2335,7 +2335,7 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 /*@
     DMGlobalToLocalEnd - Ends updating local vectors from global vector
 
-    Neighbor-wise Collective on DM
+    Neighbor-wise Collective on dm
 
     Input Parameters:
 +   dm - the DM object
@@ -2473,7 +2473,7 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
 /*@
     DMLocalToGlobal - updates global vectors from local vectors
 
-    Neighbor-wise Collective on DM
+    Neighbor-wise Collective on dm
 
     Input Parameters:
 +   dm - the DM object
@@ -2506,7 +2506,7 @@ PetscErrorCode DMLocalToGlobal(DM dm,Vec l,InsertMode mode,Vec g)
 /*@
     DMLocalToGlobalBegin - begins updating global vectors from local vectors
 
-    Neighbor-wise Collective on DM
+    Neighbor-wise Collective on dm
 
     Input Parameters:
 +   dm - the DM object
@@ -2619,7 +2619,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
 /*@
     DMLocalToGlobalEnd - updates global vectors from local vectors
 
-    Neighbor-wise Collective on DM
+    Neighbor-wise Collective on dm
 
     Input Parameters:
 +   dm - the DM object
@@ -2690,7 +2690,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
    that contain irrelevant values) to another local vector where the ghost
    points in the second are set correctly. Must be followed by DMLocalToLocalEnd().
 
-   Neighbor-wise Collective on DM and Vec
+   Neighbor-wise Collective on dm
 
    Input Parameters:
 +  dm - the DM object
@@ -2727,7 +2727,7 @@ PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
    that contain irrelevant values) to another local vector where the ghost
    points in the second are set correctly. Must be preceded by DMLocalToLocalBegin().
 
-   Neighbor-wise Collective on DM and Vec
+   Neighbor-wise Collective on dm
 
    Input Parameters:
 +  da - the DM object
@@ -2763,7 +2763,7 @@ PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 /*@
     DMCoarsen - Coarsens a DM object
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 +   dm - the DM object
@@ -2935,7 +2935,7 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 /*@C
    DMSubDomainHookAdd - adds a callback to be run when restricting a problem to the coarse grid
 
-   Logically Collective
+   Logically Collective on global
 
    Input Arguments:
 +  global - global DM
@@ -3109,7 +3109,7 @@ PetscErrorCode DMSetCoarsenLevel(DM dm,PetscInt level)
 /*@C
     DMRefineHierarchy - Refines a DM object, all levels at once
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 +   dm - the DM object
@@ -3147,7 +3147,7 @@ PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
 /*@C
     DMCoarsenHierarchy - Coarsens a DM object, all levels at once
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 +   dm - the DM object
@@ -3187,7 +3187,7 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
    DMCreateAggregates - Gets the aggregates that map between
    grids associated with two DMs.
 
-   Collective on DM
+   Collective on dmc
 
    Input Parameters:
 +  dmc - the coarse grid DM
@@ -3282,7 +3282,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 /*@C
     DMSetVariableBounds - sets a function to compute the lower and upper bound vectors for SNESVI.
 
-    Logically Collective on DM
+    Logically Collective on dm
 
     Input Parameter:
 +   dm - the DM object
@@ -3327,7 +3327,7 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 /*@C
     DMComputeVariableBounds - compute variable bounds used by SNESVI.
 
-    Logically Collective on DM
+    Logically Collective on dm
 
     Input Parameters:
 .   dm - the DM object
@@ -3432,7 +3432,7 @@ PetscErrorCode  DMHasCreateInjection(DM dm,PetscBool  *flg)
 /*@C
     DMSetVec - set the vector at which to compute residual, Jacobian and VI bounds, if the problem is nonlinear.
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 +   dm - the DM object
@@ -3465,7 +3465,7 @@ PetscBool         DMRegisterAllCalled = PETSC_FALSE;
 /*@C
   DMSetType - Builds a DM, for a particular DM implementation.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm     - The DM object
@@ -3535,7 +3535,7 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
 /*@C
   DMConvert - Converts a DM to another DM, either of the same or different type.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - the DM
@@ -3686,7 +3686,7 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
 /*@C
   DMLoad - Loads a DM that has been stored in binary  with DMView().
 
-  Collective on PetscViewer
+  Collective on viewer
 
   Input Parameters:
 + newdm - the newly loaded DM, this needs to have been created with DMCreate() or
@@ -4027,7 +4027,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
 /*@
   DMGetGlobalSection - Get the PetscSection encoding the global data layout for the DM.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The DM
@@ -4341,7 +4341,7 @@ static PetscErrorCode DMFieldEnlarge_Static(DM dm, PetscInt NfNew)
 /*@
   DMClearFields - Remove all fields from the DM
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameter:
 . dm - The DM
@@ -4394,7 +4394,7 @@ PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
 /*@
   DMSetNumFields - Set the number of fields in the DM
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameters:
 + dm - The DM
@@ -4453,7 +4453,7 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, DMLabel *label, PetscObject *field)
 /*@
   DMSetField - Set the discretization object for a given DM field
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameters:
 + dm    - The DM
@@ -4489,7 +4489,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject field)
 /*@
   DMAddField - Add the discretization object for the given DM field
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameters:
 + dm    - The DM
@@ -4522,7 +4522,7 @@ PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
 /*@
   DMCopyFields - Copy the discretizations for the DM into another DM
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The DM
@@ -4758,7 +4758,7 @@ PetscErrorCode DMGetNumDS(DM dm, PetscInt *Nds)
 /*@
   DMClearDS - Remove all discrete systems from the DM
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameter:
 . dm - The DM
@@ -4940,7 +4940,7 @@ PetscErrorCode DMGetRegionNumDS(DM dm, PetscInt num, DMLabel *label, IS *fields,
 /*@
   DMSetRegionDS - Set the PetscDS for a given mesh region, defined by a DMLabel
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm     - The DM
@@ -4989,7 +4989,7 @@ PetscErrorCode DMSetRegionDS(DM dm, DMLabel label, IS fields, PetscDS ds)
 /*@
   DMCreateDS - Create the discrete systems for the DM based upon the fields added to the DM
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The DM
@@ -5096,7 +5096,7 @@ PetscErrorCode DMCreateDS(DM dm)
 /*@
   DMCopyDS - Copy the discrete systems for the DM into another DM
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The DM
@@ -5131,7 +5131,7 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
 /*@
   DMCopyDisc - Copy the fields and discrete systems for the DM into another DM
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The DM
@@ -5264,7 +5264,7 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
 /*@
   DMGetDimPoints - Get the half-open interval for all points of a given dimension
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - the DM
@@ -5299,7 +5299,7 @@ PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *p
 /*@
   DMSetCoordinates - Sets into the DM a global vector that holds the coordinates
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - the DM
@@ -5369,7 +5369,7 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
 /*@
   DMGetCoordinates - Gets a global vector with the coordinates associated with the DM.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - the DM
@@ -5421,7 +5421,7 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
 /*@
   DMGetCoordinatesLocalSetUp - Prepares a local vector of coordinates, so that DMGetCoordinatesLocalNoncollective() can be used as non-collective afterwards.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - the DM
@@ -5460,7 +5460,7 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
 /*@
   DMGetCoordinatesLocal - Gets a local vector with the coordinates associated with the DM.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - the DM
@@ -5610,7 +5610,7 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
 /*@
   DMGetCoordinateDM - Gets the DM that prescribes coordinate layout and scatters between global and local coordinates
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - the DM
@@ -5646,7 +5646,7 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 /*@
   DMSetCoordinateDM - Sets the DM that prescribes coordinate layout and scatters between global and local coordinates
 
-  Logically Collective on DM
+  Logically Collective on dm
 
   Input Parameters:
 + dm - the DM
@@ -5725,7 +5725,7 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
 /*@
   DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The DM object
@@ -6216,7 +6216,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 /*@
   DMLocatePoints - Locate the points in v in the mesh and return a PetscSF of the containing cells
 
-  Collective on Vec v (see explanation below)
+  Collective on v (see explanation below)
 
   Input Parameters:
 + dm - The DM
@@ -7127,7 +7127,7 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 /*@
   DMCopyLabels - Copy labels from one mesh to another with a superset of the points
 
-  Collective on DM
+  Collective on dmA
 
   Input Parameter:
 . dmA - The DM object with initial labels
@@ -7588,6 +7588,8 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
 /*@C
   DMComputeL2GradientDiff - This function computes the L_2 difference between the gradient of a function u and an FEM interpolant solution grad u_h.
 
+  Collective on dm
+
   Input Parameters:
 + dm    - The DM
 , time  - The time
@@ -7617,6 +7619,8 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
 
 /*@C
   DMComputeL2FieldDiff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h, separated into field components.
+
+  Collective on dm
 
   Input Parameters:
 + dm    - The DM

@@ -420,7 +420,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   and whether all are used in each iteration also depends on the truncation strategy
   (see KSPPIPEFCGSetTruncationType)
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -477,7 +477,7 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp,PetscInt *mmax)
 /*@
   KSPPIPEFCGSetNprealloc - set the number of directions to preallocate with PIPEFCG
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -532,7 +532,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 /*@
   KSPPIPEFCGSetTruncationType - specify how many of its stored previous directions PIPEFCG uses during orthoganalization
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCD_TRUNC_TYPE_NOTAY uses max(1,mod(i,mmax)) stored directions at iteration i=0,1,..

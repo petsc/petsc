@@ -232,7 +232,7 @@ PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
    the routine SNESSetJacobian(). See MatCreateMFFD() for details on how
    the finite difference computation is done.
 
-   Collective on SNES and Vec
+   Collective on SNES
 
    Input Parameters:
 .  snes - the SNES context

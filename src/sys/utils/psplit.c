@@ -6,7 +6,7 @@
         (or global) length via a simple formula. Splits so each processors local size
         is divisible by the block size.
 
-   Collective on MPI_Comm (if N is PETSC_DECIDE)
+   Collective (if N is PETSC_DECIDE)
 
    Input Parameters:
 +    comm - MPI communicator that shares the object being divided
@@ -50,7 +50,7 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
     PetscSplitOwnership - Given a global (or local) length determines a local
         (or global) length via a simple formula
 
-   Collective on MPI_Comm (if n or N is PETSC_DECIDE)
+   Collective (if n or N is PETSC_DECIDE)
 
    Input Parameters:
 +    comm - MPI communicator that shares the object being divided

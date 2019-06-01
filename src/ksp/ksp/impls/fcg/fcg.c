@@ -326,7 +326,7 @@ static PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
   and whether all are used in each iteration also depends on the truncation strategy
   (see KSPFCGSetTruncationType())
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -384,7 +384,7 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
 /*@
   KSPFCGSetNprealloc - set the number of directions to preallocate with FCG
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -437,7 +437,7 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 /*@
   KSPFCGSetTruncationType - specify how many of its stored previous directions FCG uses during orthoganalization
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1,..

@@ -71,7 +71,7 @@ extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
 /*
    DMDAGlobalToNatural_Create - Create the global to natural scatter object
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameter:
 .  da - the distributed array context
@@ -117,7 +117,7 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
    in the "natural" grid ordering. Must be followed by
    DMDAGlobalToNaturalEnd() to complete the exchange.
 
-   Neighbor-wise Collective on DMDA
+   Neighbor-wise Collective on da
 
    Input Parameters:
 +  da - the distributed array context
@@ -162,7 +162,7 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec n)
    DMDAGlobalToNaturalEnd - Maps values from the global vector to a global vector
    in the natural ordering. Must be preceeded by DMDAGlobalToNaturalBegin().
 
-   Neighbor-wise Collective on DMDA
+   Neighbor-wise Collective on da
 
    Input Parameters:
 +  da - the distributed array context
@@ -202,7 +202,7 @@ PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec n)
    to a global vector in the PETSc DMDA grid ordering. Must be followed by
    DMDANaturalToGlobalEnd() to complete the exchange.
 
-   Neighbor-wise Collective on DMDA
+   Neighbor-wise Collective on da
 
    Input Parameters:
 +  da - the distributed array context
@@ -245,7 +245,7 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec n,InsertMode mode,Vec g)
    DMDANaturalToGlobalEnd - Maps values from the natural ordering global vector
    to a global vector in the PETSc DMDA ordering. Must be preceeded by DMDANaturalToGlobalBegin().
 
-   Neighbor-wise Collective on DMDA
+   Neighbor-wise Collective on da
 
    Input Parameters:
 +  da - the distributed array context

@@ -108,7 +108,7 @@ static int PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject,co
 /*
     PetscScanString -  Gets user input via stdin from process and broadcasts to all processes
 
-    Collective on MPI_Comm
+    Collective
 
    Input Parameters:
 +     commm - communicator for the broadcast, must be PETSC_COMM_WORLD

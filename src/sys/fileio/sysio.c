@@ -588,7 +588,7 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
 /*@C
    PetscBinarySynchronizedRead - Reads from a binary file.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -660,7 +660,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
 /*@C
    PetscBinarySynchronizedWrite - writes to a binary file.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator

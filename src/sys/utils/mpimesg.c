@@ -5,7 +5,7 @@
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm     - Communicator
@@ -63,7 +63,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
   PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive,
   including (from-id,length) pairs for each message.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm      - Communicator
@@ -133,7 +133,7 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
   including (from-id,length) pairs for each message. Same functionality as PetscGatherMessageLengths()
   except it takes TWO ilenths and output TWO olengths.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm      - Communicator

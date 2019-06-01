@@ -380,7 +380,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 /*@C
    PetscViewerHDF5Open - Opens a file for HDF5 input/output.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -1115,7 +1115,7 @@ PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
 /*@C
   PETSC_VIEWER_HDF5_ - Creates an HDF5 PetscViewer shared by all processors in a communicator.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - the MPI communicator to share the HDF5 PetscViewer

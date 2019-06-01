@@ -4,7 +4,7 @@
 /*@C
     PetscStartMatlab - starts up MATLAB with a MATLAB script
 
-    Logically Collective on MPI_Comm, but only processor zero in the communicator does anything
+    Logically Collective, but only processor zero in the communicator does anything
 
     Input Parameters:
 +     comm - MPI communicator

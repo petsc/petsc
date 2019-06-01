@@ -760,7 +760,7 @@ static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 /*@C
    PetscViewerBinaryOpen - Opens a file for binary input/output.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -847,7 +847,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
 /*@C
    PetscViewerBinaryRead - Reads from a binary file, all processors get the same result
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  viewer - the binary viewer
@@ -887,7 +887,7 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,
 /*@C
    PetscViewerBinaryWrite - writes to a binary file, only from the first process
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  viewer - the binary viewer
@@ -927,7 +927,7 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt cou
 /*@C
    PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first process an array of strings
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  viewer - the binary viewer
@@ -970,7 +970,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,const char *
 /*@C
    PetscViewerBinaryReadStringArray - reads a binary file an array of strings
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  viewer - the binary viewer
@@ -1440,7 +1440,7 @@ PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
      PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors
                      in a communicator.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameter:
 .    comm - the MPI communicator to share the binary PetscViewer

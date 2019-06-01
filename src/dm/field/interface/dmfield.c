@@ -98,7 +98,7 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
 /*@C
    DMFieldSetType - set the DMField implementation
 
-   Collective on DMField
+   Collective on field
 
    Input Parameters:
 +  field - the DMField context
@@ -217,7 +217,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 /*@
   DMFieldEvaluate - Evaluate the field and its derivatives on a set of points
 
-  Collective on Vec
+  Collective on points
 
   Input Parameter:
 + field - The DMField object

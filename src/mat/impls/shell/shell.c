@@ -1025,7 +1025,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
    MatCreateShell - Creates a new matrix class for use with a user-defined
    private data storage format.
 
-  Collective on MPI_Comm
+  Collective
 
    Input Parameters:
 +  comm - MPI communicator

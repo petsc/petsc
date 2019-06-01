@@ -245,7 +245,7 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess,PetscViewer viewer)
 /*@
    KSPGuessFischerSetModel - Use the Paul Fischer algorithm
 
-   Logically Collective on KSP
+   Logically Collective on guess
 
    Input Parameters:
 +  guess - the initial guess context

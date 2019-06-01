@@ -25,7 +25,7 @@ const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
 /*@
   PetscQuadratureCreate - Create a PetscQuadrature object
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscQuadrature object
@@ -57,7 +57,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 /*@
   PetscQuadratureDuplicate - Create a deep copy of the PetscQuadrature object
 
-  Collective on PetscQuadrature
+  Collective on q
 
   Input Parameter:
 . q  - The PetscQuadrature object
@@ -93,7 +93,7 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
 /*@
   PetscQuadratureDestroy - Destroys a PetscQuadrature object
 
-  Collective on PetscQuadrature
+  Collective on q
 
   Input Parameter:
 . q  - The PetscQuadrature object
@@ -333,7 +333,7 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
 /*@C
   PetscQuadratureView - Views a PetscQuadrature object
 
-  Collective on PetscQuadrature
+  Collective on quad
 
   Input Parameters:
 + quad  - The PetscQuadrature object

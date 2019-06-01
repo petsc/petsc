@@ -1892,7 +1892,7 @@ PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
 /*@C
   PetscSectionSymLabelSetStratum - set the symmetries for the orientations of a stratum
 
-  Logically collective on PetscSectionSym
+  Logically collective on sym
 
   InputParameters:
 + sys       - the section symmetries

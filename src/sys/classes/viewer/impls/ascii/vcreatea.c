@@ -13,7 +13,7 @@ PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
    PetscViewerASCIIGetStdout - Creates a ASCII PetscViewer shared by all processors
                     in a communicator. Error returning version of PETSC_VIEWER_STDOUT_()
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - the MPI communicator to share the PetscViewer
@@ -54,7 +54,7 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
    PETSC_VIEWER_STDOUT_ - Creates a ASCII PetscViewer shared by all processors
                     in a communicator.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - the MPI communicator to share the PetscViewer
@@ -93,7 +93,7 @@ PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
    PetscViewerASCIIGetStderr - Creates a ASCII PetscViewer shared by all processors
                     in a communicator. Error returning version of PETSC_VIEWER_STDERR_()
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - the MPI communicator to share the PetscViewer
@@ -134,7 +134,7 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
    PETSC_VIEWER_STDERR_ - Creates a ASCII PetscViewer shared by all processors
                     in a communicator.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - the MPI communicator to share the PetscViewer
@@ -181,7 +181,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval
 /*@C
    PetscViewerASCIIOpen - Opens an ASCII file for writing as a PetscViewer.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator
@@ -284,7 +284,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
 /*@C
    PetscViewerASCIIOpenWithFILE - Given an open file creates an ASCII viewer that prints to it.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator

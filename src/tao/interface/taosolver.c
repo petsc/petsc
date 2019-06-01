@@ -25,7 +25,7 @@ struct _n_TaoMonitorDrawCtx {
 /*@
   TaoCreate - Creates a TAO solver
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - MPI communicator

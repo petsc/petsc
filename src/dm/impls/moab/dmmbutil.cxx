@@ -490,7 +490,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
 /*@
   DMMoabCreateBoxMesh - Creates a mesh on the tensor product (box) of intervals with genCtx specified bounds.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm - The communicator for the DM object
@@ -799,7 +799,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 /*@
   DMMoabLoadFromFile - Creates a DM object by loading the mesh from a user specified file.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm - The communicator for the DM object
@@ -893,7 +893,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   DMMoabRenumberMeshEntities - Order and number all entities (vertices->elements) to be contiguously ordered
   in parallel
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + dm  - The DM object

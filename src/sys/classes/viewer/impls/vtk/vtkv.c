@@ -242,7 +242,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
 /*@C
    PetscViewerVTKOpen - Opens a file for VTK output.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

@@ -332,7 +332,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
 /*@C
    DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
  
-   Collective on DM
+   Collective on dm
  
    Input parameters:
 +  dm - the DMSwarm
@@ -392,7 +392,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
 /*@C
    DMSwarmViewXDMF - Write DMSwarm fields to an XDMF3 file
  
-   Collective on DM
+   Collective on dm
  
    Input parameters:
 +  dm - the DMSwarm

@@ -1205,7 +1205,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 /*@
    VecGetSubVector - Gets a vector representing part of another vector
 
-   Collective on IS (and Vec if nonlocal entries are needed)
+   Collective on IS
 
    Input Arguments:
 + X - vector from which to extract a subvector
@@ -1295,7 +1295,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 /*@
    VecRestoreSubVector - Restores a subvector extracted using VecGetSubVector()
 
-   Collective on IS (and Vec if nonlocal entries need to be written)
+   Collective on IS
 
    Input Arguments:
 + X - vector from which subvector was obtained

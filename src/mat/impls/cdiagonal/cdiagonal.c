@@ -134,7 +134,7 @@ PetscErrorCode MatGetInfo_ConstantDiagonal(Mat A,MatInfoType flag,MatInfo *info)
 /*@
    MatCreateConstantDiagonal - Creates a matrix with a uniform value along the diagonal
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

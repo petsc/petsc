@@ -10,7 +10,7 @@ extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
    DMDAGetScatter - Gets the global-to-local, and
    local-to-local vector scatter contexts for a distributed array.
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameter:
 .  da - the distributed array

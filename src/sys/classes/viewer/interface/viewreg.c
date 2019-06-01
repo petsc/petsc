@@ -175,7 +175,7 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 /*@C
    PetscOptionsGetViewer - Gets a viewer appropriate for the type indicated by the user
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator to own the viewer
@@ -369,7 +369,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 /*@
    PetscViewerCreate - Creates a viewing context
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator

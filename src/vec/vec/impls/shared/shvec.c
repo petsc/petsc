@@ -172,7 +172,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
    Output Parameter:
 .  vv - the vector
 
-   Collective on MPI_Comm
+   Collective
 
    Notes:
    Currently VecCreateShared() is available only on the SGI; otherwise,

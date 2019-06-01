@@ -169,7 +169,7 @@ M*/
     #include <petscoptions.h>
     PetscErrorCode PetscObjectOptionsBegin(PetscObject obj)
 
-    Collective on PetscObject
+    Collective on obj
 
   Input Parameters:
 .   obj - object to set options for
@@ -200,7 +200,7 @@ M*/
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
-    Collective on the MPI_Comm used in PetscOptionsBegin()
+    Collective on the comm used in PetscOptionsBegin() or obj used in PetscObjectOptionsBegin()
 
    Synopsis:
      #include <petscoptions.h>
@@ -231,7 +231,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(PetscOptionItems *,const char[]);
      PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
             See, for example, KSPSetFromOptions_GMRES().
 
-   Collective on the communicator passed in PetscOptionsBegin()
+    Collective on the comm used in PetscOptionsBegin() or obj used in PetscObjectOptionsBegin()
 
    Synopsis:
      #include <petscoptions.h>

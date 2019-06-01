@@ -1605,7 +1605,7 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
 /*@
    SNESCreate - Creates a nonlinear solver context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI communicator
@@ -2549,7 +2549,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 /*@
    SNESComputeJacobian - Computes the Jacobian matrix that has been set with SNESSetJacobian().
 
-   Collective on SNES and Mat
+   Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
@@ -2852,7 +2852,7 @@ M*/
    SNESSetJacobian - Sets the function to compute Jacobian as well as the
    location to store the matrix.
 
-   Logically Collective on SNES and Mat
+   Logically Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
@@ -4575,7 +4575,7 @@ PetscErrorCode  SNESGetType(SNES snes,SNESType *type)
 /*@
   SNESSetSolution - Sets the solution vector for use by the SNES routines.
 
-  Logically Collective on SNES and Vec
+  Logically Collective on SNES
 
   Input Parameters:
 + snes - the SNES context obtained from SNESCreate()

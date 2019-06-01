@@ -443,7 +443,7 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 /*@
   DMPlexCreateDefaultReferenceTree - create a reference tree for isotropic hierarchical mesh refinement.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm    - the MPI communicator

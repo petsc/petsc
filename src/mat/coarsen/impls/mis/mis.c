@@ -318,7 +318,7 @@ PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
 /*MC
    MATCOARSENMIS - Creates a coarsen context via the external package MIS.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  coarse - the coarsen context

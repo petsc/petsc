@@ -512,7 +512,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format
     PetscSynchronizedFlush - Flushes to the screen output from all processors
     involved in previous PetscSynchronizedPrintf()/PetscSynchronizedFPrintf() calls.
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameters:
 +   comm - the communicator
@@ -707,7 +707,7 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 /*@C
     PetscSynchronizedFGets - Several processors all get the same line from a file.
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameters:
 +   comm - the communicator

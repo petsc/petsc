@@ -7,7 +7,7 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 /*@
    ISCreate - Creates an index set object.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - the MPI communicator

@@ -303,7 +303,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 /*@
   DMPlexCreateTwoSidedProcessSF - Create an SF which just has process connectivity
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm      - The DM
@@ -393,7 +393,7 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
 /*@
   DMPlexDistributeOwnership - Compute owner information for shared points. This basically gets two-sided for an SF.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The DM
@@ -448,7 +448,7 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 /*@C
   DMPlexCreateOverlap - Compute owner information for shared points. This basically gets two-sided for an SF.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm          - The DM
@@ -562,7 +562,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
 /*@C
   DMPlexCreateOverlapMigrationSF - Create an SF describing the new mesh distribution to make the overlap described by the input SF
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm          - The DM
@@ -758,7 +758,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
 /*@
   DMPlexDistributeField - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - The DMPlex object
@@ -805,7 +805,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 /*@
   DMPlexDistributeFieldIS - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - The DMPlex object
@@ -850,7 +850,7 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
 /*@
   DMPlexDistributeData - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - The DMPlex object
@@ -1470,7 +1470,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 /*@C
   DMPlexMigrate  - Migrates internal DM data over the supplied star forest
 
-  Collective on DM and PetscSF
+  Collective on dm
 
   Input Parameter:
 + dm       - The source DMPlex object
@@ -1549,7 +1549,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 /*@C
   DMPlexDistribute - Distributes the mesh and any associated sections.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 + dm  - The original DMPlex object
@@ -1720,7 +1720,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 /*@C
   DMPlexDistributeOverlap - Add partition overlap to a distributed non-overlapping DM.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 + dm  - The non-overlapping distrbuted DMPlex object
@@ -1805,7 +1805,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   DMPlexGetGatherDM - Get a copy of the DMPlex that gathers all points on the
   root process of the original's communicator.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 . dm - the original DMPlex object
@@ -1849,7 +1849,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 /*@C
   DMPlexGetRedundantDM - Get a copy of the DMPlex that is completely copied on each process.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 . dm - the original DMPlex object

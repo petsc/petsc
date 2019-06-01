@@ -32,7 +32,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm comm,PetscMPIInt keyv
     PetscShmCommGet - Given a PETSc communicator returns a communicator of all ranks that share a common memory
 
 
-    Collective on comm.
+    Collective.
 
     Input Parameter:
 .   globcomm - MPI_Comm

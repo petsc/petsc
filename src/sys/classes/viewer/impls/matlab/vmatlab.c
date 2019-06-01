@@ -187,7 +187,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 /*@C
    PetscViewerMatlabOpen - Opens a Matlab .mat file for output
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -231,7 +231,7 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
      PETSC_VIEWER_MATLAB_ - Creates a Matlab PetscViewer shared by all processors
                      in a communicator.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameter:
 .    comm - the MPI communicator to share the Matlab PetscViewer

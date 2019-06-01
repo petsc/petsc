@@ -11,7 +11,7 @@ PetscClassId PETSC_SECTION_CLASSID;
 /*@
   PetscSectionCreate - Allocates PetscSection space and sets the map contents to the default.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm - the MPI communicator
@@ -70,7 +70,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 /*@
   PetscSectionCopy - Creates a shallow (if possible) copy of the PetscSection
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . section - the PetscSection
@@ -154,7 +154,7 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
 /*@
   PetscSectionClone - Creates a shallow (if possible) copy of the PetscSection
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . section - the PetscSection
@@ -2625,7 +2625,7 @@ PetscFunctionList PetscSectionSymList = NULL;
 /*@
   PetscSectionSymCreate - Creates an empty PetscSectionSym object.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - the MPI communicator

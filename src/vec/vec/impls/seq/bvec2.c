@@ -924,7 +924,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
    VecCreateSeqWithArray - Creates a standard,sequential array-style vector,
    where the user provides the array space to store the vector values.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF

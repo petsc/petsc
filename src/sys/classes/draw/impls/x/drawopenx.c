@@ -8,7 +8,7 @@
 /*@C
    PetscDrawOpenX - Opens an X-window for use with the PetscDraw routines.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator that will share X-window

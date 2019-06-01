@@ -19,7 +19,7 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface,c
 /*@C
   DMMoabCreateVector - Create a Vec from either an existing tag, or a specified tag size, and a range of entities
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm              - The DMMoab object being set
@@ -112,7 +112,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
 /*@C
   DMMoabVecGetArray - Returns the writable direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . dm              - The DMMoab object being set
@@ -198,7 +198,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
 /*@C
   DMMoabVecRestoreArray - Restores the writable direct access array obtained via DMMoabVecGetArray
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm              - The DMMoab object being set
@@ -280,7 +280,7 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
 /*@C
   DMMoabVecGetArrayRead - Returns the read-only direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm              - The DMMoab object being set
@@ -362,7 +362,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
 /*@C
   DMMoabVecRestoreArray - Restores the read-only direct access array obtained via DMMoabVecGetArray
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm              - The DMMoab object being set

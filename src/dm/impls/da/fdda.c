@@ -94,7 +94,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
     DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix().
 
-    Logically Collective on DMDA
+    Logically Collective on da
 
     Input Parameter:
 +   da - the distributed array
@@ -147,7 +147,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
     of the matrix returned by DMCreateMatrix(), using sparse representations
     of fill patterns.
 
-    Logically Collective on DMDA
+    Logically Collective on da
 
     Input Parameter:
 +   da - the distributed array
@@ -585,7 +585,7 @@ extern PetscErrorCode DMCreateMatrix_DA_IS(DM,Mat);
 /*@C
    MatSetupDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
 +  mat - the matrix

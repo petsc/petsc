@@ -1287,7 +1287,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin,MatDuplicateOption cpvalues,Mat *n
    For good matrix assembly performance the user should preallocate the matrix storage by
    setting the parameters d_nz (or d_nnz) and o_nz (or o_nnz).
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - the matrix
@@ -1420,7 +1420,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
 /*@C
    MatCreateSELL - Creates a sparse parallel matrix in SELL format.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

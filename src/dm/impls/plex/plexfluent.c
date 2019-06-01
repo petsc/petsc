@@ -209,7 +209,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 /*@C
   DMPlexCreateFluent - Create a DMPlex mesh from a Fluent mesh file.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator

@@ -988,7 +988,7 @@ static PetscErrorCode DMPlexMapToLocalPoint(PetscHMapIJ roothash, const PetscInt
 /*@
   DMPlexInterpolatePointSF - Insert interpolated points in the overlap into the PointSF in parallel, following local interpolation
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm      - The interpolated DM
@@ -1314,7 +1314,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
 /*@C
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - The DMPlex object with only cells and vertices
@@ -1385,7 +1385,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 /*@
   DMPlexCopyCoordinates - Copy coordinates from one mesh to another with the same vertices
 
-  Collective on DM
+  Collective on dmA
 
   Input Parameter:
 . dmA - The DMPlex object with initial coordinates
@@ -1505,7 +1505,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 /*@
   DMPlexUninterpolate - Take in a mesh with all intermediate faces, edges, etc. and return a cell-vertex mesh
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The complete DMPlex object

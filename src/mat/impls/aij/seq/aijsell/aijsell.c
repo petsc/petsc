@@ -295,7 +295,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
    Because SEQAIJSELL is a subtype of SEQAIJ, the option "-mat_seqaij_type seqaijsell" can be used to make
    sequential AIJ matrices default to being instances of MATSEQAIJSELL.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF

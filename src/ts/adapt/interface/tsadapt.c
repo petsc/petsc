@@ -990,7 +990,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
 /*@
   TSAdaptCreate - create an adaptive controller context for time stepping
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator

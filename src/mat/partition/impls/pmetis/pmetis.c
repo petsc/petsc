@@ -366,7 +366,7 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 /*MC
    MATPARTITIONINGPARMETIS - Creates a partitioning context via the external package PARMETIS.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  part - the partitioning context

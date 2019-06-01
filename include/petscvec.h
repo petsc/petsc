@@ -447,7 +447,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
 
-   Logically Collective on Vec
+   Logically Collective on x
 
    Input Parameters:
 +  x - the vector
@@ -481,7 +481,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,
 /*@C
    VecRestoreArrayPair - Returns a pair of pointers for two vectors that may be common. When not common the first is read only
 
-   Logically Collective on Vec
+   Logically Collective on x
 
    Input Parameters:
 +  x - the vector

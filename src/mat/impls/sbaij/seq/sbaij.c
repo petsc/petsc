@@ -2072,7 +2072,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
    (or the array nnz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -2393,7 +2393,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
      MatCreateSeqSBAIJWithArrays - Creates an sequential SBAIJ matrix using matrix elements
               (upper triangular entries in CSR format) provided by the user.
 
-     Collective on MPI_Comm
+     Collective
 
    Input Parameters:
 +  comm - must be an MPI communicator of size 1

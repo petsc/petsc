@@ -51,7 +51,7 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 /*@C
   PetscSpaceSetType - Builds a particular PetscSpace
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameters:
 + sp   - The PetscSpace object
@@ -121,7 +121,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 /*@C
   PetscSpaceView - Views a PetscSpace
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameter:
 + sp - the PetscSpace object to view
@@ -154,7 +154,7 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 /*@
   PetscSpaceSetFromOptions - sets parameters in a PetscSpace from the options database
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscSpace object to set options for
@@ -217,7 +217,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 /*@C
   PetscSpaceSetUp - Construct data structures for the PetscSpace
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscSpace object to setup
@@ -239,7 +239,7 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
 /*@
   PetscSpaceDestroy - Destroys a PetscSpace object
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscSpace object to destroy
@@ -268,7 +268,7 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
 /*@
   PetscSpaceCreate - Creates an empty PetscSpace object. The type can then be set with PetscSpaceSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscSpace object

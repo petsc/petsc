@@ -75,7 +75,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 /*@
   DMPatchCreate - Creates a DMPatch object, which is a collections of DMs called patches.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DMPatch object

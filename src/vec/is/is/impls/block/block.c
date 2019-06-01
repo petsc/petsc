@@ -448,7 +448,7 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator

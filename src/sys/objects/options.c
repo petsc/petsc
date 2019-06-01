@@ -307,7 +307,7 @@ static char *Petscgetline(FILE * f)
 /*@C
      PetscOptionsInsertFile - Inserts options into the database from a file.
 
-     Collective on MPI_Comm
+     Collective
 
   Input Parameter:
 +   comm - the processes that will share the options (usually PETSC_COMM_WORLD)

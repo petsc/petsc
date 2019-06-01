@@ -104,7 +104,7 @@ alldone:
    DMGetGlobalVector - Gets a MPI PETSc vector that
    may be used with the DMXXX routines.
 
-   Collective on DM
+   Collective on dm
 
    Input Parameter:
 .  dm - the distributed array
@@ -163,7 +163,7 @@ alldone:
 /*@
    DMClearGlobalVectors - Destroys all the global vectors that have been stashed in this DM
 
-   Collective on DM
+   Collective on dm
 
    Input Parameter:
 .  dm - the distributed array
@@ -196,7 +196,7 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
 /*@
    DMClearLocalVectors - Destroys all the local vectors that have been stashed in this DM
 
-   Collective on DM
+   Collective on dm
 
    Input Parameter:
 .  dm - the distributed array
@@ -311,7 +311,7 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm,const char *name,PetscBool *exists)
 /*@C
    DMGetNamedGlobalVector - get access to a named, persistent global vector
 
-   Collective on DM
+   Collective on dm
 
    Input Arguments:
 +  dm - DM to hold named vectors
@@ -360,7 +360,7 @@ found:
 /*@C
    DMRestoreNamedGlobalVector - restore access to a named, persistent global vector
 
-   Collective on DM
+   Collective on dm
 
    Input Arguments:
 +  dm - DM on which the vector was gotten

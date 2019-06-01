@@ -3,7 +3,7 @@
 /*@
   DMDASetSizes - Sets the number of grid points in the three dimensional directions
 
-  Logically Collective on DMDA
+  Logically Collective on da
 
   Input Parameters:
 + da - the DMDA
@@ -41,7 +41,7 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 /*@
   DMDASetNumProcs - Sets the number of processes in each dimension
 
-  Logically Collective on DMDA
+  Logically Collective on da
 
   Input Parameters:
 + da - the DMDA
@@ -431,7 +431,7 @@ PetscErrorCode  DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pet
 /*@
   DMDASetStencilType - Sets the type of the communication stencil
 
-  Logically Collective on DMDA
+  Logically Collective on da
 
   Input Parameter:
 + da    - The DMDA
@@ -482,7 +482,7 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
 /*@
   DMDASetStencilWidth - Sets the width of the communication stencil
 
-  Logically Collective on DMDA
+  Logically Collective on da
 
   Input Parameter:
 + da    - The DMDA
@@ -544,7 +544,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
 /*@
   DMDASetOwnershipRanges - Sets the number of nodes in each direction on each process
 
-  Logically Collective on DMDA
+  Logically Collective on da
 
   Input Parameter:
 + da - The DMDA
@@ -597,7 +597,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
        DMDASetInterpolationType - Sets the type of interpolation that will be
           returned by DMCreateInterpolation()
 
-   Logically Collective on DMDA
+   Logically Collective on da
 
    Input Parameter:
 +  da - initial distributed array
@@ -724,7 +724,7 @@ PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt
 /*@
      DMDASetRefinementFactor - Set the ratios that the DMDA grid is refined
 
-    Logically Collective on DMDA
+    Logically Collective on da
 
   Input Parameters:
 +    da - the DMDA object
@@ -795,7 +795,7 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
 /*@C
      DMDASetGetMatrix - Sets the routine used by the DMDA to allocate a matrix.
 
-    Logically Collective on DMDA
+    Logically Collective on da
 
   Input Parameters:
 +    da - the DMDA object
@@ -1317,7 +1317,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscInt n,PetscReal *nodes)
 
      DMDASetGLLCoordinates - Sets the global coordinates from -1 to 1 to the GLL points of as many GLL elements that fit the number of grid points
 
-   Collective on DM
+   Collective on da
 
    Input Parameters:
 +   da - the DMDA object

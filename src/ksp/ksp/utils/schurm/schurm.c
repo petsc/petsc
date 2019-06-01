@@ -154,7 +154,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 /*@
       MatCreateSchurComplement - Creates a new matrix object that behaves like the Schur complement of a matrix
 
-   Collective on Mat
+   Collective on A00
 
    Input Parameters:
 +   A00,A01,A10,A11  - the four parts of the original matrix A = [A00 A01; A10 A11] (A11 is optional)
@@ -203,7 +203,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
 /*@
       MatSchurComplementSetSubMatrices - Sets the matrices that define the Schur complement
 
-   Collective on Mat
+   Collective on S
 
    Input Parameter:
 +   S                - matrix obtained with MatCreateSchurComplement (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
@@ -344,7 +344,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
 /*@
       MatSchurComplementUpdateSubMatrices - Updates the Schur complement matrix object with new submatrices
 
-   Collective on Mat
+   Collective on S
 
    Input Parameters:
 +   S                - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
@@ -421,7 +421,7 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
 /*@C
   MatSchurComplementGetSubMatrices - Get the individual submatrices in the Schur complement
 
-  Collective on Mat
+  Collective on S
 
   Input Parameter:
 . S                - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
@@ -459,7 +459,7 @@ PetscErrorCode  MatSchurComplementGetSubMatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
 /*@
   MatSchurComplementComputeExplicitOperator - Compute the Schur complement matrix explicitly
 
-  Collective on Mat
+  Collective on M
 
   Input Parameter:
 . M - the matrix obtained with MatCreateSchurComplement()
@@ -583,7 +583,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 /*@
     MatGetSchurComplement - Obtain the Schur complement from eliminating part of the matrix in another part.
 
-    Collective on Mat
+    Collective on A
 
     Input Parameters:
 +   A      - matrix in which the complement is to be taken
@@ -735,7 +735,7 @@ PetscErrorCode  MatSchurComplementGetAinvType(Mat S,MatSchurComplementAinvType *
 /*@
     MatCreateSchurComplementPmat - create a preconditioning matrix for the Schur complement by assembling Sp = A11 - A10 inv(diag(A00)) A01
 
-    Collective on Mat
+    Collective on A00
 
     Input Parameters:
 +   A00,A01,A10,A11      - the four parts of the original matrix A = [A00 A01; A10 A11] (A01,A10, and A11 are optional, implying zero matrices)
@@ -836,7 +836,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 /*@
     MatSchurComplementGetPmat - Obtain a preconditioning matrix for the Schur complement by assembling Sp = A11 - A10 inv(diag(A00)) A01
 
-    Collective on Mat
+    Collective on S
 
     Input Parameters:
 +   S      - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01

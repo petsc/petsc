@@ -8,7 +8,7 @@
 /*
    DMLocalToLocalCreate_DA - Creates the local to local scatter
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameter:
 .  da - the distributed array
@@ -70,7 +70,7 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
    that contain irrelevant values) to another local vector where the ghost
    points in the second are set correctly. Must be followed by DMLocalToLocalEnd_DA().
 
-   Neighbor-wise Collective on DMDA and Vec
+   Neighbor-wise Collective on da
 
    Input Parameters:
 +  da - the distributed array context
@@ -107,7 +107,7 @@ PetscErrorCode  DMLocalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
    points in the second are set correctly.  Must be preceeded by
    DMLocalToLocalBegin_DA().
 
-   Neighbor-wise Collective on DMDA and Vec
+   Neighbor-wise Collective on da
 
    Input Parameters:
 +  da - the distributed array context

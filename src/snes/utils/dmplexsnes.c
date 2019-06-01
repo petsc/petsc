@@ -43,7 +43,7 @@ static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
 /*@C
   DMInterpolationCreate - Creates a DMInterpolationInfo context
 
-  Collective on comm
+  Collective
 
   Input Parameter:
 . comm - the communicator

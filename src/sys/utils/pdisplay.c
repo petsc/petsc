@@ -5,7 +5,7 @@
      PetscOptionsGetenv - Gets an environmental variable, broadcasts to all
           processors in communicator from first.
 
-     Collective on MPI_Comm
+     Collective
 
    Input Parameters:
 +    comm - communicator to share variable

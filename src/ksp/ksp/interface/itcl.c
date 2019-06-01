@@ -25,7 +25,7 @@ static PetscErrorCode KSPSetupMonitor_Private(KSP ksp, PetscViewer viewer, Petsc
    KSPSetOptionsPrefix - Sets the prefix used for searching for all
    KSP options in the database.
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -69,7 +69,7 @@ PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all
    KSP options in the database.
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -98,7 +98,7 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 /*@
    KSPSetUseFischerGuess - Use the Paul Fischer algorithm
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -130,7 +130,7 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
 /*@
    KSPSetGuess - Set the initial guess object
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -230,7 +230,7 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 /*@C
    KSPMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp - KSP object you wish to monitor
@@ -267,7 +267,7 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
    This routine must be called before KSPSetUp() if the user is to be
    allowed to set the Krylov type.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 .  ksp - the Krylov space context
@@ -641,7 +641,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 /*@
    KSPResetFromOptions - Sets various KSP parameters from user options ONLY if the KSP was previously set from options
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameter:
 .  ksp - the KSP context

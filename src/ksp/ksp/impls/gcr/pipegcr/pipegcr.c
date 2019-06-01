@@ -475,7 +475,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 /*@
   KSPPIPEGCRSetUnrollW - Set to PETSC_TRUE to use PIPEGCR with unrolling of the w vector
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -502,7 +502,7 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
 /*@
   KSPPIPEGCRGetUnrollW - Get information on PIPEGCR unrolling the w vector
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
    Input Parameter:
 .  ksp - the Krylov space context
@@ -534,7 +534,7 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
   and whether all are used in each iteration also depends on the truncation strategy
   (see KSPPIPEGCRSetTruncationType)
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -592,7 +592,7 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
 /*@
   KSPPIPEGCRSetNprealloc - set the number of directions to preallocate with PIPEGCR
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -647,7 +647,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
 /*@
   KSPPIPEGCRSetTruncationType - specify how many of its stored previous directions PIPEGCR uses during orthoganalization
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
@@ -743,7 +743,7 @@ static PetscErrorCode  KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp,KSPPIPEGCRModifyPCF
 /*@C
  KSPPIPEGCRSetModifyPC - Sets the routine used by PIPEGCR to modify the preconditioner.
 
- Logically Collective on KSP
+ Logically Collective on ksp
 
  Input Parameters:
  +  ksp      - iterative context obtained from KSPCreate()

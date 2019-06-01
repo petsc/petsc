@@ -213,7 +213,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
    MatNullSpaceCreate - Creates a data structure used to project vectors
    out of null spaces.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator associated with the object

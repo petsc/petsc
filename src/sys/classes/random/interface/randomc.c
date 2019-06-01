@@ -280,7 +280,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI communicator

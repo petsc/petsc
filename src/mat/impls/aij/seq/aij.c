@@ -3648,7 +3648,7 @@ PetscErrorCode  MatRetrieveValues(Mat mat)
    (or the array nnz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -3710,7 +3710,7 @@ PetscErrorCode  MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,
    (or the array nnz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - The matrix
@@ -4513,7 +4513,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg)
      MatCreateSeqAIJWithArrays - Creates an sequential AIJ matrix using matrix elements (in CSR format)
               provided by the user.
 
-      Collective on MPI_Comm
+      Collective
 
    Input Parameters:
 +   comm - must be an MPI communicator of size 1
@@ -4604,7 +4604,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
      MatCreateSeqAIJFromTriple - Creates an sequential AIJ matrix using matrix elements (in COO format)
               provided by the user.
 
-      Collective on MPI_Comm
+      Collective
 
    Input Parameters:
 +   comm - must be an MPI communicator of size 1
