@@ -490,35 +490,6 @@ checkpackagetests:
 	-@echo "Missing download package tests"
 	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`grep -l "download " *.py  | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; egrep "(download-$${j})" configexamples | grep -v "=0" | wc -l ; done
 
-#
-# Automatically generates PETSc exercises in html from the tutorial examples.
-#
-# The introduction for each section is obtained from docs/manualpages-cite/header_${MANSEC} may be edited
-#  (used also in introductions to the manual pages)
-#
-# DO NOT EDIT the *.htm files generated since they will be automatically replaced.
-#
-# Eventually the line below will replace the two cd in the rule below, it is just this way now for speed
-#	-@${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker
-#
-exercises:
-	-@echo "========================================="
-	-@echo "Generating HTML tutorial exercises"
-	-@${RM} docs/pageform.txt
-	-@echo "title=\"PETSc Exercises\""                >  docs/pageform.txt
-	-@echo "access_title=Exercise Sections"              >>  docs/pageform.txt
-	-@echo "access_format=short"                        >> docs/pageform.txt
-	-@echo "startpage=../exercises/introduction.htm"  >> docs/pageform.txt
-	-@echo "NONE title=\"Introduction\" command=link src=../exercises/introduction.htm" >> docs/pageform.txt
-	-@echo "Generating HTML for individual directories"
-	-@echo "========================================="
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} ACTION=pagemaker tree
-	-@echo "Completed HTML for individual directories"
-	-@echo "NONE title=\"<HR>\" " >> docs/pageform.txt;
-	-@echo "NONE title=\"PETSc Documentation\" command=link src=../index.html target=replace" >> docs/pageform.txt
-	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
-	-@echo "========================================="
-
 .PHONY: info info_h all deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  countfortranfunctions \
