@@ -128,6 +128,38 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 }
 
 /*@
+   PCMGSetOperators - Sets operator and preconditioning matrix for lth level
+
+   Logically Collective on PC and Mat
+
+   Input Parameters:
++  pc  - the multigrid context
+.  Amat - the operator
+.  pmat - the preconditioning operator
+-  l   - the level (0 is the coarsest) to supply
+
+   Level: advanced
+
+.keywords:  multigrid, set, interpolate, level
+
+.seealso: PCMGSetRestriction(), PCMGSetInterpolation()
+@*/
+PetscErrorCode  PCMGSetOperators(PC pc,PetscInt l,Mat Amat,Mat Pmat)
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(Amat,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(Pmat,MAT_CLASSID,4);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = KSPSetOperators(mglevels[l]->smoothd,Amat,Pmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    PCMGGetInterpolation - Gets the function to be used to calculate the
    interpolation from l-1 to the lth level
 

@@ -98,6 +98,9 @@ PETSC_EXTERN PetscErrorCode PCSetDiagonalScale(PC,Vec);
 PETSC_EXTERN PetscErrorCode PCSetDM(PC,DM);
 PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
 
+PETSC_EXTERN PetscErrorCode PCGetInterpolations(PC,PetscInt*,Mat*[]);
+PETSC_EXTERN PetscErrorCode PCGetCoarseOperators(PC pc,PetscInt*,Mat*[]);
+
 PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
@@ -362,11 +365,17 @@ PETSC_EXTERN PetscErrorCode PCMGGetRestriction(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetInjection(PC,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGetInjection(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetInterpolation(PC,PetscInt,Mat);
+PETSC_EXTERN PetscErrorCode PCMGSetOperators(PC,PetscInt,Mat,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
+
+
+PETSC_EXTERN PetscErrorCode PCHMGSetReuseInterpolation(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCHMGSetInnerPCType(PC,PCType);
 
 PETSC_EXTERN PetscErrorCode PCTelescopeGetSubcommType(PC,PetscSubcommType*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetSubcommType(PC,PetscSubcommType);

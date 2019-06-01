@@ -321,6 +321,8 @@ PetscErrorCode PCDestroy_MG(PC pc)
     ierr = PetscFree(mg->levels);CHKERRQ(ierr);
   }
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1235,6 +1237,48 @@ PetscErrorCode  PCMGSetDistinctSmoothUp(PC pc)
   PetscFunctionReturn(0);
 }
 
+/* No new matrices are created, and the coarse operator matrices are the references to the original ones */
+PetscErrorCode  PCGetInterpolations_MG(PC pc,PetscInt *num_levels,Mat *interpolations[])
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  Mat            *mat;
+  PetscInt       l;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = PetscMalloc1(mg->nlevels,&mat);CHKERRQ(ierr);
+  for (l=1; l< mg->nlevels; l++) {
+    mat[l-1] = mglevels[l]->interpolate;
+    ierr = PetscObjectReference((PetscObject)mat[l-1]);CHKERRQ(ierr);
+  }
+  *num_levels = mg->nlevels;
+  *interpolations = mat;
+  PetscFunctionReturn(0);
+}
+
+/* No new matrices are created, and the coarse operator matrices are the references to the original ones */
+PetscErrorCode  PCGetCoarseOperators_MG(PC pc,PetscInt *num_levels,Mat *coarseOperators[])
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscInt       l;
+  Mat            *mat;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = PetscMalloc1(mg->nlevels,&mat);CHKERRQ(ierr);
+  for (l=0; l<mg->nlevels-1; l++) {
+    ierr = KSPGetOperators(mglevels[l]->smoothd,NULL,&(mat[l]));CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)mat[l]);CHKERRQ(ierr);
+  }
+  *num_levels = mg->nlevels;
+  *coarseOperators = mat;
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------------------------------------*/
 
 /*MC
@@ -1297,5 +1341,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetGalerkin_C",PCMGSetGalerkin_MG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGetLevels_C",PCMGGetLevels_MG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetLevels_C",PCMGSetLevels_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",PCGetInterpolations_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",PCGetCoarseOperators_MG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

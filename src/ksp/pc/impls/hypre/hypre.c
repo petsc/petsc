@@ -12,6 +12,7 @@
 #include <../src/mat/impls/hypre/mhypre.h>
 #include <../src/dm/impls/da/hypre/mhyp.h>
 #include <_hypre_parcsr_ls.h>
+#include <petscmathypre.h>
 
 static PetscBool cite = PETSC_FALSE;
 static const char hypreCitation[] = "@manual{hypre-web-page,\n  title  = {{\\sl hypre}: High Performance Preconditioners},\n  organization = {Lawrence Livermore National Laboratory},\n  note  = {\\url{https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods}}\n}\n";
@@ -127,6 +128,66 @@ PetscErrorCode PCHYPREGetSolver(PC pc,HYPRE_Solver *hsolver)
 
   PetscFunctionBegin;
   *hsolver = jac->hsolver;
+  PetscFunctionReturn(0);
+}
+
+/*
+  Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
+  is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
+  It is used in PCHMG. Other users should avoid using this function.
+*/
+static PetscErrorCode PCGetCoarseOperators_BoomerAMG(PC pc,PetscInt *nlevels,Mat *operators[])
+{
+  PC_HYPRE             *jac  = (PC_HYPRE*)pc->data;
+  PetscBool            same = PETSC_FALSE;
+  PetscErrorCode       ierr;
+  PetscInt             num_levels,l;
+  Mat                  *mattmp;
+  hypre_ParCSRMatrix   **A_array;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcmp(jac->hypre_type,"boomeramg",&same);CHKERRQ(ierr);
+  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NOTSAMETYPE,"Hypre type is not BoomerAMG \n");
+  num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData*) (jac->hsolver));
+  ierr = PetscMalloc1(num_levels,&mattmp);CHKERRQ(ierr);
+  A_array    = hypre_ParAMGDataAArray((hypre_ParAMGData*) (jac->hsolver));
+  for (l=1; l<num_levels; l++) {
+    ierr = MatCreateFromParCSR(A_array[l],MATAIJ,PETSC_OWN_POINTER, &(mattmp[num_levels-1-l]));CHKERRQ(ierr);
+    /* We want to own the data, and HYPRE can not touch this matrix any more */
+    A_array[l] = NULL;
+  }
+  *nlevels = num_levels;
+  *operators = mattmp;
+  PetscFunctionReturn(0);
+}
+
+/*
+  Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
+  is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
+  It is used in PCHMG. Other users should avoid using this function.
+*/
+static PetscErrorCode PCGetInterpolations_BoomerAMG(PC pc,PetscInt *nlevels,Mat *interpolations[])
+{
+  PC_HYPRE             *jac  = (PC_HYPRE*)pc->data;
+  PetscBool            same = PETSC_FALSE;
+  PetscErrorCode       ierr;
+  PetscInt             num_levels,l;
+  Mat                  *mattmp;
+  hypre_ParCSRMatrix   **P_array;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcmp(jac->hypre_type,"boomeramg",&same);CHKERRQ(ierr);
+  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NOTSAMETYPE,"Hypre type is not BoomerAMG \n");
+  num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData*) (jac->hsolver));
+  ierr = PetscMalloc1(num_levels,&mattmp);CHKERRQ(ierr);
+  P_array  = hypre_ParAMGDataPArray((hypre_ParAMGData*) (jac->hsolver));
+  for (l=1; l<num_levels; l++) {
+    ierr = MatCreateFromParCSR(P_array[num_levels-1-l],MATAIJ,PETSC_OWN_POINTER, &(mattmp[l-1]));CHKERRQ(ierr);
+    /* We want to own the data, and HYPRE can not touch this matrix any more */
+    P_array[num_levels-1-l] = NULL;
+  }
+  *nlevels = num_levels;
+  *interpolations = mattmp;
   PetscFunctionReturn(0);
 }
 
@@ -438,6 +499,8 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetConstantEdgeVectors_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1712,6 +1775,8 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     pc->ops->view            = PCView_HYPRE_BoomerAMG;
     pc->ops->applytranspose  = PCApplyTranspose_HYPRE_BoomerAMG;
     pc->ops->applyrichardson = PCApplyRichardson_HYPRE_BoomerAMG;
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",PCGetInterpolations_BoomerAMG);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",PCGetCoarseOperators_BoomerAMG);CHKERRQ(ierr);
     jac->destroy             = HYPRE_BoomerAMGDestroy;
     jac->setup               = HYPRE_BoomerAMGSetup;
     jac->solve               = HYPRE_BoomerAMGSolve;
@@ -1899,7 +1964,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     It only gets here if the HYPRE type has not been set before the call to
    ...SetFromOptions() which actually is most of the time
 */
-static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx;

@@ -1790,3 +1790,63 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *c
   ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@
+   PCGetInterpolations - Gets interpolation matrices for all levels (except level 0)
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the precondition context
+
+   Output Parameter:
+-  num_levels - the number of levels
+.  interpolations - the interpolation matrices (size of num_levels-1)
+
+   Level: advanced
+
+.keywords: MG, GAMG, BoomerAMG, multigrid, interpolation, level
+
+.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetInterpolation(), PCGetCoarseOperators()
+@*/
+PetscErrorCode PCGetInterpolations(PC pc,PetscInt *num_levels,Mat *interpolations[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(num_levels,2);
+  PetscValidPointer(interpolations,3);
+  ierr = PetscUseMethod(pc,"PCGetInterpolations_C",(PC,PetscInt*,Mat*[]),(pc,num_levels,interpolations));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCGetCoarseOperators - Gets coarse operator matrices for all levels (except the finest level)
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the precondition context
+
+   Output Parameter:
+-  num_levels - the number of levels
+.  coarseOperators - the coarse operator matrices (size of num_levels-1)
+
+   Level: advanced
+
+.keywords: MG, GAMG, BoomerAMG, get, multigrid, interpolation, level
+
+.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale(), PCMGGetInterpolation(), PCGetInterpolations()
+@*/
+PetscErrorCode PCGetCoarseOperators(PC pc,PetscInt *num_levels,Mat *coarseOperators[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(num_levels,2);
+  PetscValidPointer(coarseOperators,3);
+  ierr = PetscUseMethod(pc,"PCGetCoarseOperators_C",(PC,PetscInt*,Mat*[]),(pc,num_levels,coarseOperators));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
