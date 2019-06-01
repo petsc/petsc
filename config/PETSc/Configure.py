@@ -877,11 +877,11 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
   def configureInstall(self):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
-      self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do:"',\
+      self.addMakeRule('print_mesg_after_build','',['-@echo "Now to install the libraries do:"',\
                                               '-@echo "'+self.installdir.installSudo+'make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
                                               '-@echo "========================================="'])
     else:
-      self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
+      self.addMakeRule('print_mesg_after_build','',['-@echo "Now to check if the libraries are working do:"',\
                                               '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',\
                                               '-@echo "========================================="'])
       return
