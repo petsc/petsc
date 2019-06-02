@@ -11,6 +11,7 @@ configure_options = [
   '--download-pastix=1',
   '--download-ptscotch=1',
   '--download-hypre=1',
+  '--download-hypre-configure-arguments=--enable-bigint=no --enable-mixedint=yes', # HYPRE with mixed integers
   '--download-superlu_dist=1',
   '--donwload-suitesparse=1',
   '--with-cxx-dialect=C++11',

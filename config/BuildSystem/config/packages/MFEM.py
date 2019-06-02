@@ -3,11 +3,17 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '92ab0429f21834bf4caa545d9495a26fff4f19bb'
+    #disable version checking
+    #self.minversion             = '4.0.0'
+    #self.version                = '4.0.0'
+    #self.versionname            = 'MFEM_VERSION_STRING'
+    #self.versioninclude         = 'mfem/config.hpp'
+    self.gitcommit              = 'v4.0' # tags do not include subminor
     self.download               = ['git://https://github.com/mfem/mfem.git']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
     self.cxx                    = 1
+    self.requirescxx11          = 1
     self.skippackagewithoptions = 1
     self.builtafterpetsc        = 1
     self.noMPIUni               = 1

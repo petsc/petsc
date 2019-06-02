@@ -4,12 +4,12 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version        = '2.15.1'
+    self.version        = '2.16.0'
     self.minversion     = '2.14.0'
     self.versionname    = 'HYPRE_RELEASE_VERSION'
     self.versioninclude = 'HYPRE_config.h'
     self.gitcommit      = 'v'+self.version
-    self.download       = ['git://https://github.com/LLNL/hypre','https://github.com/LLNL/hypre/archive/'+self.gitcommit+'.tar.gz']
+    self.download       = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions      = ['HYPRE_IJMatrixCreate']
     self.includes       = ['HYPRE.h']
     self.liblist        = [['libHYPRE.a']]
@@ -17,7 +17,8 @@ class Configure(config.package.GNUPackage):
     # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
     self.downloadonWindows = 0
     self.precisions        = ['double']
-    self.complex           = 0
+    # HYPRE is supposed to work with complex number
+    #self.complex           = 0
     self.hastests          = 1
     self.hastestsdatafiles = 1
 
@@ -28,6 +29,7 @@ class Configure(config.package.GNUPackage):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mpi        = framework.require('config.packages.MPI',self)
     self.mathlib    = framework.require('config.packages.mathlib',self)
+    self.scalar     = framework.require('PETSc.options.scalarTypes',self)
     self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
 
   def formGNUConfigureArgs(self):
@@ -76,8 +78,13 @@ class Configure(config.package.GNUPackage):
     args.append('--without-mli')
     args.append('--without-fei')
     args.append('--without-superlu')
+
     if self.getDefaultIndexSize() == 64:
       args.append('--enable-bigint')
+
+    if self.scalar.scalartype == 'complex':
+      args.append('--enable-complex')
+
     # hypre configure assumes the AR flags are passed in with AR
     args = [arg for arg in args if not arg.startswith('AR')]
     args.append('AR="'+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'"')
@@ -95,12 +102,13 @@ class Configure(config.package.GNUPackage):
     config.package.Package.configureLibrary(self)
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    # check integers
     if self.defaultIndexSize == 64:
-      code = '#if !defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT not defined!\n#endif'
-      msg  = '--with-64-bit-indices option requires Hypre built with --enable-bigint.\n'
+      code = '#if !defined(HYPRE_BIGINT) && !defined(HYPRE_MIXEDINT)\n#error HYPRE_BIGINT or HYPRE_MIXEDINT not defined!\n#endif'
+      msg  = '--with-64-bit-indices option requires Hypre built with --enable-bigint or --enable-mixedint.\n'
     else:
-      code = '#if defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT defined!\n#endif'
-      msg= 'Hypre with --enable-bigint appears to be specified for a default 32-bit-indices build of PETSc.\n'
+      code = '#if defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT defined!\n#endif\n#if defined(HYPRE_MIXEDINT)\n#error HYPRE_MIXEDINT defined!\n#endif\n'
+      msg  = 'Hypre with --enable-bigint/--enable-mixedint appears to be specified for a default 32-bit-indices build of PETSc.\n'
     if not self.checkCompile('#include "HYPRE_config.h"',code):
       raise RuntimeError('Hypre specified is incompatible!\n'+msg+'Suggest using --download-hypre for a compatible hypre')
     self.compilers.CPPFLAGS = oldFlags

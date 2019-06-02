@@ -99,45 +99,43 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* Rows are not sorted with HYPRE so we need an intermediate sort
+     They use a temporary buffer, so we can sort inplace the const memory */
   {
     const PetscInt    *idxA,*idxB;
     const PetscScalar *vA, *vB;
-    PetscInt          rstart, rend, nzA, nzB, j;
+    PetscInt          rstart, rend, nzA, nzB;
     PetscInt          cols[] = {0,1,2,3,4,-5};
     PetscInt          *rows;
     PetscScalar       *valuesA, *valuesB;
+    PetscBool         flg;
 
-    err = 0.0;
     ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(A,i,&nzA, &idxA,&vA);CHKERRQ(ierr);
-      ierr = MatGetRow(B,i,&nzB, &idxB,&vB);CHKERRQ(ierr);
-      if (nzA!=nzB) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %d", nzA-nzB);
-      for (j=0;j<nzA;j++) {
-        err +=idxA[j]-idxB[j];
-        err +=vA[j]-vA[j];
-      }
-      ierr = MatRestoreRow(A,i,&nzA, &idxA,&vA);CHKERRQ(ierr);
-      ierr = MatRestoreRow(B,i,&nzB, &idxB,&vB);CHKERRQ(ierr);
+      ierr = MatGetRow(A,i,&nzA,&idxA,&vA);CHKERRQ(ierr);
+      ierr = MatGetRow(B,i,&nzB,&idxB,&vB);CHKERRQ(ierr);
+      if (nzA!=nzB) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %D", nzA-nzB);
+      ierr = PetscSortIntWithScalarArray(nzB,(PetscInt*)idxB,(PetscScalar*)vB);CHKERRQ(ierr);
+      ierr = PetscMemcmp(idxA,idxB,nzA*sizeof(PetscInt),&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %D (indices)",i);
+      ierr = PetscMemcmp(vA,vB,nzA*sizeof(PetscScalar),&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %D (values)",i);
+      ierr = MatRestoreRow(A,i,&nzA,&idxA,&vA);CHKERRQ(ierr);
+      ierr = MatRestoreRow(B,i,&nzB,&idxB,&vB);CHKERRQ(ierr);
     }
-    if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatGetRow %g",err);
 
     ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
     ierr = PetscCalloc3((rend-rstart)*6,&valuesA,(rend-rstart)*6,&valuesB,rend-rstart,&rows);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++)
-      rows[i-rstart] =i;
+    for (i=rstart; i<rend; i++) rows[i-rstart] =i;
 
     ierr = MatGetValues(A,rend-rstart,rows,6,cols,valuesA);CHKERRQ(ierr);
     ierr = MatGetValues(B,rend-rstart,rows,6,cols,valuesB);CHKERRQ(ierr);
 
-    err = 0;
-    for (i=0; i<(rend-rstart); i++)
-      for (j=0; j<6; j++)
-        err += valuesA[i*6+j] - valuesB[i*6+j];
-
+    for (i=0; i<(rend-rstart); i++) {
+      ierr = PetscMemcmp(valuesA + 6*i,valuesB + 6*i,6*sizeof(PetscScalar),&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetValues %D",i + rstart);
+    }
     ierr = PetscFree3(valuesA,valuesB,rows);CHKERRQ(ierr);
-
-    if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatGetValueS %g",err);
   }
 
   /* Compare A and B */

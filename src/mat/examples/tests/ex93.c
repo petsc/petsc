@@ -247,10 +247,11 @@ PetscErrorCode testPTAPRectangular(void)
       args: -B_matmatmult_via heap
       output_file: output/ex93_1.out
 
+   #HYPRE PtAP is broken for complex numbers
    test:
       suffix: hypre
       nsize: 3
-      requires: hypre
+      requires: hypre !complex
       args: -B_matmatmult_via hypre -A_matptap_via hypre -test_hypre
 
    test:

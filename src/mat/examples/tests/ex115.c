@@ -11,12 +11,19 @@ int main(int argc,char **args)
   PetscReal          err;
   PetscInt           i,j,N = 6, M = 6;
   PetscErrorCode     ierr;
-  PetscBool          flg;
+  PetscBool          flg,testptap = PETSC_TRUE,testmatmatmult = PETSC_TRUE;
   PetscReal          norm;
   char               file[256];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,256,&flg);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  testptap = PETSC_FALSE;
+  testmatmatmult = PETSC_FALSE;
+  ierr = PetscOptionsInsertString(NULL,"-options_left 0");CHKERRQ(ierr);
+#endif
+  ierr = PetscOptionsGetBool(NULL,NULL,"-ptap",&testptap,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matmatmult",&testmatmatmult,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (!flg) { /* Create a matrix and test MatSetValues */
     PetscMPIInt size;
@@ -85,6 +92,12 @@ int main(int argc,char **args)
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_COMPLEX)
+    /* make the matrix imaginary */
+    ierr = MatScale(A,PETSC_i);CHKERRQ(ierr);
+    ierr = MatScale(B,PETSC_i);CHKERRQ(ierr);
+#endif
+
     /* MatAXPY further exercises MatSetValues_HYPRE */
     ierr = MatAXPY(B,-1.,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatConvert(B,MATMPIAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
@@ -145,7 +158,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMultTransposeAdd C");
 
   /* check PtAP */
-  if (M == N) {
+  if (testptap && M == N) {
     Mat pP,hP;
 
     /* PETSc MatPtAP -> output is a MatAIJ
@@ -184,47 +197,49 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* check MatMatMult */
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatConvert(A,MATHYPRE,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatConvert(B,MATHYPRE,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
+  if (testmatmatmult) {
+    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATHYPRE,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+    ierr = MatConvert(B,MATHYPRE,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
 
-  /* PETSc MatMatMult -> output is a MatAIJ
-     It uses HYPRE functions when -matmatmult_via hypre is specified at command line */
-  ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pAB);CHKERRQ(ierr);
-  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pAB);CHKERRQ(ierr);
-  ierr = MatNorm(pAB,NORM_INFINITY,&norm);CHKERRQ(ierr);
+    /* PETSc MatMatMult -> output is a MatAIJ
+       It uses HYPRE functions when -matmatmult_via hypre is specified at command line */
+    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pAB);CHKERRQ(ierr);
+    ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pAB);CHKERRQ(ierr);
+    ierr = MatNorm(pAB,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
-  /* MatMatMult_HYPRE_HYPRE -> output is a MatHYPRE */
-  ierr = MatMatMult(C,D,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
-  ierr = MatMatMult(C,D,MAT_REUSE_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
-  ierr = MatAXPY(CD,-1.,pAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatHasOperation(CD,MATOP_NORM,&flg);CHKERRQ(ierr);
-  if (!flg) { /* TODO add MatNorm_HYPRE */
-    ierr = MatConvert(CD,MATAIJ,MAT_INPLACE_MATRIX,&CD);CHKERRQ(ierr);
+    /* MatMatMult_HYPRE_HYPRE -> output is a MatHYPRE */
+    ierr = MatMatMult(C,D,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
+    ierr = MatMatMult(C,D,MAT_REUSE_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
+    ierr = MatAXPY(CD,-1.,pAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatHasOperation(CD,MATOP_NORM,&flg);CHKERRQ(ierr);
+    if (!flg) { /* TODO add MatNorm_HYPRE */
+      ierr = MatConvert(CD,MATAIJ,MAT_INPLACE_MATRIX,&CD);CHKERRQ(ierr);
+    }
+    ierr = MatNorm(CD,NORM_INFINITY,&err);CHKERRQ(ierr);
+    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    ierr = MatDestroy(&CD);CHKERRQ(ierr);
+    ierr = MatDestroy(&pAB);CHKERRQ(ierr);
+
+    /* When configured with HYPRE, MatMatMatMult is available for the triplet transpose(aij)-aij-aij */
+    ierr = MatCreateTranspose(A,&C);CHKERRQ(ierr);
+    ierr = MatMatMatMult(C,A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CAB);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+    ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatMatMult(D,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+    ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
+    ierr = MatAXPY(C,-1.,CAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
+    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMatMult %g %g",err,norm);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    ierr = MatDestroy(&CAB);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  ierr = MatNorm(CD,NORM_INFINITY,&err);CHKERRQ(ierr);
-  if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&D);CHKERRQ(ierr);
-  ierr = MatDestroy(&CD);CHKERRQ(ierr);
-  ierr = MatDestroy(&pAB);CHKERRQ(ierr);
-
-  /* When configured with HYPRE, MatMatMatMult is available for the triplet transpose(aij)-aij-aij */
-  ierr = MatCreateTranspose(A,&C);CHKERRQ(ierr);
-  ierr = MatMatMatMult(C,A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CAB);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatMatMult(D,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-  ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  ierr = MatAXPY(C,-1.,CAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-  if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMatMult %g %g",err,norm);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&D);CHKERRQ(ierr);
-  ierr = MatDestroy(&CAB);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* Check MatView */
   ierr = MatViewFromOptions(A,NULL,"-view_A");CHKERRQ(ierr);

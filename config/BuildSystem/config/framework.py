@@ -85,6 +85,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.cHeader         = 'matt_fix.h'
     self.headerPrefix    = ''
     self.substPrefix     = ''
+    self.pkgheader       = ''
     self.warningRE       = re.compile('warning', re.I)
     if not nargs.Arg.findArgument('debugSections', self.clArgs):
       self.argDB['debugSections'] = ['screen']
@@ -233,6 +234,11 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.log.write('**** ' + self.cHeader + ' ****\n')
       self.outputCHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
+    if self.pkgheader:
+      self.outputPkgHeader(self.pkgheader)
+      self.log.write('**** ' + self.pkgheader + ' ****\n')
+      self.outputPkgHeader(self.log)
+      self.actions.addArgument('Framework', 'File creation', 'Created configure pkg header '+self.pkgheader)
     self.log.write('\n')
     return
 
@@ -690,6 +696,40 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1])
     return
 
+  def outputPkgVersion(self, f, child):
+    '''If the child contains a tuple named "version_tuple", the entries are output in the config package header.'''
+    if not hasattr(child, 'version_tuple') or not isinstance(child.version_tuple, tuple): return
+    if not child.version_tuple: return
+    vt = child.version_tuple
+    prefix = 'PETSC_PKG_'+child.name.upper()+('_')
+    ss = ('VERSION_MAJOR','VERSION_MINOR','VERSION_SUBMINOR')
+    # output versioning tuple
+    for t in range(min(len(vt),3)):
+      f.write('#define '+prefix+ss[t]+(' ')+str(vt[t])+'\n')
+    while (t < 2):
+      t = t+1
+      f.write('#define '+prefix+ss[t]+(' 0\n'))
+
+    # output macros following petscversion.h style
+    f.write('#define '+prefix+'VERSION_ '+prefix+'VERSION_EQ\n\n')
+    f.write('#define '+prefix+'VERSION_EQ(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('      (('+prefix+'VERSION_MAJOR    == (MAJOR)) &&          \\\n')
+    f.write('       ('+prefix+'VERSION_MINOR    == (MINOR)) &&          \\\n')
+    f.write('       ('+prefix+'VERSION_SUBMINOR == (SUBMINOR)))\n\n')
+    f.write('#define '+prefix+'VERSION_LT(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('       ('+prefix+'VERSION_MAJOR  < (MAJOR) ||              \\\n')
+    f.write('        ('+prefix+'VERSION_MAJOR == (MAJOR) &&             \\\n')
+    f.write('         ('+prefix+'VERSION_MINOR  < (MINOR) ||            \\\n')
+    f.write('          ('+prefix+'VERSION_MINOR == (MINOR) &&           \\\n')
+    f.write('           ('+prefix+'VERSION_SUBMINOR  < (SUBMINOR))))))\n\n')
+    f.write('#define '+prefix+'VERSION_LE(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('       ('+prefix+'VERSION_LT(MAJOR,MINOR,SUBMINOR) ||      \\\n')
+    f.write('        '+prefix+'VERSION_EQ(MAJOR,MINOR,SUBMINOR))\n\n')
+    f.write('#define '+prefix+'VERSION_GT(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('       ( 0 == '+prefix+'VERSION_LE(MAJOR,MINOR,SUBMINOR))\n\n')
+    f.write('#define '+prefix+'VERSION_GE(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('       ( 0 == '+prefix+'VERSION_LT(MAJOR,MINOR,SUBMINOR))\n\n')
+
   def outputTypedefs(self, f, child):
     '''If the child contains a dictionary named "typedefs", the entries are output as typedefs in the config header.'''
     if not hasattr(child, 'typedefs') or not isinstance(child.typedefs, dict): return
@@ -768,6 +808,33 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputDefines(f, self, prefix)
     for child in self.childGraph.vertices:
       self.outputDefines(f, child, prefix)
+    if hasattr(self, 'headerBottom'):
+      f.write(str(self.headerBottom)+'\n')
+    f.write('#endif\n')
+    if not hasattr(name, 'close'):
+      f.close()
+    return
+
+  def outputPkgHeader(self, name, prefix = None):
+    '''Write the packages configuration header'''
+    if hasattr(name, 'close'):
+      f = name
+      filename = 'Unknown'
+    else:
+      dir = os.path.dirname(name)
+      if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+      if self.file_create_pause: time.sleep(1)
+      f = open(name, 'w')
+      filename = os.path.basename(name)
+    guard = 'INCLUDED_'+filename.upper().replace('.', '_')
+    f.write('#if !defined('+guard+')\n')
+    f.write('#define '+guard+'\n\n')
+    if hasattr(self, 'headerTop'):
+      f.write(str(self.headerTop)+'\n')
+    self.outputPkgVersion(f, self)
+    for child in self.childGraph.vertices:
+      self.outputPkgVersion(f, child)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif\n')

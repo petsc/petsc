@@ -27,7 +27,7 @@ PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
   PetscFunctionBegin;
   ierr = HYPRE_IJVectorInitialize(ij);CHKERRQ(ierr);
   ierr = VecGetArray(v,&array);CHKERRQ(ierr);
-  ierr = HYPRE_IJVectorSetValues(ij,v->map->n,NULL,array);CHKERRQ(ierr);
+  ierr = HYPRE_IJVectorSetValues(ij,v->map->n,NULL,(HYPRE_Complex*)array);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorAssemble(ij);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -40,7 +40,7 @@ PetscErrorCode VecHYPRE_IJVectorCopyFrom(HYPRE_IJVector ij,Vec v)
 
   PetscFunctionBegin;
   ierr = VecGetArray(v,&array);CHKERRQ(ierr);
-  ierr = HYPRE_IJVectorGetValues(ij,v->map->n,NULL,array);CHKERRQ(ierr);
+  ierr = HYPRE_IJVectorGetValues(ij,v->map->n,NULL,(HYPRE_Complex*)array);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
