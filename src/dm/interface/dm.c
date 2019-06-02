@@ -5044,8 +5044,10 @@ PetscErrorCode DMCreateDS(DM dm)
     PetscInt lStart, lEnd;
 
     if (label) {
-      DM       plex;
-      PetscInt depth, pMax[4];
+      DM        plex;
+      IS        fields;
+      PetscInt *fld;
+      PetscInt  depth, pMax[4];
 
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
       ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
@@ -5055,7 +5057,14 @@ PetscErrorCode DMCreateDS(DM dm)
       ierr = DMLabelGetBounds(label, &lStart, &lEnd);CHKERRQ(ierr);
       if (lStart < pMax[depth]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over hybrid cells right now");
       ierr = PetscDSCreate(comm, &probh);CHKERRQ(ierr);
-      ierr = DMSetRegionDS(dm, label, NULL, probh);CHKERRQ(ierr);
+      ierr = PetscMalloc1(1, &fld);CHKERRQ(ierr);
+      fld[0] = f;
+      ierr = ISCreate(PETSC_COMM_SELF, &fields);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) fields, "dm_fields_");CHKERRQ(ierr);
+      ierr = ISSetType(fields, ISGENERAL);CHKERRQ(ierr);
+      ierr = ISGeneralSetIndices(fields, 1, fld, PETSC_OWN_POINTER);CHKERRQ(ierr);
+      ierr = DMSetRegionDS(dm, label, fields, probh);CHKERRQ(ierr);
+      ierr = ISDestroy(&fields);CHKERRQ(ierr);
       ierr = PetscDSSetHybrid(probh, PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscDSSetCoordinateDimension(probh, dimEmbed);CHKERRQ(ierr);
       break;
