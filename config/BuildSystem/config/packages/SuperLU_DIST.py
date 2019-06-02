@@ -46,6 +46,8 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     if not self.framework.argDB['download-superlu_dist-gpu']:
       args.append('-DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE')
+    else:
+      self.usesopenmp = 'yes'
     args.append('-DUSE_XSDK_DEFAULTS=YES')
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('-DTPL_LAPACK_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
