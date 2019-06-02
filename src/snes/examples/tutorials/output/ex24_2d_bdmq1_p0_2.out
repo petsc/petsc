@@ -1,0 +1,7 @@
+L_2 Error: [3.92523e-17, 0.0192593]
+L_2 Residual: 0.0884054
+Function appears to be linear
+L_2 convergence rate: [1.0, 0.91]
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-field_petscspace_poly_type_no value: pminus_hdiv

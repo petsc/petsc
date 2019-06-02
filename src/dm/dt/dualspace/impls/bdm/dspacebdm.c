@@ -1,6 +1,41 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 #include <petscdmplex.h>
 
+/*
+Let's work out BDM_1:
+
+The model basis is
+  \phi(x, y) = / a + b x + c y \
+               \ d + e x + f y /
+which is a 6 dimensional space. There are also six dual basis functions,
+  \psi_0(v) = \int^1_{-1} dx v(x, -1) \cdot <0, -1> (1-x)/2
+  \psi_1(v) = \int^1_{-1} dx v(x, -1) \cdot <0, -1> (1+x)/2
+  \psi_2(v) = 1/2 \int^1_{-1} ds v(-s, s) \cdot <1, 1> (1-s)/2 TODO I think the 1/2 is wrong here
+  \psi_3(v) = 1/2 \int^1_{-1} ds v(-s, s) \cdot <1, 1> (1+s)/2
+  \psi_4(v) = -\int^1_{-1} dy v(-1, y) \cdot <-1, 0> (1+y)/2
+  \psi_5(v) = -\int^1_{-1} dy v(-1, y) \cdot <-1, 0> (1-y)/2
+So we do the integrals
+  \psi_0(\phi) = \int^1_{-1} dx (f - d - e x) (1-x)/2 = (f - d) + e/3
+  \psi_1(\phi) = \int^1_{-1} dx (f - d - e x) (1+x)/2 = (f - d) - e/3
+  \psi_2(\phi) = \int^1_{-1} ds (a - b s + c s + d - e s + f s) (1-s)/2 = (a + d)/2 - (c + f - b - e)/6
+  \psi_3(\phi) = \int^1_{-1} ds (a - b s + c s + d - e s + f s) (1+s)/2 = (a + d)/2 + (c + f - b - e)/6
+  \psi_4(\phi) = \int^1_{-1} dy (b - a - c y) (1+y)/2 = (a - b) + c/3
+  \psi_5(\phi) = \int^1_{-1} dy (b - a - c y) (1-y)/2 = (a - b) - c/3
+so the nodal basis is
+  \phi_0 = / -(1+x)/2        \
+           \ 1/2 + 3/2 x + y /
+  \phi_1 = / 1+x                \
+           \ -1 - 3/2 x - 1/2 y /
+  \phi_2 = / 1+x      \
+           \ -(1+y)/2 /
+  \phi_3 = / -(1+x)/2 \
+           \ (1+y)    /
+  \phi_4 = / -1 - 1/2 x - 3/2 y \
+           \ (1+y)             /
+  \phi_5 = / 1/2 + x + 3/2 y \
+           \ -(1+y)/2        /
+*/
+
 static PetscErrorCode PetscDualSpaceDestroy_BDM(PetscDualSpace sp)
 {
   PetscDualSpace_BDM *bdm = (PetscDualSpace_BDM *) sp->data;

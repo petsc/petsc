@@ -140,6 +140,7 @@ PetscErrorCode PetscSpaceRegisterAll(void)
 }
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_BDM(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace);
 
 /*@C
@@ -163,6 +164,7 @@ PetscErrorCode PetscDualSpaceRegisterAll(void)
   PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
+  ierr = PetscDualSpaceRegister(PETSCDUALSPACEBDM,      PetscDualSpaceCreate_BDM);CHKERRQ(ierr);
   ierr = PetscDualSpaceRegister(PETSCDUALSPACESIMPLE,   PetscDualSpaceCreate_Simple);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1577,10 +1577,10 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
   /* Create element */
   ierr = PetscFECreate(comm, fem);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix);CHKERRQ(ierr);
-  ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
   ierr = PetscFESetNumComponents(*fem, Nc);CHKERRQ(ierr);
+  ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);
   ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
@@ -1775,4 +1775,44 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
     }
   }
   return(0);
+}
+
+PetscErrorCode PetscFECreateCellGeometry(PetscFE fe, PetscQuadrature quad, PetscFEGeom *cgeom)
+{
+  PetscDualSpace  dsp;
+  DM              dm;
+  PetscQuadrature quadDef;
+  PetscInt        dim, cdim, Nq;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFEGetDualSpace(fe, &dsp);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(dsp, &dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &quadDef);CHKERRQ(ierr);
+  quad = quad ? quad : quadDef;
+  ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq*cdim,      &cgeom->v);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq*cdim*cdim, &cgeom->J);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq*cdim*cdim, &cgeom->invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq,           &cgeom->detJ);CHKERRQ(ierr);
+  cgeom->dim       = dim;
+  cgeom->dimEmbed  = cdim;
+  cgeom->numCells  = 1;
+  cgeom->numPoints = Nq;
+  ierr = DMPlexComputeCellGeometryFEM(dm, 0, quad, cgeom->v, cgeom->J, cgeom->invJ, cgeom->detJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscFEDestroyCellGeometry(PetscFE fe, PetscFEGeom *cgeom)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(cgeom->v);CHKERRQ(ierr);
+  ierr = PetscFree(cgeom->J);CHKERRQ(ierr);
+  ierr = PetscFree(cgeom->invJ);CHKERRQ(ierr);
+  ierr = PetscFree(cgeom->detJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }

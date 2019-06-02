@@ -10,18 +10,20 @@
 
 typedef struct _n_PetscFEGeom {
   const PetscReal *xi;
-  PetscReal *v;
-  PetscReal *J;
-  PetscReal *invJ;
-  PetscReal *detJ;
-  PetscReal *n;
-  PetscInt  (*face)[2];
-  PetscReal *suppInvJ[2];
-  PetscInt  dim;
-  PetscInt  dimEmbed;
-  PetscInt  numCells;
-  PetscInt  numPoints;
-  PetscBool isAffine;
+  PetscReal *v;           /* v[Nc*Np*dE]:           The first point in each each in real coordinates */
+  PetscReal *J;           /* J[Nc*Np*dE*dE]:        The Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
+  PetscReal *invJ;        /* invJ[Nc*Np*dE*dE]:     The inverse of the Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
+  PetscReal *detJ;        /* detJ[Nc*Np]:           The determinant of J, and if it is non-square its the volume change */
+  PetscReal *n;           /* n[Nc*Np*dE]:           For faces, the normal to the face in real coordinates */
+  PetscInt  (*face)[2];   /* face[Nc][s]:           For faces, the local face number (cone index) for this face in each supporting cell s */
+  PetscReal *suppJ[2];    /* sJ[s][Nc*Np*dE*dE]:    For faces, the Jacobian for each supporting cell s */
+  PetscReal *suppInvJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the inverse Jacobian for each supporting cell s */
+  PetscReal *suppDetJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the Jacobian determinant for each supporting cell s */
+  PetscInt  dim;          /* Topological dimension */
+  PetscInt  dimEmbed;     /* Real coordinate dimension */
+  PetscInt  numCells;     /* Number of mesh points represented in the arrays */
+  PetscInt  numPoints;    /* Number of evaluation points represented in the arrays */
+  PetscBool isAffine;     /* Flag for affine transforms */
 } PetscFEGeom;
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
@@ -90,6 +92,7 @@ PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 J*/
 typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACELAGRANGE "lagrange"
+#define PETSCDUALSPACEBDM      "bdm"
 #define PETSCDUALSPACESIMPLE   "simple"
 
 PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
@@ -204,6 +207,8 @@ PETSC_EXTERN PetscErrorCode PetscFERestoreTabulation(PetscFE, PetscInt, const Pe
 PETSC_EXTERN PetscErrorCode PetscFERefine(PetscFE, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFEGetHeightSubspace(PetscFE, PetscInt, PetscFE *);
 
+PETSC_EXTERN PetscErrorCode PetscFECreateCellGeometry(PetscFE, PetscQuadrature, PetscFEGeom *);
+PETSC_EXTERN PetscErrorCode PetscFEDestroyCellGeometry(PetscFE, PetscFEGeom *);
 PETSC_EXTERN PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, PetscScalar vals[]);
 PETSC_EXTERN PetscErrorCode PetscFEPushforwardGradient(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, PetscScalar vals[]);
 

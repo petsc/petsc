@@ -13,6 +13,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;               /* The topological mesh dimension */
   PetscBool simplex;           /* Flag for simplex or tensor product mesh */
+  PetscBool refcell;           /* Make the mesh only a reference cell */
   PetscBool useDA;             /* Flag DMDA tensor product mesh */
   PetscBool interpolate;       /* Generate intermediate mesh elements */
   PetscReal refinementLimit;   /* The largest allowable cell volume */
@@ -122,12 +123,14 @@ PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], c
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
+  PetscInt       n = 3;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->debug           = 0;
   options->dim             = 2;
   options->simplex         = PETSC_TRUE;
+  options->refcell         = PETSC_FALSE;
   options->useDA           = PETSC_TRUE;
   options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
@@ -144,11 +147,15 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->testFEjacobian  = PETSC_FALSE;
   options->testFVgrad      = PETSC_FALSE;
   options->testInjector    = PETSC_FALSE;
+  options->constants[0]    = 1.0;
+  options->constants[1]    = 2.0;
+  options->constants[2]    = 3.0;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Flag for simplices or hexhedra", "ex3.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-refcell", "Make the mesh only the reference cell", "ex3.c", options->refcell, &options->refcell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
@@ -165,6 +172,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray("-constants","Set the constant values", "ex3.c", options->constants, &n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   options->numComponents = options->numComponents < 0 ? options->dim : options->numComponents;
@@ -247,11 +255,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->simplex) {
+  if (user->refcell) {
+    ierr = DMPlexCreateReferenceCell(comm, dim, user->simplex, dm);CHKERRQ(ierr);
+  } else if (user->simplex || !user->useDA) {
     DM refinedMesh = NULL;
 
-    ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, NULL, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
     /* Refine mesh using a volume constraint */
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
@@ -729,9 +740,6 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
-  user->constants[0] = 1.0;
-  user->constants[1] = 2.0;
-  user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   /* Setup functions to approximate */
   switch (order) {
@@ -782,9 +790,6 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
-  user->constants[0] = 1.0;
-  user->constants[1] = 2.0;
-  user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
@@ -931,9 +936,16 @@ int main(int argc, char **argv)
   if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
   if (user.testInjector) {ierr = TestInjector(dm, &user);CHKERRQ(ierr);}
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
-  if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {
-    ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
-    ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
+  {
+    PetscDualSpace dsp;
+    PetscInt       k;
+
+    ierr = PetscFEGetDualSpace(user.fe, &dsp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+    if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE && k == 0) {
+      ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
+      ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
+    }
   }
   ierr = CheckConvergence(dm, 3, &user);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&user.fe);CHKERRQ(ierr);
@@ -1200,6 +1212,40 @@ int main(int argc, char **argv)
     suffix: p1d_2d_5
     requires: triangle
     args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
+
+  # 2D BDM_1 on a triangle
+  test:
+    suffix: bdm1_2d_0
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: bdm1_2d_1
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: bdm1_2d_2
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -porder 2
+
+  # 2D BDM_1 on a quadrilateral
+  test:
+    suffix: bdm1q_2d_0
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: bdm1q_2d_1
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: bdm1q_2d_2
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -porder 2
 
   # Test high order quadrature
   test:

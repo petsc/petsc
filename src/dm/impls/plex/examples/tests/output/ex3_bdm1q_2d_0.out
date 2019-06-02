@@ -1,0 +1,8 @@
+Function tests pass for order 0 at tolerance 1e-10
+Function tests pass for order 0 derivatives at tolerance 1e-10
+Function   convergence rate at refinement 0: 1.92
+Derivative convergence rate at refinement 0: 0.93
+Function   convergence rate at refinement 1: 1.98
+Derivative convergence rate at refinement 1: 0.98
+Function   convergence rate at refinement 2: 2.00
+Derivative convergence rate at refinement 2: 1.00

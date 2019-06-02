@@ -1,0 +1,7 @@
+L_2 Error: [0., 0.144338]
+L_2 Residual: 2.34521
+Taylor approximation converging at order 1.00
+L_2 convergence rate: [-0.20, -0.037]
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-petscspace_poly_type value: pminus_hdiv
