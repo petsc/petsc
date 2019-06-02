@@ -132,7 +132,8 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
     } else {
       for (dep = 0; dep <= depth - cellHeight; ++dep) {
-        d    = dim == depth ? dep : (!dep ? 0 : dim);
+        /* Cases: dim > depth (cell-vertex mesh), dim == depth (fully interpolated), dim < depth (interpolated submesh) */
+        d    = dim <= depth ? dep : (!dep ? 0 : dim);
         ierr = DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd);CHKERRQ(ierr);
         pMax[dep] = pMax[dep] < 0 ? pEnd : pMax[dep];
         for (p = pStart; p < pEnd; ++p) {
