@@ -6,7 +6,7 @@
    KSPMonitorLGResidualNormCreate - Creates a line graph context for use with
    KSP to monitor convergence of preconditioned residual norms.
 
-   Collective on KSP
+   Collective
 
    Input Parameters:
 +  comm - communicator context
@@ -144,7 +144,7 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
    KSP to monitor convergence of true residual norms (as opposed to
    preconditioned residual norms).
 
-   Collective on KSP
+   Collective
 
    Input Parameters:
 +  comm - communicator context

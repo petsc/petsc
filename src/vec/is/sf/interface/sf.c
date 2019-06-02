@@ -15,7 +15,7 @@ const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","Petsc
 /*@
    PetscSFCreate - create a star forest communication context
 
-   Collective on MPI_Comm
+   Collective
 
    Input Arguments:
 .  comm - communicator on which the star forest will operate

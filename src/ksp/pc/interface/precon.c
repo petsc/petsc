@@ -355,7 +355,7 @@ PetscErrorCode  PCGetUseAmat(PC pc,PetscBool *flg)
 /*@
    PCCreate - Creates a preconditioner context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator
@@ -405,7 +405,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 /*@
    PCApply - Applies the preconditioner to a vector.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -451,7 +451,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
 /*@
    PCApplySymmetricLeft - Applies the left part of a symmetric preconditioner to a vector.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -491,7 +491,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 /*@
    PCApplySymmetricRight - Applies the right part of a symmetric preconditioner to a vector.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -531,7 +531,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
 /*@
    PCApplyTranspose - Applies the transpose of preconditioner to a vector.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -574,7 +574,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
 /*@
    PCApplyTransposeExists - Test whether the preconditioner has a transpose apply operation
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -599,7 +599,7 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
 /*@
    PCApplyBAorAB - Applies the preconditioner and operator to a vector. y = B*A*x or y = A*B*x.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -678,7 +678,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
    and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
    NOT tr(B*A) = tr(A)*tr(B).
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1023,7 +1023,7 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
    PCSetOperators - Sets the matrix associated with the linear system and
    a (possibly) different one associated with the preconditioner.
 
-   Logically Collective on PC and Mat
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context

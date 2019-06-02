@@ -71,7 +71,7 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
     simple PetscViewer; information on the object is simply stored into
     the string in a fairly nice way.
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameters:
 +   comm - the communicator

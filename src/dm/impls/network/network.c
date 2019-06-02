@@ -25,7 +25,7 @@ PetscErrorCode DMNetworkGetPlex(DM netdm, DM *plexdm)
 /*@
   DMNetworkSetSizes - Sets the number of subnetworks, local and global vertices and edges for each subnetwork.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - the dm object
@@ -110,7 +110,7 @@ PetscErrorCode DMNetworkSetSizes(DM dm,PetscInt Nsubnet,PetscInt nV[], PetscInt 
 /*@
   DMNetworkSetEdgeList - Sets the list of local edges (vertex connectivity) for the network
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameters:
 + dm - the dm object
@@ -161,7 +161,7 @@ PetscErrorCode DMNetworkSetEdgeList(DM dm,PetscInt *edgelist[],PetscInt *edgelis
 /*@
   DMNetworkLayoutSetUp - Sets up the bare layout (graph) for the network
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters
 . DM - the dmnetwork object
@@ -419,7 +419,7 @@ PetscErrorCode DMNetworkGetSubnetworkCoupleInfo(DM dm,PetscInt id,PetscInt *ne,c
 /*@C
   DMNetworkRegisterComponent - Registers the network component
 
-  Logically collective on DM
+  Logically collective on dm
 
   Input Parameters
 + dm   - the network object

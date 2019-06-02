@@ -628,7 +628,7 @@ static PetscErrorCode PetscViewerSetFileName_GLVis(PetscViewer viewer, const cha
 /*@C
   PetscViewerGLVisOpen - Opens a GLVis type viewer
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 +  comm      - the MPI communicator
@@ -678,7 +678,7 @@ PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, co
 /*
   PETSC_VIEWER_GLVIS_ - Creates an GLVIS PetscViewer shared by all processors in a communicator.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - the MPI communicator to share the GLVIS PetscViewer

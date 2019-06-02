@@ -72,7 +72,7 @@
    #include <petscsys.h>
    PetscErrorCode SETERRQ(MPI_Comm comm,PetscErrorCode ierr,char *message)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, use PETSC_COMM_SELF unless you know all ranks of another communicator will detect the error
@@ -99,7 +99,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRMPI(MPI_Comm comm,PetscErrorCode ierr,char *message)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, use PETSC_COMM_SELF unless you know all ranks of another communicator will detect the error
@@ -123,7 +123,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ1(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -149,7 +149,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ2(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -176,7 +176,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ3(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -206,7 +206,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ4(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -237,7 +237,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ5(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Collective on MPI_COmm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -269,7 +269,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ6(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -302,7 +302,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ7(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -336,7 +336,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ8(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -371,7 +371,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRQ9(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -407,7 +407,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode SETERRABORT(MPI_Comm comm,PetscErrorCode ierr,char *message)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective

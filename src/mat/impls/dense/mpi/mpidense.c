@@ -1541,7 +1541,7 @@ PetscErrorCode  MatDenseResetArray(Mat mat)
 /*@C
    MatCreateDense - Creates a parallel matrix in dense format.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

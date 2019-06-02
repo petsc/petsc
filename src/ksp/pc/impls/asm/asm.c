@@ -896,7 +896,7 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
 /*@C
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor only) for the additive Schwarz preconditioner.
 
-    Collective on PC
+    Collective on pc
 
     Input Parameters:
 +   pc - the preconditioner context
@@ -944,7 +944,7 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
     additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine, with the same index sets.
 
-    Collective on PC
+    Collective on pc
 
     Input Parameters:
 +   pc - the preconditioner context
@@ -991,7 +991,7 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
     additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine.
 
-    Logically Collective on PC
+    Logically Collective on pc
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1041,7 +1041,7 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
 
-    Logically Collective on PC
+    Logically Collective on pc
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1080,7 +1080,7 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
     PCASMGetType - Gets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
 
-    Logically Collective on PC
+    Logically Collective on pc
 
     Input Parameter:
 .   pc  - the preconditioner context
@@ -1116,7 +1116,7 @@ PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
 /*@
   PCASMSetLocalType - Sets the type of composition used for local problems in the additive Schwarz method.
 
-  Logically Collective on PC
+  Logically Collective on pc
 
   Input Parameters:
 + pc  - the preconditioner context
@@ -1147,7 +1147,7 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
 /*@
   PCASMGetLocalType - Gets the type of composition used for local problems in the additive Schwarz method.
 
-  Logically Collective on PC
+  Logically Collective on pc
 
   Input Parameter:
 . pc  - the preconditioner context
@@ -1180,7 +1180,7 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
 /*@
     PCASMSetSortIndices - Determines whether subdomain indices are sorted.
 
-    Logically Collective on PC
+    Logically Collective on pc
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1206,7 +1206,7 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
    PCASMGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
 
-   Collective on PC iff first_local is requested
+   Collective on pc iff first_local is requested
 
    Input Parameter:
 .  pc - the preconditioner context

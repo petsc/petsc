@@ -249,7 +249,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport,int *t)
 /*@C
    PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket based server.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -472,7 +472,7 @@ PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 /*@C
      PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameter:
 .    comm - the MPI communicator to share the socket PetscViewer

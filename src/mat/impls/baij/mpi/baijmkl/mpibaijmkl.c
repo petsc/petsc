@@ -46,7 +46,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,Mat
    By setting these parameters accurately, performance can be increased by more 
    than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

@@ -283,7 +283,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 /*@C
    AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator that is to share AO

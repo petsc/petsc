@@ -22,7 +22,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 /*@
   DMAdaptorCreate - Create a DMAdaptor object. Its purpose is to construct a adaptation DMLabel or metric Vec that can be used to modify the DM.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DMAdaptor object

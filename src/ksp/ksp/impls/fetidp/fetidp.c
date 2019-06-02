@@ -78,7 +78,7 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
 /*@
  KSPFETIDPSetPressureOperator - Sets the operator used to setup the pressure preconditioner for saddle point FETI-DP.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp - the FETI-DP Krylov solver
@@ -189,7 +189,7 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc)
 /*@
  KSPFETIDPSetInnerBDDC - Sets the BDDC preconditioner used to setup the FETI-DP matrix for the Lagrange multipliers
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp - the FETI-DP Krylov solver

@@ -101,7 +101,7 @@ PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
      set can be used.  Some operating systems do not allow the use of these instructions despite
      hardware availability.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameter:
 .    comm - the MPI Communicator

@@ -521,7 +521,7 @@ PetscErrorCode  TSResetTrajectory(TS ts)
    TSComputeRHSJacobian - Computes the Jacobian matrix that has been
       set with TSSetRHSJacobian().
 
-   Collective on TS and Vec
+   Collective on TS
 
    Input Parameters:
 +  ts - the TS context
@@ -645,7 +645,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
 /*@
    TSComputeRHSFunction - Evaluates the right-hand-side function.
 
-   Collective on TS and Vec
+   Collective on TS
 
    Input Parameters:
 +  ts - the TS context
@@ -697,7 +697,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
 /*@
    TSComputeSolutionFunction - Evaluates the solution function.
 
-   Collective on TS and Vec
+   Collective on TS
 
    Input Parameters:
 +  ts - the TS context
@@ -737,7 +737,7 @@ PetscErrorCode TSComputeSolutionFunction(TS ts,PetscReal t,Vec U)
 /*@
    TSComputeForcingFunction - Evaluates the forcing function.
 
-   Collective on TS and Vec
+   Collective on TS
 
    Input Parameters:
 +  ts - the TS context
@@ -841,7 +841,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
 /*@
    TSComputeIFunction - Evaluates the DAE residual written in implicit form F(t,U,Udot)=0
 
-   Collective on TS and Vec
+   Collective on TS
 
    Input Parameters:
 +  ts - the TS context
@@ -912,7 +912,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
 /*@
    TSComputeIJacobian - Evaluates the Jacobian of the DAE
 
-   Collective on TS and Vec
+   Collective on TS
 
    Input
       Input Parameters:
@@ -1627,7 +1627,7 @@ PetscErrorCode  TSGetI2Jacobian(TS ts,Mat *J,Mat *P,TSI2Jacobian *jac,void **ctx
 /*@
   TSComputeI2Function - Evaluates the DAE residual written in implicit form F(t,U,U_t,U_tt) = 0
 
-  Collective on TS and Vec
+  Collective on TS
 
   Input Parameters:
 + ts - the TS context
@@ -1691,7 +1691,7 @@ PetscErrorCode TSComputeI2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F)
 /*@
   TSComputeI2Jacobian - Evaluates the Jacobian of the DAE
 
-  Collective on TS and Vec
+  Collective on TS
 
   Input Parameters:
 + ts - the TS context
@@ -1765,7 +1765,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
    TS2SetSolution - Sets the initial solution and time derivative vectors
    for use by the TS routines handling second order equations.
 
-   Logically Collective on TS and Vec
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -3004,7 +3004,7 @@ PetscErrorCode TSGetTotalSteps(TS ts,PetscInt *steps) { return TSGetStepNumber(t
    TSSetSolution - Sets the initial solution vector
    for use by the TS routines.
 
-   Logically Collective on TS and Vec
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -4517,7 +4517,7 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
 /*@
    TSSetDM - Sets the DM that may be used by some nonlinear solvers or preconditioners under the TS
 
-   Logically Collective on TS and DM
+   Logically Collective on ts
 
    Input Parameters:
 +  ts - the ODE integrator object
@@ -6974,7 +6974,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
 /*@
    TSComputeLinearStability - computes the linear stability function at a point
 
-   Collective on TS and Vec
+   Collective on TS
 
    Input Parameters:
 +  ts - the TS context
@@ -7348,7 +7348,7 @@ PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* 
 /*@C
   TSClone - This function clones a time step object.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . tsin    - The input TS
@@ -7453,7 +7453,7 @@ static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void* ctx,Vec x,Vec y
 /*@
     TSRHSJacobianTest - Compares the multiply routine provided to the MATSHELL with differencing on the TS given RHS function.
 
-   Logically Collective on TS and Mat
+   Logically Collective on TS
 
     Input Parameters:
     TS - the time stepping routine
@@ -7488,7 +7488,7 @@ PetscErrorCode  TSRHSJacobianTest(TS ts,PetscBool *flg)
 /*@C
     TSRHSJacobianTestTranspose - Compares the multiply transpose routine provided to the MATSHELL with differencing on the TS given RHS function.
 
-   Logically Collective on TS and Mat
+   Logically Collective on TS
 
     Input Parameters:
     TS - the time stepping routine

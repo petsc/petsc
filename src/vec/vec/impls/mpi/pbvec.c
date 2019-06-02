@@ -588,7 +588,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
    VecCreateMPIWithArray - Creates a parallel, array-style vector,
    where the user provides the array space to store the vector values.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm  - the MPI communicator to use
@@ -634,7 +634,7 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
    VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use
@@ -716,7 +716,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 /*@
    VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use
@@ -839,7 +839,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
    VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space. Indices in the ghost region are based on blocks.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use
@@ -927,7 +927,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
    VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
         The indicing of the ghost points is done with blocks.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use

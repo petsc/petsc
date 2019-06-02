@@ -8,7 +8,7 @@
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dmb  - The DMMoab object
@@ -84,7 +84,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   DMRefineHierarchy_Moab - Generate a multi-level DM hierarchy
   by succesively refining a coarse mesh.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm  - The DMMoab object
@@ -114,7 +114,7 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM 
   DMCoarsenHierarchy_Moab - Generate a multi-level DM hierarchy
   by succesively coarsening a refined mesh.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm  - The DMMoab object
@@ -147,7 +147,7 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, 
   operators (matrices, vectors) from parent level to child level as defined by
   the DM inputs provided by the user.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm1  - The DMMoab object
@@ -389,7 +389,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . dmb  - The DMMoab object
@@ -508,7 +508,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 + dm  - The DMMoab object
@@ -538,7 +538,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm  - The DMMoab object

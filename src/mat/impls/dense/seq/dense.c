@@ -2538,7 +2538,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
    is stored in column major order (the usual Fortran 77 manner). Many
    of the matrix operations use the BLAS and LAPACK routines.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -2574,7 +2574,7 @@ PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScala
 /*@C
    MatSeqDenseSetPreallocation - Sets the array used for storing the matrix elements
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - the matrix

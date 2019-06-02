@@ -6,7 +6,7 @@
 /*@
   DMPlexCreateDoublet - Creates a mesh of two cells of the specified type, optionally with later refinement.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm - The communicator for the DM object
@@ -145,7 +145,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
 /*@
   DMPlexCreateSquareBoundary - Creates a 1D mesh the is the boundary of a square lattice.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm  - The communicator for the DM object
@@ -291,7 +291,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 /*@
   DMPlexCreateCubeBoundary - Creates a 2D mesh that is the boundary of a cubic lattice.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm  - The communicator for the DM object
@@ -984,7 +984,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
 /*@C
   DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using simplices or tensor cells (hexahedra).
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm        - The communicator for the DM object
@@ -1072,7 +1072,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
 /*@
   DMPlexCreateWedgeBoxMesh - Creates a 3-D mesh tesselating the (x,y) plane and extruding in the third direction using wedge cells.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm        - The communicator for the DM object
@@ -1309,7 +1309,7 @@ PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBoo
 /*@C
   DMPlexSetOptionsPrefix - Sets the prefix used for searching for all DM options in the database.
 
-  Logically Collective on DM
+  Logically Collective on dm
 
   Input Parameters:
 + dm - the DM context
@@ -1338,7 +1338,7 @@ PetscErrorCode DMPlexSetOptionsPrefix(DM dm, const char prefix[])
 /*@
   DMPlexCreateHexCylinderMesh - Creates a mesh on the tensor product of the unit interval with the circle (cylinder) using hexahedra.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm      - The communicator for the DM object
@@ -1636,7 +1636,7 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
 /*@
   DMPlexCreateWedgeCylinderMesh - Creates a mesh on the tensor product of the unit interval with the circle (cylinder) using wedges.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm - The communicator for the DM object
@@ -1747,7 +1747,7 @@ PETSC_STATIC_INLINE PetscReal DotReal(PetscInt dim, const PetscReal x[], const P
 /*@
   DMPlexCreateSphereMesh - Creates a mesh on the d-dimensional sphere, S^d.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 . comm  - The communicator for the DM object
@@ -2587,7 +2587,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 /*@
   DMPlexCreate - Creates a DMPlex object, which encapsulates an unstructured mesh, or CW complex, which can be expressed using a Hasse Diagram.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DMPlex object
@@ -3300,7 +3300,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
 /*@
   DMPlexCreateReferenceCell - Create a DMPLEX with the appropriate FEM reference cell
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm    - The communicator

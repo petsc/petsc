@@ -674,7 +674,7 @@ PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*fun
 /*@C
   PetscPartitionerSetType - Builds a particular PetscPartitioner
 
-  Collective on PetscPartitioner
+  Collective on part
 
   Input Parameters:
 + part - The PetscPartitioner object
@@ -742,7 +742,7 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 /*@C
   PetscPartitionerView - Views a PetscPartitioner
 
-  Collective on PetscPartitioner
+  Collective on part
 
   Input Parameter:
 + part - the PetscPartitioner object to view
@@ -797,7 +797,7 @@ static PetscErrorCode PetscPartitionerGetDefaultType(const char *currentType, co
 /*@
   PetscPartitionerSetFromOptions - sets parameters in a PetscPartitioner from the options database
 
-  Collective on PetscPartitioner
+  Collective on part
 
   Input Parameter:
 . part - the PetscPartitioner object to set options for
@@ -838,7 +838,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 /*@C
   PetscPartitionerSetUp - Construct data structures for the PetscPartitioner
 
-  Collective on PetscPartitioner
+  Collective on part
 
   Input Parameter:
 . part - the PetscPartitioner object to setup
@@ -860,7 +860,7 @@ PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
 /*@
   PetscPartitionerDestroy - Destroys a PetscPartitioner object
 
-  Collective on PetscPartitioner
+  Collective on part
 
   Input Parameter:
 . part - the PetscPartitioner object to destroy
@@ -889,7 +889,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 /*@
   PetscPartitionerCreate - Creates an empty PetscPartitioner object. The type can then be set with PetscPartitionerSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscPartitioner object
@@ -926,7 +926,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 /*@
   PetscPartitionerPartition - Create a non-overlapping partition of the cells in the mesh
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + part    - The PetscPartitioner
@@ -1179,7 +1179,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 /*@C
   PetscPartitionerShellSetPartition - Set an artifical partition for a mesh
 
-  Collective on Part
+  Collective on part
 
   Input Parameters:
 + part   - The PetscPartitioner
@@ -1223,7 +1223,7 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 /*@
   PetscPartitionerShellSetRandom - Set the flag to use a random partition
 
-  Collective on Part
+  Collective on part
 
   Input Parameters:
 + part   - The PetscPartitioner
@@ -1246,7 +1246,7 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
 /*@
   PetscPartitionerShellGetRandom - get the flag to use a random partition
 
-  Collective on Part
+  Collective on part
 
   Input Parameter:
 . part   - The PetscPartitioner
@@ -2208,7 +2208,7 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 /*@
   DMPlexSetPartitioner - Set the mesh partitioner
 
-  logically collective on dm and part
+  logically collective on dm
 
   Input Parameters:
 + dm - The DM

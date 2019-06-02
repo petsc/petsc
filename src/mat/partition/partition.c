@@ -450,7 +450,7 @@ PetscErrorCode  MatPartitioningViewImbalance(MatPartitioning matp, IS partitioni
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
       partitioned.
 
-   Collective on MatPartitioning and Mat
+   Collective on MatPartitioning
 
    Input Parameters:
 +  part - the partitioning context
@@ -567,7 +567,7 @@ PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const Pe
 /*@
    MatPartitioningCreate - Creates a partitioning context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .   comm - MPI communicator

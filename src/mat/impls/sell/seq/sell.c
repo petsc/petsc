@@ -39,7 +39,7 @@
  (or the array nnz).  By setting these parameters accurately, performance
  during matrix assembly can be increased significantly.
 
- Collective on MPI_Comm
+ Collective
 
  Input Parameters:
  +  B - The matrix
@@ -2076,7 +2076,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 /*@C
  MatCreateSeqSELL - Creates a sparse matrix in SELL format.
 
- Collective on MPI_Comm
+ Collective
 
  Input Parameters:
  +  comm - MPI communicator, set to PETSC_COMM_SELF

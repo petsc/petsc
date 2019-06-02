@@ -839,7 +839,7 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
 /*@C
     PetscBagCreate - Create a bag of values
 
-  Collective on MPI_Comm
+  Collective
 
   Level: Intermediate
 

@@ -375,7 +375,7 @@ PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
    KSPLSQRMonitorDefault - Print the residual norm at each iteration of the LSQR method,
    norm of the residual of the normal equations A'*A x = A' b, and estimate of matrix norm ||A||.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -453,7 +453,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 /*@C
    KSPLSQRConvergedDefault - Determines convergence of the LSQR Krylov method.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context

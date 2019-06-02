@@ -6,7 +6,7 @@
     use for solving a linear system with a complex coefficient matrix.
     This option is irrelevant when solving a real system.
 
-    Logically Collective on KSP
+    Logically Collective on ksp
 
     Input Parameters:
 +   ksp - the iterative context
@@ -40,7 +40,7 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 /*@
     KSPCGUseSingleReduction - Merge the two inner products needed in CG into a single MPI_Allreduce() call.
 
-    Logically Collective on KSP
+    Logically Collective on ksp
 
     Input Parameters:
 +   ksp - the iterative context
@@ -75,7 +75,7 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 /*@
     KSPCGSetRadius - Sets the radius of the trust region.
 
-    Logically Collective on KSP
+    Logically Collective on ksp
 
     Input Parameters:
 +   ksp    - the iterative context
@@ -100,7 +100,7 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 /*@
     KSPCGGetNormD - Got norm of the direction.
 
-    Collective on KSP
+    Collective on ksp
 
     Input Parameters:
 +   ksp    - the iterative context
@@ -123,7 +123,7 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 /*@
     KSPCGGetObjFcn - Get objective function value.
 
-    Collective on KSP
+    Collective on ksp
 
     Input Parameters:
 +   ksp   - the iterative context

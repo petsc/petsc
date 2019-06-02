@@ -323,7 +323,7 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 .  D - the diagonal matrix, represented as a vector
 -  i - INSERT_VALUES or ADD_VALUES
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Notes:
     If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially

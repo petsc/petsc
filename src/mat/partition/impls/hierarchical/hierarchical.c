@@ -537,7 +537,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
    communication as much as possible for multi-core processor. Another user case for the hierarchical partitioning
    is to improve PCGASM convergence by generating multi-rank connected subdomain.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  part - the partitioning context

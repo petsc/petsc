@@ -8,7 +8,7 @@
    If you never  call VecSetType() or VecSetFromOptions() it will generate an
    error when you try to use the vector.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the vector object

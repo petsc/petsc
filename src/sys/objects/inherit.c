@@ -967,7 +967,7 @@ PetscClassId PETSC_CONTAINER_CLASSID;
    through a pointer) with the PetscObjectCompose() function to a PetscObject.
    The data item itself is attached by a call to PetscContainerSetPointer().
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI communicator that shares the object

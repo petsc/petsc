@@ -4,7 +4,7 @@
 /*@
   DMNetworkMonitorCreate - Creates a network monitor context
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 . network - network to monitor
@@ -40,7 +40,7 @@ PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
 /*@
   DMNetworkMonitorDestroy - Destroys a network monitor and all associated viewers
 
-  Collective on DMNetworkMonitor
+  Collective on monitor
 
   Input Parameters:
 . monitor - monitor to destroy
@@ -65,7 +65,7 @@ PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 /*@
   DMNetworkMonitorPop - Removes the most recently added viewer
 
-  Collective on DMNetworkMonitor
+  Collective on monitor
 
   Input Parameters:
 . monitor - the monitor
@@ -96,7 +96,7 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 /*@C
   DMNetworkMonitorAdd - Adds a new viewer to monitor
 
-  Collective on DMNetworkMonitor
+  Collective on monitor
 
   Input Parameters:
 + monitor - the monitor

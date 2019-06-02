@@ -64,7 +64,7 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
 /*@C
   PetscDSSetType - Builds a particular PetscDS
 
-  Collective on PetscDS
+  Collective on prob
 
   Input Parameters:
 + prob - The PetscDS object
@@ -226,7 +226,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
 /*@C
   PetscDSView - Views a PetscDS
 
-  Collective on PetscDS
+  Collective on prob
 
   Input Parameter:
 + prob - the PetscDS object to view
@@ -254,7 +254,7 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 /*@
   PetscDSSetFromOptions - sets parameters in a PetscDS from the options database
 
-  Collective on PetscDS
+  Collective on prob
 
   Input Parameter:
 . prob - the PetscDS object to set options for
@@ -331,7 +331,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 /*@C
   PetscDSSetUp - Construct data structures for the PetscDS
 
-  Collective on PetscDS
+  Collective on prob
 
   Input Parameter:
 . prob - the PetscDS object to setup
@@ -493,7 +493,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 /*@
   PetscDSDestroy - Destroys a PetscDS object
 
-  Collective on PetscDS
+  Collective on prob
 
   Input Parameter:
 . prob - the PetscDS object to destroy
@@ -549,7 +549,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
 /*@
   PetscDSCreate - Creates an empty PetscDS object. The type can then be set with PetscDSSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscDS object
@@ -672,7 +672,7 @@ PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
 /*@
   PetscDSSetCoordinateDimension - Set the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
 
-  Logically collective on DS
+  Logically collective on prob
 
   Input Parameters:
 + prob - The PetscDS object

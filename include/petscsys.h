@@ -2395,7 +2395,7 @@ PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,
                     same place in the PETSc code. This helps to detect bugs where different MPI processes follow different code paths
                     resulting in inconsistent and incorrect calls to MPI_Allreduce().
 
-   Collective on MPI_Comm
+   Collective
 
    Synopsis:
      #include <petscsys.h>

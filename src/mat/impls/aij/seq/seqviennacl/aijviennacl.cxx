@@ -266,7 +266,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
    performance during matrix assembly can be increased substantially.
 
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF

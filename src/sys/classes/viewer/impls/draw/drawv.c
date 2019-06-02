@@ -370,7 +370,7 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
    do graphics in this window, you must call PetscViewerDrawGetDraw() and
    perform the graphics on the PetscDraw object.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - communicator that will share window
@@ -733,7 +733,7 @@ PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
     PETSC_VIEWER_DRAW_ - Creates a window PetscViewer shared by all processors
                      in a communicator.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameter:
 .    comm - the MPI communicator to share the window PetscViewer

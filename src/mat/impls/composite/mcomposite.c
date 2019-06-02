@@ -296,7 +296,7 @@ PetscErrorCode MatSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,
 /*@
    MatCreateComposite - Creates a matrix as the sum or product of one or more matrices
 
-  Collective on MPI_Comm
+  Collective
 
    Input Parameters:
 +  comm - MPI communicator

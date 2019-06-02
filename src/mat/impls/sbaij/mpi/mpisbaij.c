@@ -2496,7 +2496,7 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -3248,7 +3248,7 @@ PetscErrorCode MatSOR_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType
      MatCreateMPISBAIJWithArrays - creates a MPI SBAIJ matrix using arrays that contain in standard
          CSR format the local rows.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -3298,7 +3298,7 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
    MatMPISBAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in BAIJ format
    (the default parallel PETSc format).
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - the matrix

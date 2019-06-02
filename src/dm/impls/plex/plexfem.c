@@ -162,7 +162,7 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
 /*@
   DMPlexCreateRigidBody - For the default global section, create rigid body modes by function space interpolation
 
-  Collective on DM
+  Collective on dm
 
   Input Arguments:
 . dm - the DM
@@ -229,7 +229,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
 /*@
   DMPlexCreateRigidBodies - For the default global section, create rigid body modes by function space interpolation
 
-  Collective on DM
+  Collective on dm
 
   Input Arguments:
 + dm    - the DM
@@ -1034,7 +1034,7 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
 /*@C
   DMComputeL2DiffLocal - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm     - The DM
@@ -1418,7 +1418,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
 /*@C
   DMPlexComputeL2DiffVec - This function computes the cellwise L_2 difference between a function u and an FEM interpolant solution u_h, and stores it in a Vec.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm    - The DM
@@ -1542,7 +1542,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
 /*@C
   DMPlexComputeGradientClementInterpolant - This function computes the L2 projection of the cellwise gradient of a function u onto P1, and stores it in a Vec.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - The DM

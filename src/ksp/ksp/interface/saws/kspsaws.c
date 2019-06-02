@@ -62,7 +62,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 /*@C
    KSPMonitorSAWs - monitor solution using SAWs
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context

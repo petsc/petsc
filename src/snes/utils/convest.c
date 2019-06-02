@@ -15,7 +15,7 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 /*@
   PetscConvEstCreate - Create a PetscConvEst object
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscConvEst object

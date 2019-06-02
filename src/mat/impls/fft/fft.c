@@ -23,7 +23,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 /*@C
       MatCreateFFT - Creates a matrix object that provides FFT via an external package
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +   comm - MPI communicator

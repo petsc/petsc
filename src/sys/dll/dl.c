@@ -29,7 +29,7 @@ PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
    PetscDLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
      (if it is remote), indicates if it exits and its local name.
 
-     Collective on MPI_Comm
+     Collective
 
    Input Parameters:
 +   comm - processors that are opening the library
@@ -106,7 +106,7 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
 /*@C
    PetscDLLibraryOpen - Opens a PETSc dynamic link library
 
-     Collective on MPI_Comm
+     Collective
 
    Input Parameters:
 +   comm - processors that are opening the library
@@ -207,7 +207,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
 /*@C
    PetscDLLibrarySym - Load a symbol from the dynamic link libraries.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  comm - communicator that will open the library
@@ -316,7 +316,7 @@ done:;
      PetscDLLibraryAppend - Appends another dynamic link library to the seach list, to the end
                 of the search path.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameters:
 +     comm - MPI communicator
@@ -403,7 +403,7 @@ PetscErrorCode  PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const
      PetscDLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
                  the search path.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameters:
 +     comm - MPI communicator

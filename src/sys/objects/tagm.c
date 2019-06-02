@@ -47,7 +47,7 @@ PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
     number of times.  This tag should only be used with the current objects
     communicator; do NOT use it with any other MPI communicator.
 
-    Collective on comm
+    Collective
 
     Input Parameter:
 .   comm - the MPI communicator
@@ -91,7 +91,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 /*@C
   PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 . comm_in - Input communicator
@@ -179,7 +179,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
 /*@C
    PetscCommDestroy - Frees communicator.  Use in conjunction with PetscCommDuplicate().
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - the communicator to free
@@ -234,7 +234,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     of PetscObjects living on subcommunicators of a given communicator.
 
 
-    Collective on comm.
+    Collective.
 
     Input Parameters:
 +   comm    - MPI_Comm

@@ -819,7 +819,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec 
    TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial values and w.r.t. the problem parameters
       for use by the TSAdjoint routines.
 
-   Logically Collective on TS and Vec
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -877,7 +877,7 @@ PetscErrorCode TSGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
    TSSetCostHessianProducts - Sets the initial value of the Hessian-vector products of the cost function w.r.t. initial values and w.r.t. the problem parameters
       for use by the TSAdjoint routines.
 
-   Logically Collective on TS and Vec
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -941,7 +941,7 @@ PetscErrorCode TSGetCostHessianProducts(TS ts,PetscInt *numcost,Vec **lambda2,Ve
 /*@
   TSAdjointSetForward - Trigger the tangent linear solver and initialize the forward sensitivities
 
-  Logically Collective on TS and Mat
+  Logically Collective on TS
 
   Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -995,7 +995,7 @@ PetscErrorCode TSAdjointSetForward(TS ts,Mat didp)
 /*@
   TSAdjointResetForward - Reset the tangent linear solver and destroy the tangent linear context
 
-  Logically Collective on TS and Mat
+  Logically Collective on TS
 
   Input Parameters:
 .  ts - the TS context obtained from TSCreate()
@@ -1770,7 +1770,7 @@ PetscErrorCode TSForwardStep(TS ts)
 /*@
   TSForwardSetSensitivities - Sets the initial value of the trajectory sensitivities of solution  w.r.t. the problem parameters and initial values.
 
-  Logically Collective on TS and Vec
+  Logically Collective on TS
 
   Input Parameters:
 + ts - the TS context obtained from TSCreate()
@@ -1854,7 +1854,7 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
 /*@
   TSForwardSetInitialSensitivities - Set initial values for tangent linear sensitivities
 
-  Collective on TS and Mat
+  Collective on TS
 
   Input Parameter
 + ts - the TS context obtained from TSCreate()

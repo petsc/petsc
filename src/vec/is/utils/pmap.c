@@ -10,7 +10,7 @@
 /*@
   PetscLayoutCreate - Allocates PetscLayout space and sets the map contents to the default.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm - the MPI communicator
@@ -61,7 +61,7 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 /*@
   PetscLayoutDestroy - Frees a map object and frees its range if that exists.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 . map - the PetscLayout
@@ -124,7 +124,7 @@ static PetscErrorCode PetscLayoutSetUp_SizesFromRanges_Private(PetscLayout map)
   PetscLayoutSetUp - given a map where you have set either the global or local
                      size sets up the map so that it may be used.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 . map - pointer to the map

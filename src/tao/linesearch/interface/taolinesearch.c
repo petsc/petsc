@@ -79,7 +79,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   TaoLineSearchCreate - Creates a TAO Line Search object.  Algorithms in TAO that use
   line-searches will automatically create one.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - MPI communicator

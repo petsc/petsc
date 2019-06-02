@@ -77,7 +77,7 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 /*@
    KSPGuessDestroy - Destroys KSPGuess context.
 
-   Collective on KSPGuess
+   Collective on kspGuess
 
    Input Parameter:
 .  guess - initial guess object
@@ -103,7 +103,7 @@ PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
 /*@C
    KSPGuessView - View the KSPGuess object
 
-   Logically Collective on KSPGuess
+   Logically Collective on guess
 
    Input Parameters:
 +  guess  - the initial guess object for the Krylov method
@@ -142,7 +142,7 @@ PetscErrorCode  KSPGuessView(KSPGuess guess, PetscViewer view)
 /*@
    KSPGuessCreate - Creates the default KSPGuess context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator
@@ -175,7 +175,7 @@ PetscErrorCode  KSPGuessCreate(MPI_Comm comm,KSPGuess *guess)
 /*@C
    KSPGuessSetType - Sets the type of a KSPGuess
 
-   Logically Collective on KSPGuess
+   Logically Collective on guess
 
    Input Parameters:
 +  guess - the initial guess object for the Krylov method
@@ -243,7 +243,7 @@ PetscErrorCode  KSPGuessGetType(KSPGuess guess,KSPGuessType *type)
 /*@
     KSPGuessUpdate - Updates the guess object with the current solution and rhs vector
 
-   Collective on KSPGuess
+   Collective on guess
 
    Input Parameter:
 +  guess - the initial guess context
@@ -269,7 +269,7 @@ PetscErrorCode  KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 /*@
     KSPGuessFormGuess - Form the initial guess
 
-   Collective on KSPGuess
+   Collective on guess
 
    Input Parameter:
 +  guess - the initial guess context
@@ -295,7 +295,7 @@ PetscErrorCode  KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 /*@
     KSPGuessSetUp - Setup the initial guess object
 
-   Collective on KSPGuess
+   Collective on guess
 
    Input Parameter:
 -  guess - the initial guess context

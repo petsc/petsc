@@ -1195,7 +1195,7 @@ PetscErrorCode  ISCopy(IS is,IS isy)
 /*@
    ISOnComm - Split a parallel IS on subcomms (usually self) or concatenate index sets on subcomms into a parallel index set
 
-   Collective on IS and comm
+   Collective on IS
 
    Input Arguments:
 + is - index set

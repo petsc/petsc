@@ -78,7 +78,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
    performance during matrix assembly can be increased substantially.
 
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF

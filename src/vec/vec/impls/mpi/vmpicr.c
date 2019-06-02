@@ -8,7 +8,7 @@
 /*@
    VecCreateMPI - Creates a parallel vector.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use

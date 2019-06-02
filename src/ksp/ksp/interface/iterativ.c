@@ -94,7 +94,7 @@ PetscErrorCode  KSPGetTotalIterations(KSP ksp,PetscInt *its)
     estimation of the extreme singular values of the preconditioned problem
     at each iteration.
 
-    Logically Collective on KSP
+    Logically Collective on ksp
 
     Input Parameters:
 +   ksp - the iterative context
@@ -140,7 +140,7 @@ PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,Petsc
    KSPMonitorSolution - Monitors progress of the KSP solvers by calling
    VecView() for the approximate solution at each iteration.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp - the KSP context
@@ -175,7 +175,7 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,PetscVi
    KSPMonitorDefault - Print the residual norm at each iteration of an
    iterative solver.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -209,7 +209,7 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewer
    KSPMonitorTrueResidualNorm - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -257,7 +257,7 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,Pe
 /*@C
    KSPMonitorTrueResidualMaxNorm - Prints the true residual max norm each iteration of an iterative solver.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -328,7 +328,7 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
 /*@C
    KSPMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -373,7 +373,7 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,PetscViewerA
    KSPMonitorDynamicTolerance - Recompute the inner tolerance in every
    outer iteration in an adaptive way.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -489,7 +489,7 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,Pets
    KSPConvergedSkip - Convergence test that do not return as converged
    until the maximum number of iterations is reached.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -525,7 +525,7 @@ PetscErrorCode  KSPConvergedSkip(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverged
 /*@C
    KSPConvergedDefaultCreate - Creates and initializes the space used by the KSPConvergedDefault() function context
 
-   Collective on KSP
+   Note Collective
 
    Output Parameter:
 .  ctx - convergence context
@@ -551,7 +551,7 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
       instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 .  ksp   - iterative context
@@ -591,7 +591,7 @@ PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
       In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 .  ksp   - iterative context
@@ -623,7 +623,7 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 /*@C
    KSPConvergedDefault - Determines convergence of the linear iterative solvers by default
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -753,7 +753,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
 /*@C
    KSPConvergedDefaultDestroy - Frees the space used by the KSPConvergedDefault() function context
 
-   Collective on KSP
+   Not Collective
 
    Input Parameters:
 .  ctx - convergence context
@@ -776,6 +776,8 @@ PetscErrorCode  KSPConvergedDefaultDestroy(void *ctx)
 
 /*
    KSPBuildSolutionDefault - Default code to create/move the solution.
+
+   Collective on ksp
 
    Input Parameters:
 +  ksp - iterative context
@@ -828,6 +830,8 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp,Vec v,Vec *V)
 /*
    KSPBuildResidualDefault - Default code to compute the residual.
 
+   Collecive on ksp
+
    Input Parameters:
 .  ksp - iterative context
 .  t   - pointer to temporary vector
@@ -859,6 +863,8 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
 
 /*@C
   KSPCreateVecs - Gets a number of work vectors.
+
+  Collective on ksp
 
   Input Parameters:
 + ksp  - iterative context
@@ -956,7 +962,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
 /*@C
   KSPSetWorkVecs - Sets a number of work vectors into a KSP object
 
-  Collective on KSP
+  Collective on ksp
 
   Input Parameters:
 + ksp  - iterative context
@@ -1050,7 +1056,7 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 /*@
    KSPSetDM - Sets the DM that may be used by some preconditioners
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the preconditioner context
@@ -1098,7 +1104,7 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
 /*@
    KSPSetDMActive - Indicates the DM should be used to generate the linear system matrix and right hand side
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the preconditioner context
@@ -1153,7 +1159,7 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 /*@
    KSPSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the KSP context
@@ -1213,7 +1219,7 @@ PetscErrorCode  KSPGetApplicationContext(KSP ksp,void *usrP)
    KSPCheckSolve - Checks if the PCSetUp() or KSPSolve() failed and set the error flag for the outer PC. A KSP_DIVERGED_ITS is
          not considered a failure in this context
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameter:
 +  ksp - the linear solver (KSP) context.

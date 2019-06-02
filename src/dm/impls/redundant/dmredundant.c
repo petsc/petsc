@@ -283,7 +283,7 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
 /*@
     DMRedundantSetSize - Sets the size of a densely coupled redundant object
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 +   dm - redundant DM
@@ -413,7 +413,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 /*@C
     DMRedundantCreate - Creates a DM object, used to manage data for dense globally coupled variables
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameter:
 +   comm - the processors that will share the global vector

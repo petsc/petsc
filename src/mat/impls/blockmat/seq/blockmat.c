@@ -868,7 +868,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
    (or the array nnz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - The matrix
@@ -991,7 +991,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 /*@C
    MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential Mat object
 
-  Collective on MPI_Comm
+  Collective
 
    Input Parameters:
 +  comm - MPI communicator

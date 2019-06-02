@@ -7,7 +7,7 @@
    vectorization).  The same guidelines that apply to MPIAIJ matrices for
    preallocating the matrix storage apply here as well.
 
-      Collective on MPI_Comm
+      Collective
 
    Input Parameters:
 +  comm - MPI communicator

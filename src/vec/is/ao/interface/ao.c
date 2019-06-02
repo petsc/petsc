@@ -11,7 +11,7 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 /*@C
    AOView - Displays an application ordering.
 
-   Collective on AO and PetscViewer
+   Collective on AO
 
    Input Parameters:
 +  ao - the application ordering context
@@ -93,7 +93,7 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to
    the application-defined ordering.
 
-   Collective on AO and IS
+   Collective on AO
 
    Input Parameters:
 +  ao - the application ordering context
@@ -139,7 +139,7 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
 
-   Collective on AO and IS
+   Collective on AO
 
    Input Parameters:
 +  ao - the application ordering context
@@ -433,7 +433,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
 /*@
    AOSetIS - Sets the IS associated with the application ordering.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  ao - the application ordering
@@ -473,7 +473,7 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 /*@
    AOCreate - Creates an application ordering.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI communicator that is to share AO

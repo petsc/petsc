@@ -341,7 +341,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 /*@
   DMNetworkCreate - Creates a DMNetwork object, which encapsulates an unstructured network.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DMNetwork object

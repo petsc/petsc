@@ -17,7 +17,7 @@ const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
   TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the
        type of solver can then be set with TSSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator

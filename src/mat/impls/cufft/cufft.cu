@@ -116,7 +116,7 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 /*@
   MatCreateSeqCUFFT - Creates a matrix object that provides sequential FFT via the external package CUFFT
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm - MPI communicator, set to PETSC_COMM_SELF

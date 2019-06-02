@@ -606,7 +606,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 /*@C
    PetscDrawOpenImage - Opens an image for use with the PetscDraw routines.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator that will share image

@@ -680,7 +680,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
    #include <petscmat.h>
    PetscErrorCode MatPreallocateInitialize(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator that will share the eventually allocated matrix
@@ -993,7 +993,7 @@ M*/
    #include <petscmat.h>
    PetscErrorCode MatPreallocateFinalize(PetscInt *dnz, PetscInt *onz)
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  dnz - the array that was be passed to the matrix preallocation routines

@@ -992,7 +992,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 /*@
   DMPlexCreateGmsh - Create a DMPlex mesh from a Gmsh file viewer
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator

@@ -8877,7 +8877,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
 /*@
   DMPlexCreateProcessSF - Create an SF which just has process connectivity
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm      - The DM

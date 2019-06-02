@@ -6,7 +6,7 @@
    DMDACreatePF - Creates an appropriately dimensioned PF mathematical function object
       from a DMDA.
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameter:
 .  da - initial distributed array

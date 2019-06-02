@@ -841,7 +841,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
 /*@C
   DMPlexCreateExodusFromFile - Create a DMPlex mesh from an ExodusII file.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator
@@ -883,7 +883,7 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
 /*@
   DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file ID.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator

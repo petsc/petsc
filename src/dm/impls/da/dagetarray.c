@@ -5,7 +5,7 @@
    DMDAVecGetArray - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Logically collective on Vec
+   Logically collective on da
 
    Input Parameter:
 +  da - the distributed array
@@ -79,7 +79,7 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
 /*@
    DMDAVecRestoreArray - Restores a multiple dimension array obtained with DMDAVecGetArray()
 
-   Logically collective on Vec
+   Logically collective on da
 
    Input Parameter:
 +  da - the distributed array

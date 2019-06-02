@@ -8,7 +8,7 @@
 /*@
    DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a x,y,z point in the coordinates of the DMDA
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameters:
 +  da - the distributed array
@@ -167,7 +167,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
    processors in a DMDA that own a particular global x, y, or z grid point
    (corresponding to a logical plane in a 3D grid or a line in a 2D grid).
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameters:
 +  da - the distributed array
@@ -242,7 +242,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
    processors in a DMDA adjacent in a particular dimension,
    corresponding to a logical plane in a 3D grid or a line in a 2D grid.
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameters:
 +  da - the distributed array

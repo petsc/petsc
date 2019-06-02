@@ -67,7 +67,7 @@ static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 
   PetscOptionsInsertFileYAML - Insert a YAML-formatted file in the option database
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 +   comm - the processes that will share the options (usually PETSC_COMM_WORLD)

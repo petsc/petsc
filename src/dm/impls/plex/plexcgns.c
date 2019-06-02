@@ -16,7 +16,7 @@
 /*@C
   DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator
@@ -59,7 +59,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 /*@
   DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file ID.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator

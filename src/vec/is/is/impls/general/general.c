@@ -622,7 +622,7 @@ PetscErrorCode ISSetUp_General(IS is)
    ISCreateGeneral - Creates a data structure for an index set
    containing a list of integers.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator

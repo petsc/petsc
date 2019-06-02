@@ -176,7 +176,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
     DMSlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMSlicedGetMatrix().
 
-    Logically Collective on DM
+    Logically Collective on dm
 
     Input Parameter:
 +   sliced - the DM object
@@ -288,7 +288,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 /*@C
     DMSlicedCreate - Creates a DM object, used to manage data for a unstructured problem
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameter:
 +   comm - the processors that will share the global vector

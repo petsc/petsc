@@ -9,7 +9,7 @@
       separate components (DMs) in a DMto build the correct matrix nonzero structure.
 
 
-    Logically Collective on MPI_Comm
+    Logically Collective
 
     Input Parameter:
 +   dm - the composite object
@@ -156,7 +156,7 @@ PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
     DMCompositeGetAccess - Allows one to access the individual packed vectors in their global
        representation.
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameters:
 +    dm - the packer object
@@ -227,7 +227,7 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
     DMCompositeGetAccessArray - Allows one to access the individual packed vectors in their global
        representation.
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameters:
 +    dm - the packer object
@@ -290,7 +290,7 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
     DMCompositeGetLocalAccessArray - Allows one to access the individual
     packed vectors in their local representation.
 
-    Collective on DMComposite.
+    Collective on dm.
 
     Input Parameters:
 +    dm - the packer object
@@ -359,7 +359,7 @@ PetscErrorCode  DMCompositeGetLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,c
     DMCompositeRestoreAccess - Returns the vectors obtained with DMCompositeGetAccess()
        representation.
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameters:
 +    dm - the packer object
@@ -414,7 +414,7 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
 /*@C
     DMCompositeRestoreAccessArray - Returns the vectors obtained with DMCompositeGetAccessArray()
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameters:
 +    dm - the packer object
@@ -462,7 +462,7 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
 /*@C
     DMCompositeRestoreLocalAccessArray - Returns the vectors obtained with DMCompositeGetLocalAccessArray().
 
-    Collective on DMComposite.
+    Collective on dm.
 
     Input Parameters:
 +    dm - the packer object
@@ -516,7 +516,7 @@ PetscErrorCode  DMCompositeRestoreLocalAccessArray(DM dm,Vec pvec,PetscInt nwant
 /*@C
     DMCompositeScatter - Scatters from a global packed vector into its individual local vectors
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameters:
 +    dm - the packer object
@@ -579,7 +579,7 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
 /*@
     DMCompositeScatterArray - Scatters from a global packed vector into its individual local vectors
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameters:
 +    dm - the packer object
@@ -635,7 +635,7 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
 /*@C
     DMCompositeGather - Gathers into a global packed vector from its individual local vectors
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameter:
 +    dm - the packer object
@@ -696,7 +696,7 @@ PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
 /*@
     DMCompositeGatherArray - Gathers into a global packed vector from its individual local vectors
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameter:
 +    dm - the packer object
@@ -752,7 +752,7 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
 /*@
     DMCompositeAddDM - adds a DM vector to a DMComposite
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameter:
 +    dmc - the DMComposite (packer) object
@@ -1021,7 +1021,7 @@ PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
 /*@C
     DMCompositeGetGlobalISs - Gets the index sets for each composed object
 
-    Collective on DMComposite
+    Collective on dm
 
     Input Parameter:
 .    dm - the packer object
@@ -1825,7 +1825,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
     DMCompositeCreate - Creates a vector packer, used to generate "composite"
       vectors made up of several subvectors.
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameter:
 .   comm - the processors that will share the global vector

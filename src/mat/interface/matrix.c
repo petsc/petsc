@@ -2284,7 +2284,7 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt iro
 /*@
    MatMultDiagonalBlock - Computes the matrix-vector product, y = Dx. Where D is defined by the inode or block structure of the diagonal
 
-   Collective on Mat and Vec
+   Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -2326,7 +2326,7 @@ PetscErrorCode MatMultDiagonalBlock(Mat mat,Vec x,Vec y)
 /*@
    MatMult - Computes the matrix-vector product, y = Ax.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -2377,7 +2377,7 @@ PetscErrorCode MatMult(Mat mat,Vec x,Vec y)
 /*@
    MatMultTranspose - Computes matrix transpose times a vector y = A^T * x.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -2431,7 +2431,7 @@ PetscErrorCode MatMultTranspose(Mat mat,Vec x,Vec y)
 /*@
    MatMultHermitianTranspose - Computes matrix Hermitian transpose times a vector.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -2493,7 +2493,7 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
 /*@
     MatMultAdd -  Computes v3 = v2 + A * v1.
 
-    Neighbor-wise Collective on Mat and Vec
+    Neighbor-wise Collective on Mat
 
     Input Parameters:
 +   mat - the matrix
@@ -2544,7 +2544,7 @@ PetscErrorCode MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 /*@
    MatMultTransposeAdd - Computes v3 = v2 + A' * v1.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -2593,7 +2593,7 @@ PetscErrorCode MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 /*@
    MatMultHermitianTransposeAdd - Computes v3 = v2 + A^H * v1.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -2659,7 +2659,7 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
    MatMultConstrained - The inner multiplication routine for a
    constrained matrix P^T A P.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -2704,7 +2704,7 @@ PetscErrorCode MatMultConstrained(Mat mat,Vec x,Vec y)
    MatMultTransposeConstrained - The inner multiplication routine for a
    constrained matrix P^T A^T P.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -3261,7 +3261,7 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *in
 /*@
    MatSolve - Solves A x = b, given a factored matrix.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3530,7 +3530,7 @@ PetscErrorCode MatMatTransposeSolve(Mat A,Mat Bt,Mat X)
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or
                             U^T*D^(1/2) x = b, given a factored symmetric matrix, A = U^T*D*U,
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3591,7 +3591,7 @@ PetscErrorCode MatForwardSolve(Mat mat,Vec b,Vec x)
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
                              D^(1/2) U x = b, given a factored symmetric matrix, A = U^T*D*U,
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3651,7 +3651,7 @@ PetscErrorCode MatBackwardSolve(Mat mat,Vec b,Vec x)
 /*@
    MatSolveAdd - Computes x = y + inv(A)*b, given a factored matrix.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3723,7 +3723,7 @@ PetscErrorCode MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 /*@
    MatSolveTranspose - Solves A' x = b, given a factored matrix.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3778,7 +3778,7 @@ PetscErrorCode MatSolveTranspose(Mat mat,Vec b,Vec x)
    MatSolveTransposeAdd - Computes x = y + inv(Transpose(A)) b, given a
                       factored matrix.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3855,7 +3855,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 /*@
    MatSOR - Computes relaxation (SOR, Gauss-Seidel) sweeps.
 
-   Neighbor-wise Collective on Mat and Vec
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -4568,7 +4568,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 /*@
    MatGetDiagonal - Gets the diagonal of a matrix.
 
-   Logically Collective on Mat and Vec
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -4605,7 +4605,7 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
    MatGetRowMin - Gets the minimum value (of the real part) of each
         row of the matrix
 
-   Logically Collective on Mat and Vec
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -4646,7 +4646,7 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
    MatGetRowMinAbs - Gets the minimum value (in absolute value) of each
         row of the matrix
 
-   Logically Collective on Mat and Vec
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -4687,7 +4687,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
    MatGetRowMax - Gets the maximum value (of the real part) of each
         row of the matrix
 
-   Logically Collective on Mat and Vec
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -4727,7 +4727,7 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
    MatGetRowMaxAbs - Gets the maximum value (in absolute value) of each
         row of the matrix
 
-   Logically Collective on Mat and Vec
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -4767,7 +4767,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 /*@
    MatGetRowSum - Gets the sum of each row of the matrix
 
-   Logically or Neighborhood Collective on Mat and Vec
+   Logically or Neighborhood Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -7302,7 +7302,7 @@ PetscErrorCode MatSetBlockSizesFromMats(Mat mat,Mat fromRow,Mat fromCol)
 /*@
    MatResidual - Default routine to calculate the residual.
 
-   Collective on Mat and Vec
+   Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -8109,7 +8109,7 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
 /*@
    MatGetNullSpace - retrieves the null space of a matrix.
 
-   Logically Collective on Mat and MatNullSpace
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -8131,7 +8131,7 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 /*@
    MatSetNullSpace - attaches a null space to a matrix.
 
-   Logically Collective on Mat and MatNullSpace
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -8180,7 +8180,7 @@ PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 /*@
    MatGetTransposeNullSpace - retrieves the null space of the transpose of a matrix.
 
-   Logically Collective on Mat and MatNullSpace
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -8203,7 +8203,7 @@ PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
 /*@
    MatSetTransposeNullSpace - attaches a null space to a matrix.
 
-   Logically Collective on Mat and MatNullSpace
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -8243,7 +8243,7 @@ PetscErrorCode MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
    MatSetNearNullSpace - attaches a null space to a matrix, which is often the null space (rigid body modes) of the operator without boundary conditions
         This null space will be used to provide near null space vectors to a multigrid preconditioner built from this matrix.
 
-   Logically Collective on Mat and MatNullSpace
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -8429,7 +8429,7 @@ PetscErrorCode MatGetInertia(Mat mat,PetscInt *nneg,PetscInt *nzero,PetscInt *np
 /*@C
    MatSolves - Solves A x = b, given a factored matrix, for a collection of vectors
 
-   Neighbor-wise Collective on Mat and Vecs
+   Neighbor-wise Collective on Mats
 
    Input Parameters:
 +  mat - the factored matrix
@@ -10582,7 +10582,7 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
       MatCreateMPIMatConcatenateSeqMat - Creates a single large PETSc matrix by concatenating sequential
                  matrices from each processor
 
-    Collective on MPI_Comm
+    Collective
 
    Input Parameters:
 +    comm - the communicators the parallel matrix will live on

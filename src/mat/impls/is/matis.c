@@ -1554,7 +1554,7 @@ static PetscErrorCode MatISSetUpSF_IS(Mat B)
 /*@
    MatISStoreL2L - Store local-to-local operators during the Galerkin process of MatPtAP.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  A - the matrix
@@ -1594,7 +1594,7 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store)
 /*@
    MatISFixLocalEmpty - Compress out zero local rows from the local matrices
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  A - the matrix
@@ -1630,7 +1630,7 @@ static PetscErrorCode MatISFixLocalEmpty_IS(Mat A, PetscBool fix)
 /*@
    MatISSetPreallocation - Preallocates memory for a MATIS parallel matrix.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - the matrix

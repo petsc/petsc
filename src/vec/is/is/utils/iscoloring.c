@@ -233,7 +233,7 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
     ISColoringCreate - Generates an ISColoring context from lists (provided
     by each processor) of colors for each node.
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameters:
 +   comm - communicator for the processors creating the coloring
@@ -662,7 +662,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
     ISAllGatherColors - Given a a set of colors on each processor, generates a large
     set (same on each processor) by concatenating together each processors colors
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameter:
 +   comm - communicator to share the indices

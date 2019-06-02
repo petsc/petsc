@@ -308,7 +308,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
    This ensures that the internal storage and work vectors are duplicated from the 
    correct type of vector.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF

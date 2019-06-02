@@ -278,7 +278,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 /*@C
    MatCreateScatter - Creates a new matrix based on a VecScatter
 
-  Collective on MPI_Comm
+  Collective
 
    Input Parameters:
 +  comm - MPI communicator

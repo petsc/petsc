@@ -3481,7 +3481,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
      MatCreateMPIAIJWithSeqAIJ - creates a MPIAIJ matrix using SeqAIJ matrices that contain the "diagonal"
          and "off-diagonal" part of the matrix in CSR format.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -3977,7 +3977,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
    MatMPIAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in AIJ format
    (the default parallel PETSc format).
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - the matrix
@@ -4032,7 +4032,7 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - the matrix
@@ -4169,7 +4169,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nn
      MatCreateMPIAIJWithArrays - creates a MPI AIJ matrix using arrays that contain in standard
          CSR format the local rows.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -4239,7 +4239,7 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -4940,7 +4940,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
       MatCreateMPIAIJSumSeqAIJ - Creates a MATMPIAIJ matrix by adding sequential
                  matrices from each processor
 
-    Collective on MPI_Comm
+    Collective
 
    Input Parameters:
 +    comm - the communicators the parallel matrix will live on
@@ -5689,7 +5689,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
      MatCreateMPIAIJWithSplitArrays - creates a MPI AIJ matrix using arrays that contain the "diagonal"
          and "off-diagonal" part of the matrix in CSR format.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

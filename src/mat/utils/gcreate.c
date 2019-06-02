@@ -41,7 +41,7 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
    call MatSetType() or MatSetFromOptions() it will generate an
    error when you try to use the matrix.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator

@@ -11,7 +11,7 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 /*@
     KSPGLTRGetMinEig - Get minimum eigenvalue.
 
-    Collective on KSP
+    Collective on ksp
 
     Input Parameters:
 +   ksp   - the iterative context

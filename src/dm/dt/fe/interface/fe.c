@@ -97,7 +97,7 @@ PetscErrorCode PetscFERegister(const char sname[], PetscErrorCode (*function)(Pe
 /*@C
   PetscFESetType - Builds a particular PetscFE
 
-  Collective on PetscFE
+  Collective on fem
 
   Input Parameters:
 + fem  - The PetscFE object
@@ -166,7 +166,7 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
 /*@C
   PetscFEView - Views a PetscFE
 
-  Collective on PetscFE
+  Collective on fem
 
   Input Parameter:
 + fem - the PetscFE object to view
@@ -194,7 +194,7 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer viewer)
 /*@
   PetscFESetFromOptions - sets parameters in a PetscFE from the options database
 
-  Collective on PetscFE
+  Collective on fem
 
   Input Parameter:
 . fem - the PetscFE object to set options for
@@ -245,7 +245,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
 /*@C
   PetscFESetUp - Construct data structures for the PetscFE
 
-  Collective on PetscFE
+  Collective on fem
 
   Input Parameter:
 . fem - the PetscFE object to setup
@@ -269,7 +269,7 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
 /*@
   PetscFEDestroy - Destroys a PetscFE object
 
-  Collective on PetscFE
+  Collective on fem
 
   Input Parameter:
 . fem - the PetscFE object to destroy
@@ -313,7 +313,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
 /*@
   PetscFECreate - Creates an empty PetscFE object. The type can then be set with PetscFESetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscFE object
@@ -1467,7 +1467,7 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
   sparsity). It is also used to create an interpolation between regularly refined meshes.
 
-  Collective on PetscFE
+  Collective on fem
 
   Input Parameter:
 . fe - The initial PetscFE
@@ -1524,7 +1524,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 /*@C
   PetscFECreateDefault - Create a PetscFE for basic FEM computation
 
-  Collective on DM
+  Collective
 
   Input Parameters:
 + comm      - The MPI comm

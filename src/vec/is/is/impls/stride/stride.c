@@ -381,7 +381,7 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
    ISCreateStride - Creates a data structure for an index set
    containing a list of evenly spaced integers.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator

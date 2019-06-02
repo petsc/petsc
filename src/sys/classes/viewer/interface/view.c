@@ -404,7 +404,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 /*@C
    PetscViewerRead - Reads data from a PetscViewer
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  viewer   - The viewer

@@ -116,7 +116,7 @@ PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, Petsc
 /*@
   PetscDualSpaceSimpleSetDimension - Set the number of functionals in the dual space basis
 
-  Logically Collective on PetscDualSpace
+  Logically Collective on sp
 
   Input Parameters:
 + sp  - the PetscDualSpace

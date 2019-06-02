@@ -112,7 +112,7 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
 /*@
    MatCoarsenSetAdjacency - Sets the adjacency graph (matrix) of the thing to be coarsened.
 
-   Collective on MatCoarsen and Mat
+   Collective on MatCoarsen
 
    Input Parameters:
 +  agg - the coarsen context
@@ -188,7 +188,7 @@ PetscErrorCode  MatCoarsenDestroy(MatCoarsen *agg)
 /*@
    MatCoarsenCreate - Creates a coarsen context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .   comm - MPI communicator

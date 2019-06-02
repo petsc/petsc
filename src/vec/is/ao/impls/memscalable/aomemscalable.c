@@ -479,7 +479,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 /*@C
    AOCreateMemoryScalable - Creates a memory scalable application ordering using two integer arrays.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator that is to share AO

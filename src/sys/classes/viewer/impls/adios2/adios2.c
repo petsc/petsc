@@ -128,7 +128,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS2(PetscViewer v)
 /*@C
    PetscViewerADIOS2Open - Opens a file for ADIOS2 input/output.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
