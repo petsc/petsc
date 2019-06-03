@@ -4888,17 +4888,17 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
 /*@
    TSSetConvergedReason - Sets the reason for handling the convergence of TSSolve.
 
-   Not Collective
+   Logically Collective; reason must contain common value
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context
-.  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the
+-  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the
             manual pages for the individual convergence tests for complete lists
 
    Level: advanced
 
    Notes:
-   Can only be called during TSSolve() is active.
+   Can only be called while TSSolve() is active.
 
 .seealso: TSConvergedReason
 @*/
