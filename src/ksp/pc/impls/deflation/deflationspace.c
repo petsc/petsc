@@ -465,6 +465,7 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
   }
   
   ierr = PCDeflationSetSpace(pc,defl,transp);CHKERRQ(ierr);
+  ierr = MatDestroy(&defl);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

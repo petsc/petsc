@@ -354,13 +354,12 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     transp = PETSC_TRUE;
   }
   if (match && ctype == MAT_COMPOSITE_MULTIPLICATIVE) {
-    ierr = PetscMalloc1(size,&mats);CHKERRQ(ierr);
     if (!transp) {
-      for (i=0; i<size; i++) {
-        ierr = MatCompositeGetMat(def->W,i,&mats[i]);CHKERRQ(ierr);
-        //ierr = PetscObjectReference((PetscObject)mats[i]);CHKERRQ(ierr);
-      }
       if (def->nestedlvl < def->maxnestedlvl) {
+        ierr = PetscMalloc1(size,&mats);CHKERRQ(ierr);
+        for (i=0; i<size; i++) {
+          ierr = MatCompositeGetMat(def->W,i,&mats[i]);CHKERRQ(ierr);
+        }
         size -= 1;
         ierr = MatDestroy(&def->W);CHKERRQ(ierr);
         def->W = mats[size];
@@ -372,17 +371,44 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
           nextDef = mats[0];
           ierr = PetscObjectReference((PetscObject)mats[0]);CHKERRQ(ierr);
         }
+        ierr = PetscFree(mats);CHKERRQ(ierr);
       } else {
         /* ierr = MatCompositeSetMergeType(def->W,MAT_COMPOSITE_MERGE_LEFT);CHKERRQ(ierr); */
         ierr = MatCompositeMerge(def->W);CHKERRQ(ierr);
       }
+    } else {
+      if (def->nestedlvl < def->maxnestedlvl) {
+        ierr = PetscMalloc1(size,&mats);CHKERRQ(ierr);
+        for (i=0; i<size; i++) {
+          ierr = MatCompositeGetMat(def->Wt,i,&mats[i]);CHKERRQ(ierr);
+        }
+        size -= 1;
+        ierr = MatDestroy(&def->Wt);CHKERRQ(ierr);
+        def->Wt = mats[0];
+        ierr = PetscObjectReference((PetscObject)mats[0]);CHKERRQ(ierr);
+        if (size > 1) {
+          ierr = MatCreateComposite(comm,size,&mats[1],&nextDef);CHKERRQ(ierr);
+          ierr = MatCompositeSetType(nextDef,MAT_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
+        } else {
+          nextDef = mats[1];
+          ierr = PetscObjectReference((PetscObject)mats[1]);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(mats);CHKERRQ(ierr);
+      } else {
+        /* ierr = MatCompositeSetMergeType(def->W,MAT_COMPOSITE_MERGE_LEFT);CHKERRQ(ierr); */
+        ierr = MatCompositeMerge(def->Wt);CHKERRQ(ierr);
+      }
     }
-    ierr = PetscFree(mats);CHKERRQ(ierr);
+  }
+
+  if (transp) {
+    ierr = MatDestroy(&def->W);CHKERRQ(ierr);
+    ierr = MatTranspose(def->Wt,MAT_INITIAL_MATRIX,&def->W);CHKERRQ(ierr);
   }
 
   /* setup coarse problem */
   if (!def->WtAWinv) {
-    ierr = MatGetSize(def->W,NULL,&m);CHKERRQ(ierr); /* TODO works for W MatTranspose? */
+    ierr = MatGetSize(def->W,NULL,&m);CHKERRQ(ierr);
     if (!def->WtAW) {
       /* TODO add implicit product version ? */
       if (!def->AW) {
