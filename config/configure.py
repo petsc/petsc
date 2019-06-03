@@ -131,30 +131,11 @@ def chkenable():
         if tail == '1': tail = '0'
         sys.argv[l] = head.replace('without-','with-')+'='+tail
 
-def argsAddDownload(value,deps = [],options = []):
-  # Adds --download-value to args if the command line DOES NOT already has --with-value or --download-value in it
-  # this is to prevent introducing conflicting arguments to ones that already exist
-  for opt in sys.argv[1:]:
-    optname = opt.split('=')[0].strip('-')
-    if optname in ['download-'+value,'with-'+value,'with-'+value+'-dir','with-'+value+'-include','with-'+value+'-lib']: return
-  sys.argv.append('--download-'+value)
-  for i in deps:
-    argsAddDownload(i)
-  for i in options:
-    sys.argv.append(i)
-
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
-  downloadxsdk = 0
-  downloadideas = 0
+  simplereplacements = {'F77' : 'FC', 'F90' : 'FC'}
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-
-    if name.find('download-xsdk=') >= 0 or name.endswith('download-xsdk'):
-      downloadxsdk = 1
-
-    if name.find('download-ideas=') >= 0 or name.endswith('download-ideas'):
-      downloadideas = 1
 
     if name.find('with-blas-lapack') >= 0:
       sys.argv[l] = name.replace('with-blas-lapack','with-blaslapack')
@@ -187,27 +168,11 @@ def chksynonyms():
       if tail.find('quad')>=0:
         sys.argv[l]='--with-precision=__float128'
 
-  if downloadideas:
-    downloadxsdk = 1
-    argsAddDownload('alquimia')
-    # mstk currently cannot build a shared library
-    argsAddDownload('mstk',[],['--download-mstk-shared=0'])
-    argsAddDownload('ascem-io')
-    argsAddDownload('unittestcpp')
-
-  if downloadxsdk:
-    # Common external libraries
-    argsAddDownload('pflotran')
-    argsAddDownload('hdf5',['zlib'])
-    argsAddDownload('netcdf')
-    argsAddDownload('metis')
-
-    argsAddDownload('superlu_dist',['parmetis'])
-
-    argsAddDownload('hypre')
-
-    argsAddDownload('trilinos',['boost','xsdktrilinos'],['--with-cxx-dialect=C++11'])
-
+    for i,j in simplereplacements.items():
+      if name.find(i+'=') >= 0:
+        sys.argv[l] = name.replace(i+'=',j+'=')
+      elif name.find('with-'+i.lower()+'=') >= 0:
+        sys.argv[l] = name.replace(i.lower()+'=',j.lower()+'=')
 
 def chkwinf90():
   for arg in sys.argv:
