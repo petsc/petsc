@@ -5,24 +5,6 @@
 #include <slepcbv.h>
 #endif
 
-const char *const PCDeflationSpaceTypes[] = {
-  "haar",
-  "jacket-haar",
-  "db2",
-  "db4",
-  "db8",
-  "db16",
-  "biorth22",
-  "meyer",
-  "aggregation",
-  "slepc",
-  "slepc-cheap",
-  "user",
-  "DdefSpaceType",
-  "Ddef_SPACE_",
-  0
-};
-
 PetscScalar db2[] = {0.7071067811865476,0.7071067811865476};
 
 //dec low high

@@ -52,6 +52,25 @@
 
 const char *const PCDeflationTypes[]    = {"INIT","PRE","POST","PCDeflationType","PC_DEFLATION_",0};
 
+const char *const PCDeflationSpaceTypes[] = {
+  "haar",
+  "jacket-haar",
+  "db2",
+  "db4",
+  "db8",
+  "db16",
+  "biorth22",
+  "meyer",
+  "aggregation",
+  "slepc",
+  "slepc-cheap",
+  "user",
+  "DdefSpaceType",
+  "Ddef_SPACE_",
+  0
+};
+
+
 static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transpose)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;
@@ -507,6 +526,34 @@ static PetscErrorCode PCDestroy_Deflation(PC pc)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCView_Deflation(PC pc,PetscViewer viewer)
+{
+  PC_Deflation      *def = (PC_Deflation*)pc->data;
+  PetscBool         iascii;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    //if (cg->adaptiveconv) {
+    //  ierr = PetscViewerASCIIPrintf(viewer,"  DCG: using adaptive precision for inner solve with C=%.1e\n",cg->adaptiveconst);CHKERRQ(ierr);
+    //}
+    if (def->correct) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Using CP correction\n");CHKERRQ(ierr);
+    }
+    if (!def->nestedlvl) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Deflation space type: %s\n",PCDeflationSpaceTypes[def->spacetype]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  DCG %s\n",def->extendsp ? "extended" : "truncated");CHKERRQ(ierr);
+    }
+
+    ierr = PetscViewerASCIIPrintf(viewer,"--- Coarse solver\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = KSPView(def->WtAWinv,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Deflation      *jac = (PC_Deflation*)pc->data;
@@ -579,7 +626,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   pc->ops->reset               = PCReset_Deflation;
   pc->ops->destroy             = PCDestroy_Deflation;
   pc->ops->setfromoptions      = PCSetFromOptions_Deflation;
-  pc->ops->view                = 0;
+  pc->ops->view                = PCView_Deflation;
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
