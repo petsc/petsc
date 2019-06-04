@@ -4021,7 +4021,7 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
    When called during time step evaluation (e.g. during residual evaluation or via hooks set using TSSetPreStep(),
    TSSetPreStage(), TSSetPostStage(), or TSSetPostStep()), the time is the time at the start of the step being evaluated.
 
-.seealso:  TSGetSolveTime(), TSSetTime(), TSGetTimeStep()
+.seealso:  TSGetSolveTime(), TSSetTime(), TSGetTimeStep(), TSGetStepNumber()
 
 @*/
 PetscErrorCode  TSGetTime(TS ts,PetscReal *t)
