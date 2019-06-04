@@ -4,6 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit              = 'v3.11'
+    self.gitcommitmaster        = 'origin/master'
     self.download               = ['git://https://bitbucket.com/slepc/slepc.git']
     self.functions              = []
     self.includes               = []
