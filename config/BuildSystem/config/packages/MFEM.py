@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     #disable version checking
-    #self.minversion             = '4.0.0'
+    #self.minversion             = '4'
     #self.version                = '4.0.0'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
