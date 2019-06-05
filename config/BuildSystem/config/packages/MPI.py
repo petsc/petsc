@@ -369,6 +369,7 @@ shared libraries and flag it with --known-mpi-shared-libraries=1')
     self.commc2f = 1
     self.usingMPIUni = 1
     self.version = 'PETSc MPIUNI uniprocessor MPI replacement'
+    self.executeTest(self.PetscArchMPICheck)
     return
 
   def configureMissingPrototypes(self):
@@ -545,6 +546,39 @@ shared libraries and flag it with --known-mpi-shared-libraries=1')
       pass
     return
 
+  def log_print_mpi_h_line(self,buf):
+    for line in buf.splitlines():
+      if 'mpi.h' in line:
+        self.log.write('mpi_h_line:\n'+line+'\n')
+        return
+    self.log.write('mpi.h not found in buf')
+    return
+
+  def PetscArchMPICheck(self):
+    import os
+    '''Makes sure incompatable mpi.h is not in the PETSC_ARCH/include directory'''
+    build_mpi_h_dir = os.path.join(self.petscdir.dir,self.arch,'include')
+    build_mpi_h = os.path.join(build_mpi_h_dir,'mpi.h')
+    if os.path.isfile(build_mpi_h):
+      self.log.write('mpi.h found in build dir! Checking if its a bad copy.\n')
+      if self.usingMPIUni:
+        raise RuntimeError('There is a copy of mpi.h in '+build_mpi_h_dir+' that will conflict with --with-mpi=0 build. do:\nrm -rf '+self.arch+' and run ./configure again\n')
+      oldFlags = self.compilers.CPPFLAGS
+      mpi_h_test = '#include <mpi.h>'
+      # check self.include
+      self.compilers.CPPFLAGS = oldFlags+' '+self.headers.toString(self.include)
+      buf1 = self.outputPreprocess(mpi_h_test)
+      self.log_print_mpi_h_line(buf1)
+      # check build_mpi_h_dir and self.include
+      self.compilers.CPPFLAGS = oldFlags+' '+self.headers.getIncludeArgument(build_mpi_h_dir)+' '+self.headers.toString(self.include)
+      buf2 = self.outputPreprocess(mpi_h_test)
+      self.log_print_mpi_h_line(buf2)
+      if buf1 != buf2:
+        raise RuntimeError('There is a copy of mpi.h in '+build_mpi_h_dir+' that is not compatible with your MPI, do:\nrm -rf '+self.arch+' and run ./configure again\n')
+      self.compilers.CPPFLAGS = oldFlags
+    return
+
+
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     if 'with-'+self.package+'-shared' in self.argDB:
@@ -562,6 +596,7 @@ shared libraries and flag it with --known-mpi-shared-libraries=1')
     self.executeTest(self.FortranMPICheck)
     self.executeTest(self.configureIO)
     self.executeTest(self.findMPIInc)
+    self.executeTest(self.PetscArchMPICheck)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
     funcs = '''MPI_Comm_spawn MPI_Type_get_envelope MPI_Type_get_extent MPI_Type_dup MPI_Init_thread
