@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-petsc-arch=<string>',nargs.Arg(None, None, 'The configuration name'))
     return
 
-  def createArchitecture(self):
+  def setNativeArchitecture(self):
     import sys
     arch = 'arch-' + sys.platform.replace('cygwin','mswin')
     # use opt/debug, c/c++ tags.s
@@ -31,7 +31,8 @@ class Configure(config.base.Configure):
       arch += '-debug'
     else:
       arch += '-opt'
-    return arch
+    self.nativeArch = arch
+    return
 
   def configureArchitecture(self):
     '''Checks PETSC_ARCH and sets if not set'''
@@ -51,7 +52,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
       self.arch = os.environ['PETSC_ARCH']
       msg = 'environment variable PETSC_ARCH='+str(self.arch)
     else:
-      self.arch = self.createArchitecture()
+      self.arch = self.nativeArch
     if self.arch.find('/') >= 0 or self.arch.find('\\') >= 0:
       raise RuntimeError('PETSC_ARCH should not contain path characters, but you have specified with '+msg)
     if self.arch.startswith('-'):
@@ -64,6 +65,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     return
 
   def configure(self):
+    self.executeTest(self.setNativeArchitecture)
     self.executeTest(self.configureArchitecture)
     # required by top-level configure.py
     self.framework.arch = self.arch
