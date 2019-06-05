@@ -3173,9 +3173,8 @@ PetscErrorCode  SNESDestroy(SNES *snes)
   if ((*snes)->ops->convergeddestroy) {
     ierr = (*(*snes)->ops->convergeddestroy)((*snes)->cnvP);CHKERRQ(ierr);
   }
-  if ((*snes)->conv_malloc) {
-    ierr = PetscFree((*snes)->conv_hist);CHKERRQ(ierr);
-    ierr = PetscFree((*snes)->conv_hist_its);CHKERRQ(ierr);
+  if ((*snes)->conv_hist_alloc) {
+    ierr = PetscFree2((*snes)->conv_hist,(*snes)->conv_hist_its);CHKERRQ(ierr);
   }
   ierr = SNESMonitorCancel((*snes));CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
@@ -4040,10 +4039,8 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
   if (its) PetscValidIntPointer(its,3);
   if (!a) {
     if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
-    ierr = PetscCalloc1(na,&a);CHKERRQ(ierr);
-    ierr = PetscCalloc1(na,&its);CHKERRQ(ierr);
-
-    snes->conv_malloc = PETSC_TRUE;
+    ierr = PetscCalloc2(na,&a,na,&its);CHKERRQ(ierr);
+    snes->conv_hist_alloc = PETSC_TRUE;
   }
   snes->conv_hist       = a;
   snes->conv_hist_its   = its;

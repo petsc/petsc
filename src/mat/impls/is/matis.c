@@ -830,9 +830,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
   }
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscCalloc2(nr,&lr,nc,&lc);CHKERRQ(ierr);
-  ierr = PetscCalloc6(nr,&isrow,nc,&iscol,
-                      nr,&islrow,nc,&islcol,
-                      nr*nc,&snest,nr*nc,&istrans);CHKERRQ(ierr);
+  ierr = PetscCalloc6(nr,&isrow,nc,&iscol,nr,&islrow,nc,&islcol,nr*nc,&snest,nr*nc,&istrans);CHKERRQ(ierr);
   ierr = MatNestGetISs(A,isrow,iscol);CHKERRQ(ierr);
   for (i=0;i<nr;i++) {
     for (j=0;j<nc;j++) {
@@ -1104,7 +1102,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
 
     /* attach local fields to the matrix */
     ierr = PetscNew(&lf);CHKERRQ(ierr);
-    ierr = PetscCalloc2(nr,&lf->rf,nc,&lf->cf);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nr,&lf->rf,nc,&lf->cf);CHKERRQ(ierr);
     for (i=0;i<nr;i++) {
       PetscInt n,st;
 
@@ -1767,7 +1765,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
       PetscInt owner = row_ownership[global_indices_r[i]];
       for (j=0;j<local_cols;j++) {
         PetscInt index_col = global_indices_c[j];
-        if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
+        if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1]) { /* diag block */
           my_dnz[i] += 1;
         } else { /* offdiag block */
           my_onz[i] += 1;

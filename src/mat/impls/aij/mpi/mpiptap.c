@@ -1185,7 +1185,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   }
   ierr = PetscFree(hta);CHKERRQ(ierr);
 
-  ierr = PetscCalloc1(pon,&iremote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pon,&iremote);CHKERRQ(ierr);
   for (i=0; i<pon; i++) {
     owner = 0; lidx = 0;
     ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
@@ -1206,8 +1206,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   for (i = 0; i < pn; i++) {
     rootspacesize += rootdegrees[i];
   }
-  ierr = PetscCalloc1(rootspacesize,&rootspace);CHKERRQ(ierr);
-  ierr = PetscCalloc1(rootspacesize+1,&rootspaceoffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rootspacesize,&rootspace);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rootspacesize+1,&rootspaceoffsets);CHKERRQ(ierr);
   /* Get information from leaves
    * Number of columns other people contribute to my rows
    * */
@@ -1230,7 +1230,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   }
   ierr = PetscFree(rootspace);CHKERRQ(ierr);
 
-  ierr = PetscCalloc1(pon,&c_rmtoffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pon,&c_rmtoffsets);CHKERRQ(ierr);
   ierr = PetscSFScatterBegin(sf,MPIU_INT,rootspaceoffsets,c_rmtoffsets);CHKERRQ(ierr);
   ierr = PetscSFScatterEnd(sf,MPIU_INT,rootspaceoffsets,c_rmtoffsets);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
@@ -1256,7 +1256,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   /* One to one map */
   ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
 
-  ierr = PetscCalloc2(pn,&dnz,pn,&onz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(pn,&dnz,pn,&onz);CHKERRQ(ierr);
   ierr = PetscHSetICreate(&oht);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);
   ierr = PetscMalloc2(pn,&hta,pn,&hto);CHKERRQ(ierr);
@@ -1461,7 +1461,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   }
   ierr = PetscFree(hta);CHKERRQ(ierr);
 
-  ierr = PetscCalloc1(pon,&iremote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pon,&iremote);CHKERRQ(ierr);
   for (i=0; i<pon; i++) {
     owner = 0; lidx = 0;
     ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
@@ -1482,18 +1482,18 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   for (i = 0; i < pn; i++) {
     rootspacesize += rootdegrees[i];
   }
-  ierr = PetscCalloc1(rootspacesize,&rootspace);CHKERRQ(ierr);
-  ierr = PetscCalloc1(rootspacesize+1,&rootspaceoffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rootspacesize,&rootspace);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rootspacesize+1,&rootspaceoffsets);CHKERRQ(ierr);
   /* Get information from leaves
    * Number of columns other people contribute to my rows
    * */
   ierr = PetscSFGatherBegin(sf,MPIU_INT,c_rmtc,rootspace);CHKERRQ(ierr);
   ierr = PetscSFGatherEnd(sf,MPIU_INT,c_rmtc,rootspace);CHKERRQ(ierr);
   ierr = PetscFree(c_rmtc);CHKERRQ(ierr);
-  ierr = PetscCalloc1(pn+1,&ptap->c_othi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pn+1,&ptap->c_othi);CHKERRQ(ierr);
   /* The number of columns is received for each row */
-  ptap->c_othi[0] = 0;
-  rootspacesize = 0;
+  ptap->c_othi[0]     = 0;
+  rootspacesize       = 0;
   rootspaceoffsets[0] = 0;
   for (i = 0; i < pn; i++) {
     rcvncols = 0;
@@ -1506,7 +1506,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   }
   ierr = PetscFree(rootspace);CHKERRQ(ierr);
 
-  ierr = PetscCalloc1(pon,&c_rmtoffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pon,&c_rmtoffsets);CHKERRQ(ierr);
   ierr = PetscSFScatterBegin(sf,MPIU_INT,rootspaceoffsets,c_rmtoffsets);CHKERRQ(ierr);
   ierr = PetscSFScatterEnd(sf,MPIU_INT,rootspaceoffsets,c_rmtoffsets);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
@@ -1515,11 +1515,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   ierr = PetscCalloc1(ptap->c_rmti[pon],&iremote);CHKERRQ(ierr);
   nleaves = 0;
   for (i = 0; i<pon; i++) {
-    owner = 0; lidx = 0;
-    ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
+    owner = 0;
+    lidx  = 0;
+    ierr  = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
     sendncols = ptap->c_rmti[i+1] - ptap->c_rmti[i];
     for (j=0; j<sendncols; j++) {
-      iremote[nleaves].rank = owner;
+      iremote[nleaves].rank    = owner;
       iremote[nleaves++].index = c_rmtoffsets[i] + j;
     }
   }
@@ -1534,7 +1535,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   /* Get remote data */
   ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = PetscFree(c_rmtj);CHKERRQ(ierr);
-  ierr = PetscCalloc2(pn,&dnz,pn,&onz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(pn,&dnz,pn,&onz);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);
 
   for (i = 0; i < pn; i++) {

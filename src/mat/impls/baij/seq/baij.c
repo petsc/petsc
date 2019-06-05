@@ -1255,6 +1255,7 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
+  case MAT_SORTED_FULL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_SPD:
@@ -2567,7 +2568,8 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat A,PetscInt oshift,PetscBool symm
     }
   }
   ierr   = PetscFree(collengths);CHKERRQ(ierr);
-  *ia    = cia; *ja = cja;
+  *ia    = cia;
+  *ja    = cja;
   *spidx = cspidx;
   PetscFunctionReturn(0);
 }

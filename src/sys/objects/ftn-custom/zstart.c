@@ -158,7 +158,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #endif
-PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,PetscBool,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
 PETSC_INTERN int  PetscGlobalArgc;
 PETSC_INTERN char **PetscGlobalArgs;
@@ -192,7 +192,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */
-  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),0,0,0,(void**)argv);CHKERRQ(ierr);
+  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),PETSC_FALSE,0,0,0,(void**)argv);CHKERRQ(ierr);
   (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (!rank) {

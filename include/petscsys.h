@@ -446,7 +446,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 .seealso: PetscFree(), PetscNew()
 
 M*/
-#define PetscMalloc(a,b)  ((*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
+#define PetscMalloc(a,b)  ((*PetscTrMalloc)((a),PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
 
 /*MC
    PetscRealloc - Rellocates memory
@@ -1123,11 +1123,11 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PetscMallocA(int,PetscBool,int,const char *,const char *,size_t,void *,...);
 PETSC_EXTERN PetscErrorCode PetscFreeA(int,int,const char *,const char *,void *,...);
-PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,PetscBool,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscMallocSetCoalesce(PetscBool);
-PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
+PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,PetscBool,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*

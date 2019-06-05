@@ -58,7 +58,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
    * since the old IS is often based on petsc_comm_self
    * */
   ierr = ISGetLocalSize(*is,&nindx);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nindx,&indices_sc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nindx,&indices_sc);CHKERRQ(ierr);
   ierr = ISGetIndices(*is,&indices);CHKERRQ(ierr);
   ierr = PetscArraycpy(indices_sc,indices,nindx);CHKERRQ(ierr);
   ierr = ISRestoreIndices(*is,&indices);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
    localsize_tmp = 1;
    /* remove duplicate integers */
    for (i=1; i<localsize; i++){
-     if(indices_ov[i] != indices_ov[i-1]){
+     if (indices_ov[i] != indices_ov[i-1]){
        indices_ov_rd[localsize_tmp]   = indices_ov[i];
        sources_sc_rd[localsize_tmp++] = sources_sc[i];
        localsizes_sc[sources_sc[i]]++;
@@ -117,17 +117,17 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
    nleaves = localoffsets[ssize];
    ierr    = PetscArrayzero(localoffsets,ssize+1);CHKERRQ(ierr);
    nroots  = localsizes_sc[srank];
-   ierr    = PetscCalloc1(nleaves,&remote);CHKERRQ(ierr);
-   for(i=0; i<nleaves; i++){
+   ierr    = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+   for (i=0; i<nleaves; i++){
      remote[i].rank  = sources_sc_rd[i];
      remote[i].index = localoffsets[sources_sc_rd[i]]++;
    }
    ierr = PetscFree(localoffsets);CHKERRQ(ierr);
-  }else{
+  } else {
    ierr = ISDestroy(&allis_sc);CHKERRQ(ierr);
    /* Allocate a 'zero' pointer to avoid using uninitialized variable  */
    ierr = PetscCalloc1(0,&remote);CHKERRQ(ierr);
-   nleaves = 0;
+   nleaves       = 0;
    indices_ov_rd = 0;
    sources_sc_rd = 0;
   }

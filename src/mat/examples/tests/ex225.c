@@ -59,9 +59,9 @@ int main(int argc,char **args)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   /* MatZeroRows */
-  ierr = PetscCalloc1(M, &rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(M, &rows);CHKERRQ(ierr);
   for (i=0; i<M; i++) rows[i] = i;
-  ierr = MatZeroRows(B, M, rows, 10.0,NULL, NULL);CHKERRQ(ierr);
+  ierr = MatZeroRows(B, M, rows, 10.0, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatZeroRows(A, M, rows, 10.0,NULL, NULL);CHKERRQ(ierr);
   ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);

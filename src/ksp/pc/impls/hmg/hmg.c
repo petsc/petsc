@@ -72,7 +72,7 @@ static PetscErrorCode PCHMGExpandInterpolation_Private(Mat subinterp, Mat *inter
 
   ierr = MatSetUp(*interp);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
-  ierr = PetscCalloc1(max_nz,&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(max_nz,&indices);CHKERRQ(ierr);
   for (subrow=subrstart; subrow<subrend; subrow++) {
     ierr = MatGetRow(subinterp,subrow,&nz,&idx,&values);CHKERRQ(ierr);
     for (i=0;i<blocksize;i++) {

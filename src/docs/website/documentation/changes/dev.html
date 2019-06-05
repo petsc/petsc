@@ -115,6 +115,7 @@
           <li>Changed PETSC_DEPRECATED() to PETSC_DEPRECATED_FUNCTION() and PETSC_DEPRECATED_TYPEDEF() to match naming of PETSC_DEPRECATED_ENUM() and PETSC_DEPRECATED_MACRO</li>
           <li>-help now causes the printing of the current value and the newly set value for PetscOptionsInt(), etc</li>
           <li>PetscFunctionListPrintTypes() takes an additional final argument after the current value, the set value</li>
+          <li>PetscCalloc*() now calls the system calloc() routine instead of malloc() plus memzero()
         </ul>
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>

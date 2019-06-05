@@ -15,29 +15,23 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
     for (i=0; i<obj->intstar_idmax; i++) {
       ierr = PetscFree(obj->intstarcomposeddata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(obj->intstarcomposeddata);CHKERRQ(ierr);
-    ierr = PetscFree(obj->intstarcomposedstate);CHKERRQ(ierr);
+    ierr = PetscFree2(obj->intstarcomposeddata,obj->intstarcomposedstate);CHKERRQ(ierr);
   }
   if (obj->realstar_idmax>0) {
     for (i=0; i<obj->realstar_idmax; i++) {
       ierr = PetscFree(obj->realstarcomposeddata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(obj->realstarcomposeddata);CHKERRQ(ierr);
-    ierr = PetscFree(obj->realstarcomposedstate);CHKERRQ(ierr);
+    ierr = PetscFree2(obj->realstarcomposeddata,obj->realstarcomposedstate);CHKERRQ(ierr);
   }
   if (obj->scalarstar_idmax>0) {
     for (i=0; i<obj->scalarstar_idmax; i++) {
       ierr = PetscFree(obj->scalarstarcomposeddata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(obj->scalarstarcomposeddata);CHKERRQ(ierr);
-    ierr = PetscFree(obj->scalarstarcomposedstate);CHKERRQ(ierr);
+    ierr = PetscFree2(obj->scalarstarcomposeddata,obj->scalarstarcomposedstate);CHKERRQ(ierr);
   }
-  ierr = PetscFree(obj->intcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(obj->intcomposedstate);CHKERRQ(ierr);
-  ierr = PetscFree(obj->realcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(obj->realcomposedstate);CHKERRQ(ierr);
-  ierr = PetscFree(obj->scalarcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(obj->scalarcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree2(obj->intcomposeddata,obj->intcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree2(obj->realcomposeddata,obj->realcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree2(obj->scalarcomposeddata,obj->scalarcomposedstate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

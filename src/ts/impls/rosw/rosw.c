@@ -701,7 +701,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
   if (bembed) PetscValidPointer(bembed,7);
 
   ierr     = TSRosWInitializePackage();CHKERRQ(ierr);
-  ierr     = PetscCalloc1(1,&link);CHKERRQ(ierr);
+  ierr     = PetscNew(&link);CHKERRQ(ierr);
   t        = &link->tab;
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;

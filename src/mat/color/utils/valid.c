@@ -24,7 +24,7 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc,ISColoring coloring)
   ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
   /* get the communication structures and the colors */
   ierr = MatColoringCreateBipartiteGraph(mc,&etoc,&etor);CHKERRQ(ierr);
-  ierr = ISColoringGetIS(coloring,&ncolors,&colors);CHKERRQ(ierr);
+  ierr = ISColoringGetIS(coloring,PETSC_USE_POINTER,&ncolors,&colors);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etor,&nrows,&nleafrows,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etoc,&ncols,&nleafcols,NULL,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(m,&s,&e);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat A,ISColoring iscoloring)
   PetscBT        table;
 
   PetscFunctionBegin;
-  ierr = ISColoringGetIS(iscoloring,&nn,&isis);CHKERRQ(ierr);
+  ierr = ISColoringGetIS(iscoloring,PETSC_USE_POINTER,&nn,&isis);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

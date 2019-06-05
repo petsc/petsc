@@ -613,8 +613,7 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   if ((*mapping)->info_nodei) {
     ierr = PetscFree(((*mapping)->info_nodei)[0]);CHKERRQ(ierr);
   }
-  ierr = PetscFree((*mapping)->info_nodei);CHKERRQ(ierr);
-  ierr = PetscFree((*mapping)->info_nodec);CHKERRQ(ierr);
+  ierr = PetscFree2((*mapping)->info_nodec,(*mapping)->info_nodei);CHKERRQ(ierr);
   if ((*mapping)->ops->destroy) {
     ierr = (*(*mapping)->ops->destroy)(*mapping);CHKERRQ(ierr);
   }
@@ -1532,10 +1531,11 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
   if (!mapping->info_nodec) {
     PetscInt i,m,n_neigh,*neigh,*n_shared,**shared;
 
-    ierr = PetscCalloc1(n+1,&mapping->info_nodec);CHKERRQ(ierr); /* always allocate to flag setup */
-    ierr = PetscMalloc1(n,&mapping->info_nodei);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n+1,&mapping->info_nodec,n,&mapping->info_nodei);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetInfo(mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-    for (i=0,m=0;i<n;i++) { mapping->info_nodec[i] = 1; m++; }
+    for (i=0;i<n;i++) { mapping->info_nodec[i] = 1;}
+    m = n;
+    mapping->info_nodec[n] = 0;
     for (i=1;i<n_neigh;i++) {
       PetscInt j;
 

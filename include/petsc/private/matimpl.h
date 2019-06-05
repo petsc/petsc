@@ -385,6 +385,7 @@ struct _p_Mat {
   PetscBool              was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */
   PetscObjectState       nonzerostate;     /* each time new nonzeros locations are introduced into the matrix this is updated */
+  PetscObjectState       ass_nonzerostate; /* nonzero state at last assembly */
   MatInfo                info;             /* matrix information */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
@@ -398,9 +399,10 @@ struct _p_Mat {
   PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
   PetscBool              symmetric_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
-  PetscBool              assembly_subset; /* set by MAT_SUBSET_OFF_PROC_ENTRIES */
-  PetscBool              submat_singleis; /* for efficient PCSetUP_ASM() */
+  PetscBool              assembly_subset;  /* set by MAT_SUBSET_OFF_PROC_ENTRIES */
+  PetscBool              submat_singleis;  /* for efficient PCSetUP_ASM() */
   PetscBool              structure_only;
+  PetscBool              sortedfull;       /* full, sorted rows are inserted */ 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadFlag       valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
   PetscBool              pinnedtocpu;
@@ -540,6 +542,7 @@ struct  _p_MatFDColoring{
   PetscInt       ncolors;          /* number of colors */
   PetscInt       *ncolumns;        /* number of local columns for a color */
   PetscInt       **columns;        /* lists the local columns of each color (using global column numbering) */
+  IS             *isa;             /* these are the IS that contain the column values given in columns */
   PetscInt       *nrows;           /* number of local rows for each color */
   MatEntry       *matentry;        /* holds (row, column, address of value) for Jacobian matrix entry */
   MatEntry2      *matentry2;       /* holds (row, address of value) for Jacobian matrix entry */

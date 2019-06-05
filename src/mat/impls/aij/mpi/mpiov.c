@@ -68,7 +68,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   /* retrieve IS data and put all together so that we
    * can optimize communication
    *  */
-  ierr = PetscCalloc2(nidx,(PetscInt ***)&indices,nidx,&length);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nidx,(PetscInt ***)&indices,nidx,&length);CHKERRQ(ierr);
   for (i=0,tlength=0; i<nidx; i++){
     ierr = ISGetLocalSize(is[i],&length[i]);CHKERRQ(ierr);
     tlength += length[i];
@@ -118,7 +118,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
       toranks[nto++]  = i; /* processor */
     }
   }
-  ierr = PetscCalloc1(nto+1,&toffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nto+1,&toffsets);CHKERRQ(ierr);
+  toffsets[0] = 0;
   for (i=0; i<nto; i++) {
     toffsets[i+1]  = toffsets[i]+tosizes[2*i]; /* offsets */
     tosizes[2*i+1] = toffsets[i]; /* offsets to send */
@@ -346,7 +347,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
       totalrows += indvc_ij;
     }
   }
-  ierr = PetscCalloc1(nfrom+1,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nfrom+1,&offsets);CHKERRQ(ierr);
+  offsets[0] = 0;
   for (i=0; i<nfrom; i++){
     offsets[i+1]   = offsets[i] + sbsizes[2*i];
     sbsizes[2*i+1] = offsets[i];

@@ -127,8 +127,10 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
         a->singlemalloc = PETSC_TRUE;
 
         /* Setup row lengths */
-        if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
-        ierr = PetscMalloc2(m,&a->imax,m,&a->ilen);CHKERRQ(ierr);
+        ierr = PetscFree(a->imax);CHKERRQ(ierr);
+        ierr = PetscFree(a->ilen);CHKERRQ(ierr);
+        ierr = PetscMalloc1(m,&a->imax);CHKERRQ(ierr);
+        ierr = PetscMalloc1(m,&a->ilen);CHKERRQ(ierr);
         ierr = PetscLogObjectMemory((PetscObject)A, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
 
         /* Copy data back from GPU */

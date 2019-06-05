@@ -509,11 +509,12 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
   if (!*c) PetscFunctionReturn(0);
   if (--((PetscObject)color)->refct > 0) {*c = 0; PetscFunctionReturn(0);}
 
+  /* we do not free the column arrays since their entries are owned by the ISs in color->isa */
   for (i=0; i<color->ncolors; i++) {
-    ierr = PetscFree(color->columns[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&color->isa[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(color->ncolumns);CHKERRQ(ierr);
-  ierr = PetscFree(color->columns);CHKERRQ(ierr);
+  ierr = PetscFree(color->isa);CHKERRQ(ierr);
+  ierr = PetscFree2(color->ncolumns,color->columns);CHKERRQ(ierr);
   ierr = PetscFree(color->nrows);CHKERRQ(ierr);
   if (color->htype[0] == 'w') {
     ierr = PetscFree(color->matentry2);CHKERRQ(ierr);
@@ -596,7 +597,6 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
 PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
@@ -607,17 +607,6 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sct
   if (!coloring->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetUp()");
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)coloring)->options,NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
-  } else {
-    PetscBool assembled;
-    ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
-    if (assembled) {
-      ierr = MatZeroEntries(J);CHKERRQ(ierr);
-    }
-  }
-
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,sctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);

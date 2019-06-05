@@ -1358,8 +1358,8 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
-  PetscValidScalarPointer(v,6);
   MatCheckPreallocated(mat,1);
+
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
@@ -1578,7 +1578,6 @@ PetscErrorCode MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],Pe
   PetscValidType(mat,1);
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
-  PetscValidScalarPointer(v,6);
 
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
@@ -2139,7 +2138,6 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
   if (!nrow || !ncol) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(irow,3);
   PetscValidIntPointer(icol,5);
-  PetscValidScalarPointer(y,6);
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
@@ -5213,6 +5211,7 @@ PetscErrorCode MatAssemblyBegin(Mat mat,MatAssemblyType type)
     mat->was_assembled = PETSC_TRUE;
     mat->assembled     = PETSC_FALSE;
   }
+
   if (!MatAssemblyEnd_InUse) {
     ierr = PetscLogEventBegin(MAT_AssemblyBegin,mat,0,0,0);CHKERRQ(ierr);
     if (mat->ops->assemblybegin) {ierr = (*mat->ops->assemblybegin)(mat,type);CHKERRQ(ierr);}
@@ -5310,8 +5309,11 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
   /* Flush assembly is not a true assembly */
   if (type != MAT_FLUSH_ASSEMBLY) {
-    mat->assembled = PETSC_TRUE; mat->num_ass++;
+    mat->assembled        = PETSC_TRUE;
+    mat->num_ass++;
+    mat->ass_nonzerostate = mat->nonzerostate;
   }
+
   mat->insertmode = NOT_SET_VALUES;
   MatAssemblyEnd_InUse--;
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
@@ -5448,6 +5450,9 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_IGNORE_LOWER_TRIANGULAR - For SBAIJ matrices will ignore any insertions you make in the lower triangular
         part of the matrix (since they should match the upper triangular part).
 
+   MAT_SORTED_FULL - each process provides exactly its local rows; all column indices for a given row are passed in a
+                     single call to MatSetValues(), preallocation is perfect, row oriented, INSERT_VALUES is used. Common
+                     with finite difference schemes with non-periodic boundary conditions.
    Notes:
     Can only be called after MatSetSizes() and MatSetType() have been set.
 
@@ -5528,6 +5533,9 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
     break;
   case MAT_STRUCTURE_ONLY:
     mat->structure_only = flg;
+    break;
+  case MAT_SORTED_FULL:
+    mat->sortedfull = flg;
     break;
   default:
     break;

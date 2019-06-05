@@ -71,7 +71,8 @@ PetscErrorCode DMNetworkSetSizes(DM dm,PetscInt Nsubnet,PetscInt nV[], PetscInt 
     /* Get global number of vertices and edges for subnet[i] */
     a[0] = nV[i]; a[1] = nE[i]; /* local number of vertices (excluding ghost) and edges */
     ierr = MPIU_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-    network->subnet[i].Nvtx = b[0]; network->subnet[i].Nedge = b[1];
+    network->subnet[i].Nvtx = b[0];
+    network->subnet[i].Nedge = b[1];
 
     network->subnet[i].nvtx   = nV[i]; /* local nvtx, without ghost */
 

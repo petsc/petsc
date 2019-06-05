@@ -164,7 +164,7 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name,PetscInt order,PetscInt
 {
   BasicSymplecticSchemeLink link;
   BasicSymplecticScheme     scheme;
-  PetscErrorCode  ierr;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
@@ -172,7 +172,7 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name,PetscInt order,PetscInt
   PetscValidPointer(d,4);
 
   ierr = TSBasicSymplecticInitializePackage();CHKERRQ(ierr);
-  ierr = PetscCalloc1(1,&link);CHKERRQ(ierr);
+  ierr = PetscNew(&link);CHKERRQ(ierr);
   scheme = &link->sch;
   ierr = PetscStrallocpy(name,&scheme->name);CHKERRQ(ierr);
   scheme->order = order;

@@ -487,7 +487,6 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   bs2 = stash->bs*stash->bs;
 
   /*  first count number of contributors to each processor */
-  ierr = PetscCalloc1(size,&sizes);CHKERRQ(ierr);
   ierr = PetscCalloc1(size,&nlengths);CHKERRQ(ierr);
   ierr = PetscMalloc1(stash->n+1,&owner);CHKERRQ(ierr);
 
@@ -510,7 +509,9 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
     }
     space = space_next;
   }
+
   /* Now check what procs get messages - and compute nsends. */
+  ierr = PetscCalloc1(size,&sizes);CHKERRQ(ierr);
   for (i=0, nsends=0; i<size; i++) {
     if (nlengths[i]) {
       sizes[i] = 1; nsends++;

@@ -528,7 +528,6 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,
   if (Amb) {
     t->np = 3;
     ierr = PetscMalloc3(s*s,&t->Amb,s,&t->bmb,s,&t->cmb);CHKERRQ(ierr);
-    ierr = PetscCalloc1(s,&t->rmb);CHKERRQ(ierr);
     ierr = PetscArraycpy(t->Amb,Amb,s*s);CHKERRQ(ierr);
     if (bmb) {
       ierr = PetscArraycpy(t->bmb,bmb,s);CHKERRQ(ierr);
@@ -543,13 +542,15 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,
           t->cmb[i] += Amb[i*s+j];
     }
     if (rmb) {
+      ierr = PetscMalloc1(s,&t->rmb);CHKERRQ(ierr);
       ierr = PetscArraycpy(t->rmb,rmb,s);CHKERRQ(ierr);
+    } else {
+      ierr = PetscCalloc1(s,&t->rmb);CHKERRQ(ierr);
     }
   }
 
   ierr = PetscMalloc3(s*s,&t->Asb,s,&t->bsb,s,&t->csb);CHKERRQ(ierr);
   ierr = PetscArraycpy(t->Asb,Asb,s*s);CHKERRQ(ierr);
-  ierr = PetscCalloc1(s,&t->rsb);CHKERRQ(ierr);
   if (bsb) {
     ierr = PetscArraycpy(t->bsb,bsb,s);CHKERRQ(ierr);
   } else
@@ -562,7 +563,10 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,
         t->csb[i] += Asb[i*s+j];
   }
   if (rsb) {
+    ierr = PetscMalloc1(s,&t->rsb);CHKERRQ(ierr);
     ierr = PetscArraycpy(t->rsb,rsb,s);CHKERRQ(ierr);
+  } else {
+    ierr = PetscCalloc1(s,&t->rsb);CHKERRQ(ierr);
   }
   link->next = MPRKTableauList;
   MPRKTableauList = link;

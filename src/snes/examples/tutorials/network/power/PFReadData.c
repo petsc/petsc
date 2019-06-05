@@ -60,10 +60,6 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   ierr = PetscCalloc1(pf->nbranch,&pf->branch);CHKERRQ(ierr);
   Bus = pf->bus; Gen = pf->gen; Load = pf->load; Branch = pf->branch;
 
-  for(i=0; i < pf->nbus; i++) {
-    pf->bus[i].ngen = pf->bus[i].nload = 0;
-  }
-
   /* Setting pf->sbase to 100 */
   pf->sbase = 100.0;
 

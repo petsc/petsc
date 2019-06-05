@@ -49,7 +49,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
     }
     gs->coloring = coloring;
   }
-  ierr = ISColoringGetIS(coloring,&ncolors,&coloris);CHKERRQ(ierr);
+  ierr = ISColoringGetIS(coloring,PETSC_USE_POINTER,&ncolors,&coloris);CHKERRQ(ierr);
   ierr = VecEqual(X,snes->vec_sol,&equal);CHKERRQ(ierr);
   if (equal && snes->normschedule == SNES_NORM_ALWAYS) {
     /* assume that the function is already computed */
@@ -121,6 +121,6 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
   ierr = VecRestoreArray(F,&fa);CHKERRQ(ierr);
   ierr = VecRestoreArray(G,&ga);CHKERRQ(ierr);
   ierr = VecRestoreArray(W,&wa);CHKERRQ(ierr);
-  ierr = ISColoringRestoreIS(coloring,&coloris);CHKERRQ(ierr);
+  ierr = ISColoringRestoreIS(coloring,PETSC_USE_POINTER,&coloris);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

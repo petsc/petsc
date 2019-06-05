@@ -130,11 +130,11 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
 
-  ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&is);CHKERRQ(ierr);
+  ierr = ISColoringGetIS(iscoloring,PETSC_USE_POINTER,PETSC_IGNORE,&is);CHKERRQ(ierr);
   for (i=0; i<iscoloring->n; i++) {
     ierr = ISView(iscoloring->is[i],viewer);CHKERRQ(ierr);
   }
-  ierr = ISColoringRestoreIS(iscoloring,&is);CHKERRQ(ierr);
+  ierr = ISColoringRestoreIS(iscoloring,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -144,7 +144,8 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
    Collective on ISColoring
 
    Input Parameter:
-.  iscoloring - the coloring context
++  iscoloring - the coloring context
+-  mode - if this value is PETSC_OWN_POINTER then the caller owns the pointer and must free the array of IS and each IS in the array
 
    Output Parameters:
 +  nn - number of index sets in the coloring context
@@ -154,7 +155,7 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 
 .seealso: ISColoringRestoreIS(), ISColoringView()
 @*/
-PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
+PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscInt *nn,IS *isis[])
 {
   PetscErrorCode ierr;
 
@@ -196,12 +197,14 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
         ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
       }
 
-      iscoloring->is = is;
+      if (mode != PETSC_OWN_POINTER) iscoloring->is = is;
+      *isis = is;
       ierr = PetscFree(ii[0]);CHKERRQ(ierr);
       ierr = PetscFree(ii);CHKERRQ(ierr);
       ierr = PetscFree(mcolors);CHKERRQ(ierr);
+    } else {
+      *isis = iscoloring->is;
     }
-    *isis = iscoloring->is;
   }
   PetscFunctionReturn(0);
 }
@@ -213,13 +216,14 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
 
    Input Parameter:
 +  iscoloring - the coloring context
+.  mode - who retains ownership of the is
 -  is - array of index sets
 
    Level: advanced
 
 .seealso: ISColoringGetIS(), ISColoringView()
 @*/
-PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
+PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,PetscCopyMode mode,IS *is[])
 {
   PetscFunctionBegin;
   PetscValidPointer(iscoloring,1);
@@ -398,13 +402,13 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    ierr = PetscFree2(tosizes_tmp,tooffsets_tmp);CHKERRQ(ierr);
    ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes);CHKERRQ(ierr);
    ierr = PetscFree2(toranks,tosizes);CHKERRQ(ierr);
-   ierr = PetscCalloc1(nfrom,&fromperm_newtoold);CHKERRQ(ierr);
+   ierr = PetscMalloc1(nfrom,&fromperm_newtoold);CHKERRQ(ierr);
    for (i=0; i<nfrom; i++) fromperm_newtoold[i] = i;
    ierr   = PetscSortMPIIntWithArray(nfrom,fromranks,fromperm_newtoold);CHKERRQ(ierr);
    nrecvs = 0;
    for (i=0; i<nfrom; i++) nrecvs += fromsizes[i*2];
    ierr   = PetscCalloc1(nrecvs,&recv_indices);CHKERRQ(ierr);
-   ierr   = PetscCalloc1(nrecvs,&iremote);CHKERRQ(ierr);
+   ierr   = PetscMalloc1(nrecvs,&iremote);CHKERRQ(ierr);
    nrecvs = 0;
    for (i=0; i<nfrom; i++) {
      for (j=0; j<fromsizes[2*fromperm_newtoold[i]]; j++) {

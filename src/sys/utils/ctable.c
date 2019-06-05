@@ -79,7 +79,6 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rt
 PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
   PetscTable     ta;
 
   PetscFunctionBegin;
@@ -87,13 +86,16 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   ta->tablesize = intable->tablesize;
   ierr          = PetscMalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr          = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
-  for (i = 0; i < ta->tablesize; i++) {
-    ta->keytable[i] = intable->keytable[i];
-    ta->table[i]    = intable->table[i];
+  ierr          = PetscMemcpy(ta->keytable,intable->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr          = PetscMemcpy(ta->table,intable->table,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
+  {
+  PetscInt i;
+  for (i = 0; i < ta->tablesize; i++) {
     if (ta->keytable[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->keytable[i] < 0");
-#endif
   }
+  }
+#endif
   ta->head   = 0;
   ta->count  = intable->count;
   ta->maxkey = intable->maxkey;

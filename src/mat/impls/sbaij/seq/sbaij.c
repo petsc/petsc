@@ -233,6 +233,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
+  case MAT_SORTED_FULL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_HERMITIAN:
@@ -2289,9 +2290,8 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
   for (i=0; i<extra_rows; i++) jj[nz+i] = M+i;
 
   /* loop over row lengths determining block row lengths */
-  ierr     = PetscCalloc1(mbs,&s_browlengths);CHKERRQ(ierr);
-  ierr     = PetscMalloc2(mbs,&mask,mbs,&masked);CHKERRQ(ierr);
-  ierr     = PetscArrayzero(mask,mbs);CHKERRQ(ierr);
+  ierr     = PetscCalloc2(mbs,&s_browlengths,mbs,&mask);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(mbs,&masked);CHKERRQ(ierr);
   rowcount = 0;
   nzcount  = 0;
   for (i=0; i<mbs; i++) {
@@ -2370,10 +2370,10 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
   if (jcount != a->nz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Bad binary matrix");
 
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
-  ierr = PetscFree(s_browlengths);CHKERRQ(ierr);
+  ierr = PetscFree2(s_browlengths,mask);CHKERRQ(ierr);
   ierr = PetscFree(aa);CHKERRQ(ierr);
   ierr = PetscFree(jj);CHKERRQ(ierr);
-  ierr = PetscFree2(mask,masked);CHKERRQ(ierr);
+  ierr = PetscFree(masked);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
