@@ -57,6 +57,14 @@ PETSC_EXTERN PetscLogEvent PETSC_LARGEST_EVENT;
 PETSC_EXTERN PetscLogDouble petsc_TotalFlops;
 PETSC_EXTERN PetscLogDouble petsc_tmp_flops;
 
+/* Global GPU counters */
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
+PETSC_EXTERN PetscLogDouble petsc_ctog_ct;
+PETSC_EXTERN PetscLogDouble petsc_gtoc_ct;
+PETSC_EXTERN PetscLogDouble petsc_ctog_sz;
+PETSC_EXTERN PetscLogDouble petsc_gtoc_sz;
+#endif
+
 /* We must make the following structures available to access the event
      activation flags in the PetscLogEventBegin/End() macros. These are not part of the PETSc public
      API and are not intended to be used by other parts of PETSc or by users.
@@ -137,6 +145,12 @@ typedef struct {
   PetscLogDouble mallocIncrease;/* How much the maximum malloced space has increased in this event */
   PetscLogDouble mallocSpace;   /* How much the space was malloced and kept during this event */
   PetscLogDouble mallocIncreaseEvent;  /* Maximum of the high water mark with in event minus memory available at the end of the event */
+  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
+  PetscLogDouble CpuToGpuCount; /* The total number of CPU to GPU copies */
+  PetscLogDouble GpuToCpuCount; /* The total number of GPU to CPU copies */
+  PetscLogDouble CpuToGpuSize;  /* The total size of CPU to GPU copies */
+  PetscLogDouble GpuToCpuSize;  /* The total size of GPU to CPU copies */
+  #endif
 } PetscEventPerfInfo;
 
 typedef struct _n_PetscEventRegLog *PetscEventRegLog;
@@ -215,6 +229,19 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
   petsc_TotalFlops += PETSC_FLOPS_PER_OP*n;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+PETSC_STATIC_INLINE PetscErrorCode PetscLogCpuToGpu(PetscLogDouble size){
+  petsc_ctog_ct += 1;
+  petsc_ctog_sz += size;
+  PetscFunctionReturn(0);
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpu(PetscLogDouble size){
+  petsc_gtoc_ct += 1;
+  petsc_gtoc_sz += size;
+  PetscFunctionReturn(0);
+}
+#endif
 
 PETSC_EXTERN PetscErrorCode PetscGetFlops(PetscLogDouble *);
 
