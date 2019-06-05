@@ -10,7 +10,7 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.minversion         = '2.0'
+    self.minversion         = '2'
     self.versionname        = 'MPI_VERSION'
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']

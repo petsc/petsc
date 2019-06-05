@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.version        = '2.16.0'
-    self.minversion     = '2.14.0'
+    self.minversion     = '2.14'
     self.versionname    = 'HYPRE_RELEASE_VERSION'
     self.versioninclude = 'HYPRE_config.h'
     self.gitcommit      = 'v'+self.version

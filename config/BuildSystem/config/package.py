@@ -923,7 +923,11 @@ class Package(config.base.Configure):
       self.pushLanguage('C++')
     else:
       self.pushLanguage(self.defaultLanguage)
-    output,err,ret  = self.preprocess('#include "'+self.versioninclude+'"\nversion='+self.versionname+'\n')
+    try:
+      output,err,ret  = self.preprocess('#include "'+self.versioninclude+'"\nversion='+self.versionname+'\n')
+    except:
+      self.log.write('For '+self.package+' unable to run preprocessor to obtain version information: output below, skipping version check\n')
+      return
     self.popLanguage()
     self.compilers.CPPFLAGS = oldFlags
     loutput = output.split('\n')
@@ -933,48 +937,38 @@ class Package(config.base.Configure):
         version = i[8:]
         break
     if not version:
-      self.log.write('For '+self.package+' unable to find version information: output below\n')
+      self.log.write('For '+self.package+' unable to find version information: output below, skipping version check\n')
       self.log.write(output)
       return
-    version = version.strip().strip('\"')
-    self.foundversion = self.versionToStandardForm(version)
-    self.version_tuple = self.versionToTuple(self.foundversion)
-
-    # check for consistency of version numbering
-    cnt = -1
-    if self.version:
-      cnt = self.version.count('.')
-    if self.minversion:
-      mcnt = self.minversion.count('.')
-      if cnt > -1 and not mcnt == cnt:
-        raise RuntimeError(self.package+' self.version '+self.version+' has different number of periods then self.minversion '+self.minversion+'\n')
-      cnt = max(mcnt,cnt)
-    if self.maxversion:
-      mcnt = self.maxversion.count('.')
-      if cnt > -1 and not mcnt == cnt:
-        raise RuntimeError(self.package+' self.version '+self.maxversion+' has different number of periods then self.minversion '+self.minversion+' or self.version '+self.version+'\n')
-      cnt = max(mcnt,cnt)
-    if cnt > -1:
-      mcnt = self.foundversion.count('.')
-      if mcnt == cnt-1: self.foundversion = self.foundversion+'.0'
-      elif not mcnt == cnt:
-        self.log.write(self.package+' version found '+self.foundversion+'does not have same number of periods as in package file\n')
-        return
+    version = version.replace(' ','').replace('\"','')
+    try:
+      self.foundversion = self.versionToStandardForm(version)
+      self.version_tuple = self.versionToTuple(self.foundversion)
+    except:
+      self.log.write('For '+self.package+' unable to convert version to standard form, skipping version check\n')
+      return
 
     self.log.write('For '+self.package+' need '+self.minversion+' <= '+self.foundversion+' <= '+self.maxversion+'\n')
+
+    try:
+      foundversiontuble = self.versionToTuple(self.foundversion)
+    except:
+      self.log.write('For '+self.package+' unable to convert version string to tuble, skipping version check\n')
+      return
+
     suggest = ''
     if self.download: suggest = '\nSuggest using --download-'+self.package+' for a compatible '+self.name
     if self.minversion:
-      if self.versionToTuple(self.minversion) > self.versionToTuple(self.foundversion):
+      if self.versionToTuple(self.minversion) > foundversiontuble:
         raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at least '+self.minversion+suggest+'\n')
     elif self.version:
-      if self.versionToTuple(zeroPatch(self.version)) > self.versionToTuple(self.foundversion):
+      if self.versionToTuple(zeroPatch(self.version)) > foundversiontuble:
         self.logPrintBox('Warning: Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
     if self.maxversion:
-      if self.versionToTuple(self.maxversion) < self.versionToTuple(self.foundversion):
+      if self.versionToTuple(self.maxversion) < foundversiontuble:
         raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at most '+self.maxversion+suggest+'\n')
     elif self.version:
-      if self.versionToTuple(infinitePatch(self.version)) < self.versionToTuple(self.foundversion):
+      if self.versionToTuple(infinitePatch(self.version)) < foundversiontuble:
         self.logPrintBox('Warning: Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
     return
 
