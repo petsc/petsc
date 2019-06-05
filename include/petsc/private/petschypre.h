@@ -9,7 +9,7 @@
 /* from version 2.16 on, HYPRE_BigInt is 64 bit for 64bit installations
    and 32 bit for 32bit installations -> not the best name for a variable */
 #if PETSC_PKG_HYPRE_VERSION_LT(2,16,0)
-typedef PetscInt HYPRE_BigInt
+typedef PetscInt HYPRE_BigInt;
 #endif
 
 /*
