@@ -110,9 +110,10 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_monitor_draw_error - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 .  -ts_monitor_solution [ascii binary draw][:filename][:viewerformat] - monitors the solution at each timestep
 .  -ts_monitor_solution_vtk <filename.vts,filename.vtu> - Save each time step to a binary file, use filename-%%03D.vts (filename-%%03D.vtu)
-.  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
+-  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
 
-   Developer Note: We should unify all the -ts_monitor options in the way that -xxx_view has been unified
+   Developer Note:
+   We should unify all the -ts_monitor options in the way that -xxx_view has been unified
 
    Level: beginner
 
