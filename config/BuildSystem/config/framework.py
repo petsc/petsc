@@ -969,7 +969,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.extend(self.batchCleanup)
       # pretty print repr(args.values())
       for itm in args:
-        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=config.compilerOptions'):
+        if (itm not in ['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions','--force']):
           body.append('fprintf(output,"  \'%s\',\\n","'+str(itm).replace('"', "'")+'");')
       body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
