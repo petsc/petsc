@@ -531,7 +531,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
         ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
         ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
         ierr = MatDenseGetArrayRead(deluxe_ctx->seq_mat[i],&M);CHKERRQ(ierr);
-        ierr = PetscMemcpy(W,M,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArraycpy(W,M,subset_size*subset_size);CHKERRQ(ierr);
         ierr = MatDenseRestoreArrayRead(deluxe_ctx->seq_mat[i],&M);CHKERRQ(ierr);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
         PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,W,&B_N,pivots,&B_ierr));
@@ -892,9 +892,9 @@ PetscErrorCode FETIDPMatMult_Kernel(Mat fetimat, Vec x, Vec y, PetscBool trans)
     }
   }
   /* Application of \widetilde{S}^-1 */
-  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
   ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,trans);CHKERRQ(ierr);
-  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
   /* Application of B_delta */
   ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);

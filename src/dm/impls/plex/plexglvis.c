@@ -1032,7 +1032,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                   PetscInt       hvsuppSize,hesuppSize,coneSize;
                   PetscInt       hv = children[n],he = -1,f;
 
-                  ierr = PetscMemzero(skip,maxsupp*sizeof(PetscBool));CHKERRQ(ierr);
+                  ierr = PetscArrayzero(skip,maxsupp);CHKERRQ(ierr);
                   ierr = DMPlexGetSupportSize(dm,hv,&hvsuppSize);CHKERRQ(ierr);
                   ierr = DMPlexGetSupport(dm,hv,&hvsupp);CHKERRQ(ierr);
                   for (i=0;i<hvsuppSize;i++) {

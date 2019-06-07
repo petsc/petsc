@@ -34,7 +34,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
 
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,&rtmp,bs2,&mwork);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(rtmp,bs2*n);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     /* zero rtmp */
@@ -42,14 +42,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(rtmp+bs2*bjtmp[j],bs2);CHKERRQ(ierr);
     }
 
     /* U part */
     nz    = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1]+1;
     for  (j=0; j<nz; j++) {
-      ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(rtmp+bs2*bjtmp[j],bs2);CHKERRQ(ierr);
     }
 
     /* load in initial (unfactored row) */
@@ -57,7 +57,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
     ajtmp = aj + ai[i];
     v     = aa + bs2*ai[i];
     for (j=0; j<nz; j++) {
-      ierr = PetscMemcpy(rtmp+bs2*ajtmp[j],v+bs2*j,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(rtmp+bs2*ajtmp[j],v+bs2*j,bs2);CHKERRQ(ierr);
     }
 
     /* elimination */
@@ -95,13 +95,13 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
     pj = b->j + bi[i];
     nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
-      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
 
     /* Mark diagonal and invert diagonal for simplier triangular solves */
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
-    ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(pv,rtmp+bs2*pj[0],bs2);CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_15(pv,ipvt,work,info->shiftamount,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
@@ -110,7 +110,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
     pj = b->j + bdiag[i+1]+1;
     nz = bdiag[i] - bdiag[i+1] - 1;
     for (j=0; j<nz; j++) {
-      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
   }
 
@@ -144,8 +144,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   allowzeropivot = PetscNot(A->erroriffailure);
 
-  ierr = PetscMalloc1(bs2*n,&rtmp);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(bs2*n,&rtmp);CHKERRQ(ierr);
 
   /* generate work space needed by dense LU factorization */
   ierr = PetscMalloc3(bs,&v_work,bs2,&mwork,bs,&v_pivots);CHKERRQ(ierr);
@@ -156,14 +155,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(rtmp+bs2*bjtmp[j],bs2);CHKERRQ(ierr);
     }
 
     /* U part */
     nz    = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1]+1;
     for  (j=0; j<nz; j++) {
-      ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(rtmp+bs2*bjtmp[j],bs2);CHKERRQ(ierr);
     }
 
     /* load in initial (unfactored row) */
@@ -171,7 +170,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     ajtmp = aj + ai[r[i]];
     v     = aa + bs2*ai[r[i]];
     for (j=0; j<nz; j++) {
-      ierr = PetscMemcpy(rtmp+bs2*ic[ajtmp[j]],v+bs2*j,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(rtmp+bs2*ic[ajtmp[j]],v+bs2*j,bs2);CHKERRQ(ierr);
     }
 
     /* elimination */
@@ -205,13 +204,13 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     pj = b->j + bi[i];
     nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
-      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
 
     /* Mark diagonal and invert diagonal for simplier triangular solves */
     pv = b->a + bs2*bdiag[i];
     pj = b->j + bdiag[i];
-    ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(pv,rtmp+bs2*pj[0],bs2);CHKERRQ(ierr);
 
     ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) B->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
@@ -221,7 +220,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     pj = b->j + bdiag[i+1]+1;
     nz = bdiag[i] - bdiag[i+1] - 1;
     for (j=0; j<nz; j++) {
-      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
   }
 
@@ -304,7 +303,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact,Mat A,IS isrow,IS isco
   bdiag = b->diag;
 
   if (n > 0) {
-    ierr = PetscMemzero(b->a,bs2*ai[n]*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(b->a,bs2*ai[n]);CHKERRQ(ierr);
   }
 
   /* set bi and bj with new data structure */
@@ -690,11 +689,11 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 
       /* allocate a longer ajnew and ajfill */
       ierr   = PetscMalloc1(jmax,&xitmp);CHKERRQ(ierr);
-      ierr   = PetscMemcpy(xitmp,ajnew,ainew[prow]*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr   = PetscArraycpy(xitmp,ajnew,ainew[prow]);CHKERRQ(ierr);
       ierr   = PetscFree(ajnew);CHKERRQ(ierr);
       ajnew  = xitmp;
       ierr   = PetscMalloc1(jmax,&xitmp);CHKERRQ(ierr);
-      ierr   = PetscMemcpy(xitmp,ajfill,ainew[prow]*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr   = PetscArraycpy(xitmp,ajfill,ainew[prow]);CHKERRQ(ierr);
       ierr   = PetscFree(ajfill);CHKERRQ(ierr);
       ajfill = xitmp;
       reallocate++;   /* count how many reallocations are needed */

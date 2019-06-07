@@ -4676,7 +4676,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->getrowminabs) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
-  if (idx) {ierr = PetscMemzero(idx,mat->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);}
+  if (idx) {ierr = PetscArrayzero(idx,mat->rmap->n);CHKERRQ(ierr);}
 
   ierr = (*mat->ops->getrowminabs)(mat,v,idx);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -4757,7 +4757,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->getrowmaxabs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
-  if (idx) {ierr = PetscMemzero(idx,mat->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);}
+  if (idx) {ierr = PetscArrayzero(idx,mat->rmap->n);CHKERRQ(ierr);}
 
   ierr = (*mat->ops->getrowmaxabs)(mat,v,idx);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -7177,7 +7177,7 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat,PetscInt nblocks,PetscInt *bsize
   ierr = PetscFree(mat->bsizes);CHKERRQ(ierr);
   mat->nblocks = nblocks;
   ierr = PetscMalloc1(nblocks,&mat->bsizes);CHKERRQ(ierr);
-  ierr = PetscMemcpy(mat->bsizes,bsizes,nblocks*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mat->bsizes,bsizes,nblocks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

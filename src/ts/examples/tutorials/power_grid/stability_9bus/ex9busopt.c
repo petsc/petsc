@@ -145,7 +145,7 @@ PetscErrorCode SaveSolution(TS ts)
   ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   mat[idx] = t;
-  ierr     = PetscMemcpy(mat+idx+1,x,user->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr     = PetscArraycpy(mat+idx+1,x,user->neqs_pgrid);CHKERRQ(ierr);
   ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   user->stepnum++;

@@ -116,9 +116,9 @@ int main(int argc,char **args)
       ierr = MatGetRow(B,i,&nzB,&idxB,&vB);CHKERRQ(ierr);
       if (nzA!=nzB) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %D", nzA-nzB);
       ierr = PetscSortIntWithScalarArray(nzB,(PetscInt*)idxB,(PetscScalar*)vB);CHKERRQ(ierr);
-      ierr = PetscMemcmp(idxA,idxB,nzA*sizeof(PetscInt),&flg);CHKERRQ(ierr);
+      ierr = PetscArraycmp(idxA,idxB,nzA,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %D (indices)",i);
-      ierr = PetscMemcmp(vA,vB,nzA*sizeof(PetscScalar),&flg);CHKERRQ(ierr);
+      ierr = PetscArraycmp(vA,vB,nzA,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %D (values)",i);
       ierr = MatRestoreRow(A,i,&nzA,&idxA,&vA);CHKERRQ(ierr);
       ierr = MatRestoreRow(B,i,&nzB,&idxB,&vB);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ int main(int argc,char **args)
     ierr = MatGetValues(B,rend-rstart,rows,6,cols,valuesB);CHKERRQ(ierr);
 
     for (i=0; i<(rend-rstart); i++) {
-      ierr = PetscMemcmp(valuesA + 6*i,valuesB + 6*i,6*sizeof(PetscScalar),&flg);CHKERRQ(ierr);
+      ierr = PetscArraycmp(valuesA + 6*i,valuesB + 6*i,6,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetValues %D",i + rstart);
     }
     ierr = PetscFree3(valuesA,valuesB,rows);CHKERRQ(ierr);

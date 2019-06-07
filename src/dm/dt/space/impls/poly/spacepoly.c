@@ -232,13 +232,13 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
     PetscInt topDegree = sp->degree;
 
     /* B (npoints x pdim x Nc) */
-    ierr = PetscMemzero(B, npoints*pdim*Nc*Nc * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(B, npoints*pdim*Nc*Nc);CHKERRQ(ierr);
     if ((poly->ptype == PETSCSPACE_POLYNOMIALTYPE_PMINUS_HDIV) || (poly->ptype == PETSCSPACE_POLYNOMIALTYPE_PMINUS_HCURL)) topDegree--;
     /* Make complete space portion */
     if (poly->tensor) {
       if (poly->ptype != PETSCSPACE_POLYNOMIALTYPE_P) SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Tensor spaces not supported for P^- spaces (%s)", PetscSpacePolynomialTypes[poly->ptype]);
       i = 0;
-      ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArrayzero(ind, dim);CHKERRQ(ierr);
       while (ind[0] >= 0) {
         ierr = TensorPoint_Internal(dim, sp->degree+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
@@ -252,7 +252,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
     } else {
       i = 0;
       for (o = 0; o <= topDegree; ++o) {
-        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArrayzero(ind, dim);CHKERRQ(ierr);
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
           for (p = 0; p < npoints; ++p) {
@@ -279,7 +279,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       if (poly->tensor) {
       } else {
         i = pdimRed;
-        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArrayzero(ind, dim);CHKERRQ(ierr);
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, topDegree, ind, tup);CHKERRQ(ierr);
           for (p = 0; p < npoints; ++p) {
@@ -310,10 +310,10 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   if (D) {
     if (poly->ptype != PETSCSPACE_POLYNOMIALTYPE_P) SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Derivatives not supported for P^- spaces (%s)", PetscSpacePolynomialTypes[poly->ptype]);
     /* D (npoints x pdim x Nc x dim) */
-    ierr = PetscMemzero(D, npoints*pdim*Nc*Nc*dim * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(D, npoints*pdim*Nc*Nc*dim);CHKERRQ(ierr);
     if (poly->tensor) {
       i = 0;
-      ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArrayzero(ind, dim);CHKERRQ(ierr);
       while (ind[0] >= 0) {
         ierr = TensorPoint_Internal(dim, sp->degree+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
@@ -333,7 +333,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
     } else {
       i = 0;
       for (o = 0; o <= sp->degree; ++o) {
-        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArrayzero(ind, dim);CHKERRQ(ierr);
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
           for (p = 0; p < npoints; ++p) {
@@ -366,10 +366,10 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   if (H) {
     if (poly->ptype != PETSCSPACE_POLYNOMIALTYPE_P) SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Hessians not supported for P^- spaces (%s)", PetscSpacePolynomialTypes[poly->ptype]);
     /* H (npoints x pdim x Nc x Nc x dim x dim) */
-    ierr = PetscMemzero(H, npoints*pdim*Nc*Nc*dim*dim * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(H, npoints*pdim*Nc*Nc*dim*dim);CHKERRQ(ierr);
     if (poly->tensor) {
       i = 0;
-      ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArrayzero(ind, dim);CHKERRQ(ierr);
       while (ind[0] >= 0) {
         ierr = TensorPoint_Internal(dim, sp->degree+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
@@ -400,7 +400,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
     } else {
       i = 0;
       for (o = 0; o <= sp->degree; ++o) {
-        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArrayzero(ind, dim);CHKERRQ(ierr);
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
           for (p = 0; p < npoints; ++p) {

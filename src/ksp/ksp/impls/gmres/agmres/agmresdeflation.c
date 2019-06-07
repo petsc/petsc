@@ -159,7 +159,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
     else r += 1;
   }
   /* Reorder the Schur decomposition so that the cluster of smallest/largest eigenvalues appears in the leading diagonal blocks of A (and B)*/
-  ierr = PetscMemzero(select, N*sizeof(PetscBLASInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(select, N);CHKERRQ(ierr);
   if (!agmres->GreatestEig) {
     for (j = 0; j < r; j++) select[perm[j]] = 1;
   } else {
@@ -172,7 +172,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
 #endif
   /* Extract the Schur vectors associated to the r smallest eigenvalues */
-  ierr = PetscMemzero(Sr,(N+1)*r*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(Sr,(N+1)*r);CHKERRQ(ierr);
   for (j = 0; j < r; j++) {
     for (i = 0; i < KspSize; i++) {
       Sr[j*(N+1)+i] = Z[j*N+i];

@@ -204,7 +204,7 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
         v     += 15;
       }
     }
-    ierr = PetscMemzero(x+idt,bs*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(x+idt,bs);CHKERRQ(ierr);
     for (k=0; k<15; k++) {
       x[idt]    += v[0]*s[k];
       x[1+idt]  += v[1]*s[k];

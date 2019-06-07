@@ -336,7 +336,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
     ierr = DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect);CHKERRQ(ierr);
     if (nconn != 3 && nconn != 4) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only TRI3/QUAD4 element bases are supported in the current example. n(Connectivity)=%D.\n", nconn);
 
-    ierr = PetscMemzero(localv, sizeof(PetscScalar) * nconn);CHKERRQ(ierr);
+    ierr = PetscArrayzero(localv, nconn);CHKERRQ(ierr);
 
     /* get the coordinates of the element vertices */
     ierr = DMMoabGetVertexCoordinates(dm, nconn, connect, vpos);CHKERRQ(ierr);
@@ -456,7 +456,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
        2) compute the quadrature points transformed to the physical space */
     ierr = DMMoabFEMComputeBasis(2, nconn, vpos, quadratureObj, phypts, jxw, phi, dphi);CHKERRQ(ierr);
 
-    ierr = PetscMemzero(array, nconn * nconn * sizeof(PetscScalar));
+    ierr = PetscArrayzero(array, nconn * nconn);
 
     /* Compute function over the locally owned part of the grid */
     for (q = 0; q < npoints; ++q) {

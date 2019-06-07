@@ -49,7 +49,7 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
   for (j = 0; j < Nj; ++j) {
     for (i = 0; i < Ni; ++i) {
       PetscInt    ki, kj, o = 0;
-      ierr = PetscMemzero(closure,sizeof(PetscScalar)*clSize);CHKERRQ(ierr);
+      ierr = PetscArrayzero(closure,clSize);CHKERRQ(ierr);
 
       for (f = 0; f < user->Nf; ++f) {
         PetscInt ioff = i*user->k[f], joff = j*user->k[f];
@@ -81,7 +81,7 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
     for (j = 0; j < Nj; ++j) {
       for (i = 0; i < Ni; ++i) {
         PetscInt    ki, kj, kk, o = 0;
-        ierr = PetscMemzero(closure,sizeof(PetscScalar)*clSize);CHKERRQ(ierr);
+        ierr = PetscArrayzero(closure,clSize);CHKERRQ(ierr);
 
         for (f = 0; f < user->Nf; ++f) {
           PetscInt ioff = i*user->k[f], joff = j*user->k[f], koff = k*user->k[f];

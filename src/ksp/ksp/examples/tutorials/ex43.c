@@ -552,7 +552,7 @@ static void FormDivergenceOperatorQ1(PetscScalar De[],PetscScalar coords[])
   PetscInt    i,j;
   PetscInt    nr_g,nc_g;
 
-  PetscMemzero(Ge,sizeof(PetscScalar)*U_DOFS*NODES_PER_EL*P_DOFS*NODES_PER_EL);
+  PetscMemzero(Ge,sizeof(Ge));
   FormGradientOperatorQ1(Ge,coords);
 
   nr_g = U_DOFS*NODES_PER_EL;
@@ -723,10 +723,10 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec p
       prop_eta = props[ej][ei].eta;
 
       /* initialise element stiffness matrix */
-      ierr = PetscMemzero(Ae,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-      ierr = PetscMemzero(Ge,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
-      ierr = PetscMemzero(De,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-      ierr = PetscMemzero(Ce,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
+      ierr = PetscMemzero(Ae,sizeof(Ae));CHKERRQ(ierr);
+      ierr = PetscMemzero(Ge,sizeof(Ge));CHKERRQ(ierr);
+      ierr = PetscMemzero(De,sizeof(De));CHKERRQ(ierr);
+      ierr = PetscMemzero(Ce,sizeof(Ce));CHKERRQ(ierr);
 
       /* form element stiffness matrix */
       FormStressOperatorQ1(Ae,el_coords,prop_eta);
@@ -794,10 +794,10 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
       prop_eta = props[ej][ei].eta;
 
       /* initialise element stiffness matrix */
-      ierr = PetscMemzero(Ae,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-      ierr = PetscMemzero(Ge,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
-      ierr = PetscMemzero(De,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-      ierr = PetscMemzero(Ce,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
+      ierr = PetscMemzero(Ae,sizeof(Ae));CHKERRQ(ierr);
+      ierr = PetscMemzero(Ge,sizeof(Ge));CHKERRQ(ierr);
+      ierr = PetscMemzero(De,sizeof(De));CHKERRQ(ierr);
+      ierr = PetscMemzero(Ce,sizeof(Ce));CHKERRQ(ierr);
 
       /* form element stiffness matrix */
       FormStressOperatorQ1(Ae,el_coords,prop_eta);
@@ -882,8 +882,8 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,DM properties_da,Vec p
       prop_fy = props[ej][ei].fy;
 
       /* initialise element stiffness matrix */
-      ierr = PetscMemzero(Fe,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-      ierr = PetscMemzero(He,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
+      ierr = PetscMemzero(Fe,sizeof(Fe));CHKERRQ(ierr);
+      ierr = PetscMemzero(He,sizeof(He));CHKERRQ(ierr);
 
       /* form element stiffness matrix */
       FormMomentumRhsQ1(Fe,el_coords,prop_fx,prop_fy);

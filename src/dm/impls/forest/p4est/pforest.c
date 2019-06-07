@@ -2451,7 +2451,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         *sf  = pforestC->pointSelfToAdaptSF;
         if (childIds) {
           ierr      = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
-          ierr      = PetscMemcpy(cids,pforestC->pointSelfToAdaptCids,(pEndF-pStartF) * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr      = PetscArraycpy(cids,pforestC->pointSelfToAdaptCids,pEndF-pStartF);CHKERRQ(ierr);
           *childIds = cids;
         }
         PetscFunctionReturn(0);
@@ -2465,7 +2465,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         *sf  = pforestF->pointAdaptToSelfSF;
         if (childIds) {
           ierr      = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
-          ierr      = PetscMemcpy(cids,pforestF->pointAdaptToSelfCids,(pEndF-pStartF) * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr      = PetscArraycpy(cids,pforestF->pointAdaptToSelfCids,pEndF-pStartF);CHKERRQ(ierr);
           *childIds = cids;
         }
         PetscFunctionReturn(0);
@@ -2533,7 +2533,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         p4est_tree_t *tree = &(((p4est_tree_t*) p4estC->trees->array)[t]);
         PetscInt     q;
 
-        ierr = PetscMemcpy(&coverQuadsSend[count],tree->quadrants.array,tree->quadrants.elem_count * sizeof(p4est_quadrant_t));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&coverQuadsSend[count],tree->quadrants.array,tree->quadrants.elem_count);CHKERRQ(ierr);
         for (q = 0; (size_t) q < tree->quadrants.elem_count; q++) coverQuadsSend[count+q].p.which_tree = t;
         count += tree->quadrants.elem_count;
       }
@@ -2864,7 +2864,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       PetscInt *rootTypeCopy, p;
 
       ierr = PetscMalloc1(pEndF-pStartF,&rootTypeCopy);CHKERRQ(ierr);
-      ierr = PetscMemcpy(rootTypeCopy,rootType,(pEndF-pStartF)*sizeof(*rootTypeCopy));CHKERRQ(ierr);
+      ierr = PetscArraycpy(rootTypeCopy,rootType,pEndF-pStartF);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy);CHKERRQ(ierr);
@@ -2940,7 +2940,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       pforestC->pointSelfToAdaptCids = cids;
     } else {
       ierr = PetscMalloc1(pEndF-pStartF,&pforestC->pointSelfToAdaptCids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(pforestC->pointSelfToAdaptCids,cids,(pEndF-pStartF)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pforestC->pointSelfToAdaptCids,cids,pEndF-pStartF);CHKERRQ(ierr);
     }
   } else if (saveInFine) {
     ierr = PetscObjectReference((PetscObject)*sf);CHKERRQ(ierr);
@@ -2949,7 +2949,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       pforestF->pointAdaptToSelfCids = cids;
     } else {
       ierr = PetscMalloc1(pEndF-pStartF,&pforestF->pointAdaptToSelfCids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(pforestF->pointAdaptToSelfCids,cids,(pEndF-pStartF)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pforestF->pointAdaptToSelfCids,cids,pEndF-pStartF);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree2(treeQuads,treeQuadCounts);CHKERRQ(ierr);

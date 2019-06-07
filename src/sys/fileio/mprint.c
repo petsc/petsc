@@ -432,7 +432,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
       ierr = PetscFree(next->string);CHKERRQ(ierr);
       ierr = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
-      ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+      ierr = PetscArrayzero(next->string,next->size);CHKERRQ(ierr);
       ierr = PetscVSNPrintf(next->string,next->size,format, &fullLength,Argp);CHKERRQ(ierr);
       va_end(Argp);
     }
@@ -500,7 +500,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format
       ierr = PetscFree(next->string);CHKERRQ(ierr);
       ierr = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
-      ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+      ierr = PetscArrayzero(next->string,next->size);CHKERRQ(ierr);
       ierr = PetscVSNPrintf(next->string,next->size,format,&fullLength,Argp);CHKERRQ(ierr);
       va_end(Argp);
     }

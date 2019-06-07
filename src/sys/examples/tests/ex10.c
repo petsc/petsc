@@ -1,5 +1,5 @@
 
-static char help[] = "Tests PetscMemmove()\n";
+static char help[] = "Tests PetscArraymove()/PetscMemmove()\n";
 
 #include <petscsys.h>
 
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
       Nonoverlapping regions
   */
   for (i=0; i<20; i++) b[i] = i;
-  ierr = PetscMemmove(a,b,10*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraymove(a,b,10);CHKERRQ(ierr);
   ierr = PetscIntView(10,a,NULL);CHKERRQ(ierr);
 
   ierr = PetscFree(a);CHKERRQ(ierr);
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
                               a+10    a+15
   */
   a    = b + 5;
-  ierr = PetscMemmove(a,b,15*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraymove(a,b,15);CHKERRQ(ierr);
   ierr = PetscIntView(15,a,NULL);CHKERRQ(ierr);
   ierr = PetscFree(b);CHKERRQ(ierr);
 
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc1(25,&a);CHKERRQ(ierr);
   b    = a + 5;
   for (i=0; i<20; i++) b[i] = i;
-  ierr = PetscMemmove(a,b,20*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraymove(a,b,20);CHKERRQ(ierr);
   ierr = PetscIntView(20,a,NULL);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
 

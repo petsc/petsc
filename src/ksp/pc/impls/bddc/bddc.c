@@ -1079,9 +1079,9 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
   if (mat_graph->nvtxs == nvtxs && mat_graph->freecsr) { /* we own the data */
     if (mat_graph->xadj == xadj && mat_graph->adjncy == adjncy) same_data = PETSC_TRUE;
     if (!same_data && mat_graph->xadj[nvtxs] == xadj[nvtxs]) {
-      ierr = PetscMemcmp(xadj,mat_graph->xadj,(nvtxs+1)*sizeof(PetscInt),&same_data);CHKERRQ(ierr);
+      ierr = PetscArraycmp(xadj,mat_graph->xadj,nvtxs+1,&same_data);CHKERRQ(ierr);
       if (same_data) {
-        ierr = PetscMemcmp(adjncy,mat_graph->adjncy,xadj[nvtxs]*sizeof(PetscInt),&same_data);CHKERRQ(ierr);
+        ierr = PetscArraycmp(adjncy,mat_graph->adjncy,xadj[nvtxs],&same_data);CHKERRQ(ierr);
       }
     }
   }
@@ -1092,8 +1092,8 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
     if (copymode == PETSC_COPY_VALUES) {
       ierr = PetscMalloc1(nvtxs+1,&mat_graph->xadj);CHKERRQ(ierr);
       ierr = PetscMalloc1(xadj[nvtxs],&mat_graph->adjncy);CHKERRQ(ierr);
-      ierr = PetscMemcpy(mat_graph->xadj,xadj,(nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemcpy(mat_graph->adjncy,adjncy,xadj[nvtxs]*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(mat_graph->xadj,xadj,nvtxs+1);CHKERRQ(ierr);
+      ierr = PetscArraycpy(mat_graph->adjncy,adjncy,xadj[nvtxs]);CHKERRQ(ierr);
       mat_graph->freecsr = PETSC_TRUE;
     } else if (copymode == PETSC_OWN_POINTER) {
       mat_graph->xadj    = (PetscInt*)xadj;
@@ -2023,7 +2023,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   }
   if (pcbddc->benign_have_null) { /* set p0 (computed in PCBDDCApplyInterface) */
     if (pcbddc->benign_apply_coarse_only) {
-      ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
     }
     ierr = PCBDDCBenignGetOrSetP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -2288,7 +2288,7 @@ static PetscErrorCode PCSetCoordinates_BDDC(PC pc, PetscInt dim, PetscInt nloc, 
   PetscFunctionBegin;
   ierr = PetscFree(mat_graph->coords);CHKERRQ(ierr);
   ierr = PetscMalloc1(nloc*dim,&mat_graph->coords);CHKERRQ(ierr);
-  ierr = PetscMemcpy(mat_graph->coords,coords,nloc*dim*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mat_graph->coords,coords,nloc*dim);CHKERRQ(ierr);
   mat_graph->cnloc = nloc;
   mat_graph->cdim  = dim;
   mat_graph->cloc  = PETSC_FALSE;
@@ -2379,9 +2379,9 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
     ierr = VecCopy(mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
   }
   /* apply BDDC */
-  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
   ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
 
   /* Application of B_delta and assembling of rhs for fetidp fluxes */
   ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);
@@ -2466,7 +2466,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   }
 
   /* apply BDDC */
-  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
   ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
 
   /* put values into global vector */

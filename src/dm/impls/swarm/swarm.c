@@ -291,7 +291,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       }
       ierr = PetscFEGetTabulation((PetscFE) obj, numCIndices, xi, &Bcoarse, NULL, NULL);CHKERRQ(ierr);
       /* Get elemMat entries by multiplying by weight */
-      ierr = PetscMemzero(elemMat, numCIndices*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(elemMat, numCIndices*totDim);CHKERRQ(ierr);
       for (i = 0; i < numFIndices; ++i) {
         for (p = 0; p < numCIndices; ++p) {
           for (c = 0; c < Nc; ++c) {

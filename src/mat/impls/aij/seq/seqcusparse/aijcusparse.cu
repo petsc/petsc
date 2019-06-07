@@ -274,8 +274,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILULowerTriMatrix(Mat A)
         AiLo[i]    = rowOffset;
         rowOffset += nz+1;
 
-        ierr = PetscMemcpy(&(AjLo[offset]), vi, nz*sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemcpy(&(AALo[offset]), v, nz*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&(AjLo[offset]), vi, nz);CHKERRQ(ierr);
+        ierr = PetscArraycpy(&(AALo[offset]), v, nz);CHKERRQ(ierr);
 
         offset      += nz;
         AjLo[offset] = (PetscInt) i;
@@ -380,8 +380,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(Mat A)
         AAUp[offset] = (MatScalar)1./v[nz];
         AiUp[i]      = AiUp[i+1] - (nz+1);
 
-        ierr = PetscMemcpy(&(AjUp[offset+1]), vi, nz*sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemcpy(&(AAUp[offset+1]), v, nz*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&(AjUp[offset+1]), vi, nz);CHKERRQ(ierr);
+        ierr = PetscArraycpy(&(AAUp[offset+1]), v, nz);CHKERRQ(ierr);
       }
 
       /* allocate space for the triangular factor information */
@@ -515,8 +515,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildICCTriMatrices(Mat A)
 
         offset+=1;
         if (nz>0) {
-          ierr = PetscMemcpy(&(AjUp[offset]), vj, nz*sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(&(AAUp[offset]), v, nz*sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = PetscArraypy(&(AjUp[offset]), vj, nz);CHKERRQ(ierr);
+          ierr = PetscArraycpy(&(AAUp[offset]), v, nz);CHKERRQ(ierr);
           for (j=offset; j<offset+nz; j++) {
             AAUp[j] = -AAUp[j];
             AALo[j] = AAUp[j]/v[nz];

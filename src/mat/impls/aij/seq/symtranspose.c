@@ -45,7 +45,7 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   }
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
-  ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(atfill,ati,an);CHKERRQ(ierr);
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
   for (i=0; i<am; i++) {
@@ -97,7 +97,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   }
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
-  ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(atfill,ati,an);CHKERRQ(ierr);
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
   aj = aj + ai[rstart];
@@ -153,7 +153,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
   ierr = PetscMalloc1(an,&atfill);CHKERRQ(ierr);
-  ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(atfill,ati,an);CHKERRQ(ierr);
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
   for (i=0;i<am;i++) {

@@ -492,7 +492,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     if (n) {
       ierr = PetscMalloc1(n,&c->columns[i]);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)c,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemcpy(c->columns[i],is,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(c->columns[i],is,n);CHKERRQ(ierr);
     } else {
       c->columns[i] = 0;
     }
@@ -523,11 +523,11 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       /* Determine local number of columns of this color on this process, including ghost points */
       nctot = n;
       ierr  = PetscMalloc1(nctot+1,&cols);CHKERRQ(ierr);
-      ierr  = PetscMemcpy(cols,is,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr  = PetscArraycpy(cols,is,n);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
 
     /* Mark all rows affect by these columns */
-    ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr    = PetscArrayzero(rowhit,m);CHKERRQ(ierr);
     bs2     = bs*bs;
     nrows_i = 0;
     for (j=0; j<nctot; j++) { /* loop over columns*/

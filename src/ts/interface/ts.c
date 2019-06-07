@@ -6178,10 +6178,10 @@ PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec u,Vec udot,V
   PetscCheckSameComm(snes,1,u,3);
   PetscCheckSameComm(snes,1,y,5);
 
-  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lx,&u,sizeof(u));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lxdot,&udot,sizeof(udot));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&ly,&y,sizeof(u));CHKERRQ(ierr);
+  ierr = PetscArraycpy(&ls,&snes,1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&lx,&u,1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&lxdot,&udot,1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&ly,&y,1);CHKERRQ(ierr);
 
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar(time);
@@ -6270,11 +6270,11 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,Pet
 
   /* call Matlab function in ctx with arguments u and y */
 
-  ierr = PetscMemcpy(&ls,&ts,sizeof(ts));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lx,&u,sizeof(u));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lxdot,&udot,sizeof(u));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lA,A,sizeof(u));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lB,B,sizeof(u));CHKERRQ(ierr);
+  ierr = PetscArraycpy(&ls,&ts,1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&lx,&u,1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&lxdot,&udot,1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&lA,A,1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&lB,B,1);CHKERRQ(ierr);
 
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)time);
@@ -6358,8 +6358,8 @@ PetscErrorCode  TSMonitor_Matlab(TS ts,PetscInt it, PetscReal time,Vec u, void *
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(u,VEC_CLASSID,4);
 
-  ierr = PetscMemcpy(&ls,&ts,sizeof(ts));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lx,&u,sizeof(u));CHKERRQ(ierr);
+  ierr = PetscArraycpy(&ls,&ts,1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&lx,&u,1);CHKERRQ(ierr);
 
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)it);
@@ -6467,8 +6467,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
       char      **displaynames;
       PetscBool flg;
       ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
-      ierr = PetscMalloc1(dim+1,&displaynames);CHKERRQ(ierr);
-      ierr = PetscMemzero(displaynames,(dim+1)*sizeof(char*));CHKERRQ(ierr);
+      ierr = PetscCalloc1(dim+1,&displaynames);CHKERRQ(ierr);
       ierr = PetscOptionsGetStringArray(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",displaynames,&dim,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = TSMonitorLGCtxSetDisplayVariables(ctx,(const char *const *)displaynames);CHKERRQ(ierr);

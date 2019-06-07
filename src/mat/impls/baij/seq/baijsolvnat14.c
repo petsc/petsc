@@ -81,7 +81,7 @@ PetscErrorCode MatSolve_SeqBAIJ_14_NaturalOrdering(Mat A,Vec bb,Vec xx)
         v     += 14;
       }
     }
-    ierr = PetscMemzero(x+idt,bs*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(x+idt,bs);CHKERRQ(ierr);
     for (k=0; k<bs; k++) {
       x[idt]    += v[0]*s[k];
       x[1+idt]  += v[1]*s[k];
@@ -184,7 +184,7 @@ PetscErrorCode MatSolve_SeqBAIJ_13_NaturalOrdering(Mat A,Vec bb,Vec xx)
         v     += 13;
       }
     }
-    ierr = PetscMemzero(x+idt,bs*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(x+idt,bs);CHKERRQ(ierr);
     for (k=0; k<bs; k++) {
       x[idt]    += v[0]*s[k];
       x[1+idt]  += v[1]*s[k];
@@ -284,7 +284,7 @@ PetscErrorCode MatSolve_SeqBAIJ_12_NaturalOrdering(Mat A,Vec bb,Vec xx)
         v     += 12;
       }
     }
-    ierr = PetscMemzero(x+idt,bs*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(x+idt,bs);CHKERRQ(ierr);
     for (k=0; k<bs; k++) {
       x[idt]    += v[0]*s[k];
       x[1+idt]  += v[1]*s[k];

@@ -60,8 +60,8 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   } else {
     ai = a->inew; aj = a->jnew;
   }
-  ierr = PetscMemcpy(ai,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(aj,a->j,(a->i[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(ai,a->i,mbs+1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(aj,a->j,a->i[mbs]);CHKERRQ(ierr);
 
   /*
      Phase 1: Find row index r in which to store each nonzero.
@@ -119,7 +119,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   }
 
   a->a2anew = aj + ai[mbs];
-  ierr      = PetscMemcpy(a->a2anew,r,ai[mbs]*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr      = PetscArraycpy(a->a2anew,r,ai[mbs]);CHKERRQ(ierr);
 
   /* Phase 3: permute (aj,a) to upper triangular form (wrt new ordering) */
   for (j=jmin; j<jmax; j++) {

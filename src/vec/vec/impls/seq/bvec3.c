@@ -45,9 +45,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
   case PETSC_PRECISION_SINGLE: {
     float *aarray;
 
-    ierr = PetscMalloc1(n,&aarray);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n,&aarray);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)V, n*sizeof(float));CHKERRQ(ierr);
-    ierr = PetscMemzero(aarray,n*sizeof(float));CHKERRQ(ierr);
     ierr = VecCreate_Seq_Private(V,aarray);CHKERRQ(ierr);
 
     s                  = (Vec_Seq*)V->data;
@@ -56,9 +55,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
   case PETSC_PRECISION_DOUBLE: {
     double *aarray;
 
-    ierr = PetscMalloc1(n,&aarray);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n,&aarray);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)V, n*sizeof(double));CHKERRQ(ierr);
-    ierr = PetscMemzero(aarray,n*sizeof(double));CHKERRQ(ierr);
     ierr = VecCreate_Seq_Private(V,aarray);CHKERRQ(ierr);
 
     s                  = (Vec_Seq*)V->data;

@@ -614,7 +614,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   newblock->nfields = n;
 
   ierr = PetscMalloc1(n, &newblock->fields);CHKERRQ(ierr);
-  ierr = PetscMemcpy(newblock->fields, fields, n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(newblock->fields, fields, n);CHKERRQ(ierr);
 
   newblock->next = NULL;
 

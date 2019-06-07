@@ -69,7 +69,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
       ierr = PetscRegisterFinalize(PetscFortranCallbackFinalize);CHKERRQ(ierr);
     }
     ierr = PetscCalloc1(newmax-PETSC_SMALLEST_CLASSID,&newbase);CHKERRQ(ierr);
-    ierr = PetscMemcpy(newbase,_classbase,(_maxclassid-PETSC_SMALLEST_CLASSID)*sizeof(_classbase[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(newbase,_classbase,_maxclassid-PETSC_SMALLEST_CLASSID);CHKERRQ(ierr);
     ierr = PetscFree(_classbase);CHKERRQ(ierr);
 
     _classbase = newbase;

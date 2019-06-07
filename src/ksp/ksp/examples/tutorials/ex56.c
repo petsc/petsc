@@ -944,7 +944,7 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
   };
 
   PetscFunctionBeginUser;
-  ierr = PetscMemcpy(dd,DD,sizeof(PetscScalar)*576);CHKERRQ(ierr);
+  ierr = PetscArraycpy(dd,DD,576);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

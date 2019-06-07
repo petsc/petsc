@@ -39,7 +39,7 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers ctx, Vec v, Vec 
     ierr = VecGetArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
     ierr = VecGetLocalSize(v2,&nl);CHKERRQ(ierr);
     ierr = VecGetArray(v2,&array2);CHKERRQ(ierr);
-    ierr = PetscMemcpy(array2,array,nl*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(array2,array,nl);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(v,&array);CHKERRQ(ierr);
     array2 = array;
@@ -147,7 +147,7 @@ static PetscErrorCode PCBDDCReuseSolvers_Solve_Private(PC pc, Vec rhs, Vec sol, 
     ierr = VecGetLocalSize(rhs,&n);CHKERRQ(ierr);
     ierr = VecGetArrayRead(rhs,(const PetscScalar**)&array);CHKERRQ(ierr);
     ierr = VecGetArray(ctx->rhs,&array_solver);CHKERRQ(ierr);
-    ierr = PetscMemcpy(array_solver,array,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(array_solver,array,n);CHKERRQ(ierr);
     ierr = VecRestoreArray(ctx->rhs,&array_solver);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(rhs,(const PetscScalar**)&array);CHKERRQ(ierr);
 
@@ -162,7 +162,7 @@ static PetscErrorCode PCBDDCReuseSolvers_Solve_Private(PC pc, Vec rhs, Vec sol, 
     /* get back data to caller worskpace */
     ierr = VecGetArrayRead(ctx->sol,(const PetscScalar**)&array_solver);CHKERRQ(ierr);
     ierr = VecGetArray(sol,&array);CHKERRQ(ierr);
-    ierr = PetscMemcpy(array,array_solver,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(array,array_solver,n);CHKERRQ(ierr);
     ierr = VecRestoreArray(sol,&array);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(ctx->sol,(const PetscScalar**)&array_solver);CHKERRQ(ierr);
   } else {
@@ -541,7 +541,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     for (j=0;j<n_B;j++) {
       ierr = PetscBTSet(touched,idx_B[j]);CHKERRQ(ierr);
     }
-    ierr = PetscMemcpy(local_numbering,idx_B,n_B*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(local_numbering,idx_B,n_B);CHKERRQ(ierr);
     ierr = ISRestoreIndices(sub_schurs->is_B,&idx_B);CHKERRQ(ierr);
 
     /* add prescribed number of layers of dofs */
@@ -609,7 +609,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   if (extra) {
     const PetscInt *idxs;
     ierr = ISGetIndices(is_I_layer,&idxs);CHKERRQ(ierr);
-    ierr = PetscMemcpy(all_local_idx_N,idxs,extra*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(all_local_idx_N,idxs,extra);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is_I_layer,&idxs);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(local_size,&nnz);CHKERRQ(ierr);
@@ -628,7 +628,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     auxnum1[i] = idxs[0];
     auxnum2[i] = subset_size;
     /* subset indices in local numbering */
-    ierr = PetscMemcpy(all_local_idx_N+local_size+extra,idxs,subset_size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(all_local_idx_N+local_size+extra,idxs,subset_size);CHKERRQ(ierr);
     ierr = ISRestoreIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
     for (j=0;j<subset_size;j++) nnz[local_size+j] = subset_size;
     local_size += subset_size;
@@ -879,7 +879,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       ierr = ISGetLocalSize(sub_schurs->is_dir,&n_dir);CHKERRQ(ierr);
       ierr = ISGetIndices(sub_schurs->is_dir,&idxs);CHKERRQ(ierr);
-      ierr = PetscMemcpy(all_local_idx_N+cum,idxs,n_dir*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(all_local_idx_N+cum,idxs,n_dir);CHKERRQ(ierr);
       ierr = ISRestoreIndices(sub_schurs->is_dir,&idxs);CHKERRQ(ierr);
       cum += n_dir;
       factor_workaround = PETSC_TRUE;
@@ -893,7 +893,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         const PetscInt* idxs;
 
         ierr = ISGetIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
-        ierr = PetscMemcpy(all_local_idx_N+cum,idxs,n_v*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArraycpy(all_local_idx_N+cum,idxs,n_v);CHKERRQ(ierr);
         ierr = ISRestoreIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
         cum += n_v;
         factor_workaround = PETSC_TRUE;
@@ -1451,12 +1451,12 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
               news = size_active_schur + nv;
               ierr = PetscCalloc1(news*news,&tdata);CHKERRQ(ierr);
               for (i=0;i<size_active_schur;i++) {
-                ierr = PetscMemcpy(tdata+i*(news+1),data+i*(size_schur+1),(size_active_schur-i)*sizeof(PetscScalar));CHKERRQ(ierr);
-                ierr = PetscMemcpy(tdata+i*(news+1)+size_active_schur-i,data+i*size_schur+size_active_schur+nd,nv*sizeof(PetscScalar));CHKERRQ(ierr);
+                ierr = PetscArraycpy(tdata+i*(news+1),data+i*(size_schur+1),size_active_schur-i);CHKERRQ(ierr);
+                ierr = PetscArraycpy(tdata+i*(news+1)+size_active_schur-i,data+i*size_schur+size_active_schur+nd,nv);CHKERRQ(ierr);
               }
               for (i=0;i<nv;i++) {
                 PetscInt k = i+size_active_schur;
-                ierr = PetscMemcpy(tdata+k*(news+1),data+(k+nd)*(size_schur+1),(nv-i)*sizeof(PetscScalar));CHKERRQ(ierr);
+                ierr = PetscArraycpy(tdata+k*(news+1),data+(k+nd)*(size_schur+1),nv-i);CHKERRQ(ierr);
               }
 
               ierr = MatCreateSeqDense(PETSC_COMM_SELF,news,news,tdata,&M);CHKERRQ(ierr);
@@ -1466,14 +1466,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
               cum = 0;
               ierr = PetscMalloc1((size_active_schur*(size_active_schur +1))/2+nd,&schur_factor);CHKERRQ(ierr);
               for (i=0;i<size_active_schur;i++) {
-                ierr = PetscMemcpy(schur_factor+cum,tdata+i*(news+1),(size_active_schur-i)*sizeof(PetscScalar));CHKERRQ(ierr);
+                ierr = PetscArraycpy(schur_factor+cum,tdata+i*(news+1),size_active_schur-i);CHKERRQ(ierr);
                 cum += size_active_schur - i;
               }
               for (i=0;i<nd;i++) schur_factor[cum+i] = PetscSqrtReal(PetscRealPart(data[(i+size_active_schur)*(size_schur+1)]));
               ierr = MatSeqDenseInvertFactors_Private(M);CHKERRQ(ierr);
               /* move back just the active dofs to the Schur complement */
               for (i=0;i<size_active_schur;i++) {
-                ierr = PetscMemcpy(data+i*size_schur,tdata+i*news,size_active_schur*sizeof(PetscScalar));CHKERRQ(ierr);
+                ierr = PetscArraycpy(data+i*size_schur,tdata+i*news,size_active_schur);CHKERRQ(ierr);
               }
               ierr = PetscFree(tdata);CHKERRQ(ierr);
               ierr = MatDestroy(&M);CHKERRQ(ierr);
@@ -1612,16 +1612,16 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           PetscScalar *data;
 
           ierr = MatDenseGetArray(S_tmp,&data);CHKERRQ(ierr);
-          ierr = PetscMemzero(data,size_schur*size_schur*sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = PetscArrayzero(data,size_schur*size_schur);CHKERRQ(ierr);
 
           if (S_lower_triangular) {
             cum = 0;
             for (i=0;i<size_active_schur;i++) {
-              ierr = PetscMemcpy(data+i*(size_schur+1),schur_factor+cum,(size_active_schur-i)*sizeof(PetscScalar));CHKERRQ(ierr);
+              ierr = PetscArraycpy(data+i*(size_schur+1),schur_factor+cum,size_active_schur-i);CHKERRQ(ierr);
               cum += size_active_schur-i;
 	    }
           } else {
-            ierr = PetscMemcpy(data,schur_factor,size_schur*size_schur*sizeof(PetscScalar));CHKERRQ(ierr);
+            ierr = PetscArraycpy(data,schur_factor,size_schur*size_schur);CHKERRQ(ierr);
           }
           if (sub_schurs->is_dir) {
             ierr = ISGetLocalSize(sub_schurs->is_dir,&nd);CHKERRQ(ierr);
@@ -1648,10 +1648,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatFactorGetSchurComplement(F,&S_all,NULL);CHKERRQ(ierr);
       ierr = MatDenseGetArray(S_all,&data);CHKERRQ(ierr);
       for (i=0;i<size_active_schur;i++) {
-        ierr = PetscMemzero(data+i*size_schur+size_active_schur,(size_schur-size_active_schur)*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(data+i*size_schur+size_active_schur,size_schur-size_active_schur);CHKERRQ(ierr);
       }
       for (i=size_active_schur+nd;i<size_schur;i++) {
-        ierr = PetscMemzero(data+i*size_schur+size_active_schur,(size_schur-size_active_schur)*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(data+i*size_schur+size_active_schur,size_schur-size_active_schur);CHKERRQ(ierr);
         data[i*(size_schur+1)] = infty;
       }
       ierr = MatDenseRestoreArray(S_all,&data);CHKERRQ(ierr);

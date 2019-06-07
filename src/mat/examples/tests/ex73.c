@@ -167,7 +167,7 @@ int main(int argc,char **args)
     ierr = PetscFree(nzd);CHKERRQ(ierr);
     ierr = PetscFree(nzo);CHKERRQ(ierr);
     ierr = PetscMalloc2(nzmax,&ncols,nzmax,&nvals);CHKERRQ(ierr);
-    ierr = PetscMemzero(nvals,nzmax*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(nvals,nzmax);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = MatGetRow(B,i+rstart,&nzl,&cols,&vals);CHKERRQ(ierr);
       for (j=0; j<nzl; j++) {

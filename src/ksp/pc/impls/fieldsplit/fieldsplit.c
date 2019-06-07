@@ -1650,9 +1650,9 @@ static PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitna
   }
   ilink->event = jac->nsplits < 5 ? KSP_Solve_FS_0 + jac->nsplits : KSP_Solve_FS_0 + 4; /* Any split great than 4 gets logged in the 4th split */
   ierr = PetscMalloc1(n,&ilink->fields);CHKERRQ(ierr);
-  ierr = PetscMemcpy(ilink->fields,fields,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(ilink->fields,fields,n);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&ilink->fields_col);CHKERRQ(ierr);
-  ierr = PetscMemcpy(ilink->fields_col,fields_col,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(ilink->fields_col,fields_col,n);CHKERRQ(ierr);
 
   ilink->nfields = n;
   ilink->next    = NULL;
@@ -1778,7 +1778,7 @@ static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
     ierr          = ISGetLocalSize(isrl,&localsize);CHKERRQ(ierr);
     ierr          = PetscMalloc1(localsize,&indc);CHKERRQ(ierr);
     ierr          = ISGetIndices(isrl,&ind);CHKERRQ(ierr);
-    ierr          = PetscMemcpy(indc,ind,localsize*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr          = PetscArraycpy(indc,ind,localsize);CHKERRQ(ierr);
     ierr          = ISRestoreIndices(isrl,&ind);CHKERRQ(ierr);
     ierr          = ISDestroy(&isrl);CHKERRQ(ierr);
     for (i=0; i<localsize; i++) *(indc+i) += size;
@@ -1803,7 +1803,7 @@ static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
       ierr   = ISGetLocalSize(iszl,&localsize);CHKERRQ(ierr);
       ierr   = PetscMalloc1(localsize,&indcz);CHKERRQ(ierr);
       ierr   = ISGetIndices(iszl,&indz);CHKERRQ(ierr);
-      ierr   = PetscMemcpy(indcz,indz,localsize*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr   = PetscArraycpy(indcz,indz,localsize);CHKERRQ(ierr);
       ierr   = ISRestoreIndices(iszl,&indz);CHKERRQ(ierr);
       ierr   = ISDestroy(&iszl);CHKERRQ(ierr);
       for (i=0; i<localsize; i++) *(indcz+i) += sizez;

@@ -278,7 +278,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
             /* Flip facet connectivities and IDs to a vertex-wise layout */
             ierr = PetscSectionGetOffset(facetSectionVertices, vertex-vrange[rank], &offset);
             offset += vertexIdx[vertex-vrange[rank]] * numFacetCorners;
-            ierr = PetscMemcpy(&(vertexFacets[offset]), &(facetListRendezvous[f*numFacetCorners]), numFacetCorners*sizeof(PetscInt));CHKERRQ(ierr);
+            ierr = PetscArraycpy(&(vertexFacets[offset]), &(facetListRendezvous[f*numFacetCorners]), numFacetCorners);CHKERRQ(ierr);
             ierr = PetscSectionGetOffset(facetSectionIDs, vertex-vrange[rank], &offset);
             offset += vertexIdx[vertex-vrange[rank]];
             vertexFacetIDs[offset] = facetIDsRendezvous[f];

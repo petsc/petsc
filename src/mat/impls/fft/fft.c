@@ -62,7 +62,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   }
 
   ierr = PetscMalloc1(ndim,&fft->dim);CHKERRQ(ierr);
-  ierr = PetscMemcpy(fft->dim,dim,ndim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(fft->dim,dim,ndim);CHKERRQ(ierr);
 
   fft->ndim = ndim;
   fft->n    = PETSC_DECIDE;

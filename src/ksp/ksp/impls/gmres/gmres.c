@@ -246,7 +246,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
           ierr = VecDuplicateVecs(VEC_VV(0),N,&gmres->vecb);CHKERRQ(ierr);
         }
         ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
-        ierr = PetscMemcpy(gmres->hes_ritz,gmres->hes_origin,bN*bN*sizeof(PetscReal));CHKERRQ(ierr);
+        ierr = PetscArraycpy(gmres->hes_ritz,gmres->hes_origin,bN*bN);CHKERRQ(ierr);
         for (i=0; i<gmres->max_k+1; i++) {
           ierr = VecCopy(VEC_VV(i),gmres->vecb[i]);CHKERRQ(ierr);
         }
@@ -482,7 +482,7 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec ptr,Vec *result)
   if (!gmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc1(gmres->max_k,&gmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,gmres->max_k);CHKERRQ(ierr);
   }
 
   ierr = KSPGMRESBuildSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);

@@ -96,8 +96,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
 
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: setup (CoarseDM)\n");CHKERRQ(ierr);
-  ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
-  ierr = PetscMemzero(ctx,sizeof(PC_Telescope_CoarseDMCtx));CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
   sred->dm_ctx = (void*)ctx;
 
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);

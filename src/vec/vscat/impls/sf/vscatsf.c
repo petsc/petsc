@@ -159,7 +159,7 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
       ierr = PetscSFSetUp(sf);CHKERRQ(ierr); /* to bulid sf->rmine if SetUp is not yet called */
       if (!sf->mine) { /* the old SF uses contiguous ilocal. After the remapping, it may not be true */
         ierr = PetscMalloc1(sf->nleaves,&sf->mine);CHKERRQ(ierr);
-        ierr = PetscMemcpy(sf->mine,tomap,sizeof(PetscInt)*sf->nleaves);CHKERRQ(ierr);
+        ierr = PetscArraycpy(sf->mine,tomap,sf->nleaves);CHKERRQ(ierr);
         sf->mine_alloc = sf->mine;
       } else {
         for (i=0; i<sf->nleaves; i++)             sf->mine[i]   = tomap[sf->mine[i]];
@@ -494,7 +494,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
     ierr = VecGetLocalSize(yy,&nroots);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ilocal,xindices,nleaves*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ilocal,xindices,nleaves);CHKERRQ(ierr);
     for (i=0; i<nleaves; i++) {ierr = PetscLayoutFindOwnerIndex(ylayout,yindices[i],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr);}
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)yy),&data->sf);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(data->sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);

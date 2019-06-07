@@ -231,7 +231,7 @@ PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   PetscErrorCode     ierr;
   sparse_status_t    stat = SPARSE_STATUS_SUCCESS;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   /* If there are no nonzero entries, zero yy and return immediately. */
   if(!a->nz) {
     PetscInt i;

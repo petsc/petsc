@@ -289,7 +289,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
       PetscNestedEvent *tmp = nestedEvents;
       ierr = PetscMalloc1(2*nNestedEvents,&nestedEvents);CHKERRQ(ierr);
       nNestedEventsAllocated*=2;
-      ierr = PetscMemcpy(nestedEvents, tmp, nNestedEvents*sizeof(PetscNestedEvent));CHKERRQ(ierr);
+      ierr = PetscArraycpy(nestedEvents, tmp, nNestedEvents);CHKERRQ(ierr);
       ierr = PetscFree(tmp);CHKERRQ(ierr);
     }
 
@@ -336,10 +336,10 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
 
       /* Reallocate parents and dftEvents to make space for new parent */
       ierr = PetscMalloc4(1+nParents,&nestedEvents[entry].dftParentsSorted,1+nParents,&nestedEvents[entry].dftEventsSorted,1+nParents,&nestedEvents[entry].dftParents,1+nParents,&nestedEvents[entry].dftEvents);CHKERRQ(ierr);
-      ierr = PetscMemcpy(nestedEvents[entry].dftParentsSorted, dftParentsSorted, nParents*sizeof(PetscLogEvent));CHKERRQ(ierr);
-      ierr = PetscMemcpy(nestedEvents[entry].dftEventsSorted,  dftEventsSorted,  nParents*sizeof(PetscLogEvent));CHKERRQ(ierr);
-      ierr = PetscMemcpy(nestedEvents[entry].dftParents,       dftParents,       nParents*sizeof(PetscLogEvent));CHKERRQ(ierr);
-      ierr = PetscMemcpy(nestedEvents[entry].dftEvents,        dftEvents,        nParents*sizeof(PetscLogEvent));CHKERRQ(ierr);
+      ierr = PetscArraycpy(nestedEvents[entry].dftParentsSorted, dftParentsSorted, nParents);CHKERRQ(ierr);
+      ierr = PetscArraycpy(nestedEvents[entry].dftEventsSorted,  dftEventsSorted,  nParents);CHKERRQ(ierr);
+      ierr = PetscArraycpy(nestedEvents[entry].dftParents,       dftParents,       nParents);CHKERRQ(ierr);
+      ierr = PetscArraycpy(nestedEvents[entry].dftEvents,        dftEvents,        nParents);CHKERRQ(ierr);
       ierr = PetscFree4(dftParentsSorted,dftEventsSorted,dftParents,dftEvents);CHKERRQ(ierr);
 
       dftParents       = nestedEvents[entry].dftParents;
@@ -731,7 +731,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
       if (tree[i].depth==depth) {
         if (depth>1) {
           int    j = treeIndices[tree[i].dftParent];
-          ierr = PetscMemcpy(tree[i].nstPath,tree[j].nstPath,(depth-1)*sizeof(NestedEventId));CHKERRQ(ierr);
+          ierr = PetscArraycpy(tree[i].nstPath,tree[j].nstPath,depth-1);CHKERRQ(ierr);
         }
         tree[i].nstPath[depth-1] = tree[i].nstEvent;
       }

@@ -62,7 +62,7 @@ PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx,DM dm,PetscInt ncells)
     ierr = PetscRealloc(sizeof(PetscInt)*(ncells + 1),&ctx->pcell_offsets);CHKERRQ(ierr);
     ctx->ncells = ncells;
   }
-  ierr = PetscMemzero(ctx->pcell_offsets,sizeof(PetscInt)*(ctx->ncells + 1));CHKERRQ(ierr);
+  ierr = PetscArrayzero(ctx->pcell_offsets,ctx->ncells + 1);CHKERRQ(ierr);
   
   /* get the number of points */
   ierr = DMSwarmGetLocalSize(dm,&npoints);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx,DM dm,PetscInt ncells)
     ierr = PetscRealloc(sizeof(SwarmPoint)*npoints,&ctx->list);CHKERRQ(ierr);
     ctx->npoints = npoints;
   }
-  ierr = PetscMemzero(ctx->list,sizeof(SwarmPoint)*npoints);CHKERRQ(ierr);
+  ierr = PetscArrayzero(ctx->list,npoints);CHKERRQ(ierr);
   
   ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
   for (p=0; p<ctx->npoints; p++) {

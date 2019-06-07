@@ -1728,8 +1728,8 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
     np   = npoints/numSubelements;
     ierr = PetscMalloc1(np*dim,&p);CHKERRQ(ierr);
     ierr = PetscMalloc1(np*Nc,&w);CHKERRQ(ierr);
-    ierr = PetscMemcpy(p, &points[s*np*dim], np*dim * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(w, &weights[s*np*Nc], np*Nc  * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(p, &points[s*np*dim], np*dim);CHKERRQ(ierr);
+    ierr = PetscArraycpy(w, &weights[s*np*Nc], np*Nc);CHKERRQ(ierr);
     ierr = PetscQuadratureSetData(qs, dim, Nc, np, p, w);CHKERRQ(ierr);
     ierr = PetscDualSpaceSimpleSetFunctional(Qref, s, qs);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qs);CHKERRQ(ierr);
@@ -1918,7 +1918,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   PetscFunctionBegin;
   if (debug) {
     ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
-    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(Aback,A,m*n);CHKERRQ(ierr);
   }
 
   ierr = PetscBLASIntCast(m,&M);CHKERRQ(ierr);
@@ -1933,7 +1933,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
 
   /* Extract an explicit representation of Q */
   Q    = Ainv;
-  ierr = PetscMemcpy(Q,A,mstride*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(Q,A,mstride*n);CHKERRQ(ierr);
   K    = N;                     /* full rank */
   PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
@@ -1975,7 +1975,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscFunctionBegin;
   if (debug) {
     ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
-    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(Aback,A,m*n);CHKERRQ(ierr);
   }
 
   /* initialize to identity */

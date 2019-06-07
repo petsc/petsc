@@ -97,8 +97,8 @@ static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], Petsc
        - to unify order with the other side */
     o = roffset[r];
     n = roffset[r+1] - o;
-    ierr = PetscMemcpy(&(*rmine1)[o], &rmine[o], n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(&(*rremote1)[o], &rremote[o], n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&(*rmine1)[o], &rmine[o], n);CHKERRQ(ierr);
+    ierr = PetscArraycpy(&(*rremote1)[o], &rremote[o], n);CHKERRQ(ierr);
     ierr = PetscSortIntWithArray(n, &(*rremote1)[o], &(*rmine1)[o]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

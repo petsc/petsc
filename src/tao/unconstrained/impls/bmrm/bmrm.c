@@ -345,27 +345,27 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
 
   /* memory space required by dai-fletcher */
   ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->f, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscArraycpy(tmp, df->f, old_n);CHKERRQ(ierr);
   ierr = PetscFree(df->f);CHKERRQ(ierr);
   df->f = tmp;
 
   ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->a, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscArraycpy(tmp, df->a, old_n);CHKERRQ(ierr);
   ierr = PetscFree(df->a);CHKERRQ(ierr);
   df->a = tmp;
 
   ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->l, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscArraycpy(tmp, df->l, old_n);CHKERRQ(ierr);
   ierr = PetscFree(df->l);CHKERRQ(ierr);
   df->l = tmp;
 
   ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->u, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscArraycpy(tmp, df->u, old_n);CHKERRQ(ierr);
   ierr = PetscFree(df->u);CHKERRQ(ierr);
   df->u = tmp;
 
   ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->x, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscArraycpy(tmp, df->x, old_n);CHKERRQ(ierr);
   ierr = PetscFree(df->x);CHKERRQ(ierr);
   df->x = tmp;
 
@@ -373,7 +373,7 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
   for (i = 0; i < n; i ++) {
     ierr = PetscMalloc1(n, &tmp_Q[i]);CHKERRQ(ierr);
     if (i < old_n) {
-      ierr = PetscMemcpy(tmp_Q[i], df->Q[i], sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+      ierr = PetscArraycpy(tmp_Q[i], df->Q[i], old_n);CHKERRQ(ierr);
       ierr = PetscFree(df->Q[i]);CHKERRQ(ierr);
     }
   }
@@ -648,7 +648,7 @@ PetscErrorCode solve(TAO_DF *df)
     if (PetscAbsReal(x[i]) > ProdDELTAsv) ipt[it++] = i;
   }
 
-  ierr = PetscMemzero(t, dim*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(t, dim);CHKERRQ(ierr);
   for (i = 0; i < it; i++){
     tempQ = Q[ipt[i]];
     for (j = 0; j < dim; j++) t[j] += (tempQ[j]*x[ipt[i]]);
@@ -722,7 +722,7 @@ PetscErrorCode solve(TAO_DF *df)
       if (PetscAbsReal(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
     }
 
-    ierr = PetscMemzero(Qd, dim*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(Qd, dim);CHKERRQ(ierr);
     /* compute Qd = Q*d */
     if (it < it2){
       for (i = 0; i < it; i++){

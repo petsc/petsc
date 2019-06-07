@@ -77,7 +77,7 @@ PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pets
 
   PetscFunctionBegin;
   if (x && b) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
-  ierr = PetscMemzero(values,7*sizeof(HYPRE_Complex));CHKERRQ(ierr);
+  ierr = PetscArrayzero(values,7);CHKERRQ(ierr);
   ierr = PetscHYPREScalarCast(d,&values[3]);CHKERRQ(ierr);
   for (i=0; i<nrow; i++) {
     row      = ex->gindices[irow[i]] - ex->rstart;
@@ -471,7 +471,7 @@ PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pet
   }
 
   for (i=0; i< nvars; i++) {
-    ierr = PetscMemzero(values[i],nvars*7*sizeof(HYPRE_Complex));CHKERRQ(ierr);
+    ierr = PetscArrayzero(values[i],nvars*7*sizeof(HYPRE_Complex));CHKERRQ(ierr);
     ierr = PetscHYPREScalarCast(d,values[i]+3);CHKERRQ(ierr);
   }
 
@@ -529,7 +529,7 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 
     ierr = PetscMalloc2(nvars*7,&entries,nvars*7*size,&values);CHKERRQ(ierr);
     for (i= 0; i< nvars*7; i++) entries[i] = i;
-    ierr = PetscMemzero(values,nvars*7*size*sizeof(HYPRE_Complex));CHKERRQ(ierr);
+    ierr = PetscArrayzero(values,nvars*7*size);CHKERRQ(ierr);
 
     for (i= 0; i< nvars; i++) {
       PetscStackCallStandard(HYPRE_SStructMatrixSetBoxValues,(ex->ss_mat,part,ilower,iupper,i,nvars*7,entries,values));

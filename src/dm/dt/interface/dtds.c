@@ -300,7 +300,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
       b->numids = len;
       ierr = PetscFree(b->ids);CHKERRQ(ierr);
       ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(b->ids, ids, len);CHKERRQ(ierr);
     }
     len = 1024;
     ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
@@ -310,7 +310,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
       b->numcomps = len;
       ierr = PetscFree(b->comps);CHKERRQ(ierr);
       ierr = PetscMalloc1(len, &b->comps);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->comps, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(b->comps, ids, len);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsFList("-petscds_type", "Discrete System", "PetscDSSetType", PetscDSList, defaultType, name, 256, &flg);CHKERRQ(ierr);
@@ -2337,7 +2337,7 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
   }
   if (prob->numConstants) {
     PetscValidPointer(constants, 3);
-    ierr = PetscMemcpy(prob->constants, constants, prob->numConstants * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(prob->constants, constants, prob->numConstants);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2697,9 +2697,9 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
   ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
   ierr = PetscMalloc1(numcomps, &b->comps);CHKERRQ(ierr);
-  if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
+  if (numcomps) {ierr = PetscArraycpy(b->comps, comps, numcomps);CHKERRQ(ierr);}
   ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
-  if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
+  if (numids) {ierr = PetscArraycpy(b->ids, ids, numids);CHKERRQ(ierr);}
   b->type            = type;
   b->field           = field;
   b->numcomps        = numcomps;
@@ -2760,13 +2760,13 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
     b->numcomps = numcomps;
     ierr = PetscFree(b->comps);CHKERRQ(ierr);
     ierr = PetscMalloc1(numcomps, &b->comps);CHKERRQ(ierr);
-    if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
+    if (numcomps) {ierr = PetscArraycpy(b->comps, comps, numcomps);CHKERRQ(ierr);}
   }
   if (numids >= 0 && numids != b->numids) {
     b->numids = numids;
     ierr = PetscFree(b->ids);CHKERRQ(ierr);
     ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
-    if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
+    if (numids) {ierr = PetscArraycpy(b->ids, ids, numids);CHKERRQ(ierr);}
   }
   b->type = type;
   if (field >= 0) {b->field  = field;}
@@ -2925,10 +2925,10 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
     ierr = PetscNew(&bNew);CHKERRQ(ierr);
     bNew->numcomps = b->numcomps;
     ierr = PetscMalloc1(bNew->numcomps, &bNew->comps);CHKERRQ(ierr);
-    ierr = PetscMemcpy(bNew->comps, b->comps, bNew->numcomps*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(bNew->comps, b->comps, bNew->numcomps);CHKERRQ(ierr);
     bNew->numids = b->numids;
     ierr = PetscMalloc1(bNew->numids, &bNew->ids);CHKERRQ(ierr);
-    ierr = PetscMemcpy(bNew->ids, b->ids, bNew->numids*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(bNew->ids, b->ids, bNew->numids);CHKERRQ(ierr);
     ierr = PetscStrallocpy(b->labelname,(char **) &(bNew->labelname));CHKERRQ(ierr);
     ierr = PetscStrallocpy(b->name,(char **) &(bNew->name));CHKERRQ(ierr);
     bNew->ctx   = b->ctx;

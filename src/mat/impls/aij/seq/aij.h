@@ -163,12 +163,12 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     /* copy over old data into new slots */ \
     for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
     for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-    ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
+    ierr = PetscArraycpy(new_j,AJ,AI[ROW]+NROW);CHKERRQ(ierr); \
     len  = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-    ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
-    ierr = PetscMemcpy(new_a,AA,BS2*(AI[ROW]+NROW)*sizeof(datatype));CHKERRQ(ierr); \
-    ierr = PetscMemzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE*sizeof(datatype));CHKERRQ(ierr); \
-    ierr = PetscMemcpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len*sizeof(datatype));CHKERRQ(ierr);  \
+    ierr = PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len);CHKERRQ(ierr); \
+    ierr = PetscArraycpy(new_a,AA,BS2*(AI[ROW]+NROW));CHKERRQ(ierr);    \
+    ierr = PetscArrayzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE);CHKERRQ(ierr); \
+    ierr = PetscArraycpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len);CHKERRQ(ierr);  \
     /* free up old matrix storage */ \
     ierr              = MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr); \
     AA                = new_a; \
@@ -196,9 +196,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     /* copy over old data into new slots */ \
     for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
     for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-    ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
+    ierr = PetscArraycpy(new_j,AJ,AI[ROW]+NROW);CHKERRQ(ierr); \
     len  = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-    ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
+    ierr = PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len);CHKERRQ(ierr); \
  \
     /* free up old matrix storage */ \
     ierr              = MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr); \

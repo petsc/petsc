@@ -624,7 +624,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   for (i=0; i<sf->ndranks; i++) {
     PetscInt npoints = sf->roffset[i+1]-sf->roffset[i];
     if (npoints != bas->ioffset[i+1]-bas->ioffset[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Distinguished rank exchange has mismatched lengths");
-    ierr = PetscMemcpy(bas->irootloc+bas->ioffset[i],sf->rremote+sf->roffset[i],npoints*sizeof(bas->irootloc[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(bas->irootloc+bas->ioffset[i],sf->rremote+sf->roffset[i],npoints);CHKERRQ(ierr);
   }
   ierr = MPI_Waitall(nreqs,reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ierr = PetscFree(reqs);CHKERRQ(ierr);

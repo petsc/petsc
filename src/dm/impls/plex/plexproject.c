@@ -605,7 +605,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
         for (p = 0; p < n; ++p) {
           const PetscInt  point = points[p];
 
-          ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = PetscArrayzero(values, numValues);CHKERRQ(ierr);
           ierr = PetscFEGeomGetChunk(fegeom,p,p+1,&chunkgeom);CHKERRQ(ierr);
           ierr = DMProjectPoint_Private(dm, probEff, chunkgeom, dmAux, probAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, point, Ncc, comps, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
           if (ierr) {
@@ -643,7 +643,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       }
       ierr = DMFieldCreateFEGeom(coordField,pointIS,quad,PETSC_FALSE,&fegeom);CHKERRQ(ierr);
       for (p = pStart; p < pEnd; ++p) {
-        ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(values, numValues);CHKERRQ(ierr);
         ierr = PetscFEGeomGetChunk(fegeom,p-pStart,p-pStart+1,&chunkgeom);CHKERRQ(ierr);
         ierr = DMProjectPoint_Private(dm, probEff, chunkgeom, dmAux, probAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, p, Ncc, comps, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
         if (ierr) {

@@ -971,8 +971,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     }
     vascii->petsc_printfqueuelength++;
     next->size = QUEUESTRINGSIZE;
-    ierr       = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
-    ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+    ierr       = PetscCalloc1(next->size, &next->string);CHKERRQ(ierr);
     string     = next->string;
     tab       *= 2;
     while (tab--) {
@@ -984,8 +983,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     if (fullLength > (size_t) (next->size-2*vascii->tab)) {
       ierr       = PetscFree(next->string);CHKERRQ(ierr);
       next->size = fullLength + 2*vascii->tab;
-      ierr       = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
-      ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+      ierr       = PetscCalloc1(next->size, &next->string);CHKERRQ(ierr);
       string     = next->string;
       tab        = 2*vascii->tab;
       while (tab--) {

@@ -103,7 +103,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(array, temp, ao->N*block);CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -120,7 +120,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(array, temp, ao->N*block);CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -137,7 +137,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(array, temp, ao->N*block);CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -154,7 +154,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(array, temp, ao->N*block);CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -229,13 +229,13 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
     PetscInt *sorted;
     ierr = PetscMalloc1(N,&sorted);CHKERRQ(ierr);
 
-    ierr = PetscMemcpy(sorted,allpetsc,N*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(sorted,allpetsc,N);CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
       if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
     }
 
-    ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(sorted,allapp,N);CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
       if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
@@ -246,10 +246,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 #endif
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc2(N, &aobasic->app,N,&aobasic->petsc);CHKERRQ(ierr);
+  ierr = PetscCalloc2(N, &aobasic->app,N,&aobasic->petsc);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(aobasic->app, N*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(aobasic->petsc, N*sizeof(PetscInt));CHKERRQ(ierr);
   for (i = 0; i < N; i++) {
     ip = allpetsc[i];
     ia = allapp[i];

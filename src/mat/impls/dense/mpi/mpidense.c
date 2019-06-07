@@ -930,9 +930,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       ierr = PetscLogFlops(2.0*mdn->A->cmap->n*mdn->A->rmap->n);CHKERRQ(ierr);
     } else if (type == NORM_1) {
       PetscReal *tmp,*tmp2;
-      ierr = PetscMalloc2(A->cmap->N,&tmp,A->cmap->N,&tmp2);CHKERRQ(ierr);
-      ierr = PetscMemzero(tmp,A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
-      ierr = PetscMemzero(tmp2,A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscCalloc2(A->cmap->N,&tmp,A->cmap->N,&tmp2);CHKERRQ(ierr);
       *nrm = 0.0;
       v    = mat->v;
       for (j=0; j<mdn->A->cmap->n; j++) {
@@ -1059,7 +1057,7 @@ static PetscErrorCode MatGetColumnVector_MPIDense(Mat A,Vec v,PetscInt col)
   ierr = MatDenseGetLDA(A,&lda);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(A,&a);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  ierr = PetscMemcpy(x,a+col*lda,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(x,a+col*lda,A->rmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(A,&a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1776,8 +1774,7 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
 
   if (!rank) {
     /* calculate the number of nonzeros on each processor */
-    ierr = PetscMalloc1(size,&procsnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(size,&procsnz);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       for (j=rowners[i]; j< rowners[i+1]; j++) {
         procsnz[i] += rowlengths[j];

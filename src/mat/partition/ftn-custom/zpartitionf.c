@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL matpartitioningsetvertexweights_(MatPartitioning
   PetscInt *array;
   *ierr = MatGetLocalSize((*part)->adj,&len,0); if (*ierr) return;
   *ierr = PetscMalloc1(len,&array); if (*ierr) return;
-  *ierr = PetscMemcpy(array,weights,len*sizeof(PetscInt));if (*ierr) return;
+  *ierr = PetscArraycpy(array,weights,len);if (*ierr) return;
   *ierr = MatPartitioningSetVertexWeights(*part,array);
 }
 PETSC_EXTERN void PETSC_STDCALL matpartitioningview_(MatPartitioning *part,PetscViewer *viewer, PetscErrorCode *ierr)

@@ -303,8 +303,7 @@ int main(int argc,char **argv)
     in setting up the data structures.
   */
   ierr      = PetscMalloc1(user.Nvglobal,&vertices);CHKERRQ(ierr);
-  ierr      = PetscMalloc1(user.Nvglobal,&verticesmask);CHKERRQ(ierr);
-  ierr      = PetscMemzero(verticesmask,user.Nvglobal*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr      = PetscCalloc1(user.Nvglobal,&verticesmask);CHKERRQ(ierr);
   nvertices = 0;
 
   /*

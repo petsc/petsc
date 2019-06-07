@@ -52,7 +52,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
     dd->refine_x = refx[0];
     dd->refine_x_hier_n = n;
     ierr = PetscMalloc1(n,&dd->refine_x_hier);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd->refine_x_hier,refx,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd->refine_x_hier,refx,n);CHKERRQ(ierr);
   }
   if (dim > 1) {
     n    = maxnlevels;
@@ -61,7 +61,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
       dd->refine_y = refy[0];
       dd->refine_y_hier_n = n;
       ierr = PetscMalloc1(n,&dd->refine_y_hier);CHKERRQ(ierr);
-      ierr = PetscMemcpy(dd->refine_y_hier,refy,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(dd->refine_y_hier,refy,n);CHKERRQ(ierr);
     }
   }
   if (dim > 2) {
@@ -71,7 +71,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
       dd->refine_z = refz[0];
       dd->refine_z_hier_n = n;
       ierr = PetscMalloc1(n,&dd->refine_z_hier);CHKERRQ(ierr);
-      ierr = PetscMemcpy(dd->refine_z_hier,refz,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(dd->refine_z_hier,refz,n);CHKERRQ(ierr);
     }
   }
 

@@ -582,7 +582,7 @@ static PetscErrorCode AssembleA_Elasticity(Mat A,DM elas_da,DM properties_da,Vec
       prop_nu = props[ej][ei].nu;
 
       /* initialise element stiffness matrix */
-      ierr = PetscMemzero(Ae,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
+      ierr = PetscMemzero(Ae,sizeof(Ae));CHKERRQ(ierr);
 
       /* form element stiffness matrix */
       FormStressOperatorQ1(Ae,el_coords,prop_E,prop_nu);
@@ -661,7 +661,7 @@ static PetscErrorCode AssembleF_Elasticity(Vec F,DM elas_da,DM properties_da,Vec
       prop_fy = props[ej][ei].fy;
 
       /* initialise element stiffness matrix */
-      ierr = PetscMemzero(Fe,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
+      ierr = PetscMemzero(Fe,sizeof(Fe));CHKERRQ(ierr);
 
       /* form element stiffness matrix */
       FormMomentumRhsQ1(Fe,el_coords,prop_fx,prop_fy);

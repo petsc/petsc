@@ -112,8 +112,8 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   numEdges = start[numVertices];
   ierr = PetscMalloc1(numVertices+1, &i);CHKERRQ(ierr);
   ierr = PetscMalloc1(numEdges, &j);CHKERRQ(ierr);
-  ierr = PetscMemcpy(i, start, (numVertices+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(j, adjacency, numEdges*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(i, start, numVertices+1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(j, adjacency, numEdges);CHKERRQ(ierr);
 
   /* construct the adjacency matrix */
   ierr = MatCreateMPIAdj(comm, numVertices, numVerticesGlobal, i, j, NULL, &matadj);CHKERRQ(ierr);

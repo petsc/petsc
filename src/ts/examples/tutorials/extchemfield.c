@@ -326,7 +326,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
     ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
     for (i=xs; i<xs+xm; i++) {
-      ierr = PetscMemcpy(user->tchemwork,x[i],(user->Nspec+1)*sizeof(x[xs][0]));CHKERRQ(ierr);
+      ierr = PetscArraycpy(user->tchemwork,x[i],user->Nspec+1);CHKERRQ(ierr);
       user->tchemwork[0] *= user->Tini; /* Dimensionalize */
       ierr = TC_getSrc(user->tchemwork,user->Nspec+1,f[i]);TCCHKERRQ(ierr);
       f[i][0] /= user->Tini;           /* Non-dimensionalize */
@@ -361,7 +361,7 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
     ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
     for (i=xs; i<xs+xm; i++) {
-      ierr = PetscMemcpy(user->tchemwork,x[i],(user->Nspec+1)*sizeof(x[xs][0]));CHKERRQ(ierr);
+      ierr = PetscArraycpy(user->tchemwork,x[i],user->Nspec+1);CHKERRQ(ierr);
       user->tchemwork[0] *= user->Tini;  /* Dimensionalize temperature (first row) because that is what Tchem wants */
       ierr = TC_getJacTYN(user->tchemwork,user->Nspec,user->Jdense,1);CHKERRQ(ierr);
 

@@ -319,9 +319,9 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
     av = aa->a;
 #endif
 
-    ierr = PetscMemcpy(lu->row,ai,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(lu->col,aj,nz*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(lu->val,av,nz*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(lu->row,ai,(m+1));CHKERRQ(ierr);
+    ierr = PetscArraycpy(lu->col,aj,nz);CHKERRQ(ierr);
+    ierr = PetscArraycpy(lu->val,av,nz);CHKERRQ(ierr);
   } else {
     nz = 0;
     for (i=0; i<m; i++) {

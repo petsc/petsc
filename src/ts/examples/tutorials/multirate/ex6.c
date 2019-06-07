@@ -220,7 +220,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
     /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
     ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
     /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-    ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+    ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
     cjmpL = &ctx->cjmpLR[0];
     cjmpR = &ctx->cjmpLR[dof];
     for (j=0; j<dof; j++) {
@@ -371,7 +371,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
       /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
       ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
       /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-      ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+      ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
       cjmpL = &ctx->cjmpLR[0];
       cjmpR = &ctx->cjmpLR[dof];
       for (j=0; j<dof; j++) {
@@ -499,7 +499,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
       /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
       ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
       /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-      ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+      ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
       cjmpL = &ctx->cjmpLR[0];
       cjmpR = &ctx->cjmpLR[dof];
       for (j=0; j<dof; j++) {
@@ -645,7 +645,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
     PetscScalar       *cjmpL,*cjmpR;
     if (i > sf-2 && i < fs+1) {
       ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
-      ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+      ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
       cjmpL = &ctx->cjmpLR[0];
       cjmpR = &ctx->cjmpLR[dof];
       for (j=0; j<dof; j++) {

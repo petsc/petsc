@@ -50,7 +50,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat C,Mat A,c
     }
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
-    ierr = PetscMemcpy(dk,w+k*36,36*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dk,w+k*36,36);CHKERRQ(ierr);
     i    = jl[k]; /* first row to be added to k_th row  */
 
     while (i < mbs) {
@@ -168,7 +168,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat C,Mat A,c
       ierr = PetscLogFlops(216.0*4.0);CHKERRQ(ierr);
 
       /* update -U(i,k) */
-      ierr = PetscMemcpy(ba+ili*36,uik,36*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(ba+ili*36,uik,36);CHKERRQ(ierr);
 
       /* add multiple of row i to k-th row ... */
       jmin = ili + 1; jmax = bi[i+1];
@@ -241,7 +241,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat C,Mat A,c
 
     /* invert diagonal block */
     d    = ba+k*36;
-    ierr = PetscMemcpy(d,dk,36*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(d,dk,36);CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_6(d,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 

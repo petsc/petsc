@@ -520,7 +520,7 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
     ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds,ctx->xmin+hx*i);CHKERRQ(ierr);
     /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-    ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+    ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
     cjmpL = &ctx->cjmpLR[0];
     cjmpR = &ctx->cjmpLR[dof];
     for (j=0; j<dof; j++) {

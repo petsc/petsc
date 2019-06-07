@@ -1086,7 +1086,7 @@ PetscErrorCode SetUpBoundaries(DM dm, User user)
       ierr      = PetscFree(b->ids);CHKERRQ(ierr);
       b->numids = len;
       ierr      = PetscMalloc1(len,&b->ids);CHKERRQ(ierr);
-      ierr      = PetscMemcpy(b->ids,ids,len*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr      = PetscArraycpy(b->ids,ids,len);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1290,12 +1290,12 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       FunctionalLink flink = mod->functionalMonitored[i];
       PetscInt       id    = flink->offset;
       if (i % 3) {
-        ierr = PetscMemcpy(buffer,"  ",2);CHKERRQ(ierr);
+        ierr = PetscArraycpy(buffer,"  ",2);CHKERRQ(ierr);
         p    = buffer + 2;
       } else if (i) {
         char newline[] = "\n";
-        ierr = PetscMemcpy(buffer,newline,sizeof newline-1);CHKERRQ(ierr);
-        p    = buffer + sizeof newline - 1;
+        ierr = PetscArraycpy(buffer,newline,sizeof(newline)-1);CHKERRQ(ierr);
+        p    = buffer + sizeof(newline) - 1;
       } else {
         p = buffer;
       }
@@ -1305,11 +1305,11 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
         char *ftablenew;
         ftablealloc = 2*ftablealloc + countused;
         ierr = PetscMalloc(ftablealloc,&ftablenew);CHKERRQ(ierr);
-        ierr = PetscMemcpy(ftablenew,ftable,ftableused);CHKERRQ(ierr);
+        ierr = PetscArraycpy(ftablenew,ftable,ftableused);CHKERRQ(ierr);
         ierr = PetscFree(ftable);CHKERRQ(ierr);
         ftable = ftablenew;
       }
-      ierr = PetscMemcpy(ftable+ftableused,buffer,countused);CHKERRQ(ierr);
+      ierr = PetscArraycpy(ftable+ftableused,buffer,countused);CHKERRQ(ierr);
       ftableused += countused;
       ftable[ftableused] = 0;
     }

@@ -227,7 +227,8 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   }
 
   ierr = PetscMalloc2(c->m,&rowhit,c->m,&valaddrhit);CHKERRQ(ierr);
-  ierr = PetscMemzero(rowhit,c->m*sizeof(PetscInt));CHKERRQ(ierr);
+  /* TODO: Use PetscCalloc1() */
+  ierr = PetscArrayzero(rowhit,c->m);CHKERRQ(ierr);
 
   nz = 0;
   for (i=0; i<nis; i++) { /* loop over colors */
@@ -238,7 +239,7 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     if (n) {
       ierr = PetscMalloc1(n,&c->columns[i]);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)c,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemcpy(c->columns[i],is,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(c->columns[i],is,n);CHKERRQ(ierr);
     } else {
       c->columns[i] = 0;
     }

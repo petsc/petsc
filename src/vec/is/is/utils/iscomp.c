@@ -70,12 +70,12 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
       ierr = PetscMalloc1(sz1,&a1);CHKERRQ(ierr);
       ierr = PetscMalloc1(sz2,&a2);CHKERRQ(ierr);
 
-      ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemcpy(a2,ptr2,sz2*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(a1,ptr1,sz1);CHKERRQ(ierr);
+      ierr = PetscArraycpy(a2,ptr2,sz2);CHKERRQ(ierr);
 
       ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
       ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
-      ierr = PetscMemcmp(a1,a2,sz1*sizeof(PetscInt),&flag);CHKERRQ(ierr);
+      ierr = PetscArraycmp(a1,a2,sz1,&flag);CHKERRQ(ierr);
 
       ierr = ISRestoreIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ PetscErrorCode  ISEqualUnsorted(IS is1,IS is2,PetscBool  *flg)
       ierr = ISGetIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
 
-      ierr = PetscMemcmp(ptr1,ptr2,sz1*sizeof(PetscInt),&flag);CHKERRQ(ierr);
+      ierr = PetscArraycmp(ptr1,ptr2,sz1,&flag);CHKERRQ(ierr);
 
       ierr = ISRestoreIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);

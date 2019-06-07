@@ -23,13 +23,13 @@ PetscErrorCode MatSolve_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
 
   /* forward solve the lower triangular */
-  ierr = PetscMemcpy(t,b+bs*(*r++),bs*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(t,b+bs*(*r++),bs);CHKERRQ(ierr);
   for (i=1; i<n; i++) {
     v    = aa + bs2*ai[i];
     vi   = aj + ai[i];
     nz   = a->diag[i] - ai[i];
     s    = t + bs*i;
-    ierr = PetscMemcpy(s,b+bs*(*r++),bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(s,b+bs*(*r++),bs);CHKERRQ(ierr);
     while (nz--) {
       PetscKernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*(*vi++));
       v += bs2;
@@ -41,13 +41,13 @@ PetscErrorCode MatSolve_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
     v    = aa + bs2*(a->diag[i] + 1);
     vi   = aj + a->diag[i] + 1;
     nz   = ai[i+1] - a->diag[i] - 1;
-    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ls,t+i*bs,bs);CHKERRQ(ierr);
     while (nz--) {
       PetscKernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*(*vi++));
       v += bs2;
     }
     PetscKernel_w_gets_A_times_v(bs,ls,aa+bs2*a->diag[i],t+i*bs);
-    ierr = PetscMemcpy(x + bs*(*c--),t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(x + bs*(*c--),t+i*bs,bs);CHKERRQ(ierr);
   }
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);

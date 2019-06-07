@@ -533,7 +533,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   (*mapping)->ops->destroy                        = NULL;
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
-    ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(in,indices,n);CHKERRQ(ierr);
     (*mapping)->indices = in;
     ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) {
@@ -1030,7 +1030,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
 
   /* determine ownership ranges of global indices */
   ierr = PetscMalloc1(2*size,&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(nprocs,2*size);CHKERRQ(ierr);
 
   /* determine owners of each local node  */
   ierr = PetscMalloc1(n,&owner);CHKERRQ(ierr);
@@ -1084,8 +1084,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   ierr = PetscMalloc1(nrecvs+1,&source);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrecvs+1,&len);CHKERRQ(ierr);
   cnt  = nrecvs;
-  ierr = PetscMalloc1(ng+1,&nownedsenders);CHKERRQ(ierr);
-  ierr = PetscMemzero(nownedsenders,ng*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(ng+1,&nownedsenders);CHKERRQ(ierr);
   while (cnt) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
@@ -1189,7 +1188,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
         sends2[starts2[i]]++;
         sends2[starts2[i]+cnt++] = recvs[2*i*nmax+2*j+1];
         sends2[starts2[i]+cnt++] = nownedsenders[node];
-        ierr = PetscMemcpy(&sends2[starts2[i]+cnt],&ownedsenders[starts[node]],nownedsenders[node]*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&sends2[starts2[i]+cnt],&ownedsenders[starts[node]],nownedsenders[node]);CHKERRQ(ierr);
         cnt += nownedsenders[node];
       }
     }
@@ -1263,8 +1262,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   } /* -----------------------------------  */
 
   /* count number subdomains for each local node */
-  ierr = PetscMalloc1(size,&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(size,&nprocs);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<nrecvs2; i++) {
     nt = recvs2[cnt++];
@@ -1292,7 +1290,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   }
 
   /* make the list of subdomains for each nontrivial local node */
-  ierr = PetscMemzero(*numprocs,nt*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(*numprocs,nt);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<nrecvs2; i++) {
     nt = recvs2[cnt++];
@@ -1546,7 +1544,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
     }
     if (n) { ierr = PetscMalloc1(m,&mapping->info_nodei[0]);CHKERRQ(ierr); }
     for (i=1;i<n;i++) mapping->info_nodei[i] = mapping->info_nodei[i-1] + mapping->info_nodec[i-1];
-    ierr = PetscMemzero(mapping->info_nodec,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(mapping->info_nodec,n);CHKERRQ(ierr);
     for (i=0;i<n;i++) { mapping->info_nodec[i] = 1; mapping->info_nodei[i][0] = neigh[0]; }
     for (i=1;i<n_neigh;i++) {
       PetscInt j;
@@ -1750,7 +1748,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
     const PetscInt *subidx;
     ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetIndices(ltogs[i],&subidx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(&idx[cnt],subidx,m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&idx[cnt],subidx,m);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
     cnt += m;
   }

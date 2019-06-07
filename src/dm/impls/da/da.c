@@ -572,7 +572,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
     if (!dd->lx) {
       ierr = PetscMalloc1(dd->m, &dd->lx);CHKERRQ(ierr);
     }
-    ierr = PetscMemcpy(dd->lx, lx, dd->m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd->lx, lx, dd->m);CHKERRQ(ierr);
   }
   if (ly) {
     if (dd->n < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
@@ -580,7 +580,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
     if (!dd->ly) {
       ierr = PetscMalloc1(dd->n, &dd->ly);CHKERRQ(ierr);
     }
-    ierr = PetscMemcpy(dd->ly, ly, dd->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd->ly, ly, dd->n);CHKERRQ(ierr);
   }
   if (lz) {
     if (dd->p < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
@@ -588,7 +588,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
     if (!dd->lz) {
       ierr = PetscMalloc1(dd->p, &dd->lz);CHKERRQ(ierr);
     }
-    ierr = PetscMemcpy(dd->lz, lz, dd->p*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd->lz, lz, dd->p);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -833,7 +833,7 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
   PetscFunctionBegin;
   if (ratio < 1) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
   if (ratio == 1) {
-    ierr = PetscMemcpy(lf,lc,m*sizeof(lc[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(lf,lc,m);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   for (i=0; i<m; i++) totalc += lc[i];
@@ -875,7 +875,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
   PetscFunctionBegin;
   if (ratio < 1) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
   if (ratio == 1) {
-    ierr = PetscMemcpy(lc,lf,m*sizeof(lf[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(lc,lf,m);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   for (i=0,totalf=0; i<m; i++) totalf += lf[i];
@@ -979,11 +979,11 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   /* copy fill information if given */
   if (dd->dfill) {
     ierr = PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->dfill,dd->dfill,(dd->dfill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->dfill,dd->dfill,dd->dfill[dd->w]+dd->w+1);CHKERRQ(ierr);
   }
   if (dd->ofill) {
     ierr = PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->ofill,dd->ofill,(dd->ofill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->ofill,dd->ofill,dd->ofill[dd->w]+dd->w+1);CHKERRQ(ierr);
   }
   /* copy the refine information */
   dd2->coarsen_x = dd2->refine_x = dd->refine_x;
@@ -999,7 +999,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     }
     dd2->refine_z_hier_n = dd->refine_z_hier_n;
     ierr = PetscMalloc1(dd2->refine_z_hier_n,&dd2->refine_z_hier);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n);CHKERRQ(ierr);
   }
   if (dd->refine_y_hier) {
     if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_y_hier_n) {
@@ -1010,7 +1010,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     }
     dd2->refine_y_hier_n = dd->refine_y_hier_n;
     ierr = PetscMalloc1(dd2->refine_y_hier_n,&dd2->refine_y_hier);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n);CHKERRQ(ierr);
   }
   if (dd->refine_x_hier) {
     if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_x_hier_n) {
@@ -1021,7 +1021,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     }
     dd2->refine_x_hier_n = dd->refine_x_hier_n;
     ierr = PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n);CHKERRQ(ierr);
   }
 
 
@@ -1141,11 +1141,11 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   /* copy fill information if given */
   if (dd->dfill) {
     ierr = PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->dfill,dd->dfill,(dd->dfill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->dfill,dd->dfill,dd->dfill[dd->w]+dd->w+1);CHKERRQ(ierr);
   }
   if (dd->ofill) {
     ierr = PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->ofill,dd->ofill,(dd->ofill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->ofill,dd->ofill,dd->ofill[dd->w]+dd->w+1);CHKERRQ(ierr);
   }
   /* copy the refine information */
   dd2->coarsen_x = dd2->refine_x = dd->coarsen_x;
@@ -1161,7 +1161,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     }
     dd2->refine_z_hier_n = dd->refine_z_hier_n;
     ierr = PetscMalloc1(dd2->refine_z_hier_n,&dd2->refine_z_hier);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n);CHKERRQ(ierr);
   }
   if (dd->refine_y_hier) {
     if (da->levelup - da->leveldown - 1 > -1 && da->levelup - da->leveldown - 1< dd->refine_y_hier_n) {
@@ -1172,7 +1172,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     }
     dd2->refine_y_hier_n = dd->refine_y_hier_n;
     ierr = PetscMalloc1(dd2->refine_y_hier_n,&dd2->refine_y_hier);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n);CHKERRQ(ierr);
   }
   if (dd->refine_x_hier) {
     if (da->levelup - da->leveldown - 1 > -1 && da->levelup - da->leveldown - 1 < dd->refine_x_hier_n) {
@@ -1183,7 +1183,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     }
     dd2->refine_x_hier_n = dd->refine_x_hier_n;
     ierr = PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n);CHKERRQ(ierr);
   }
 
   /* copy vector type information */

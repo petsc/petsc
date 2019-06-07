@@ -181,7 +181,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
       ierr = PetscMalloc1(nc,&ii);CHKERRQ(ierr);
       ierr = PetscMalloc1(n,&ii[0]);CHKERRQ(ierr);
       for (i=1; i<nc; i++) ii[i] = ii[i-1] + mcolors[i-1];
-      ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArrayzero(mcolors,nc);CHKERRQ(ierr);
 
       if (iscoloring->ctype == IS_COLORING_GLOBAL) {
         ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
@@ -305,7 +305,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&(*iscoloring)->colors);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)(*iscoloring),n*sizeof(ISColoringValue));CHKERRQ(ierr);
-    ierr = PetscMemcpy((*iscoloring)->colors,colors,n*sizeof(ISColoringValue));CHKERRQ(ierr);
+    ierr = PetscArraycpy((*iscoloring)->colors,colors,n);CHKERRQ(ierr);
     (*iscoloring)->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {
     (*iscoloring)->colors    = (ISColoringValue*)colors;
@@ -489,7 +489,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
         starts - global number of first element in each partition on this processor
   */
   ierr = PetscMalloc3(np,&lsizes,np,&starts,np,&sums);CHKERRQ(ierr);
-  ierr = PetscMemzero(lsizes,np*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(lsizes,np);CHKERRQ(ierr);
   for (i=0; i<n; i++) lsizes[indices[i]]++;
   ierr = MPIU_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr = MPI_Scan(lsizes,starts,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);

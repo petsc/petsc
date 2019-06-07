@@ -722,7 +722,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
 
   if (conn) {
     ierr = PetscMalloc(sizeof(moab::EntityHandle) * connect.size(), conn);CHKERRQ(ierr);
-    ierr = PetscMemcpy(*conn, &connect[0], sizeof(moab::EntityHandle) * connect.size());CHKERRQ(ierr);
+    ierr = PetscArraycpy(*conn, &connect[0], connect.size());CHKERRQ(ierr);
   }
   if (nconn) *nconn = connect.size();
   PetscFunctionReturn(0);

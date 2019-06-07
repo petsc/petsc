@@ -66,7 +66,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
     ierr = VecDuplicateVecs(U ? U : Udot,o,&tj->lag.W);CHKERRQ(ierr);
   }
   cnt = 0;
-  ierr = PetscMemzero(tj->lag.TT,2*(tj->lag.order+1)*sizeof(PetscBool));CHKERRQ(ierr);
+  ierr = PetscArrayzero(tj->lag.TT,2*(tj->lag.order+1));CHKERRQ(ierr);
   if (id < 0 || Udot) { /* populate snapshots for interpolation */
     PetscInt s,nid = id < 0 ? -(id+1) : id;
 
@@ -124,7 +124,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
       ierr = PetscViewerASCIIPopTab(tj->monitor);CHKERRQ(ierr);
     }
   }
-  ierr = PetscMemzero(tj->lag.TT,(tj->lag.order+1)*sizeof(PetscBool));CHKERRQ(ierr);
+  ierr = PetscArrayzero(tj->lag.TT,tj->lag.order+1);CHKERRQ(ierr);
   if (id >=0 && U) { /* requested time match */
     PetscInt tid = LagrangeGetId(t,tj->lag.order+1,tj->lag.T,tj->lag.TT);
     if (tj->monitor) {

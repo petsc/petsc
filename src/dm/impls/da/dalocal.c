@@ -35,7 +35,7 @@ static PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 #else
   mat = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
-  ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mxGetPr(mat),array,n*m);CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   engPutVariable((Engine*)mengine,obj->name,mat);
 
@@ -43,7 +43,6 @@ static PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
   PetscFunctionReturn(0);
 }
 #endif
-
 
 PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 {

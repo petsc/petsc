@@ -279,7 +279,7 @@ static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2],PetscReal hx
   PetscScalar (*restrict dpg)[2][PRMNODE_SIZE]   = (PetscScalar(*)[2][PRMNODE_SIZE])dp;
 
   PetscFunctionBeginUser;
-  ierr = PetscMemzero(dpg,4*sizeof(dpg[0]));CHKERRQ(ierr);
+  ierr = PetscArrayzero(dpg,4);CHKERRQ(ierr);
   for (q=0; q<4; q++) {
     for (i=0; i<4; i++) {
       for (f=0; f<PRMNODE_SIZE; f++) {

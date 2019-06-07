@@ -418,13 +418,14 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!lsb->allocated) {
     ierr = VecDuplicate(X, &lsb->work);CHKERRQ(ierr);
-    ierr = PetscMalloc6(lmvm->m, &lsb->stp, lmvm->m, &lsb->ytq, lmvm->m, &lsb->yts, lmvm->m, &lsb->yty, lmvm->m, &lsb->sts, lmvm->m, &lsb->psi);CHKERRQ(ierr);
-    ierr = PetscMemzero(lsb->psi, lmvm->m);CHKERRQ(ierr);
+    ierr = PetscMalloc6(lmvm->m,&lsb->stp,lmvm->m,&lsb->ytq,lmvm->m,&lsb->yts,lmvm->m,&lsb->yty,lmvm->m,&lsb->sts,lmvm->m,&lsb->psi);CHKERRQ(ierr);
+    /* TODO: use PetscCalloc1() */
+    ierr = PetscArrayzero(lsb->psi, lmvm->m);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDuplicateVecs(X, lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(X, lmvm->m, &lsb->Q);CHKERRQ(ierr);
@@ -476,8 +477,9 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!lsb->allocated) {
     ierr = VecDuplicate(lmvm->Xprev, &lsb->work);CHKERRQ(ierr);
-    ierr = PetscMalloc6(lmvm->m, &lsb->stp, lmvm->m, &lsb->ytq, lmvm->m, &lsb->yts, lmvm->m, &lsb->yty, lmvm->m, &lsb->sts, lmvm->m, &lsb->psi);CHKERRQ(ierr);
-    ierr = PetscMemzero(lsb->psi, lmvm->m);CHKERRQ(ierr);
+    ierr = PetscMalloc6(lmvm->m,&lsb->stp,lmvm->m,&lsb->ytq,lmvm->m,&lsb->yts,lmvm->m,&lsb->yty,lmvm->m,&lsb->sts,lmvm->m,&lsb->psi);CHKERRQ(ierr);
+    /* TODO: use PetscCalloc1() */
+    ierr = PetscArrayzero(lsb->psi, lmvm->m);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->Q);CHKERRQ(ierr);

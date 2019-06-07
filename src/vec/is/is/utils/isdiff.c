@@ -472,7 +472,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     if (islist[i]) {
       ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
       ierr = ISGetIndices(islist[i], &iidx);CHKERRQ(ierr);
-      ierr = PetscMemcpy(idx+N,iidx, sizeof(PetscInt)*n);CHKERRQ(ierr);
+      ierr = PetscArraycpy(idx+N,iidx, n);CHKERRQ(ierr);
       ierr = ISRestoreIndices(islist[i], &iidx);CHKERRQ(ierr);
       N   += n;
     }
@@ -599,8 +599,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   ierr = ISGetIndices(coloris, &ccolors);CHKERRQ(ierr);
   ierr = ISGetIndices(indis, &cinds);CHKERRQ(ierr);
   ierr = PetscMalloc2(ilen,&inds,llen,&colors);CHKERRQ(ierr);
-  ierr = PetscMemcpy(inds,cinds,ilen*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(colors,ccolors,llen*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(inds,cinds,ilen);CHKERRQ(ierr);
+  ierr = PetscArraycpy(colors,ccolors,llen);CHKERRQ(ierr);
   ierr = PetscSortIntWithArray(llen, colors, inds);CHKERRQ(ierr);
   /* Determine the global extent of colors. */
   llow   = 0; lhigh  = -1;
@@ -724,7 +724,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   if (clen != alen) {
     cindices2 = cindices;
     ierr      = PetscMalloc1(clen, &cindices);CHKERRQ(ierr);
-    ierr      = PetscMemcpy(cindices,cindices2,clen*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr      = PetscArraycpy(cindices,cindices2,clen);CHKERRQ(ierr);
     ierr      = PetscFree(cindices2);CHKERRQ(ierr);
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,clen,cindices,PETSC_OWN_POINTER,c);CHKERRQ(ierr);

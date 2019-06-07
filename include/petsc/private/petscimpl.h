@@ -817,7 +817,7 @@ typedef struct {
   PetscBool   async;
   PetscScalar *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
   PetscScalar *gvalues;     /* values after call to MPI_Allreduce() */
-  void        **invecs;     /* for debugging only, vector/memory used with each op */
+  void        **invecs;      /* for debugging only, vector/memory used with each op */
   PetscInt    *reducetype;  /* is particular value to be summed or maxed? */
   SRState     state;        /* are we calling xxxBegin() or xxxEnd()? */
   PetscInt    maxops;       /* total amount of space we have for requests */

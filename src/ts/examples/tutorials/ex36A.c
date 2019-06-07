@@ -71,7 +71,7 @@ static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscRe
   ierr    = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   ierr    = VecGetArrayRead(Ydot,&ydot);CHKERRQ(ierr);
 
-  PetscMemzero(J,sizeof(J));
+  ierr = PetscMemzero(J,sizeof(J));CHKERRQ(ierr);
 
   J[0][0]=-0.001 - a/1.e6;
   J[0][1]=a/1.e6;

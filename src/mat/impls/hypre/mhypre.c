@@ -180,15 +180,15 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
        this is the Hack part where we monkey directly with the hypre datastructures
   */
   if (sameint) {
-    ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(hdiag->j,pdiag->j,pdiag->nz*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(hdiag->i,pdiag->i,A->rmap->n + 1);CHKERRQ(ierr);
+    ierr = PetscArraycpy(hdiag->j,pdiag->j,pdiag->nz);CHKERRQ(ierr);
   } else {
     PetscInt i;
 
     for (i=0;i<A->rmap->n + 1;i++) hdiag->i[i] = (HYPRE_Int)pdiag->i[i];
     for (i=0;i<pdiag->nz;i++)      hdiag->j[i] = (HYPRE_Int)pdiag->j[i];
   }
-  ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(hdiag->data,pdiag->a,pdiag->nz);CHKERRQ(ierr);
 
   aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
@@ -224,7 +224,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
        this is the Hack part where we monkey directly with the hypre datastructures
   */
   if (sameint) {
-    ierr = PetscMemcpy(hdiag->i,pdiag->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
+    ierr = PetscArraycpy(hdiag->i,pdiag->i,pA->A->rmap->n + 1);CHKERRQ(ierr);
   } else {
     for (i=0; i<pA->A->rmap->n + 1; i++) hdiag->i[i] = (HYPRE_Int)(pdiag->i[i]);
   }
@@ -236,9 +236,9 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 #else
   for (i=0; i<pdiag->nz; i++) hjj[i] = cstart + pjj[i];
 #endif
-  ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
+  ierr = PetscArraycpy(hdiag->data,pdiag->a,pdiag->nz);CHKERRQ(ierr);
   if (sameint) {
-    ierr = PetscMemcpy(hoffd->i,poffd->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
+    ierr = PetscArraycpy(hoffd->i,poffd->i,pA->A->rmap->n + 1);CHKERRQ(ierr);
   } else {
     for (i=0; i<pA->A->rmap->n + 1; i++) hoffd->i[i] = (HYPRE_Int)(poffd->i[i]);
   }
@@ -254,7 +254,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   pjj = poffd->j;
   for (i=0; i<poffd->nz; i++) jj[i] = garray[pjj[i]];
 
-  ierr = PetscMemcpy(hoffd->data,poffd->a,poffd->nz*sizeof(PetscScalar));
+  ierr = PetscArraycpy(hoffd->data,poffd->a,poffd->nz);CHKERRQ(ierr);
 
   aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
@@ -471,10 +471,10 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
     for (i=0;i<m+1;i++)  dii[i] = (PetscInt)(hypre_CSRMatrixI(hdiag)[i]);
     for (i=0;i<dnnz;i++) djj[i] = (PetscInt)(hypre_CSRMatrixJ(hdiag)[i]);
   } else {
-    ierr = PetscMemcpy(dii,hypre_CSRMatrixI(hdiag),(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(djj,hypre_CSRMatrixJ(hdiag),dnnz*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dii,hypre_CSRMatrixI(hdiag),m+1);CHKERRQ(ierr);
+    ierr = PetscArraycpy(djj,hypre_CSRMatrixJ(hdiag),dnnz);CHKERRQ(ierr);
   }
-  ierr = PetscMemcpy(da,hypre_CSRMatrixData(hdiag),dnnz*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(da,hypre_CSRMatrixData(hdiag),dnnz);CHKERRQ(ierr);
   iptr = djj;
   aptr = da;
   for (i=0; i<m; i++) {
@@ -513,12 +513,12 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
     if (!sameint) {
       for (i=0;i<m+1;i++) oii[i] = (PetscInt)(hypre_CSRMatrixI(hoffd)[i]);
     } else {
-      ierr = PetscMemcpy(oii,hypre_CSRMatrixI(hoffd),(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(oii,hypre_CSRMatrixI(hoffd),m+1);CHKERRQ(ierr);
     }
     offdj = hypre_CSRMatrixJ(hoffd);
     coffd = hypre_ParCSRMatrixColMapOffd(parcsr);
     for (i=0; i<onnz; i++) ojj[i] = coffd[offdj[i]];
-    ierr = PetscMemcpy(oa,hypre_CSRMatrixData(hoffd),onnz*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(oa,hypre_CSRMatrixData(hoffd),onnz);CHKERRQ(ierr);
     iptr = ojj;
     aptr = oa;
     for (i=0; i<m; i++) {
@@ -1474,8 +1474,8 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
     hoffd      = hypre_ParCSRMatrixOffd(parcsr);
     ndiag      = hypre_ParCSRMatrixDiag(new_parcsr);
     noffd      = hypre_ParCSRMatrixOffd(new_parcsr);
-    ierr       = PetscMemcpy(hypre_CSRMatrixData(ndiag),hypre_CSRMatrixData(hdiag),hypre_CSRMatrixNumNonzeros(hdiag)*sizeof(HYPRE_Complex));CHKERRQ(ierr);
-    ierr       = PetscMemcpy(hypre_CSRMatrixData(noffd),hypre_CSRMatrixData(hoffd),hypre_CSRMatrixNumNonzeros(hoffd)*sizeof(HYPRE_Complex));CHKERRQ(ierr);
+    ierr       = PetscArraycpy(hypre_CSRMatrixData(ndiag),hypre_CSRMatrixData(hdiag),hypre_CSRMatrixNumNonzeros(hdiag));CHKERRQ(ierr);
+    ierr       = PetscArraycpy(hypre_CSRMatrixData(noffd),hypre_CSRMatrixData(hoffd),hypre_CSRMatrixNumNonzeros(hoffd));CHKERRQ(ierr);
     parcsr     = new_parcsr;
     copymode   = PETSC_OWN_POINTER;
   }
@@ -1690,7 +1690,7 @@ static PetscErrorCode MatZeroEntries_HYPRE_CSRMatrix(hypre_CSRMatrix *ha)
     a    = hypre_CSRMatrixData(ha);
     ii   = hypre_CSRMatrixI(ha);
 
-    if (a) { ierr = PetscMemzero(a,(ii[size])*sizeof(HYPRE_Complex));CHKERRQ(ierr); }
+    if (a) {ierr = PetscArrayzero(a,ii[size]);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

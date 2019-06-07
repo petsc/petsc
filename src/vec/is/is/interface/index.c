@@ -72,7 +72,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
     const PetscInt* idxs_mult;
 
     ierr = ISGetIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
-    ierr = PetscMemcpy(leaf_data,idxs_mult,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(leaf_data,idxs_mult,n);CHKERRQ(ierr);
     ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
   } else {
     for (i=0;i<n;i++) leaf_data[i] = 1;
@@ -90,7 +90,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
 
   /* reduce from leaves to roots */
-  ierr = PetscMemzero(root_data,Nl*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(root_data,Nl);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
 
@@ -394,7 +394,7 @@ PetscErrorCode  ISSetPermutation(IS is)
       ierr = ISGetSize(is,&n);CHKERRQ(ierr);
       ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
       ierr = ISGetIndices(is,&iidx);CHKERRQ(ierr);
-      ierr = PetscMemcpy(idx,iidx,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(idx,iidx,n);CHKERRQ(ierr);
       ierr = PetscSortInt(n,idx);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         if (idx[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
@@ -859,8 +859,8 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
     ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
     ierr = ISGetSize(is,&N);CHKERRQ(ierr);
     ierr = PetscMalloc1(N-n, &(is->nonlocal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(is->nonlocal, is->total, sizeof(PetscInt)*is->local_offset);CHKERRQ(ierr);
-    ierr = PetscMemcpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n, sizeof(PetscInt)*(N - is->local_offset - n));CHKERRQ(ierr);
+    ierr = PetscArraycpy(is->nonlocal, is->total, is->local_offset);CHKERRQ(ierr);
+    ierr = PetscArraycpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n,N - is->local_offset - n);CHKERRQ(ierr);
     *indices = is->nonlocal;
   }
   PetscFunctionReturn(0);

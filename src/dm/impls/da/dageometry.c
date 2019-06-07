@@ -66,7 +66,7 @@ PETSC_STATIC_INLINE PetscErrorCode GetPointArray_Private(DM dm,PetscInt n,PetscI
   if (rn) *rn = n;
   if (rpoints) {
     ierr     = DMGetWorkArray(dm,n,MPIU_INT,&work);CHKERRQ(ierr);
-    ierr     = PetscMemcpy(work,points,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr     = PetscArraycpy(work,points,n);CHKERRQ(ierr);
     *rpoints = work;
   }
   PetscFunctionReturn(0);

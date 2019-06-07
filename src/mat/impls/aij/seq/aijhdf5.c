@@ -96,7 +96,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = PetscLayoutSetSize(is_i->map,M);CHKERRQ(ierr);
   ierr = ISLoad(is_i,viewer);CHKERRQ(ierr);
   ierr = ISGetIndices(is_i,&i_glob);CHKERRQ(ierr);
-  ierr = PetscMemcpy(i,i_glob,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(i,i_glob,m);CHKERRQ(ierr);
 
   /* Reset m and M to the matrix sizes */
   m = mat->rmap->n;

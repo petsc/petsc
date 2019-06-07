@@ -76,9 +76,8 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
     /* Need to increase the space for storing PETSc objects */
     if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
     else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
-    ierr = PetscMalloc1(newPetscObjectsMaxCounts,&newPetscObjects);CHKERRQ(ierr);
-    ierr = PetscMemcpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts*sizeof(PetscObject));CHKERRQ(ierr);
-    ierr = PetscMemzero(newPetscObjects+PetscObjectsMaxCounts,(newPetscObjectsMaxCounts - PetscObjectsMaxCounts)*sizeof(PetscObject));CHKERRQ(ierr);
+    ierr = PetscCalloc1(newPetscObjectsMaxCounts,&newPetscObjects);CHKERRQ(ierr);
+    ierr = PetscArraycpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts);CHKERRQ(ierr);
     ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
 
     PetscObjects                        = newPetscObjects;

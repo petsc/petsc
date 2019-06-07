@@ -303,7 +303,7 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
   aijmkl      = (Mat_SeqAIJMKL*) A->spptr;
   aijmkl_dest = (Mat_SeqAIJMKL*) (*M)->spptr;
-  ierr = PetscMemcpy(aijmkl_dest,aijmkl,sizeof(Mat_SeqAIJMKL));CHKERRQ(ierr);
+  ierr = PetscArraycpy(aijmkl_dest,aijmkl,1);CHKERRQ(ierr);
   aijmkl_dest->sparse_optimized = PETSC_FALSE;
   if (aijmkl->eager_inspection) {
     ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);

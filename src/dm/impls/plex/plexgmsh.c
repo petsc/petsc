@@ -481,9 +481,9 @@ static PetscErrorCode DMPlexCreateGmsh_ReadNodes_v40(GmshFile *gmsh, int shift, 
         double *xyz = coordinates + v*3;
         if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(cnid, PETSC_ENUM, 1);CHKERRQ(ierr);}
         if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(cxyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
-        ierr = PetscMemcpy(&nid, cnid, sizeof(int));CHKERRQ(ierr);
-        ierr = PetscMemcpy(xyz, cxyz, 3*sizeof(double));CHKERRQ(ierr);
-        if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
+         ierr = PetscMemcpy(&nid, cnid, sizeof(int));CHKERRQ(ierr);
+         ierr = PetscMemcpy(xyz, cxyz, 3*sizeof(double));CHKERRQ(ierr);
+         if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
         if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
         if (nid != v+shift) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unexpected node number %d should be %d", nid, v+shift);
       }
@@ -960,7 +960,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     int         snum;
     float       version;
 
-    ierr = PetscMemzero(gmsh,sizeof(GmshFile));CHKERRQ(ierr);
+    ierr = PetscArrayzero(gmsh,1);CHKERRQ(ierr);
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &gmsh->viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(gmsh->viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(gmsh->viewer, FILE_MODE_READ);CHKERRQ(ierr);
@@ -1056,7 +1056,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     char      line[PETSC_MAX_PATH_LEN];
     PetscBool match;
 
-    ierr = PetscMemzero(gmsh,sizeof(GmshFile));CHKERRQ(ierr);
+    ierr = PetscArrayzero(gmsh,1);CHKERRQ(ierr);
     gmsh->viewer = viewer;
     gmsh->binary = binary;
 

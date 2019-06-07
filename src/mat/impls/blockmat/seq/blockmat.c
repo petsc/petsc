@@ -319,7 +319,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   a    = (Mat_SeqAIJ*) tmpA->data;
   mbs  = m/bs;
   ierr = PetscMalloc3(mbs,&lens,bs,&ii,bs,&ilens);CHKERRQ(ierr);
-  ierr = PetscMemzero(lens,mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(lens,mbs);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
     for (j=0; j<bs; j++) {
@@ -374,7 +374,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     while (PETSC_TRUE) {  /* loops over blocks in block row */
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
-      ierr    = PetscMemzero(llens,bs*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr    = PetscArrayzero(llens,bs);CHKERRQ(ierr);
       for (j=0; j<bs; j++) { /* loop over rows in block */
         while ((ilens[j] > 0 && ii[j][0]/bs <= currentcol)) { /* loop over columns in row */
           ii[j]++;

@@ -121,7 +121,7 @@ PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
   ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
   aijsell      = (Mat_SeqAIJSELL*) A->spptr;
   aijsell_dest = (Mat_SeqAIJSELL*) (*M)->spptr;
-  ierr = PetscMemcpy(aijsell_dest,aijsell,sizeof(Mat_SeqAIJSELL));CHKERRQ(ierr);
+  ierr = PetscArraycpy(aijsell_dest,aijsell,1);CHKERRQ(ierr);
   /* We don't duplicate the shadow matrix -- that will be constructed as needed. */
   aijsell_dest->S = NULL;
   if (aijsell->eager_shadow) {

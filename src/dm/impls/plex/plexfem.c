@@ -376,7 +376,7 @@ static PetscErrorCode DMPlexBasisTransformSetUp_Rotation_Internal(DM dm, void *c
     c1 = PetscCosReal(rc->alpha);s1 = PetscSinReal(rc->alpha);
     rc->R[0] =  c1;rc->R[1] = s1;
     rc->R[2] = -s1;rc->R[3] = c1;
-    ierr = PetscMemcpy(rc->RT, rc->R, PetscSqr(dim) * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(rc->RT, rc->R, PetscSqr(dim));CHKERRQ(ierr);
     DMPlex_Transpose2D_Internal(rc->RT);break;
     break;
   case 3:
@@ -386,7 +386,7 @@ static PetscErrorCode DMPlexBasisTransformSetUp_Rotation_Internal(DM dm, void *c
     rc->R[0] =  c1*c3 - c2*s1*s3;rc->R[1] =  c3*s1    + c1*c2*s3;rc->R[2] = s2*s3;
     rc->R[3] = -c1*s3 - c2*c3*s1;rc->R[4] =  c1*c2*c3 - s1*s3;   rc->R[5] = c3*s2;
     rc->R[6] =  s1*s2;           rc->R[7] = -c1*s2;              rc->R[8] = c2;
-    ierr = PetscMemcpy(rc->RT, rc->R, PetscSqr(dim) * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(rc->RT, rc->R, PetscSqr(dim));CHKERRQ(ierr);
     DMPlex_Transpose3D_Internal(rc->RT);break;
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
@@ -1613,7 +1613,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
     PetscInt   *star = NULL;
     PetscInt    starSize, st, d, fc;
 
-    ierr = PetscMemzero(gradsum, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(gradsum, coordDim*numComponents);CHKERRQ(ierr);
     ierr = DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     for (st = 0; st < starSize*2; st += 2) {
       const PetscInt cell = star[st];
@@ -1629,7 +1629,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
         PetscClassId id;
         PetscInt     Nb, Nc, q, qc = 0;
 
-        ierr = PetscMemzero(grad, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(grad, coordDim*numComponents);CHKERRQ(ierr);
         ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
         ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
@@ -2182,7 +2182,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   /* Loop over label values */
-  ierr = PetscMemzero(integral, Nf * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(integral, Nf);CHKERRQ(ierr);
   for (v = 0; v < numVals; ++v) {
     IS           pointIS;
     PetscInt     numFaces, face;
@@ -2280,7 +2280,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
   }
   ierr = PetscDSGetTotalDimension(prob, &cTotDim);CHKERRQ(ierr);
   ierr = PetscMalloc1(rTotDim*cTotDim,&elemMat);CHKERRQ(ierr);
-  ierr = PetscMemzero(elemMat, rTotDim*cTotDim * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(elemMat, rTotDim*cTotDim);CHKERRQ(ierr);
   for (fieldI = 0, offsetI = 0; fieldI < Nf; ++fieldI) {
     PetscDualSpace   Qref;
     PetscQuadrature  f;
@@ -2643,7 +2643,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
             /* Evaluate coarse basis on contained point */
             ierr = PetscFEGetDimension(fe, &cpdim);CHKERRQ(ierr);
             ierr = PetscFEGetTabulation(fe, 1, x, &B, NULL, NULL);CHKERRQ(ierr);
-            ierr = PetscMemzero(elemMat, cpdim * sizeof(PetscScalar));CHKERRQ(ierr);
+            ierr = PetscArrayzero(elemMat, cpdim);CHKERRQ(ierr);
             /* Get elemMat entries by multiplying by weight */
             for (j = 0; j < cpdim; ++j) {
               for (c = 0; c < Nc; ++c) elemMat[j] += B[j*Nc + c]*qweights[ccell*qNc + c];
@@ -2870,7 +2870,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
           ierr = PetscFEGetTabulation(fe, 1, x, &B, NULL, NULL);CHKERRQ(ierr);
           /* Get elemMat entries by multiplying by weight */
           for (i = 0; i < numFIndices; ++i) {
-            ierr = PetscMemzero(elemMat, cpdim * sizeof(PetscScalar));CHKERRQ(ierr);
+            ierr = PetscArrayzero(elemMat, cpdim);CHKERRQ(ierr);
             for (j = 0; j < cpdim; ++j) {
               for (c = 0; c < Nc; ++c) elemMat[j] += B[j*Nc + c]*Bfine[(ccell*numFIndices + i)*Nc + c]*qweights[ccell*Nc + c]*detJ;
             }
@@ -2883,7 +2883,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
         } else {
           cpdim = 1;
           for (i = 0; i < numFIndices; ++i) {
-            ierr = PetscMemzero(elemMat, cpdim * sizeof(PetscScalar));CHKERRQ(ierr);
+            ierr = PetscArrayzero(elemMat, cpdim);CHKERRQ(ierr);
             for (j = 0; j < cpdim; ++j) {
               for (c = 0; c < Nc; ++c) elemMat[j] += 1.0*1.0*qweights[ccell*Nc + c]*detJ;
             }
@@ -3614,7 +3614,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
       ierr = ISGetPointSubrange(chunkIS, cS, cE, cells);CHKERRQ(ierr);
       ierr = DMPlexGetCellFields(dm, chunkIS, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
       ierr = DMGetWorkArray(dm, numCells*totDim, MPIU_SCALAR, &elemVec);CHKERRQ(ierr);
-      ierr = PetscMemzero(elemVec, numCells*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(elemVec, numCells*totDim);CHKERRQ(ierr);
     }
     /* TODO We will interlace both our field coefficients (u, u_t, uL, uR, etc.) and our output (elemVec, fL, fR). I think this works */
     /* Loop over fields */
@@ -3825,7 +3825,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   /* Get work space */
   wsz  = (((X?1:0) + (X_t?1:0) + (dmAux?1:0))*totDim + ((hasJac?1:0) + (hasPrec?1:0) + (hasDyn?1:0))*totDim*totDim)*chunkSize;
   ierr = DMGetWorkArray(dm, wsz, MPIU_SCALAR, &work);CHKERRQ(ierr);
-  ierr = PetscMemzero(work, wsz * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(work, wsz);CHKERRQ(ierr);
   off      = 0;
   u        = X       ? (sz = chunkSize*totDim,        off += sz, work+off-sz) : NULL;
   u_t      = X_t     ? (sz = chunkSize*totDim,        off += sz, work+off-sz) : NULL;

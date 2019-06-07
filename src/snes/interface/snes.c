@@ -5567,9 +5567,9 @@ PetscErrorCode  SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
 
   /* call Matlab function in ctx with arguments x and y */
 
-  ierr    = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(&ly,&y,sizeof(x));CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&ls,&snes,1);CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&lx,&x,1);CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&ly,&y,1);CHKERRQ(ierr);
   prhs[0] = mxCreateDoubleScalar((double)ls);
   prhs[1] = mxCreateDoubleScalar((double)lx);
   prhs[2] = mxCreateDoubleScalar((double)ly);
@@ -5656,10 +5656,10 @@ PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat A,Mat B,void *ctx
 
   /* call Matlab function in ctx with arguments x and y */
 
-  ierr    = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(&lA,A,sizeof(x));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(&lB,B,sizeof(x));CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&ls,&snes,1);CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&lx,&x,1);CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&lA,A,1);CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&lB,B,1);CHKERRQ(ierr);
   prhs[0] = mxCreateDoubleScalar((double)ls);
   prhs[1] = mxCreateDoubleScalar((double)lx);
   prhs[2] = mxCreateDoubleScalar((double)lA);
@@ -5735,8 +5735,8 @@ PetscErrorCode  SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
-  ierr    = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&ls,&snes,1);CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&lx,&x,1);CHKERRQ(ierr);
   prhs[0] = mxCreateDoubleScalar((double)ls);
   prhs[1] = mxCreateDoubleScalar((double)it);
   prhs[2] = mxCreateDoubleScalar((double)fnorm);

@@ -23,8 +23,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   allowzeropivot = PetscNot(A->erroriffailure);
 
-  ierr = PetscMalloc1(bs2*(n+1),&rtmp);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,(bs2*n+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(bs2*(n+1),&rtmp);CHKERRQ(ierr);
   /* generate work space needed by dense LU factorization */
   ierr = PetscMalloc3(bs,&v_work,bs2,&multiplier,bs,&v_pivots);CHKERRQ(ierr);
 
@@ -32,14 +31,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      ierr = PetscMemzero(rtmp+bs2*ajtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(rtmp+bs2*ajtmp[j],bs2);CHKERRQ(ierr);
     }
     /* load in initial (unfactored row) */
     nz       = ai[r[i]+1] - ai[r[i]];
     ajtmpold = aj + ai[r[i]];
     v        = aa + bs2*ai[r[i]];
     for (j=0; j<nz; j++) {
-      ierr = PetscMemcpy(rtmp+bs2*ic[ajtmpold[j]],v+bs2*j,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(rtmp+bs2*ic[ajtmpold[j]],v+bs2*j,bs2);CHKERRQ(ierr);
     }
     row = *ajtmp++;
     while (row < i) {
@@ -69,7 +68,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
     pj = bj + bi[i];
     nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
-      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
     diag = diag_offset[i] - bi[i];
     /* invert diagonal block */

@@ -82,11 +82,9 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
     vdraw->draw_max = 2*windownumber;
 
     ierr = PetscCalloc3(vdraw->draw_max,&vdraw->draw,vdraw->draw_max,&vdraw->drawlg,vdraw->draw_max,&vdraw->drawaxis);CHKERRQ(ierr);
-
-    ierr = PetscMemcpy(vdraw->draw,tdraw,draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
-    ierr = PetscMemcpy(vdraw->drawlg,drawlg,draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
-    ierr = PetscMemcpy(vdraw->drawaxis,drawaxis,draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
-
+    ierr = PetscArraycpy(vdraw->draw,tdraw,draw_max);CHKERRQ(ierr);
+    ierr = PetscArraycpy(vdraw->drawlg,drawlg,draw_max);CHKERRQ(ierr);
+    ierr = PetscArraycpy(vdraw->drawaxis,drawaxis,draw_max);CHKERRQ(ierr);
     ierr = PetscFree3(tdraw,drawlg,drawaxis);CHKERRQ(ierr);
   }
 
@@ -815,7 +813,7 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
   vdraw->nbounds = nbounds;
   ierr = PetscFree(vdraw->bounds);CHKERRQ(ierr);
   ierr = PetscMalloc1(2*nbounds,&vdraw->bounds);CHKERRQ(ierr);
-  ierr = PetscMemcpy(vdraw->bounds,bounds,2*nbounds*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(vdraw->bounds,bounds,2*nbounds);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

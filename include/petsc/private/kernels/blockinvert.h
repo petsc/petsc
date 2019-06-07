@@ -136,7 +136,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscScalar    _one = 1.0,_zero = 0.0;       \
     PetscErrorCode _ierr;                        \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(ierr); \
-    _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
+    _ierr = PetscArraycpy((W),(A),(bs)*(bs));CHKERRQ(_ierr); \
     PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_one,(W),&(_bbs),(B),&(_bbs),&_zero,(A),&(_bbs))); \
   }
 
@@ -372,7 +372,7 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
 */
 #define PetscKernel_A_gets_A_times_B(bs,A,B,W) \
   {                                              \
-    PetscErrorCode _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
+    PetscErrorCode _ierr = PetscArraycpy((W),(A),(bs)*(bs));CHKERRQ(_ierr); \
     msgemmi_(&bs,A,B,W); \
   }
 

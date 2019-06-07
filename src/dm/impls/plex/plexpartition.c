@@ -201,7 +201,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
       ierr = PetscSortRemoveDupsInt(&numEdges, &graph[start]);CHKERRQ(ierr);
       ierr = PetscSectionSetDof(section, p, numEdges);CHKERRQ(ierr);
       ierr = PetscSegBufferGetInts(adjBuffer, numEdges, &edges);CHKERRQ(ierr);
-      ierr = PetscMemcpy(edges, &graph[start], numEdges*sizeof(*edges));CHKERRQ(ierr);
+      ierr = PetscArraycpy(edges, &graph[start], numEdges);CHKERRQ(ierr);
     }
     ierr = PetscFree(vOffsets);CHKERRQ(ierr);
     ierr = PetscFree(graph);CHKERRQ(ierr);
@@ -503,7 +503,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
 
       ierr = PetscMalloc1(off[numCells], &adj);CHKERRQ(ierr);
       ierr = PetscMalloc1(numCells+1, &tmp);CHKERRQ(ierr);
-      ierr = PetscMemcpy(tmp, off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(tmp, off, numCells+1);CHKERRQ(ierr);
       /* Get neighboring cells */
       for (f = fStart; f < fEnd; ++f) {
         const PetscInt *support;
@@ -1792,7 +1792,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   wgtflag |= 2; /* have weights on graph vertices */
 
   if (nparts == 1) {
-    ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(assignment, nvtxs);CHKERRQ(ierr);
   } else {
     for (p = 0; !vtxdist[p+1] && p < size; ++p);
     if (vtxdist[p+1] == vtxdist[size]) {
@@ -2085,7 +2085,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
   }
 
   if (nparts == 1) {
-    ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(assignment, nvtxs);CHKERRQ(ierr);
   } else { /* Weight cells by dofs on cell by default */
     PetscSection section;
 
@@ -3153,7 +3153,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     PetscInt        temp=0;
     const PetscInt *cols;
     ierr = MatGetRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
-    ierr = PetscMemcpy(&adjncy[counter], cols, temp*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&adjncy[counter], cols, temp);CHKERRQ(ierr);
     counter += temp;
     xadj[i+1] = counter;
     ierr = MatRestoreRow(A, cumSumVertices[rank] + i, &temp, &cols, NULL);CHKERRQ(ierr);
@@ -3225,7 +3225,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
         PetscInt        temp=0;
         const PetscInt *cols;
         ierr = MatGetRow(As, i, &temp, &cols, NULL);CHKERRQ(ierr);
-        ierr = PetscMemcpy(&adjncy_g[counter], cols, temp*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&adjncy_g[counter], cols, temp);CHKERRQ(ierr);
         counter += temp;
         xadj_g[i+1] = counter;
         ierr = MatRestoreRow(As, i, &temp, &cols, NULL);CHKERRQ(ierr);

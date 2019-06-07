@@ -335,7 +335,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
        compute the basis functions to compute local operators */
     ierr = DMMoabFEMComputeBasis(user->dim, nconn, vpos, quadratureObj, phypts, jxw, phi, NULL);CHKERRQ(ierr);
 
-    ierr = PetscMemzero(localv, sizeof(PetscScalar) * nconn);CHKERRQ(ierr);
+    ierr = PetscArrayzero(localv, nconn);CHKERRQ(ierr);
     /* Compute function over the locally owned part of the grid */
     for (q = 0; q < npoints; ++q) {
       const double ff = ForcingFunction(&phypts[3 * q], user);
@@ -435,7 +435,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
        compute the basis functions and the derivatives wrt x, y and z directions */
     ierr = DMMoabFEMComputeBasis(user->dim, nconn, vpos, quadratureObj, phypts, jxw, phi, dphi);CHKERRQ(ierr);
 
-    ierr = PetscMemzero(array, nconn * nconn * sizeof(PetscScalar));
+    ierr = PetscArrayzero(array, nconn * nconn);
 
     /* Compute function over the locally owned part of the grid */
     for (q = 0; q < npoints; ++q) {

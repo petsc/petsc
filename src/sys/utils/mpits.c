@@ -207,7 +207,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMalloc1(size,&iflags);CHKERRQ(ierr);
-  ierr = PetscMemzero(iflags,size*sizeof(*iflags));CHKERRQ(ierr);
+  ierr = PetscArrayzero(iflags,size);CHKERRQ(ierr);
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
   ierr = MPI_Reduce_scatter_block(iflags,&nrecvs,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr = PetscFree(iflags);CHKERRQ(ierr);

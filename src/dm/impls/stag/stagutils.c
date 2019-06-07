@@ -1038,7 +1038,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm,PetscInt const *lx,PetscInt const 
       if (!stag->l[d]) {
         ierr = PetscMalloc1(stag->nRanks[d], &stag->l[d]);CHKERRQ(ierr);
       }
-      ierr = PetscMemcpy(stag->l[d], lin[d], stag->nRanks[d]*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(stag->l[d], lin[d], stag->nRanks[d]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

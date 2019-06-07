@@ -576,15 +576,15 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
   t->order = order;
   t->s     = s;
   ierr     = PetscMalloc6(s*s,&t->At,s,&t->bt,s,&t->ct,s*s,&t->A,s,&t->b,s,&t->c);CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->At,At,s*s*sizeof(At[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
-  if (bt) { ierr = PetscMemcpy(t->bt,bt,s*sizeof(bt[0]));CHKERRQ(ierr); }
+  ierr     = PetscArraycpy(t->At,At,s*s);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->A,A,s*s);CHKERRQ(ierr);
+  if (bt) { ierr = PetscArraycpy(t->bt,bt,s);CHKERRQ(ierr); }
   else for (i=0; i<s; i++) t->bt[i] = At[(s-1)*s+i];
-  if (b)  { ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr); }
+  if (b)  { ierr = PetscArraycpy(t->b,b,s);CHKERRQ(ierr); }
   else for (i=0; i<s; i++) t->b[i] = t->bt[i];
-  if (ct) { ierr = PetscMemcpy(t->ct,ct,s*sizeof(ct[0]));CHKERRQ(ierr); }
+  if (ct) { ierr = PetscArraycpy(t->ct,ct,s);CHKERRQ(ierr); }
   else for (i=0; i<s; i++) for (j=0,t->ct[i]=0; j<s; j++) t->ct[i] += At[i*s+j];
-  if (c)  { ierr = PetscMemcpy(t->c,c,s*sizeof(c[0]));CHKERRQ(ierr); }
+  if (c)  { ierr = PetscArraycpy(t->c,c,s);CHKERRQ(ierr); }
   else for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
   t->stiffly_accurate = PETSC_TRUE;
   for (i=0; i<s; i++) if (t->At[(s-1)*s+i] != t->bt[i]) t->stiffly_accurate = PETSC_FALSE;
@@ -594,14 +594,14 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
   t->FSAL_implicit = (PetscBool)(t->explicit_first_stage && t->stiffly_accurate);
   if (bembedt) {
     ierr = PetscMalloc2(s,&t->bembedt,s,&t->bembed);CHKERRQ(ierr);
-    ierr = PetscMemcpy(t->bembedt,bembedt,s*sizeof(bembedt[0]));CHKERRQ(ierr);
-    ierr = PetscMemcpy(t->bembed,bembed ? bembed : bembedt,s*sizeof(bembed[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->bembedt,bembedt,s);CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->bembed,bembed ? bembed : bembedt,s);CHKERRQ(ierr);
   }
 
   t->pinterp     = pinterp;
   ierr           = PetscMalloc2(s*pinterp,&t->binterpt,s*pinterp,&t->binterp);CHKERRQ(ierr);
-  ierr           = PetscMemcpy(t->binterpt,binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
-  ierr           = PetscMemcpy(t->binterp,binterp ? binterp : binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
+  ierr           = PetscArraycpy(t->binterpt,binterpt,s*pinterp);CHKERRQ(ierr);
+  ierr           = PetscArraycpy(t->binterp,binterp ? binterp : binterpt,s*pinterp);CHKERRQ(ierr);
   link->next     = ARKTableauList;
   ARKTableauList = link;
   PetscFunctionReturn(0);

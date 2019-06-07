@@ -321,7 +321,7 @@ PETSC_EXTERN void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,Pe
 
   *ierr = MPI_Comm_size(PetscObjectComm((PetscObject)*x),&size);if (*ierr) return;
   *ierr = VecGetOwnershipRanges(*x,&r);if (*ierr) return;
-  *ierr = PetscMemcpy(range,r,(size+1)*sizeof(PetscInt));
+  *ierr = PetscArraycpy(range,r,size+1);
 }
 
 PETSC_EXTERN void PETSC_STDCALL vecsetoptionsprefix_(Vec *v,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

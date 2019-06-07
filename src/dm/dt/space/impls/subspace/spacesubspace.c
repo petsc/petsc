@@ -531,22 +531,22 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
   case PETSC_COPY_VALUES:
     if (x) {
       ierr = PetscMalloc1(origDim,&subsp->x_alloc);CHKERRQ(ierr);
-      ierr = PetscMemcpy(subsp->x_alloc,x,origDim*sizeof(*subsp->x_alloc));CHKERRQ(ierr);
+      ierr = PetscArraycpy(subsp->x_alloc,x,origDim);CHKERRQ(ierr);
       subsp->x = subsp->x_alloc;
     }
     if (Jx) {
       ierr = PetscMalloc1(origDim * subDim,&subsp->Jx_alloc);CHKERRQ(ierr);
-      ierr = PetscMemcpy(subsp->Jx_alloc,Jx,origDim * subDim*sizeof(*subsp->Jx_alloc));CHKERRQ(ierr);
+      ierr = PetscArraycpy(subsp->Jx_alloc,Jx,origDim * subDim);CHKERRQ(ierr);
       subsp->Jx = subsp->Jx_alloc;
     }
     if (u) {
       ierr = PetscMalloc1(subNc,&subsp->u_alloc);CHKERRQ(ierr);
-      ierr = PetscMemcpy(subsp->u_alloc,u,subNc*sizeof(*subsp->u_alloc));CHKERRQ(ierr);
+      ierr = PetscArraycpy(subsp->u_alloc,u,subNc);CHKERRQ(ierr);
       subsp->u = subsp->u_alloc;
     }
     if (Ju) {
       ierr = PetscMalloc1(origNc * subNc,&subsp->Ju_alloc);CHKERRQ(ierr);
-      ierr = PetscMemcpy(subsp->Ju_alloc,Ju,origNc * subNc*sizeof(*subsp->Ju_alloc));CHKERRQ(ierr);
+      ierr = PetscArraycpy(subsp->Ju_alloc,Ju,origNc * subNc);CHKERRQ(ierr);
       subsp->Ju = subsp->Ju_alloc;
     }
     break;

@@ -274,7 +274,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
     ierr = PetscSectionGetConstraintIndices(s1, p, &idx1);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintIndices(s2, p, &idx2);CHKERRQ(ierr);
-    ierr = PetscMemcmp(idx1, idx2, ncdof*sizeof(PetscInt), congruent);CHKERRQ(ierr);
+    ierr = PetscArraycmp(idx1, idx2, ncdof, congruent);CHKERRQ(ierr);
     if (!(*congruent)) goto not_congruent;
   }
 
@@ -302,7 +302,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
       ierr = PetscSectionGetFieldConstraintIndices(s1, p, f, &idx1);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldConstraintIndices(s2, p, f, &idx2);CHKERRQ(ierr);
-      ierr = PetscMemcmp(idx1, idx2, nfcdof*sizeof(PetscInt), congruent);CHKERRQ(ierr);
+      ierr = PetscArraycmp(idx1, idx2, nfcdof, congruent);CHKERRQ(ierr);
       if (!(*congruent)) goto not_congruent;
     }
   }
@@ -545,7 +545,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
   s->pStart = pStart;
   s->pEnd   = pEnd;
   ierr = PetscMalloc2((pEnd - pStart), &s->atlasDof, (pEnd - pStart), &s->atlasOff);CHKERRQ(ierr);
-  ierr = PetscMemzero(s->atlasDof, (pEnd - pStart)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(s->atlasDof, pEnd - pStart);CHKERRQ(ierr);
   for (f = 0; f < s->numFields; ++f) {
     ierr = PetscSectionSetChart(s->field[f], pStart, pEnd);CHKERRQ(ierr);
   }
@@ -1181,7 +1181,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     if (nroots < pEnd) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "SF roots %D < pEnd %D", nroots, pEnd);
     if (maxleaf >= nroots) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Max local leaf %D >= nroots %D", maxleaf, nroots);
     ierr = PetscMalloc2(nroots,&neg,nlocal,&recv);CHKERRQ(ierr);
-    ierr = PetscMemzero(neg,nroots*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(neg,nroots);CHKERRQ(ierr);
   }
   /* Mark all local points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
@@ -1192,9 +1192,9 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     if (neg) neg[p] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(gs);CHKERRQ(ierr);
-  if (gs->bcIndices) {ierr = PetscMemcpy(gs->bcIndices, s->bcIndices, sizeof(PetscInt) * (gs->bc->atlasOff[gs->bc->pEnd-gs->bc->pStart-1] + gs->bc->atlasDof[gs->bc->pEnd-gs->bc->pStart-1]));CHKERRQ(ierr);}
+  if (gs->bcIndices) {ierr = PetscArraycpy(gs->bcIndices, s->bcIndices,gs->bc->atlasOff[gs->bc->pEnd-gs->bc->pStart-1] + gs->bc->atlasDof[gs->bc->pEnd-gs->bc->pStart-1]);CHKERRQ(ierr);}
   if (nroots >= 0) {
-    ierr = PetscMemzero(recv,nlocal*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(recv,nlocal);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
@@ -1225,7 +1225,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   if (s->perm) {ierr = ISRestoreIndices(s->perm, &pind);CHKERRQ(ierr);}
   /* Put in negative offsets for ghost points */
   if (nroots >= 0) {
-    ierr = PetscMemzero(recv,nlocal*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(recv,nlocal);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
@@ -2465,7 +2465,7 @@ PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, 
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(clSize, &section->clPerm);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject) obj, clSize*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(section->clPerm, clPerm, clSize*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(section->clPerm, clPerm, clSize);CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) {
     section->clPerm = clPerm;
   } else SETERRQ(PetscObjectComm(obj), PETSC_ERR_SUP, "Do not support borrowed arrays");
@@ -2994,8 +2994,8 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
     }
     link->next   = sym->workout;
     sym->workout = link;
-    ierr = PetscMemzero((void *) link->perms,numPoints * sizeof(const PetscInt *));CHKERRQ(ierr);
-    ierr = PetscMemzero((void *) link->rots,numPoints * sizeof(const PetscScalar *));CHKERRQ(ierr);
+    ierr = PetscArrayzero((void *) link->perms,numPoints);CHKERRQ(ierr);
+    ierr = PetscArrayzero((void *) link->rots,numPoints);CHKERRQ(ierr);
     ierr = (*sym->ops->getpoints) (sym, section, numPoints, points, link->perms, link->rots);CHKERRQ(ierr);
     if (perms) *perms = link->perms;
     if (rots)  *rots  = link->rots;

@@ -126,7 +126,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     ierr = MatPartitioningSetType(hpart->coarseMatPart,MATPARTITIONINGPTSCOTCH);CHKERRQ(ierr);
     ierr = PetscStrallocpy(MATPARTITIONINGPTSCOTCH,&hpart->coarseparttype);CHKERRQ(ierr);
 #else
-    SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype"); 
+    SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype");
 #endif
   } else {
     ierr = MatPartitioningSetType(hpart->coarseMatPart,hpart->coarseparttype);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   /* copy over vertex weights */
   if(part->vertex_weights){
     ierr = PetscMalloc1(mat_localsize,&coarse_vertex_weights);CHKERRQ(ierr);
-    ierr = PetscMemcpy(coarse_vertex_weights,part->vertex_weights,sizeof(PetscInt)*mat_localsize);CHKERRQ(ierr);
+    ierr = PetscArraycpy(coarse_vertex_weights,part->vertex_weights,mat_localsize);CHKERRQ(ierr);
     ierr = MatPartitioningSetVertexWeights(hpart->coarseMatPart,coarse_vertex_weights);CHKERRQ(ierr);
   }
 
@@ -162,7 +162,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
       ierr = ISGetLocalSize(svweights,&nsvwegihts);CHKERRQ(ierr);
       ierr = PetscMalloc1(nsvwegihts,&fp_vweights);CHKERRQ(ierr);
       ierr = ISGetIndices(svweights,&svweights_indices);CHKERRQ(ierr);
-      ierr = PetscMemcpy(fp_vweights,svweights_indices,nsvwegihts*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(fp_vweights,svweights_indices,nsvwegihts);CHKERRQ(ierr);
       ierr = ISRestoreIndices(svweights,&svweights_indices);CHKERRQ(ierr);
       ierr = ISDestroy(&svweights);CHKERRQ(ierr);
     }
@@ -519,7 +519,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   /* copy over vertex weights */
   if(part->vertex_weights){
     ierr = PetscMalloc1(adj->rmap->n,&vertex_weights);CHKERRQ(ierr);
-    ierr = PetscMemcpy(vertex_weights,part->vertex_weights,sizeof(PetscInt)*adj->rmap->n);CHKERRQ(ierr);
+    ierr = PetscArraycpy(vertex_weights,part->vertex_weights,adj->rmap->n);CHKERRQ(ierr);
     ierr = MatPartitioningSetVertexWeights(hpart->improver,vertex_weights);CHKERRQ(ierr);
   }
   ierr = MatPartitioningImprove(hpart->improver,partitioning);CHKERRQ(ierr);

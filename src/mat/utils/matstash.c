@@ -735,12 +735,12 @@ static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode in
         ierr = PetscSegBufferGet(stash->segsendblocks,1,&block);CHKERRQ(ierr);
         block->row = row[rowstart];
         block->col = col[colstart];
-        ierr = PetscMemcpy(block->vals,valptr[perm[colstart]],bs2*sizeof(block->vals[0]));CHKERRQ(ierr);
+        ierr = PetscArraycpy(block->vals,valptr[perm[colstart]],bs2);CHKERRQ(ierr);
         for (j=colstart+1; j<i && col[j] == col[colstart]; j++) { /* Add any extra stashed blocks at the same (row,col) */
           if (insertmode == ADD_VALUES) {
             for (l=0; l<bs2; l++) block->vals[l] += valptr[perm[j]][l];
           } else {
-            ierr = PetscMemcpy(block->vals,valptr[perm[j]],bs2*sizeof(block->vals[0]));CHKERRQ(ierr);
+            ierr = PetscArraycpy(block->vals,valptr[perm[j]],bs2);CHKERRQ(ierr);
           }
         }
         colstart = j;

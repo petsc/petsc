@@ -128,7 +128,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
 #endif
   } break;
   case INSERT_VALUES:
-    ierr = PetscMemcpy(gv,lv,red->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(gv,lv,red->n);CHKERRQ(ierr);
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"InsertMode not supported");
   }
@@ -155,7 +155,7 @@ static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm,Vec g,InsertMode imod
   ierr = VecGetArray(l,&lv);CHKERRQ(ierr);
   switch (imode) {
   case INSERT_VALUES:
-    if (red->n) {ierr = PetscMemcpy(lv,gv,red->n*sizeof(PetscScalar));CHKERRQ(ierr);}
+    if (red->n) {ierr = PetscArraycpy(lv,gv,red->n);CHKERRQ(ierr);}
     ierr = MPI_Bcast(lv,red->N,MPIU_SCALAR,red->rank,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"InsertMode not supported");

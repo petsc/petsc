@@ -149,9 +149,9 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatRe
     c = (Mat_SeqSBAIJ*)((*B)->data);
 
     if (c->mbs!=nrows || c->nbs!=ncols || (*B)->rmap->bs!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
-    ierr = PetscMemcmp(c->ilen,lens,c->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
+    ierr = PetscArraycmp(c->ilen,lens,c->mbs,&flag);CHKERRQ(ierr);
     if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
-    ierr = PetscMemzero(c->ilen,c->mbs*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(c->ilen,c->mbs);CHKERRQ(ierr);
     C    = *B;
   } else {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatRe
     for (k=kstart; k<kend; k++) {
       if ((tcol=ssmap[a->j[k]])) {
         *mat_j++ = tcol - 1;
-        ierr     = PetscMemcpy(mat_a,a->a+k*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+        ierr     = PetscArraycpy(mat_a,a->a+k*bs2,bs2);CHKERRQ(ierr);
         mat_a   += bs2;
         (*mat_ilen)++;
       }
@@ -223,7 +223,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scal
    and form the IS with compressed IS */
   maxmnbs = PetscMax(a->mbs,a->nbs);
   ierr = PetscMalloc2(maxmnbs,&vary,maxmnbs,&iary);CHKERRQ(ierr);
-  ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(vary,a->mbs);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
   for (i=0; i<a->mbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
@@ -235,7 +235,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scal
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
 
-  ierr = PetscMemzero(vary,(a->nbs)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(vary,a->nbs);CHKERRQ(ierr);
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
   for (i=0; i<a->nbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc");
@@ -684,7 +684,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 
     if (ncols > 0) {
       workt = work;
-      ierr  = PetscMemzero(workt,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr  = PetscArrayzero(workt,ncols);CHKERRQ(ierr);
       PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
       for (j=0; j<n; j++) {
         zb = z_ptr + bs*(*idx++);
@@ -1145,7 +1145,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     }
     if (ncols > 0) {
       workt = work;
-      ierr  = PetscMemzero(workt,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr  = PetscArrayzero(workt,ncols);CHKERRQ(ierr);
       PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
       for (j=0; j<n; j++) {
         zb = z_ptr + bs*(*idx++);
@@ -1277,15 +1277,15 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscBool * flg)
   }
 
   /* if the a->i are the same */
-  ierr = PetscMemcmp(a->i,b->i,(a->mbs+1)*sizeof(PetscInt),flg);CHKERRQ(ierr);
+  ierr = PetscArraycmp(a->i,b->i,a->mbs+1,flg);CHKERRQ(ierr);
   if (!*flg) PetscFunctionReturn(0);
 
   /* if a->j are the same */
-  ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),flg);CHKERRQ(ierr);
+  ierr = PetscArraycmp(a->j,b->j,a->nz,flg);CHKERRQ(ierr);
   if (!*flg) PetscFunctionReturn(0);
 
   /* if a->a are the same */
-  ierr = PetscMemcmp(a->a,b->a,(a->nz)*(A->rmap->bs)*(A->rmap->bs)*sizeof(PetscScalar),flg);CHKERRQ(ierr);
+  ierr = PetscArraycmp(a->a,b->a,(a->nz)*(A->rmap->bs)*(A->rmap->bs),flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1408,7 +1408,7 @@ PetscErrorCode MatZeroEntries_SeqSBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(a->a,a->bs2*a->i[a->mbs]*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(a->a,a->bs2*a->i[a->mbs]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -110,7 +110,7 @@ PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin)
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ya,xa,xin->map->n);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
