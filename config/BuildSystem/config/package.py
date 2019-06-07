@@ -606,7 +606,7 @@ If its a commit/tag that is not found - perhaps the repo URL changed. If so, del
 If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       if self.gitcommit != 'HEAD':
         try:
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
+          config.base.Configure.executeShellCommand([self.sourceControl.git, '-c', 'user.name=petsc-configure', '-c', 'user.email=petsc@configure', 'stash'], cwd=self.packageDir, log = self.log)
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
         except:
           raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
