@@ -417,7 +417,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 }
 
 /*@
-     MatPinToCPU - marks a matrix to temprarily stay on the CPU and perform computations on the CPU
+     MatPinToCPU - marks a matrix to temporarily stay on the CPU and perform computations on the CPU
 
    Input Parameters:
 +   A - the matrix
