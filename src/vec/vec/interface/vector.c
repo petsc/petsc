@@ -1814,8 +1814,9 @@ PetscErrorCode VecSetInf(Vec xin)
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /*@
-     VecPinToCPU - marks a vector to temprarily stay on the CPU and perform computations on the CPU
+     VecPinToCPU - marks a vector to temporarily stay on the CPU and perform computations on the CPU
 
    Input Parameters:
 +   v - the vector
