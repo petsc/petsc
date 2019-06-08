@@ -102,7 +102,7 @@ PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filen
   char           **myargs = args;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&myargc,&myargs,filename,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&myargc,&myargs,filename,help);if (ierr) return ierr;
   ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   PetscBeganMPI = PETSC_FALSE;
   PetscFunctionReturn(ierr);
