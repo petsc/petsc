@@ -111,6 +111,8 @@ SNES Object: 5 MPI processes
                                       ICNTL(31) (factors is discarded in the solve phase):    0 
                                       ICNTL(33) (compute determinant):                        0 
                                       ICNTL(35) (activate BLR based factorization):           0 
+                                      ICNTL(36) (choice of BLR factorization variant):        0 
+                                      ICNTL(38) (estimated compression rate of LU factors):   333 
                                       CNTL(1) (relative pivoting threshold):      0.01 
                                       CNTL(2) (stopping criterion of refinement): 1.49012e-08 
                                       CNTL(3) (absolute pivoting threshold):      0. 
@@ -162,6 +164,11 @@ SNES Object: 5 MPI processes
                                       INFOG(32) (after analysis: type of analysis done): 1
                                       INFOG(33) (value used for ICNTL(8)): 7
                                       INFOG(34) (exponent of the determinant if determinant is requested): 0
+                                      INFOG(35) (after factorization: number of entries taking into account BLR factor compression - sum over all processors): 10386
+                                      INFOG(36) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - value on the most memory consuming processor): 0 
+                                      INFOG(37) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - sum over all processors): 0 
+                                      INFOG(38) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - value on the most memory consuming processor): 0 
+                                      INFOG(39) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - sum over all processors): 0 
                           linear system matrix = precond matrix:
                           Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
                             type: seqaij
@@ -284,6 +291,8 @@ SNES Object: 5 MPI processes
                                               ICNTL(31) (factors is discarded in the solve phase):    0 
                                               ICNTL(33) (compute determinant):                        0 
                                               ICNTL(35) (activate BLR based factorization):           0 
+                                              ICNTL(36) (choice of BLR factorization variant):        0 
+                                              ICNTL(38) (estimated compression rate of LU factors):   333 
                                               CNTL(1) (relative pivoting threshold):      0.01 
                                               CNTL(2) (stopping criterion of refinement): 1.49012e-08 
                                               CNTL(3) (absolute pivoting threshold):      0. 
@@ -335,6 +344,11 @@ SNES Object: 5 MPI processes
                                               INFOG(32) (after analysis: type of analysis done): 1
                                               INFOG(33) (value used for ICNTL(8)): 7
                                               INFOG(34) (exponent of the determinant if determinant is requested): 0
+                                              INFOG(35) (after factorization: number of entries taking into account BLR factor compression - sum over all processors): 10386
+                                              INFOG(36) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - value on the most memory consuming processor): 0 
+                                              INFOG(37) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - sum over all processors): 0 
+                                              INFOG(38) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - value on the most memory consuming processor): 0 
+                                              INFOG(39) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - sum over all processors): 0 
                                   linear system matrix = precond matrix:
                                   Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
                                     type: seqaij
@@ -469,6 +483,8 @@ SNES Object: 5 MPI processes
                         ICNTL(31) (factors is discarded in the solve phase):    0 
                         ICNTL(33) (compute determinant):                        0 
                         ICNTL(35) (activate BLR based factorization):           0 
+                        ICNTL(36) (choice of BLR factorization variant):        0 
+                        ICNTL(38) (estimated compression rate of LU factors):   333 
                         CNTL(1) (relative pivoting threshold):      0.01 
                         CNTL(2) (stopping criterion of refinement): 1.49012e-08 
                         CNTL(3) (absolute pivoting threshold):      0. 
@@ -520,6 +536,11 @@ SNES Object: 5 MPI processes
                         INFOG(32) (after analysis: type of analysis done): 1
                         INFOG(33) (value used for ICNTL(8)): 7
                         INFOG(34) (exponent of the determinant if determinant is requested): 0
+                        INFOG(35) (after factorization: number of entries taking into account BLR factor compression - sum over all processors): 10386
+                        INFOG(36) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - value on the most memory consuming processor): 0 
+                        INFOG(37) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - sum over all processors): 0 
+                        INFOG(38) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - value on the most memory consuming processor): 0 
+                        INFOG(39) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - sum over all processors): 0 
             linear system matrix = precond matrix:
             Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
               type: seqaij
@@ -579,6 +600,8 @@ SNES Object: 5 MPI processes
                         ICNTL(31) (factors is discarded in the solve phase):    0 
                         ICNTL(33) (compute determinant):                        0 
                         ICNTL(35) (activate BLR based factorization):           0 
+                        ICNTL(36) (choice of BLR factorization variant):        0 
+                        ICNTL(38) (estimated compression rate of LU factors):   333 
                         CNTL(1) (relative pivoting threshold):      0.01 
                         CNTL(2) (stopping criterion of refinement): 1.49012e-08 
                         CNTL(3) (absolute pivoting threshold):      0. 
@@ -630,6 +653,11 @@ SNES Object: 5 MPI processes
                         INFOG(32) (after analysis: type of analysis done): 1
                         INFOG(33) (value used for ICNTL(8)): 7
                         INFOG(34) (exponent of the determinant if determinant is requested): 0
+                        INFOG(35) (after factorization: number of entries taking into account BLR factor compression - sum over all processors): 14655
+                        INFOG(36) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - value on the most memory consuming processor): 0 
+                        INFOG(37) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - sum over all processors): 0 
+                        INFOG(38) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - value on the most memory consuming processor): 0 
+                        INFOG(39) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - sum over all processors): 0 
             linear system matrix = precond matrix:
             Mat Object: (fetidp_bddc_pc_bddc_neumann_) 1 MPI processes
               type: seqaij

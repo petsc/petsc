@@ -1289,7 +1289,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->data;
   PetscErrorCode ierr;
-  PetscInt       icntl,info[40],i,ninfo=40;
+  PetscInt       icntl,info[80],i,ninfo=80;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -1345,7 +1345,9 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   ierr = PetscOptionsInt("-mat_mumps_icntl_31","ICNTL(31): indicates which factors may be discarded during factorization","None",mumps->id.ICNTL(31),&mumps->id.ICNTL(31),NULL);CHKERRQ(ierr);
   /* ierr = PetscOptionsInt("-mat_mumps_icntl_32","ICNTL(32): performs the forward elemination of the right-hand sides during factorization","None",mumps->id.ICNTL(32),&mumps->id.ICNTL(32),NULL);CHKERRQ(ierr);  -- not supported by PETSc API */
   ierr = PetscOptionsInt("-mat_mumps_icntl_33","ICNTL(33): compute determinant","None",mumps->id.ICNTL(33),&mumps->id.ICNTL(33),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_35","ICNTL(35): activates Block Lock Rank (BLR) based factorization","None",mumps->id.ICNTL(35),&mumps->id.ICNTL(35),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_35","ICNTL(35): activates Block Low Rank (BLR) based factorization","None",mumps->id.ICNTL(35),&mumps->id.ICNTL(35),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_36","ICNTL(36): choice of BLR factorization variant","None",mumps->id.ICNTL(36),&mumps->id.ICNTL(36),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_38","ICNTL(38): estimated compression rate of LU factors with BLR","None",mumps->id.ICNTL(38),&mumps->id.ICNTL(38),NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",mumps->id.CNTL(1),&mumps->id.CNTL(1),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",mumps->id.CNTL(2),&mumps->id.CNTL(2),NULL);CHKERRQ(ierr);
@@ -1358,11 +1360,11 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsIntArray("-mat_mumps_view_info","request INFO local to each processor","",info,&ninfo,NULL);CHKERRQ(ierr);
   if (ninfo) {
-    if (ninfo > 40) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"number of INFO %d must <= 40\n",ninfo);
+    if (ninfo > 80) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"number of INFO %d must <= 80\n",ninfo);
     ierr = PetscMalloc1(ninfo,&mumps->info);CHKERRQ(ierr);
     mumps->ninfo = ninfo;
     for (i=0; i<ninfo; i++) {
-      if (info[i] < 0 || info[i]>40) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %d must between 1 and 40\n",ninfo);
+      if (info[i] < 0 || info[i]>80) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %d must between 1 and 80\n",ninfo);
       else  mumps->info[i] = info[i];
     }
   }
@@ -1408,7 +1410,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
      For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
    */
-  ierr = MPI_Bcast(mumps->id.icntl,40,MPIU_INT, 0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 Manual Section 9 */
+  ierr = MPI_Bcast(mumps->id.icntl,60,MPIU_INT, 0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 Manual Section 9 */
   ierr = MPI_Bcast(mumps->id.cntl, 15,MPIU_REAL,0,mumps->omp_comm);CHKERRQ(ierr);
 
   mumps->scat_rhs     = NULL;
@@ -1440,7 +1442,7 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactor
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Bcast(mumps->id.infog, 40,MPIU_INT, 0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 manual p82 */
+  ierr = MPI_Bcast(mumps->id.infog, 80,MPIU_INT, 0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 manual p82 */
   ierr = MPI_Bcast(mumps->id.rinfog,20,MPIU_REAL,0,mumps->omp_comm);CHKERRQ(ierr);
   if (mumps->id.INFOG(1) < 0) {
     if (A->erroriffailure) {
@@ -1727,6 +1729,8 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(31) (factors is discarded in the solve phase):    %d \n",mumps->id.ICNTL(31));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(33) (compute determinant):                        %d \n",mumps->id.ICNTL(33));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(35) (activate BLR based factorization):           %d \n",mumps->id.ICNTL(35));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(36) (choice of BLR factorization variant):        %d \n",mumps->id.ICNTL(36));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(38) (estimated compression rate of LU factors):   %d \n",mumps->id.ICNTL(38));CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",mumps->id.CNTL(1));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",mumps->id.CNTL(2));CHKERRQ(ierr);
@@ -1759,7 +1763,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",mumps->myid,mumps->id.INFO(23));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
-      if (mumps->ninfo && mumps->ninfo <= 40){
+      if (mumps->ninfo && mumps->ninfo <= 80){
         PetscInt i;
         for (i=0; i<mumps->ninfo; i++){
           ierr = PetscViewerASCIIPrintf(viewer, "  INFO(%d): \n",mumps->info[i]);CHKERRQ(ierr);
@@ -1804,6 +1808,11 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(32) (after analysis: type of analysis done): %d\n",mumps->id.INFOG(32));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(33) (value used for ICNTL(8)): %d\n",mumps->id.INFOG(33));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(34) (exponent of the determinant if determinant is requested): %d\n",mumps->id.INFOG(34));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(35) (after factorization: number of entries taking into account BLR factor compression - sum over all processors): %d\n",mumps->id.INFOG(35));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(36) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - value on the most memory consuming processor): %d \n",mumps->id.INFOG(36));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(37) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - sum over all processors): %d \n",mumps->id.INFOG(37));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(38) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - value on the most memory consuming processor): %d \n",mumps->id.INFOG(38));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(39) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - sum over all processors): %d \n",mumps->id.INFOG(39));CHKERRQ(ierr);
       }
     }
   }
@@ -2445,11 +2454,15 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 .  -mat_mumps_icntl_30 - ICNTL(30): compute user-specified set of entries in inv(A)
 .  -mat_mumps_icntl_31 - ICNTL(31): indicates which factors may be discarded during factorization
 .  -mat_mumps_icntl_33 - ICNTL(33): compute determinant
+.  -mat_mumps_icntl_35 - ICNTL(35): level of activation of BLR (Block Low-Rank) feature
+.  -mat_mumps_icntl_36 - ICNTL(36): controls the choice of BLR factorization variant
+.  -mat_mumps_icntl_38 - ICNTL(38): sets the estimated compression rate of LU factors with BLR
 .  -mat_mumps_cntl_1  - CNTL(1): relative pivoting threshold
 .  -mat_mumps_cntl_2  -  CNTL(2): stopping criterion of refinement
 .  -mat_mumps_cntl_3 - CNTL(3): absolute pivoting threshold
 .  -mat_mumps_cntl_4 - CNTL(4): value for static pivoting
 .  -mat_mumps_cntl_5 - CNTL(5): fixation for null pivots
+.  -mat_mumps_cntl_7 - CNTL(7): precision of the dropping parameter used during BLR factorization
 -  -mat_mumps_use_omp_threads [m] - run MUMPS in MPI+OpenMP hybrid mode as if omp_set_num_threads(m) is called before calling MUMPS.
                                    Default might be the number of cores per CPU package (socket) as reported by hwloc and suggested by the MUMPS manual.
 
