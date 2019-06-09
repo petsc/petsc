@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['http://www.mpich.org/static/downloads/3.3b1/mpich-3.3b1.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3b1.tar.gz']
+    self.download         = ['http://www.mpich.org/static/downloads/3.3b1/mpich-3.3.1.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3.1.tar.gz']
     self.download_31      = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
     self.download_33a2    = ['http://www.mpich.org/static/downloads/3.3a2/mpich-3.3a2.tar.gz',
@@ -51,6 +51,8 @@ class Configure(config.package.GNUPackage):
       args.append("--enable-error-messages=all")
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')
+    if not self.sharedLibraries.useShared and config.setCompilers.Configure.isDarwin(self.log):
+      args.append('--disable-opencl')
     # MPICH configure errors out on certain standard configure arguments
     args = self.rmArgs(args,['--disable-f90','--enable-f90'])
     args = self.rmArgsStartsWith(args,['F90=','F90FLAGS='])
