@@ -3139,3 +3139,141 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
   }
   PetscFunctionReturn(0);
 }
+
+/*@C
+  DMPlexRemapGeometry - This function maps the original DM coordinates to new coordinates.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+- func    - The function transforming current coordinates to new coordaintes
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
+
++  dim          - The spatial dimension
+.  Nf           - The number of input fields (here 1)
+.  NfAux        - The number of input auxiliary fields
+.  uOff         - The offset of the coordinates in u[] (here 0)
+.  uOff_x       - The offset of the coordinates in u_x[] (here 0)
+.  u            - The coordinate values at this point in space
+.  u_t          - The coordinate time derivative at this point in space (here NULL)
+.  u_x          - The coordinate derivatives at this point in space
+.  aOff         - The offset of each auxiliary field in u[]
+.  aOff_x       - The offset of each auxiliary field in u_x[]
+.  a            - The auxiliary field values at this point in space
+.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
+.  a_x          - The auxiliary field derivatives at this point in space
+.  t            - The current time
+.  x            - The coordinates of this point (here not used)
+.  numConstants - The number of constants
+.  constants    - The value of each constant
+-  f            - The new coordinates at this point in space
+
+  Level: intermediate
+
+.seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMProjectFieldLocal(), DMProjectFieldLabelLocal()
+@*/
+PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
+                                   void (*func)(PetscInt, PetscInt, PetscInt,
+                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
+{
+  DM             cdm;
+  Vec            lCoords, tmpCoords;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &lCoords);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(cdm, &tmpCoords);CHKERRQ(ierr);
+  ierr = VecCopy(lCoords, tmpCoords);CHKERRQ(ierr);
+  ierr = DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(cdm, &tmpCoords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Shear applies the transformation, assuming we fix z,
+  / 1  0  m_0 \
+  | 0  1  m_1 |
+  \ 0  0   1  /
+*/
+static void f0_shear(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                     PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar coords[])
+{
+  const PetscInt Nc = uOff[1]-uOff[0];
+  const PetscInt ax = (PetscInt) constants[0];
+  PetscInt       c;
+
+  for (c = 0; c < Nc; ++c) {
+    coords[c] = u[c] + constants[c+1]*u[ax];
+  }
+}
+
+/*@C
+  DMPlexShearGeometry - This shears the domain, meaning adds a multiple of the shear coordinate to all other coordinates.
+
+  Not collective
+
+  Input Parameters:
++ dm          - The DM
+. dir         - The shear coordinate direction, e.g. 0 is the x-axis
+- multipliers - The multiplier m for each direction which is not the shear direction
+
+  Level: intermediate
+
+.seealso: DMPlexRemapGeometry()
+@*/
+PetscErrorCode DMPlexShearGeometry(DM dm, PetscInt dir, PetscReal multipliers[])
+{
+  DM             cdm;
+  PetscDS        cds;
+  PetscObject    obj;
+  PetscClassId   id;
+  PetscScalar   *moduli;
+  PetscInt       dE, d, e;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dE+1, &moduli);CHKERRQ(ierr);
+  moduli[0] = dir;
+  for (d = 0, e = 0; d < dE; ++d) moduli[d] = d == dir ? 0.0 : (multipliers ? multipliers[e++] : 1.0);
+  ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(cds, 0, &obj);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+  if (id != PETSCFE_CLASSID) {
+    Vec           lCoords;
+    PetscSection  cSection;
+    PetscScalar  *coords;
+    PetscInt      vStart, vEnd, v;
+
+    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &lCoords);CHKERRQ(ierr);
+    ierr = VecGetArray(lCoords, &coords);CHKERRQ(ierr);
+    for (v = vStart; v < vEnd; ++v) {
+      PetscReal ds;
+      PetscInt  off, c;
+
+      ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
+      ds   = PetscRealPart(coords[off+dir]);
+      for (c = 0; c < dE; ++c) coords[off+c] += moduli[c]*ds;
+    }
+    ierr = VecRestoreArray(lCoords, &coords);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSSetConstants(cds, dE+1, moduli);CHKERRQ(ierr);
+    ierr = DMPlexRemapGeometry(dm, 0.0, f0_shear);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(moduli);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
