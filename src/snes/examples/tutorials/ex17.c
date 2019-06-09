@@ -22,6 +22,7 @@ typedef struct {
   PetscInt     dim;         /* The topological mesh dimension */
   PetscBool    simplex;     /* Simplicial mesh */
   PetscInt     cells[3];    /* The initial domain division */
+  PetscBool    shear;       /* Shear the domain */
   /* Problem definition */
   SolutionType solType;     /* Type of exact solution */
   /* Solver definition */
@@ -303,6 +304,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cells[1]         = 1;
   options->cells[2]         = 1;
   options->simplex          = PETSC_TRUE;
+  options->shear            = PETSC_FALSE;
   options->solType          = SOL_VLAP_QUADRATIC;
   options->useNearNullspace = PETSC_TRUE;
   ierr = PetscStrncpy(options->dmType, DMPLEX, 256);CHKERRQ(ierr);
@@ -311,6 +313,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex17.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex17.c", options->cells, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex17.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-shear", "Shear the domain", "ex17.c", options->shear, &options->shear, NULL);CHKERRQ(ierr);
   sol  = options->solType;
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex17.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
@@ -349,6 +352,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = ndm;
     }
   }
+  if (user->shear) {ierr = DMPlexShearGeometry(*dm, 0, NULL);CHKERRQ(ierr);}
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
@@ -548,11 +552,20 @@ int main(int argc, char **argv)
     suffix: 2d_q1_quad_elas
     args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
+    suffix: 2d_q1_quad_elas_shear
+    args: -sol_type elas_quad -simplex 0 -shear -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+  test:
     suffix: 2d_q2_quad_elas
     args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 2 -dmsnes_check .0001
   test:
+    suffix: 2d_q2_quad_elas_shear
+    args: -sol_type elas_quad -simplex 0 -shear -displacement_petscspace_degree 2 -dmsnes_check
+  test:
     suffix: 2d_q3_quad_elas
     args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 3 -dmsnes_check .0001
+  test:
+    suffix: 2d_q3_quad_elas_shear
+    args: -sol_type elas_quad -simplex 0 -shear -displacement_petscspace_degree 3 -dmsnes_check
 
   test:
     suffix: 3d_p1_quad_vlap
@@ -635,11 +648,20 @@ int main(int argc, char **argv)
     suffix: 2d_q1_trig_elas
     args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
+    suffix: 2d_q1_trig_elas_shear
+    args: -sol_type elas_trig -simplex 0 -shear -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+  test:
     suffix: 2d_q2_trig_elas
     args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
+    suffix: 2d_q2_trig_elas_shear
+    args: -sol_type elas_trig -simplex 0 -shear -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+  test:
     suffix: 2d_q3_trig_elas
     args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+  test:
+    suffix: 2d_q3_trig_elas_shear
+    args: -sol_type elas_trig -simplex 0 -shear -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
 
   test:
     suffix: 3d_p1_trig_vlap
