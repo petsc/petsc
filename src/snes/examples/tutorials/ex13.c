@@ -15,6 +15,7 @@ typedef struct {
   PetscBool simplex;           /* Simplicial mesh */
   PetscBool spectral;          /* Look at the spectrum along planes in the solution */
   PetscInt  cells[3];          /* The initial domain division */
+  PetscBool shear;             /* Shear the domain */
   PetscBool adjoint;           /* Solve the adjoint problem */
 } AppCtx;
 
@@ -95,6 +96,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cells[1] = 1;
   options->cells[2] = 1;
   options->simplex  = PETSC_TRUE;
+  options->shear    = PETSC_FALSE;
   options->spectral = PETSC_FALSE;
   options->adjoint  = PETSC_FALSE;
 
@@ -102,6 +104,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex13.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex13.c", options->cells, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex13.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-shear", "Shear the domain", "ex13.c", options->shear, &options->shear, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-adjoint", "Solve the adjoint problem", "ex13.c", options->adjoint, &options->adjoint, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -181,6 +184,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
+  if (user->shear) {ierr = DMPlexShearGeometry(*dm, 0, NULL);CHKERRQ(ierr);}
   /* TODO: This should be pulled into the library */
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
 
@@ -572,11 +576,20 @@ int main(int argc, char **argv)
     suffix: 2d_q1_0
     args: -simplex 0 -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
+    suffix: 2d_q1_1
+    args: -simplex 0 -shear -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
+  test:
     suffix: 2d_q2_0
     args: -simplex 0 -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
+    suffix: 2d_q2_1
+    args: -simplex 0 -shear -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
+  test:
     suffix: 2d_q3_0
     args: -simplex 0 -potential_petscspace_degree 3 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
+  test:
+    suffix: 2d_q3_1
+    args: -simplex 0 -shear -potential_petscspace_degree 3 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p1_0
     requires: ctetgen
