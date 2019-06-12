@@ -1,26 +1,9 @@
 #include <petsc/private/viewerimpl.h>
+#include <petsc/private/viewerhdf5impl.h>
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE < 10800)
-#error "PETSc needs HDF5 version >= 1.8.0"
-#endif
 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer, const char[], PetscBool, PetscBool*, H5O_type_t*);
 static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool*);
-
-typedef struct GroupList {
-  const char       *name;
-  struct GroupList *next;
-} GroupList;
-
-typedef struct {
-  char          *filename;
-  PetscFileMode btype;
-  hid_t         file_id;
-  PetscInt      timestep;
-  GroupList     *groups;
-  PetscBool     basedimension2;  /* save vectors and DMDA vectors with a dimension of at least 2 even if the bs/dof is 1 */
-  PetscBool     spoutput;  /* write data in single precision even if PETSc is compiled with double precision PetscReal */
-} PetscViewer_HDF5;
 
 static PetscErrorCode PetscViewerHDF5GetAbsolutePath_Internal(PetscViewer viewer, const char objname[], char **fullpath)
 {
@@ -56,12 +39,15 @@ static PetscErrorCode PetscViewerHDF5CheckNamedObject_Internal(PetscViewer viewe
 static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode   ierr;
+  PetscBool        flg = PETSC_FALSE, set;
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)v->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HDF5 PetscViewer Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_hdf5_base_dimension2","1d Vectors get 2 dimensions in HDF5","PetscViewerHDF5SetBaseDimension2",hdf5->basedimension2,&hdf5->basedimension2,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_hdf5_sp_output","Force data to be written in single precision","PetscViewerHDF5SetSPOutput",hdf5->spoutput,&hdf5->spoutput,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_hdf5_collective","Enable collective transfer mode","PetscViewerHDF5SetCollective",flg,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = PetscViewerHDF5SetCollective(v,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -69,6 +55,7 @@ static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOpti
 static PetscErrorCode PetscViewerView_HDF5(PetscViewer v,PetscViewer viewer)
 {
   PetscViewer_HDF5  *hdf5 = (PetscViewer_HDF5*)v->data;
+  PetscBool         flg;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -77,6 +64,8 @@ static PetscErrorCode PetscViewerView_HDF5(PetscViewer v,PetscViewer viewer)
   }
   ierr = PetscViewerASCIIPrintf(viewer,"Vectors with blocksize 1 saved as 2D datasets: %s\n",PetscBools[hdf5->basedimension2]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Enforce single precision storage: %s\n",PetscBools[hdf5->spoutput]);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetCollective(v,&flg);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"MPI-IO transfer mode: %s\n",flg ? "collective" : "independent");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -97,9 +86,10 @@ static PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  PetscStackCallHDF5(H5Pclose,(hdf5->dxpl_id));
   ierr = PetscViewerFileClose_HDF5(viewer);CHKERRQ(ierr);
   while (hdf5->groups) {
-    GroupList *tmp = hdf5->groups->next;
+    PetscViewerHDF5GroupList *tmp = hdf5->groups->next;
 
     ierr         = PetscFree(hdf5->groups->name);CHKERRQ(ierr);
     ierr         = PetscFree(hdf5->groups);CHKERRQ(ierr);
@@ -280,12 +270,108 @@ PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer viewer,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode  PetscViewerHDF5SetCollective_HDF5(PetscViewer viewer, PetscBool flg)
+{
+  PetscFunctionBegin;
+  /* H5FD_MPIO_COLLECTIVE is wrong in hdf5 1.10.2, and is the same as H5FD_MPIO_INDEPENDENT in earlier versions
+     - see e.g. https://gitlab.cosma.dur.ac.uk/swift/swiftsim/issues/431 */
+#if H5_VERSION_GE(1,10,3)
+  {
+    PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+    PetscStackCallHDF5(H5Pset_dxpl_mpio,(hdf5->dxpl_id, flg ? H5FD_MPIO_COLLECTIVE : H5FD_MPIO_INDEPENDENT));
+  }
+#else
+  if (flg) {
+    PetscErrorCode ierr;
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer), "Warning: PetscViewerHDF5SetCollective(viewer,PETSC_TRUE) is ignored for HDF5 versions prior to 1.10.3\n");CHKERRQ(ierr);
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5SetCollective - Use collective MPI-IO transfer mode for HDF5 reads and writes.
+
+  Logically Collective; flg must contain common value
+
+  Input Parameters:
++ viewer - the PetscViewer; if it is not hdf5 then this command is ignored
+- flg - PETSC_TRUE for collective mode; PETSC_FALSE for independent mode (default)
+
+  Options Database:
+. -viewer_hdf5_collective - turns on (true) or off (false) collective transfers
+
+  Notes:
+  Collective mode gives the MPI-IO layer underneath HDF5 a chance to do some additional collective optimizations and hence can perform better.
+  However, this works correctly only since HDF5 1.10.3; hence, we ignore this setting for older versions.
+
+  Developer notes:
+  In the HDF5 layer, PETSC_TRUE / PETSC_FALSE means H5Pset_dxpl_mpio() is called with H5FD_MPIO_COLLECTIVE / H5FD_MPIO_INDEPENDENT, respectively.
+  This in turn means use of MPI_File_{read,write}_all /  MPI_File_{read,write} in the MPI-IO layer, respectively.
+  See HDF5 documentation and MPI-IO documentation for details.
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5GetCollective(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerHDF5Open()
+
+@*/
+PetscErrorCode PetscViewerHDF5SetCollective(PetscViewer viewer,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidLogicalCollectiveBool(viewer,flg,2);
+  ierr = PetscTryMethod(viewer,"PetscViewerHDF5SetCollective_C",(PetscViewer,PetscBool),(viewer,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PetscViewerHDF5GetCollective_HDF5(PetscViewer viewer, PetscBool *flg)
+{
+  PetscViewer_HDF5  *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  H5FD_mpio_xfer_t  mode;
+
+  PetscFunctionBegin;
+  PetscStackCallHDF5(H5Pget_dxpl_mpio,(hdf5->dxpl_id, &mode));
+  *flg = (mode == H5FD_MPIO_COLLECTIVE) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5GetCollective - Return flag whether collective MPI-IO transfer mode is used for HDF5 reads and writes.
+
+  Not Collective
+
+  Input Parameters:
+. viewer - the HDF5 PetscViewer
+
+  Output Parameters:
+. flg - the flag
+
+  Level: intermediate
+
+  Notes:
+  This setting works correctly only since HDF5 1.10.3. For older versions, PETSC_FALSE will be always returned.
+  For more details, see PetscViewerHDF5SetCollective().
+
+.seealso: PetscViewerHDF5SetCollective(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerHDF5Open()
+
+@*/
+PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer viewer,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidPointer(flg,2);
+
+  ierr = PetscUseMethod(viewer,"PetscViewerHDF5GetCollective_C",(PetscViewer,PetscBool*),(viewer,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  MPI_Info          info = MPI_INFO_NULL;
-#endif
   hid_t             plist_id;
   PetscErrorCode    ierr;
 
@@ -295,9 +381,7 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
   ierr = PetscStrallocpy(name, &hdf5->filename);CHKERRQ(ierr);
   /* Set up file access property list with parallel I/O access */
   PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  PetscStackCallHDF5(H5Pset_fapl_mpio,(plist_id, PetscObjectComm((PetscObject)viewer), info));
-#endif
+  PetscStackCallHDF5(H5Pset_fapl_mpio,(plist_id, PetscObjectComm((PetscObject)viewer), MPI_INFO_NULL));
   /* Create or open the file collectively */
   switch (hdf5->btype) {
   case FILE_MODE_READ:
@@ -368,12 +452,16 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   hdf5->timestep         = -1;
   hdf5->groups           = NULL;
 
+  PetscStackCallHDF5Return(hdf5->dxpl_id,H5Pcreate,(H5P_DATASET_XFER));
+
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetBaseDimension2_C",PetscViewerHDF5SetBaseDimension2_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetSPOutput_C",PetscViewerHDF5SetSPOutput_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetCollective_C",PetscViewerHDF5SetCollective_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5GetCollective_C",PetscViewerHDF5GetCollective_HDF5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -461,7 +549,7 @@ PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  GroupList        *groupNode;
+  PetscViewerHDF5GroupList *groupNode;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -490,7 +578,7 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  GroupList        *groupNode;
+  PetscViewerHDF5GroupList *groupNode;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;

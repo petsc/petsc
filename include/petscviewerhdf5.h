@@ -5,8 +5,13 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_HDF5)
-
 #include <hdf5.h>
+#if !defined(H5_VERSION_GE)
+/* H5_VERSION_GE was introduced in HDF5 1.8.7, we support >= 1.8.0 */
+/* So beware this will automatically 0 for HDF5 1.8.0 - 1.8.6 */
+#define H5_VERSION_GE(a,b,c) 0
+#endif
+
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer,hid_t*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
 
@@ -60,4 +65,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer,PetscBo
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer,PetscBool*);
+
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetCollective(PetscViewer,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer,PetscBool*);
 #endif
