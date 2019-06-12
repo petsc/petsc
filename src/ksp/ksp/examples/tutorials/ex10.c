@@ -62,7 +62,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (!flg) preload = PETSC_FALSE;   /* don't bother with second system */
   }
-  ierr = PetscOptionsGetEnum(NULL,NULL,"-rhs_random",RHSTypes,(PetscEnum*)&rhstype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-rhs",RHSTypes,(PetscEnum*)&rhstype,NULL);CHKERRQ(ierr);
 
   /*
     To use preloading, one usually has code like the following:
