@@ -384,8 +384,12 @@ cdef class KSP(Object):
     def setUpOnBlocks(self):
         CHKERR( KSPSetUpOnBlocks(self.ksp) )
 
-    def solve(self, Vec b, Vec x):
-        CHKERR( KSPSolve(self.ksp, b.vec, x.vec) )
+    def solve(self, Vec b or None, Vec x or None):
+        cdef PetscVec b_vec = NULL
+        cdef PetscVec x_vec = NULL
+        if b is not None: b_vec = b.vec
+        if x is not None: x_vec = x.vec
+        CHKERR( KSPSolve(self.ksp, b_vec, x_vec) )
 
     def solveTranspose(self, Vec b, Vec x):
         CHKERR( KSPSolveTranspose(self.ksp, b.vec, x.vec) )
