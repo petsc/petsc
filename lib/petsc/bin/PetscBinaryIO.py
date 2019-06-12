@@ -520,7 +520,7 @@ if __name__ == "__main__":
     convert.add_argument('infile', help='file to convert')
     convert.add_argument('-o', '--outfile', help='name of output file (defaults to {infile}.petsc)')
     convert.add_argument('--symmetrize', help='Symmetrize (A+A^T)/2 during conversion', action='store_true')
-    convert.add_argument('--precision', help='Precision of scalar values', choices=['single', 'double', '__float128'], default='single')
+    convert.add_argument('--precision', help='Precision of scalar values', choices=['single', 'double', '__float128'], default='double')
     convert.add_argument('--complex', help='Use complex scalars', action='store_true')
     convert.add_argument('--indices', help='Integer size for indices', choices=['32bit', '64bit'], default='32bit')
     args = parser.parse_args()
