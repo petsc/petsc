@@ -1,9 +1,6 @@
 #include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
-#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE < 10800)
-#error "PETSc needs HDF5 version >= 1.8.0"
-#endif
 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer, const char[], PetscBool, PetscBool*, H5O_type_t*);
 static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool*);
