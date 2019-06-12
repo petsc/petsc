@@ -871,14 +871,28 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="sparse-matrix-ascii-format">How can I read in or write out a sparse matrix in Matrix Market, Harwell-Boeing, SLAPC or other ASCII format?</a></h3>
 
-      See the examples in src/mat/examples/tests, specifically ex72.c, ex78.c,
-      and ex32.c. You will likely need to modify the code slightly to match your
+      <p>If you can read or write your matrix using Python or MATLAB/Octave, there
+      are PetscBinaryIO modules for each language that can assist with reading
+      and writing.  If you just want to convert MatrixMarket, you can use</p>
+
+      <code>python -m PetscBinaryIO convert matrix.mtx</code>
+
+      <p>to produce <code>matrix.petsc</code>.  The above assumes you have either
+      installed the module or added <code>$PETSC_DIR/lib/petsc/bin</code> to
+      your <code>PYTHONPATH</code>.  You can also call the script directly or
+      import it from your Python code.  There is also
+      a <a href="https://github.com/tkonolige/PETScBinaryIO.jl">PETScBinaryIO.jl</a>
+      Julia package.</p>
+
+      <p>For other formats, either adapt one of the above libraries or see the
+      examples in src/mat/examples/tests, specifically ex72.c, ex78.c, and
+      ex32.c. You will likely need to modify the code slightly to match your
       required ASCII format. Note: Never read or write in parallel an ASCII
       matrix file, instead for reading: read in sequentially with a standalone
       code based on ex72.c, ex78.c, or ex32.c then save the matrix with the
       binary viewer PetscBinaryViewerOpen() and load the matrix in parallel in
       your "real" PETSc program with MatLoad(); for writing save with the binary
-      viewer and then load with the sequential code to store it as ASCII.
+      viewer and then load with the sequential code to store it as ASCII.</p>
 
       <h3><a name="setfromoptions">Does TSSetFromOptions(), SNESSetFromOptions() or KSPSetFromOptions() reset all the parameters I previously set or how come my TS/SNES/KSPSetXXX() does not seem to work?</a></h3>
 
