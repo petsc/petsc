@@ -5207,7 +5207,10 @@ PetscErrorCode DMSetRegionDS(DM dm, DMLabel label, IS fields, PetscDS ds)
   for (s = 0; s < Nds; ++s) {
     if (dm->probs[s].label == label) {
       ierr = PetscDSDestroy(&dm->probs[s].ds);CHKERRQ(ierr);
-      dm->probs[s].ds = ds;
+      ierr = PetscObjectReference((PetscObject) fields);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject) ds);CHKERRQ(ierr);
+      dm->probs[s].fields = fields;
+      dm->probs[s].ds     = ds;
       PetscFunctionReturn(0);
     }
   }
@@ -5251,6 +5254,7 @@ PetscErrorCode DMCreateDS(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->fields) PetscFunctionReturn(0);
+  if (dm->Nds > 1) PetscFunctionReturn(0);
   /* Can only handle two label cases right now:
    1) NULL
    2) Hybrid cells
