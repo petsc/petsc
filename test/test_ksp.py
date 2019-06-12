@@ -185,8 +185,8 @@ class TestKSPCG(BaseTestKSP, unittest.TestCase):
 class TestKSPCGNE(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.CGNE
 
-class TestKSPCGSTCG(BaseTestKSP, unittest.TestCase):
-    KSP_TYPE = PETSc.KSP.Type.CGSTCG
+class TestKSPSTCG(BaseTestKSP, unittest.TestCase):
+    KSP_TYPE = PETSc.KSP.Type.STCG
 
 class TestKSPBCGS(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.BCGS
@@ -213,7 +213,7 @@ class TestKSPFGMRES(BaseTestKSP, unittest.TestCase):
 # --------------------------------------------------------------------
 
 if PETSc.ScalarType().dtype.char in 'FDG':
-    del TestKSPCGSTCG
+    del TestKSPSTCG
 
 # --------------------------------------------------------------------
 
