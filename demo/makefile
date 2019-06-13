@@ -1,5 +1,5 @@
 .PHONY:all
-all:
+all: petsc
 	${MAKE} -C binary-io
 	${MAKE} -C kspsolve
 	${MAKE} -C bratu2d
@@ -9,3 +9,7 @@ all:
 	${MAKE} -C perftest
 	${MAKE} -C wrap-swig
 	${MAKE} -C wrap-f2py
+
+.PHONY:petsc
+petsc:
+	${MAKE} -C petsc-examples
