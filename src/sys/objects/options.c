@@ -74,26 +74,27 @@ KHASH_INIT(HO, kh_cstr_t, int, 1, PetscOptHash, PetscOptEqual)
 #define MAXOPTIONSMONITORS 5
 
 struct  _n_PetscOptions {
-  int        N;                    /* number of options */
-  char       *names[MAXOPTIONS];   /* option names */
-  char       *values[MAXOPTIONS];  /* option values */
-  PetscBool  used[MAXOPTIONS];     /* flag option use */
+  PetscOptions   next,previous;
+  int            N;                    /* number of options */
+  char           *names[MAXOPTIONS];   /* option names */
+  char           *values[MAXOPTIONS];  /* option values */
+  PetscBool      used[MAXOPTIONS];     /* flag option use */
 
   /* Hash table */
-  khash_t(HO) *ht;
+  khash_t(HO)    *ht;
 
   /* Prefixes */
-  int   prefixind;
-  int   prefixstack[MAXPREFIXES];
-  char  prefix[MAXOPTNAME];
+  int            prefixind;
+  int            prefixstack[MAXPREFIXES];
+  char           prefix[MAXOPTNAME];
 
   /* Aliases */
-  int  Naliases;                   /* number or aliases */
-  char *aliases1[MAXALIASES];      /* aliased */
-  char *aliases2[MAXALIASES];      /* aliasee */
+  int            Naliases;                   /* number or aliases */
+  char           *aliases1[MAXALIASES];      /* aliased */
+  char           *aliases2[MAXALIASES];      /* aliasee */
 
   /* Help */
-  PetscBool help; /* flag whether "-help" is in the database */
+  PetscBool      help; /* flag whether "-help" is in the database */
 
   /* Monitors */
   PetscErrorCode (*monitor[MAXOPTIONSMONITORS])(const char[],const char[],void*); /* returns control to user after */
@@ -102,8 +103,8 @@ struct  _n_PetscOptions {
   PetscInt       numbermonitors;                                       /* to, for instance, detect options being set */
 };
 
-static PetscOptions defaultoptions = NULL;
-
+static PetscOptions defaultoptions = NULL;  /* the options database routines query this object for options */
+static PetscOptions initialoptions = NULL;  /* this contains the options set by PetscInitialize() */
 
 /*
     Options events monitor
@@ -129,7 +130,7 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options,const char name[]
 
    Level: advanced
 
-.seealso: PetscOptionsDestroy()
+.seealso: PetscOptionsDestroy(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsInsert(), PetscOptionsSetValue()
 @*/
 PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 {
@@ -147,7 +148,7 @@ PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 
    Level: developer
 
-.seealso: PetscOptionsInsert()
+.seealso: PetscOptionsInsert(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsInsert(), PetscOptionsSetValue()
 @*/
 PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 {
@@ -170,8 +171,59 @@ PetscErrorCode PetscOptionsCreateDefault(void)
 
   if (!defaultoptions) {
     ierr = PetscOptionsCreate(&defaultoptions);if (ierr) return ierr;
+    initialoptions = defaultoptions;
   }
   return 0;
+}
+
+/*@
+      PetscOptionsPush - Push a new PetscOptions object as the default provider of options
+
+  Logically Collective
+
+  Input Parameter:
+.   opt - the options obtained with PetscOptionsCreate()
+
+  Notes:
+  Use PetscOptionsPop() to return to the previous default options database
+  Allows using different parts of a code to use different options databases
+
+.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue()
+
+@*/
+PetscErrorCode PetscOptionsPush(PetscOptions opt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!defaultoptions) {
+    ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
+  }
+  defaultoptions->next = opt;
+  opt->previous        = defaultoptions;
+  defaultoptions       = opt;
+  PetscFunctionReturn(0);
+}
+
+/*@
+      PetscOptionsPop - Pop the most recent PetscOptionsPush() to return to the previous default options
+
+  Logically Collective
+
+  Notes:
+  Use PetscOptionsPop() to return to the previous default options database
+  Allows using different parts of a code to use different options databases
+
+.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue()
+
+@*/
+PetscErrorCode PetscOptionsPop(void)
+{
+  PetscFunctionBegin;
+  if (!defaultoptions) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing default options");
+  if (!defaultoptions->previous) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscOptionsPop() called too many times");
+  defaultoptions = defaultoptions->previous;
+  PetscFunctionReturn(0);
 }
 
 /*
