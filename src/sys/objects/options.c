@@ -74,7 +74,7 @@ KHASH_INIT(HO, kh_cstr_t, int, 1, PetscOptHash, PetscOptEqual)
 #define MAXOPTIONSMONITORS 5
 
 struct  _n_PetscOptions {
-  PetscOptions   next,previous;
+  PetscOptions   previous;
   int            N;                    /* number of options */
   char           *names[MAXOPTIONS];   /* option names */
   char           *values[MAXOPTIONS];  /* option values */
@@ -104,7 +104,6 @@ struct  _n_PetscOptions {
 };
 
 static PetscOptions defaultoptions = NULL;  /* the options database routines query this object for options */
-static PetscOptions initialoptions = NULL;  /* this contains the options set by PetscInitialize() */
 
 /*
     Options events monitor
@@ -146,7 +145,7 @@ PetscErrorCode PetscOptionsCreate(PetscOptions *options)
   Input Parameter:
 .  options - the PetscOptions object
 
-   Level: developer
+   Level: advanced
 
 .seealso: PetscOptionsInsert(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsInsert(), PetscOptionsSetValue()
 @*/
@@ -155,6 +154,7 @@ PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
   PetscErrorCode ierr;
 
   if (!*options) return 0;
+  if ((*options)->previous) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You are destroying an option that has been used with PetscOptionsPush() but does not have a corresponding PetscOptionsPop()");
   ierr = PetscOptionsClear(*options);if (ierr) return ierr;
   /* XXX what about monitors ? */
   free(*options);
@@ -171,7 +171,6 @@ PetscErrorCode PetscOptionsCreateDefault(void)
 
   if (!defaultoptions) {
     ierr = PetscOptionsCreate(&defaultoptions);if (ierr) return ierr;
-    initialoptions = defaultoptions;
   }
   return 0;
 }
@@ -188,7 +187,10 @@ PetscErrorCode PetscOptionsCreateDefault(void)
   Use PetscOptionsPop() to return to the previous default options database
   Allows using different parts of a code to use different options databases
 
-.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue()
+   Level: advanced
+
+.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue(),
+          PetscOptionsLeft()
 
 @*/
 PetscErrorCode PetscOptionsPush(PetscOptions opt)
@@ -199,7 +201,6 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
   if (!defaultoptions) {
     ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
   }
-  defaultoptions->next = opt;
   opt->previous        = defaultoptions;
   defaultoptions       = opt;
   PetscFunctionReturn(0);
@@ -214,15 +215,21 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
   Use PetscOptionsPop() to return to the previous default options database
   Allows using different parts of a code to use different options databases
 
-.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue()
+   Level: advanced
+
+.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue(),
+          PetscOptionsLeft()
 
 @*/
 PetscErrorCode PetscOptionsPop(void)
 {
+  PetscOptions current = defaultoptions;
+
   PetscFunctionBegin;
   if (!defaultoptions) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing default options");
   if (!defaultoptions->previous) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscOptionsPop() called too many times");
   defaultoptions = defaultoptions->previous;
+  current->previous    = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +239,14 @@ PetscErrorCode PetscOptionsPop(void)
 PetscErrorCode PetscOptionsDestroyDefault(void)
 {
   PetscErrorCode ierr;
+  PetscOptions   tmp;
 
+  /* Destroy any options that the user forgot to pop */
+  while (defaultoptions->previous) {
+    tmp = defaultoptions;
+    ierr = PetscOptionsPop();CHKERRQ(ierr);
+    ierr = PetscOptionsDestroy(&tmp);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsDestroy(&defaultoptions);if (ierr) return ierr;
   return 0;
 }
@@ -1520,6 +1534,10 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options,PetscInt *N)
    Options Database Key:
 .  -options_left - Activates OptionsAllUsed() within PetscFinalize()
 
+   Notes:
+      This is rarely used directly, it is called by PetscFinalize() in debug more or if -options_left
+      is passed otherwise to help users determine possible mistakes in their usage of options
+
    Level: advanced
 
 .seealso: PetscOptionsAllUsed()
@@ -1528,16 +1546,28 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscInt       cnt = 0;
+  PetscOptions   toptions;
 
   PetscFunctionBegin;
-  options = options ? options : defaultoptions;
-  for (i=0; i<options->N; i++) {
-    if (!options->used[i]) {
-      if (options->values[i]) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
+  toptions = options ? options : defaultoptions;
+  for (i=0; i<toptions->N; i++) {
+    if (!toptions->used[i]) {
+      if (toptions->values[i]) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",toptions->names[i],toptions->values[i]);CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",options->names[i]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",toptions->names[i]);CHKERRQ(ierr);
       }
+    }
+  }
+  if (!options) {
+    toptions = defaultoptions;
+    while (toptions->previous) {
+      cnt++;
+      toptions = toptions->previous;
+    }
+    if (cnt) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: You may have forgotten some calls to PetscOptionsPop(),\n             PetscOptionsPop() has been called %D less times than PetscOptionsPush()\n",cnt);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

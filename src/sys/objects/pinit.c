@@ -1387,32 +1387,29 @@ PetscErrorCode  PetscFinalize(void)
 
   flg3 = PETSC_FALSE; /* default value is required */
   ierr = PetscOptionsGetBool(NULL,NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsAllUsed(NULL,&nopt);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  if (!flg1) flg3 = PETSC_TRUE;
+#endif
   if (flg3) {
-    if (!flg2) { /* have not yet printed the options */
+    if (!flg2 && flg1) { /* have not yet printed the options */
       PetscViewer viewer;
       ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
       ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscOptionsView(NULL,viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
-    if (!nopt) {
+    ierr = PetscOptionsAllUsed(NULL,&nopt);CHKERRQ(ierr);
+    if (nopt) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
+      if (nopt == 1) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
+      }
+    } else if (flg3 && flg1) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
-    } else if (nopt == 1) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
     }
-  }
-#if defined(PETSC_USE_DEBUG)
-  if (nopt && !flg3 && !flg1) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
-    ierr = PetscOptionsLeft(NULL);CHKERRQ(ierr);
-  } else if (nopt && flg3) {
-#else
-  if (nopt && flg3) {
-#endif
     ierr = PetscOptionsLeft(NULL);CHKERRQ(ierr);
   }
 
