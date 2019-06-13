@@ -1,9 +1,6 @@
 stages:
-  - ci-begin
   - test
-  - ci-long-begin
   - test-long
-  - ci-end
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
@@ -133,37 +130,3 @@ opensolaris-cmplx-pkgs-dbg:
   extends: .opensolaris_mcs_test
   variables:
     TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
-
-.status:
-  image: jedbrown/alpine-curl
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - curl -s -O https://gitlab.com/jedbrown/petsc/raw/jed/gitlab-ci/.gitlab-build-status.sh
-    - BUILD_KEY=push BITBUCKET_NAMESPACE=petsc /bin/sh .gitlab-build-status.sh
-
-inprogress:
-  stage: ci-begin
-  extends: .status
-  variables:
-    BUILD_STATUS: running
-
-shortcomplete:
-  stage: ci-long-begin
-  extends: .status
-  variables:
-    BUILD_STATUS: shortcomplete
-
-success:
-  stage: ci-end
-  extends: .status
-  variables:
-    BUILD_STATUS: passed
-  when: on_success
-
-failure:
-  stage: ci-end
-  extends: .status
-  variables:
-    BUILD_STATUS: failed
-  when: on_failure
