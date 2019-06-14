@@ -14,6 +14,7 @@ variables:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
     - ccache --zero-stats
+    - export CCACHE_COMPILERCHECK=content
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make -j$(nproc) -l$(nproc) CFLAGS=-Werror
@@ -74,6 +75,9 @@ c89-mlib-static-py2:
     - hostname
     - grep PRETTY_NAME /etc/os-release
     - echo $(nproc)
+    - ccache --zero-stats
+  after_script:
+    - ccache --show-stats
 
 .freebsd_mcs_test:
   extends: .mcs_test
@@ -83,6 +87,9 @@ c89-mlib-static-py2:
     - hostname
     - freebsd-version
     - echo $(sysctl -n hw.ncpu)
+    - ccache --zero-stats
+  after_script:
+    - ccache --show-stats
 
 .osx_mcs_test:
   extends: .mcs_test
@@ -94,6 +101,9 @@ c89-mlib-static-py2:
     - hostname
     - sw_vers -productVersion
     - echo $(sysctl -n hw.ncpu)
+    - ccache --zero-stats
+  after_script:
+    - ccache --show-stats
 
 .opensolaris_mcs_test:
   extends: .mcs_test
