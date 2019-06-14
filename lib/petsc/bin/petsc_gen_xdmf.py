@@ -7,8 +7,14 @@ class Xdmf:
   def __init__(self, filename):
     self.filename = filename
     self.cellMap  = {1 : {1 : 'Polyvertex', 2 : 'Polyline'}, 2 : {3 : 'Triangle', 4 : 'Quadrilateral'}, 3 : {4 : 'Tetrahedron', 6: 'Wedge', 8 : 'Hexahedron'}}
-    self.typeMap  = {'scalar' : 'Scalar', 'vector' : 'Vector', 'tensor' : 'Tensor6', 'matrix' : 'Matrix'}
-    self.typeExt  = {2 : {'vector' : ['x', 'y'], 'tensor' : ['xx', 'yy', 'xy']}, 3 : {'vector' : ['x', 'y', 'z'], 'tensor' : ['xx', 'yy', 'zz', 'xy', 'yz', 'xz']}}
+
+    # py2/py3 compatibility, see https://github.com/h5py/h5py/issues/379
+    if sys.version_info[0] < 3:
+      self.typeMap = {'scalar' : 'Scalar', 'vector' : 'Vector', 'tensor' : 'Tensor6', 'matrix' : 'Matrix'}
+      self.typeExt = {2 : {'vector' : ['x', 'y'], 'tensor' : ['xx', 'yy', 'xy']}, 3 : {'vector' : ['x', 'y', 'z'], 'tensor' : ['xx', 'yy', 'zz', 'xy', 'yz', 'xz']}}
+    else:
+      self.typeMap = {b'scalar' : 'Scalar', b'vector' : 'Vector', b'tensor' : 'Tensor6', b'matrix' : 'Matrix'}
+      self.typeExt = {2 : {b'vector' : ['x', 'y'], b'tensor' : ['xx', 'yy', 'xy']}, 3 : {b'vector' : ['x', 'y', 'z'], b'tensor' : ['xx', 'yy', 'zz', 'xy', 'yz', 'xz']}}
     return
 
   def writeHeader(self, fp, hdfFilename):
