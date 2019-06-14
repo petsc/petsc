@@ -23,7 +23,7 @@ variables:
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make -j$(nproc) -l$(nproc) CFLAGS=-Werror
-    - make -j$(nproc) -l$(nproc) -f gmakefile.test PETSC_DIR=$PWD test search="${TEST_SEARCH}"
+    - make allgtests-tap search="${TEST_SEARCH}"
   after_script:
     - ccache --show-stats
   artifacts:
