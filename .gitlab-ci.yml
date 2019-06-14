@@ -10,6 +10,10 @@ variables:
 .test:
   stage: test
   image: jedbrown/mpich-ccache
+  only:
+    - branches
+    - tags
+    - merge_requests
   before_script:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
@@ -58,6 +62,9 @@ c89-mlib-static-py2:
 
 .mcs_test:
   stage: test-long
+  only:
+    - tags
+    - merge_requests
   script:
     - ./config/examples/${TEST_ARCH}.py
     - make
