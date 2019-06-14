@@ -3,14 +3,13 @@ stages:
   - test-long
 variables:
   GIT_STRATEGY: fetch
+  GIT_DEPTH: 1
   GIT_CLEAN_FLAGS: -ffdxq
   PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
 
 .test:
   stage: test
   image: jedbrown/mpich
-  variables:
-    GIT_DEPTH: 1
   before_script:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
@@ -52,14 +51,13 @@ c89-mlib-static-py2:
 .mcs_test:
   stage: test-long
   script:
-    - git config user.email "petsc@gitlab.none"
-    - git config user.name "petsc gitlab-ci"
-    - git fetch origin master
-    - git merge -m "test" FETCH_HEAD
     - ./config/examples/${TEST_ARCH}.py
     - make
     - make check
     - make cleantest allgtests-tap TIMEOUT=300
+  artifacts:
+    reports:
+      junit: ${TEST_ARCH}/tests/testresults.xml
 
 .linux_mcs_test:
   extends: .mcs_test
