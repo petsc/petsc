@@ -171,9 +171,7 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
   Mat_SeqKAIJ    *a = (Mat_SeqKAIJ*)A->data;
 
   PetscFunctionBegin;
-  if (a->S) {
-    ierr = PetscFree(a->S);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(a->S);CHKERRQ(ierr);
   if (S) {
     ierr = PetscMalloc1(p*q*sizeof(PetscScalar),&a->S);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->S,S,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -181,7 +179,6 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
 
   a->p = p;
   a->q = q;
-
   PetscFunctionReturn(0);
 }
 
@@ -227,9 +224,7 @@ PetscErrorCode MatKAIJSetT(Mat A,PetscInt p,PetscInt q,const PetscScalar T[])
   }
   a->isTI = isTI;
 
-  if (a->T) {
-    ierr = PetscFree(a->T);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(a->T);CHKERRQ(ierr);
   if (T && (!isTI)) {
     ierr = PetscMalloc1(p*q*sizeof(PetscScalar),&a->T);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->T,T,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -303,9 +298,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     } else T = a->T;
     ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr); 
     ierr = MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ);CHKERRQ(ierr);
-    if (a->isTI) {
-      ierr = PetscFree(T);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(T);CHKERRQ(ierr);
 
     ierr = VecGetSize(mpiaij->lvec,&n);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_SELF,&a->w);CHKERRQ(ierr);
@@ -373,7 +366,6 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* --------------------------------------------------------------------------------------*/
 
@@ -940,7 +932,6 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   if (ncols)    *ncols  = nz;
   if (cols)     *cols   = idx;
   if (values)   *values = v;
-
   PetscFunctionReturn(0);
 }
 
@@ -1171,7 +1162,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
   ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ);CHKERRQ(ierr);
-
     A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_SeqKAIJ;
     A->ops->view                = MatView_SeqKAIJ;
