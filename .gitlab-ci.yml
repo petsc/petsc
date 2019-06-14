@@ -9,17 +9,24 @@ variables:
 
 .test:
   stage: test
-  image: jedbrown/mpich
+  image: jedbrown/mpich-ccache
   before_script:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
+    - ccache --zero-stats
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make -j$(nproc) -l$(nproc) CFLAGS=-Werror
     - make -j$(nproc) -l$(nproc) -f gmakefile.test PETSC_DIR=$PWD test search="${TEST_SEARCH}"
+  after_script:
+    - ccache --show-stats
   artifacts:
     reports:
       junit: arch-*/tests/testresults.xml
+  cache:
+    paths:
+      - "${CCACHE_DIR}"
+    key: "${CI_JOB_NAME}"
 
 mpich-cxx-py3:
   extends: .test
@@ -39,7 +46,7 @@ uni-complex-float-int64:
 
 c89-mlib-static-py2:
   extends: .test
-  image: jedbrown/mpich:python2
+  image: jedbrown/mpich-ccache:python2
   variables:
     PYTHON: python2
     CONFIG_OPTS: <
