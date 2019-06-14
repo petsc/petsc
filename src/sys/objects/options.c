@@ -193,7 +193,7 @@ PetscErrorCode PetscOptionsCreateDefault(void)
   Notes:
   Use PetscOptionsPop() to return to the previous default options database
 
-  The collectivity of thie routine is complex, only the MPI processes that call this routine will
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
   have the affect of these options. If some processes that create objects call this routine and others do
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
@@ -303,7 +303,7 @@ PetscErrorCode PetscOptionsValidKey(const char key[],PetscBool *valid)
 
    Level: intermediate
 
-  The collectivity of thie routine is complex, only the MPI processes that call this routine will
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
   have the affect of these options. If some processes that create objects call this routine and others do
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
@@ -403,7 +403,7 @@ static char *Petscgetline(FILE * f)
     Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options
    such as -log_view or -malloc_debug are processed properly. This routine only sets options into the options database that will be processed by later
    calls to XXXSetFromOptions() it should not be used for options listed under PetscInitialize().
-   The collectivity of thie routine is complex, only the MPI processes in comm will
+   The collectivity of this routine is complex; only the MPI processes in comm will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -728,7 +728,8 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
    Options Database Key:
 .  -options_view - Activates PetscOptionsView() within PetscFinalize()
 
-   Notes: Only the rank zero process of MPI_Comm used to create view prints the option values. Other processes
+   Notes:
+   Only the rank zero process of MPI_Comm used to create view prints the option values. Other processes
    may have different values but they are not printed.
 
    Level: advanced
@@ -809,7 +810,7 @@ $ -prefix_push system1_ -options_file system1rc -prefix_pop -prefix_push system2
 
    where the files no longer require all options to be prefixed with -system2_.
 
-   The collectivity of thie routine is complex, only the MPI processes that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -875,7 +876,7 @@ PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
   Input Parameters:
 .  options - options database, use NULL for the default global database
 
-   The collectivity of thie routine is complex, only the MPI processes that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -925,7 +926,7 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
 
    Level: advanced
 
-   The collectivity of thie routine is complex, only the MPI processes that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -980,7 +981,7 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
    Note:
    This function can be called BEFORE PetscInitialize()
 
-   The collectivity of thie routine is complex, only the MPI processes that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -1086,7 +1087,7 @@ setvalue:
 
    Level: intermediate
 
-   The collectivity of thie routine is complex, only the MPI processes that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -1155,7 +1156,8 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
 +  value - the option value (optional, not used for all options)
 -  set - whether the option is set (optional)
 
-   Notes: Each process may find different values or no value depending on how options were inserted into the database
+   Notes:
+   Each process may find different values or no value depending on how options were inserted into the database
 
    Level: developer
 
@@ -1521,7 +1523,8 @@ PetscErrorCode PetscOptionsGetAll(PetscOptions options,char *copts[])
 
    Level: advanced
 
-   Notes: The value returned may be different on each process and depends on which options have been processed
+   Notes:
+   The value returned may be different on each process and depends on which options have been processed
    on the given process
 
 .seealso: PetscOptionsView(), PetscOptionsLeft(), PetscOptionsAllUsed()
@@ -1560,7 +1563,8 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool 
 
    Level: advanced
 
-   Notes: The value returned may be different on each process and depends on which options have been processed
+   Notes:
+   The value returned may be different on each process and depends on which options have been processed
    on the given process
 
 .seealso: PetscOptionsView()
@@ -1772,7 +1776,8 @@ PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
 
    Level: intermediate
 
-   Notes: The first MPI rank in the PetscViewer viewer actually prints the values, other
+   Notes:
+     The first MPI rank in the PetscViewer viewer actually prints the values, other
      processes may have different values set
 
 .seealso: PetscOptionsMonitorSet()
