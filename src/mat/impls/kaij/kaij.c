@@ -60,9 +60,7 @@ PetscErrorCode  MatKAIJGetAIJ(Mat A,Mat *B)
     Mat_SeqKAIJ *b = (Mat_SeqKAIJ*)A->data;
 
     *B = b->AIJ;
-  } else {
-    *B = A;
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix passed in is not of type KAIJ");
   PetscFunctionReturn(0);
 }
 
