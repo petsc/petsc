@@ -18,6 +18,7 @@ variables:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
     - ccache --zero-stats
+    - echo "${CI_JOB_NAME}"
     - export CCACHE_COMPILERCHECK=content
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
@@ -30,7 +31,7 @@ variables:
       junit: arch-*/tests/testresults.xml
   cache:
     paths:
-      - /ccache
+      - /ccache/
     key: "${CI_JOB_NAME}"
 
 mpich-cxx-py3:
