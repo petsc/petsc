@@ -3,7 +3,6 @@ stages:
   - test-long
 variables:
   GIT_STRATEGY: fetch
-  GIT_DEPTH: 1
   GIT_CLEAN_FLAGS: -ffdxq
   PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
 
