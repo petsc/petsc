@@ -30,7 +30,7 @@ variables:
       junit: arch-*/tests/testresults.xml
   cache:
     paths:
-      - "${CCACHE_DIR}"
+      - /ccache
     key: "${CI_JOB_NAME}"
 
 mpich-cxx-py3:
