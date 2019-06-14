@@ -101,7 +101,6 @@ int main(int argc,char **args)
   /* Test KAIJ when T is is an identity matrix */
 
   if (p == q) {
-
     for (i=0; i<p; i++) {
       for (j=0; j<q; j++) {
         if (i==j) T[i+j*p] = 1.0;
