@@ -32,6 +32,9 @@ to read in objects one at a time use such as
 
 
 See also PetscBinaryIO.__doc__ and methods therein.
+
+This module can also be used as a command line tool for converting matrices.
+Run with --help to see options.
 """
 
 import numpy as np
@@ -494,3 +497,33 @@ class PetscBinaryIO(object):
         if close:
             fid.close()
         return
+
+def _convert(infile, outfile, args):
+    ext = os.path.splitext(infile)[1]
+    if ext == '.mtx':
+        import scipy.io
+        mat = scipy.io.mmread(infile)
+        if args.symmetrize:
+            mat = (mat + mat.T)/2
+        with open(outfile, 'wb') as fd:
+            PetscBinaryIO().writeMatSciPy(fd, mat, precision=args.precision, complexscalars=args.complex, indices=args.indices)
+    else:
+        print('Unknown format: {}'.format(infile))
+        exit(1)
+
+if __name__ == "__main__":
+    import argparse
+    import os
+    parser = argparse.ArgumentParser('PetscBinaryIO')
+    subparsers = parser.add_subparsers(title='commands')
+    convert = subparsers.add_parser('convert', help='convert matrices to/from PETSc format')
+    convert.add_argument('infile', help='file to convert')
+    convert.add_argument('-o', '--outfile', help='name of output file (defaults to {infile}.petsc)')
+    convert.add_argument('--symmetrize', help='Symmetrize (A+A^T)/2 during conversion', action='store_true')
+    convert.add_argument('--precision', help='Precision of scalar values', choices=['single', 'double', '__float128'], default='double')
+    convert.add_argument('--complex', help='Use complex scalars', action='store_true')
+    convert.add_argument('--indices', help='Integer size for indices', choices=['32bit', '64bit'], default='32bit')
+    args = parser.parse_args()
+    if args.outfile is None:
+        args.outfile = os.path.splitext(args.infile)[0] + '.petsc'
+    _convert(args.infile, args.outfile, args)
