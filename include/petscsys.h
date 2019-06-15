@@ -1387,7 +1387,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList*,cons
 PETSC_EXTERN PetscErrorCode PetscFunctionListDestroy(PetscFunctionList*);
 #define PetscFunctionListFind(list,name,fptr) PetscFunctionListFind_Private((list),(name),(PetscVoidFunction*)(fptr))
 PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList,const char[],void (**)(void));
-PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFunctionList,const char[]);
+PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFunctionList,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList,PetscFunctionList *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListView(PetscFunctionList,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char ***,int*);
