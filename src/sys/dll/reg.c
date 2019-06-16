@@ -463,7 +463,7 @@ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char pr
 
   ierr = PetscStrncpy(p,"-",sizeof(p));CHKERRQ(ierr);
   if (prefix) {ierr = PetscStrlcat(p,prefix,sizeof(p));CHKERRQ(ierr);}
-  ierr = PetscFPrintf(comm,fd,"  %s%s <%s : %s>: %s (one of)",p,name+1,def,newv,text);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"  %s%s <now %s : formerly %s>: %s (one of)",p,name+1,newv,def,text);CHKERRQ(ierr);
 
   while (list) {
     ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
