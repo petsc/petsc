@@ -14,7 +14,6 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -O',
     #'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
-    '--with-cxx-dialect=C++11',
     '--download-codipack=1',
     '--download-adblaslapack=1',
   ]

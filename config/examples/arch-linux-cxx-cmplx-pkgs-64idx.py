@@ -23,7 +23,6 @@ configure_options = [
   '--download-pastix=1',
   '--download-ptscotch=1',
   '--download-superlu_dist=1',
-  '--with-cxx-dialect=C++11',
   '--download-elemental=1',
   '--download-p4est=1',
   '--with-zlib=1',
