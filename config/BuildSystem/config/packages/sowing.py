@@ -16,6 +16,7 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np
+    self.executablename    = 'bfort'
     return
 
   def setupHelp(self, help):

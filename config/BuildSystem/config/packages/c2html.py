@@ -10,13 +10,14 @@ class Configure(config.package.GNUPackage):
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0
     self.lookforbydefault  = 1
+    self.executablename    = 'c2html'
 
   def setupHelp(self, help):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
     help.addArgument('C2HTML', '-download-c2html-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for c2html'))
     help.addArgument('C2HTML', '-download-c2html-configure-options=<options>',   nargs.Arg(None, None, 'additional options for c2html'))
-    help.addArgument('C2HTML', '-with-c2html-exec=<executable>',                 nargs.Arg(None, None, 'C2html executable to look for'))
+    help.addArgument('C2HTML', '-with-c2html-exec=<executable>',                 nargs.Arg(None, None, 'c2html executable to look for'))
     return
 
   def formGNUConfigureArgs(self):
@@ -51,7 +52,7 @@ class Configure(config.package.GNUPackage):
     if self.argDB['download-c2html']:
       self.log.write('Building c2html\n')
       config.package.GNUPackage.configure(self)
-      self.getExecutable('c2html',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
+      self.getExecutable('c2html',    path=os.path.join(self.installDir,'bin'), getFullPath = 1, resultName='c2html')
     elif (not self.argDB['with-c2html']  == 0 and not self.argDB['with-c2html']  == 'no') or 'with-c2html-exec' in self.argDB:
       self.executeTest(self.locateC2html)
     else:

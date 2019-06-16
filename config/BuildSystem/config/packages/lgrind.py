@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/lgrind-dev.tar.gz']
     self.linkedbypetsc     = 0
     self.useddirectly      = 0
+    self.executablename    = 'lgrind'
     #
     #  lgrind is currently not used by PETSc
     #
