@@ -33,5 +33,6 @@ int main(int argc,char **argv)
 
    test:
      localrunfiles: optionsfile
-     filter: grep -v malloc | grep -v nox | grep -v display | grep -v saws_port | grep -v vecscatter | grep -v options_left | grep -v check_pointer_intensity
+     filter: egrep -v "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize)"
+
 TEST*/
