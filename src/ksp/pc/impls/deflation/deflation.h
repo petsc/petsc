@@ -14,6 +14,7 @@ typedef struct {
   Mat       W,Wt,AW,WtAW;    /* deflation space, coarse problem mats */
   KSP       WtAWinv;         /* deflation coarse problem */
   KSPType   ksptype;
+  PC        pc;              /* additional preconditioner */
   Vec       work;
   Vec       *workcoarse;
 
