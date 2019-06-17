@@ -184,6 +184,41 @@ PetscErrorCode PCDeflationSetPC(PC pc,PC apc)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCDeflationGetCoarseKSP_Deflation(PC pc,KSP *ksp)
+{
+  PC_Deflation     *def = (PC_Deflation*)pc->data;
+
+  PetscFunctionBegin;
+  *ksp = def->WtAWinv;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationGetCoarseKSP - Returns a pointer to the coarse problem KSP.
+
+   Not Collective
+
+   Input Parameters:
+.  pc - preconditioner context
+
+   Output Parameter:
+.  ksp - coarse problem KSP context
+
+   Level: developer
+
+.seealso: PCDEFLATION
+@*/
+PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(ksp,2);
+  ierr = PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
   x <- x + W*(W'*A*W)^{-1}*W'*r  = x + Q*r
 */
@@ -405,8 +440,6 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       /* inherit options TODO if not set */
       ((PC_Deflation*)(pcinner->data))->ksptype = def->ksptype;
       ((PC_Deflation*)(pcinner->data))->correct = def->correct;
-      ((PC_Deflation*)(pcinner->data))->adaptiveconv = def->adaptiveconv;
-      ((PC_Deflation*)(pcinner->data))->adaptiveconst = def->adaptiveconst;
       ierr = MatDestroy(&nextDef);CHKERRQ(ierr);
     } else { /* the last level */
       ierr = KSPSetType(def->WtAWinv,KSPPREONLY);CHKERRQ(ierr);
@@ -451,12 +484,6 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = KSPSetFromOptions(innerksp);CHKERRQ(ierr);
       ierr = KSPSetUp(innerksp);CHKERRQ(ierr);
     }
-    /* TODO: check if WtAWinv is KSP and move following from this if */
-    //if (def->adaptiveconv) {
-    //  PetscReal *rnorm;
-    //  PetscNew(&rnorm);
-    //  ierr = KSPSetConvergenceTest(def->WtAWinv,KSPDCGConvergedAdaptive_DCG,rnorm,NULL);CHKERRQ(ierr);
-    //}
   }
   ierr = KSPSetFromOptions(def->WtAWinv);CHKERRQ(ierr);
   ierr = KSPSetUp(def->WtAWinv);CHKERRQ(ierr);
@@ -552,7 +579,6 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
 {
   PC_Deflation      *def = (PC_Deflation*)pc->data;
   PetscErrorCode    ierr;
-  PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Deflation options");CHKERRQ(ierr);
@@ -562,8 +588,6 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
 //TODO add set function and fix manpages
   ierr = PetscOptionsBool("-pc_deflation_initdef","Use only initialization step - Initdef","PCDeflation",def->init,&def->init,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_deflation_correct","Add Qr to descent direction","PCDeflation",def->correct,&def->correct,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_deflation_adaptive","Adaptive stopping criteria","PCDeflation",def->adaptiveconv,&def->adaptiveconv,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_deflation_adaptive_const","Adaptive stopping criteria constant","PCDeflation",def->adaptiveconst,&def->adaptiveconst,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_redfact","Reduction factor for coarse problem solution","PCDeflation",def->reductionfact,&def->reductionfact,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_max_nested_lvl","Maximum of nested deflation levels","PCDeflation",def->maxnestedlvl,&def->maxnestedlvl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -605,8 +629,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   def->extendsp      = PETSC_FALSE;
   def->nestedlvl     = 0;
   def->maxnestedlvl  = 0;
-  def->adaptiveconv  = PETSC_FALSE;
-  def->adaptiveconst = 1.0;
 
   /*
       Set the pointers for the functions that are provided above.
@@ -631,6 +653,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",PCDeflationGetCoarseKSP_Deflation);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
