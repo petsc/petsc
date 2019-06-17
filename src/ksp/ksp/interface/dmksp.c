@@ -117,11 +117,12 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *kspdm = (DMKSP) dm->dmksp;
   if (!*kspdm) {
-    ierr      = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
-    ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm);CHKERRQ(ierr);
-    dm->dmksp = (PetscObject) *kspdm;
-    ierr      = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
-    ierr      = DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+    ierr                 = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
+    ierr                 = DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm);CHKERRQ(ierr);
+    dm->dmksp            = (PetscObject) *kspdm;
+    (*kspdm)->originaldm = dm;
+    ierr                 = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+    ierr                 = DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
