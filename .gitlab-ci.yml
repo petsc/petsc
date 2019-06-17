@@ -160,8 +160,4 @@ barry-checksource:
   tags:
     - barry
   script:
-    - git config user.email "petsc@gitlab.none"
-    - git config user.name "petsc gitlab-ci"
-    - git fetch origin master
-    - PETSC_ARCH=arch-basic PETSC_DIR=`pwd` ./configure --with-mpi=0 --with-fc=0
-    - PETSC_ARCH=arch-basic PETSC_DIR=`pwd` make checkbadSource
+    -hostname
