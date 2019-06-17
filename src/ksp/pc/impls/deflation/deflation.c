@@ -587,18 +587,28 @@ static PetscErrorCode PCView_Deflation(PC pc,PetscViewer viewer)
 
 static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PC_Deflation      *jac = (PC_Deflation*)pc->data;
-  PetscErrorCode ierr;
-  PetscBool      flg;
+  PC_Deflation      *def = (PC_Deflation*)pc->data;
+  PetscErrorCode    ierr;
+  PetscBool         flg;
   PCDeflationType   deflt,type;
 
   PetscFunctionBegin;
   ierr = PCDeflationGetType(pc,&deflt);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"Deflation options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-pc_jacobi_type","How to construct diagonal matrix","PCDeflationSetType",PCDeflationTypes,(PetscEnum)deflt,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-pc_deflation_type","Determine type of deflation","PCDeflationSetType",PCDeflationTypes,(PetscEnum)deflt,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCDeflationSetType(pc,type);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsEnum("-pc_deflation_compute_space","Compute deflation space","PCDeflationSetSpace",PCDeflationSpaceTypes,(PetscEnum)def->spacetype,(PetscEnum*)&def->spacetype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_deflation_compute_space_size","Set size of the deflation space to compute","PCDeflationSetSpace",def->spacesize,&def->spacesize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_deflation_space_extend","Extend deflation space instead of truncating (wavelets)","PCDeflation",def->extendsp,&def->extendsp,NULL);CHKERRQ(ierr);
+//TODO add set function and fix manpages
+  ierr = PetscOptionsBool("-pc_deflation_initdef","Use only initialization step - Initdef","PCDeflation",def->init,&def->init,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_deflation_correct","Add Qr to descent direction","PCDeflation",def->correct,&def->correct,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_deflation_adaptive","Adaptive stopping criteria","PCDeflation",def->adaptiveconv,&def->adaptiveconv,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_deflation_adaptive_const","Adaptive stopping criteria constant","PCDeflation",def->adaptiveconst,&def->adaptiveconst,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_deflation_redfact","Reduction factor for coarse problem solution","PCDeflation",def->reductionfact,&def->reductionfact,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_deflation_max_nested_lvl","Maximum of nested deflation levels","PCDeflation",def->maxnestedlvl,&def->maxnestedlvl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
