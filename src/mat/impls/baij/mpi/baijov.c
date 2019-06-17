@@ -134,7 +134,6 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 
   /* Allocate Memory for outgoing messages */
   ierr = PetscMalloc4(size,&outdat,size,&ptr,msz,&tmp,size,&ctr);CHKERRQ(ierr);
-  /*  TODO: use PetscCalloc2() */
   ierr = PetscArrayzero(outdat,size);CHKERRQ(ierr);
   ierr = PetscArrayzero(ptr,size);CHKERRQ(ierr);
   {
@@ -810,7 +809,6 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
 
     /* Allocate Memory for outgoing messages */
     ierr = PetscMalloc4(size,&sbuf1,size,&ptr,2*msz,&tmp,size,&ctr);CHKERRQ(ierr);
-    /*   TODO: use PetscCalloc2() */
     ierr = PetscArrayzero(sbuf1,size);CHKERRQ(ierr);
     ierr = PetscArrayzero(ptr,size);CHKERRQ(ierr);
 

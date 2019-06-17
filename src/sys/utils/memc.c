@@ -29,7 +29,7 @@
    Level: intermediate
 
    Note:
-   PetscArraycmp() is prefered
+   PetscArraycmp() is preferred
    This routine is anologous to memcmp()
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscStrallocpy(),

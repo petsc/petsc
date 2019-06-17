@@ -695,9 +695,8 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
     } else if (type == NORM_1) { /* max column sum */
       PetscReal *tmp,*tmp2;
       PetscInt  *jj,*garray=baij->garray,cstart=baij->rstartbs;
-      ierr = PetscMalloc2(mat->cmap->N,&tmp,mat->cmap->N,&tmp2);CHKERRQ(ierr);
-      /* TODO: use PetscCalloc1()  */
-      ierr = PetscArrayzero(tmp,mat->cmap->N);CHKERRQ(ierr);
+      ierr = PetscMalloc1(mat->cmap->N,&tmp);CHKERRQ(ierr);
+      ierr = PetscMalloc1(mat->cmap->N,&tmp2);CHKERRQ(ierr);
       v    = amat->a; jj = amat->j;
       for (i=0; i<amat->nz; i++) {
         for (j=0; j<bs; j++) {
@@ -723,7 +722,8 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
       for (j=0; j<mat->cmap->N; j++) {
         if (tmp2[j] > *nrm) *nrm = tmp2[j];
       }
-      ierr = PetscFree2(tmp,tmp2);CHKERRQ(ierr);
+      ierr = PetscFree(tmp);CHKERRQ(ierr);
+      ierr = PetscFree(tmp2);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row sum */
       PetscReal *sums;
       ierr = PetscMalloc1(bs,&sums);CHKERRQ(ierr);

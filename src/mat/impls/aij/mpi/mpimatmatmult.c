@@ -1328,7 +1328,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc4(size,&len_s,size,&len_si,size,&sstatus,size+2,&owners_co);CHKERRQ(ierr);
-  /* TODO: use PetscCallo2() */
   ierr = PetscArrayzero(len_s,size);CHKERRQ(ierr);
   ierr = PetscArrayzero(len_si,size);CHKERRQ(ierr);
 

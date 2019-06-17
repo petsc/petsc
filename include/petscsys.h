@@ -1514,7 +1514,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 #include <xmmintrin.h>
 #endif
 
-/*@
+/*@C
    PetscMemmove - Copies n bytes, beginning at location b, to the space
    beginning at location a. Copying  between regions that overlap will
    take place correctly. Use PetscMemcpy() if the locations do not overlap
@@ -1529,7 +1529,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
    Level: intermediate
 
    Note:
-   PetscArraymove() is prefered
+   PetscArraymove() is preferred
    This routine is analogous to memmove().
 
    Developers Note: This is inlined for performance
@@ -1654,7 +1654,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
   to be faster than the memset() routine. This flag causes the bzero() routine to be used.
 
    Not available from Fortran
-   Prefer PetscArrayMemzero((
+   Prefer PetscArrayzero()
 
    Developer Note: this is inlined for fastest performance
 
@@ -1710,7 +1710,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
    Level: intermediate
 
    Note:
-   This routine is a prefered replacement to PetscMemcmp()
+   This routine is a preferred replacement to PetscMemcmp()
    The arrays must be of the same type
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy(),
@@ -1736,7 +1736,7 @@ M*/
    Level: intermediate
 
    Note:
-   This routine is a prefered replacement to PetscMemmove()
+   This routine is a preferred replacement to PetscMemmove()
    The arrays must be of the same type
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycpy(), PetscMemmove(), PetscArraycmp(), PetscStrallocpy()
@@ -1760,7 +1760,7 @@ M*/
    Level: intermediate
 
    Note:
-   This routine is a prefered replacement to PetscMemcpy()
+   This routine is a preferred replacement to PetscMemcpy()
    The arrays must be of the same type
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraymove(), PetscMemmove(), PetscArraycmp(), PetscStrallocpy()
@@ -1783,7 +1783,7 @@ M*/
    Level: intermediate
 
    Note:
-   This routine is a prefered replacement to PetscMemzero()
+   This routine is a preferred replacement to PetscMemzero()
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy(), PetscArraymove()
 M*/

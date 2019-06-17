@@ -61,6 +61,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
 #define MAXOPS 32
   (*sr)->maxops      = MAXOPS;
   ierr               = PetscMalloc4(2*MAXOPS,&(*sr)->lvalues,2*MAXOPS,&(*sr)->gvalues,MAXOPS,&(*sr)->invecs,MAXOPS,&(*sr)->reducetype);CHKERRQ(ierr);
+#undef MAXOPS
   (*sr)->comm        = comm;
   (*sr)->request     = MPI_REQUEST_NULL;
   (*sr)->async       = PETSC_FALSE;

@@ -51,7 +51,7 @@ static PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   /* Data for the Newton basis GMRES */
   ierr = PetscCalloc4(max_k,&agmres->Rshift,max_k,&agmres->Ishift,hes,&agmres->Rloc,(N+1)*4,&agmres->wbufptr);CHKERRQ(ierr);
   ierr = PetscMalloc3(N+1,&agmres->tau,lwork,&agmres->work,N+1,&agmres->nrs);CHKERRQ(ierr);
-  ierr = PetscMalloc4(N+1,&agmres->Scale,N+1,&agmres->sgn,N+1,&agmres->tloc,N+1,&agmres->temp);CHKERRQ(ierr);
+  ierr = PetscCalloc4(N+1,&agmres->Scale,N+1,&agmres->sgn,N+1,&agmres->tloc,N+1,&agmres->temp);CHKERRQ(ierr);
 
   /* Allocate space for the vectors in the orthogonalized basis*/
   ierr = VecGetLocalSize(agmres->vecs[0], &nloc);CHKERRQ(ierr);

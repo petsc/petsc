@@ -538,7 +538,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
   /* Allocate Memory for outgoing messages */
   ierr = PetscMalloc4(size,&outdat,size,&ptr,msz,&tmp,size,&ctr);CHKERRQ(ierr);
-  /* TODO: use PetscCalloc2() */
   ierr = PetscArrayzero(outdat,size);CHKERRQ(ierr);
   ierr = PetscArrayzero(ptr,size);CHKERRQ(ierr);
 

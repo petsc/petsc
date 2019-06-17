@@ -509,7 +509,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc4(size,&len_s,size,&len_si,size,&sstatus,size+2,&owners_co);CHKERRQ(ierr);
-  /* TODO: Use PetscCalloc2() */
   ierr = PetscArrayzero(len_s,size);CHKERRQ(ierr);
   ierr = PetscArrayzero(len_si,size);CHKERRQ(ierr);
 
@@ -1770,7 +1769,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc4(size,&len_s,size,&len_si,size,&sstatus,size+2,&owners_co);CHKERRQ(ierr);
-  /* TODO: Use PetscCalloc2() */
   ierr = PetscArrayzero(len_s,size);CHKERRQ(ierr);
   ierr = PetscArrayzero(len_si,size);CHKERRQ(ierr);
 

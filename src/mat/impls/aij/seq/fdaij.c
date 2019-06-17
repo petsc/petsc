@@ -226,9 +226,8 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     ierr = MatGetColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscMalloc2(c->m,&rowhit,c->m,&valaddrhit);CHKERRQ(ierr);
-  /* TODO: Use PetscCalloc1() */
-  ierr = PetscArrayzero(rowhit,c->m);CHKERRQ(ierr);
+  ierr = PetscCalloc1(c->m,&rowhit);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->m,&valaddrhit);CHKERRQ(ierr);
 
   nz = 0;
   for (i=0; i<nis; i++) { /* loop over colors */
@@ -295,7 +294,8 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   } else {
     ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscFree2(rowhit,valaddrhit);CHKERRQ(ierr);
+  ierr = PetscFree(rowhit);CHKERRQ(ierr);
+  ierr = PetscFree(valaddrhit);CHKERRQ(ierr);
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
 
   ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->rmap->n,PETSC_DETERMINE,0,NULL,&c->vscale);CHKERRQ(ierr);
