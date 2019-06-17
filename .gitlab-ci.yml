@@ -155,3 +155,12 @@ opensolaris-cmplx-pkgs-dbg:
   extends: .opensolaris_mcs_test
   variables:
     TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
+
+barry-checksource:
+  tags:
+    - barry
+  script:
+    - git config user.email "petsc@gitlab.none"
+    - git config user.name "petsc gitlab-ci"
+    - git fetch origin master
+    - make checkbadSource
