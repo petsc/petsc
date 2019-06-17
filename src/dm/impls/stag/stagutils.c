@@ -604,7 +604,7 @@ PetscErrorCode DMStagCreateCompatibleDMStag(DM dm,PetscInt dof0,PetscInt dof1,Pe
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOF(), DMStagVecGetArrayDOFRead(), DMStagGetDOF(), DStagMGetEntriesPerElement()
+.seealso: DMSTAG, DMStagVecGetArrayDOF(), DMStagVecGetArrayDOFRead(), DMStagGetDOF(), DMStagGetEntriesPerElement()
 @*/
 PetscErrorCode DMStagGetLocationSlot(DM dm,DMStagStencilLocation loc,PetscInt c,PetscInt *slot)
 {
