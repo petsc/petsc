@@ -94,7 +94,7 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
 /*@C
    DMGetDMKSP - get read-only private DMKSP context from a DM
 
-   Not Collective
+   Logically Collective
 
    Input Argument:
 .  dm - DM to be used with KSP
@@ -129,7 +129,7 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 /*@C
    DMGetDMKSPWrite - get write access to private DMKSP context from a DM
 
-   Not Collective
+   Logically Collective
 
    Input Argument:
 .  dm - DM to be used with KSP
