@@ -189,7 +189,10 @@ test_build:
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_superlu_dist; \
          fi;
 	+@if [ "${HDF5_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/vec/vec/examples/tests >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex47 DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex47; \
+          cd src/vec/vec/examples/tests >/dev/null; \
+          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean; \
+          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex47.PETSc DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex47; \
+          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean; \
          fi;
 	+@if ( [ "${ML_LIB}" != "" ] ||  [ "${TRILINOS_LIB}" != "" ] ) && [ "${PETSC_WITH_BATCH}" = "" ]; then \
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_ml; \
