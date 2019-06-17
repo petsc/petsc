@@ -308,19 +308,6 @@ E*/
 typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
 
 /*E
-    PCDeflationType - Type of deflation to use
-    Level: beginner
-
-    Values:
-+  	PC_DEFLATION_PRE   - use special initial guess and keep the iterations in the correct space (default)
-.  	PC_DEFLATION_INIT  - use special initial guess (good for deflation space consiting of eigenvectors approximated to high precision)
--  	PC_DEFLATION_POST  - keep the iterations in the correct space and correct the solution after it was found
-
-.seealso: PCDeflationSetType(), PCDeflationGetType(), PCDEFLATION
-E*/
-typedef enum {PC_DEFLATION_INIT,PC_DEFLATION_PRE,PC_DEFLATION_POST} PCDeflationType;
-
-/*E
     PCDeflationSpaceType - Type of deflation space TODO improve doc
     Level: beginner
 

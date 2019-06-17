@@ -50,8 +50,6 @@
 
 #include <../src/ksp/pc/impls/deflation/deflation.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
 
-const char *const PCDeflationTypes[]    = {"INIT","PRE","POST","PCDeflationType","PC_DEFLATION_",0};
-
 const char *const PCDeflationSpaceTypes[] = {
   "haar",
   "jacket-haar",
@@ -258,100 +256,6 @@ static PetscErrorCode PCApply_Deflation(PC pc,Vec r,Vec z)
     ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                   /*    u  <- W*w2                */
     ierr = VecAXPY(z,-1.0,u);CHKERRQ(ierr);                      /*    z  <- z - u               */
   }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode  PCDeflationSetType_Deflation(PC pc,PCDeflationType type)
-{
-  PC_Deflation *def = (PC_Deflation*)pc->data;
-
-  PetscFunctionBegin;
-  def->init = PETSC_FALSE;
-  def->pre = PETSC_FALSE;
-  if (type == PC_DEFLATION_POST) {
-    //pc->ops->postsolve = PCPostSolve_Deflation;
-    pc->ops->presolve = 0;
-  } else {
-    pc->ops->presolve = PCPreSolve_Deflation;
-    pc->ops->postsolve = 0;
-    if (type == PC_DEFLATION_INIT) {
-      def->init = PETSC_TRUE;
-      pc->ops->apply = 0;
-    } else {
-      def->pre  = PETSC_TRUE;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-   PCDeflationSetType - Causes the deflation preconditioner to use only a special
-    initial gues or pre/post solve solution update
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  type - PC_DEFLATION_PRE, PC_DEFLATION_INIT, PC_DEFLATION_POST
-
-   Options Database Key:
-.  -pc_deflation_type <pre,init,post>
-
-   Level: intermediate
-
-   Concepts: Deflation preconditioner
-
-.seealso: PCDeflationGetType()
-@*/
-PetscErrorCode  PCDeflationSetType(PC pc,PCDeflationType type)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCDeflationSetType_C",(PC,PCDeflationType),(pc,type));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode  PCDeflationGetType_Deflation(PC pc,PCDeflationType *type)
-{
-  PC_Deflation *def = (PC_Deflation*)pc->data;
-
-  PetscFunctionBegin;
-  if (def->init) {
-    *type = PC_DEFLATION_INIT;
-  } else if (def->pre) {
-    *type = PC_DEFLATION_PRE;
-  } else {
-    *type = PC_DEFLATION_POST;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-   PCDeflationGetType - Gets how the diagonal matrix is produced for the preconditioner
-
-   Not Collective on PC
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Output Parameter:
--  type - PC_DEFLATION_PRE, PC_DEFLATION_INIT, PC_DEFLATION_POST
-
-   Level: intermediate
-
-   Concepts: Deflation preconditioner
-
-.seealso: PCDeflationSetType()
-@*/
-PetscErrorCode  PCDeflationGetType(PC pc,PCDeflationType *type)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCDeflationGetType_C",(PC,PCDeflationType*),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -649,15 +553,9 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   PC_Deflation      *def = (PC_Deflation*)pc->data;
   PetscErrorCode    ierr;
   PetscBool         flg;
-  PCDeflationType   deflt,type;
 
   PetscFunctionBegin;
-  ierr = PCDeflationGetType(pc,&deflt);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"Deflation options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-pc_deflation_type","Determine type of deflation","PCDeflationSetType",PCDeflationTypes,(PetscEnum)deflt,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCDeflationSetType(pc,type);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsEnum("-pc_deflation_compute_space","Compute deflation space","PCDeflationSetSpace",PCDeflationSpaceTypes,(PetscEnum)def->spacetype,(PetscEnum*)&def->spacetype,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_compute_space_size","Set size of the deflation space to compute","PCDeflationSetSpace",def->spacesize,&def->spacesize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_deflation_space_extend","Extend deflation space instead of truncating (wavelets)","PCDeflation",def->extendsp,&def->extendsp,NULL);CHKERRQ(ierr);
@@ -699,7 +597,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   pc->data = (void*)def;
 
   def->init          = PETSC_FALSE;
-  def->pre           = PETSC_TRUE;
   def->correct       = PETSC_FALSE;
   def->truenorm      = PETSC_TRUE;
   def->reductionfact = -1;
@@ -731,8 +628,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetType_C",PCDeflationSetType_Deflation);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetType_C",PCDeflationGetType_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);

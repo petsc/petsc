@@ -5,7 +5,6 @@
 
 typedef struct {
   PetscBool init;            /* do only init step - error correction of direction is omitted */
-  PetscBool pre;             /* start with x0 being the solution in the deflation space */
   PetscBool correct;         /* add CP (Qr) correction to descent direction */
   PetscBool truenorm;
   PetscBool adaptiveconv;
