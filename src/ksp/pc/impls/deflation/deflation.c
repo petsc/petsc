@@ -119,7 +119,7 @@ static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscIn
   PC_Deflation   *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
-  def->nestedlvl = current;
+  if (current) def->nestedlvl = current;
   def->maxnestedlvl = max;
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,6 @@ PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,max,2);
-  /* TODO allow setting only for the top level */
   ierr = PetscTryMethod(pc,"PCDeflationSetLvl_C",(PC,PetscInt,PetscInt),(pc,0,max));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
