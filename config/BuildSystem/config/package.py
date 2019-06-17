@@ -94,6 +94,7 @@ class Package(config.base.Configure):
     self.builtafterpetsc        = 0  # package is compiled/installed after PETSc is compiled
 
     self.downloaded             = 0  # 1 indicates that this package is being downloaded during this run (internal use only)
+    self.executablename         = '' # full path of executable, for example cmake, bfort etc
     return
 
   def __str__(self):
@@ -107,6 +108,7 @@ class Package(config.base.Configure):
         if self.version: output += '  Version:  '+self.version+'\n'
       if self.include: output += '  Includes: '+self.headers.toStringNoDupes(self.include)+'\n'
       if self.lib:     output += '  Library:  '+self.libraries.toStringNoDupes(self.lib)+'\n'
+      if self.executablename: output += ' '+getattr(self,self.executablename)+'\n'
       if self.usesopenmp == 'yes': output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> or -omp_num_threads <p> to control the number of threads\n'
       if self.usesopenmp == 'unknown': output += '  Unkown if this uses OpenMP (try export OMP_NUM_THREADS=<1-4> yourprogram -log_view) \n'
     return output
