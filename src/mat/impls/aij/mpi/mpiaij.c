@@ -3911,7 +3911,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   PetscBool      nooffprocentries;
 
   PetscFunctionBegin;
-  if (Ii && Ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
+  if (Ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
 
   ierr   = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr   = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
@@ -3923,7 +3923,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   ierr = PetscCalloc2(m,&d_nnz,m,&o_nnz);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
-  for (i=0; i<m && Ii; i++) {
+  for (i=0; i<m; i++) {
     nnz = Ii[i+1]- Ii[i];
     JJ  = J + Ii[i];
     if (nnz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
@@ -3932,7 +3932,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   }
 #endif
 
-  for (i=0; i<m && Ii; i++) {
+  for (i=0; i<m; i++) {
     nnz     = Ii[i+1]- Ii[i];
     JJ      = J + Ii[i];
     nnz_max = PetscMax(nnz_max,nnz);
@@ -3951,7 +3951,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
     ierr = PetscCalloc1(nnz_max+1,&values);CHKERRQ(ierr);
   }
 
-  for (i=0; i<m && Ii; i++) {
+  for (i=0; i<m; i++) {
     ii   = i + rstart;
     nnz  = Ii[i+1]- Ii[i];
     ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+Ii[i],values+(v ? Ii[i] : 0),INSERT_VALUES);CHKERRQ(ierr);
@@ -4163,7 +4163,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nn
 
 /*@
      MatCreateMPIAIJWithArrays - creates a MPI AIJ matrix using arrays that contain in standard
-         CSR format the local rows.
+         CSR format for the local rows.
 
    Collective
 
@@ -4195,6 +4195,8 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nn
     row-major ordering.. i.e for the following matrix, the input data expected is
     as shown
 
+       Once you have created the matrix you can update it with new numerical values using MatUpdateMPIAIJWithArrays
+
 $        1 0 0
 $        2 0 3     P0
 $       -------
@@ -4211,7 +4213,7 @@ $        j =  {0,1,2}  [size = 3]
 $        v =  {4,5,6}  [size = 3]
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()
+          MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays(), MatUpdateMPIAIJWithArrays()
 @*/
 PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
 {
@@ -4225,6 +4227,86 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
   /* ierr = MatSetBlockSizes(M,bs,cbs);CHKERRQ(ierr); */
   ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocationCSR(*mat,i,j,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+     MatUpdateMPIAIJWithArrays - updates a MPI AIJ matrix using arrays that contain in standard
+         CSR format for the local rows. Only the numerical values are updated the other arrays must be identical
+
+   Collective
+
+   Input Parameters:
++  mat - the matrix
+.  m - number of local rows (Cannot be PETSC_DECIDE)
+.  n - This value should be the same as the local size used in creating the
+       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       calculated if N is given) For square matrices n is almost always m.
+.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
+.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  Ii - row indices; that is Ii[0] = 0, Ii[row] = Ii[row-1] + number of elements in that row of the matrix
+.  J - column indices
+-  v - matrix values
+
+   Level: intermediate
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
+          MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays(), MatUpdateMPIAIJWithArrays()
+@*/
+PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
+{
+  PetscErrorCode ierr;
+  PetscInt       cstart, cend,nnz,i,j;
+  PetscInt       *ld;
+  PetscBool      nooffprocentries;
+  Mat_MPIAIJ     *Aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ     *Ad  = (Mat_SeqAIJ*)Aij->A->data, *Ao  = (Mat_SeqAIJ*)Aij->B->data;
+  PetscScalar    *ad = Ad->a, *ao = Ao->a;
+  const PetscInt *Adi = Ad->i;
+  PetscInt       ldi,Iii,md;
+
+  PetscFunctionBegin;
+  if (Ii[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
+  if (m != mat->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local number of rows cannot change from call to MatUpdateMPIAIJWithArrays()");
+  if (n != mat->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local number of columns cannot change from call to MatUpdateMPIAIJWithArrays()");
+
+  cstart = mat->cmap->rstart;
+  cend   = mat->cmap->rend;
+  if (!Aij->ld) {
+    /* count number of entries below block diagonal */
+    ierr    = PetscCalloc1(m,&ld);CHKERRQ(ierr);
+    Aij->ld = ld;
+    for (i=0; i<m; i++) {
+      nnz  = Ii[i+1]- Ii[i];
+      j     = 0;
+      while  (J[j] < cstart && j < nnz) {j++;}
+      J    += nnz;
+      ld[i] = j;
+    }
+  } else {
+    ld = Aij->ld;
+  }
+
+  for (i=0; i<m; i++) {
+    nnz  = Ii[i+1]- Ii[i];
+    Iii  = Ii[i];
+    ldi  = ld[i];
+    md   = Adi[i+1]-Adi[i];
+    ierr = PetscArraycpy(ao,v + Iii,ldi);CHKERRQ(ierr);
+    ierr = PetscArraycpy(ad,v + Iii + ldi,md);CHKERRQ(ierr);
+    ierr = PetscArraycpy(ao + ldi,v + Iii + ldi + md,nnz - ldi - md);CHKERRQ(ierr);
+    ad  += md;
+    ao  += nnz - md;
+  }
+  nooffprocentries      = mat->nooffprocentries;
+  mat->nooffprocentries = PETSC_TRUE;
+  ierr = PetscObjectStateIncrease((PetscObject)Aij->A);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)Aij->B);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  mat->nooffprocentries = nooffprocentries;
   PetscFunctionReturn(0);
 }
 

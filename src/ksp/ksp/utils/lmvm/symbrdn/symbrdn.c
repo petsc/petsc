@@ -426,7 +426,7 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
     ierr = VecDuplicate(X, &lsb->work);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = PetscMalloc5(lmvm->m,&lsb->stp,lmvm->m,&lsb->ytq,lmvm->m,&lsb->yts,lmvm->m,&lsb->yty,lmvm->m,&lsb->sts);CHKERRQ(ierr);
-      ierr = PetscMalloc1(lmvm->m,&lsb->psi);CHKERRQ(ierr);
+      ierr = PetscCalloc1(lmvm->m,&lsb->psi);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(X, lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(X, lmvm->m, &lsb->Q);CHKERRQ(ierr);
     }
@@ -480,7 +480,7 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
     ierr = VecDuplicate(lmvm->Xprev, &lsb->work);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = PetscMalloc5(lmvm->m,&lsb->stp,lmvm->m,&lsb->ytq,lmvm->m,&lsb->yts,lmvm->m,&lsb->yty,lmvm->m,&lsb->sts);CHKERRQ(ierr);
-      ierr = PetscMalloc1(lmvm->m,&lsb->psi);CHKERRQ(ierr);
+      ierr = PetscCalloc1(lmvm->m,&lsb->psi);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->Q);CHKERRQ(ierr);
     }

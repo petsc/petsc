@@ -1690,7 +1690,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
   return 0;
 }
 
-/*M
+/*MC
    PetscArraycmp - Compares two arrays in memory.
 
    Synopsis:
@@ -1718,7 +1718,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
 M*/
 #define  PetscArraycmp(str1,str2,cnt,e) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcmp(str1,str2,(cnt)*sizeof(*(str1)),e));
 
-/*M
+/*MC
    PetscArraymove - Copies from one array in memory to another, the arrays may overlap. Use PetscArraycpy() when the arrays
                     do not overlap
 
@@ -1743,7 +1743,7 @@ M*/
 M*/
 #define  PetscArraymove(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemmove(str1,str2,(cnt)*sizeof(*(str1))));
 
-/*M
+/*MC
    PetscArraycpy - Copies from one array in memory to another
 
    Synopsis:
@@ -1767,7 +1767,7 @@ M*/
 M*/
 #define  PetscArraycpy(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcpy(str1,str2,(cnt)*sizeof(*(str1))));
 
-/*M
+/*MC
    PetscArrayzero - Zeros an array in memory.
 
    Synopsis:

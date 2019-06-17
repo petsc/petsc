@@ -228,7 +228,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P (cn: non-scalable) */
-  ierr = PetscMalloc2(cn,&apa,cn,&apjdense);CHKERRQ(ierr);
+  ierr = PetscCalloc2(cn,&apa,cn,&apjdense);CHKERRQ(ierr);
   ierr = PetscMalloc1(cn,&apj);CHKERRQ(ierr);
 
   /* Clear old values in C */
