@@ -275,21 +275,20 @@ static PetscErrorCode PCApply_Deflation(PC pc,Vec r,Vec z)
   ierr = PCApply(def->pc,r,z);CHKERRQ(ierr);
   if (!def->init) {
     if (!def->AW) {
-      ierr = MatMult(A,z,u);CHKERRQ(ierr);                       /*    u  <- A*z                 */
-      /* TODO correct const */
-      if (def->correct) ierr = VecAXPY(u,-1.0,z);CHKERRQ(ierr);  /*    u  <- A*z -z              */
-      ierr = MatMultTranspose(def->W,u,w1);CHKERRQ(ierr);        /*    w1 <- W'*u                */
+      ierr = MatMult(A,z,u);CHKERRQ(ierr);                                        /*    u  <- A*z                 */
+      if (def->correct) ierr = VecAXPY(u,-1.0*def->correctfact,z);CHKERRQ(ierr);  /*    u  <- A*z -z              */
+      ierr = MatMultTranspose(def->W,u,w1);CHKERRQ(ierr);                         /*    w1 <- W'*u                */
     } else {
       /* ONLY if A SYM */
-      ierr = MatMultTranspose(def->AW,z,w1);CHKERRQ(ierr);       /*    w1  <- W'*A*r             */
+      ierr = MatMultTranspose(def->AW,z,w1);CHKERRQ(ierr);                        /*    w1  <- W'*A*r             */
       if (def->correct) {
-        ierr = MatMultTranspose(def->W,z,w2);CHKERRQ(ierr);      /*    w2 <- W'*u                */
-        ierr = VecAXPY(w1,-1.0,w2);CHKERRQ(ierr);                /*    w1 <- w1 - w2             */
+        ierr = MatMultTranspose(def->W,z,w2);CHKERRQ(ierr);                       /*    w2 <- W'*u                */
+        ierr = VecAXPY(w1,-1.0*def->correctfact,w2);CHKERRQ(ierr);                /*    w1 <- w1 - w2             */
       }
     }
-    ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);           /*    w2 <- (W'*A*W)^{-1}*w1    */
-    ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                   /*    u  <- W*w2                */
-    ierr = VecAXPY(z,-1.0,u);CHKERRQ(ierr);                      /*    z  <- z - u               */
+    ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);                            /*    w2 <- (W'*A*W)^{-1}*w1    */
+    ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                                    /*    u  <- W*w2                */
+    ierr = VecAXPY(z,-1.0,u);CHKERRQ(ierr);                                       /*    z  <- z - u               */
   }
   PetscFunctionReturn(0);
 }
@@ -587,7 +586,8 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   ierr = PetscOptionsBool("-pc_deflation_space_extend","Extend deflation space instead of truncating (wavelets)","PCDeflation",def->extendsp,&def->extendsp,NULL);CHKERRQ(ierr);
 //TODO add set function and fix manpages
   ierr = PetscOptionsBool("-pc_deflation_initdef","Use only initialization step - Initdef","PCDeflation",def->init,&def->init,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_deflation_correct","Add Qr to descent direction","PCDeflation",def->correct,&def->correct,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_deflation_correct","Add coarse problem correction Q to P","PCDeflation",def->correct,&def->correct,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_deflation_correct_val","Set multiple of Q to use as coarse problem correction","PCDeflation",def->correctfact,&def->correctfact,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_redfact","Reduction factor for coarse problem solution","PCDeflation",def->reductionfact,&def->reductionfact,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_max_nested_lvl","Maximum of nested deflation levels","PCDeflation",def->maxnestedlvl,&def->maxnestedlvl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -622,7 +622,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
 
   def->init          = PETSC_FALSE;
   def->correct       = PETSC_FALSE;
-  def->truenorm      = PETSC_TRUE;
+  def->correctfact   = 1.0;
   def->reductionfact = -1;
   def->spacetype     = PC_DEFLATION_SPACE_HAAR;
   def->spacesize     = 1;
