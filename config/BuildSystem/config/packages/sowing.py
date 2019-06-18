@@ -116,6 +116,10 @@ class Configure(config.package.GNUPackage):
           self.getExecutable('mapnames', path=installDir, getFullPath = 1)
           self.getExecutable('bib2html', path=installDir, getFullPath = 1)
 
+          if not hasattr(self,'bfort'): raise RuntimeError('Unable to locate bfort (part of sowing) in its expected location in '+installDir+'\n\
+Perhaps the installation has been corrupted or changed, remove the directory '+os.path.join(self.petscdir.dir,self.arch)+'\n\
+and run configure again\n')
+
       self.checkBfortVersion(1,1,25)
       self.buildFortranStubs()
     else:
