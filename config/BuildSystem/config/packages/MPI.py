@@ -274,6 +274,13 @@ shared libraries and run with --known-mpi-shared-libraries=1')
                        if (MPI_Ialltoall(&send,1,MPI_INT,&recv,1,MPI_INT,MPI_COMM_WORLD,&req));\n'):
       self.addDefine('HAVE_MPI_NONBLOCKING_COLLECTIVES', 1)
       self.support_mpi3_nbc = 1
+    if self.checkLink('#include <mpi.h>\n',
+                      'MPI_Comm distcomm; \n\
+                       MPI_Request req; \n\
+                       if (MPI_Dist_graph_create_adjacent(MPI_COMM_WORLD,0,0,MPI_WEIGHTS_EMPTY,0,0,MPI_WEIGHTS_EMPTY,MPI_INFO_NULL,0,&distcomm));\n\
+                       if (MPI_Neighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm));\n\
+                       if (MPI_Ineighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm,&req));\n'):
+      self.addDefine('HAVE_MPI_NEIGHBORHOOD_COLLECTIVES',1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
