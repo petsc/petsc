@@ -1875,10 +1875,11 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_MPI1_12(PetscInt n,const PetscInt *in
 PETSC_STATIC_INLINE void Pack_MPI1_bs(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y,PetscInt bs)
 {
   PetscInt       i,idx;
+  PetscErrorCode ierr;
 
   for (i=0; i<n; i++) {
     idx   = *indicesx++;
-    PetscArraycpy(y,x + idx,bs);
+    ierr = PetscArraycpy(y,x + idx,bs);CHKERRV(ierr);
     y    += bs;
   }
 }
@@ -1886,6 +1887,7 @@ PETSC_STATIC_INLINE void Pack_MPI1_bs(PetscInt n,const PetscInt *indicesx,const 
 PETSC_STATIC_INLINE PetscErrorCode UnPack_MPI1_bs(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy,j;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (addv) {
@@ -1893,7 +1895,7 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_MPI1_bs(PetscInt n,const PetscScalar *
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      PetscArraycpy(y + idy,x,bs);
+      ierr = PetscArraycpy(y + idy,x,bs);CHKERRQ(ierr);
       x        += bs;
     }
     break;
@@ -1926,6 +1928,7 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_MPI1_bs(PetscInt n,const PetscScalar *
 PETSC_STATIC_INLINE PetscErrorCode Scatter_MPI1_bs(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy,j;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (addv) {
@@ -1934,7 +1937,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_MPI1_bs(PetscInt n,const PetscInt *in
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      PetscArraycpy(y + idy, x + idx,bs);
+      ierr = PetscArraycpy(y + idy, x + idx,bs);CHKERRQ(ierr);
     }
     break;
   case ADD_VALUES:

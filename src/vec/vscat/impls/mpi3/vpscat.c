@@ -1960,10 +1960,11 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_12(PetscInt n,const PetscInt *indices
 PETSC_STATIC_INLINE void Pack_bs(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y,PetscInt bs)
 {
   PetscInt       i,idx;
+  PetscErrorCode ierr;
 
   for (i=0; i<n; i++) {
     idx   = *indicesx++;
-    PetscArraycpy(y,x + idx,bs);
+    ierr = PetscArraycpy(y,x + idx,bs);CHKERRV(ierr);
     y    += bs;
   }
 }
@@ -1971,6 +1972,7 @@ PETSC_STATIC_INLINE void Pack_bs(PetscInt n,const PetscInt *indicesx,const Petsc
 PETSC_STATIC_INLINE PetscErrorCode UnPack_bs(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy,j;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (addv) {
@@ -1978,7 +1980,7 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_bs(PetscInt n,const PetscScalar *x,con
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      PetscArraycpy(y + idy,x,bs);
+      ierr = PetscArraycpy(y + idy,x,bs);CHKERRQ(ierr);
       x        += bs;
     }
     break;
@@ -2011,6 +2013,7 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_bs(PetscInt n,const PetscScalar *x,con
 PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy,j;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (addv) {
@@ -2019,7 +2022,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indices
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      PetscArraycpy(y + idy, x + idx,bs);
+      ierr = PetscArraycpy(y + idy, x + idx,bs);CHKERRQ(ierr);
     }
     break;
   case ADD_VALUES:

@@ -909,6 +909,7 @@ PETSC_EXTERN void matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[]
   PetscInt          *aj    =a->j,stepval,lastcol = -1;
   const PetscScalar *value = v;
   MatScalar         *ap,*aa = a->a,*bap;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (A->rmap->bs != 4) SETERRABORT(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Can only be called with a block size of 4");
@@ -948,10 +949,10 @@ PETSC_EXTERN void matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[]
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
         rp[ii+1] = rp[ii];
-        PetscArraycpy(ap+16*(ii+1),ap+16*(ii),16);
+        ierr = PetscArraycpy(ap+16*(ii+1),ap+16*(ii),16);CHKERRV(ierr);
       }
       if (N >= i) {
-        PetscArrayzero(ap+16*i,16);
+        ierr = PetscArrayzero(ap+16*i,16);CHKERRV(ierr);
       }
       rp[i] = col;
       bap   = ap +  16*i;
@@ -983,6 +984,7 @@ PETSC_EXTERN void matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,
   PetscInt    *aj=a->j,brow,bcol;
   PetscInt    ridx,cidx,lastcol = -1;
   MatScalar   *ap,value,*aa=a->a,*bap;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over added rows */
@@ -1015,9 +1017,9 @@ PETSC_EXTERN void matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,
       N = nrow++ - 1;
       high++; /* added new column thus must search to one higher than before */
       /* shift up all the later entries in this row */
-      PetscArraymove(rp+i+1,rp+i,N-i+1);
-      PetscArraymove(ap+16*i+16,ap+16*i,16*(N-i+1));
-      PetscArrayzero(ap+16*i,16);
+      ierr = PetscArraymove(rp+i+1,rp+i,N-i+1);CHKERRV(ierr);
+      ierr = PetscArraymove(ap+16*i+16,ap+16*i,16*(N-i+1));CHKERRV(ierr);
+      ierr = PetscArrayzero(ap+16*i,16);CHKERRV(ierr);
       rp[i]                    = bcol;
       ap[16*i + 4*cidx + ridx] = value;
 noinsert1:;

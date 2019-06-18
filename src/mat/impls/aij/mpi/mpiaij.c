@@ -4256,7 +4256,7 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
 PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
 {
   PetscErrorCode ierr;
-  PetscInt       cstart, cend,nnz,i,j;
+  PetscInt       cstart,nnz,i,j;
   PetscInt       *ld;
   PetscBool      nooffprocentries;
   Mat_MPIAIJ     *Aij = (Mat_MPIAIJ*)mat->data;
@@ -4272,7 +4272,6 @@ PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat,PetscInt m,PetscInt n,PetscInt 
   if (n != mat->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local number of columns cannot change from call to MatUpdateMPIAIJWithArrays()");
 
   cstart = mat->cmap->rstart;
-  cend   = mat->cmap->rend;
   if (!Aij->ld) {
     /* count number of entries below block diagonal */
     ierr    = PetscCalloc1(m,&ld);CHKERRQ(ierr);
