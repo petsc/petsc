@@ -44,8 +44,6 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
     ierr = KSPSetOperators(ksp,subJ,subpJ);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,b[i],x[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-  for (i=0;i<n;i++) {
     ierr = VecScatterEnd(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

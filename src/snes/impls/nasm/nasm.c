@@ -685,22 +685,14 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     ierr = VecScale(Yl, nasm->damping);CHKERRQ(ierr);
     if (type == PC_ASM_BASIC) {
       ierr = VecScatterBegin(oscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(oscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     } else if (type == PC_ASM_RESTRICT) {
       ierr = VecScatterBegin(iscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(iscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Only basic and restrict types are supported for SNESNASM");
   }
   if (nasm->eventsubsolve) {ierr = PetscLogEventEnd(nasm->eventsubsolve,snes,0,0,0);CHKERRQ(ierr);}
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
-  for (i=0; i<nasm->n; i++) {
-    Yl    = nasm->y[i];
-    iscat   = nasm->iscatter[i];
-    oscat   = nasm->oscatter[i];
-    if (type == PC_ASM_BASIC) {
-      ierr = VecScatterEnd(oscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    } else if (type == PC_ASM_RESTRICT) {
-      ierr = VecScatterEnd(iscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Only basic and restrict types are supported for SNESNASM");
-  }
   if (nasm->weight_set) {
     ierr = VecPointwiseMult(Y,Y,nasm->weight);CHKERRQ(ierr);
   }
