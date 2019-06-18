@@ -1078,66 +1078,6 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nleaves, const P
 }
 
 /*@C
-   PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()
-
-   Collective on PetscSF
-
-   Input Arguments:
-+  sf - star forest on which to communicate
-.  unit - data type associated with each node
--  rootdata - buffer to broadcast
-
-   Output Arguments:
-.  leafdata - buffer to update with values from each leaf's respective root
-
-   Level: intermediate
-
-.seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFView(), PetscSFBcastEnd(), PetscSFReduceBegin()
-@*/
-PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(PETSCSF_BcastBegin,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->BcastBegin)(sf,unit,rootdata,leafdata);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PETSCSF_BcastBegin,sf,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   PetscSFBcastEnd - end a broadcast operation started with PetscSFBcastBegin()
-
-   Collective
-
-   Input Arguments:
-+  sf - star forest
-.  unit - data type
--  rootdata - buffer to broadcast
-
-   Output Arguments:
-.  leafdata - buffer to update with values from each leaf's respective root
-
-   Level: intermediate
-
-.seealso: PetscSFSetGraph(), PetscSFReduceEnd()
-@*/
-PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(PETSCSF_BcastEnd,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->BcastEnd)(sf,unit,rootdata,leafdata);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PETSCSF_BcastEnd,sf,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
    PetscSFBcastAndOpBegin - begin pointwise broadcast with root value being reduced to leaf value, to be concluded with call to PetscSFBcastAndOpEnd()
 
    Collective on PetscSF

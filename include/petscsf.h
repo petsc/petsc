@@ -86,11 +86,6 @@ PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);
 
-/* broadcasts rootdata to leafdata */
-PETSC_EXTERN PetscErrorCode PetscSFBcastBegin(PetscSF,MPI_Datatype,const void*,void*)
-  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
-PETSC_EXTERN PetscErrorCode PetscSFBcastEnd(PetscSF,MPI_Datatype,const void*,void*)
-  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 /* Reduce rootdata to leafdata using provided operation */
 PETSC_EXTERN PetscErrorCode PetscSFBcastAndOpBegin(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
@@ -137,4 +132,12 @@ PETSC_DEPRECATED_FUNCTION("Use PetscSFGetRootRanks (since v3.12)")
 PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote) {
   return PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote);
 }
+
+PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata) {
+  return PetscSFBcastAndOpBegin(sf,unit,rootdata,leafdata,MPIU_REPLACE);
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata) {
+  return PetscSFBcastAndOpEnd(sf,unit,rootdata,leafdata,MPIU_REPLACE);
+}
+
 #endif

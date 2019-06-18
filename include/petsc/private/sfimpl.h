@@ -27,8 +27,6 @@ struct _PetscSFOps {
   PetscErrorCode (*SetFromOptions)(PetscOptionItems*,PetscSF);
   PetscErrorCode (*View)(PetscSF,PetscViewer);
   PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
-  PetscErrorCode (*BcastBegin)(PetscSF,MPI_Datatype,const void*,void*);
-  PetscErrorCode (*BcastEnd)(PetscSF,MPI_Datatype,const void*,void*);
   PetscErrorCode (*BcastAndOpBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*BcastAndOpEnd)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*ReduceBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);

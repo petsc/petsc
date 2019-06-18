@@ -1055,25 +1055,6 @@ PetscErrorCode PetscSFBcastAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,const voi
   PetscFunctionReturn(0);
 }
 
-/* Send from roots to leaves */
-static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
-{
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscSFBcastAndOpBegin_Basic(sf,unit,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
-{
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscSFBcastAndOpEnd_Basic(sf,unit,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* leaf -> root with reduction */
 PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
@@ -1223,8 +1204,6 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
   sf->ops->Reset           = PetscSFReset_Basic;
   sf->ops->Destroy         = PetscSFDestroy_Basic;
   sf->ops->View            = PetscSFView_Basic;
-  sf->ops->BcastBegin      = PetscSFBcastBegin_Basic;
-  sf->ops->BcastEnd        = PetscSFBcastEnd_Basic;
   sf->ops->BcastAndOpBegin = PetscSFBcastAndOpBegin_Basic;
   sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Basic;
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Basic;
