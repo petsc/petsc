@@ -1582,3 +1582,54 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
   ierr = PetscSFSetGraph(*sfBA, numRootsA, numLeavesB, localPointsB, PETSC_COPY_VALUES, remotePointsBA, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*
+  PetscSFCreateLocalSF_Private - Creates a local PetscSF that only has intra-process edges of the global PetscSF
+
+  Input Parameters:
+. sf - The global PetscSF
+
+  Output Parameters:
+. out - The local PetscSF
+ */
+PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF sf,PetscSF *out)
+{
+  MPI_Comm           comm;
+  PetscMPIInt        myrank;
+  const PetscInt     *ilocal;
+  const PetscSFNode  *iremote;
+  PetscInt           i,j,nroots,nleaves,lnleaves,*lilocal;
+  PetscSFNode        *liremote;
+  PetscSF            lsf;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (sf->ops->CreateLocalSF) {
+    ierr = (*sf->ops->CreateLocalSF)(sf,out);CHKERRQ(ierr);
+  } else {
+    /* Could use PetscSFCreateEmbeddedLeafSF, but since we know the comm is PETSC_COMM_SELF, we can make it fast */
+    ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&myrank);CHKERRQ(ierr);
+
+    /* Find out local edges and build a local SF */
+    ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+    for (i=lnleaves=0; i<nleaves; i++) {if (iremote[i].rank == (PetscInt)myrank) lnleaves++;}
+    ierr = PetscMalloc1(lnleaves,&lilocal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(lnleaves,&liremote);CHKERRQ(ierr);
+
+    for (i=j=0; i<nleaves; i++) {
+      if (iremote[i].rank == (PetscInt)myrank) {
+        lilocal[j]        = ilocal? ilocal[i] : i; /* ilocal=NULL for contiguous storage */
+        liremote[j].rank  = 0; /* rank in PETSC_COMM_SELF */
+        liremote[j].index = iremote[i].index;
+        j++;
+      }
+    }
+    ierr = PetscSFCreate(PETSC_COMM_SELF,&lsf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(lsf,nroots,lnleaves,lilocal,PETSC_OWN_POINTER,liremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(lsf);CHKERRQ(ierr);
+    *out = lsf;
+  }
+  PetscFunctionReturn(0);
+}

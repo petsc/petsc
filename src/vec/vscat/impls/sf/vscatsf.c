@@ -13,6 +13,7 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   VecScatter_SF  *data=(VecScatter_SF*)vscat->data;
   PetscSF        sf;
   MPI_Op         mop=MPI_OP_NULL;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -41,7 +42,13 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   ierr = VecLockWriteSet_Private(y,PETSC_TRUE);CHKERRQ(ierr);
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
-  sf = (mode & SCATTER_LOCAL) ? data->lsf : data->sf;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)data->sf),&size);CHKERRQ(ierr);
+  if ((mode & SCATTER_LOCAL) && size > 1) { /* Lazy creation of data->lsf since SCATTER_LOCAL is uncommon */
+    if (!data->lsf) {ierr = PetscSFCreateLocalSF_Private(data->sf,&data->lsf);CHKERRQ(ierr);}
+    sf = data->lsf;
+  } else {
+    sf = data->sf;
+  }
 
   if (addv == INSERT_VALUES)   mop = MPI_REPLACE;
   else if (addv == ADD_VALUES) mop = MPI_SUM;
@@ -514,35 +521,8 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
   if (!vscat->from_is) {ierr = ISDestroy(&ix);CHKERRQ(ierr);}
   if (!vscat->to_is  ) {ierr = ISDestroy(&iy);CHKERRQ(ierr);}
 
-  /* Create lsf, the local scatter. Could use PetscSFCreateEmbeddedLeafSF, but since we know the comm is PETSC_COMM_SELF, we can make it fast */
-  ierr = PetscObjectGetComm((PetscObject)data->sf,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&myrank);CHKERRQ(ierr);
-
-  /* Find out local edges and build a local SF */
-  {
-    const PetscInt    *ilocal;
-    const PetscSFNode *iremote;
-    ierr = PetscSFGetGraph(data->sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
-    for (i=lnleaves=0; i<nleaves; i++) {if (iremote[i].rank == (PetscInt)myrank) lnleaves++;}
-    ierr = PetscMalloc1(lnleaves,&lilocal);CHKERRQ(ierr);
-    ierr = PetscMalloc1(lnleaves,&liremote);CHKERRQ(ierr);
-
-    for (i=j=0; i<nleaves; i++) {
-      if (iremote[i].rank == (PetscInt)myrank) {
-        lilocal[j]        = ilocal? ilocal[i] : i; /* ilocal=NULL for contiguous storage */
-        liremote[j].rank  = 0; /* rank in PETSC_COMM_SELF */
-        liremote[j].index = iremote[i].index;
-        j++;
-      }
-    }
-    ierr = PetscSFCreate(PETSC_COMM_SELF,&data->lsf);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(data->lsf,nroots,lnleaves,lilocal,PETSC_OWN_POINTER,liremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  }
-
   /* vecscatter uses eager setup */
   ierr = PetscSFSetUp(data->sf);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(data->lsf);CHKERRQ(ierr);
 
   vscat->data                      = (void*)data;
   vscat->ops->begin                = VecScatterBegin_SF;
