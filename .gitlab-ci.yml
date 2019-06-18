@@ -161,3 +161,5 @@ barry-checksource:
     - barry
   script:
     - hostname
+    - PETSC_ARCH=arch-basic PETSC_DIR=`pwd` ./configure --with-mpi=0 --with-fc=0
+    - make checkbadSource
