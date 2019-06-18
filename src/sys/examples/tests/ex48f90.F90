@@ -34,13 +34,13 @@
 !   test:
 !      suffix: 1
 !      args: -f petsc.yml
-!      filter:   grep -v saws_port_auto_select |grep -v malloc_dump | grep -v display
+!      filter:   egrep -v "(malloc_dump|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
 !      localrunfiles: petsc.yml
 !
 !   test:
 !      suffix: 2
 !      args: -options_file_yaml petsc.yml
-!      filter:   grep -v saws_port_auto_select |grep -v malloc_dump | grep -v display
+!      filter:   egrep -v "(malloc_dump|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
 !      localrunfiles: petsc.yml
 !
 !TEST*/

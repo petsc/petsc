@@ -1,5 +1,4 @@
 #PETSc Option Table entries:
--check_pointer_intensity 0
 -cs0001_force 0.
 -cs0010_force 0.
 -cs0010_hookeslaw 1,2,3,4,5,6
