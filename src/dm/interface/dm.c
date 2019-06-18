@@ -7726,7 +7726,7 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DM *dmAdapt)
 
  Level: beginner
 
- .seealso: DMDAGetNeighbors(), PetscSFGetRanks()
+ .seealso: DMDAGetNeighbors(), PetscSFGetRootRanks()
 @*/
 PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
 {

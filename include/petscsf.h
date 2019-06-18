@@ -80,7 +80,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt,const Petsc
 PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const PetscInt *, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetUpRanks(PetscSF,MPI_Group);
-PETSC_EXTERN PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
@@ -133,4 +133,8 @@ PETSC_EXTERN PetscErrorCode PetscSFCompose(PetscSF,PetscSF,PetscSF*);
 #  define MPIU_REPLACE (MPI_Op)(0x5800000d)
 #endif
 
+PETSC_DEPRECATED_FUNCTION("Use PetscSFGetRootRanks (since v3.12)")
+PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote) {
+  return PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote);
+}
 #endif

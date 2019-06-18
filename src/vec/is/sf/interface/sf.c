@@ -618,7 +618,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
 }
 
 /*@C
-   PetscSFGetRanks - Get ranks and number of vertices referenced by leaves on this process
+   PetscSFGetRootRanks - Get root ranks and number of vertices referenced by leaves on this process
 
    Not Collective
 
@@ -634,19 +634,25 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
 
    Level: developer
 
-.seealso: PetscSFSetGraph()
+.seealso: PetscSFGetLeafRanks()
 @*/
-PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
+PetscErrorCode PetscSFGetRootRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   if (!sf->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
-  if (nranks)  *nranks  = sf->nranks;
-  if (ranks)   *ranks   = sf->ranks;
-  if (roffset) *roffset = sf->roffset;
-  if (rmine)   *rmine   = sf->rmine;
-  if (rremote) *rremote = sf->rremote;
+  if (sf->ops->GetRootRanks) {
+    ierr = (sf->ops->GetRootRanks)(sf,nranks,ranks,roffset,rmine,rremote);CHKERRQ(ierr);
+  } else {
+    /* The generic implementation */
+    if (nranks)  *nranks  = sf->nranks;
+    if (ranks)   *ranks   = sf->ranks;
+    if (roffset) *roffset = sf->roffset;
+    if (rmine)   *rmine   = sf->rmine;
+    if (rremote) *rremote = sf->rremote;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -666,7 +672,7 @@ PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **r
 
    Level: developer
 
-.seealso: PetscSFGetRanks()
+.seealso: PetscSFGetRootRanks()
 @*/
 PetscErrorCode PetscSFGetLeafRanks(PetscSF sf,PetscInt *niranks,const PetscMPIInt **iranks,const PetscInt **ioffset,const PetscInt **irootloc)
 {
@@ -704,7 +710,7 @@ static PetscBool InList(PetscMPIInt needle,PetscMPIInt n,const PetscMPIInt *list
 
    Level: developer
 
-.seealso: PetscSFGetRanks()
+.seealso: PetscSFGetRootRanks()
 @*/
 PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
 {

@@ -185,7 +185,7 @@ static PetscErrorCode VecScatterGetRemoteCount_SF(VecScatter vscat,PetscBool sen
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&myrank);CHKERRQ(ierr);
 
-  if (send) { ierr = PetscSFGetRanks(sf,&nranks,&ranks,&offset,NULL,NULL);CHKERRQ(ierr); }
+  if (send) { ierr = PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,NULL,NULL);CHKERRQ(ierr); }
   else { ierr = PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,NULL);CHKERRQ(ierr); }
 
   if (nranks) {
@@ -212,7 +212,7 @@ static PetscErrorCode VecScatterGetRemote_SF(VecScatter vscat,PetscBool send,Pet
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&myrank);CHKERRQ(ierr);
 
-  if (send) { ierr = PetscSFGetRanks(sf,&nranks,&ranks,&offset,&location,NULL);CHKERRQ(ierr); }
+  if (send) { ierr = PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,&location,NULL);CHKERRQ(ierr); }
   else { ierr = PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,&location);CHKERRQ(ierr); }
 
   if (nranks) {
