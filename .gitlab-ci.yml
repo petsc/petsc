@@ -157,6 +157,7 @@ opensolaris-cmplx-pkgs-dbg:
     TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
 
 barry-checksource:
+  stage: test
   tags:
     - barry
   script:
