@@ -160,4 +160,4 @@ barry-checksource:
   tags:
     - barry
   script:
-    -hostname
+    - hostname
