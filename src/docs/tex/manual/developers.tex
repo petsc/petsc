@@ -1244,6 +1244,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
     ierr      = DMKSPCopy(oldkdm,kdm);CHKERRQ(ierr);
     ierr      = DMKSPDestroy((DMKSP*)&dm->dmksp);CHKERRQ(ierr);
     dm->dmksp = (PetscObject)kdm;
+    kdm->originaldm = dm;
   }
   *kspdm = kdm;
   PetscFunctionReturn(0);
@@ -1262,16 +1263,17 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
     ierr      = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
     ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm);CHKERRQ(ierr);
     dm->dmksp = (PetscObject) *kspdm;
+    (*kspdm)->originaldm = dm;
     ierr      = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
     ierr      = DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 \end{lstlisting}
-This routine uses \lstinline{DMCoarsenHookAdd()} and \lstinline{DMCoarsenHookAdd()} to attach to the \lstinline{DM} object two functions that are automatically called when the object is coarsened or refined.
-The hooks \lstinline{DMCoarsenHook_DMXXX()} and \lstinline{DMCoarsenHook_DMXXX()} have the form.
+This routine uses \lstinline{DMCoarsenHookAdd()} and \lstinline{DMRefineHookAdd()} to attach to the \lstinline{DM} object two functions that are automatically called when the object is coarsened or refined.
+The hooks \lstinline{DMCoarsenHook_DMXXX()} and \lstinline{DMRefineHook_DMXXX()} have the same form:
 \begin{lstlisting}
-static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
+static PetscErrorCode DMCoarsenHook_DMKSP(DM dm,DM dmc,void *ctx)
 {
   PetscErrorCode ierr;
 
