@@ -1148,7 +1148,6 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   }
   ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
   ierr = PetscHSetIDestroy(&cht);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numCells,  cellsArray,  PETSC_OWN_POINTER, &patch->cells);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) patch->cells,  "Patch Cells");CHKERRQ(ierr);
