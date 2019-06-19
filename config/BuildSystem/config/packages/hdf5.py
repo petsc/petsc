@@ -18,6 +18,12 @@ class Configure(config.package.GNUPackage):
     self.precisions     = ['single','double'];
     return
 
+  def setupHelp(self, help):
+    config.package.GNUPackage.setupHelp(self,help)
+    import nargs
+    help.addArgument('HDF5', '-download-hdf5-fc', nargs.ArgBool(None, 1, 'Build HDF5 Fortran interface'))
+    return
+
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.mpi            = framework.require('config.packages.MPI',self)
@@ -37,7 +43,7 @@ class Configure(config.package.GNUPackage):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--with-default-api-version=v18') # for hdf-1.10
     args.append('--enable-parallel')
-    if hasattr(self.compilers, 'FC'):
+    if hasattr(self.compilers, 'FC') and self.argDB['download-hdf5-fc']:
       self.setCompilers.pushLanguage('FC')
       args.append('--enable-fortran')
       args.append('F9X="'+self.setCompilers.getCompiler()+'"')
@@ -55,7 +61,7 @@ class Configure(config.package.GNUPackage):
     return args
 
   def configureLibrary(self):
-    if hasattr(self.compilers, 'FC'):
+    if hasattr(self.compilers, 'FC') and self.argDB['download-hdf5-fc']:
       # PETSc does not need the Fortran interface, but some users will call the Fortran interface
       # and expect our standard linking to be sufficient.  Thus we try to link the Fortran
       # libraries, but fall back to linking only C.
