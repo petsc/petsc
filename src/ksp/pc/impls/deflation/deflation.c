@@ -146,6 +146,41 @@ PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCDeflationGetPC_Deflation(PC pc,PC *apc)
+{
+  PC_Deflation   *def = (PC_Deflation*)pc->data;
+
+  PetscFunctionBegin;
+  *apc = def->pc;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationGetPC - Returns a pointer to additional preconditioner.
+
+   Not Collective
+
+   Input Parameters:
+.  pc  - the preconditioner context
+
+   Output Parameter:
+.  apc - additional preconditioner
+
+   Level: advanced
+
+.seealso: PCDeflationSetPC(), PCDEFLATION
+@*/
+PetscErrorCode PCDeflationGetPC(PC pc,PC *apc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(pc,2);
+  ierr = PetscTryMethod(pc,"PCDeflationGetPC_C",(PC,PC*),(pc,apc));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCDeflationSetPC_Deflation(PC pc,PC apc)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;
@@ -162,15 +197,15 @@ static PetscErrorCode PCDeflationSetPC_Deflation(PC pc,PC apc)
 /*@
    PCDeflationSetPC - Set additional preconditioner.
 
-   Logically Collective on PC
+   Collective on PC
 
    Input Parameters:
 +  pc  - the preconditioner context
 -  apc - additional preconditioner
 
-   Level: advanced
+   Level: developer
 
-.seealso: PCDEFLATION
+.seealso: PCDeflationGetPC(), PCDEFLATION
 @*/
 PetscErrorCode PCDeflationSetPC(PC pc,PC apc)
 {
@@ -652,6 +687,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",PCDeflationGetCoarseKSP_Deflation);CHKERRQ(ierr);
   PetscFunctionReturn(0);
