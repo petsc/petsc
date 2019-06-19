@@ -8,6 +8,8 @@
 
 typedef struct _n_PetscOptions* PetscOptions;
 PETSC_EXTERN PetscErrorCode PetscOptionsCreate(PetscOptions*);
+PETSC_EXTERN PetscErrorCode PetscOptionsPush(PetscOptions);
+PETSC_EXTERN PetscErrorCode PetscOptionsPop(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsDestroy(PetscOptions*);
 PETSC_EXTERN PetscErrorCode PetscOptionsCreateDefault(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsDestroyDefault(void);

@@ -17,6 +17,7 @@
 #End of PETSc Option Table entries
 WARNING! There are options you set that were not used!
 WARNING! could be spelling mistake, etc!
+There are 13 unused database options. They are:
 Option left: name:-cs0001_force value: 0.
 Option left: name:-cs0010_force value: 0.
 Option left: name:-cs0010_hookeslaw value: 1,2,3,4,5,6

@@ -74,26 +74,27 @@ KHASH_INIT(HO, kh_cstr_t, int, 1, PetscOptHash, PetscOptEqual)
 #define MAXOPTIONSMONITORS 5
 
 struct  _n_PetscOptions {
-  int        N;                    /* number of options */
-  char       *names[MAXOPTIONS];   /* option names */
-  char       *values[MAXOPTIONS];  /* option values */
-  PetscBool  used[MAXOPTIONS];     /* flag option use */
+  PetscOptions   previous;
+  int            N;                    /* number of options */
+  char           *names[MAXOPTIONS];   /* option names */
+  char           *values[MAXOPTIONS];  /* option values */
+  PetscBool      used[MAXOPTIONS];     /* flag option use */
 
   /* Hash table */
-  khash_t(HO) *ht;
+  khash_t(HO)    *ht;
 
   /* Prefixes */
-  int   prefixind;
-  int   prefixstack[MAXPREFIXES];
-  char  prefix[MAXOPTNAME];
+  int            prefixind;
+  int            prefixstack[MAXPREFIXES];
+  char           prefix[MAXOPTNAME];
 
   /* Aliases */
-  int  Naliases;                   /* number or aliases */
-  char *aliases1[MAXALIASES];      /* aliased */
-  char *aliases2[MAXALIASES];      /* aliasee */
+  int            Naliases;                   /* number or aliases */
+  char           *aliases1[MAXALIASES];      /* aliased */
+  char           *aliases2[MAXALIASES];      /* aliasee */
 
   /* Help */
-  PetscBool help; /* flag whether "-help" is in the database */
+  PetscBool      help; /* flag whether "-help" is in the database */
 
   /* Monitors */
   PetscErrorCode (*monitor[MAXOPTIONSMONITORS])(const char[],const char[],void*); /* returns control to user after */
@@ -102,8 +103,7 @@ struct  _n_PetscOptions {
   PetscInt       numbermonitors;                                       /* to, for instance, detect options being set */
 };
 
-static PetscOptions defaultoptions = NULL;
-
+static PetscOptions defaultoptions = NULL;  /* the options database routines query this object for options */
 
 /*
     Options events monitor
@@ -124,12 +124,16 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options,const char name[]
 /*@
    PetscOptionsCreate - Creates an empty options database.
 
+   Logically collective
+
    Output Parameter:
 .  options - Options database object
 
    Level: advanced
 
-.seealso: PetscOptionsDestroy()
+   Developer Note: We may want eventually to pass a MPI_Comm to determine the ownership of the object
+
+.seealso: PetscOptionsDestroy(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsInsert(), PetscOptionsSetValue()
 @*/
 PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 {
@@ -142,18 +146,21 @@ PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 /*@
     PetscOptionsDestroy - Destroys an option database.
 
+    Logically collective on whatever communicator was associated with the call to PetscOptionsCreate()
+
   Input Parameter:
 .  options - the PetscOptions object
 
-   Level: developer
+   Level: advanced
 
-.seealso: PetscOptionsInsert()
+.seealso: PetscOptionsInsert(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsInsert(), PetscOptionsSetValue()
 @*/
 PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 {
   PetscErrorCode ierr;
 
   if (!*options) return 0;
+  if ((*options)->previous) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You are destroying an option that has been used with PetscOptionsPush() but does not have a corresponding PetscOptionsPop()");
   ierr = PetscOptionsClear(*options);if (ierr) return ierr;
   /* XXX what about monitors ? */
   free(*options);
@@ -174,19 +181,91 @@ PetscErrorCode PetscOptionsCreateDefault(void)
   return 0;
 }
 
+/*@
+      PetscOptionsPush - Push a new PetscOptions object as the default provider of options
+                         Allows using different parts of a code to use different options databases
+
+  Logically Collective
+
+  Input Parameter:
+.   opt - the options obtained with PetscOptionsCreate()
+
+  Notes:
+  Use PetscOptionsPop() to return to the previous default options database
+
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
+  have the affect of these options. If some processes that create objects call this routine and others do
+  not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+  on different ranks.
+
+   Level: advanced
+
+.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue(),
+          PetscOptionsLeft()
+
+@*/
+PetscErrorCode PetscOptionsPush(PetscOptions opt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!defaultoptions) {
+    ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
+  }
+  opt->previous        = defaultoptions;
+  defaultoptions       = opt;
+  PetscFunctionReturn(0);
+}
+
+/*@
+      PetscOptionsPop - Pop the most recent PetscOptionsPush() to return to the previous default options
+
+      Logically collective on whatever communicator was associated with the call to PetscOptionsCreate()
+
+  Notes:
+  Use PetscOptionsPop() to return to the previous default options database
+  Allows using different parts of a code to use different options databases
+
+   Level: advanced
+
+.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue(),
+          PetscOptionsLeft()
+
+@*/
+PetscErrorCode PetscOptionsPop(void)
+{
+  PetscOptions current = defaultoptions;
+
+  PetscFunctionBegin;
+  if (!defaultoptions) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing default options");
+  if (!defaultoptions->previous) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscOptionsPop() called too many times");
+  defaultoptions = defaultoptions->previous;
+  current->previous    = NULL;
+  PetscFunctionReturn(0);
+}
+
 /*
     PetscOptionsDestroyDefault - Destroys the default global options database
 */
 PetscErrorCode PetscOptionsDestroyDefault(void)
 {
   PetscErrorCode ierr;
+  PetscOptions   tmp;
 
+  /* Destroy any options that the user forgot to pop */
+  while (defaultoptions->previous) {
+    tmp = defaultoptions;
+    ierr = PetscOptionsPop();CHKERRQ(ierr);
+    ierr = PetscOptionsDestroy(&tmp);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsDestroy(&defaultoptions);if (ierr) return ierr;
   return 0;
 }
 
 /*@C
    PetscOptionsValidKey - PETSc Options database keys must begin with one or two dashes (-) followed by a letter.
+
+   Not collective
 
    Input Parameter:
 .  key - string to check if valid
@@ -217,14 +296,17 @@ PetscErrorCode PetscOptionsValidKey(const char key[],PetscBool *valid)
 /*@C
    PetscOptionsInsertString - Inserts options into the database from a string
 
-   Not Collective, but only processes that call this routine will set the options
-   included in the string
+   Logically Collective
 
    Input Parameter:
 .  in_str - string that contains options separated by blanks
 
-
    Level: intermediate
+
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
+  have the affect of these options. If some processes that create objects call this routine and others do
+  not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+  on different ranks.
 
    Contributed by Boyana Norris
 
@@ -318,10 +400,13 @@ static char *Petscgetline(FILE * f)
 
   Notes:
     Use  # for lines that are comments and which should be ignored.
-
-   Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options
+    Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options
    such as -log_view or -malloc_debug are processed properly. This routine only sets options into the options database that will be processed by later
    calls to XXXSetFromOptions() it should not be used for options listed under PetscInitialize().
+   The collectivity of this routine is complex; only the MPI processes in comm will
+   have the affect of these options. If some processes that create objects call this routine and others do
+   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+   on different ranks.
 
   Level: developer
 
@@ -538,7 +623,9 @@ static PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char 
 
 /*@C
    PetscOptionsInsert - Inserts into the options database from the command line,
-                   the environmental variable and a file.
+                        the environmental variable and a file.
+
+   Collective on PETSC_COMM_WORLD
 
    Input Parameters:
 +  options - options database or NULL for the default global database
@@ -641,6 +728,10 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
    Options Database Key:
 .  -options_view - Activates PetscOptionsView() within PetscFinalize()
 
+   Notes:
+   Only the rank zero process of MPI_Comm used to create view prints the option values. Other processes
+   may have different values but they are not printed.
+
    Level: advanced
 
 .seealso: PetscOptionsAllUsed()
@@ -702,7 +793,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
 /*@C
    PetscOptionsPrefixPush - Designate a prefix to be used by all options insertions to follow.
 
-   Not Collective, but prefix will only be applied on calling ranks
+   Logically Collective
 
    Input Parameter:
 +  options - options database, or NULL for the default global database
@@ -719,9 +810,14 @@ $ -prefix_push system1_ -options_file system1rc -prefix_pop -prefix_push system2
 
    where the files no longer require all options to be prefixed with -system2_.
 
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
+   have the affect of these options. If some processes that create objects call this routine and others do
+   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+   on different ranks.
+
 Level: advanced
 
-.seealso: PetscOptionsPrefixPop()
+.seealso: PetscOptionsPrefixPop(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsCreate(), PetscOptionsSetValue()
 @*/
 PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
 {
@@ -750,14 +846,14 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
 /*@C
    PetscOptionsPrefixPop - Remove the latest options prefix, see PetscOptionsPrefixPush() for details
 
-   Not  Collective, but prefix will only be popped on calling ranks
+   Logically Collective on the MPI_Comm that called PetscOptionsPrefixPush()
 
   Input Parameters:
 .  options - options database, or NULL for the default global database
 
    Level: advanced
 
-.seealso: PetscOptionsPrefixPush()
+.seealso: PetscOptionsPrefixPush(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsCreate(), PetscOptionsSetValue()
 @*/
 PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
 {
@@ -775,8 +871,15 @@ PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
 /*@C
     PetscOptionsClear - Removes all options form the database leaving it empty.
 
+    Logically Collective
+
   Input Parameters:
 .  options - options database, use NULL for the default global database
+
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
+   have the affect of these options. If some processes that create objects call this routine and others do
+   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+   on different ranks.
 
    Level: developer
 
@@ -814,8 +917,7 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
 /*@C
    PetscOptionsSetAlias - Makes a key and alias for another key
 
-   Not Collective, but setting values on certain processors could cause problems
-   for parallel objects looking for options.
+   Logically Collective
 
    Input Parameters:
 +  options - options database, or NULL for default global database
@@ -823,6 +925,11 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
 -  oldname - the name that alias will refer to
 
    Level: advanced
+
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
+   have the affect of these options. If some processes that create objects call this routine and others do
+   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+   on different ranks.
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),OptionsHasName(),
           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsBool(),
@@ -862,8 +969,7 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
    PetscOptionsSetValue - Sets an option name-value pair in the options
    database, overriding whatever is already present.
 
-   Not Collective, but setting values on certain processors could cause problems
-   for parallel objects looking for options.
+   Logically Collective
 
    Input Parameters:
 +  options - options database, use NULL for the default global database
@@ -874,6 +980,11 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
 
    Note:
    This function can be called BEFORE PetscInitialize()
+
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
+   have the affect of these options. If some processes that create objects call this routine and others do
+   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+   on different ranks.
 
    Developers Note: Uses malloc() directly because PETSc may not be initialized yet.
 
@@ -968,14 +1079,18 @@ setvalue:
    PetscOptionsClearValue - Clears an option name-value pair in the options
    database, overriding whatever is already present.
 
-   Not Collective, but setting values on certain processors could cause problems
-   for parallel objects looking for options.
+   Logically Collective
 
    Input Parameter:
 +  options - options database, use NULL for the default global database
 .  name - name of option, this SHOULD have the - prepended
 
    Level: intermediate
+
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
+   have the affect of these options. If some processes that create objects call this routine and others do
+   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+   on different ranks.
 
 .seealso: PetscOptionsInsert()
 @*/
@@ -1040,6 +1155,9 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
    Output Parameters:
 +  value - the option value (optional, not used for all options)
 -  set - whether the option is set (optional)
+
+   Notes:
+   Each process may find different values or no value depending on how options were inserted into the database
 
    Level: developer
 
@@ -1243,8 +1361,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
 /*@C
    PetscOptionsReject - Generates an error if a certain option is given.
 
-   Not Collective, but setting values on certain processors could cause problems
-   for parallel objects looking for options.
+   Not Collective
 
    Input Parameters:
 +  options - options database, use NULL for default global database
@@ -1351,11 +1468,12 @@ PetscErrorCode PetscOptionsHasName(PetscOptions options,const char pre[],const c
 .  copts - pointer where string pointer is stored
 
    Notes:
-    the array and each entry in the array should be freed with PetscFree()
+    The array and each entry in the array should be freed with PetscFree()
+    Each process may have different values depending on how the options were inserted into the database
 
    Level: advanced
 
-.seealso: PetscOptionsAllUsed(), PetscOptionsView()
+.seealso: PetscOptionsAllUsed(), PetscOptionsView(), PetscOptionsPush(), PetscOptionsPop()
 @*/
 PetscErrorCode PetscOptionsGetAll(PetscOptions options,char *copts[])
 {
@@ -1405,6 +1523,10 @@ PetscErrorCode PetscOptionsGetAll(PetscOptions options,char *copts[])
 
    Level: advanced
 
+   Notes:
+   The value returned may be different on each process and depends on which options have been processed
+   on the given process
+
 .seealso: PetscOptionsView(), PetscOptionsLeft(), PetscOptionsAllUsed()
 @*/
 PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool *used)
@@ -1441,6 +1563,10 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool 
 
    Level: advanced
 
+   Notes:
+   The value returned may be different on each process and depends on which options have been processed
+   on the given process
+
 .seealso: PetscOptionsView()
 @*/
 PetscErrorCode PetscOptionsAllUsed(PetscOptions options,PetscInt *N)
@@ -1468,6 +1594,12 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options,PetscInt *N)
    Options Database Key:
 .  -options_left - Activates OptionsAllUsed() within PetscFinalize()
 
+   Notes:
+      This is rarely used directly, it is called by PetscFinalize() in debug more or if -options_left
+      is passed otherwise to help users determine possible mistakes in their usage of options. This
+      only prints values on process zero of PETSC_COMM_WORLD. Other processes depending the objects
+      used may have different options that are left unused.
+
    Level: advanced
 
 .seealso: PetscOptionsAllUsed()
@@ -1476,16 +1608,28 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscInt       cnt = 0;
+  PetscOptions   toptions;
 
   PetscFunctionBegin;
-  options = options ? options : defaultoptions;
-  for (i=0; i<options->N; i++) {
-    if (!options->used[i]) {
-      if (options->values[i]) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
+  toptions = options ? options : defaultoptions;
+  for (i=0; i<toptions->N; i++) {
+    if (!toptions->used[i]) {
+      if (toptions->values[i]) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",toptions->names[i],toptions->values[i]);CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",options->names[i]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",toptions->names[i]);CHKERRQ(ierr);
       }
+    }
+  }
+  if (!options) {
+    toptions = defaultoptions;
+    while (toptions->previous) {
+      cnt++;
+      toptions = toptions->previous;
+    }
+    if (cnt) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: You may have forgotten some calls to PetscOptionsPop(),\n             PetscOptionsPop() has been called %D less times than PetscOptionsPush()\n",cnt);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1508,6 +1652,8 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
 
    Notes:
    Users should call PetscOptionsLeftRestore() to free the memory allocated in this routine
+   Notes: The value returned may be different on each process and depends on which options have been processed
+   on the given process
 
 .seealso: PetscOptionsAllUsed(), PetscOptionsLeft()
 @*/
@@ -1588,7 +1734,7 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **n
 .  -options_monitor_cancel - cancel all options database monitors
 
    Notes:
-   To see all options, run your program with the -help option or consult Users-Manual: sec_gettingstarted
+   To see all options, run your program with the -help option
 
    Level: intermediate
 
@@ -1621,7 +1767,7 @@ PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
 /*@C
    PetscOptionsMonitorDefault - Print all options set value events.
 
-   Logically Collective on PETSC_COMM_WORLD
+   Logically Collective on ctx
 
    Input Parameters:
 +  name  - option name string
@@ -1629,6 +1775,10 @@ PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
 -  ctx - an ASCII viewer
 
    Level: intermediate
+
+   Notes:
+     The first MPI rank in the PetscViewer viewer actually prints the values, other
+     processes may have different values set
 
 .seealso: PetscOptionsMonitorSet()
 @*/
@@ -2690,8 +2840,6 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options,const char pre[],
    The user is responsible for deallocating the strings that are
    returned. The Fortran interface for this routine is not supported.
 
-   Contributed by Matthew Knepley.
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -2733,7 +2881,7 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options,const char pre[],
 
    Prints a deprecation warning, unless an option is supplied to suppress.
 
-   Not Collective
+   Logically Collective
 
    Input Parameters:
 +  pre - string to prepend to name or NULL
@@ -2746,7 +2894,9 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options,const char pre[],
 . -options_suppress_deprecated_warnings - do not print deprecation warnings
 
    Notes:
-   Must be called between PetscOptionsBegin() and PetscOptionsEnd().
+   Must be called between PetscOptionsBegin() (or PetscObjectOptionsBegin()) and PetscOptionsEnd().
+   Only the proces of rank zero that owns the PetscOptionsItems are argument (managed by PetscOptionsBegin() or
+   PetscObjectOptionsBegin() prints the information
    If newname is provided, the old option is replaced. Otherwise, it remains
    in the options database.
    If an option is not replaced, the info argument should be used to advise the user
