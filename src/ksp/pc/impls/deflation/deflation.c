@@ -254,9 +254,9 @@ static PetscErrorCode PCPreSolve_Deflation(PC pc,KSP ksp,Vec b, Vec x)
 
 /*
   if (def->correct) {
-    z <- r - W*(W'*A*W)^{-1}*W'*(A*r -r) = (P-Q)*M^{-1}*r
+    z <- M^{-1}r - W*(W'*A*W)^{-1}*(W'*A*M^{-1}r - l*W'*r) = (P*M^{-1} + l*Q)*r
   } else {
-    z <- r - W*(W'*A*W)^{-1}*W'*A*r = P*M^{-1}*r
+    z <- M^{-1}*r - W*(W'*A*W)^{-1}*W'*A*M{-1}*r = P*M^{-1}*r
   }
 */
 static PetscErrorCode PCApply_Deflation(PC pc,Vec r,Vec z)
@@ -272,23 +272,20 @@ static PetscErrorCode PCApply_Deflation(PC pc,Vec r,Vec z)
   u  = def->work;
   ierr = PCGetOperators(pc,NULL,&A);CHKERRQ(ierr);
 
-  ierr = PCApply(def->pc,r,z);CHKERRQ(ierr);
+  ierr = PCApply(def->pc,r,z);CHKERRQ(ierr);                      /*    z <- M^{-1}*r             */
   if (!def->init) {
-    if (!def->AW) {
-      ierr = MatMult(A,z,u);CHKERRQ(ierr);                                        /*    u  <- A*z                 */
-      if (def->correct) ierr = VecAXPY(u,-1.0*def->correctfact,z);CHKERRQ(ierr);  /*    u  <- A*z -z              */
-      ierr = MatMultTranspose(def->W,u,w1);CHKERRQ(ierr);                         /*    w1 <- W'*u                */
-    } else {
-      /* ONLY if A SYM */
-      ierr = MatMultTranspose(def->AW,z,w1);CHKERRQ(ierr);                        /*    w1  <- W'*A*r             */
-      if (def->correct) {
-        ierr = MatMultTranspose(def->W,z,w2);CHKERRQ(ierr);                       /*    w2 <- W'*u                */
-        ierr = VecAXPY(w1,-1.0*def->correctfact,w2);CHKERRQ(ierr);                /*    w1 <- w1 - w2             */
+    ierr = MatMult(def->WtA,z,w1);CHKERRQ(ierr);                  /*    w1 <- W'*A*z              */
+    if (def->correct) {
+      if (def->Wt) {
+        ierr = MatMult(def->Wt,r,w2);CHKERRQ(ierr);               /*    w2 <- W'*r                */
+      } else {
+        ierr = MatMultTranspose(def->W,r,w2);CHKERRQ(ierr);       /*    w2 <- W'*r                */
       }
+      ierr = VecAXPY(w1,-1.0*def->correctfact,w2);CHKERRQ(ierr);  /*    w1 <- w1 - l*w2           */
     }
-    ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);                            /*    w2 <- (W'*A*W)^{-1}*w1    */
-    ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                                    /*    u  <- W*w2                */
-    ierr = VecAXPY(z,-1.0,u);CHKERRQ(ierr);                                       /*    z  <- z - u               */
+    ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);            /*    w2 <- (W'*A*W)^{-1}*w1    */
+    ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                    /*    u  <- W*w2                */
+    ierr = VecAXPY(z,-1.0,u);CHKERRQ(ierr);                       /*    z  <- z - u               */
   }
   PetscFunctionReturn(0);
 }
@@ -390,21 +387,24 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
+  /* assemble WtA */
+  if (!def->WtA) {
+    if (def->Wt) {
+      ierr = MatMatMult(def->Wt,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA);CHKERRQ(ierr);
+    } else {
+      ierr = MatTransposeMatMult(def->W,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA);CHKERRQ(ierr);
+    }
+  }
   /* setup coarse problem */
   if (!def->WtAWinv) {
     ierr = MatGetSize(def->W,NULL,&m);CHKERRQ(ierr);
     if (!def->WtAW) {
-      /* TODO add implicit product version ? */
-      if (!def->AW) {
-        ierr = MatPtAP(Amat,def->W,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtAW);CHKERRQ(ierr);
-      } else {
-        ierr = MatTransposeMatMult(def->W,def->AW,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtAW);CHKERRQ(ierr);
-      }
+      ierr = MatMatMult(def->WtA,def->W,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtAW);CHKERRQ(ierr);
       /* TODO create MatInheritOption(Mat,MatOption) */
       ierr = MatGetOption(Amat,MAT_SPD,&flgspd);CHKERRQ(ierr);
       ierr = MatSetOption(def->WtAW,MAT_SPD,flgspd);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-      /* Check WtAW is not sigular */
+      /* Check columns of W are not in kernel of A */
       PetscReal *norms;
       ierr = PetscMalloc1(m,&norms);CHKERRQ(ierr);
       ierr = MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms);CHKERRQ(ierr);
@@ -432,11 +432,11 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
           def->ksptype = KSPFCG;
         }
       }
-      ierr = KSPSetType(innerksp,def->ksptype);CHKERRQ(ierr); /* TODO iherit from KSP */
+      ierr = KSPSetType(innerksp,def->ksptype);CHKERRQ(ierr); /* TODO iherit from KSP + tolerances */
       ierr = PCSetType(pcinner,PCDEFLATION);CHKERRQ(ierr); /* TODO create coarse preconditinoner M_c = WtMW ? */
       ierr = PCDeflationSetSpace(pcinner,nextDef,transp);CHKERRQ(ierr);
       ierr = PCDeflationSetLvl_Deflation(pcinner,def->nestedlvl+1,def->maxnestedlvl);CHKERRQ(ierr);
-      /* inherit options TODO if not set */
+      /* inherit options */
       ((PC_Deflation*)(pcinner->data))->ksptype = def->ksptype;
       ((PC_Deflation*)(pcinner->data))->correct = def->correct;
       ierr = MatDestroy(&nextDef);CHKERRQ(ierr);
@@ -515,7 +515,7 @@ static PetscErrorCode PCReset_Deflation(PC pc)
   ierr = VecDestroyVecs(2,&def->workcoarse);CHKERRQ(ierr);
   ierr = MatDestroy(&def->W);CHKERRQ(ierr);
   ierr = MatDestroy(&def->Wt);CHKERRQ(ierr);
-  ierr = MatDestroy(&def->AW);CHKERRQ(ierr);
+  ierr = MatDestroy(&def->WtA);CHKERRQ(ierr);
   ierr = MatDestroy(&def->WtAW);CHKERRQ(ierr);
   ierr = KSPDestroy(&def->WtAWinv);CHKERRQ(ierr);
   ierr = PCDestroy(&def->pc);CHKERRQ(ierr);
