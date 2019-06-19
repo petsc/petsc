@@ -182,7 +182,6 @@ class Installer(script.Script):
     if not os.path.isdir(newConfigDir): os.mkdir(newConfigDir)
     testConfFiles="gmakegentest.py gmakegen.py testparse.py example_template.py".split()
     testConfFiles+="petsc_harness.sh report_tests.py".split()
-    testConfFiles+=["cmakegen.py"]
     for tf in testConfFiles:
       self.copies.extend(self.copyfile(os.path.join('config',tf),newConfigDir))
     return

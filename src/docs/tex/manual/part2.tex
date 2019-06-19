@@ -8938,7 +8938,7 @@ within the makefile.
    include ${PETSC_DIR}/lib/petsc/conf/variables
    include ${PETSC_DIR}/lib/petsc/conf/rules
 
-   ex2: ex2.o chkopts
+   ex2: ex2.o 
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
            ${RM} ex2.o
 \end{makelisting}

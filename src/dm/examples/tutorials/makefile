@@ -15,6 +15,3 @@ include ${PETSC_DIR}/lib/petsc/conf/test
 
 ex13f90.o: ex13f90aux.o
 ex13f90: ex13f90.o ex13f90aux.o
-
-swarm_ex%: swarm_ex%.o | chkopts
-	-${CLINKER} -o $@ $^  ${PETSC_LIB}

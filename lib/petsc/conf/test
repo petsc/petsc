@@ -2,17 +2,19 @@
 #
 
 ifeq ($(RM),true)
-.SECONDARY: $(ex%.o) $(ex%f.o) $(ex%f90.o)
+.SECONDARY: $(%.o) $(%f.o) $(%f90.o)
 endif
 
-ex%f90: ex%f90.o | chkopts
-	-${FLINKER} -o $@ $^  ${PETSC_LIB}
-ex%f: ex%f.o | chkopts
-	-${FLINKER} -o $@ $^  ${PETSC_LIB}
-ex%: ex%.o | chkopts
-	-${CLINKER} -o $@ $^  ${PETSC_LIB}
-	${DSYMUTIL} $@
+LINK.c = $(CLINKER) $(PCC_LINKER_FLAGS) $(CFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+LINK.F = $(FC_LINKER) $(FC_LINKER_FLAGS) $(FFLAGS) $(PETSC_FCPPFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+LINK.cc = $(CXXLINKER) $(CXX_LINKER_FLAGS) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
 
+LDFLAGS = $(filter-out -l%,$(PETSC_LIB))
+LDLIBS = $(filter -l%,$(PETSC_LIB))
+
+% : %.F90
+	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
+% : %.cxx
+	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 include ${PETSC_DIR}/lib/petsc/conf/test.common
-

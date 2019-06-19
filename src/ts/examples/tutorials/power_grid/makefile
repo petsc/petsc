@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex3sa.c ex3opt.c ex3opt_fd.c ex5.c \
-                ex6.c ex7.c ex8.c ex9adj.c ex9.c ex9opt.c
+                  ex6.c ex7.c ex8.c ex9adj.c ex9.c ex9opt.c
 EXAMPLESF       =
 EXAMPLESFH      =
 MANSEC          = TS

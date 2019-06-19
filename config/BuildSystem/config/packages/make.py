@@ -121,7 +121,6 @@ class Configure(config.package.GNUPackage):
     # Setup make flags
     self.printdirflag = ' --print-directory'
     self.noprintdirflag = ' --no-print-directory'
-    self.addMakeMacro('MAKE_IS_GNUMAKE',1)
     # Use rules which look inside archives
     self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
     self.addMakeRule('libcxx','${LIBNAME}(${OBJSCXX})')

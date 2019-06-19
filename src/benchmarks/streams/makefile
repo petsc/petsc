@@ -15,23 +15,23 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
 
-BasicVersion: BasicVersion.o  chkopts
+BasicVersion: BasicVersion.o 
 	-@${CLINKER} -o BasicVersion BasicVersion.o ${PETSC_LIB}
 	@${RM} -f BasicVersion.o
 
-MPIVersion: MPIVersion.o  chkopts
+MPIVersion: MPIVersion.o 
 	-@${CLINKER} -o MPIVersion MPIVersion.o ${PETSC_LIB}
 	@${RM} -f MPIVersion.o
 
-OpenMPVersion: OpenMPVersion.o  chkopts
+OpenMPVersion: OpenMPVersion.o 
 	-@${CLINKER} -o OpenMPVersion OpenMPVersion.o ${PETSC_LIB}
 	@${RM} -f OpenMPVersion.o
 
-SSEVersion: SSEVersion.o chkopts
+SSEVersion: SSEVersion.o
 	-${CLINKER} -o $@ $< ${PETSC_LIB}
 	${RM} -f $<
 
-PthreadVersion: PthreadVersion.o  chkopts
+PthreadVersion: PthreadVersion.o 
 	-@${CLINKER} -o PthreadVersion PthreadVersion.o ${PETSC_LIB}
 	@${RM} -f PthreadVersion.o
 
