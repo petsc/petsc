@@ -241,7 +241,7 @@ static PetscErrorCode PCDeflationGetCoarseKSP_Deflation(PC pc,KSP *ksp)
 
    Level: developer
 
-.seealso: PCDEFLATION
+.seealso: PCDeflationSetCoarseKSP(), PCDEFLATION
 @*/
 PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
 {
@@ -251,6 +251,44 @@ PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
   ierr = PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCDeflationSetCoarseKSP_Deflation(PC pc,KSP ksp)
+{
+  PC_Deflation     *def = (PC_Deflation*)pc->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPDestroy(&def->WtAWinv);CHKERRQ(ierr);
+  def->WtAWinv = ksp;
+  ierr = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtAWinv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetCoarseKSP - Set coarse problem KSP.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - preconditioner context
+-  ksp - coarse problem KSP context
+
+   Level: developer
+
+.seealso: PCDeflationGetCoarseKSP(), PCDEFLATION
+@*/
+PetscErrorCode  PCDeflationSetCoarseKSP(PC pc,KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
+  PetscCheckSameComm(pc,1,ksp,2);
+  ierr = PetscTryMethod(pc,"PCDeflationSetCoarseKSP_C",(PC,KSP),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -690,6 +728,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",PCDeflationGetCoarseKSP_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseKSP_C",PCDeflationSetCoarseKSP_Deflation);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
