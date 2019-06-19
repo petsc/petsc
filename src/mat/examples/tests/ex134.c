@@ -61,7 +61,7 @@ int main(int argc,char *argv[])
 
    test:
       nsize: 2
-      args: -mat_ignore_lower_triangular
+      args: -mat_ignore_lower_triangular -vecscatter_type sf
       requires: double !complex  !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/
