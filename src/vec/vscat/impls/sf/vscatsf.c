@@ -1,5 +1,7 @@
 #include <petsc/private/vecscatterimpl.h>    /*I   "petscvec.h"    I*/
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
+#include <../src/vec/is/sf/impls/basic/sfbasic.h> /* for VecScatterRemap_SF */
+#include <../src/vec/is/sf/impls/basic/sfpack.h>
 
 typedef struct {
   PetscSF           sf;     /* the whole scatter, including local and remote */
@@ -50,15 +52,15 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
     sf = data->sf;
   }
 
-  if (addv == INSERT_VALUES)   mop = MPI_REPLACE;
-  else if (addv == ADD_VALUES) mop = MPI_SUM;
-  else if (addv == MAX_VALUES) mop = MPI_MAX;
+  if (addv == INSERT_VALUES)   mop = MPIU_REPLACE;
+  else if (addv == ADD_VALUES) mop = MPIU_SUM; /* Petsc defines its own MPI datatype and SUM operation for __float128 etc. */
+  else if (addv == MAX_VALUES) mop = MPIU_MAX;
   else SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"Unsupported InsertMode %D in VecScatterBegin/End",addv);
 
-  if (mode & SCATTER_REVERSE) { /* reverse scatter sends root to leaf. Note that x and y are swapped in input */
-    ierr = PetscSFBcastAndOpBegin(sf,data->unit,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
-  } else { /* forward scatter sends leaf to root, i.e., x to y */
+  if (mode & SCATTER_REVERSE) { /* REVERSE indicates leaves to root scatter. Note that x and y are swapped in input */
     ierr = PetscSFReduceBegin(sf,data->unit,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
+  } else { /* FORWARD indicates x to y scatter, where x is root and y is leaf */
+    ierr = PetscSFBcastAndOpBegin(sf,data->unit,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -68,21 +70,23 @@ static PetscErrorCode VecScatterEnd_SF(VecScatter vscat,Vec x,Vec y,InsertMode a
   VecScatter_SF  *data=(VecScatter_SF*)vscat->data;
   PetscSF        sf;
   MPI_Op         mop=MPI_OP_NULL;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
-  sf = (mode & SCATTER_LOCAL) ? data->lsf : data->sf;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)data->sf),&size);CHKERRQ(ierr);
+  sf = ((mode & SCATTER_LOCAL) && size > 1) ? data->lsf : data->sf;
 
-  if (addv == INSERT_VALUES)   mop = MPI_REPLACE;
-  else if (addv == ADD_VALUES) mop = MPI_SUM;
-  else if (addv == MAX_VALUES) mop = MPI_MAX;
+  if (addv == INSERT_VALUES)   mop = MPIU_REPLACE;
+  else if (addv == ADD_VALUES) mop = MPIU_SUM;
+  else if (addv == MAX_VALUES) mop = MPIU_MAX;
   else SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"Unsupported InsertMode %D in VecScatterBegin/End",addv);
 
-  if (mode & SCATTER_REVERSE) {/* reverse scatter sends root to leaf. Note that x and y are swapped in input */
-    ierr = PetscSFBcastAndOpEnd(sf,data->unit,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
-  } else { /* forward scatter sends leaf to root, i.e., x to y */
+  if (mode & SCATTER_REVERSE) { /* reverse scatter sends leaves to roots. Note that x and y are swapped in input */
     ierr = PetscSFReduceEnd(sf,data->unit,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
+  } else { /* forward scatter sends roots to leaves, i.e., x to y */
+    ierr = PetscSFBcastAndOpEnd(sf,data->unit,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
   }
 
   if (x != y) {
@@ -103,9 +107,8 @@ static PetscErrorCode VecScatterCopy_SF(VecScatter vscat,VecScatter ctx)
   ierr = PetscMemcpy(ctx->ops,vscat->ops,sizeof(vscat->ops));CHKERRQ(ierr);
   ierr = PetscNewLog(ctx,&out);CHKERRQ(ierr);
   ierr = PetscSFDuplicate(data->sf,PETSCSF_DUPLICATE_GRAPH,&out->sf);CHKERRQ(ierr);
-  ierr = PetscSFDuplicate(data->lsf,PETSCSF_DUPLICATE_GRAPH,&out->lsf);CHKERRQ(ierr);
   ierr = PetscSFSetUp(out->sf);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(out->lsf);CHKERRQ(ierr);
+  /* Do not copy lsf. Build it on demand since it is rarely used */
 
   out->bs = data->bs;
   if (out->bs > 1) {
@@ -141,62 +144,92 @@ static PetscErrorCode VecScatterView_SF(VecScatter vscat,PetscViewer viewer)
 }
 
 /* VecScatterRemap provides a light way to slightly modify a VecScatter. Suppose the input vscat scatters
-   x[i] to y[j], tomap gives a plan to change vscat to scatter x[tomap[i]] to y[j].
+   x[i] to y[j], tomap gives a plan to change vscat to scatter x[tomap[i]] to y[j]. Note that in SF,
+   x is roots. That means we need to change incoming stuffs such as bas->irootloc[].
  */
 static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,const PetscInt *frommap)
 {
   VecScatter_SF  *data = (VecScatter_SF *)vscat->data;
-  PetscSF        sfs[2],sf;
-  PetscInt       i,j;
-  PetscBool      ident;
+  PetscSF        sf = data->sf;
+  PetscInt       i,bs = data->bs;
+  PetscMPIInt    size;
+  PetscBool      ident = PETSC_TRUE,isbasic;
+  PetscSFType    type;
+  PetscSF_Basic  *bas = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  sfs[0] = data->sf;
-  sfs[1] = data->lsf;
-
+  /* check if it is an identity map. If it is, do nothing */
   if (tomap) {
-    /* check if it is an identity map. If it is, do nothing */
-    ident = PETSC_TRUE;
-    for (i=0; i<data->sf->nleaves; i++) {if (i != tomap[i]) {ident = PETSC_FALSE; break; } }
+    for (i=0; i<sf->nroots*bs; i++) {if (i != tomap[i]) {ident = PETSC_FALSE; break; } }
     if (ident) PetscFunctionReturn(0);
-
-    for (j=0; j<2; j++) {
-      sf   = sfs[j];
-      ierr = PetscSFSetUp(sf);CHKERRQ(ierr); /* to bulid sf->rmine if SetUp is not yet called */
-      if (!sf->mine) { /* the old SF uses contiguous ilocal. After the remapping, it may not be true */
-        ierr = PetscMalloc1(sf->nleaves,&sf->mine);CHKERRQ(ierr);
-        ierr = PetscArraycpy(sf->mine,tomap,sf->nleaves);CHKERRQ(ierr);
-        sf->mine_alloc = sf->mine;
-      } else {
-        for (i=0; i<sf->nleaves; i++)             sf->mine[i]   = tomap[sf->mine[i]];
-      }
-      for (i=0; i<sf->roffset[sf->nranks]; i++)   sf->rmine[i]  = tomap[sf->rmine[i]];
-    }
   }
-
   if (frommap) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
+  if (!tomap) PetscFunctionReturn(0);
+
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)data->sf),&size);CHKERRQ(ierr);
+
+  /* Since the indices changed, we must also update the local SF. But we do not do it since
+     lsf is rarely used. We just destroy lsf and rebuild it on demand from updated data->sf.
+  */
+  if (data->lsf) {ierr = PetscSFDestroy(&data->lsf);CHKERRQ(ierr);}
+
+  ierr = PetscSFGetType(sf,&type);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)sf,PETSCSFBASIC,&isbasic);CHKERRQ(ierr);
+  if (!isbasic) SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"VecScatterRemap on SF type %s is not supported",type);CHKERRQ(ierr);
+
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr); /* to bulid sf->irootloc if SetUp is not yet called */
+
+  /* Root indices are going to be remapped. This is tricky for SF. Root indices are used in sf->rremote,
+    sf->remote and bas->irootloc. The latter one is cheap to remap, but the former two are not.
+    To remap them, we have to do a bcast from roots to leaves, to let leaves know their updated roots.
+    Since VecScatterRemap is supposed to be a cheap routine to adapt a vecscatter by only changing where
+    x[] data is taken, we do not remap sf->rremote, sf->remote. The consequence is that operations
+    accessing them (such as PetscSFCompose) may get stale info. Considering VecScatter does not need
+    that complicated SF operations, we do not remap sf->rremote, sf->remote, instead we destroy them
+    so that code accessing them (if any) will crash (instead of get silent errors). Note that BcastAndOp/Reduce,
+    which are used by VecScatter and only rely on bas->irootloc, are updated and correct.
+  */
+  sf->remote = NULL;
+  ierr       = PetscFree(sf->remote_alloc);CHKERRQ(ierr);
+  /* Not easy to free sf->rremote since it was allocated with PetscMalloc4(), so just give it crazy values */
+  for (i=0; i<sf->roffset[sf->nranks]; i++) sf->rremote[i] = PETSC_MIN_INT;
+
+  /* Indices in tomap[] are for each indivisual vector entry. But indices in sf are for each
+     block in the vector. So before the remapping, we have to expand indices in sf by bs, and
+     after the remapping, we have to shrink them back.
+   */
+  bas = (PetscSF_Basic*)sf->data;
+  for (i=0; i<bas->ioffset[bas->niranks]; i++) bas->irootloc[i] = tomap[bas->irootloc[i]*bs]/bs;
+
+  /* Destroy and then rebuild root packing optimizations since indices are changed */
+  ierr = PetscSFPackDestoryOptimization(&bas->rootpackopt);CHKERRQ(ierr);
+  ierr = PetscSFPackSetupOptimization(bas->niranks,bas->ioffset,bas->irootloc,&bas->rootpackopt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode VecScatterGetRemoteCount_SF(VecScatter vscat,PetscBool send,PetscInt *num_procs,PetscInt *num_entries)
 {
+  PetscErrorCode    ierr;
   VecScatter_SF     *data = (VecScatter_SF *)vscat->data;
   PetscSF           sf = data->sf;
   PetscInt          nranks,remote_start;
-  PetscMPIInt       myrank;
+  PetscMPIInt       rank;
   const PetscInt    *offset;
   const PetscMPIInt *ranks;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&myrank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
 
-  if (send) { ierr = PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,NULL,NULL);CHKERRQ(ierr); }
-  else { ierr = PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,NULL);CHKERRQ(ierr); }
-
+  /* This routine is mainly used for MatMult's Mvctx. In Mvctx, we scatter an MPI vector x to a sequential vector lvec.
+     Remember x is roots and lvec is leaves. 'send' means roots to leaves communication. If 'send' is true, we need to
+     get info about which ranks this processor needs to send to. In other words, we need to call PetscSFGetLeafRanks().
+     If send is false, we do the opposite, calling PetscSFGetRootRanks().
+  */
+  if (send) {ierr = PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,NULL);CHKERRQ(ierr);}
+  else {ierr = PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,NULL,NULL);CHKERRQ(ierr);}
   if (nranks) {
-    remote_start = (myrank == ranks[0])? 1 : 0;
+    remote_start = (rank == ranks[0])? 1 : 0;
     if (num_procs)   *num_procs   = nranks - remote_start;
     if (num_entries) *num_entries = offset[nranks] - offset[remote_start];
   } else {
@@ -208,22 +241,22 @@ static PetscErrorCode VecScatterGetRemoteCount_SF(VecScatter vscat,PetscBool sen
 
 static PetscErrorCode VecScatterGetRemote_SF(VecScatter vscat,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
+  PetscErrorCode    ierr;
   VecScatter_SF     *data = (VecScatter_SF *)vscat->data;
   PetscSF           sf = data->sf;
   PetscInt          nranks,remote_start;
-  PetscMPIInt       myrank;
+  PetscMPIInt       rank;
   const PetscInt    *offset,*location;
   const PetscMPIInt *ranks;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&myrank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
 
-  if (send) { ierr = PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,&location,NULL);CHKERRQ(ierr); }
-  else { ierr = PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,&location);CHKERRQ(ierr); }
+  if (send) {ierr = PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,&location);CHKERRQ(ierr);}
+  else {ierr = PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,&location,NULL);CHKERRQ(ierr);}
 
   if (nranks) {
-    remote_start = (myrank == ranks[0])? 1 : 0;
+    remote_start = (rank == ranks[0])? 1 : 0;
     if (n)       *n       = nranks - remote_start;
     if (starts)  *starts  = &offset[remote_start];
     if (indices) *indices = location; /* not &location[offset[remote_start]]. Starts[0] may point to the middle of indices[] */
@@ -286,30 +319,33 @@ functionend:
 
 static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
 {
+  PetscErrorCode ierr;
   VecScatter_SF  *data;
-  MPI_Comm       comm,xcomm,ycomm,bigcomm;
+  MPI_Comm       xcomm,ycomm,bigcomm;
   Vec            x=vscat->from_v,y=vscat->to_v,xx,yy;
   IS             ix=vscat->from_is,iy=vscat->to_is,ixx,iyy;
-  PetscMPIInt    size,xcommsize,ycommsize,myrank;
-  PetscInt       i,j,n,N,nroots,nleaves,inedges=0,*leafdata,*rootdata,*ilocal,*lilocal,xstart,ystart,lnleaves,ixsize,iysize,xlen,ylen;
+  PetscMPIInt    xcommsize,ycommsize,rank;
+  PetscInt       i,n,N,nroots,nleaves,inedges=0,*leafdata,*rootdata,*ilocal,xstart,ystart,ixsize,iysize,xlen,ylen;
   const PetscInt *xindices,*yindices,*degree;
-  PetscSFNode    *iremote,*liremote;
+  PetscSFNode    *iremote;
   PetscLayout    xlayout,ylayout;
   PetscSF        tmpsf;
   ISTypeID       ixid,iyid;
-  PetscInt       bs,bsx,bsy,min=PETSC_MIN_INT,max=PETSC_MAX_INT,ixfirst,ixstep,iyfirst,iystep;
+  PetscInt       bs,bsx,bsy,min,max,m[2],ixfirst,ixstep,iyfirst,iystep;
   PetscBool      can_do_block_opt=PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(vscat,&data);CHKERRQ(ierr);
+  data->bs   = 1; /* default, no blocking */
+  data->unit = MPIU_SCALAR;
 
-  /* Let P and S stand for parallel and sequential vectors respectively, there are four combinations of vecscatters: PtoP, PtoS, StoP and StoS.
-    The assumption of VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newctx) is: if x is parallel, then ix contains global
-    indices of x. If x is sequential, ix contains local indices of x. Similarily for y and iy.
+  /*
+   Let P and S stand for parallel and sequential vectors respectively. There are four combinations of vecscatters: PtoP, PtoS,
+   StoP and StoS. The assumption of VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newctx) is: if x is parallel, then ix
+   contains global indices of x. If x is sequential, ix contains local indices of x. Similarily for y and iy.
 
-    SF builds around concepts of local leaves and remote roots, which correspond to an StoP scatter. We transform PtoP and PtoS to StoP, and
-    treat StoS as a trivial StoP.
+   SF builds around concepts of local leaves and remote roots. We treat source vector x as roots and destination vector y as
+   leaves. A PtoS scatter can be naturally mapped to SF. We transform PtoP and StoP to PtoS, and treat StoS as trivial PtoS.
   */
   ierr = PetscObjectGetComm((PetscObject)x,&xcomm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)y,&ycomm);CHKERRQ(ierr);
@@ -350,43 +386,83 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
   ierr = ISGetMinMax(iy,&min,&max);CHKERRQ(ierr);
   if (min < 0 || max >= ylen) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scatter indices in iy are out of range");
 
-  /* Do block optimization by taking advantage of high level info available in ix, iy.
-     The block optimization is valid when all of the following conditions are met:
-     1) ix, iy are blocked or can be blocked (i.e., strided with step=1);
-     2) ix, iy have the same block size;
-     3) all processors agree on one block size;
-     4) no blocks span more than one process;
-   */
-  data->bs   = 1; /* default, no blocking */
-  data->unit = MPIU_SCALAR;
-  ierr       = ISGetTypeID_Private(ix,&ixid);CHKERRQ(ierr);
-  ierr       = ISGetTypeID_Private(iy,&iyid);CHKERRQ(ierr);
-  bigcomm    = (ycommsize == 1) ? xcomm : ycomm;
-
+  /* Extract info about ix, iy for further test */
+  ierr = ISGetTypeID_Private(ix,&ixid);CHKERRQ(ierr);
+  ierr = ISGetTypeID_Private(iy,&iyid);CHKERRQ(ierr);
   if (ixid == IS_BLOCK)       {ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);}
   else if (ixid == IS_STRIDE) {ierr = ISStrideGetInfo(ix,&ixfirst,&ixstep);CHKERRQ(ierr);}
 
   if ( iyid == IS_BLOCK)      {ierr = ISGetBlockSize(iy,&bsy);CHKERRQ(ierr);}
   else if (iyid == IS_STRIDE) {ierr = ISStrideGetInfo(iy,&iyfirst,&iystep);CHKERRQ(ierr);}
 
-  /* Processors could go through different path in this if-else test */
-  if (ixid == IS_BLOCK && iyid == IS_BLOCK) {
-    min = PetscMin(bsx,bsy);
-    max = PetscMax(bsx,bsy);
-  } else if (ixid == IS_BLOCK  && iyid == IS_STRIDE && iystep==1 && iyfirst%bsx==0) {
-    min = max = bsx;
-  } else if (ixid == IS_STRIDE && iyid == IS_BLOCK  && ixstep==1 && ixfirst%bsy==0) {
-    min = max = bsy;
+  /* Check if a PtoS is special ToAll/ToZero scatters, which can be results of VecScatterCreateToAll/Zero.
+     ToAll means a whole MPI vector is copied to a seq vector on every process. ToZero means a whole MPI
+     vector is copied to a seq vector on rank 0 and other processes do nothing(i.e.,they input empty ix,iy).
+
+     We can optimize these scatters with MPI collectives. We can also avoid costly analysis used for general scatters.
+  */
+  if (xcommsize > 1 && ycommsize == 1) { /* Ranks do not diverge at this if-test */
+    PetscInt    pattern[2] = {0, 0}; /* A boolean array with pattern[0] for allgather-like (ToAll) and pattern[1] for gather-like (ToZero) */
+    PetscLayout map;
+
+    ierr = MPI_Comm_rank(xcomm,&rank);CHKERRQ(ierr);
+    ierr = VecGetLayout(x,&map);CHKERRQ(ierr);
+    if (!rank) {
+      if (ixid == IS_STRIDE && iyid == IS_STRIDE && ixsize == xlen && ixfirst == 0 && ixstep == 1 && iyfirst == 0 && iystep == 1) {
+        /* Rank 0 scatters the whole mpi x to seq y, so it is either a ToAll or a ToZero candidate in its view */
+        pattern[0] = pattern[1] = 1;
+      }
+    } else {
+      if (ixid == IS_STRIDE && iyid == IS_STRIDE && ixsize == xlen && ixfirst == 0 && ixstep == 1 && iyfirst == 0 && iystep == 1) {
+        /* Other ranks also scatter the whole mpi x to seq y, so it is a ToAll candidate in their view */
+        pattern[0] = 1;
+      } else if (ixsize == 0) {
+        /* Other ranks do nothing, so it is a ToZero candiate */
+        pattern[1] = 1;
+      }
+    }
+
+    /* One stone (the expensive allreduce) two birds: pattern[] tells if it is ToAll or ToZero */
+    ierr   = MPIU_Allreduce(MPI_IN_PLACE,pattern,2,MPIU_INT,MPI_LAND,xcomm);CHKERRQ(ierr);
+
+    if (pattern[0] || pattern[1]) {
+      ierr = PetscSFCreate(xcomm,&data->sf);CHKERRQ(ierr);
+      ierr = PetscSFSetGraphWithPattern(data->sf,map,pattern[0] ? PETSCSF_PATTERN_ALLGATHER : PETSCSF_PATTERN_GATHER);CHKERRQ(ierr);
+      goto functionend; /* No further analysis needed. What a big win! */
+    }
   }
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&min,1,MPIU_INT,MPI_MIN,bigcomm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&max,1,MPIU_INT,MPI_MAX,bigcomm);CHKERRQ(ierr);
+
+  /* Continue ...
+     Do block optimization by taking advantage of high level info available in ix, iy.
+     The block optimization is valid when all of the following conditions are met:
+     1) ix, iy are blocked or can be blocked (i.e., strided with step=1);
+     2) ix, iy have the same block size;
+     3) all processors agree on one block size;
+     4) no blocks span more than one process;
+   */
+  bigcomm = (xcommsize == 1) ? ycomm : xcomm;
+
+  /* Processors could go through different path in this if-else test */
+  m[0] = m[1] = PETSC_MPI_INT_MIN;
+  if (ixid == IS_BLOCK && iyid == IS_BLOCK) {
+    m[0] = PetscMax(bsx,bsy);
+    m[1] = -PetscMin(bsx,bsy);
+  } else if (ixid == IS_BLOCK  && iyid == IS_STRIDE && iystep==1 && iyfirst%bsx==0) {
+    m[0] = bsx;
+    m[1] = -bsx;
+  } else if (ixid == IS_STRIDE && iyid == IS_BLOCK  && ixstep==1 && ixfirst%bsy==0) {
+    m[0] = bsy;
+    m[1] = -bsy;
+  }
+  /* Get max and min of bsx,bsy over all processes in one allreduce */
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_MAX,bigcomm);CHKERRQ(ierr);
+  max = m[0]; min = -m[1];
 
   /* Since we used allreduce above, all ranks will have the same min and max. min==max
      implies all ranks have the same bs. Do further test to see if local vectors are dividable
      by bs on ALL ranks. If they are, we are ensured that no blocks span more than one processor.
    */
   if (min == max && min > 1) {
-    PetscInt m[2];
     ierr = VecGetLocalSize(x,&xlen);CHKERRQ(ierr);
     ierr = VecGetLocalSize(y,&ylen);CHKERRQ(ierr);
     m[0] = xlen%min;
@@ -399,8 +475,8 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
      and layout are actually used in building SF. Suppose blocked ix representing {0,1,2,6,7,8} has
      indices {0,2} and bs=3, then ixx = {0,2}; suppose strided iy={3,4,5,6,7,8}, then iyy={1,2}.
 
-     yy is a little special. If y is seq, then yy is the concatenation of seq y's on xcomm. In this way,
-     we can treat PtoP and PtoS uniformly as PtoP.
+     xx is a little special. If x is seq, then xx is the concatenation of seq x's on ycomm. In this way,
+     we can treat PtoP and StoP uniformly as PtoS.
    */
   if (can_do_block_opt) {
     const PetscInt *indices;
@@ -410,58 +486,58 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
     ierr     = MPI_Type_commit(&data->unit);CHKERRQ(ierr);
 
     /* Shrink x and ix */
-    ierr = VecCreateMPIWithArray(xcomm,1,xlen/bs,PETSC_DECIDE,NULL,&xx);CHKERRQ(ierr); /* We only care xx's layout */
+    ierr = VecCreateMPIWithArray(bigcomm,1,xlen/bs,PETSC_DECIDE,NULL,&xx);CHKERRQ(ierr); /* We only care xx's layout */
     if (ixid == IS_BLOCK) {
       ierr = ISBlockGetIndices(ix,&indices);CHKERRQ(ierr);
       ierr = ISBlockGetLocalSize(ix,&ixsize);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,ixsize,indices,PETSC_COPY_VALUES,&ixx);CHKERRQ(ierr);
       ierr = ISBlockRestoreIndices(ix,&indices);CHKERRQ(ierr);
-    } else if (ixid == IS_STRIDE) {
+    } else { /* ixid == IS_STRIDE */
       ierr = ISGetLocalSize(ix,&ixsize);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,ixsize/bs,ixfirst/bs,1,&ixx);CHKERRQ(ierr);
     }
 
     /* Shrink y and iy */
-    ierr = VecCreateMPIWithArray(bigcomm,1,ylen/bs,PETSC_DECIDE,NULL,&yy);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(ycomm,1,ylen/bs,PETSC_DECIDE,NULL,&yy);CHKERRQ(ierr);
     if (iyid == IS_BLOCK) {
       ierr = ISBlockGetIndices(iy,&indices);CHKERRQ(ierr);
       ierr = ISBlockGetLocalSize(iy,&iysize);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,iysize,indices,PETSC_COPY_VALUES,&iyy);CHKERRQ(ierr);
       ierr = ISBlockRestoreIndices(iy,&indices);CHKERRQ(ierr);
-    } else if (iyid == IS_STRIDE) {
+    } else { /* iyid == IS_STRIDE */
       ierr = ISGetLocalSize(iy,&iysize);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,iysize/bs,iyfirst/bs,1,&iyy);CHKERRQ(ierr);
     }
   } else {
     ixx = ix;
     iyy = iy;
-    xx  = x;
-    if (ycommsize == 1) {ierr = VecCreateMPIWithArray(bigcomm,1,ylen,PETSC_DECIDE,NULL,&yy);CHKERRQ(ierr);} else yy = y;
+    yy  = y;
+    if (xcommsize == 1) {ierr = VecCreateMPIWithArray(bigcomm,1,xlen,PETSC_DECIDE,NULL,&xx);CHKERRQ(ierr);} else xx = x;
   }
 
   /* Now it is ready to build SF with preprocessed (xx, yy) and (ixx, iyy) */
   ierr = ISGetIndices(ixx,&xindices);CHKERRQ(ierr);
   ierr = ISGetIndices(iyy,&yindices);CHKERRQ(ierr);
 
-  if (xcommsize > 1) {
-    /* PtoP or PtoS */
+  if (ycommsize > 1) {
+    /* PtoP or StoP */
     ierr = VecGetLayout(xx,&xlayout);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(xx,&xstart,NULL);CHKERRQ(ierr);
     ierr = VecGetLayout(yy,&ylayout);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(yy,&ystart,NULL);CHKERRQ(ierr);
 
-    /* Each process has a set of global index pairs (i, j) to scatter xx[i] to yy[j]. We first shift (i, j) to owner process of i through a tmp SF */
-    ierr = VecGetLocalSize(xx,&nroots);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(ixx,&nleaves);CHKERRQ(ierr);
+    /* Each process has a set of global index pairs (i, j) to scatter xx[i] to yy[j]. We first shift (i, j) to owner process of j through a tmp SF */
+    ierr = VecGetLocalSize(yy,&nroots);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iyy,&nleaves);CHKERRQ(ierr);
     ierr = PetscMalloc2(nleaves,&iremote,nleaves*2,&leafdata);CHKERRQ(ierr);
 
     for (i=0; i<nleaves; i++) {
-      ierr            = PetscLayoutFindOwnerIndex(xlayout,xindices[i],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr);
-      leafdata[2*i]   = xindices[i];
-      leafdata[2*i+1] = (ycommsize > 1)? yindices[i] : yindices[i] + ystart;
+      ierr            = PetscLayoutFindOwnerIndex(ylayout,yindices[i],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr);
+      leafdata[2*i]   = yindices[i];
+      leafdata[2*i+1] = (xcommsize > 1)? xindices[i] : xindices[i] + xstart;
     }
 
-    ierr = PetscSFCreate(xcomm,&tmpsf);CHKERRQ(ierr);
+    ierr = PetscSFCreate(ycomm,&tmpsf);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(tmpsf,nroots,nleaves,NULL,PETSC_USE_POINTER,iremote,PETSC_USE_POINTER);CHKERRQ(ierr);
 
     ierr = PetscSFComputeDegreeBegin(tmpsf,&degree);CHKERRQ(ierr);
@@ -475,37 +551,36 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
     ierr = PetscFree2(iremote,leafdata);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&tmpsf);CHKERRQ(ierr);
 
-    /* rootdata contains global index pairs (i, j). i's are owned by the current process, but j's can point to anywhere.
-       We convert i to local, and convert j to (rank, index). In the end, we get an StoP suitable for building SF.
+    /* rootdata contains global index pairs (i, j). j's are owned by the current process, but i's can point to anywhere.
+       We convert j to local, and convert i to (rank, index). In the end, we get an PtoS suitable for building SF.
      */
     nleaves = inedges;
-    ierr    = VecGetLocalSize(yy,&nroots);CHKERRQ(ierr);
+    ierr    = VecGetLocalSize(xx,&nroots);CHKERRQ(ierr);
     ierr    = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
     ierr    = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
 
     for (i=0; i<inedges; i++) {
-      ilocal[i] = rootdata[2*i] - xstart; /* covert x's global index to local index */
-      ierr      = PetscLayoutFindOwnerIndex(ylayout,rootdata[2*i+1],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr); /* convert y's global index to (rank, index) */
+      ilocal[i] = rootdata[2*i] - ystart; /* covert y's global index to local index */
+      ierr      = PetscLayoutFindOwnerIndex(xlayout,rootdata[2*i+1],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr); /* convert x's global index to (rank, index) */
     }
-
-    /* MUST build SF on yy's comm, which is not necessarily identical to xx's comm.
-       In SF's view, yy contains the roots (i.e., the remote) and iremote[].rank are ranks in yy's comm.
-       xx contains leaves, which are local and can be thought as part of PETSC_COMM_SELF. */
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject)yy),&data->sf);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(data->sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscFree(rootdata);CHKERRQ(ierr);
   } else {
-    /* StoP or StoS */
-    ierr = VecGetLayout(yy,&ylayout);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(ixx,&nleaves);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(yy,&nroots);CHKERRQ(ierr);
+    /* PtoS or StoS */
+    ierr = VecGetLayout(xx,&xlayout);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iyy,&nleaves);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(xx,&nroots);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
-    ierr = PetscArraycpy(ilocal,xindices,nleaves);CHKERRQ(ierr);
-    for (i=0; i<nleaves; i++) {ierr = PetscLayoutFindOwnerIndex(ylayout,yindices[i],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr);}
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject)yy),&data->sf);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(data->sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscArraycpy(ilocal,yindices,nleaves);CHKERRQ(ierr);
+    for (i=0; i<nleaves; i++) {ierr = PetscLayoutFindOwnerIndex(xlayout,xindices[i],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr);}
   }
+
+  /* MUST build SF on xx's comm, which is not necessarily identical to yy's comm.
+     In SF's view, xx contains the roots (i.e., the remote) and iremote[].rank are ranks in xx's comm.
+     yy contains leaves, which are local and can be thought as part of PETSC_COMM_SELF. */
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)xx),&data->sf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(data->sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(data->sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr); /* Give ilocal/iremote to petsc and no need to free them here */
 
   /* Free memory no longer needed */
   ierr = ISRestoreIndices(ixx,&xindices);CHKERRQ(ierr);
@@ -515,9 +590,11 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
     ierr = VecDestroy(&yy);CHKERRQ(ierr);
     ierr = ISDestroy(&ixx);CHKERRQ(ierr);
     ierr = ISDestroy(&iyy);CHKERRQ(ierr);
-  } else if (ycommsize == 1) {
-    ierr = VecDestroy(&yy);CHKERRQ(ierr);
+  } else if (xcommsize == 1) {
+    ierr = VecDestroy(&xx);CHKERRQ(ierr);
   }
+
+functionend:
   if (!vscat->from_is) {ierr = ISDestroy(&ix);CHKERRQ(ierr);}
   if (!vscat->to_is  ) {ierr = ISDestroy(&iy);CHKERRQ(ierr);}
 

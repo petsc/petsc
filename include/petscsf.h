@@ -4,29 +4,42 @@
 #if !defined(PETSCSF_H)
 #define PETSCSF_H
 #include <petscsys.h>
+#include <petscis.h>
 #include <petscsftypes.h>
 
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
 /*J
-    PetscSFType - String with the name of a PetscSF method or the creation function
-       with an optional dynamic library name, for example
-       https://www.mcs.anl.gov/petsc/lib.so:mysfcreate()
+    PetscSFType - String with the name of a PetscSF type
 
    Level: beginner
-
-   Notes:
-    The two approaches provided are
-$     PETSCSFBASIC which uses MPI 1 message passing to perform the communication and
-$     PETSCSFWINDOW which uses MPI 2 one-sided operations to perform the communication, this may be more efficient,
-$                   but may not be available for all MPI distributions. In particular OpenMPI has bugs in its one-sided
-$                   operations that prevent its use.
 
 .seealso: PetscSFSetType(), PetscSF
 J*/
 typedef const char *PetscSFType;
-#define PETSCSFBASIC  "basic"
-#define PETSCSFWINDOW "window"
+#define PETSCSFBASIC      "basic"
+#define PETSCSFALLGATHERV "allgatherv"
+#define PETSCSFALLGATHER  "allgather"
+#define PETSCSFGATHERV    "gatherv"
+#define PETSCSFGATHER     "gather"
+#define PETSCSFALLTOALL   "alltoall"
+#define PETSCSFWINDOW     "window"
+
+/*E
+   PetscSFPattern - Pattern of the PetscSF graph
+
+$  PETSCSF_PATTERN_GENERAL   - A general graph. One sets the graph with PetscSFSetGraph() and usually does not use this enum directly.
+$  PETSCSF_PATTERN_ALLGATHER - A graph that every rank gathers all roots from all ranks (like MPI_Allgather/v). One sets the graph with PetscSFSetGraphWithPattern().
+$  PETSCSF_PATTERN_GATHER    - A graph that rank 0 gathers all roots from all ranks (like MPI_Gather/v with root=0). One sets the graph with PetscSFSetGraphWithPattern().
+$  PETSCSF_PATTERN_ALLTOALL  - A graph that every rank gathers different roots from all ranks (like MPI_Alltoall). One sets the graph with PetscSFSetGraphWithPattern().
+                               In an ALLTOALL graph, we assume each process has <size> leaves and <size> roots, with each leaf connecting to a remote root. Here <size> is
+                               the size of the communicator. This does not mean one can not communicate multiple data items between a pair of processes. One just needs to
+                               create a new MPI datatype for the multiple data items, e.g., by MPI_Type_contiguous.
+   Level: beginner
+
+.seealso: PetscSFSetGraph(), PetscSFSetGraphWithPattern()
+E*/
+typedef enum {PETSCSF_PATTERN_GENERAL=0,PETSCSF_PATTERN_ALLGATHER,PETSCSF_PATTERN_GATHER,PETSCSF_PATTERN_ALLTOALL} PetscSFPattern;
 
 /*E
     PetscSFWindowSyncType - Type of synchronization for PETSCSFWINDOW
@@ -74,6 +87,7 @@ PETSC_EXTERN PetscErrorCode PetscSFWindowSetSyncType(PetscSF,PetscSFWindowSyncTy
 PETSC_EXTERN PetscErrorCode PetscSFWindowGetSyncType(PetscSF,PetscSFWindowSyncType*);
 PETSC_EXTERN PetscErrorCode PetscSFSetRankOrder(PetscSF,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const PetscInt*,PetscCopyMode,const PetscSFNode*,PetscCopyMode);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF,PetscLayout,PetscSFPattern);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF,PetscInt*,PetscInt*,const PetscInt**,const PetscSFNode**);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt,const PetscInt*,PetscSF*);

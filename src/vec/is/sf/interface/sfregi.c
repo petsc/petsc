@@ -3,6 +3,11 @@
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFCreate_Gatherv(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF);
 #endif
 
 PetscFunctionList PetscSFList;
@@ -28,6 +33,11 @@ PetscErrorCode  PetscSFRegisterAll(void)
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
   ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);
 #endif
+  ierr = PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFALLGATHER, PetscSFCreate_Allgather);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

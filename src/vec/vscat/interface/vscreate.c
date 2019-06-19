@@ -197,13 +197,14 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
    Output Parameter:
 .  newctx - location to store the new scatter context
 
-   Options Database Keys: (uses regular MPI_Sends by default)
-+  -vecscatter_view         - Prints detail of communications
+   Options Database Keys:
+.  -vecscatter_view         - Prints detail of communications
 .  -vecscatter_view ::ascii_info    - Print less details about communication
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
                               eliminates the chance for overlap of computation and communication
 -  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
                               will make the results of scatters deterministic when otherwise they are not (it may be slower also).
+.  -vecscatter_type sf      - Use the PetscSF implementation of vecscatter (Default). One can use PetscSF options to control the communication.
 
     Level: intermediate
 
@@ -225,8 +226,11 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 
    Both ix and iy cannot be NULL at the same time.
 
+   Use VecScatterCreateToAll() to create a vecscatter that copies an MPI vector to sequential vectors on all MPI ranks.
+   Use VecScatterCreateToZero() to create a vecscatter that copies an MPI vector to a sequential vector on MPI rank 0.
+   These special vecscatters have better performance than general ones.
 
-.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
+.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero(), PetscSFCreate()
 @*/
 PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {

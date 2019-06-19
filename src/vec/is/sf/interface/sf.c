@@ -4,7 +4,7 @@
 #if defined(PETSC_USE_DEBUG)
 #  define PetscSFCheckGraphSet(sf,arg) do {                          \
     if (PetscUnlikely(!(sf)->graphset))                              \
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetGraph() on argument %D \"%s\" before %s()",(arg),#sf,PETSC_FUNCTION_NAME); \
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetGraph() or PetscSFSetGraphWithPattern() on argument %D \"%s\" before %s()",(arg),#sf,PETSC_FUNCTION_NAME); \
   } while (0)
 #else
 #  define PetscSFCheckGraphSet(sf,arg) do {} while (0)
@@ -23,9 +23,19 @@ const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","Petsc
    Output Arguments:
 .  sf - new star forest context
 
+   Options Database Keys:
++  -sf_type basic     -Use MPI persistent Isend/Irecv for communication (Default)
+.  -sf_type window    -Use MPI-3 one-sided window for communication
+-  -sf_type neighbor  -Use MPI-3 neighborhood collectives for communication
+
    Level: intermediate
 
-.seealso: PetscSFSetGraph(), PetscSFDestroy()
+   Notes:
+   When one knows the communication graph is one of the predefined graph, such as MPI_Alltoall, MPI_Allgatherv,
+   MPI_Gatherv, one can create a PetscSF and then set its graph with PetscSFSetGraphWithPattern(). These special
+   SFs are optimized and they have better performance than general SFs.
+
+.seealso: PetscSFSetGraph(), PetscSFSetGraphWithPattern(), PetscSFDestroy()
 @*/
 PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
 {
@@ -87,6 +97,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   if (sf->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->ingroup);CHKERRQ(ierr);}
   if (sf->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->outgroup);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&sf->multi);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&sf->map);CHKERRQ(ierr);
   sf->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -379,16 +390,114 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
 }
 
 /*@
+  PetscSFSetGraphWithPattern - Sets the graph of an SF with a specific pattern
+
+  Collective
+
+  Input Parameters:
++ sf      - The PetscSF
+. map     - Layout of roots over all processes (insignificant when pattern is PETSCSF_PATTERN_ALLTOALL)
+- pattern - One of PETSCSF_PATTERN_ALLGATHER, PETSCSF_PATTERN_GATHER, PETSCSF_PATTERN_ALLTOALL
+
+  Notes:
+  It is easier to explain PetscSFPattern using vectors. Suppose we have an MPI vector x and its layout is map.
+  n and N are local and global sizes of x respectively.
+
+  With PETSCSF_PATTERN_ALLGATHER, the routine creates a graph that if one does Bcast on it, it will copy x to
+  sequential vectors y on all ranks.
+
+  With PETSCSF_PATTERN_GATHER, the routine creates a graph that if one does Bcast on it, it will copy x to a
+  sequential vector y on rank 0.
+
+  In above cases, entries of x are roots and entries of y are leaves.
+
+  With PETSCSF_PATTERN_ALLTOALL, map is insignificant. Suppose NP is size of sf's communicator. The routine
+  creates a graph that every rank has NP leaves and NP roots. On rank i, its leaf j is connected to root i
+  of rank j. Here 0 <=i,j<NP. It is a kind of MPI_Alltoall with sendcount/recvcount being 1. Note that it does
+  not mean one can not send multiple items. One just needs to create a new MPI datatype for the mulptiple data
+  items with MPI_Type_contiguous() and use that as the <unit> argument in SF routines.
+
+  In this case, roots and leaves are symmetric.
+
+  Level: intermediate
+ @*/
+PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf,PetscLayout map,PetscSFPattern pattern)
+{
+  MPI_Comm       comm;
+  PetscInt       n,N,res[2];
+  PetscMPIInt    rank,size;
+  PetscSFType    type;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
+  if (pattern < PETSCSF_PATTERN_ALLGATHER || pattern > PETSCSF_PATTERN_ALLTOALL) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unsupported PetscSFPattern %D\n",pattern);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  if (pattern == PETSCSF_PATTERN_ALLTOALL) {
+    type = PETSCSFALLTOALL;
+    ierr = PetscLayoutCreate(comm,&sf->map);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(sf->map,size);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(sf->map,((PetscInt)size)*size);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(sf->map);CHKERRQ(ierr);
+  } else {
+    ierr   = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
+    ierr   = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
+    res[0] = n;
+    res[1] = -n;
+    /* Check if n are same over all ranks so that we can optimize it */
+    ierr   = MPIU_Allreduce(MPI_IN_PLACE,res,2,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+    if (res[0] == -res[1]) { /* same n */
+      type = (pattern == PETSCSF_PATTERN_ALLGATHER) ? PETSCSFALLGATHER  : PETSCSFGATHER;
+    } else {
+      type = (pattern == PETSCSF_PATTERN_ALLGATHER) ? PETSCSFALLGATHERV : PETSCSFGATHERV;
+    }
+    ierr = PetscLayoutReference(map,&sf->map);CHKERRQ(ierr);
+  }
+  ierr = PetscSFSetType(sf,type);CHKERRQ(ierr);
+
+  sf->pattern = pattern;
+  sf->mine    = NULL; /* Contiguous */
+
+  /* Set nleaves, nroots here in case user calls PetscSFGetGraph, which is legal to call even before PetscSFSetUp is called.
+     Also set other easy stuff.
+   */
+  if (pattern == PETSCSF_PATTERN_ALLGATHER) {
+    sf->nleaves      = N;
+    sf->nroots       = n;
+    sf->nranks       = size;
+    sf->minleaf      = 0;
+    sf->maxleaf      = N - 1;
+  } else if (pattern == PETSCSF_PATTERN_GATHER) {
+    sf->nleaves      = rank ? 0 : N;
+    sf->nroots       = n;
+    sf->nranks       = rank ? 0 : size;
+    sf->minleaf      = 0;
+    sf->maxleaf      = rank ? -1 : N - 1;
+  } else if (pattern == PETSCSF_PATTERN_ALLTOALL) {
+    sf->nleaves      = size;
+    sf->nroots       = size;
+    sf->nranks       = size;
+    sf->minleaf      = 0;
+    sf->maxleaf      = size - 1;
+  }
+  sf->ndranks  = 0; /* We do not need to separate out distinguished ranks for patterned graphs to improve communication performance */
+  sf->graphset = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@
    PetscSFCreateInverseSF - given a PetscSF in which all vertices have degree 1, creates the inverse map
 
    Collective
 
    Input Arguments:
+
 .  sf - star forest to invert
 
    Output Arguments:
 .  isf - inverse of sf
-
    Level: advanced
 
    Notes:
@@ -477,12 +586,16 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
   ierr = PetscSFGetType(sf,&type);CHKERRQ(ierr);
   if (type) {ierr = PetscSFSetType(*newsf,type);CHKERRQ(ierr);}
   if (opt == PETSCSF_DUPLICATE_GRAPH) {
-    PetscInt          nroots,nleaves;
-    const PetscInt    *ilocal;
-    const PetscSFNode *iremote;
     PetscSFCheckGraphSet(sf,1);
-    ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(*newsf,nroots,nleaves,ilocal,PETSC_COPY_VALUES,iremote,PETSC_COPY_VALUES);CHKERRQ(ierr);
+    if (sf->pattern == PETSCSF_PATTERN_GENERAL) {
+      PetscInt          nroots,nleaves;
+      const PetscInt    *ilocal;
+      const PetscSFNode *iremote;
+      ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(*newsf,nroots,nleaves,ilocal,PETSC_COPY_VALUES,iremote,PETSC_COPY_VALUES);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFSetGraphWithPattern(*newsf,sf->map,sf->pattern);CHKERRQ(ierr);
+    }
   }
   if (sf->ops->Duplicate) {ierr = (*sf->ops->Duplicate)(sf,opt,*newsf);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -535,8 +648,8 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf,PetscInt *nroots,PetscInt *nleaves,con
 .  sf - star forest
 
    Output Arguments:
-+  minleaf - minimum active leaf on this process
--  maxleaf - maximum active leaf on this process
++  minleaf - minimum active leaf on this process. Return 0 if there are no leaves.
+-  maxleaf - maximum active leaf on this process. Return -1 if there are no leaves.
 
    Level: developer
 
@@ -586,37 +699,39 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (sf->ops->View) {ierr = (*sf->ops->View)(sf,viewer);CHKERRQ(ierr);}
-    if (!sf->graphset) {
-      ierr = PetscViewerASCIIPrintf(viewer,"PetscSFSetGraph() has not been called yet\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    }
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,sf->nroots,sf->nleaves,sf->nranks);CHKERRQ(ierr);
-    for (i=0; i<sf->nleaves; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,sf->mine ? sf->mine[i] : i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      PetscMPIInt *tmpranks,*perm;
-      ierr = PetscMalloc2(sf->nranks,&tmpranks,sf->nranks,&perm);CHKERRQ(ierr);
-      ierr = PetscArraycpy(tmpranks,sf->ranks,sf->nranks);CHKERRQ(ierr);
-      for (i=0; i<sf->nranks; i++) perm[i] = i;
-      ierr = PetscSortMPIIntWithArray(sf->nranks,tmpranks,perm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
-      for (ii=0; ii<sf->nranks; ii++) {
-        i = perm[ii];
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
-        for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
-        }
+    if (sf->pattern == PETSCSF_PATTERN_GENERAL) {
+      if (!sf->graphset) {
+        ierr = PetscViewerASCIIPrintf(viewer,"PetscSFSetGraph() has not been called yet\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
       }
-      ierr = PetscFree2(tmpranks,perm);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,sf->nroots,sf->nleaves,sf->nranks);CHKERRQ(ierr);
+      for (i=0; i<sf->nleaves; i++) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,sf->mine ? sf->mine[i] : i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+      if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+        PetscMPIInt *tmpranks,*perm;
+        ierr = PetscMalloc2(sf->nranks,&tmpranks,sf->nranks,&perm);CHKERRQ(ierr);
+        ierr = PetscArraycpy(tmpranks,sf->ranks,sf->nranks);CHKERRQ(ierr);
+        for (i=0; i<sf->nranks; i++) perm[i] = i;
+        ierr = PetscSortMPIIntWithArray(sf->nranks,tmpranks,perm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
+        for (ii=0; ii<sf->nranks; ii++) {
+          i = perm[ii];
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
+          for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
+            ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
+          }
+        }
+        ierr = PetscFree2(tmpranks,perm);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1007,7 +1122,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
   /* Uniq selected[] and put results in roots[] */
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscMalloc1(nselected,&roots);CHKERRQ(ierr);
-  ierr = PetscMemcpy(roots,selected,sizeof(PetscInt)*nselected);CHKERRQ(ierr);
+  ierr = PetscArraycpy(roots,selected,nselected);CHKERRQ(ierr);
   ierr = PetscSortedRemoveDupsInt(&nselected,roots);CHKERRQ(ierr);
   if (nselected && (roots[0] < 0 || roots[nselected-1] >= sf->nroots)) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max root indices %D/%D are not in [0,%D)",roots[0],roots[nselected-1],sf->nroots);
 
@@ -1084,7 +1199,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
   /* Uniq selected[] and put results in leaves[] */
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscMalloc1(nselected,&leaves);CHKERRQ(ierr);
-  ierr = PetscMemcpy(leaves,selected,sizeof(PetscInt)*nselected);CHKERRQ(ierr);
+  ierr = PetscArraycpy(leaves,selected,nselected);CHKERRQ(ierr);
   ierr = PetscSortedRemoveDupsInt(&nselected,leaves);CHKERRQ(ierr);
   if (nselected && (leaves[0] < 0 || leaves[nselected-1] >= sf->nleaves)) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max leaf indices %D/%D are not in [0,%D)",leaves[0],leaves[nselected-1],sf->nleaves);
 
@@ -1324,7 +1439,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
 -  multiRootsOrigNumbering - original indices of multi-roots; length of this array is nMultiRoots
 
    Level: developer
-   
+
    Notes:
    The returned array multiRootsOrigNumbering is newly allocated and should be destroyed with PetscFree() when no longer needed.
 
@@ -1638,3 +1753,20 @@ PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF sf,PetscSF *out)
   }
   PetscFunctionReturn(0);
 }
+
+/* Similar to PetscSFBcast, but only Bcast to leaves on rank 0 */
+PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
+{
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  if (sf->ops->BcastToZero) {
+    ierr = (*sf->ops->BcastToZero)(sf,unit,rootdata,leafdata);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSFBcastToZero_Private is not supported on this SF type");
+  ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

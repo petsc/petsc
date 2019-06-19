@@ -29,6 +29,7 @@ struct _PetscSFOps {
   PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
   PetscErrorCode (*BcastAndOpBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*BcastAndOpEnd)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*BcastToZero)(PetscSF,MPI_Datatype,const void*,void*); /* For interal use only */
   PetscErrorCode (*ReduceBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*ReduceEnd)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op);
@@ -69,6 +70,9 @@ struct _p_PetscSF {
   PetscBool       setupcalled;  /* Type and communication structures have been set up */
   PetscSFPackOpt  leafpackopt;  /* Optimization plans to (un)pack leaves based on patterns in rmine[]. NULL for no optimization */
 
+  PetscSFPattern  pattern;      /* Pattern of the graph */
+  PetscLayout     map;          /* Layout of leaves over all processes when building a patterned graph */
+
   void *data;                   /* Pointer to implementation */
 };
 
@@ -76,9 +80,31 @@ PETSC_EXTERN PetscBool PetscSFRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
 
 PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF,PetscSF*);
+PETSC_INTERN PetscErrorCode PetscSFBcastToZero_Private(PetscSF,MPI_Datatype,const void*,void*);
 
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype,MPI_Datatype*,PetscBool*);
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype,MPI_Datatype,PetscBool*);
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype,MPI_Datatype,PetscInt*);
+
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
+#define MPIU_Iscatter(a,b,c,d,e,f,g,h,req)     MPI_Iscatter(a,b,c,d,e,f,g,h,req)
+#define MPIU_Iscatterv(a,b,c,d,e,f,g,h,i,req)  MPI_Iscatterv(a,b,c,d,e,f,g,h,i,req)
+#define MPIU_Igather(a,b,c,d,e,f,g,h,req)      MPI_Igather(a,b,c,d,e,f,g,h,req)
+#define MPIU_Igatherv(a,b,c,d,e,f,g,h,i,req)   MPI_Igatherv(a,b,c,d,e,f,g,h,i,req)
+#define MPIU_Iallgather(a,b,c,d,e,f,g,req)     MPI_Iallgather(a,b,c,d,e,f,g,req)
+#define MPIU_Iallgatherv(a,b,c,d,e,f,g,h,req)  MPI_Iallgatherv(a,b,c,d,e,f,g,h,req)
+#define MPIU_Ialltoall(a,b,c,d,e,f,g,req)      MPI_Ialltoall(a,b,c,d,e,f,g,req)
+#else
+/* Ignore req, the MPI_Request argument, and use MPI blocking collectives. One should initialize req
+   to MPI_REQUEST_NULL so that one can do MPI_Wait(req,status) no matter the call is blocking or not.
+ */
+#define MPIU_Iscatter(a,b,c,d,e,f,g,h,req)     MPI_Scatter(a,b,c,d,e,f,g,h)
+#define MPIU_Iscatterv(a,b,c,d,e,f,g,h,i,req)  MPI_Scatterv(a,b,c,d,e,f,g,h,i)
+#define MPIU_Igather(a,b,c,d,e,f,g,h,req)      MPI_Gather(a,b,c,d,e,f,g,h)
+#define MPIU_Igatherv(a,b,c,d,e,f,g,h,i,req)   MPI_Gatherv(a,b,c,d,e,f,g,h,i)
+#define MPIU_Iallgather(a,b,c,d,e,f,g,req)     MPI_Allgather(a,b,c,d,e,f,g)
+#define MPIU_Iallgatherv(a,b,c,d,e,f,g,h,req)  MPI_Allgatherv(a,b,c,d,e,f,g,h)
+#define MPIU_Ialltoall(a,b,c,d,e,f,g,req)      MPI_Alltoall(a,b,c,d,e,f,g)
+#endif
 
 #endif
