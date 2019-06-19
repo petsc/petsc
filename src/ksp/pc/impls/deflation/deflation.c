@@ -112,6 +112,43 @@ PetscErrorCode PCDeflationSetSpace(PC pc,Mat W,PetscBool transpose)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCDeflationSetCoarseMat_Deflation(PC pc,Mat mat)
+{
+  PC_Deflation     *def = (PC_Deflation*)pc->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&def->WtAW);CHKERRQ(ierr);
+  def->WtAW = mat;
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtAW);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetCoarseMat - Set coarse problem Mat.
+
+   Not Collective
+
+   Input Parameters:
++  pc - preconditioner context
+-  mat - coarse problem mat
+
+   Level: developer
+
+.seealso: PCDEFLATION
+@*/
+PetscErrorCode  PCDeflationSetCoarseMat(PC pc,Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  ierr = PetscTryMethod(pc,"PCDeflationSetCoarseMat_C",(PC,Mat),(pc,mat));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscInt max)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;
@@ -727,6 +764,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseMat_C",PCDeflationSetCoarseMat_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",PCDeflationGetCoarseKSP_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseKSP_C",PCDeflationSetCoarseKSP_Deflation);CHKERRQ(ierr);
   PetscFunctionReturn(0);
