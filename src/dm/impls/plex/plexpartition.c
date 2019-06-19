@@ -2638,7 +2638,6 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
   /* Communicate overlap using process star forest */
   if (processSF || mpiOverflow) {
     PetscSF      procSF;
-    PetscSFNode  *remote;
     PetscSection leafSection;
 
     if (processSF) {
@@ -2647,14 +2646,12 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
       procSF = processSF;
     } else {
       ierr = PetscInfo(dm,"Using processSF for mesh distribution (MPI overflow)\n");CHKERRQ(ierr);
-      ierr = PetscMalloc1(size, &remote);CHKERRQ(ierr);
-      for (r = 0; r < size; ++r) { remote[r].rank  = r; remote[r].index = rank; }
-      ierr = PetscSFCreate(comm, &procSF);CHKERRQ(ierr);
-      ierr = PetscSFSetGraph(procSF, size, size, NULL, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+      ierr = PetscSFCreate(comm,&procSF);CHKERRQ(ierr);
+      ierr = PetscSFSetGraphWithPattern(procSF,NULL,PETSCSF_PATTERN_ALLTOALL);CHKERRQ(ierr);
     }
 
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &leafSection);CHKERRQ(ierr);
-    ierr = DMPlexDistributeData(dm, processSF, rootSection, MPIU_2INT, rootPoints, leafSection, (void**) &leafPoints);CHKERRQ(ierr);
+    ierr = DMPlexDistributeData(dm, procSF, rootSection, MPIU_2INT, rootPoints, leafSection, (void**) &leafPoints);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(leafSection, &leafSize);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&procSF);CHKERRQ(ierr);
