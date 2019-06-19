@@ -511,13 +511,18 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
 @*/
 PetscErrorCode PetscSFGetGraph(PetscSF sf,PetscInt *nroots,PetscInt *nleaves,const PetscInt **ilocal,const PetscSFNode **iremote)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  if (nroots) *nroots = sf->nroots;
-  if (nleaves) *nleaves = sf->nleaves;
-  if (ilocal) *ilocal = sf->mine;
-  if (iremote) *iremote = sf->remote;
+  if (sf->ops->GetGraph) {
+    ierr = (sf->ops->GetGraph)(sf,nroots,nleaves,ilocal,iremote);CHKERRQ(ierr);
+  } else {
+    if (nroots) *nroots = sf->nroots;
+    if (nleaves) *nleaves = sf->nleaves;
+    if (ilocal) *ilocal = sf->mine;
+    if (iremote) *iremote = sf->remote;
+  }
   PetscFunctionReturn(0);
 }
 
