@@ -225,6 +225,7 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
     ierr = PetscInfo(dm,"Creating new DMTS\n");CHKERRQ(ierr);
     ierr = DMTSCreate(PetscObjectComm((PetscObject)dm),tsdm);CHKERRQ(ierr);
     dm->dmts = (PetscObject) *tsdm;
+    (*tsdm)->originaldm = dm;
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,NULL);CHKERRQ(ierr);
     ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,NULL);CHKERRQ(ierr);
   }
@@ -254,7 +255,7 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTS(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->originaldm) sdm->originaldm = dm;
+  if (!sdm->originaldm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMTS has a NULL originaldm");
   if (sdm->originaldm != dm) {  /* Copy on write */
     DMTS oldsdm = sdm;
     ierr     = PetscInfo(dm,"Copying DMTS due to write\n");CHKERRQ(ierr);
@@ -262,6 +263,7 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
     ierr     = DMTSCopy(oldsdm,sdm);CHKERRQ(ierr);
     ierr     = DMTSDestroy((DMTS*)&dm->dmts);CHKERRQ(ierr);
     dm->dmts = (PetscObject) sdm;
+    sdm->originaldm = dm;
   }
   *tsdm = sdm;
   PetscFunctionReturn(0);

@@ -269,6 +269,12 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
       args: -snes_grid_sequence 2 -snes_vi_monitor -snes_type vinewtonrsls
 
    test:
+      suffix: mg
+      requires: !single
+      nsize: 4
+      args: -snes_grid_sequence 3 -snes_converged_reason -pc_type mg
+
+   test:
       suffix: 4
       nsize: 1
       args: -mat_is_symmetric

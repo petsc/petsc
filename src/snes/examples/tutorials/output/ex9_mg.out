@@ -1,0 +1,5 @@
+     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+errors on 33 x 33 grid:  av |u-uexact|  = 8.182e-04,  |u-uexact|_inf = 5.747e-03

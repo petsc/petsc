@@ -162,6 +162,7 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   nkdm->pctx         = kdm->pctx;
   nkdm->jacobianctx  = kdm->jacobianctx;
   nkdm->objectivectx = kdm->objectivectx;
+  nkdm->originaldm   = kdm->originaldm;
 
   /*
   nkdm->fortran_func_pointers[0] = kdm->fortran_func_pointers[0];
@@ -203,8 +204,8 @@ PetscErrorCode DMGetDMSNES(DM dm,DMSNES *snesdm)
     ierr = PetscInfo(dm,"Creating new DMSNES\n");CHKERRQ(ierr);
     ierr = DMSNESCreate(PetscObjectComm((PetscObject)dm),snesdm);CHKERRQ(ierr);
 
-    dm->dmsnes = (PetscObject) *snesdm;
-
+    dm->dmsnes            = (PetscObject) *snesdm;
+    (*snesdm)->originaldm = dm;
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,NULL);CHKERRQ(ierr);
     ierr = DMRefineHookAdd(dm,DMRefineHook_DMSNES,DMInterpolateHook_DMSNES,NULL);CHKERRQ(ierr);
     ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL);CHKERRQ(ierr);
@@ -235,7 +236,7 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->originaldm) sdm->originaldm = dm;
+  if (!sdm->originaldm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMSNES has a NULL originaldm");
   if (sdm->originaldm != dm) {  /* Copy on write */
     DMSNES oldsdm = sdm;
     ierr       = PetscInfo(dm,"Copying DMSNES due to write\n");CHKERRQ(ierr);
@@ -243,6 +244,7 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
     ierr       = DMSNESCopy(oldsdm,sdm);CHKERRQ(ierr);
     ierr       = DMSNESDestroy((DMSNES*)&dm->dmsnes);CHKERRQ(ierr);
     dm->dmsnes = (PetscObject)sdm;
+    sdm->originaldm = dm;
   }
   *snesdm = sdm;
   PetscFunctionReturn(0);
