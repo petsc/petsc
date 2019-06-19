@@ -28,7 +28,8 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Cmake will chose its own compilers if they are not provided explicitly here'''
-    args = ['--prefix='+self.confDir,'--parallel='+str(self.make.make_np)]
+    args = ['--prefix='+self.installDir]
+    args.append('--parallel='+str(self.make.make_np))
     if 'download-cmake-cc' in self.argDB and self.argDB['download-cmake-cc']:
       args.append('CC="'+self.argDB['download-cmake-cc']+'"')
     if 'download-cmake-configure-options' in self.argDB and self.argDB['download-cmake-configure-options']:
