@@ -18,6 +18,7 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 J*/
 typedef const char *PetscSFType;
 #define PETSCSFBASIC      "basic"
+#define PETSCSFNEIGHBOR   "neighbor"
 #define PETSCSFALLGATHERV "allgatherv"
 #define PETSCSFALLGATHER  "allgather"
 #define PETSCSFGATHERV    "gatherv"

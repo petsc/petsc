@@ -153,7 +153,7 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
   PetscSF        sf = data->sf;
   PetscInt       i,bs = data->bs;
   PetscMPIInt    size;
-  PetscBool      ident = PETSC_TRUE,isbasic;
+  PetscBool      ident = PETSC_TRUE,isbasic,isneighbor;
   PetscSFType    type;
   PetscSF_Basic  *bas = NULL;
   PetscErrorCode ierr;
@@ -176,7 +176,8 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
 
   ierr = PetscSFGetType(sf,&type);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)sf,PETSCSFBASIC,&isbasic);CHKERRQ(ierr);
-  if (!isbasic) SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"VecScatterRemap on SF type %s is not supported",type);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)sf,PETSCSFNEIGHBOR,&isneighbor);CHKERRQ(ierr);
+  if (!isbasic && !isneighbor) SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"VecScatterRemap on SF type %s is not supported",type);CHKERRQ(ierr);
 
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr); /* to bulid sf->irootloc if SetUp is not yet called */
 

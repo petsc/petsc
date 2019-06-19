@@ -1,13 +1,16 @@
 #include <petsc/private/sfimpl.h>     /*I  "petscsf.h"  I*/
 
-PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
-PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
+#endif
 PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFCreate_Gatherv(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF);
+#if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
+PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF);
 #endif
 
 PetscFunctionList PetscSFList;
@@ -38,6 +41,9 @@ PetscErrorCode  PetscSFRegisterAll(void)
   ierr = PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv);CHKERRQ(ierr);
   ierr = PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather);CHKERRQ(ierr);
   ierr = PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
+  ierr = PetscSFRegister(PETSCSFNEIGHBOR,  PetscSFCreate_Neighbor);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

@@ -1,10 +1,10 @@
 ALL: lib
 
 SOURCEH   =
-SOURCEC   = sfbasic.c sfpack.c
+SOURCEC   = sfneighbor.c
 LIBBASE   = libpetscvec
-DIRS      = allgatherv allgather gatherv gather alltoall neighbor
-LOCDIR    = src/vec/is/sf/impls/basic/
+DIRS      =
+LOCDIR    = src/vec/is/sf/impls/basic/neighbor
 MANSEC    = Vec
 SUBMANSEC = PetscSF
 
