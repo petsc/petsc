@@ -515,7 +515,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildICCTriMatrices(Mat A)
 
         offset+=1;
         if (nz>0) {
-          ierr = PetscArraypy(&(AjUp[offset]), vj, nz);CHKERRQ(ierr);
+          ierr = PetscArraycpy(&(AjUp[offset]), vj, nz);CHKERRQ(ierr);
           ierr = PetscArraycpy(&(AAUp[offset]), v, nz);CHKERRQ(ierr);
           for (j=offset; j<offset+nz; j++) {
             AAUp[j] = -AAUp[j];

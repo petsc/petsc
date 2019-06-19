@@ -476,7 +476,7 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&next->data,1,SAWs_WRITE,SAWs_STRING));
       ierr = PetscMalloc1((ntext+1),(char***)&next->edata);CHKERRQ(ierr);
-      ierr = PetscArraycpy(next->edata,next->list,ntext);CHKERRQ(ierr);
+      ierr = PetscMemcpy(next->edata,next->list,ntext*sizeof(char*));CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Set_Legal_Variable_Values,(dir,ntext,next->edata));
       }
       break;

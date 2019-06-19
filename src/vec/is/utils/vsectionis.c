@@ -2988,14 +2988,14 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
       ierr = PetscNewLog(sym,&link);CHKERRQ(ierr);
     }
     if (numPoints > link->numPoints) {
-      ierr = PetscFree2(link->perms,link->rots);CHKERRQ(ierr);
+      ierr = PetscFree2(*(PetscInt***)&link->perms,*(PetscInt***)&link->rots);CHKERRQ(ierr);
       ierr = PetscMalloc2(numPoints,(PetscInt***)&link->perms,numPoints,(PetscScalar***)&link->rots);CHKERRQ(ierr);
       link->numPoints = numPoints;
     }
     link->next   = sym->workout;
     sym->workout = link;
-    ierr = PetscArrayzero(link->perms,numPoints);CHKERRQ(ierr);
-    ierr = PetscArrayzero(link->rots,numPoints);CHKERRQ(ierr);
+    ierr = PetscArrayzero((PetscInt**)link->perms,numPoints);CHKERRQ(ierr);
+    ierr = PetscArrayzero((PetscInt**)link->rots,numPoints);CHKERRQ(ierr);
     ierr = (*sym->ops->getpoints) (sym, section, numPoints, points, link->perms, link->rots);CHKERRQ(ierr);
     if (perms) *perms = link->perms;
     if (rots)  *rots  = link->rots;
