@@ -417,6 +417,7 @@ PETSC_EXTERN PetscErrorCode PCLMVMClearIS(PC);
 
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
+PETSC_EXTERN PetscErrorCode PCDeflationSetInitOnly(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCDeflationSetMaxLvl(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCDeflationSetReductionFactor(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCDeflationSetCorrectionFactor(PC,PetscScalar);
