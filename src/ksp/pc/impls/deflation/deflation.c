@@ -135,6 +135,47 @@ PetscErrorCode PCDeflationSetReductionFactor(PC pc,PetscInt red)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCDeflationSetCorrectionFactor_Deflation(PC pc,PetscScalar fact)
+{
+  PC_Deflation   *def = (PC_Deflation*)pc->data;
+
+  PetscFunctionBegin;
+  /* TODO PETSC_DETERMINE -> compute max eigenvalue with power method */
+  def->correct = PETSC_TRUE;
+  def->correctfact = fact;
+  if (fact == PETSC_DEFAULT) {
+    def->correctfact = 1.0;
+  } else if (def->correct == 0.0) {
+    def->correct = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetCorrectionFactor - Set coarse problem correction factor.
+    The Preconditioner becomes P*M^{-1} + factor*Q.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc   - the preconditioner context
+-  fact - correction factor (set 0.0 to disable, PETSC_DEFAULT = 1.0)
+
+   Level: intermediate
+
+.seealso: PCDEFLATION
+@*/
+PetscErrorCode PCDeflationSetCorrectionFactor(PC pc,PetscScalar fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(pc,fact,2);
+  ierr = PetscTryMethod(pc,"PCDeflationSetCorrectionFactor_C",(PC,PetscScalar),(pc,fact));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCDeflationSetSpaceToCompute_Deflation(PC pc,PCDeflationSpaceType type,PetscInt size)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;
@@ -811,13 +852,13 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   ierr = PetscOptionsHead(PetscOptionsObject,"Deflation options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_max_lvl","Maximum of deflation levels","PCDeflationSetMaxLvl",def->maxnestedlvl,&def->maxnestedlvl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_reduction_factor","Reduction factor for coarse problem solution using PCTELESCOPE","PCDeflationSetReductionFactor",def->reductionfact,&def->reductionfact,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_deflation_correction","Add coarse problem correction Q to P","PCDeflationSetCorrectionFactor",def->correct,&def->correct,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsScalar("-pc_deflation_correction_factor","Set multiple of Q to use as coarse problem correction","PCDeflationSetCorrectionFactor",def->correctfact,&def->correctfact,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-pc_deflation_compute_space","Compute deflation space","PCDeflationSetSpace",PCDeflationSpaceTypes,(PetscEnum)def->spacetype,(PetscEnum*)&def->spacetype,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_compute_space_size","Set size of the deflation space to compute","PCDeflationSetSpace",def->spacesize,&def->spacesize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_deflation_space_extend","Extend deflation space instead of truncating (wavelets)","PCDeflation",def->extendsp,&def->extendsp,NULL);CHKERRQ(ierr);
 //TODO add set function and fix manpages
   ierr = PetscOptionsBool("-pc_deflation_initdef","Use only initialization step - Initdef","PCDeflation",def->init,&def->init,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_deflation_correct","Add coarse problem correction Q to P","PCDeflation",def->correct,&def->correct,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_deflation_correct_val","Set multiple of Q to use as coarse problem correction","PCDeflation",def->correctfact,&def->correctfact,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -880,6 +921,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetReductionFactor_C",PCDeflationSetReductionFactor_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCorrectionFactor_C",PCDeflationSetCorrectionFactor_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpaceToCompute_C",PCDeflationSetSpaceToCompute_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetProjectionNullSpaceMat_C",PCDeflationSetProjectionNullSpaceMat_Deflation);CHKERRQ(ierr);
