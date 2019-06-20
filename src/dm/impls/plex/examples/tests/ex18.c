@@ -231,7 +231,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1);CHKERRQ(ierr);
   if (options->dim < 1 || options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be between 1 and 3", options->dim);
-  ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-cell_simplex", "Generate simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-interpolate", "Type of mesh interpolation, e.g. none, serial, parallel", "ex18.c", interpTypes, 3, interpTypes[options->interpolate], &interp, NULL);CHKERRQ(ierr);
   options->interpolate = (InterpType) interp;
@@ -785,7 +785,7 @@ int main(int argc, char **argv)
     requires: exodusii
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo
-    args: -cell_simplex 0 -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
       suffix: 5_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
@@ -815,7 +815,7 @@ int main(int argc, char **argv)
 
   testset:
     nsize: {{1 2 4 5}}
-    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
       suffix: 7_exo
       requires: exodusii
@@ -839,7 +839,7 @@ int main(int argc, char **argv)
     suffix: 7_hdf5_hierarch
     requires: hdf5 ptscotch !complex
     nsize: {{2 3 4}separate output}
-    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -interpolate serial
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     args: -petscpartitioner_type matpartitioning -petscpartitioner_view ::ascii_info
