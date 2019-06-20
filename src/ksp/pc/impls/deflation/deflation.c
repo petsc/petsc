@@ -1,53 +1,3 @@
-
-/*  --------------------------------------------------------------------
-
-     This file implements a Deflation preconditioner in PETSc as part of PC.
-     You can use this as a starting point for implementing your own
-     preconditioner that is not provided with PETSc. (You might also consider
-     just using PCSHELL)
-
-     The following basic routines are required for each preconditioner.
-          PCCreate_XXX()          - Creates a preconditioner context
-          PCSetFromOptions_XXX()  - Sets runtime options
-          PCApply_XXX()           - Applies the preconditioner
-          PCDestroy_XXX()         - Destroys the preconditioner context
-     where the suffix "_XXX" denotes a particular implementation, in
-     this case we use _Deflation (e.g., PCCreate_Deflation, PCApply_Deflation).
-     These routines are actually called via the common user interface
-     routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(),
-     so the application code interface remains identical for all
-     preconditioners.
-
-     Another key routine is:
-          PCSetUp_XXX()           - Prepares for the use of a preconditioner
-     by setting data structures and options.   The interface routine PCSetUp()
-     is not usually called directly by the user, but instead is called by
-     PCApply() if necessary.
-
-     Additional basic routines are:
-          PCView_XXX()            - Prints details of runtime options that
-                                    have actually been used.
-     These are called by application codes via the interface routines
-     PCView().
-
-     The various types of solvers (preconditioners, Krylov subspace methods,
-     nonlinear solvers, timesteppers) are all organized similarly, so the
-     above description applies to these categories also.  One exception is
-     that the analogues of PCApply() for these components are KSPSolve(),
-     SNESSolve(), and TSSolve().
-
-     Additional optional functionality unique to preconditioners is left and
-     right symmetric preconditioner application via PCApplySymmetricLeft()
-     and PCApplySymmetricRight().  The Deflation implementation is
-     PCApplySymmetricLeftOrRight_Deflation().
-
-    -------------------------------------------------------------------- */
-
-/*
-   Include files needed for the Deflation preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners
-*/
-
 #include <../src/ksp/pc/impls/deflation/deflation.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
 
 const char *const PCDeflationSpaceTypes[] = {
@@ -63,8 +13,8 @@ const char *const PCDeflationSpaceTypes[] = {
   "slepc",
   "slepc-cheap",
   "user",
-  "DdefSpaceType",
-  "Ddef_SPACE_",
+  "PCDeflationSpaceType",
+  "PC_DEFLATION_SPACE_",
   0
 };
 
@@ -268,7 +218,6 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transp
   PetscFunctionReturn(0);
 }
 
-/* TODO create PCDeflationSetSpaceTranspose? */
 /*@
    PCDeflationSetSpace - Set deflation space matrix (or its transpose).
 
@@ -572,20 +521,20 @@ static PetscErrorCode PCApply_Deflation(PC pc,Vec r,Vec z)
   u  = def->work;
   ierr = PCGetOperators(pc,NULL,&A);CHKERRQ(ierr);
 
-  ierr = PCApply(def->pc,r,z);CHKERRQ(ierr);                      /*    z <- M^{-1}*r             */
+  ierr = PCApply(def->pc,r,z);CHKERRQ(ierr);                          /*    z <- M^{-1}*r             */
   if (!def->init) {
-    ierr = MatMult(def->WtA,z,w1);CHKERRQ(ierr);                  /*    w1 <- W'*A*z              */
+    ierr = MatMult(def->WtA,z,w1);CHKERRQ(ierr);                      /*    w1 <- W'*A*z              */
     if (def->correct) {
       if (def->Wt) {
-        ierr = MatMult(def->Wt,r,w2);CHKERRQ(ierr);               /*    w2 <- W'*r                */
+        ierr = MatMult(def->Wt,r,w2);CHKERRQ(ierr);                   /*    w2 <- W'*r                */
       } else {
-        ierr = MatMultHermitianTranspose(def->W,r,w2);CHKERRQ(ierr);       /*    w2 <- W'*r                */
+        ierr = MatMultHermitianTranspose(def->W,r,w2);CHKERRQ(ierr);  /*    w2 <- W'*r                */
       }
-      ierr = VecAXPY(w1,-1.0*def->correctfact,w2);CHKERRQ(ierr);  /*    w1 <- w1 - l*w2           */
+      ierr = VecAXPY(w1,-1.0*def->correctfact,w2);CHKERRQ(ierr);      /*    w1 <- w1 - l*w2           */
     }
-    ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);            /*    w2 <- (W'*A*W)^{-1}*w1    */
-    ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                    /*    u  <- W*w2                */
-    ierr = VecAXPY(z,-1.0,u);CHKERRQ(ierr);                       /*    z  <- z - u               */
+    ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);                /*    w2 <- (W'*A*W)^{-1}*w1    */
+    ierr = MatMult(def->W,w2,u);CHKERRQ(ierr);                        /*    u  <- W*w2                */
+    ierr = VecAXPY(z,-1.0,u);CHKERRQ(ierr);                           /*    z  <- z - u               */
   }
   PetscFunctionReturn(0);
 }
@@ -607,6 +556,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   if (pc->setupcalled) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PCGetOperators(pc,NULL,&Amat);CHKERRQ(ierr);
+  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   /* compute a deflation space */
   if (def->W || def->Wt) {
@@ -683,9 +633,6 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     ierr = MatDestroy(&def->W);CHKERRQ(ierr);
     ierr = MatHermitianTranspose(def->Wt,MAT_INITIAL_MATRIX,&def->W);CHKERRQ(ierr);
   }
-
-
-  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   /* assemble WtA */
   if (!def->WtA) {
@@ -936,25 +883,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   def->nestedlvl     = 0;
   def->maxnestedlvl  = 0;
 
-  /*
-      Set the pointers for the functions that are provided above.
-      Now when the user-level routines (such as PCApply(), PCDestroy(), etc.)
-      are called, they will automatically call these functions.  Note we
-      choose not to provide a couple of these functions since they are
-      not needed.
-  */
-  pc->ops->apply               = PCApply_Deflation;
-  pc->ops->applytranspose      = PCApply_Deflation;
-  pc->ops->presolve            = PCPreSolve_Deflation;
-  pc->ops->postsolve           = 0;
-  pc->ops->setup               = PCSetUp_Deflation;
-  pc->ops->reset               = PCReset_Deflation;
-  pc->ops->destroy             = PCDestroy_Deflation;
-  pc->ops->setfromoptions      = PCSetFromOptions_Deflation;
-  pc->ops->view                = PCView_Deflation;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
+  pc->ops->apply          = PCApply_Deflation;
+  pc->ops->presolve       = PCPreSolve_Deflation;
+  pc->ops->setup          = PCSetUp_Deflation;
+  pc->ops->reset          = PCReset_Deflation;
+  pc->ops->destroy        = PCDestroy_Deflation;
+  pc->ops->setfromoptions = PCSetFromOptions_Deflation;
+  pc->ops->view           = PCView_Deflation;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetInitOnly_C",PCDeflationSetInitOnly_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
