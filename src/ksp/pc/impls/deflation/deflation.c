@@ -68,6 +68,45 @@ const char *const PCDeflationSpaceTypes[] = {
   0
 };
 
+static PetscErrorCode PCDeflationSetSpaceToCompute_Deflation(PC pc,PCDeflationSpaceType type,PetscInt size)
+{
+  PC_Deflation   *def = (PC_Deflation*)pc->data;
+
+  PetscFunctionBegin;
+  if (type) def->spacetype = type;
+  if (size > 0) def->spacesize = size;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetSpaceToCompute - Set deflation space type and size to compute.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc   - the preconditioner context
+.  type - deflation space type to compute (or PETSC_IGNORE)
+-  size - size of the space to compute (or PETSC_DEFAULT)
+
+   Notes:
+    For wavelet-based deflation, size represents number of levels.
+    The deflation space is computed in PCSetUP().
+
+   Level: intermediate
+
+.seealso: PCDEFLATION
+@*/
+PetscErrorCode PCDeflationSetSpaceToCompute(PC pc,PCDeflationSpaceType type,PetscInt size)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (type) PetscValidLogicalCollectiveEnum(pc,type,2);
+  if (size > 0) PetscValidLogicalCollectiveInt(pc,size,3);
+  ierr = PetscTryMethod(pc,"PCDeflationSetSpaceToCompute_C",(PC,PCDeflationSpaceType,PetscInt),(pc,type,size));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transpose)
 {
@@ -806,6 +845,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
 
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpaceToCompute_C",PCDeflationSetSpaceToCompute_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetProjectionNullSpaceMat_C",PCDeflationSetProjectionNullSpaceMat_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
