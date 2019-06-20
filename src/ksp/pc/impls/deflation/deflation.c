@@ -849,30 +849,31 @@ static PetscErrorCode PCDestroy_Deflation(PC pc)
 static PetscErrorCode PCView_Deflation(PC pc,PetscViewer viewer)
 {
   PC_Deflation      *def = (PC_Deflation*)pc->data;
+  PetscInt          its;
   PetscBool         iascii;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    //if (cg->adaptiveconv) {
-    //  ierr = PetscViewerASCIIPrintf(viewer,"  DCG: using adaptive precision for inner solve with C=%.1e\n",cg->adaptiveconst);CHKERRQ(ierr);
-    //}
     if (def->correct) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Using CP correction\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"using CP correction, factor = %g+%gi\n",
+                                    (double)PetscRealPart(def->correctfact),
+                                    (double)PetscImaginaryPart(def->correctfact));CHKERRQ(ierr);
     }
     if (!def->nestedlvl) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Deflation space type: %s\n",PCDeflationSpaceTypes[def->spacetype]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  DCG %s\n",def->extendsp ? "extended" : "truncated");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"deflation space type: %s\n",PCDeflationSpaceTypes[def->spacetype]);CHKERRQ(ierr);
     }
 
-    ierr = PetscViewerASCIIPrintf(viewer,"--- Additional PC\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"--- Additional PC:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PCView(def->pc,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"--- Coarse solver\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"--- Coarse problem solver:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = KSPGetTotalIterations(def->WtAWinv,&its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"total number of iterations: %D\n",its);CHKERRQ(ierr);
     ierr = KSPView(def->WtAWinv,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
