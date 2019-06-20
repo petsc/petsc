@@ -68,6 +68,40 @@ const char *const PCDeflationSpaceTypes[] = {
   0
 };
 
+static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscInt max)
+{
+  PC_Deflation   *def = (PC_Deflation*)pc->data;
+
+  PetscFunctionBegin;
+  if (current) def->nestedlvl = current;
+  def->maxnestedlvl = max;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetMaxLvl - Set maximum level of deflation.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc  - the preconditioner context
+-  max - maximum deflation level
+
+   Level: intermediate
+
+.seealso: PCDEFLATION
+@*/
+PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,max,2);
+  ierr = PetscTryMethod(pc,"PCDeflationSetLvl_C",(PC,PetscInt,PetscInt),(pc,0,max));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCDeflationSetSpaceToCompute_Deflation(PC pc,PCDeflationSpaceType type,PetscInt size)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;
@@ -225,37 +259,76 @@ PetscErrorCode  PCDeflationSetCoarseMat(PC pc,Mat mat)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscInt max)
+static PetscErrorCode PCDeflationGetCoarseKSP_Deflation(PC pc,KSP *ksp)
 {
-  PC_Deflation   *def = (PC_Deflation*)pc->data;
+  PC_Deflation     *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
-  if (current) def->nestedlvl = current;
-  def->maxnestedlvl = max;
+  *ksp = def->WtAWinv;
   PetscFunctionReturn(0);
 }
 
 /*@
-   PCDeflationSetMaxLvl - Set maximum level of deflation.
+   PCDeflationGetCoarseKSP - Returns a pointer to the coarse problem KSP.
 
-   Logically Collective on PC
+   Not Collective
 
    Input Parameters:
-+  pc  - the preconditioner context
--  max - maximum deflation level
+.  pc - preconditioner context
 
-   Level: intermediate
+   Output Parameter:
+.  ksp - coarse problem KSP context
 
-.seealso: PCDEFLATION
+   Level: developer
+
+.seealso: PCDeflationSetCoarseKSP(), PCDEFLATION
 @*/
-PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
+PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveInt(pc,max,2);
-  ierr = PetscTryMethod(pc,"PCDeflationSetLvl_C",(PC,PetscInt,PetscInt),(pc,0,max));CHKERRQ(ierr);
+  PetscValidPointer(ksp,2);
+  ierr = PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCDeflationSetCoarseKSP_Deflation(PC pc,KSP ksp)
+{
+  PC_Deflation     *def = (PC_Deflation*)pc->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPDestroy(&def->WtAWinv);CHKERRQ(ierr);
+  def->WtAWinv = ksp;
+  ierr = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtAWinv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetCoarseKSP - Set coarse problem KSP.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - preconditioner context
+-  ksp - coarse problem KSP context
+
+   Level: developer
+
+.seealso: PCDeflationGetCoarseKSP(), PCDEFLATION
+@*/
+PetscErrorCode  PCDeflationSetCoarseKSP(PC pc,KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
+  PetscCheckSameComm(pc,1,ksp,2);
+  ierr = PetscTryMethod(pc,"PCDeflationSetCoarseKSP_C",(PC,KSP),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -329,79 +402,6 @@ PetscErrorCode PCDeflationSetPC(PC pc,PC apc)
   PetscValidHeaderSpecific(apc,PC_CLASSID,2);
   PetscCheckSameComm(pc,1,apc,2);
   ierr = PetscTryMethod(pc,"PCDeflationSetPC_C",(PC,PC),(pc,apc));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PCDeflationGetCoarseKSP_Deflation(PC pc,KSP *ksp)
-{
-  PC_Deflation     *def = (PC_Deflation*)pc->data;
-
-  PetscFunctionBegin;
-  *ksp = def->WtAWinv;
-  PetscFunctionReturn(0);
-}
-
-/*@
-   PCDeflationGetCoarseKSP - Returns a pointer to the coarse problem KSP.
-
-   Not Collective
-
-   Input Parameters:
-.  pc - preconditioner context
-
-   Output Parameter:
-.  ksp - coarse problem KSP context
-
-   Level: developer
-
-.seealso: PCDeflationSetCoarseKSP(), PCDEFLATION
-@*/
-PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(ksp,2);
-  ierr = PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PCDeflationSetCoarseKSP_Deflation(PC pc,KSP ksp)
-{
-  PC_Deflation     *def = (PC_Deflation*)pc->data;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = KSPDestroy(&def->WtAWinv);CHKERRQ(ierr);
-  def->WtAWinv = ksp;
-  ierr = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtAWinv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-   PCDeflationSetCoarseKSP - Set coarse problem KSP.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - preconditioner context
--  ksp - coarse problem KSP context
-
-   Level: developer
-
-.seealso: PCDeflationGetCoarseKSP(), PCDEFLATION
-@*/
-PetscErrorCode  PCDeflationSetCoarseKSP(PC pc,KSP ksp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
-  PetscCheckSameComm(pc,1,ksp,2);
-  ierr = PetscTryMethod(pc,"PCDeflationSetCoarseKSP_C",(PC,KSP),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -845,15 +845,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
 
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpaceToCompute_C",PCDeflationSetSpaceToCompute_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetProjectionNullSpaceMat_C",PCDeflationSetProjectionNullSpaceMat_Deflation);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseMat_C",PCDeflationSetCoarseMat_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",PCDeflationGetCoarseKSP_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseKSP_C",PCDeflationSetCoarseKSP_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
