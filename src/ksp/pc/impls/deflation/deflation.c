@@ -112,6 +112,43 @@ PetscErrorCode PCDeflationSetSpace(PC pc,Mat W,PetscBool transpose)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCDeflationSetProjectionNullSpaceMat_Deflation(PC pc,Mat mat)
+{
+  PC_Deflation     *def = (PC_Deflation*)pc->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&def->WtA);CHKERRQ(ierr);
+  def->WtA = mat;
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtA);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCDeflationSetProjectionNullSpaceMat - Set projection null space matrix (W'*A).
+
+   Not Collective
+
+   Input Parameters:
++  pc  - preconditioner context
+-  mat - projection null space matrix
+
+   Level: developer
+
+.seealso: PCDEFLATION
+@*/
+PetscErrorCode  PCDeflationSetProjectionNullSpaceMat(PC pc,Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  ierr = PetscTryMethod(pc,"PCDeflationSetProjectionNullSpaceMat_C",(PC,Mat),(pc,mat));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCDeflationSetCoarseMat_Deflation(PC pc,Mat mat)
 {
   PC_Deflation     *def = (PC_Deflation*)pc->data;
@@ -770,6 +807,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   pc->ops->applysymmetricright = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetProjectionNullSpaceMat_C",PCDeflationSetProjectionNullSpaceMat_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);
