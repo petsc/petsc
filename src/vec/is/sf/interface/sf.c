@@ -1664,42 +1664,88 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
 }
 
 /*@
-  PetscSFCompose - Compose a new PetscSF equivalent to action to PetscSFs
+  PetscSFCompose - Compose a new PetscSF by putting the second SF under the first one in a top (roots) down (leaves) view
 
   Input Parameters:
-+ sfA - The first PetscSF
-- sfB - The second PetscSF
++ sfA - The first PetscSF, whose local space may be a permutation, but can not be sparse.
+- sfB - The second PetscSF, whose number of roots must be equal to number of leaves of sfA on each processor
 
   Output Parameters:
-. sfBA - equvalent PetscSF for applying A then B
+. sfBA - The composite SF. Doing a Bcast on the new SF is equvalent to doing Bcast on sfA, then Bcast on sfB
 
   Level: developer
 
-.seealso: PetscSF, PetscSFGetGraph(), PetscSFSetGraph()
+.seealso: PetscSF, PetscSFComposeInverse(), PetscSFGetGraph(), PetscSFSetGraph()
 @*/
-PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
+PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
 {
-  MPI_Comm           comm;
-  const PetscSFNode *remotePointsA, *remotePointsB;
+  PetscErrorCode    ierr;
+  MPI_Comm          comm;
+  const PetscSFNode *remotePointsA,*remotePointsB;
   PetscSFNode       *remotePointsBA;
-  const PetscInt    *localPointsA, *localPointsB;
-  PetscInt           numRootsA, numLeavesA, numRootsB, numLeavesB;
-  PetscErrorCode     ierr;
+  const PetscInt    *localPointsA,*localPointsB;
+  PetscInt          numRootsA,numLeavesA,numRootsB,numLeavesB,minleaf,maxleaf;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sfA, PETSCSF_CLASSID, 1);
-  PetscSFCheckGraphSet(sfA, 1);
-  PetscValidHeaderSpecific(sfB, PETSCSF_CLASSID, 2);
-  PetscSFCheckGraphSet(sfB, 2);
-  PetscValidPointer(sfBA, 3);
+  PetscValidHeaderSpecific(sfA,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sfA,1);
+  PetscValidHeaderSpecific(sfB,PETSCSF_CLASSID,2);
+  PetscSFCheckGraphSet(sfB,2);
+  PetscValidPointer(sfBA,3);
+  ierr = PetscObjectGetComm((PetscObject)sfA,&comm);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfA,&numRootsA,&numLeavesA,&localPointsA,&remotePointsA);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfB,&numRootsB,&numLeavesB,&localPointsB,&remotePointsB);CHKERRQ(ierr);
+  ierr = PetscSFGetLeafRange(sfA,&minleaf,&maxleaf);CHKERRQ(ierr);
+  if (maxleaf+1-minleaf != numLeavesA) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The first SF can not have sparse local space");
+  if (numRootsB != numLeavesA) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The second SF's number of roots must be equal to the first SF's number of leaves");
+  ierr = PetscMalloc1(numLeavesB,&remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB,MPIU_2INT,remotePointsA,remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB,MPIU_2INT,remotePointsA,remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm, sfBA);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfBA,numRootsA,numLeavesB,localPointsB,PETSC_COPY_VALUES,remotePointsBA,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSFComposeInverse - Compose a new PetscSF by putting inverse of the second SF under the first one
+
+  Input Parameters:
++ sfA - The first PetscSF, whose local space may be a permutation, but can not be sparse.
+- sfB - The second PetscSF, whose number of leaves must be equal to number of leaves of sfA on each processor. All roots must have degree 1.
+
+  Output Parameters:
+. sfBA - The composite SF. Doing a Bcast on the new SF is equvalent to doing Bcast on sfA, then Bcast on inverse of sfB
+
+  Level: developer
+
+.seealso: PetscSF, PetscSFCompose(), PetscSFGetGraph(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFComposeInverse(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
+{
+  PetscErrorCode    ierr;
+  MPI_Comm          comm;
+  const PetscSFNode *remotePointsA,*remotePointsB;
+  PetscSFNode       *remotePointsBA;
+  const PetscInt    *localPointsA,*localPointsB;
+  PetscInt          numRootsA,numLeavesA,numRootsB,numLeavesB,minleaf,maxleaf;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sfA,PETSCSF_CLASSID,1);
+  PetscSFCheckGraphSet(sfA,1);
+  PetscValidHeaderSpecific(sfB,PETSCSF_CLASSID,2);
+  PetscSFCheckGraphSet(sfB,2);
+  PetscValidPointer(sfBA,3);
   ierr = PetscObjectGetComm((PetscObject) sfA, &comm);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfA, &numRootsA, &numLeavesA, &localPointsA, &remotePointsA);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfB, &numRootsB, &numLeavesB, &localPointsB, &remotePointsB);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeavesB, &remotePointsBA);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, remotePointsBA);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, remotePointsBA);CHKERRQ(ierr);
-  ierr = PetscSFCreate(comm, sfBA);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfBA, numRootsA, numLeavesB, localPointsB, PETSC_COPY_VALUES, remotePointsBA, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFGetLeafRange(sfA,&minleaf,&maxleaf);CHKERRQ(ierr);
+  if (maxleaf+1-minleaf != numLeavesA) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The first SF can not have sparse local space");
+  if (numLeavesA != numLeavesB) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The second SF's number of leaves must be equal to the first SF's number of leaves");
+  ierr = PetscMalloc1(numRootsB,&remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sfB,MPIU_2INT,remotePointsA,remotePointsBA,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sfB,MPIU_2INT,remotePointsA,remotePointsBA,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm,sfBA);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfBA,numRootsA,numRootsB,NULL,PETSC_COPY_VALUES,remotePointsBA,PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
