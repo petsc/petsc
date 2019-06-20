@@ -349,15 +349,19 @@ static PetscErrorCode PCPreSolve_Deflation(PC pc,KSP ksp,Vec b, Vec x)
   ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   if (nonzero) {
-    ierr = MatMult(A,x,r);CHKERRQ(ierr);               /*    r  <- b - Ax              */
+    ierr = MatMult(A,x,r);CHKERRQ(ierr);                          /*    r  <- b - Ax              */
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(b,r);CHKERRQ(ierr);                 /*    r  <- b (x is 0)          */
+    ierr = VecCopy(b,r);CHKERRQ(ierr);                            /*    r  <- b (x is 0)          */
   }
 
-  ierr = MatMultTranspose(def->W,r,w1);CHKERRQ(ierr);  /*    w1 <- W'*r                */
-  ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);   /*    w2 <- (W'*A*W)^{-1}*w1    */
-  ierr = MatMult(def->W,w2,r);CHKERRQ(ierr);           /*    r  <- W*w2                */
+  if (def->Wt) {
+    ierr = MatMult(def->Wt,r,w1);CHKERRQ(ierr);                   /*    w1 <- W'*r                */
+  } else {
+    ierr = MatMultHermitianTranspose(def->W,r,w1);CHKERRQ(ierr);  /*    w1 <- W'*r                */
+  }
+  ierr = KSPSolve(def->WtAWinv,w1,w2);CHKERRQ(ierr);              /*    w2 <- (W'*A*W)^{-1}*w1    */
+  ierr = MatMult(def->W,w2,r);CHKERRQ(ierr);                      /*    r  <- W*w2                */
   ierr = VecAYPX(x,1.0,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -389,7 +393,7 @@ static PetscErrorCode PCApply_Deflation(PC pc,Vec r,Vec z)
       if (def->Wt) {
         ierr = MatMult(def->Wt,r,w2);CHKERRQ(ierr);               /*    w2 <- W'*r                */
       } else {
-        ierr = MatMultTranspose(def->W,r,w2);CHKERRQ(ierr);       /*    w2 <- W'*r                */
+        ierr = MatMultHermitianTranspose(def->W,r,w2);CHKERRQ(ierr);       /*    w2 <- W'*r                */
       }
       ierr = VecAXPY(w1,-1.0*def->correctfact,w2);CHKERRQ(ierr);  /*    w1 <- w1 - l*w2           */
     }
@@ -433,7 +437,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = MatCompositeGetNumberMat(def->W,&size);CHKERRQ(ierr);
     }
   } else {
-    ierr = MatCreateTranspose(def->Wt,&def->W);CHKERRQ(ierr);
+    ierr = MatCreateHermitianTranspose(def->Wt,&def->W);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)def->Wt,MATCOMPOSITE,&match);CHKERRQ(ierr);
     if (match) {
       ierr = MatCompositeGetType(def->Wt,&ctype);CHKERRQ(ierr);
@@ -491,7 +495,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
 
   if (transp) {
     ierr = MatDestroy(&def->W);CHKERRQ(ierr);
-    ierr = MatTranspose(def->Wt,MAT_INITIAL_MATRIX,&def->W);CHKERRQ(ierr);
+    ierr = MatHermitianTranspose(def->Wt,MAT_INITIAL_MATRIX,&def->W);CHKERRQ(ierr);
   }
 
 
@@ -502,7 +506,12 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     if (def->Wt) {
       ierr = MatMatMult(def->Wt,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA);CHKERRQ(ierr);
     } else {
+#if defined(PETSC_USE_COMPLEX)
+      ierr = MatHermitianTranspose(def->W,MAT_INITIAL_MATRIX,&def->Wt);CHKERRQ(ierr);
+      ierr = MatMatMult(def->W,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA);CHKERRQ(ierr);
+#else
       ierr = MatTransposeMatMult(def->W,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA);CHKERRQ(ierr);
+#endif
     }
   }
   /* setup coarse problem */
