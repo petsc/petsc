@@ -2533,7 +2533,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         p4est_tree_t *tree = &(((p4est_tree_t*) p4estC->trees->array)[t]);
         PetscInt     q;
 
-        ierr = PetscArraycpy(&coverQuadsSend[count],tree->quadrants.array,tree->quadrants.elem_count);CHKERRQ(ierr);
+        ierr = PetscMemcpy(&coverQuadsSend[count],tree->quadrants.array,tree->quadrants.elem_count * sizeof(p4est_quadrant_t));CHKERRQ(ierr);
         for (q = 0; (size_t) q < tree->quadrants.elem_count; q++) coverQuadsSend[count+q].p.which_tree = t;
         count += tree->quadrants.elem_count;
       }
