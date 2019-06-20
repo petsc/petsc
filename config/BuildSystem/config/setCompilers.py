@@ -140,7 +140,7 @@ class Configure(config.base.Configure):
   def isGNU(compiler, log):
     '''Returns true if the compiler is a GNU compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20 ', log = log)
       output = output + error
       return (any([s in output for s in ['www.gnu.org',
                                          'bugzilla.redhat.com',
@@ -164,7 +164,7 @@ class Configure(config.base.Configure):
   def isClang(compiler, log):
     '''Returns true if the compiler is a Clang/LLVM compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
       return any([s in output for s in ['Emit Clang AST']])
     except RuntimeError:
@@ -237,7 +237,7 @@ class Configure(config.base.Configure):
   def isG95(compiler, log):
     '''Returns true if the compiler is g95'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
@@ -251,7 +251,7 @@ class Configure(config.base.Configure):
   def isCompaqF90(compiler, log):
     '''Returns true if the compiler is Compaq f90'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
@@ -289,7 +289,7 @@ class Configure(config.base.Configure):
   def isIntel(compiler, log):
     '''Returns true if the compiler is a Intel compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
       if output.find('Intel Corporation') >= 0 :
         return 1
