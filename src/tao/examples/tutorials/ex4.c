@@ -544,7 +544,7 @@ static PetscErrorCode TaoSolveADMM(UserCtx ctx,  Vec x)
   ierr = TaoSetFromOptions(tao2);CHKERRQ(ierr);
 
   for (i=0; i<ctx->iter; i++) {
-    ierr = VecCopy(z,zold);
+    ierr = VecCopy(z,zold);CHKERRQ(ierr);
     ierr = TaoSolve(tao1);CHKERRQ(ierr); /* Updates xk */
     if (ctx->p == NORM_1){
       ierr = VecWAXPY(temp,1.,xk,u);CHKERRQ(ierr);
