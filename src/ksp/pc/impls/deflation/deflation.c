@@ -29,14 +29,17 @@ static PetscErrorCode PCDeflationSetInitOnly_Deflation(PC pc,PetscBool flg)
 
 /*@
    PCDeflationSetInitOnly - Do only initialization step.
-    Sets initial guess to the solution on the deflation space but do not apply deflation preconditioner.
-    The additional preconditioner is still applied.
+    Sets initial guess to the solution on the deflation space but does not apply
+    the deflation preconditioner. The additional preconditioner is still applied.
 
-   Logically Collective on PC
+   Logically Collective
 
    Input Parameters:
 +  pc  - the preconditioner context
 -  flg - default PETSC_FALSE
+
+   Options Database Keys:
+.    -pc_deflation_init_only <false> - if true computes only the special guess
 
    Level: intermediate
 
@@ -65,17 +68,20 @@ static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscIn
 }
 
 /*@
-   PCDeflationSetMaxLvl - Set maximum level of deflation.
+   PCDeflationSetMaxLvl - Set the maximum level of deflation nesting.
 
-   Logically Collective on PC
+   Logically Collective
 
    Input Parameters:
 +  pc  - the preconditioner context
 -  max - maximum deflation level
 
+   Options Database Keys:
+.    -pc_deflation_max_lvl <0> - maximum number of levels for multilevel deflation
+
    Level: intermediate
 
-.seealso: PCDEFLATION
+.seealso: PCDeflationSetSpaceToCompute(), PCDeflationSetSpace(), PCDEFLATION
 @*/
 PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
 {
@@ -98,17 +104,23 @@ static PetscErrorCode PCDeflationSetReductionFactor_Deflation(PC pc,PetscInt red
 }
 
 /*@
-   PCDeflationSetReductionFactor - Set reduction factor for PCTELESCOPE coarse problem solver.
+   PCDeflationSetReductionFactor - Set reduction factor for the bottom PCTELESCOPE coarse problem solver.
 
-   Logically Collective on PC
+   Logically Collective
 
    Input Parameters:
 +  pc  - the preconditioner context
 -  red - reduction factor (or PETSC_DETERMINE)
 
+   Options Database Keys:
+.    -pc_deflation_reduction_factor <-1> - reduction factor on bottom level coarse problem for PCTELESCOPE
+
+   Notes:
+     Default is computed based on the size of the coarse problem.
+
    Level: intermediate
 
-.seealso: PCDEFLATION
+.seealso: PCTELESCOPE, PCDEFLATION
 @*/
 PetscErrorCode PCDeflationSetReductionFactor(PC pc,PetscInt red)
 {
@@ -129,9 +141,7 @@ static PetscErrorCode PCDeflationSetCorrectionFactor_Deflation(PC pc,PetscScalar
   /* TODO PETSC_DETERMINE -> compute max eigenvalue with power method */
   def->correct = PETSC_TRUE;
   def->correctfact = fact;
-  if (fact == PETSC_DEFAULT) {
-    def->correctfact = 1.0;
-  } else if (def->correct == 0.0) {
+  if (def->correct == 0.0) {
     def->correct = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -139,13 +149,20 @@ static PetscErrorCode PCDeflationSetCorrectionFactor_Deflation(PC pc,PetscScalar
 
 /*@
    PCDeflationSetCorrectionFactor - Set coarse problem correction factor.
-    The Preconditioner becomes P*M^{-1} + factor*Q.
+    The Preconditioner becomes P*M^{-1} + fact*Q.
 
-   Logically Collective on PC
+   Logically Collective
 
    Input Parameters:
 +  pc   - the preconditioner context
--  fact - correction factor (set 0.0 to disable, PETSC_DEFAULT = 1.0)
+-  fact - correction factor
+
+   Options Database Keys:
++    -pc_deflation_correction        <false> - if true apply coarse problem correction
+-    -pc_deflation_correction_factor <1.0>   - sets coarse problem correction factor
+
+   Notes:
+    Any non-zero fact enables the coarse problem correction.
 
    Level: intermediate
 
@@ -175,20 +192,25 @@ static PetscErrorCode PCDeflationSetSpaceToCompute_Deflation(PC pc,PCDeflationSp
 /*@
    PCDeflationSetSpaceToCompute - Set deflation space type and size to compute.
 
-   Logically Collective on PC
+   Logically Collective
 
    Input Parameters:
 +  pc   - the preconditioner context
 .  type - deflation space type to compute (or PETSC_IGNORE)
 -  size - size of the space to compute (or PETSC_DEFAULT)
 
+   Options Database Keys:
++    -pc_deflation_compute_space      <haar> - compute PCDeflationSpaceType deflation space
+-    -pc_deflation_compute_space_size <1>    - size of the deflation space
+
    Notes:
     For wavelet-based deflation, size represents number of levels.
+
     The deflation space is computed in PCSetUP().
 
    Level: intermediate
 
-.seealso: PCDEFLATION
+.seealso: PCDeflationSetMaxLvl(), PCDEFLATION
 @*/
 PetscErrorCode PCDeflationSetSpaceToCompute(PC pc,PCDeflationSpaceType type,PetscInt size)
 {
@@ -219,18 +241,27 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transp
 }
 
 /*@
-   PCDeflationSetSpace - Set deflation space matrix (or its transpose).
+   PCDeflationSetSpace - Set the deflation space matrix (or its (hermitian) transpose).
 
-   Logically Collective on PC
+   Logically Collective
 
    Input Parameters:
-+  pc - the preconditioner context
-.  W  - deflation matrix
--  tranpose - indicates that W is an explicit transpose of the deflation matrix
++  pc        - the preconditioner context
+.  W         - deflation matrix
+-  transpose - indicates that W is an explicit transpose of the deflation matrix
+
+   Notes:
+    Setting W as a multipliplicative MATCOMPOSITE enables use of the multilevel
+    deflation. If W = W0*W1*W2*...*Wn, W0 is taken as the first deflation space and
+    the coarse problem (W0'*A*W0)^{-1} is again preconditioned by deflation with
+    W1 as the deflation matrix. This repeats until the maximum level set by
+    PCDeflationSetMaxLvl is reached or there are no more matrices available.
+    If there are matrices left after reaching the maximum level,
+    they are merged into a deflation matrix ...*W{n-1}*Wn.
 
    Level: intermediate
 
-.seealso: PCDEFLATION
+.seealso: PCDeflationSetMaxLvl(), PCDEFLATION
 @*/
 PetscErrorCode PCDeflationSetSpace(PC pc,Mat W,PetscBool transpose)
 {
@@ -258,9 +289,9 @@ static PetscErrorCode PCDeflationSetProjectionNullSpaceMat_Deflation(PC pc,Mat m
 }
 
 /*@
-   PCDeflationSetProjectionNullSpaceMat - Set projection null space matrix (W'*A).
+   PCDeflationSetProjectionNullSpaceMat - Set the projection null space matrix (W'*A).
 
-   Not Collective
+   Collective
 
    Input Parameters:
 +  pc  - preconditioner context
@@ -295,12 +326,12 @@ static PetscErrorCode PCDeflationSetCoarseMat_Deflation(PC pc,Mat mat)
 }
 
 /*@
-   PCDeflationSetCoarseMat - Set coarse problem Mat.
+   PCDeflationSetCoarseMat - Set the coarse problem Mat.
 
-   Not Collective
+   Collective
 
    Input Parameters:
-+  pc - preconditioner context
++  pc  - preconditioner context
 -  mat - coarse problem mat
 
    Level: developer
@@ -335,10 +366,10 @@ static PetscErrorCode PCDeflationGetCoarseKSP_Deflation(PC pc,KSP *ksp)
    Input Parameters:
 .  pc - preconditioner context
 
-   Output Parameter:
+   Output Parameters:
 .  ksp - coarse problem KSP context
 
-   Level: developer
+   Level: advanced
 
 .seealso: PCDeflationSetCoarseKSP(), PCDEFLATION
 @*/
@@ -367,12 +398,12 @@ static PetscErrorCode PCDeflationSetCoarseKSP_Deflation(PC pc,KSP ksp)
 }
 
 /*@
-   PCDeflationSetCoarseKSP - Set coarse problem KSP.
+   PCDeflationSetCoarseKSP - Set the coarse problem KSP.
 
-   Collective on PC
+   Collective
 
    Input Parameters:
-+  pc - preconditioner context
++  pc  - preconditioner context
 -  ksp - coarse problem KSP context
 
    Level: developer
@@ -401,14 +432,14 @@ static PetscErrorCode PCDeflationGetPC_Deflation(PC pc,PC *apc)
 }
 
 /*@
-   PCDeflationGetPC - Returns a pointer to additional preconditioner.
+   PCDeflationGetPC - Returns a pointer to the additional preconditioner.
 
    Not Collective
 
    Input Parameters:
 .  pc  - the preconditioner context
 
-   Output Parameter:
+   Output Parameters:
 .  apc - additional preconditioner
 
    Level: advanced
@@ -440,9 +471,9 @@ static PetscErrorCode PCDeflationSetPC_Deflation(PC pc,PC apc)
 }
 
 /*@
-   PCDeflationSetPC - Set additional preconditioner.
+   PCDeflationSetPC - Set the additional preconditioner.
 
-   Collective on PC
+   Collective
 
    Input Parameters:
 +  pc  - the preconditioner context
@@ -774,15 +805,6 @@ static PetscErrorCode PCReset_Deflation(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*
-   PCDestroy_Deflation - Destroys the private context for the Deflation preconditioner
-   that was created with PCCreate_Deflation().
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCDestroy()
-*/
 static PetscErrorCode PCDestroy_Deflation(PC pc)
 {
   PetscErrorCode ierr;
@@ -848,20 +870,82 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
 }
 
 /*MC
-     PCDEFLATION - Deflation preconditioner shifts part of the spectrum to zero (deflates)
-     or to a predefined value
+   PCDEFLATION - Deflation preconditioner shifts (deflates) part of the spectrum to zero or to a predefined value.
 
-   Options Database Key:
-+    -pc_deflation_type <init,pre,post> - selects approach to deflation (default: pre)
--    -pc_jacobi_abs - use the absolute value of the diagonal entry
+   Options Database Keys:
++    -pc_deflation_init_only          <false> - if true computes only the special guess
+.    -pc_deflation_max_lvl            <0>     - maximum number of levels for multilevel deflation
+.    -pc_deflation_reduction_factor   <-1>    - reduction factor on bottom level coarse problem for PCTELESCOPE (default based on the size of the coarse problem)
+.    -pc_deflation_correction         <false> - if true apply coarse problem correction
+.    -pc_deflation_correction_factor  <1.0>   - sets coarse problem correction factor
+.    -pc_deflation_compute_space      <haar>  - compute PCDeflationSpaceType deflation space
+-    -pc_deflation_compute_space_size <1>     - size of the deflation space (corresponds to number of levels for wavelet-based deflation)
 
-   Level: beginner
+   Notes:
+    Given a (complex - transpose is always hermitian) full rank deflation matrix W, the deflation (introduced in [1,2])
+    preconditioner uses projections Q = W*(W'*A*W)^{-1}*W' and P = I - Q*A, where A is pmat.
 
-  Notes:
-    todo
+    The deflation computes initial guess x0 = x_{-1} - Q*r_{-1}, which is the solution on the deflation space.
+    If PCDeflationSetInitOnly() or -pc_deflation_init_only is set to PETSC_TRUE (InitDef scheme), the application of the
+    preconditioner consists only of application of the additional preconditioner M^{-1}. Otherwise, the preconditioner
+    application consists of P*M{-1} + factor*Q. The first part of the preconditioner (PM^{-1}) shifts some eigenvalues
+    to zero while the addition of the coarse problem correction (factor*Q) makes the preconditioner to shift some
+    eigenvalues to the given factor. The InitDef scheme is recommended for deflation using high accuracy estimates
+    of eigenvectors of A when it exhibits similar convergence to the full deflation but is cheaper.
+
+    The deflation matrix is by default automatically computed. The type of deflation matrix and its size to compute can
+    be controlled by PCDeflationSetSpaceToCompute() or -pc_deflation_compute_space and -pc_deflation_compute_space_size.
+    User can set an arbitrary deflation space matrix with PCDeflationSetSpace(). If the deflation matrix
+    is a multiplicative MATCOMPOSITE, a multilevel deflation [3] is used. The first matrix in the composite is used as the
+    deflation matrix, and the coarse problem (W'*A*W)^{-1} is solved by FCG (if A is MAT_SPD) or FGMRES preconditioned
+    by deflation with deflation matrix being the next matrix in the MATCOMPOSITE. This scheme repeats until the maximum
+    level is reached or there are no more matrices. If the maximal level is reached, the remaining matrices are merged
+    (multiplied) to create the last deflation matrix. The maximal level defaults to 0 and can be set by
+    PCDeflationSetMaxLvl() or by -pc_deflation_max_lvl.
+
+    The coarse problem KSP can be controlled from the command line with prefix -def_[lvl]. You can also use
+    PCDeflationGetCoarseKSP() or PCDeflationSetCoarseKSP() to control it from code. The bottom level KSP defaults to
+    KSPREONLY with PCLU direct solver wrapped into PCTELESCOPE. For convenience, the reduction factor can be set by
+    PCDeflationSetReductionFactor() or -pc_deflation_recduction_factor. The default is chosen heuristically based on the
+    coarse problem size.
+
+    The additional preconditioner can be controlled from command line with prefix -def_[lvl]_pc,
+    e.g., -def_0_pc_pc_type bjacobi. You can also use PCDeflationGetPC() or PCDeflationSetPC() to control
+    the additional preconditioner from code. It defaults to PCNONE.
+
+    The coarse problem correction term (factor*Q) can be turned on by -pc_deflation_correction and the factor value can
+    be set by pc_deflation_correction_factor or by PCDeflationSetCorrectionFactor(). The coarse problem can
+    significantly improve convergence when the deflation coarse problem is not solved with high enough accuracy. We
+    recommend setting factor to some eigenvalue, e.g., the largest eigenvalue so that the preconditioner does not create
+    an isolated eigenvalue.
+
+    The preconditioner supports KSPMonitorDynamicTolerance(). This is useful for the multilevel scheme for which we also
+    recommend limiting the number of iterations for the coarse problem.
+
+    See section 3 of [4] for additional references and decription of the algorithm when used for conjugate gradients.
+    Section 4 describes some possible choices for the deflation space.
+
+   Developer Notes:
+     Contributed by Jakub Kruzik (PERMON), Institute of Geonics of the Czech
+     Academy of Sciences and VSB - TU Ostrava.
+
+     Developed from PERMON code used in [4] while on a research stay with
+     Prof. Reinhard Nabben at the Institute of Mathematics, TU Berlin.
+
+   References:
++    [1] - A. Nicolaides. “Deflation of conjugate gradients with applications to boundary valueproblems”, SIAM J. Numer. Anal. 24.2, 1987.
+.    [2] - Z. Dostal. "Conjugate gradient method with preconditioning by projector", Int J. Comput. Math. 23.3-4, 1988.
+.    [3] - Y. A. Erlangga and R. Nabben. "Multilevel Projection-Based Nested Krylov Iteration for Boundary Value Problems", SIAM J. Sci. Comput. 30.3, 2008.
+.    [4] - J. Kruzik "Implementation of the Deflated Variants of the Conjugate Gradient Method", Master's thesis, VSB-TUO, 2018 - http://dspace5.vsb.cz/bitstream/handle/10084/130303/KRU0097_USP_N2658_2612T078_2018.pdf
+
+   Level: intermediate
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCDeflationSetType(), PCDeflationSetSpace()
+           PCDeflationSetInitOnly(), PCDeflationSetMaxLvl(), PCDeflationSetReductionFactor(),
+           PCDeflationSetCorrectionFactor(), PCDeflationSetSpaceToCompoute(),
+           PCDeflationSetSpace(), PCDeflationSpaceType, PCDeflationSetProjectionNullSpaceMat(),
+           PCDeflationSetCoarseMat(), PCDeflationSetCoarseKSP(), PCDeflationGetCoarseKSP(),
+           PCDeflationGetPC(), PCDeflationSetPC()
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)

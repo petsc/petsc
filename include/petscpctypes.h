@@ -308,31 +308,29 @@ E*/
 typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
 
 /*E
-    PCDeflationSpaceType - Type of deflation space TODO improve doc
+    PCDeflationSpaceType - Type of deflation
     Level: beginner
 
     Values:
-+   PC_DEFLATION_SPACE_HAAR        - directly assembled Haar (db2) wawelet with cut-off
-.   PC_DEFLATION_SPACE_JACKET_HAAR - directly assembled Haar ......
-.   PC_DEFLATION_SPACE_DB2         - implicit product of db2 (2 coefficient Daubechies wavelet)/Haar wavelet
-.   PC_DEFLATION_SPACE_DB4         -
-.   PC_DEFLATION_SPACE_DB8         -
-.   PC_DEFLATION_SPACE_DB16        -
-.   PC_DEFLATION_SPACE_BIORTH22    -
-.   PC_DEFLATION_SPACE_MEYER       -
-.   PC_DEFLATION_SPACE_AGGREGATION - aggregates local indices (given by operator matix distribution) into subdomain
++   PC_DEFLATION_SPACE_HAAR        - directly assembled based on Haar (db2) wawelet with overflowed filter cuted-off
+.   PC_DEFLATION_SPACE_DB2         - MATCOMPOSITE of 1-lvl matices based on db2 (2 coefficient Daubechies / Haar wavelet)
+.   PC_DEFLATION_SPACE_DB4         - same as above, but with db4 (4 coefficient Daubechies)
+.   PC_DEFLATION_SPACE_DB8         - same as above, but with db8 (8 coefficient Daubechies)
+.   PC_DEFLATION_SPACE_DB16        - same as above, but with db16 (16 coefficient Daubechies)
+.   PC_DEFLATION_SPACE_BIORTH22    - same as above, but with biorthogonal 2.2 (6 coefficients)
+.   PC_DEFLATION_SPACE_MEYER       - same as above, but with Meyer/FIR (62 coefficients)
+.   PC_DEFLATION_SPACE_AGGREGATION - aggregates local indices (given by operator matix distribution) into a subdomain
 .   PC_DEFLATION_SPACE_SLEPC       - computes eigenvectors using SLEPc
 .   PC_DEFLATION_SPACE_SLEPC_CHEAP - same AS DEFLATION_SPACE_SLEPC, but it directly assembles AW by scaling columns of W with eigenvalues
 -   PC_DEFLATION_SPACE_USER        - indicates space set by user
 
     Notes:
-      SLEPc....
+      Wavelet-based space (except haar) can be used in multilevel deflation.
 
-.seealso: PCDeflationComputeSpace(), PCDEFLATION
+.seealso: PCDeflatioSetSpaceToCompute(), PCDEFLATION
 E*/
 typedef enum {
   PC_DEFLATION_SPACE_HAAR,
-  PC_DEFLATION_SPACE_JACKET_HAAR,
   PC_DEFLATION_SPACE_DB2,
   PC_DEFLATION_SPACE_DB4,
   PC_DEFLATION_SPACE_DB8,
