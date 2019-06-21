@@ -236,7 +236,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter        ctx;
   PetscErrorCode    ierr;
-  PetscMPIInt       size,xsize,ysize,result;
+  PetscMPIInt       xsize,ysize,result;
   MPI_Comm          comm,xcomm,ycomm;
 
   PetscFunctionBegin;
@@ -256,8 +256,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     if (result == MPI_UNEQUAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"VecScatterCreate: parallel vectors xin and yin must have identical/congruent/similar communicators");
   }
 
-  comm = xsize > ysize ? xcomm : ycomm; /* If xsize==ysize, we use ycomm as comm of ctx, which does affect correctness */
-  size = xsize > ysize ? xsize : ysize;
+  /* If xsize==ysize, we use ycomm as comm of ctx, which does affect correctness of -vecscatter_type mpi1. But it does not
+     affect -vecscatter_type sf, since sf internally uses the roots' comm (equal to xcomm when x is parallel) as the sf
+     object's comm. One day when we degrade VecScatter from a petsc object to a simple wrapper around PetscSF, we can get
+     rid of this confusion.
+   */
+  comm = xsize > ysize ? xcomm : ycomm;
 
   ierr = VecScatterInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","Vector Scatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
@@ -270,8 +274,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = VecGetLocalSize(yin,&ctx->to_n);CHKERRQ(ierr);
 
   /* Set default scatter type */
-  if (size == 1) {ierr = VecScatterSetType(ctx,VECSCATTERSEQ);CHKERRQ(ierr);}
-  else {ierr = VecScatterSetType(ctx,VECSCATTERMPI1);CHKERRQ(ierr);}
+  ierr = VecScatterSetType(ctx,VECSCATTERSF);CHKERRQ(ierr);
 
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
   ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
