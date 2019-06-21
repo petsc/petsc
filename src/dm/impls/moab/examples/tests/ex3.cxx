@@ -36,11 +36,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscOptionsBegin(comm, "", "Uniform Mesh Refinement Options", "DMMOAB");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-n", "The number of elements in each dimension", "ex3.cxx", options->nele, &options->nele, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-levels", "Number of levels in the hierarchy", "ex3.cxx", options->nlevels, &options->nlevels, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-degree", "Number of degrees at each level of refinement", "ex3.cxx", options->degree, &options->degree, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ghost", "Number of ghost layers in the mesh", "ex3.cxx", options->nghost, &options->nghost, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex3.cxx", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-n", "The number of elements in each dimension", "ex3.cxx", options->nele, &options->nele, NULL,1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-levels", "Number of levels in the hierarchy", "ex3.cxx", options->nlevels, &options->nlevels, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-degree", "Number of degrees at each level of refinement", "ex3.cxx", options->degree, &options->degree, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-ghost", "Number of ghost layers in the mesh", "ex3.cxx", options->nghost, &options->nghost, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex3.cxx", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex3.cxx", options->output_file, options->output_file, PETSC_MAX_PATH_LEN, &options->write_output);CHKERRQ(ierr);

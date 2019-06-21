@@ -17,8 +17,8 @@ int main(int argc, char **argv)
   nfaces      = 3;
   interpolate = PETSC_TRUE;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex20",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim","domain dimension",NULL,dim,&dim,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-nfaces","number of faces per dimension",NULL,nfaces,&nfaces,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim","domain dimension",NULL,dim,&dim,NULL,1,3);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-nfaces","number of faces per dimension",NULL,nfaces,&nfaces,NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   faces[0] = faces[1] = faces[2] = nfaces;
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD,dim,PETSC_TRUE,faces,NULL,NULL,NULL,interpolate,&dm);CHKERRQ(ierr);

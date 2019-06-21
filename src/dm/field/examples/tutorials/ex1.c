@@ -244,12 +244,12 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "DMField Tutorial Options", "DM");CHKERRQ(ierr);
   ierr = PetscOptionsFList("-dm_type","DM implementation on which to define field","ex1.c",DMList,type,type,256,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim","DM intrinsic dimension", "ex1.c", dim, &dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_components","Number of components in field", "ex1.c", nc, &nc, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_quad_points","Number of quadrature points per dimension", "ex1.c", pointsPerEdge, &pointsPerEdge, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_point_tests", "Number of test points for DMFieldEvaluate()", "ex1.c", numPoint, &numPoint, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_fe_tests", "Number of test cells for DMFieldEvaluateFE()", "ex1.c", numFE, &numFE, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_fv_tests", "Number of test cells for DMFieldEvaluateFV()", "ex1.c", numFV, &numFV, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim","DM intrinsic dimension", "ex1.c", dim, &dim, NULL,1,3);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_components","Number of components in field", "ex1.c", nc, &nc, NULL,1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_quad_points","Number of quadrature points per dimension", "ex1.c", pointsPerEdge, &pointsPerEdge, NULL,1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_point_tests", "Number of test points for DMFieldEvaluate()", "ex1.c", numPoint, &numPoint, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_fe_tests", "Number of test cells for DMFieldEvaluateFE()", "ex1.c", numFE, &numFE, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_fv_tests", "Number of test cells for DMFieldEvaluateFV()", "ex1.c", numFV, &numFV, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_shell", "Test the DMFIELDSHELL implementation of DMField", "ex1.c", testShell, &testShell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -273,7 +273,7 @@ int main(int argc, char **argv)
 
     ierr = PetscOptionsBegin(comm, "", "DMField DMPlex Options", "DM");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-simplex","Create a simplicial DMPlex","ex1.c",simplex,&simplex,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-overlap","DMPlex parallel overlap","ex1.c",overlap,&overlap,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBoundedInt("-overlap","DMPlex parallel overlap","ex1.c",overlap,&overlap,NULL,0);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-interpolate","Interpolate the DMPlex","ex1.c",interpolate,&interpolate,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-boundary_x","type of boundary in x direction","ex1.c",DMBoundaryTypes,5,DMBoundaryTypes[types[0]],&inttypes[0],&flags[0]);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-boundary_y","type of boundary in y direction","ex1.c",DMBoundaryTypes,5,DMBoundaryTypes[types[1]],&inttypes[1],&flags[1]);CHKERRQ(ierr);

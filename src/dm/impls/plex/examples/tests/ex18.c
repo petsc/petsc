@@ -231,9 +231,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->coordsTol    = PETSC_DEFAULT;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex18.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex18.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1,1,3);CHKERRQ(ierr);
   if (options->dim < 1 || options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be between 1 and 3", options->dim);
   ierr = PetscOptionsBool("-cell_simplex", "Generate simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
@@ -241,8 +241,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate = (InterpType) interp;
   if (!options->distribute && options->interpolate == PARALLEL) SETERRQ(comm, PETSC_ERR_SUP, "-interpolate parallel  needs  -distribute 1");
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2,0);CHKERRQ(ierr);
   options->ncoords = 128;
   ierr = PetscOptionsRealArray("-view_vertices_from_coords", "Print DAG points corresponding to vertices with given coordinates", "ex18.c", options->coords, &options->ncoords, NULL);CHKERRQ(ierr);
   if (flg2 != options->testOrientIF) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");

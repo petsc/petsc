@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FEM Layout Options", "ex26");CHKERRQ(ierr);
   ierr = PetscOptionsString("-i", "Filename to read", "ex26", ifilename, ifilename, sizeof(ifilename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-o", "Filename to write", "ex26", ofilename, ofilename, sizeof(ofilename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-order", "FEM polynomial order", "ex26", order, &order, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-order", "FEM polynomial order", "ex26", order, &order, NULL,1);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if ((order > 2) || (order < 1)) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported polynomial order %D not in [1, 2]", order);
 

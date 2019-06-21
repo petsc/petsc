@@ -170,7 +170,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 {
   const char    *defaultType;
   char           name[256];
-  PetscBool      flg, orderflg;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -190,20 +190,12 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
     ierr = PetscSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
   {
-    ierr = PetscOptionsInt("-petscspace_order", "DEPRECATED: The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, &orderflg);CHKERRQ(ierr);
-    if (orderflg) {
-      int compare;
-
-      ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)sp), PETSC_COMM_WORLD, &compare);CHKERRQ(ierr);
-
-      if (compare == MPI_IDENT || compare == MPI_CONGRUENT) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)sp), "Warning: -petscspace_order is deprecated.  Use -petscspace_degree\n");CHKERRQ(ierr);
-      }
-    }
+    ierr = PetscOptionsDeprecated("-petscspace_order","-petscspace_degree","3.11",NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBoundedInt("-petscspace_order", "DEPRECATED: The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL,0);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL,0);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }

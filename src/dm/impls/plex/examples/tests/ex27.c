@@ -22,7 +22,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->simplex  = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Plex ex27", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex27.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex27.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise tensor product cells", "ex27.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   dim  = options->dim;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", "ex27.c", options->faces, &dim, NULL);CHKERRQ(ierr);

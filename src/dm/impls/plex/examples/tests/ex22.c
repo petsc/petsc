@@ -130,7 +130,7 @@ int main(int argc, char **argv)
   ierr = PetscRandomSetFromOptions(randCtx);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-vertex_perturbation","scale of random vertex distortion",NULL,perturb,&perturb,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_test_points","number of points to test",NULL,numTests,&numTests,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_test_points","number of points to test",NULL,numTests,&numTests,NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   for (dim = 1; dim <= 3; dim++) {
     for (dimC = dim; dimC <= PetscMin(3,dim + 1); dimC++) {

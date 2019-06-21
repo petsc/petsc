@@ -262,7 +262,9 @@ M*/
 #define    PetscOptionsTail() 0; do {if (PetscOptionsObject->count != 1) PetscFunctionReturn(0);} while(0)
 
 #define PetscOptionsEnum(a,b,c,d,e,f,g) PetscOptionsEnum_Private(PetscOptionsObject,a,b,c,d,e,f,g)
-#define PetscOptionsInt(a,b,c,d,e,f) PetscOptionsInt_Private(PetscOptionsObject,a,b,c,d,e,f)
+#define PetscOptionsInt(a,b,c,d,e,f) PetscOptionsInt_Private(PetscOptionsObject,a,b,c,d,e,f,PETSC_MIN_INT,PETSC_MAX_INT)
+#define PetscOptionsBoundedInt(a,b,c,d,e,f,g) PetscOptionsInt_Private(PetscOptionsObject,a,b,c,d,e,f,g,PETSC_MAX_INT)
+#define PetscOptionsRangeInt(a,b,c,d,e,f,g,h) PetscOptionsInt_Private(PetscOptionsObject,a,b,c,d,e,f,g,h)
 #define PetscOptionsReal(a,b,c,d,e,f) PetscOptionsReal_Private(PetscOptionsObject,a,b,c,d,e,f)
 #define PetscOptionsScalar(a,b,c,d,e,f) PetscOptionsScalar_Private(PetscOptionsObject,a,b,c,d,e,f)
 #define PetscOptionsName(a,b,c,d) PetscOptionsName_Private(PetscOptionsObject,a,b,c,d)
@@ -283,7 +285,7 @@ M*/
 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems*,const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscOptionsInt_Private(PetscOptionItems*,const char[],const char[],const char[],PetscInt,PetscInt*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscOptionsInt_Private(PetscOptionItems*,const char[],const char[],const char[],PetscInt,PetscInt*,PetscBool*,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscOptionsReal_Private(PetscOptionItems*,const char[],const char[],const char[],PetscReal,PetscReal*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems*,const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsName_Private(PetscOptionItems*,const char[],const char[],const char[],PetscBool*);

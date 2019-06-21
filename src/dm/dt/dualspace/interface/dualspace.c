@@ -276,12 +276,12 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   } else if (!((PetscObject) sp)->type_name) {
     ierr = PetscDualSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-petscdualspace_degree", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscdualspace_components", "The number of components", "PetscDualSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscdualspace_degree", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscdualspace_components", "The number of components", "PetscDualSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL,1);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-petscdualspace_refdim", "The spatial dimension of the reference cell", "PetscDualSpaceSetReferenceCell", refDim, &refDim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscdualspace_refdim", "The spatial dimension of the reference cell", "PetscDualSpaceSetReferenceCell", refDim, &refDim, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-petscdualspace_refcell", "Reference cell", "PetscDualSpaceSetReferenceCell", PetscDualSpaceReferenceCells, (PetscEnum) refCell, (PetscEnum *) &refCell, &flg);CHKERRQ(ierr);
   if (flg) {
     DM K;

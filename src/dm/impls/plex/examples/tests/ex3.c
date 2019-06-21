@@ -152,8 +152,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->constants[2]    = 3.0;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Flag for simplices or hexhedra", "ex3.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-refcell", "Make the mesh only the reference cell", "ex3.c", options->refcell, &options->refcell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL);CHKERRQ(ierr);
@@ -161,14 +161,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-shear_coords", "Transform coordinates with a shear", "ex3.c", options->shearCoords, &options->shearCoords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-non_affine_coords", "Transform coordinates with a non-affine transform", "ex3.c", options->nonaffineCoords, &options->nonaffineCoords, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-conv_refine", "Use refinement for the convergence rate", "ex3.c", options->convRefine, &options->convRefine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);

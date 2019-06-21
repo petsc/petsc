@@ -1034,7 +1034,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = PetscOptionsBool("-dm_plex_gmsh_periodic","Read Gmsh periodic section", "DMPlexCreateGmsh", periodic, &periodic, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_gmsh_use_marker", "Generate marker label", "DMPlexCreateGmsh", usemarker, &usemarker, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_gmsh_zero_base", "Read Gmsh file with zero base indices", "DMPlexCreateGmsh", zerobase, &zerobase, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", embedDim, &embedDim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", embedDim, &embedDim, NULL,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (zerobase) shift = 0;

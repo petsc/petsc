@@ -45,7 +45,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   options->auxfield    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex23.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex23.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cellSimplex", "Flag for simplices", "ex23.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-submesh", "Flag for trying submesh", "ex23.c", options->submesh, &options->submesh, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-auxfield", "Flag for trying auxiliary fields", "ex23.c", options->auxfield, &options->auxfield, NULL);CHKERRQ(ierr);

@@ -170,7 +170,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The dimension (2 or 3)", "ex2.c", dim, &dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The dimension (2 or 3)", "ex2.c", dim, &dim, NULL,2,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-linear","Transfer a simple linear function", "ex2.c", linear, &linear, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-coords","Transfer a simple coordinate function", "ex2.c", coords, &coords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_fv","Use a finite volume approximation", "ex2.c", useFV, &useFV, NULL);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
   transfer_from_base[1] = transfer_from_base[0];
   ierr = PetscOptionsBool("-transfer_from_base_steps","Transfer a vector from base DM to the latest DMForest after the adaptivity steps", "ex2.c", transfer_from_base[1], &transfer_from_base[1], NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_bcs","Use dirichlet boundary conditions", "ex2.c", use_bcs, &use_bcs, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-adapt_steps","Number of adaptivity steps", "ex2.c", adaptSteps, &adaptSteps, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-adapt_steps","Number of adaptivity steps", "ex2.c", adaptSteps, &adaptSteps, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-periodic","Use periodic box mesh", "ex2.c", periodic, &periodic, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
