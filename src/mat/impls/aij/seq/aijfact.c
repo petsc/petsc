@@ -36,7 +36,7 @@ PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,
   }
 
   ierr     = PetscMalloc1(n,&done);CHKERRQ(ierr);
-  ierr     = PetscMemzero(done,n*sizeof(PetscBool));CHKERRQ(ierr);
+  ierr     = PetscArrayzero(done,n);CHKERRQ(ierr);
   ierr     = PetscMalloc1(n,&order);CHKERRQ(ierr);
   order[0] = current;
   for (i=0; i<n-1; i++) {
@@ -810,7 +810,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc1(n+1,&rtmp);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(rtmp,n+1);CHKERRQ(ierr);
   ics  = ic;
 
 #if defined(MV)
@@ -1614,7 +1614,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
   bdiag = b->diag;
 
   if (n > 0) {
-    ierr = PetscMemzero(b->a,(ai[n])*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(b->a,ai[n]);CHKERRQ(ierr);
   }
 
   /* set bi and bj with new data structure */
@@ -3288,7 +3288,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = PetscMalloc2(n,&im,n,&jtmp);CHKERRQ(ierr);
   /* rtmp, vtmp: working arrays for sparse and contiguous row entries of active row */
   ierr = PetscMalloc2(n,&rtmp,n,&vtmp);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,n*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(rtmp,n);CHKERRQ(ierr);
 
   bi[0]        = 0;
   bdiag[0]     = nnz_max-1; /* location of diag[0] in factor B */

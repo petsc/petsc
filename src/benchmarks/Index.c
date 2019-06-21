@@ -98,8 +98,8 @@ int test1(void)
   ierr = PetscTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
 
-  ierr = PetscMemcpy(x,y,10);CHKERRQ(ierr);
-  ierr = PetscMemcpy(z,zi,10);CHKERRQ(ierr);
+  ierr = PetscArraycpy(x,y,10);CHKERRQ(ierr);
+  ierr = PetscArraycpy(z,zi,10);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
   ierr = PetscFree(zi);CHKERRQ(ierr);
   ierr = PetscFree(x);CHKERRQ(ierr);

@@ -89,7 +89,7 @@ PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerPack;
 PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm,const PetscInt count, DMSwarmDataEx *ex)
 {
   PetscErrorCode ierr;
-  DMSwarmDataEx         d;
+  DMSwarmDataEx  d;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(struct _p_DMSwarmDataEx), &d);CHKERRQ(ierr);

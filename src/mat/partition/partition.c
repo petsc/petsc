@@ -127,8 +127,8 @@ PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscI
   l2p = PetscLog2Real(p);
   if (l2p - (PetscInt)PetscLog2Real(p)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%D is not a power of 2",p);
   if (!p) PetscFunctionReturn(0);
-  ierr = PetscMemzero(seps,(2*p-2)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(level,(p-1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(seps,2*p-2);CHKERRQ(ierr);
+  ierr = PetscArrayzero(level,p-1);CHKERRQ(ierr);
   seps[2*p-2] = sizes[2*p-2];
   pTree = p;
   pStartTree = 0;

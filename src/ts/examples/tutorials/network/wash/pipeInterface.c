@@ -209,7 +209,7 @@ PetscErrorCode JunctionCreateJacobian(DM dm,PetscInt v,Mat *Jin,Mat *J[])
   ierr = DMNetworkGetNumVariables(dm,v,&M);CHKERRQ(ierr);
   if (M !=2) SETERRQ1(PETSC_COMM_SELF,1,"M != 2",M);
   ierr = PetscMalloc3(M,&rows,M,&cols,M*M,&zeros);CHKERRQ(ierr);
-  ierr = PetscMemzero(zeros,M*M*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(zeros,M*M);CHKERRQ(ierr);
   for (i=0; i<M; i++) rows[i] = i;
 
   for (e=0; e<nedges; e++) {

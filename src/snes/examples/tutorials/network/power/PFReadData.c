@@ -169,7 +169,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
     }
   }
   fclose(fp);
-  
+
   /* Reorder the generator data structure according to bus numbers */
   genj=0; loadj=0;
   ierr = PetscMalloc1(pf->ngen,&newgen);CHKERRQ(ierr);

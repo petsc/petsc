@@ -1574,7 +1574,7 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
       else {
         ierr = VecGetArrayRead(vec1,&v1);CHKERRQ(ierr);
         ierr = VecGetArrayRead(vec2,&v2);CHKERRQ(ierr);
-        ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
+        ierr = PetscArraycmp(v1,v2,n1,&flg1);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(vec1,&v1);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(vec2,&v2);CHKERRQ(ierr);
       }

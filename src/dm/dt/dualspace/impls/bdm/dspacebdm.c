@@ -410,7 +410,7 @@ static PetscErrorCode PetscDualSpaceSetUp_BDM(PetscDualSpace sp)
           ierr = PetscCalloc1(Nq*Nc,  &qweights);CHKERRQ(ierr);
           ierr = PetscQuadratureSetOrder(sp->functional[f], order);CHKERRQ(ierr);
           ierr = PetscQuadratureSetData(sp->functional[f], dim, Nc, Nq, qpoints, qweights);CHKERRQ(ierr);
-          ierr = PetscMemcpy(qpoints, cqpoints, Nq*dim * sizeof(PetscReal));CHKERRQ(ierr);
+          ierr = PetscArraycpy(qpoints, cqpoints, Nq*dim);CHKERRQ(ierr);
           for (q = 0; q < Nq; ++q) {
             /* Make Radon measure for integral p dx */
             for (c = 0; c < Nc; ++c) qweights[q*Nc+c] = B[(q*cdim+cb)*Nc+c]*cqweights[q*Nc+c];

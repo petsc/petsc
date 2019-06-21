@@ -349,8 +349,8 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   f->Bf            = NULL;
   f->Df            = NULL;
   f->Hf            = NULL;
-  ierr = PetscMemzero(&f->quadrature, sizeof(PetscQuadrature));CHKERRQ(ierr);
-  ierr = PetscMemzero(&f->faceQuadrature, sizeof(PetscQuadrature));CHKERRQ(ierr);
+  ierr = PetscArrayzero(&f->quadrature, 1);CHKERRQ(ierr);
+  ierr = PetscArrayzero(&f->faceQuadrature, 1);CHKERRQ(ierr);
   f->blockSize     = 0;
   f->numBlocks     = 1;
   f->batchSize     = 0;

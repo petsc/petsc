@@ -125,7 +125,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
     }
     ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-    ierr = PetscMemcpy(cperm, sperm, numCells * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(cperm, sperm, numCells);CHKERRQ(ierr);
     ierr = PetscFree3(sperm, vsize, voff);CHKERRQ(ierr);
   }
   /* Construct closure */

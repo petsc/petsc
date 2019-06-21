@@ -254,7 +254,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
         if (orderEff < 0) continue;
         ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, orderEff, &cdim);CHKERRQ(ierr);
-        ierr = PetscMemzero(tup,(dim+1)*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArrayzero(tup,dim+1);CHKERRQ(ierr);
         if (!tensorSpace) {
           while (!tup[dim]) {
             for (c = 0; c < Nc; ++c) {

@@ -599,8 +599,8 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter inctx,Vec x)
       ierr = PetscMalloc1(nr,&tindicesRecvs);CHKERRQ(ierr);
 
       /* s/rindices and s/rstarts could be NULL when ns or nr is zero */
-      if (ns) {ierr = PetscMemcpy(tindicesSends,&sindices[sstarts[0]],ns*sizeof(PetscInt));CHKERRQ(ierr);}
-      if (nr) {ierr = PetscMemcpy(tindicesRecvs,&rindices[rstarts[0]],nr*sizeof(PetscInt));CHKERRQ(ierr);}
+      if (ns) {ierr = PetscArraycpy(tindicesSends,&sindices[sstarts[0]],ns);CHKERRQ(ierr);}
+      if (nr) {ierr = PetscArraycpy(tindicesRecvs,&rindices[rstarts[0]],nr);CHKERRQ(ierr);}
 
       ierr = PetscSortRemoveDupsInt(&ns,tindicesSends);CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&nr,tindicesRecvs);CHKERRQ(ierr);

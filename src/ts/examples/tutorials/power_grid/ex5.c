@@ -88,7 +88,7 @@ PetscErrorCode SaveSolution(TS ts)
   ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   mat[idx] = t;
-  ierr     = PetscMemcpy(mat+idx+1,x,2*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr     = PetscArraycpy(mat+idx+1,x,2);CHKERRQ(ierr);
   ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   user->stepnum++;
@@ -290,7 +290,7 @@ int main(int argc,char **argv)
 
   mat[idx] = 0.0;
 
-  ierr = PetscMemcpy(mat+idx+1,x,2*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mat+idx+1,x,2);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(U,&x);CHKERRQ(ierr);
   user.stepnum++;
@@ -312,7 +312,7 @@ int main(int argc,char **argv)
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,NULL,&B);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
   ierr = MatDenseGetArray(B,&amat);CHKERRQ(ierr);
-  ierr = PetscMemcpy(amat,rmat,user.stepnum*3*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(amat,rmat,user.stepnum*3);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(B,&amat);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
 

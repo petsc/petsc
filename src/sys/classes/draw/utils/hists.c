@@ -211,7 +211,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 
     ierr = PetscMalloc1(hist->maxValues+CHUNKSIZE, &tmp);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmp, hist->values, hist->maxValues);CHKERRQ(ierr);
     ierr = PetscFree(hist->values);CHKERRQ(ierr);
 
     hist->values     = tmp;
@@ -342,7 +342,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
     binSize = (xmax - xmin)/numBins;
     bins    = hist->bins;
 
-    ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(bins, numBins);CHKERRQ(ierr);
 
     maxHeight = 0.0;
     for (i = 0; i < numBins; i++) {
@@ -476,7 +476,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
     bins    = hist->bins;
 
     /* Calculate number of points in each bin */
-    ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(bins, numBins);CHKERRQ(ierr);
     for (i = 0; i < numBins; i++) {
       binLeft  = xmin + binSize*i;
       binRight = xmin + binSize*(i+1);

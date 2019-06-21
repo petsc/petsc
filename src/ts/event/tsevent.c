@@ -266,11 +266,11 @@ static PetscErrorCode TSEventRecorderResize(TSEvent event)
   }
 
   /* Copy over data */
-  ierr = PetscMemcpy(time,event->recorder.time,event->recsize*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemcpy(stepnum,event->recorder.stepnum,event->recsize*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(nevents,event->recorder.nevents,event->recsize*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(time,event->recorder.time,event->recsize);CHKERRQ(ierr);
+  ierr = PetscArraycpy(stepnum,event->recorder.stepnum,event->recsize);CHKERRQ(ierr);
+  ierr = PetscArraycpy(nevents,event->recorder.nevents,event->recsize);CHKERRQ(ierr);
   for (i=0; i < event->recsize; i++) {
-    ierr = PetscMemcpy(eventidx[i],event->recorder.eventidx[i],event->recorder.nevents[i]*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(eventidx[i],event->recorder.eventidx[i],event->recorder.nevents[i]);CHKERRQ(ierr);
   }
 
   /* Destroy old arrays */

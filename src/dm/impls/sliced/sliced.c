@@ -99,7 +99,7 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr           = PetscFree(slice->ghosts);CHKERRQ(ierr);
   ierr           = PetscMalloc1(Nghosts,&slice->ghosts);CHKERRQ(ierr);
-  ierr           = PetscMemcpy(slice->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr           = PetscArraycpy(slice->ghosts,ghosts,Nghosts);CHKERRQ(ierr);
   slice->bs      = bs;
   slice->n       = nlocal;
   slice->Nghosts = Nghosts;

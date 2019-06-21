@@ -771,11 +771,11 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn,
     }
   }
   if (ak < an) {
-    ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(L_+k,aI+ak,an-ak);CHKERRQ(ierr);
     k   += (an-ak);
   }
   if (bk < bn) {
-    ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(L_+k,bI+bk,bn-bk);CHKERRQ(ierr);
     k   += (bn-bk);
   }
   *n = k;
@@ -841,13 +841,13 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const Pe
     }
   }
   if (ak < an) {
-    ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(J_+k,aJ+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(L_+k,aI+ak,an-ak);CHKERRQ(ierr);
+    ierr = PetscArraycpy(J_+k,aJ+ak,an-ak);CHKERRQ(ierr);
     k   += (an-ak);
   }
   if (bk < bn) {
-    ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(J_+k,bJ+bk,(bn-bk)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(L_+k,bI+bk,bn-bk);CHKERRQ(ierr);
+    ierr = PetscArraycpy(J_+k,bJ+bk,bn-bk);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -972,7 +972,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
     ierr = PetscSortIntWithArray(cnt,workparentid,workid);CHKERRQ(ierr);
     PetscIntView(cnt,workparentid,0);
     PetscIntView(cnt,workid,0);*/
-    ierr  = PetscMemcpy(idbylevel+tcnt,workid,cnt*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr  = PetscArraycpy(idbylevel+tcnt,workid,cnt);CHKERRQ(ierr);
     tcnt += cnt;
   }
   if (tcnt != nmask) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent count of unmasked nodes");

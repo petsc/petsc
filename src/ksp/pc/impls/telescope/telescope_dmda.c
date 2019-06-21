@@ -453,9 +453,9 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
   ierr = PetscCalloc1(ctx->Np_re,&ctx->range_j_re);CHKERRQ(ierr);
   ierr = PetscCalloc1(ctx->Pp_re,&ctx->range_k_re);CHKERRQ(ierr);
 
-  if (_range_i_re) {ierr = PetscMemcpy(ctx->range_i_re,_range_i_re,sizeof(PetscInt)*ctx->Mp_re);CHKERRQ(ierr);}
-  if (_range_j_re) {ierr = PetscMemcpy(ctx->range_j_re,_range_j_re,sizeof(PetscInt)*ctx->Np_re);CHKERRQ(ierr);}
-  if (_range_k_re) {ierr = PetscMemcpy(ctx->range_k_re,_range_k_re,sizeof(PetscInt)*ctx->Pp_re);CHKERRQ(ierr);}
+  if (_range_i_re) {ierr = PetscArraycpy(ctx->range_i_re,_range_i_re,ctx->Mp_re);CHKERRQ(ierr);}
+  if (_range_j_re) {ierr = PetscArraycpy(ctx->range_j_re,_range_j_re,ctx->Np_re);CHKERRQ(ierr);}
+  if (_range_k_re) {ierr = PetscArraycpy(ctx->range_k_re,_range_k_re,ctx->Pp_re);CHKERRQ(ierr);}
 
   ierr = MPI_Bcast(ctx->range_i_re,ctx->Mp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(ctx->range_j_re,ctx->Np_re,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -707,8 +707,7 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
 
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: setup (DMDA)\n");CHKERRQ(ierr);
-  PetscMalloc1(1,&ctx);
-  PetscMemzero(ctx,sizeof(PC_Telescope_DMDACtx));
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
   sred->dm_ctx = (void*)ctx;
 
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);

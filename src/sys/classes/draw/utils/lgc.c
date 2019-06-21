@@ -212,7 +212,7 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int colors[])
 
   ierr = PetscFree(lg->colors);CHKERRQ(ierr);
   ierr = PetscMalloc1(lg->dim,&lg->colors);CHKERRQ(ierr);
-  ierr = PetscMemcpy(lg->colors,colors,lg->dim*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscArraycpy(lg->colors,colors,lg->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -37,11 +37,11 @@ PetscErrorCode PetscMatStashSpaceContiguous(PetscInt bs2,PetscMatStashSpace *spa
   PetscFunctionBegin;
   while ((*space)) {
     a    = (*space)->next;
-    ierr = PetscMemcpy(val,(*space)->val,((*space)->local_used*bs2)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(val,(*space)->val,(*space)->local_used*bs2);CHKERRQ(ierr);
     val += bs2*(*space)->local_used;
-    ierr = PetscMemcpy(idx,(*space)->idx,((*space)->local_used)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(idx,(*space)->idx,(*space)->local_used);CHKERRQ(ierr);
     idx += (*space)->local_used;
-    ierr = PetscMemcpy(idy,(*space)->idy,((*space)->local_used)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(idy,(*space)->idy,(*space)->local_used);CHKERRQ(ierr);
     idy += (*space)->local_used;
 
     ierr   =  PetscFree3((*space)->space_head,(*space)->idx,(*space)->idy);CHKERRQ(ierr);

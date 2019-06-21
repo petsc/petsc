@@ -659,9 +659,9 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS *is_redact,vo
    bet set by the Matlab function */
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),0,indices,PETSC_OWN_POINTER,is_redact);CHKERRQ(ierr);
   /* call Matlab function in ctx */
-  ierr    = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(&l1,&is_act,sizeof(is_act));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(&l2,is_redact,sizeof(is_act));CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&ls,&snes,1);CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&l1,&is_act,1);CHKERRQ(ierr);
+  ierr    = PetscArraycpy(&l2,is_redact,1);CHKERRQ(ierr);
   prhs[0] = mxCreateDoubleScalar((double)ls);
   prhs[1] = mxCreateDoubleScalar((double)l1);
   prhs[2] = mxCreateDoubleScalar((double)l2);

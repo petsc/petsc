@@ -2890,8 +2890,8 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
 
   /* Work arrays for rows of P^T*A */
   ierr = PetscMalloc4(an,&ptadenserow,an,&ptasparserow,cn,&denserow,cn,&sparserow);CHKERRQ(ierr);
-  ierr = PetscMemzero(ptadenserow,an*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(denserow,cn*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(ptadenserow,an);CHKERRQ(ierr);
+  ierr = PetscArrayzero(denserow,cn);CHKERRQ(ierr);
 
   /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
@@ -2950,7 +2950,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
       }
 
       /* Copy data into free space, and zero out denserows */
-      ierr = PetscMemcpy(current_space->array,sparserow,cnzi*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(current_space->array,sparserow,cnzi);CHKERRQ(ierr);
 
       current_space->array           += cnzi;
       current_space->local_used      += cnzi;
@@ -3013,7 +3013,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
   ierr = PetscCalloc3(cn,&apa,cn,&apj,cn,&apjdense);CHKERRQ(ierr);
 
   /* Clear old values in C */
-  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(ca,ci[cm]);CHKERRQ(ierr);
 
   for (i=0; i<am; i++) {
     /* Form sparse row of A*P */

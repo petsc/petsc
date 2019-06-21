@@ -688,17 +688,17 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig
   if (r > 0) {
     /* Add XMU to T */
     for (j = 0; j < r; j++) {
-      ierr = PetscMemcpy(&(TT[max_neig*j+r]), &(XMU[neig1*j]), neig*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&(TT[max_neig*j+r]), &(XMU[neig1*j]), neig);CHKERRQ(ierr);
     }
     /* Add [UMX; XMX] to T */
     for (j = 0; j < neig; j++) {
       k = r+j;
-      ierr = PetscMemcpy(&(TT[max_neig*k]), &(UMX[max_neig*j]), r*sizeof(PetscReal));CHKERRQ(ierr);
-      ierr = PetscMemcpy(&(TT[max_neig*k + r]), &(XMX[neig1*j]), neig*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&(TT[max_neig*k]), &(UMX[max_neig*j]), r);CHKERRQ(ierr);
+      ierr = PetscArraycpy(&(TT[max_neig*k + r]), &(XMX[neig1*j]), neig);CHKERRQ(ierr);
     }
   } else { /* Add XMX to T */
     for (j = 0; j < neig; j++) {
-      ierr = PetscMemcpy(&(TT[max_neig*j]), &(XMX[neig1*j]), neig*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&(TT[max_neig*j]), &(XMX[neig1*j]), neig);CHKERRQ(ierr);
     }
   }
 
@@ -711,7 +711,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig
   if (!TTF) {
     ierr = PetscMalloc1(bmax*bmax, &TTF);CHKERRQ(ierr);
   }
-  ierr = PetscMemcpy(TTF, TT, bmax*r*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(TTF, TT, bmax*r);CHKERRQ(ierr);
   if (!INVP) {
     ierr = PetscMalloc1(bmax, &INVP);CHKERRQ(ierr);
   }
@@ -786,7 +786,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   ierr = PetscMalloc1(n,&modul);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
   /* copy the Hessenberg matrix to work space */
-  ierr = PetscMemcpy(A, dgmres->hes_origin, ldA*ldA*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(A, dgmres->hes_origin, ldA*ldA);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &flag);CHKERRQ(ierr);
   if (flag) {
     /* Compute the matrix H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
@@ -873,7 +873,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 
   /* Extract the Schur vectors */
   for (j = 0; j < NbrEig; j++) {
-    ierr = PetscMemcpy(&SR[j*N], &(Q[j*ldQ]), n*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&SR[j*N], &(Q[j*ldQ]), n);CHKERRQ(ierr);
   }
   *neig = NbrEig;
   ierr  = PetscFree(A);CHKERRQ(ierr);
@@ -912,7 +912,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   ierr = VecMDot(x, r, UU, X1);CHKERRQ(ierr);
 
   /* Solve T*X1=X2 for X1*/
-  ierr = PetscMemcpy(X2, X1, br*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(X2, X1, br);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GETRS)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
@@ -1090,7 +1090,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   ierr = PetscFree(select);CHKERRQ(ierr);
 
   for (j=0; j<r; j++) {
-    ierr = PetscMemcpy(&SR2[j*aug1], &(Z[j*N]), N*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&SR2[j*aug1], &(Z[j*N]), N);CHKERRQ(ierr);
   }
 
   /* Multiply the Schur vectors SR2 by U (and X)  to get a new U
@@ -1110,7 +1110,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     ierr = VecMDot(MU[j], r, UU, &TT[j*bmax]);CHKERRQ(ierr);
   }
   /* Factorize T */
-  ierr = PetscMemcpy(TTF, TT, bmax*r*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(TTF, TT, bmax*r);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(r,&nr);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(bmax,&bm);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GETRF)

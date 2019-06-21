@@ -5105,7 +5105,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
   /* if there are point-to-point constraints */
   if (aSec) {
-    ierr = PetscMemzero(newOffsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(newOffsets, 32);CHKERRQ(ierr);
     ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(aSec,&aStart,&aEnd);CHKERRQ(ierr);
     /* figure out how many points are going to be in the new element matrix
@@ -5412,7 +5412,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
   if (outValues) {
     ierr = DMGetWorkArray(dm,newNumIndices*numIndices,MPIU_SCALAR,&tmpValues);CHKERRQ(ierr);
-    ierr = PetscMemzero(tmpValues,newNumIndices*numIndices*sizeof(*tmpValues));CHKERRQ(ierr);
+    ierr = PetscArrayzero(tmpValues,newNumIndices*numIndices);CHKERRQ(ierr);
     /* multiply constraints on the right */
     if (numFields) {
       for (f = 0; f < numFields; f++) {
@@ -5490,7 +5490,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
     if (multiplyLeft) {
       ierr = DMGetWorkArray(dm,newNumIndices*newNumIndices,MPIU_SCALAR,&newValues);CHKERRQ(ierr);
-      ierr = PetscMemzero(newValues,newNumIndices*newNumIndices*sizeof(*newValues));CHKERRQ(ierr);
+      ierr = PetscArrayzero(newValues,newNumIndices*newNumIndices);CHKERRQ(ierr);
       /* multiply constraints transpose on the left */
       if (numFields) {
         for (f = 0; f < numFields; f++) {
@@ -5644,7 +5644,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   PetscValidPointer(indices, 5);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   if (Nf > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", Nf);
-  ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(offsets, 32);CHKERRQ(ierr);
   /* Get points in closure */
   ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &clperm);CHKERRQ(ierr);
@@ -5796,7 +5796,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   PetscValidHeaderSpecific(A, MAT_CLASSID, 4);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
-  ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(offsets, 32);CHKERRQ(ierr);
   ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &clperm);CHKERRQ(ierr);
   ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   for (p = 0, numIndices = 0; p < numPoints*2; p += 2) {
@@ -5952,8 +5952,8 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   PetscValidHeaderSpecific(A, MAT_CLASSID, 7);
   ierr = PetscSectionGetNumFields(fsection, &numFields);CHKERRQ(ierr);
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
-  ierr = PetscMemzero(foffsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(coffsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(foffsets, 32);CHKERRQ(ierr);
+  ierr = PetscArrayzero(coffsets, 32);CHKERRQ(ierr);
   ierr = PetscSectionGetClosureInversePermutation_Internal(fsection, (PetscObject) dmf, NULL, &fclperm);CHKERRQ(ierr);
   ierr = PetscSectionGetClosureInversePermutation_Internal(csection, (PetscObject) dmc, NULL, &cclperm);CHKERRQ(ierr);
   /* Column indices */
@@ -6107,8 +6107,8 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   PetscValidHeaderSpecific(globalCSection, PETSC_SECTION_CLASSID, 6);
   ierr = PetscSectionGetNumFields(fsection, &numFields);CHKERRQ(ierr);
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
-  ierr = PetscMemzero(foffsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(coffsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(foffsets, 32);CHKERRQ(ierr);
+  ierr = PetscArrayzero(coffsets, 32);CHKERRQ(ierr);
   ierr = PetscSectionGetClosureInversePermutation_Internal(fsection, (PetscObject) dmf, NULL, &fclperm);CHKERRQ(ierr);
   ierr = PetscSectionGetClosureInversePermutation_Internal(csection, (PetscObject) dmc, NULL, &cclperm);CHKERRQ(ierr);
   /* Column indices */
@@ -7024,7 +7024,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output)
     ierr = MPI_Op_free(&statReduce);CHKERRQ(ierr);
     ierr = MPI_Type_free(&statType);CHKERRQ(ierr);
   } else {
-    ierr = PetscMemcpy(&globalStats,&stats,sizeof(stats));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&globalStats,&stats,1);CHKERRQ(ierr);
   }
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

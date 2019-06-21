@@ -58,13 +58,12 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->numopsbegin = 0;
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;
-  (*sr)->maxops      = 32;
-  ierr               = PetscMalloc1(2*32,&(*sr)->lvalues);CHKERRQ(ierr);
-  ierr               = PetscMalloc1(2*32,&(*sr)->gvalues);CHKERRQ(ierr);
-  ierr               = PetscMalloc1(32,&(*sr)->invecs);CHKERRQ(ierr);
+#define MAXOPS 32
+  (*sr)->maxops      = MAXOPS;
+  ierr               = PetscMalloc4(2*MAXOPS,&(*sr)->lvalues,2*MAXOPS,&(*sr)->gvalues,MAXOPS,&(*sr)->invecs,MAXOPS,&(*sr)->reducetype);CHKERRQ(ierr);
+#undef MAXOPS
   (*sr)->comm        = comm;
   (*sr)->request     = MPI_REQUEST_NULL;
-  ierr               = PetscMalloc1(32,&(*sr)->reducetype);CHKERRQ(ierr);
   (*sr)->async       = PETSC_FALSE;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
@@ -139,7 +138,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
     ierr = PetscLogEventBegin(VEC_ReduceBegin,0,0,0,0);CHKERRQ(ierr);
     ierr = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
-      ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(gvalues,lvalues,numops);CHKERRQ(ierr);
     } else {
       /* determine if all reductions are sum, max, or min */
       for (i=0; i<numops; i++) {
@@ -213,7 +212,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
   ierr = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(gvalues,lvalues,numops);CHKERRQ(ierr);
   } else {
     /* determine if all reductions are sum, max, or min */
     for (i=0; i<numops; i++) {
@@ -251,22 +250,16 @@ PetscErrorCode  PetscSplitReductionExtend(PetscSplitReduction *sr)
   PetscErrorCode ierr;
   PetscInt       maxops   = sr->maxops,*reducetype = sr->reducetype;
   PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  void           *invecs  = sr->invecs;
+  void           **invecs = sr->invecs;
 
   PetscFunctionBegin;
   sr->maxops     = 2*maxops;
-  ierr = PetscMalloc1(2*2*maxops,&sr->lvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc1(2*2*maxops,&sr->gvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc1(2*maxops,&sr->reducetype);CHKERRQ(ierr);
-  ierr = PetscMalloc1(2*maxops,&sr->invecs);CHKERRQ(ierr);
-  ierr = PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(sr->invecs,invecs,maxops*sizeof(void*));CHKERRQ(ierr);
-  ierr = PetscFree(lvalues);CHKERRQ(ierr);
-  ierr = PetscFree(gvalues);CHKERRQ(ierr);
-  ierr = PetscFree(reducetype);CHKERRQ(ierr);
-  ierr = PetscFree(invecs);CHKERRQ(ierr);
+  ierr = PetscMalloc4(2*2*maxops,&sr->lvalues,2*2*maxops,&sr->gvalues,2*maxops,&sr->reducetype,2*maxops,&sr->invecs);CHKERRQ(ierr);
+  ierr = PetscArraycpy(sr->lvalues,lvalues,maxops);CHKERRQ(ierr);
+  ierr = PetscArraycpy(sr->gvalues,gvalues,maxops);CHKERRQ(ierr);
+  ierr = PetscArraycpy(sr->reducetype,reducetype,maxops);CHKERRQ(ierr);
+  ierr = PetscArraycpy(sr->invecs,invecs,maxops);CHKERRQ(ierr);
+  ierr = PetscFree4(lvalues,gvalues,reducetype,invecs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -275,10 +268,7 @@ PetscErrorCode  PetscSplitReductionDestroy(PetscSplitReduction *sr)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(sr->lvalues);CHKERRQ(ierr);
-  ierr = PetscFree(sr->gvalues);CHKERRQ(ierr);
-  ierr = PetscFree(sr->reducetype);CHKERRQ(ierr);
-  ierr = PetscFree(sr->invecs);CHKERRQ(ierr);
+  ierr = PetscFree4(sr->lvalues,sr->gvalues,sr->reducetype,sr->invecs);CHKERRQ(ierr);
   ierr = PetscFree(sr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -403,7 +393,7 @@ PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
   ierr = PetscSplitReductionEnd(sr);CHKERRQ(ierr);
 
   if (sr->numopsend >= sr->numopsbegin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  if (x && (void*) x != sr->invecs[sr->numopsend]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  if (x && (void*)x != sr->invecs[sr->numopsend]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   if (sr->reducetype[sr->numopsend] != PETSC_SR_REDUCE_SUM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecDotEnd() on a reduction started with VecNormBegin()");
   *result = sr->gvalues[sr->numopsend++];
 
@@ -673,7 +663,7 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
   ierr = PetscSplitReductionEnd(sr);CHKERRQ(ierr);
 
   if (sr->numopsend >= sr->numopsbegin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  if (x && (void*) x != sr->invecs[sr->numopsend]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  if (x && (void*)x != sr->invecs[sr->numopsend]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   if (sr->reducetype[sr->numopsend] != PETSC_SR_REDUCE_SUM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecDotEnd() on a reduction started with VecNormBegin()");
   for (i=0;i<nv;i++) result[i] = sr->gvalues[sr->numopsend++];
 

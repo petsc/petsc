@@ -630,13 +630,13 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
     ierr = PetscMalloc2(Nc, &interpolant, cdim*Nc, &interpolantGrad);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFVM(plex, cell, &cg.volume, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscMemzero(gradient, cdim*Nc * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(gradient, cdim*Nc);CHKERRQ(ierr);
     for (f = 0, fieldOffset = 0; f < Nf; ++f) {
       PetscInt qc = 0, q;
 
       ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
-      ierr = PetscMemzero(interpolant,     Nc * sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscMemzero(interpolantGrad, cdim*Nc * sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(interpolant,Nc);CHKERRQ(ierr);
+      ierr = PetscArrayzero(interpolantGrad, cdim*Nc);CHKERRQ(ierr);
       for (q = 0; q < Nq; ++q) {
         ierr = PetscFEInterpolateFieldAndGradient_Static((PetscFE) obj, x, &fegeom, q, interpolant, interpolantGrad);CHKERRQ(ierr);
         for (fc = 0; fc < Nc; ++fc) {

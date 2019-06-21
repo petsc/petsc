@@ -178,7 +178,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
           if (nn != nnodes*cdim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
         } else {
-          ierr = PetscMemcpy(array,coords,nnodes*cdim*sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = PetscArraycpy(array,coords,nnodes*cdim);CHKERRQ(ierr);
         }
         /* Transpose coordinates to VTK (C-style) ordering */
         for (k=0; k<zm; k++) {
@@ -226,7 +226,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
           if (nn != nnodes*bs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
-          ierr = PetscMemcpy(array,x,nnodes*bs*sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = PetscArraycpy(array,x,nnodes*bs);CHKERRQ(ierr);
         }
 
         /* If any fields are named, add scalar fields. Otherwise, add a vector field */
@@ -477,7 +477,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
           ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
           if (nn != nnodes*bs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
-          ierr = PetscMemcpy(array,x,nnodes*bs*sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = PetscArraycpy(array,x,nnodes*bs);CHKERRQ(ierr);
         }
         /* If any fields are named, add scalar fields. Otherwise, add a vector field */
         ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);

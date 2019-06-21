@@ -545,7 +545,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
     PetscInt   *star = NULL;
     PetscInt    starSize, st, d, fc;
 
-    ierr = PetscMemzero(gradsum, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(gradsum, coordDim*numComponents);CHKERRQ(ierr);
     ierr = DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     for (st = 0; st < starSize*2; st += 2) {
       const PetscInt cell = star[st];
@@ -560,7 +560,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
         PetscClassId id;
         PetscInt     Nb, Nc, q, qc = 0;
 
-        ierr = PetscMemzero(grad, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(grad, coordDim*numComponents);CHKERRQ(ierr);
         ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
         ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}

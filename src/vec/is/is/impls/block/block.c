@@ -286,7 +286,7 @@ static PetscErrorCode ISCopy_Block(IS is,IS isy)
   ierr = PetscLayoutGetSize(isy->map, &Ny);CHKERRQ(ierr);
   if (n != ny || N != Ny || bs != bsy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
   isy_block->sorted = is_block->sorted;
-  ierr = PetscMemcpy(isy_block->idx,is_block->idx,(n/bs)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(isy_block->idx,is_block->idx,(n/bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -412,7 +412,7 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&sub->idx);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(sub->idx,idx,n);CHKERRQ(ierr);
     sub->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {
     sub->idx = (PetscInt*) idx;

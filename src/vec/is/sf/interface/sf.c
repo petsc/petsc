@@ -341,7 +341,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     switch (localmode) {
     case PETSC_COPY_VALUES:
       ierr = PetscMalloc1(nleaves,&sf->mine_alloc);CHKERRQ(ierr);
-      ierr = PetscMemcpy(sf->mine_alloc,ilocal,nleaves*sizeof(*ilocal));CHKERRQ(ierr);
+      ierr = PetscArraycpy(sf->mine_alloc,ilocal,nleaves);CHKERRQ(ierr);
       sf->mine = sf->mine_alloc;
       break;
     case PETSC_OWN_POINTER:
@@ -359,7 +359,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   switch (remotemode) {
   case PETSC_COPY_VALUES:
     ierr = PetscMalloc1(nleaves,&sf->remote_alloc);CHKERRQ(ierr);
-    ierr = PetscMemcpy(sf->remote_alloc,iremote,nleaves*sizeof(*iremote));CHKERRQ(ierr);
+    ierr = PetscArraycpy(sf->remote_alloc,iremote,nleaves);CHKERRQ(ierr);
     sf->remote = sf->remote_alloc;
     break;
   case PETSC_OWN_POINTER:
@@ -597,7 +597,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       PetscMPIInt *tmpranks,*perm;
       ierr = PetscMalloc2(sf->nranks,&tmpranks,sf->nranks,&perm);CHKERRQ(ierr);
-      ierr = PetscMemcpy(tmpranks,sf->ranks,sf->nranks*sizeof(tmpranks[0]));CHKERRQ(ierr);
+      ierr = PetscArraycpy(tmpranks,sf->ranks,sf->nranks);CHKERRQ(ierr);
       for (i=0; i<sf->nranks; i++) perm[i] = i;
       ierr = PetscSortMPIIntWithArray(sf->nranks,tmpranks,perm);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);

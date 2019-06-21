@@ -217,7 +217,7 @@ PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog,int size)
   PetscFunctionBegin;
   while (size > eventLog->maxEvents) {
     ierr = PetscMalloc1(eventLog->maxEvents*2,&eventInfo);CHKERRQ(ierr);
-    ierr = PetscMemcpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents * sizeof(PetscEventPerfInfo));CHKERRQ(ierr);
+    ierr = PetscArraycpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents);CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
     eventLog->eventInfo  = eventInfo;
     eventLog->maxEvents *= 2;
@@ -286,7 +286,7 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event,int t,PetscObject o1,Pets
 
   Level: developer
 
-.seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), 
+.seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
           PetscEventLogActivate(), PetscEventLogDeactivate()
 @*/
 PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ename[],PetscClassId classid,PetscLogEvent *event)
@@ -303,7 +303,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
   e = eventLog->numEvents++;
   if (eventLog->numEvents > eventLog->maxEvents) {
     ierr = PetscMalloc1(eventLog->maxEvents*2,&eventInfo);CHKERRQ(ierr);
-    ierr = PetscMemcpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents * sizeof(PetscEventRegInfo));CHKERRQ(ierr);
+    ierr = PetscArraycpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents);CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
     eventLog->eventInfo  = eventInfo;
     eventLog->maxEvents *= 2;
@@ -735,7 +735,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event,int t,PetscObject 
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
     ierr = PetscMalloc1(petsc_maxActions*2,&tmpAction);CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpAction,petsc_actions,petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpAction,petsc_actions,petsc_maxActions);CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
     petsc_actions     = tmpAction;
@@ -795,7 +795,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event,int t,PetscObject o1
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
     ierr = PetscMalloc1(petsc_maxActions*2,&tmpAction);CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpAction,petsc_actions,petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpAction,petsc_actions,petsc_maxActions);CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
     petsc_actions     = tmpAction;

@@ -474,13 +474,13 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
         } else if (first[0] == '-') {
           ierr = PetscStrlen(first,&len);CHKERRQ(ierr);
           ierr = PetscSegBufferGet(vseg,len+1,&vstring);CHKERRQ(ierr);
-          ierr = PetscMemcpy(vstring,first,len);CHKERRQ(ierr);
+          ierr = PetscArraycpy(vstring,first,len);CHKERRQ(ierr);
           vstring[len] = ' ';
           if (second) {
             ierr = PetscStrlen(second,&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(vseg,len+3,&vstring);CHKERRQ(ierr);
             vstring[0] = '"';
-            ierr = PetscMemcpy(vstring+1,second,len);CHKERRQ(ierr);
+            ierr = PetscArraycpy(vstring+1,second,len);CHKERRQ(ierr);
             vstring[len+1] = '"';
             vstring[len+2] = ' ';
           }
@@ -493,12 +493,12 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
             if (!third) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
             ierr = PetscStrlen(second,&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
-            ierr = PetscMemcpy(astring,second,len);CHKERRQ(ierr);
+            ierr = PetscArraycpy(astring,second,len);CHKERRQ(ierr);
             astring[len] = ' ';
 
             ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
-            ierr = PetscMemcpy(astring,third,len);CHKERRQ(ierr);
+            ierr = PetscArraycpy(astring,third,len);CHKERRQ(ierr);
             astring[len] = ' ';
           } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
@@ -838,7 +838,7 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
   start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
   ierr = PetscStrlen(prefix,&n);CHKERRQ(ierr);
   if (n+1 > sizeof(options->prefix)-start) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum prefix length %d exceeded",sizeof(options->prefix));
-  ierr = PetscMemcpy(options->prefix+start,prefix,n+1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(options->prefix+start,prefix,n+1);CHKERRQ(ierr);
   options->prefixstack[options->prefixind++] = start+n;
   PetscFunctionReturn(0);
 }
@@ -2457,7 +2457,7 @@ PetscErrorCode PetscOptionsGetString(PetscOptions options,const char pre[],const
     if (value) {
       ierr = PetscStrncpy(string,value,len);CHKERRQ(ierr);
     } else {
-      ierr = PetscMemzero(string,len);CHKERRQ(ierr);
+      ierr = PetscArrayzero(string,len);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

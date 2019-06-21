@@ -75,7 +75,7 @@ PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
     PetscInt loc,*ids;
 
     ierr = PetscMalloc1(tsh->n,&ids);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ids,tsh->hist_id,tsh->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ids,tsh->hist_id,tsh->n);CHKERRQ(ierr);
     ierr = PetscSortInt(tsh->n,ids);CHKERRQ(ierr);
     ierr = PetscFindInt(id,tsh->n,ids,&loc);CHKERRQ(ierr);
     ierr = PetscFree(ids);CHKERRQ(ierr);

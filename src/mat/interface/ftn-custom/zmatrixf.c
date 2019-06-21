@@ -504,8 +504,8 @@ PETSC_EXTERN void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncol
   *ierr = MatGetRow(*mat,*row,ncols,oocols,oovals);
   if (*ierr) return;
 
-  if (oocols) { *ierr = PetscMemcpy(cols,my_ocols,(*ncols)*sizeof(PetscInt)); if (*ierr) return;}
-  if (oovals) { *ierr = PetscMemcpy(vals,my_ovals,(*ncols)*sizeof(PetscScalar)); if (*ierr) return;}
+  if (oocols) { *ierr = PetscArraycpy(cols,my_ocols,*ncols); if (*ierr) return;}
+  if (oovals) { *ierr = PetscArraycpy(vals,my_ovals,*ncols); if (*ierr) return;}
   matgetrowactive = 1;
 }
 

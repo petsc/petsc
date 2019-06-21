@@ -62,15 +62,17 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt triPoints_p2[8] = {3, 5, 6, 7, 0, 1, 2, 4};
 
           ierr = PetscMalloc2(2, &sizes, 8, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  triSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, triPoints_p2, 8 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  triSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, triPoints_p2, 8);CHKERRQ(ierr);
+          break;}
         case 1: {
           PetscInt triSizes_p2[2]  = {6, 2};
           PetscInt triPoints_p2[8] = {1, 2, 3, 4, 6, 7, 0, 5};
 
           ierr = PetscMalloc2(2, &sizes, 8, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  triSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, triPoints_p2, 8 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  triSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, triPoints_p2, 8);CHKERRQ(ierr);
+          break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
@@ -79,15 +81,15 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         PetscInt triPoints_p3[8] = {1, 2, 4, 3, 6, 7, 0, 5};
 
         ierr = PetscMalloc2(3, &sizes, 8, &points);CHKERRQ(ierr);
-        ierr = PetscMemcpy(sizes,  triSizes_p3, 3 * sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemcpy(points, triPoints_p3, 8 * sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArraycpy(sizes,  triSizes_p3, 3);CHKERRQ(ierr);
+        ierr = PetscArraycpy(points, triPoints_p3, 8);CHKERRQ(ierr);
       } else if (dim == 2 && !cellSimplex && size == 2) {
         PetscInt quadSizes_p2[2]  = {2, 2};
         PetscInt quadPoints_p2[4] = {2, 3, 0, 1};
 
         ierr = PetscMalloc2(2, &sizes, 4, &points);CHKERRQ(ierr);
-        ierr = PetscMemcpy(sizes,  quadSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemcpy(points, quadPoints_p2, 4 * sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArraycpy(sizes,  quadSizes_p2, 2);CHKERRQ(ierr);
+        ierr = PetscArraycpy(points, quadPoints_p2, 4);CHKERRQ(ierr);
       } else SETERRQ3(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition dim: %D simplex: %D size: %D", dim, (PetscInt) cellSimplex, (PetscInt) size);
     }
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);

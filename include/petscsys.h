@@ -1167,7 +1167,6 @@ PETSC_EXTERN PetscErrorCode PetscDataTypeFromString(const char*,PetscDataType*,P
    functionality and/or error checking.
 */
 PETSC_EXTERN PetscErrorCode PetscBitMemcpy(void*,PetscInt,const void*,PetscInt,PetscInt,PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscMemmove(void*,void *,size_t);
 PETSC_EXTERN PetscErrorCode PetscMemcmp(const void*,const void*,size_t,PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscStrlen(const char[],size_t*);
 PETSC_EXTERN PetscErrorCode PetscStrToArray(const char[],char,int*,char ***);
@@ -1516,6 +1515,54 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 #endif
 
 /*@C
+   PetscMemmove - Copies n bytes, beginning at location b, to the space
+   beginning at location a. Copying  between regions that overlap will
+   take place correctly. Use PetscMemcpy() if the locations do not overlap
+
+   Not Collective
+
+   Input Parameters:
++  b - pointer to initial memory space
+.  a - pointer to copy space
+-  n - length (in bytes) of space to copy
+
+   Level: intermediate
+
+   Note:
+   PetscArraymove() is preferred
+   This routine is analogous to memmove().
+
+   Developers Note: This is inlined for performance
+
+.seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscStrallocpy(),
+          PetscArraymove()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscMemmove(void *a,const void *b,size_t n)
+{
+  PetscFunctionBegin;
+  if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to null pointer");
+  if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+#if !defined(PETSC_HAVE_MEMMOVE)
+  if (a < b) {
+    if (a <= b - n) memcpy(a,b,n);
+    else {
+      memcpy(a,b,(int)(b - a));
+      PetscMemmove(b,b + (int)(b - a),n - (int)(b - a));
+    }
+  } else {
+    if (b <= a - n) memcpy(a,b,n);
+    else {
+      memcpy(b + n,b + (n - (int)(a - b)),(int)(a - b));
+      PetscMemmove(a,b,n - (int)(a - b));
+    }
+  }
+#else
+  memmove((char*)(a),(char*)(b),n);
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
    PetscMemmove() in that case.
@@ -1540,14 +1587,13 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
                                   for memory copies on double precision values.
 
    Note:
+   Prefer PetscArraycpy()
    This routine is analogous to memcpy().
-
    Not available from Fortran
 
    Developer Note: this is inlined for fastest performance
 
-
-.seealso: PetscMemmove(), PetscStrallocpy()
+.seealso: PetscMemzero(), PetscMemcmp(), PetscArrayzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy()
 
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
@@ -1608,11 +1654,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
   to be faster than the memset() routine. This flag causes the bzero() routine to be used.
 
    Not available from Fortran
+   Prefer PetscArrayzero()
 
    Developer Note: this is inlined for fastest performance
 
-
-.seealso: PetscMemcpy()
+.seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
 {
@@ -1643,6 +1689,105 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
   }
   return 0;
 }
+
+/*MC
+   PetscArraycmp - Compares two arrays in memory.
+
+   Synopsis:
+    #include <petscsys.h>
+    PetscErrorCode PetscArraycmp(const anytype *str1,const anytype *str2,size_t cnt,PetscBool *e)
+
+   Not Collective
+
+   Input Parameters:
++  str1 - First array
+.  str2 - Second array
+-  cnt  - Count of the array, not in bytes, but number of entries in the arrays
+
+   Output Parameters:
+.   e - PETSC_TRUE if equal else PETSC_FALSE.
+
+   Level: intermediate
+
+   Note:
+   This routine is a preferred replacement to PetscMemcmp()
+   The arrays must be of the same type
+
+.seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy(),
+          PetscArraymove()
+M*/
+#define  PetscArraycmp(str1,str2,cnt,e) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcmp(str1,str2,(cnt)*sizeof(*(str1)),e));
+
+/*MC
+   PetscArraymove - Copies from one array in memory to another, the arrays may overlap. Use PetscArraycpy() when the arrays
+                    do not overlap
+
+   Synopsis:
+    #include <petscsys.h>
+    PetscErrorCode PetscArraymove(anytype *str1,const anytype *str2,size_t cnt)
+
+   Not Collective
+
+   Input Parameters:
++  str1 - First array
+.  str2 - Second array
+-  cnt  - Count of the array, not in bytes, but number of entries in the arrays
+
+   Level: intermediate
+
+   Note:
+   This routine is a preferred replacement to PetscMemmove()
+   The arrays must be of the same type
+
+.seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycpy(), PetscMemmove(), PetscArraycmp(), PetscStrallocpy()
+M*/
+#define  PetscArraymove(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemmove(str1,str2,(cnt)*sizeof(*(str1))));
+
+/*MC
+   PetscArraycpy - Copies from one array in memory to another
+
+   Synopsis:
+    #include <petscsys.h>
+    PetscErrorCode PetscArraycpy(anytype *str1,const anytype *str2,size_t cnt)
+
+   Not Collective
+
+   Input Parameters:
++  str1 - First array
+.  str2 - Second array
+-  cnt  - Count of the array, not in bytes, but number of entries in the arrays
+
+   Level: intermediate
+
+   Note:
+   This routine is a preferred replacement to PetscMemcpy()
+   The arrays must be of the same type
+
+.seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraymove(), PetscMemmove(), PetscArraycmp(), PetscStrallocpy()
+M*/
+#define  PetscArraycpy(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcpy(str1,str2,(cnt)*sizeof(*(str1))));
+
+/*MC
+   PetscArrayzero - Zeros an array in memory.
+
+   Synopsis:
+    #include <petscsys.h>
+    PetscErrorCode PetscArrayzero(anytype *str1,size_t cnt)
+
+   Not Collective
+
+   Input Parameters:
++  str1 - array
+-  cnt  - Count of the array, not in bytes, but number of entries in the array
+
+   Level: intermediate
+
+   Note:
+   This routine is a preferred replacement to PetscMemzero()
+
+.seealso: PetscMemcpy(), PetscMemcmp(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy(), PetscArraymove()
+M*/
+#define  PetscArrayzero(str1,cnt) PetscMemzero(str1,(cnt)*sizeof(*(str1)));
 
 /*MC
    PetscPrefetchBlock - Prefetches a block of memory
@@ -2362,7 +2507,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],Petsc
   if (set && *set) PetscFunctionReturn(0);
   ierr = PetscStrlen(cit,&len);CHKERRQ(ierr);
   ierr = PetscSegBufferGet(PetscCitationsList,len,&vstring);CHKERRQ(ierr);
-  ierr = PetscMemcpy(vstring,cit,len);CHKERRQ(ierr);
+  ierr = PetscArraycpy(vstring,cit,len);CHKERRQ(ierr);
   if (set) *set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

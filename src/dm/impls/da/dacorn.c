@@ -333,8 +333,8 @@ PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
     max[1] = info.ys + info.ym-1;
     max[2] = info.zs + info.zm-1;
   }
-  if (lmin) {ierr = PetscMemcpy(lmin,min,dim*sizeof(PetscReal));CHKERRQ(ierr);}
-  if (lmax) {ierr = PetscMemcpy(lmax,max,dim*sizeof(PetscReal));CHKERRQ(ierr);}
+  if (lmin) {ierr = PetscArraycpy(lmin,min,dim);CHKERRQ(ierr);}
+  if (lmax) {ierr = PetscArraycpy(lmax,max,dim);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

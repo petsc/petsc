@@ -606,7 +606,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm,PetscInt *ncell
     } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot determine the number of cells for a DM not of type DA, PLEX or SHELL");
     
     ierr = PetscMalloc1(nel,&sum);CHKERRQ(ierr);
-    ierr = PetscMemzero(sum,sizeof(PetscInt)*nel);CHKERRQ(ierr);
+    ierr = PetscArrayzero(sum,nel);CHKERRQ(ierr);
     ierr = DMSwarmGetLocalSize(dm,&npoints);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
     for (p=0; p<npoints; p++) {

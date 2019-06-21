@@ -994,7 +994,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,Node **x,Mat J,Mat
       PetscScalar Ke[4*2][4*2];
       QuadExtract(prm,i,j,pn);
       QuadExtract(x,i,j,n);
-      PetscMemzero(Ke,sizeof(Ke));
+      ierr = PetscMemzero(Ke,sizeof(Ke));CHKERRQ(ierr);
       for (q=0; q<4; q++) {
         PetscReal   phi[4],dphi[4][2],jw,eta,deta,beta2,dbeta2;
         PetscScalar u,v,du[2],dv[2],h = 0,rbeta2 = 0;
@@ -1075,7 +1075,7 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,TH
 
         PrmHexGetZ(pn,k,zm,zn);
         HexExtract(x,i,j,k,n);
-        PetscMemzero(Ke,sizeof(Ke));
+        ierr = PetscMemzero(Ke,sizeof(Ke));CHKERRQ(ierr);
         if (thi->no_slip && k == 0) {
           for (l=0; l<4; l++) n[l].u = n[l].v = 0;
           ls = 4;

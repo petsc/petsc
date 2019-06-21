@@ -84,8 +84,8 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
   ierr = PetscQuadratureGetData(q, &dim, &Nc, &Nq, &points, &weights);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nq*dim, &p);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nq*Nc, &w);CHKERRQ(ierr);
-  ierr = PetscMemcpy(p, points, Nq*dim * sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemcpy(w, weights, Nc * Nq * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(p, points, Nq*dim);CHKERRQ(ierr);
+  ierr = PetscArraycpy(w, weights, Nc * Nq);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*r, dim, Nc, Nq, p, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -621,7 +621,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
         M[i]=0.5*PetscSqrtReal(si*(si+2.0)/((si+0.5)*(si+1.5)));
       }
       ierr = PetscBLASIntCast(npoints-2,&bn);CHKERRQ(ierr);
-      ierr = PetscMemzero(&x[1],bn*sizeof(x[1]));CHKERRQ(ierr);
+      ierr = PetscArrayzero(&x[1],bn);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       x0=0;
       PetscStackCallBLAS("LAPACKsteqr",LAPACKREALsteqr_("N",&bn,&x[1],M,&x0,&bn,M,&lierr));
@@ -1265,7 +1265,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
 
   /* Extract an explicit representation of Q */
   Q = Ainv;
-  ierr = PetscMemcpy(Q,A,mstride*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(Q,A,mstride*n);CHKERRQ(ierr);
   K = N;                        /* full rank */
   PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");

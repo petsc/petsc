@@ -1637,12 +1637,12 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
     }
   }
   if (1 == patch->nsubspaces) {
-    ierr = PetscMemcpy(asmArray, dofsArray, numDofs * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(asmArray, dofsArray, numDofs);CHKERRQ(ierr);
     if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
-      ierr = PetscMemcpy(asmArrayWithArtificial, dofsArrayWithArtificial, numDofs * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(asmArrayWithArtificial, dofsArrayWithArtificial, numDofs);CHKERRQ(ierr);
     }
     if (isNonlinear) {
-      ierr = PetscMemcpy(asmArrayWithAll, dofsArrayWithAll, numDofs * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(asmArrayWithAll, dofsArrayWithAll, numDofs);CHKERRQ(ierr);
     }
   }
 

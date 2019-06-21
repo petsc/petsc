@@ -407,7 +407,7 @@ PetscErrorCode VecScatterBegin_SSToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
 
   if (addv == INSERT_VALUES) {
     if (to_step == 1 && from_step == 1) {
-      ierr = PetscMemcpy(yv+to_first,xv+from_first,n*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(yv+to_first,xv+from_first,n);CHKERRQ(ierr);
     } else  {
       for (i=0; i<n; i++) yv[to_first + i*to_step] = xv[from_first+i*from_step];
     }
@@ -454,14 +454,14 @@ PetscErrorCode VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
   out_to->format               = in_to->format;
   out_to->nonmatching_computed = PETSC_FALSE;
   out_to->slots_nonmatching    = 0;
-  ierr = PetscMemcpy(out_to->vslots,in_to->vslots,(out_to->n)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(out_to->vslots,in_to->vslots,out_to->n);CHKERRQ(ierr);
   ierr = VecScatterMemcpyPlanCopy(&in_to->memcpy_plan,&out_to->memcpy_plan);CHKERRQ(ierr);
 
   out_from->n                    = in_from->n;
   out_from->format               = in_from->format;
   out_from->nonmatching_computed = PETSC_FALSE;
   out_from->slots_nonmatching    = 0;
-  ierr = PetscMemcpy(out_from->vslots,in_from->vslots,(out_from->n)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(out_from->vslots,in_from->vslots,out_from->n);CHKERRQ(ierr);
   ierr = VecScatterMemcpyPlanCopy(&in_from->memcpy_plan,&out_from->memcpy_plan);CHKERRQ(ierr);
 
   out->todata   = (void*)out_to;
@@ -517,7 +517,7 @@ PetscErrorCode VecScatterCopy_SGToSS(VecScatter in,VecScatter out)
   out_from->format               = in_from->format;
   out_from->nonmatching_computed = PETSC_FALSE;
   out_from->slots_nonmatching    = 0;
-  ierr = PetscMemcpy(out_from->vslots,in_from->vslots,(out_from->n)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(out_from->vslots,in_from->vslots,out_from->n);CHKERRQ(ierr);
   ierr = VecScatterMemcpyPlanCopy(&in_from->memcpy_plan,&out_from->memcpy_plan);CHKERRQ(ierr);
 
   out->todata   = (void*)out_to;
@@ -693,14 +693,14 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
 #if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
-    ierr    = PetscMemcpy(to->vslots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr    = PetscArraycpy(to->vslots,idy,nx);CHKERRQ(ierr);
     from->n = nx;
 #if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
-    ierr              =  PetscMemcpy(from->vslots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
-    to->format          = VEC_SCATTER_SEQ_GENERAL;
-    from->format        = VEC_SCATTER_SEQ_GENERAL;
+    ierr              = PetscArraycpy(from->vslots,idx,nx);CHKERRQ(ierr);
+    to->format        = VEC_SCATTER_SEQ_GENERAL;
+    from->format      = VEC_SCATTER_SEQ_GENERAL;
     ctx->todata       = (void*)to;
     ctx->fromdata     = (void*)from;
     ierr              = VecScatterMemcpyPlanCreate_SGToSG(1,to,from);CHKERRQ(ierr);
@@ -759,7 +759,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
 #if defined(PETSC_USE_DEBUG)
     ierr           = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
-    ierr           = PetscMemcpy(from9->vslots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr           = PetscArraycpy(from9->vslots,idx,nx);CHKERRQ(ierr);
     ctx->todata    = (void*)to9; ctx->fromdata = (void*)from9;
     if (step == 1) {
       PetscInt tmp[2];
@@ -798,7 +798,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
 #if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
-    ierr = PetscMemcpy(to10->vslots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(to10->vslots,idy,nx);CHKERRQ(ierr);
     ctx->todata   = (void*)to10;
     ctx->fromdata = (void*)from10;
     if (step == 1) {
@@ -859,12 +859,12 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
 #if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
-    ierr = PetscMemcpy(to11->vslots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(to11->vslots,idy,nx);CHKERRQ(ierr);
     from11->n = nx;
 #if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
-    ierr = PetscMemcpy(from11->vslots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(from11->vslots,idx,nx);CHKERRQ(ierr);
     to11->format        = VEC_SCATTER_SEQ_GENERAL;
     from11->format      = VEC_SCATTER_SEQ_GENERAL;
     ctx->todata       = (void*)to11;

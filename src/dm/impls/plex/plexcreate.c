@@ -486,7 +486,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(MPI_Comm comm,PetscInt segme
 
   numPoints[0] = numVerts ; numPoints[1] = numCells;
   ierr = PetscMalloc4(numCells+numVerts,&coneSize,numCells*2,&cones,numCells+numVerts,&coneOrientations,numVerts,&vertexCoords);CHKERRQ(ierr);
-  ierr = PetscMemzero(coneOrientations,(numCells+numVerts)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(coneOrientations,numCells+numVerts);CHKERRQ(ierr);
   for (i = 0; i < numCells; ++i) { coneSize[i] = 2; }
   for (i = 0; i < numVerts; ++i) { coneSize[numCells+i] = 0; }
   for (i = 0; i < numCells; ++i) { cones[2*i] = numCells + i%numVerts; cones[2*i+1] = numCells + (i+1)%numVerts; }

@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "na np ns %D %D %D\n", na, np, ns);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL);CHKERRQ(ierr);
-  ierr = PetscMemzero(vecs, ns*sizeof(Vec));CHKERRQ(ierr);
+  ierr = PetscArrayzero(vecs, ns);CHKERRQ(ierr);
 
   /* create & initialize vector vecs[1] "x" */
   ierr = VecCreate(PETSC_COMM_WORLD, &vecs[1]);CHKERRQ(ierr);

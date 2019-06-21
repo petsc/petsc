@@ -2151,7 +2151,7 @@ PetscErrorCode DMConstructBasisTransform_Internal(DM dm)
         /* TODO Get quadrature point for this dual basis vector for coordinate */
         ierr = (*dm->transformGetMatrix)(dm, x, PETSC_TRUE, &A, dm->transformCtx);CHKERRQ(ierr);
         ierr = DMPlexPointLocalFieldRef(dm->transformDM, p, f, ta, (void *) &tva);CHKERRQ(ierr);
-        ierr = PetscMemcpy(tva, A, PetscSqr(cdim) * sizeof(PetscScalar));
+        ierr = PetscArraycpy(tva, A, PetscSqr(cdim));CHKERRQ(ierr);
       }
     }
   }

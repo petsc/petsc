@@ -512,13 +512,13 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,
   t->np = 2;
 
   ierr = PetscMalloc3(s*s,&t->Af,s,&t->bf,s,&t->cf);CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->Af,Af,s*s*sizeof(Af[0]));CHKERRQ(ierr);
+  ierr = PetscArraycpy(t->Af,Af,s*s);CHKERRQ(ierr);
   if (bf) {
-    ierr = PetscMemcpy(t->bf,bf,s*sizeof(bf[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->bf,bf,s);CHKERRQ(ierr);
   } else
     for (i=0; i<s; i++) t->bf[i] = Af[(s-1)*s+i];
   if (cf) {
-    ierr = PetscMemcpy(t->cf,cf,s*sizeof(cf[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->cf,cf,s);CHKERRQ(ierr);
   } else {
     for (i=0; i<s; i++)
       for (j=0,t->cf[i]=0; j<s; j++)
@@ -529,40 +529,40 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,
     t->np = 3;
     ierr = PetscMalloc3(s*s,&t->Amb,s,&t->bmb,s,&t->cmb);CHKERRQ(ierr);
     ierr = PetscCalloc1(s,&t->rmb);CHKERRQ(ierr);
-    ierr = PetscMemcpy(t->Amb,Amb,s*s*sizeof(Amb[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->Amb,Amb,s*s);CHKERRQ(ierr);
     if (bmb) {
-      ierr = PetscMemcpy(t->bmb,bmb,s*sizeof(bmb[0]));CHKERRQ(ierr);
+      ierr = PetscArraycpy(t->bmb,bmb,s);CHKERRQ(ierr);
     } else {
       for (i=0; i<s; i++) t->bmb[i] = Amb[(s-1)*s+i];
     }
     if (cmb) {
-      ierr = PetscMemcpy(t->cmb,cmb,s*sizeof(cmb[0]));CHKERRQ(ierr);
+      ierr = PetscArraycpy(t->cmb,cmb,s);CHKERRQ(ierr);
     } else {
       for (i=0; i<s; i++)
         for (j=0,t->cmb[i]=0; j<s; j++)
           t->cmb[i] += Amb[i*s+j];
     }
     if (rmb) {
-      ierr = PetscMemcpy(t->rmb,rmb,s*sizeof(rmb[0]));CHKERRQ(ierr);
+      ierr = PetscArraycpy(t->rmb,rmb,s);CHKERRQ(ierr);
     }
   }
 
   ierr = PetscMalloc3(s*s,&t->Asb,s,&t->bsb,s,&t->csb);CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->Asb,Asb,s*s*sizeof(Asb[0]));CHKERRQ(ierr);
+  ierr = PetscArraycpy(t->Asb,Asb,s*s);CHKERRQ(ierr);
   ierr = PetscCalloc1(s,&t->rsb);CHKERRQ(ierr);
   if (bsb) {
-    ierr = PetscMemcpy(t->bsb,bsb,s*sizeof(bsb[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->bsb,bsb,s);CHKERRQ(ierr);
   } else
     for (i=0; i<s; i++) t->bsb[i] = Asb[(s-1)*s+i];
   if (csb) {
-    ierr = PetscMemcpy(t->csb,csb,s*sizeof(csb[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->csb,csb,s);CHKERRQ(ierr);
   } else {
     for (i=0; i<s; i++)
       for (j=0,t->csb[i]=0; j<s; j++)
         t->csb[i] += Asb[i*s+j];
   }
   if (rsb) {
-    ierr = PetscMemcpy(t->rsb,rsb,s*sizeof(rsb[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->rsb,rsb,s);CHKERRQ(ierr);
   }
   link->next = MPRKTableauList;
   MPRKTableauList = link;

@@ -114,7 +114,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     */
     /*  count number of contributors to each processor */
     ierr   = PetscMalloc2(size,&sizes,cnt,&owner);CHKERRQ(ierr);
-    ierr   = PetscMemzero(sizes,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+    ierr   = PetscArrayzero(sizes,size);CHKERRQ(ierr);
     j      = 0;
     nsends = 0;
     for (i=rstart; i<rend; i++) {

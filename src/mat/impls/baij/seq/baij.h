@@ -270,7 +270,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
 #define PetscKernel_A_gets_A_times_B_2(A,B,W) 0; \
   { \
-    PetscMemcpy(W,A,4*sizeof(MatScalar)); \
+    ierr = PetscArraycpy(W,A,4); CHKERRQ(ierr); \
     A[0] = W[0]*B[0] + W[2]*B[1]; \
     A[1] = W[1]*B[0] + W[3]*B[1]; \
     A[2] = W[0]*B[2] + W[2]*B[3]; \
@@ -308,7 +308,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
 #define PetscKernel_A_gets_A_times_B_3(A,B,W) 0; \
   { \
-    PetscMemcpy(W,A,9*sizeof(MatScalar)); \
+    ierr = PetscArraycpy(W,A,9);CHKERRQ(ierr);  \
     A[0] = W[0]*B[0] + W[3]*B[1] + W[6]*B[2]; \
     A[1] = W[1]*B[0] + W[4]*B[1] + W[7]*B[2]; \
     A[2] = W[2]*B[0] + W[5]*B[1] + W[8]*B[2]; \
@@ -356,7 +356,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
 #define PetscKernel_A_gets_A_times_B_4(A,B,W) 0; \
   { \
-    PetscMemcpy(W,A,16*sizeof(MatScalar)); \
+    ierr = PetscArraycpy(W,A,16);CHKERRQ(ierr); \
     A[0]  =  W[0]*B[0]  + W[4]*B[1]  + W[8]*B[2]   + W[12]*B[3]; \
     A[1]  =  W[1]*B[0]  + W[5]*B[1]  + W[9]*B[2]   + W[13]*B[3]; \
     A[2]  =  W[2]*B[0]  + W[6]*B[1]  + W[10]*B[2]  + W[14]*B[3]; \
@@ -407,7 +407,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
 #define PetscKernel_A_gets_A_times_B_5(A,B,W) 0; \
   { \
-    PetscMemcpy(W,A,25*sizeof(MatScalar)); \
+    ierr = PetscArraycpy(W,A,25);CHKERRQ(ierr); \
     A[0]  =  W[0]*B[0]  + W[5]*B[1]  + W[10]*B[2]   + W[15]*B[3] + W[20]*B[4]; \
     A[1]  =  W[1]*B[0]  + W[6]*B[1]  + W[11]*B[2]   + W[16]*B[3] + W[21]*B[4]; \
     A[2]  =  W[2]*B[0]  + W[7]*B[1]  + W[12]*B[2]  + W[17]*B[3]  + W[22]*B[4]; \
@@ -476,7 +476,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
 #define PetscKernel_A_gets_A_times_B_6(A,B,W) 0; \
   { \
-    PetscMemcpy(W,A,36*sizeof(MatScalar)); \
+    ierr = PetscArraycpy(W,A,36);CHKERRQ(ierr); \
     A[0]  =  W[0]*B[0]   + W[6]*B[1]   + W[12]*B[2]   + W[18]*B[3]  + W[24]*B[4]  + W[30]*B[5]; \
     A[1]  =  W[1]*B[0]   + W[7]*B[1]   + W[13]*B[2]   + W[19]*B[3]  + W[25]*B[4]  + W[31]*B[5]; \
     A[2]  =  W[2]*B[0]   + W[8]*B[1]   + W[14]*B[2]   + W[20]*B[3]  + W[26]*B[4]  + W[32]*B[5]; \
@@ -567,7 +567,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
 #define PetscKernel_A_gets_A_times_B_7(A,B,W) 0; \
   { \
-    PetscMemcpy(W,A,49*sizeof(MatScalar)); \
+    ierr = PetscArraycpy(W,A,49);CHKERRQ(ierr); \
     A[0]  =  W[0]*B[0]   + W[7]*B[1]   + W[14]*B[2]   + W[21]*B[3]  + W[28]*B[4]  + W[35]*B[5]  + W[42]*B[6]; \
     A[1]  =  W[1]*B[0]   + W[8]*B[1]   + W[15]*B[2]   + W[22]*B[3]  + W[29]*B[4]  + W[36]*B[5]  + W[43]*B[6]; \
     A[2]  =  W[2]*B[0]   + W[9]*B[1]   + W[16]*B[2]   + W[23]*B[3]  + W[30]*B[4]  + W[37]*B[5]  + W[44]*B[6]; \
@@ -688,7 +688,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
      PetscInt __i; \
     __m256d S0,S1,S2,S3,S4,S5,S6,S7,S8,B0,B1,B2,B6,B7,B8,A0,A1,A2,A3,A4,A5,A6,A7,A8; \
 \
-    PetscMemcpy(W,A,81*sizeof(MatScalar)); \
+    PetscArraycpy(W,A,81); \
     for (__i=0; __i<3; __i++) {\
 \
       S0 = _mm256_setzero_pd(); S1 = _mm256_setzero_pd(); S2 = _mm256_setzero_pd(); \
@@ -759,7 +759,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 #else
 #define PetscKernel_A_gets_A_times_B_9(A,B,W) 0; \
   { \
-    PetscMemcpy(W,A,81*sizeof(MatScalar)); \
+    PetscArraycpy(W,A,81); \
     A[ 0] = W[0]*B[ 0] + W[ 9]*B[ 1] + W[18]*B[ 2] + W[27]*B[ 3] + W[36]*B[ 4] + W[45]*B[ 5] + W[54]*B[ 6] + W[63]*B[ 7] + W[72]*B[ 8]; \
     A[ 1] = W[1]*B[ 0] + W[10]*B[ 1] + W[19]*B[ 2] + W[28]*B[ 3] + W[37]*B[ 4] + W[46]*B[ 5] + W[55]*B[ 6] + W[64]*B[ 7] + W[73]*B[ 8]; \
     A[ 2] = W[2]*B[ 0] + W[11]*B[ 1] + W[20]*B[ 2] + W[29]*B[ 3] + W[38]*B[ 4] + W[47]*B[ 5] + W[56]*B[ 6] + W[65]*B[ 7] + W[74]*B[ 8]; \
@@ -1033,7 +1033,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 */
 #define PetscKernel_A_gets_A_times_B_11(A,B,W) 0; \
   { \
-    PetscMemcpy(W,A,121*sizeof(MatScalar)); \
+    PetscArraycpy(W,A,121); \
     A[0]  =  W[0]*B[0]   + W[11]*B[1]   + W[22]*B[2]   + W[33]*B[3]  + W[44]*B[4]  + W[55]*B[5]  + W[66]*B[6] + W[77]*B[7] + W[88]*B[8] + W[99]*B[9] + W[110]*B[10]; \
     A[1]  =  W[1]*B[0]   + W[12]*B[1]   + W[23]*B[2]   + W[34]*B[3]  + W[45]*B[4]  + W[56]*B[5]  + W[67]*B[6] + W[78]*B[7] + W[89]*B[8] + W[100]*B[9]+ W[111]*B[10]; \
     A[2]  =  W[2]*B[0]   + W[13]*B[1]   + W[24]*B[2]   + W[35]*B[3]  + W[46]*B[4]  + W[57]*B[5]  + W[68]*B[6] + W[79]*B[7] + W[90]*B[8] + W[101]*B[9]+ W[112]*B[10]; \
@@ -1313,7 +1313,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
 #define PetscKernel_A_gets_A_times_B_15(A,B,W) 0; \
   {        \
-    PetscMemcpy(W,A,225*sizeof(MatScalar)); \
+    PetscArraycpy(W,A,225); \
     A[0]   = W[0]*B[0] + W[15]*B[1] + W[30]*B[2] + W[45]*B[3] + W[60]*B[4] + W[75]*B[5] + W[90]*B[6] + W[105]*B[7] + W[120]*B[8] + W[135]*B[9] + W[150]*B[10] + W[165]*B[11] + W[180]*B[12] + W[195]*B[13] + W[210]*B[14]; \
     A[1]   = W[1]*B[0] + W[16]*B[1] + W[31]*B[2] + W[46]*B[3] + W[61]*B[4] + W[76]*B[5] + W[91]*B[6] + W[106]*B[7] + W[121]*B[8] + W[136]*B[9] + W[151]*B[10] + W[166]*B[11] + W[181]*B[12] + W[196]*B[13] + W[211]*B[14]; \
     A[2]   = W[2]*B[0] + W[17]*B[1] + W[32]*B[2] + W[47]*B[3] + W[62]*B[4] + W[77]*B[5] + W[92]*B[6] + W[107]*B[7] + W[122]*B[8] + W[137]*B[9] + W[152]*B[10] + W[167]*B[11] + W[182]*B[12] + W[197]*B[13] + W[212]*B[14]; \

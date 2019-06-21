@@ -963,12 +963,12 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   if (parents != mesh->parents) {
     ierr = PetscFree(mesh->parents);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&mesh->parents);CHKERRQ(ierr);
-    ierr = PetscMemcpy(mesh->parents, parents, size * sizeof(*parents));CHKERRQ(ierr);
+    ierr = PetscArraycpy(mesh->parents, parents, size);CHKERRQ(ierr);
   }
   if (childIDs != mesh->childIDs) {
     ierr = PetscFree(mesh->childIDs);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&mesh->childIDs);CHKERRQ(ierr);
-    ierr = PetscMemcpy(mesh->childIDs, childIDs, size * sizeof(*childIDs));CHKERRQ(ierr);
+    ierr = PetscArraycpy(mesh->childIDs, childIDs, size);CHKERRQ(ierr);
   }
   ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
   if (refTree) {
@@ -1308,8 +1308,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
 
       ierr = PetscDualSpaceGetFunctional(dspace,i,&quad);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad,NULL,NULL,&qPoints,&p,&w);CHKERRQ(ierr);
-      ierr = PetscMemcpy(weights+Nc*offset,w,Nc*qPoints*sizeof(*w));CHKERRQ(ierr);
-      ierr = PetscMemcpy(pointsRef+spdim*offset,p,spdim*qPoints*sizeof(*p));CHKERRQ(ierr);
+      ierr = PetscArraycpy(weights+Nc*offset,w,Nc*qPoints);CHKERRQ(ierr);
+      ierr = PetscArraycpy(pointsRef+spdim*offset,p,spdim*qPoints);CHKERRQ(ierr);
       sizes[i] = qPoints;
       offset  += qPoints;
     }

@@ -1597,8 +1597,8 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
   }
 
   /* Precompute elements per row and layer on neighbor (zero unused) */
-  PetscMemzero(eprNeighbor,27*sizeof(PetscInt));
-  PetscMemzero(eplNeighbor,27*sizeof(PetscInt));
+  ierr = PetscMemzero(eprNeighbor,sizeof(eprNeighbor));CHKERRQ(ierr);
+  ierr = PetscMemzero(eplNeighbor,sizeof(eplNeighbor));CHKERRQ(ierr);
   if (stag->neighbors[0] >= 0) {
     eprNeighbor[0] = stag->entriesPerElement * nNeighbors[0][0];
     eplNeighbor[0] = eprNeighbor[0] * nNeighbors[0][1];

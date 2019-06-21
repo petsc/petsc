@@ -111,7 +111,7 @@ PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscRe
     ierr = PetscMalloc1(bins, &bar->values);CHKERRQ(ierr);
     bar->numBins = bins;
   }
-  ierr = PetscMemcpy(bar->values,data,bins*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(bar->values,data,bins);CHKERRQ(ierr);
   bar->numBins = bins;
   if (labels) {
     ierr = PetscStrArrayallocpy(labels,&bar->labels);CHKERRQ(ierr);

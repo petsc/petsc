@@ -204,7 +204,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   }
 
   /* Now read the server's response, globus sends it in two chunks hence must read a second time if needed */
-  ierr      = PetscMemzero(buff,buffsize);CHKERRQ(ierr);
+  ierr      = PetscArrayzero(buff,buffsize);CHKERRQ(ierr);
   len       = 0;
   foundbody = PETSC_FALSE;
   do {

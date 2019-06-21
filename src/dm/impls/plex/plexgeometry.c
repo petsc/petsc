@@ -1630,7 +1630,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   }
   if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
   if (v) {
-    ierr = PetscMemzero(v, Nq*cdim*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(v, Nq*cdim);CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       PetscInt i, k;
 
@@ -1641,7 +1641,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
     }
   }
   if (J) {
-    ierr = PetscMemzero(J, Nq*cdim*cdim*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(J, Nq*cdim*cdim);CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       PetscInt i, j, k, c, r;
 
@@ -2048,7 +2048,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
     PetscFEGeom *cg;
 
     ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-    ierr = PetscMemzero(cg, sizeof(*cg));CHKERRQ(ierr);
+    ierr = PetscArrayzero(cg, 1);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFEM(dmCell, c, NULL, cg->v, cg->J, cg->invJ, cg->detJ);CHKERRQ(ierr);
     if (*cg->detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", cg->detJ, c);
   }
@@ -2106,7 +2106,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
     PetscFVCellGeom *cg;
 
     ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-    ierr = PetscMemzero(cg, sizeof(*cg));CHKERRQ(ierr);
+    ierr = PetscArrayzero(cg, 1);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFVM(dmCell, c, &cg->volume, cg->centroid, NULL);CHKERRQ(ierr);
   }
   /* Compute face normals and minimum cell radius */
@@ -2668,7 +2668,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
       cellCoords = swap;
     }
   }
-  ierr = PetscMemzero(refCoords,numPoints * dimR * sizeof (PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(refCoords,numPoints * dimR);CHKERRQ(ierr);
   for (j = 0; j < numPoints; j++) {
     for (i = 0; i < maxIts; i++) {
       PetscReal *guess = &refCoords[dimR * j];
@@ -2776,7 +2776,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_Tensor(DM dm, PetscInt cell, 
       cellCoords = swap;
     }
   }
-  ierr = PetscMemzero(realCoords,numPoints * dimC * sizeof (PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(realCoords,numPoints * dimC);CHKERRQ(ierr);
   for (j = 0; j < numPoints; j++) {
     const PetscReal *guess  = &refCoords[dimR * j];
     PetscReal       *mapped = &realCoords[dimC * j];

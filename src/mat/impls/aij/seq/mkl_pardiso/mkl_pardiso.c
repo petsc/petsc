@@ -280,9 +280,9 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
     ierr = MatSetOption(F->schur,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  ierr = PetscMemzero(mpardiso->perm,mpardiso->n*sizeof(INT_TYPE));CHKERRQ(ierr);
+  ierr = PetscArrayzero(mpardiso->perm,mpardiso->n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idxs);CHKERRQ(ierr);
-  ierr = PetscMemcpy(mpardiso->schur_idxs,idxs,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mpardiso->schur_idxs,idxs,size);CHKERRQ(ierr);
   for (i=0;i<size;i++) mpardiso->perm[idxs[i]] = 1;
   ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
   if (size) { /* turn on Schur switch if the set of indices is not empty */

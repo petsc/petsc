@@ -1013,11 +1013,11 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
 
       /* Create string with functional outputs */
       if (f % 3) {
-        ierr = PetscMemcpy(buffer, "  ", 2);CHKERRQ(ierr);
+        ierr = PetscArraycpy(buffer, "  ", 2);CHKERRQ(ierr);
         p    = buffer + 2;
       } else if (f) {
-        ierr = PetscMemcpy(buffer, newline, sizeof newline-1);CHKERRQ(ierr);
-        p    = buffer + sizeof newline - 1;
+        ierr = PetscArraycpy(buffer, newline, sizeof(newline)-1);CHKERRQ(ierr);
+        p    = buffer + sizeof(newline) - 1;
       } else {
         p = buffer;
       }
@@ -1029,11 +1029,11 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
 
         ftablealloc = 2*ftablealloc + countused;
         ierr = PetscMalloc1(ftablealloc, &ftablenew);CHKERRQ(ierr);
-        ierr = PetscMemcpy(ftablenew, ftable, ftableused);CHKERRQ(ierr);
+        ierr = PetscArraycpy(ftablenew, ftable, ftableused);CHKERRQ(ierr);
         ierr = PetscFree(ftable);CHKERRQ(ierr);
         ftable = ftablenew;
       }
-      ierr = PetscMemcpy(ftable+ftableused, buffer, countused);CHKERRQ(ierr);
+      ierr = PetscArraycpy(ftable+ftableused, buffer, countused);CHKERRQ(ierr);
       ftableused += countused;
       ftable[ftableused] = 0;
       /* Output vecs */

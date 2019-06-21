@@ -324,7 +324,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       maxv = sizes[PetscMax(numCellFacesT-1, 0)];
       if (minv != maxv) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Different number of vertices for non-hybrid face %D != %D", minv, maxv);
       faceSizeAllT = minv;
-      ierr = PetscMemzero(sizes, numCellFacesH*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArrayzero(sizes, numCellFacesH);CHKERRQ(ierr);
       for (cf = numCellFacesT; cf < numCellFacesH; ++cf) { /* These are the hybrid faces */
         const PetscInt *cellFace = &cellFaces[-cf*faceSize];
         PetscInt       f;
@@ -784,8 +784,8 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
        - to unify order with the other side */
     o = roffset[r];
     n = roffset[r+1] - o;
-    ierr = PetscMemcpy(&(*rmine1)[o], &rmine[o], n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(&(*rremote1)[o], &rremote[o], n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&(*rmine1)[o], &rmine[o], n);CHKERRQ(ierr);
+    ierr = PetscArraycpy(&(*rremote1)[o], &rremote[o], n);CHKERRQ(ierr);
     ierr = PetscSortIntWithArray(n, &(*rremote1)[o], &(*rmine1)[o]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1492,7 +1492,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
       ierr = PetscSectionGetOffset(coordSectionA, c + cStartA, &offA);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionB, c + cStartB, &offB);CHKERRQ(ierr);
       ierr = PetscSectionGetDof(coordSectionA, c + cStartA, &dof);CHKERRQ(ierr);
-      ierr = PetscMemcpy(coordsB + offB,coordsA + offA,dof*sizeof(*coordsB));CHKERRQ(ierr);
+      ierr = PetscArraycpy(coordsB + offB,coordsA + offA,dof);CHKERRQ(ierr);
     }
   }
   ierr = VecRestoreArray(coordinatesA, &coordsA);CHKERRQ(ierr);

@@ -105,6 +105,10 @@
         <ul>
           <li>The legacy and cmake compile systems (make all-legacy and all-cmake) are removed</li>
           <li>make gnumake is now make libs</li>
+          <li>PetscArraycmp() should be used instead of PetscMemcmp(), it takes a count argument instead of a byte argument</li>
+          <li>PetscArraycpy() should be used instead of PetscMemcpy(), it takes a count argument instead of a byte argument</li>
+          <li>PetscArrayzero() should be used instead of PetscMemzero(), it takes a count argument instead of a byte argument</li>
+          <li>PetscArraymove() should be used instead of PetscMemmove(), it takes a count argument instead of a byte argument</li>
           <li>The ./configure options -with-gnu-compilers and -with-vendor-compilers are removed</li>
           <li>The order ./configure tests compilers has changed so there may be a different compiler selected if you do not provide them</li>
           <li>Added --with-64-bit-blas-indices that will switch to 64 bit indices when using MKL libraries for BLAS/LAPACK</li>

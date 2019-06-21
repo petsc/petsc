@@ -241,7 +241,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
   ierr = PetscSectionSetUp(leafSectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(leafSectionAdj, &adjSize);CHKERRQ(ierr);
   ierr = PetscMalloc1(adjSize, &adj);CHKERRQ(ierr);
-  ierr = PetscMemzero(adj, adjSize * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(adj, adjSize);CHKERRQ(ierr);
   for (l = 0; l < nleaves; ++l) {
     PetscInt dof, off, d, q;
     PetscInt p = leaves[l], numAdj = maxAdjSize;
@@ -433,7 +433,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
 
         ierr = PetscSectionGetOffset(sectionAdj, goff+d, &aoff);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(rootSectionAdj, off+d, &roff);CHKERRQ(ierr);
-        ierr = PetscMemcpy(&cols[aoff], &rootAdj[roff], rdof * sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&cols[aoff], &rootAdj[roff], rdof);CHKERRQ(ierr);
       } else {
         found = PETSC_FALSE;
       }

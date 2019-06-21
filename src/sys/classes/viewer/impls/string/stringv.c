@@ -220,7 +220,7 @@ PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],size
   if (!isstring) PetscFunctionReturn(0);
   if (len <= 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
 
-  ierr         = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
+  ierr         = PetscArrayzero(string,len);CHKERRQ(ierr);
   vstr->string = string;
   vstr->head   = string;
   vstr->curlen = 0;

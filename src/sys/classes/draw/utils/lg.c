@@ -31,8 +31,8 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
     PetscReal *tmpx,*tmpy;
     ierr     = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,&tmpx,lg->len+lg->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
     ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr     = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr     = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpx,lg->x,lg->len);CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpy,lg->y,lg->len);CHKERRQ(ierr);
     ierr     = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);
     lg->x    = tmpx;
     lg->y    = tmpy;
@@ -82,8 +82,8 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
     PetscReal *tmpx,*tmpy;
     ierr     = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,&tmpx,lg->len+lg->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
     ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr     = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr     = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpx,lg->x,lg->len);CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpy,lg->y,lg->len);CHKERRQ(ierr);
     ierr     = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);
     lg->x    = tmpx;
     lg->y    = tmpy;
@@ -142,8 +142,8 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
     if (n > chunk) chunk = n;
     ierr     = PetscMalloc2(lg->len+lg->dim*chunk,&tmpx,lg->len+lg->dim*chunk,&tmpy);CHKERRQ(ierr);
     ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*chunk*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr     = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr     = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpx,lg->x,lg->len);CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpy,lg->y,lg->len);CHKERRQ(ierr);
     ierr     = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);
     lg->x    = tmpx;
     lg->y    = tmpy;

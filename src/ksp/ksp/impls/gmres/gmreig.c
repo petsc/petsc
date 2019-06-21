@@ -29,7 +29,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
-  ierr = PetscMemcpy(R,gmres->hh_origin,(gmres->max_k+2)*(gmres->max_k+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(R,gmres->hh_origin,(gmres->max_k+2)*(gmres->max_k+1));CHKERRQ(ierr);
 
   /* zero below diagonal garbage */
   for (i=0; i<n; i++) R[i*N+i+1] = 0.0;
@@ -75,7 +75,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   if (!n) PetscFunctionReturn(0);
 
   /* copy R matrix to work space */
-  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(R,gmres->hes_origin,N*N);CHKERRQ(ierr);
 
   /* compute eigenvalues */
 
@@ -136,7 +136,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   if (!n) PetscFunctionReturn(0);
 
   /* copy R matrix to work space */
-  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(R,gmres->hes_origin,N*N);CHKERRQ(ierr);
 
   /* compute eigenvalues */
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   if (!n) PetscFunctionReturn(0);
 
   /* copy R matrix to work space */
-  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(R,gmres->hes_origin,N*N);CHKERRQ(ierr);
 
   /* compute eigenvalues */
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -222,9 +222,9 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
 
   /* copy H matrix to work space */
   if (gmres->fullcycle) {
-    ierr = PetscMemcpy(H,gmres->hes_ritz,bN*bN*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(H,gmres->hes_ritz,bN*bN);CHKERRQ(ierr);
   } else {
-    ierr = PetscMemcpy(H,gmres->hes_origin,bN*bN*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(H,gmres->hes_origin,bN*bN);CHKERRQ(ierr);
   }
 
   /* Modify H to compute Harmonic Ritz pairs H = H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
@@ -291,7 +291,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
     for (i=0; i<nb; i++) {
       tetar[i] = wr[perm[i]];
       tetai[i] = wi[perm[i]];
-      ierr = PetscMemcpy(&SR[i*n],&(Q[perm[i]*bn]),n*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&SR[i*n],&(Q[perm[i]*bn]),n);CHKERRQ(ierr);
     }
   } else {
     while (nb < NbrRitz) {
@@ -302,7 +302,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
     for (i=0; i<nb; i++) {
       tetar[i] = wr[perm[n-nb+i]];
       tetai[i] = wi[perm[n-nb+i]];
-      ierr = PetscMemcpy(&SR[i*n], &(Q[perm[n-nb+i]*bn]), n*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&SR[i*n], &(Q[perm[n-nb+i]*bn]), n);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(modul);CHKERRQ(ierr);

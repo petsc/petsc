@@ -170,10 +170,10 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
     ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
     ierr = ISGetIndices(irow[i],&irow_indices);CHKERRQ(ierr);
-    ierr = PetscMemcpy(indices,irow_indices,sizeof(PetscInt)*irow_n);CHKERRQ(ierr);
+    ierr = PetscArraycpy(indices,irow_indices,irow_n);CHKERRQ(ierr);
     ierr = ISRestoreIndices(irow[i],&irow_indices);CHKERRQ(ierr);
     ierr = ISGetIndices(icol[i],&icol_indices);CHKERRQ(ierr);
-    ierr = PetscMemcpy(indices+irow_n,icol_indices,sizeof(PetscInt)*icol_n);CHKERRQ(ierr);
+    ierr = PetscArraycpy(indices+irow_n,icol_indices,icol_n);CHKERRQ(ierr);
     ierr = ISRestoreIndices(icol[i],&icol_indices);CHKERRQ(ierr);
     nindx = irow_n+icol_n;
     ierr = PetscSortRemoveDupsInt(&nindx,indices);CHKERRQ(ierr);
@@ -195,9 +195,9 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
        ierr = PetscObjectGetComm((PetscObject)sadj,&scomm_mat);CHKERRQ(ierr);
        ierr = MPI_Comm_compare(scomm_row,scomm_mat,&issame);CHKERRQ(ierr);
        if (issame != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"submatrix  must have the same comm as the col index set\n");
-       ierr = PetscMemcpy(sa->i,sxadj,sizeof(PetscInt)*(irow_n+1));CHKERRQ(ierr);
-       ierr = PetscMemcpy(sa->j,sadjncy,sizeof(PetscInt)*sxadj[irow_n]);CHKERRQ(ierr);
-       if (svalues){ierr = PetscMemcpy(sa->values,svalues,sizeof(PetscInt)*sxadj[irow_n]);CHKERRQ(ierr);}
+       ierr = PetscArraycpy(sa->i,sxadj,irow_n+1);CHKERRQ(ierr);
+       ierr = PetscArraycpy(sa->j,sadjncy,sxadj[irow_n]);CHKERRQ(ierr);
+       if (svalues){ierr = PetscArraycpy(sa->values,svalues,sxadj[irow_n]);CHKERRQ(ierr);}
        ierr = PetscFree(sxadj);CHKERRQ(ierr);
        ierr = PetscFree(sadjncy);CHKERRQ(ierr);
        if (svalues) {ierr = PetscFree(svalues);CHKERRQ(ierr);}
@@ -367,7 +367,7 @@ static PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscBool * flg)
   }
 
   /* if the a->i are the same */
-  ierr = PetscMemcmp(a->i,b->i,(A->rmap->n+1)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
+  ierr = PetscArraycmp(a->i,b->i,A->rmap->n+1,&flag);CHKERRQ(ierr);
 
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),&flag);CHKERRQ(ierr);

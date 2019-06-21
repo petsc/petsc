@@ -266,7 +266,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
     /* AP[i,:] = A[i,:]*P = Ad*P_loc Ao*P_oth */
     apnz = api[i+1] - api[i];
     apa = ap->a + api[i];
-    ierr = PetscMemzero(apa,sizeof(PetscScalar)*apnz);CHKERRQ(ierr);
+    ierr = PetscArrayzero(apa,apnz);CHKERRQ(ierr);
     AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa);
   }
   ierr = ISGlobalToLocalMappingApply(ptap->ltog,IS_GTOLM_DROP,api[AP_loc->rmap->n],apj,&nout,apj);CHKERRQ(ierr);
@@ -509,8 +509,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc4(size,&len_s,size,&len_si,size,&sstatus,size+2,&owners_co);CHKERRQ(ierr);
-  ierr = PetscMemzero(len_s,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(len_s,size);CHKERRQ(ierr);
+  ierr = PetscArrayzero(len_si,size);CHKERRQ(ierr);
 
   c_oth = (Mat_SeqAIJ*)ptap->C_oth->data;
   coi   = c_oth->i; coj = c_oth->j;
@@ -863,7 +863,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
     voff = 0;
     ierr = PetscHMapIVGetPairs(hmap,&voff,apindices,apvalues);CHKERRQ(ierr);
     if (!voff) continue;
-    /*ierr = PetscMemzero(c_rmtc,sizeof(PetscInt)*pon);CHKERRQ(ierr);*/
 
     /* Form C(ii, :) */
     poj = po->j + po->i[i];
@@ -1770,8 +1769,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc4(size,&len_s,size,&len_si,size,&sstatus,size+2,&owners_co);CHKERRQ(ierr);
-  ierr = PetscMemzero(len_s,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(len_s,size);CHKERRQ(ierr);
+  ierr = PetscArrayzero(len_si,size);CHKERRQ(ierr);
 
   c_oth = (Mat_SeqAIJ*)ptap->C_oth->data;
   coi   = c_oth->i; coj = c_oth->j;

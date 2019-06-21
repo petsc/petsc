@@ -184,7 +184,7 @@ PetscErrorCode  PetscTableRemoveAll(PetscTable ta)
   if (ta->count) {
     ta->count = 0;
 
-    ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(ta->keytable,ta->tablesize);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

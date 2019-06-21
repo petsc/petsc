@@ -36,8 +36,8 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMa
 {
   PetscInt i,j;
   if (!called) {*ierr = PETSC_ERR_ARG_WRONGSTATE; return;}
-  *ierr = PetscMemcpy(procs,sprocs,*size*sizeof(PetscInt)); if (*ierr) return;
-  *ierr = PetscMemcpy(numprocs,snumprocs,*size*sizeof(PetscInt)); if (*ierr) return;
+  *ierr = PetscArraycpy(procs,sprocs,*size); if (*ierr) return;
+  *ierr = PetscArraycpy(numprocs,snumprocs,*size); if (*ierr) return;
   for (i=0; i<*size; i++) {
     for (j=0; j<numprocs[i]; j++) indices[i + (*size)*j] = sindices[i][j];
   }

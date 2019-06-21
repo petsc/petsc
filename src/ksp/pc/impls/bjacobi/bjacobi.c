@@ -60,7 +60,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       if (size == 1) {
         jac->n_local = jac->n;
         ierr         = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
-        ierr         = PetscMemcpy(jac->l_lens,jac->g_lens,jac->n_local*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr         = PetscArraycpy(jac->l_lens,jac->g_lens,jac->n_local);CHKERRQ(ierr);
         /* check that user set these correctly */
         sum = 0;
         for (i=0; i<jac->n_local; i++) sum += jac->l_lens[i];
@@ -83,7 +83,7 @@ start_1:
 end_1:
         jac->n_local = i_end - i_start;
         ierr         = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
-        ierr         = PetscMemcpy(jac->l_lens,jac->g_lens+i_start,jac->n_local*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr         = PetscArraycpy(jac->l_lens,jac->g_lens+i_start,jac->n_local);CHKERRQ(ierr);
       }
     } else { /* no global blocks given, determine then using default layout */
       jac->n_local = jac->n/size + ((jac->n % size) > rank);
@@ -290,7 +290,7 @@ static PetscErrorCode  PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,Pet
   else {
     ierr = PetscMalloc1(blocks,&jac->g_lens);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,blocks*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(jac->g_lens,lens,blocks*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(jac->g_lens,lens,blocks);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -318,7 +318,7 @@ static PetscErrorCode  PCBJacobiSetLocalBlocks_BJacobi(PC pc,PetscInt blocks,con
   else {
     ierr = PetscMalloc1(blocks,&jac->l_lens);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,blocks*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(jac->l_lens,lens,blocks*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(jac->l_lens,lens,blocks);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

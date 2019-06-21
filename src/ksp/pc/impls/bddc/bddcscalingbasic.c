@@ -31,7 +31,7 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
   ierr = PetscBLASIntCast(n,&nrhs);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
-  ierr = PetscMemcpy(x,b,m*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(x,b,m*nrhs);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
 
   if (A->factortype == MAT_FACTOR_LU) {

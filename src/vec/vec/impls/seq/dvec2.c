@@ -545,7 +545,7 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (alpha == (PetscScalar)0.0) {
-    ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(xx,n);CHKERRQ(ierr);
   } else {
     for (i=0; i<n; i++) xx[i] = alpha;
   }
@@ -695,7 +695,7 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
     ierr = PetscLogFlops(n);CHKERRQ(ierr);
     for (i=0; i<n; i++) ww[i] = yy[i] - xx[i];
   } else if (alpha == (PetscScalar)0.0) {
-    ierr = PetscMemcpy(ww,yy,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ww,yy,n);CHKERRQ(ierr);
   } else {
     PetscScalar oalpha = alpha;
 #if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)

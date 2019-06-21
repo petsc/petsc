@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = MatSeqAIJGetArray(AB,&oa);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(oi[5],&ooj);CHKERRQ(ierr);
-  ierr = PetscMemcpy(ooj,oj,oi[5]*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(ooj,oj,oi[5]);CHKERRQ(ierr);
   /* modify the column entries in the non-diagonal portion back to global numbering */
   for (i=0; i<oi[5]; i++) {
     ooj[i] = garray[ooj[i]];

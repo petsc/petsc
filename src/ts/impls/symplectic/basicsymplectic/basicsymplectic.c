@@ -178,8 +178,8 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name,PetscInt order,PetscInt
   scheme->order = order;
   scheme->s = s;
   ierr = PetscMalloc2(s,&scheme->c,s,&scheme->d);CHKERRQ(ierr);
-  ierr = PetscMemcpy(scheme->c,c,s*sizeof(c[0]));CHKERRQ(ierr);
-  ierr = PetscMemcpy(scheme->d,d,s*sizeof(d[0]));CHKERRQ(ierr);
+  ierr = PetscArraycpy(scheme->c,c,s);CHKERRQ(ierr);
+  ierr = PetscArraycpy(scheme->d,d,s);CHKERRQ(ierr);
   link->next = BasicSymplecticSchemeList;
   BasicSymplecticSchemeList = link;
   PetscFunctionReturn(0);

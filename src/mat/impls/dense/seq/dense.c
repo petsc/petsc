@@ -130,7 +130,7 @@ PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A,PetscInt N,const PetscInt rows[
 
   for (i=0; i<N; i++) {
     slot = l->v + rows[i]*m;
-    ierr = PetscMemzero(slot,r*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(slot,r);CHKERRQ(ierr);
   }
   for (i=0; i<N; i++) {
     slot = l->v + rows[i];
@@ -206,7 +206,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,Mat
     b    = (Mat_SeqDense*)(B->data);
   } else {
     b    = (Mat_SeqDense*)((*newmat)->data);
-    ierr = PetscMemzero(b->v,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(b->v,m*n);CHKERRQ(ierr);
   }
   for (i=0; i<m; i++) {
     PetscInt j;
@@ -368,10 +368,10 @@ static PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi,Mat A,MatDuplicateO
     if (lda>A->rmap->n) {
       m = A->rmap->n;
       for (j=0; j<A->cmap->n; j++) {
-        ierr = PetscMemcpy(l->v+j*m,mat->v+j*lda,m*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArraycpy(l->v+j*m,mat->v+j*lda,m);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscMemcpy(l->v,mat->v,A->rmap->n*A->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(l->v,mat->v,A->rmap->n*A->cmap->n);CHKERRQ(ierr);
     }
   }
   newi->assembled = PETSC_TRUE;
@@ -416,7 +416,7 @@ static PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscMemcpy(y,x,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(y,x,A->rmap->n);CHKERRQ(ierr);
   if (A->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
@@ -478,7 +478,7 @@ static PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(x,b,m*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(x,b,m*nrhs);CHKERRQ(ierr);
 
   if (A->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS)
@@ -534,7 +534,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscMemcpy(y,x,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(y,x,A->rmap->n);CHKERRQ(ierr);
   if (A->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
@@ -1706,10 +1706,10 @@ static PetscErrorCode MatZeroEntries_SeqDense(Mat A)
   PetscFunctionBegin;
   if (lda>m) {
     for (j=0; j<A->cmap->n; j++) {
-      ierr = PetscMemzero(l->v+j*lda,m*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(l->v+j*lda,m);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMemzero(l->v,A->rmap->n*A->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArrayzero(l->v,A->rmap->n*A->cmap->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1991,10 +1991,10 @@ static PetscErrorCode MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
   if (m != B->rmap->n || n != B->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
   if (lda1>m || lda2>m) {
     for (j=0; j<n; j++) {
-      ierr = PetscMemcpy(b->v+j*lda2,a->v+j*lda1,m*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(b->v+j*lda2,a->v+j*lda1,m);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMemcpy(b->v,a->v,A->rmap->n*A->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(b->v,a->v,A->rmap->n*A->cmap->n);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2301,7 +2301,7 @@ static PetscErrorCode MatGetColumnVector_SeqDense(Mat A,Vec v,PetscInt col)
   if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  ierr = PetscMemcpy(x,a->v+col*a->lda,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(x,a->v+col*a->lda,A->rmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2314,7 +2314,7 @@ PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = PetscMemzero(norms,n*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(norms,n);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(A,&a);CHKERRQ(ierr);
   if (type == NORM_2) {
     for (i=0; i<n; i++) {

@@ -114,7 +114,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   if (lu->options.Equil) {
     /* Copy b into rsh_dup */
     ierr   = VecGetArrayRead(b,&barray);CHKERRQ(ierr);
-    ierr   = PetscMemcpy(lu->rhs_dup,barray,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr   = PetscArraycpy(lu->rhs_dup,barray,n);CHKERRQ(ierr);
     ierr   = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
     barray = lu->rhs_dup;
   } else {

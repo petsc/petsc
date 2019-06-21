@@ -216,11 +216,11 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelNewStratum(DMLabel label, PetscInt val
     ierr = PetscMalloc((v+1)*sizeof(*tmpH), &tmpH);CHKERRQ(ierr);
     ierr = PetscMalloc((v+1)*sizeof(*tmpP), &tmpP);CHKERRQ(ierr);
     ierr = PetscMalloc((v+1)*sizeof(*tmpB), &tmpB);CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpV, oldV, v*sizeof(*tmpV));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpS, oldS, v*sizeof(*tmpS));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpH, oldH, v*sizeof(*tmpH));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpP, oldP, v*sizeof(*tmpP));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpB, oldB, v*sizeof(*tmpB));CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpV, oldV, v);CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpS, oldS, v);CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpH, oldH, v);CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpP, oldP, v);CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpB, oldB, v);CHKERRQ(ierr);
     ierr = PetscFree(oldV);CHKERRQ(ierr);
     ierr = PetscFree(oldS);CHKERRQ(ierr);
     ierr = PetscFree(oldH);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ PetscErrorCode DMLabelAddStrata(DMLabel label, PetscInt numStrata, const PetscIn
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   if (numStrata) PetscValidIntPointer(stratumValues, 3);
   ierr = PetscMalloc1(numStrata, &values);CHKERRQ(ierr);
-  ierr = PetscMemcpy(values, stratumValues, numStrata*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(values, stratumValues, numStrata);CHKERRQ(ierr);
   ierr = PetscSortRemoveDupsInt(&numStrata, values);CHKERRQ(ierr);
   if (!label->numStrata) { /* Fast preallocation */
     PetscInt   *tmpV;
@@ -1482,7 +1482,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   nameSize = len;
   ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscMalloc1(nameSize+1, &name);CHKERRQ(ierr);
-  if (!rank) {ierr = PetscMemcpy(name, lname, nameSize+1);CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscArraycpy(name, lname, nameSize+1);CHKERRQ(ierr);}
   ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF, name, labelNew);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
@@ -1599,7 +1599,7 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   nameSize = len;
   ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscMalloc1(nameSize+1, &name);CHKERRQ(ierr);
-  if (!rank) {ierr = PetscMemcpy(name, lname, nameSize+1);CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscArraycpy(name, lname, nameSize+1);CHKERRQ(ierr);}
   ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF, name, labelNew);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);

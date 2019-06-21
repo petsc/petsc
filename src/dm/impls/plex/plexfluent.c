@@ -283,7 +283,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
           numFaceEntries = numFaceVertices + 2;
           if (!faces) {ierr = PetscMalloc1(numFaces*numFaceEntries, &faces);CHKERRQ(ierr);}
           if (!faceZoneIDs) {ierr = PetscMalloc1(numFaces, &faceZoneIDs);CHKERRQ(ierr);}
-          ierr = PetscMemcpy(&(faces[(s.first-1)*numFaceEntries]), s.data, (s.last-s.first+1)*numFaceEntries*sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(&faces[(s.first-1)*numFaceEntries], s.data, (s.last-s.first+1)*numFaceEntries*sizeof(PetscInt));CHKERRQ(ierr);
           /* Record the zoneID for each face set */
           for (z = s.first -1; z < s.last; z++) faceZoneIDs[z] = s.zoneID;
           ierr = PetscFree(s.data);CHKERRQ(ierr);

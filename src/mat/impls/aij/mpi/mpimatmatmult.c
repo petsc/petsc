@@ -1328,8 +1328,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc4(size,&len_s,size,&len_si,size,&sstatus,size+2,&owners_co);CHKERRQ(ierr);
-  ierr = PetscMemzero(len_s,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(len_s,size);CHKERRQ(ierr);
+  ierr = PetscArrayzero(len_si,size);CHKERRQ(ierr);
 
   c_oth = (Mat_SeqAIJ*)ptap->C_oth->data;
   coi   = c_oth->i; coj = c_oth->j;
@@ -1876,13 +1876,12 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscCalloc1(size,&len_si);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&merge->len_s);CHKERRQ(ierr);
+  ierr = PetscCalloc1(size,&merge->len_s);CHKERRQ(ierr);
 
   len_s        = merge->len_s;
   merge->nsend = 0;
 
   ierr = PetscMalloc1(size+2,&owners_co);CHKERRQ(ierr);
-  ierr = PetscMemzero(len_s,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
 
   proc = 0;
   for (i=0; i<pon; i++) {

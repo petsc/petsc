@@ -24,9 +24,8 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESReset_NGMRES(snes);CHKERRQ(ierr);
-  ierr = PetscFree5(ngmres->h,ngmres->beta,ngmres->xi,ngmres->fnorms,ngmres->q);CHKERRQ(ierr);
-  ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
-  ierr = PetscFree(ngmres->xnorms);CHKERRQ(ierr);
+  ierr = PetscFree4(ngmres->h,ngmres->beta,ngmres->xi,ngmres->q);CHKERRQ(ierr);
+  ierr = PetscFree3(ngmres->xnorms,ngmres->fnorms,ngmres->s);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscFree(ngmres->rwork);CHKERRQ(ierr);
 #endif
@@ -62,16 +61,11 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     hsize = msize * msize;
 
     /* explicit least squares minimization solve */
-    ierr = PetscMalloc5(hsize,&ngmres->h, msize,&ngmres->beta, msize,&ngmres->xi, msize,&ngmres->fnorms, hsize,&ngmres->q);CHKERRQ(ierr);
-    ierr = PetscMalloc1(msize,&ngmres->xnorms);CHKERRQ(ierr);
+    ierr = PetscCalloc4(hsize,&ngmres->h, msize,&ngmres->beta, msize,&ngmres->xi, hsize,&ngmres->q);CHKERRQ(ierr);
+    ierr = PetscMalloc3(msize,&ngmres->xnorms,msize,&ngmres->fnorms,msize,&ngmres->s);CHKERRQ(ierr);
     ngmres->nrhs  = 1;
     ngmres->lda   = msize;
     ngmres->ldb   = msize;
-    ierr          = PetscMalloc1(msize,&ngmres->s);CHKERRQ(ierr);
-    ierr          = PetscMemzero(ngmres->h,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr          = PetscMemzero(ngmres->q,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr          = PetscMemzero(ngmres->xi,  msize*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr          = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
     ngmres->lwork = 12*msize;
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscMalloc1(ngmres->lwork,&ngmres->rwork);CHKERRQ(ierr);

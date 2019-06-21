@@ -960,7 +960,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     int         snum;
     float       version;
 
-    ierr = PetscMemzero(gmsh,sizeof(GmshFile));CHKERRQ(ierr);
+    ierr = PetscArrayzero(gmsh,1);CHKERRQ(ierr);
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &gmsh->viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(gmsh->viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(gmsh->viewer, FILE_MODE_READ);CHKERRQ(ierr);
@@ -1056,7 +1056,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     char      line[PETSC_MAX_PATH_LEN];
     PetscBool match;
 
-    ierr = PetscMemzero(gmsh,sizeof(GmshFile));CHKERRQ(ierr);
+    ierr = PetscArrayzero(gmsh,1);CHKERRQ(ierr);
     gmsh->viewer = viewer;
     gmsh->binary = binary;
 

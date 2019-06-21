@@ -146,7 +146,7 @@ int main(int argc,char **args)
 
     /* Save A to arrayErr for checking accuracy later. arrayA will be destroyed by LAPACKgesvd_() */
     ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
-    ierr = PetscMemcpy(arrayErr,arrayA,sizeof(PetscScalar)*m*minMN);CHKERRQ(ierr);
+    ierr = PetscArraycpy(arrayErr,arrayA,m*minMN);CHKERRQ(ierr);
 
     ierr = PetscBLASIntCast(m,&im);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(n,&in);CHKERRQ(ierr);

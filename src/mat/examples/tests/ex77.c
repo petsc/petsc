@@ -224,7 +224,7 @@ int main(int argc,char **args)
     PetscInt *nip_ptr;
     ierr = PetscMalloc1(mbs,&nip_ptr);CHKERRQ(ierr);
     ierr = ISGetIndices(ip,&ip_ptr);CHKERRQ(ierr);
-    ierr = PetscMemcpy(nip_ptr,ip_ptr,mbs*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(nip_ptr,ip_ptr,mbs);CHKERRQ(ierr);
     i    = nip_ptr[1]; nip_ptr[1] = nip_ptr[mbs-2]; nip_ptr[mbs-2] = i;
     i    = nip_ptr[0]; nip_ptr[0] = nip_ptr[mbs-1]; nip_ptr[mbs-1] = i;
     ierr = ISRestoreIndices(ip,&ip_ptr);CHKERRQ(ierr);

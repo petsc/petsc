@@ -631,8 +631,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       }
 
       /* interior dofs in layout */
-      ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArrayzero(matis->sf_leafdata,n);CHKERRQ(ierr);
+      ierr = PetscArrayzero(matis->sf_rootdata,nl);CHKERRQ(ierr);
       ierr = ISGetLocalSize(II,&ni);CHKERRQ(ierr);
       ierr = ISGetIndices(II,&idxs);CHKERRQ(ierr);
       for (i=0;i<ni;i++) matis->sf_leafdata[idxs[i]] = 1;
@@ -699,8 +699,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISDifference(Pall,pII,&pP);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_pP",(PetscObject)pP);CHKERRQ(ierr);
         /* need all local pressure dofs */
-        ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArrayzero(matis->sf_leafdata,n);CHKERRQ(ierr);
+        ierr = PetscArrayzero(matis->sf_rootdata,nl);CHKERRQ(ierr);
         ierr = ISGetLocalSize(Pall,&ni);CHKERRQ(ierr);
         ierr = ISGetIndices(Pall,&idxs);CHKERRQ(ierr);
         for (i=0;i<ni;i++) matis->sf_rootdata[idxs[i]-rst] = 1;
@@ -712,8 +712,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       }
 
       if (!Pall) {
-        ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArrayzero(matis->sf_leafdata,n);CHKERRQ(ierr);
+        ierr = PetscArrayzero(matis->sf_rootdata,nl);CHKERRQ(ierr);
         ierr = ISGetLocalSize(lPall,&ni);CHKERRQ(ierr);
         ierr = ISGetIndices(lPall,&idxs);CHKERRQ(ierr);
         for (i=0;i<ni;i++) matis->sf_leafdata[idxs[i]] = 1;
@@ -744,8 +744,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       ierr = ISDestroy(&pII);CHKERRQ(ierr);
 
       /* local selected pressures in subdomain-wise and global ordering */
-      ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArrayzero(matis->sf_leafdata,n);CHKERRQ(ierr);
+      ierr = PetscArrayzero(matis->sf_rootdata,nl);CHKERRQ(ierr);
       if (!ploc) {
         PetscInt *widxs2;
 

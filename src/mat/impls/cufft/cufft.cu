@@ -151,7 +151,7 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   ierr       = PetscNewLog(*A,&cufft);CHKERRQ(ierr);
   (*A)->data = (void*) cufft;
   ierr       = PetscMalloc1(ndim+1, &cufft->dim);CHKERRQ(ierr);
-  ierr       = PetscMemcpy(cufft->dim, dim, ndim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr       = PetscArraycpy(cufft->dim, dim, ndim);CHKERRQ(ierr);
 
   cufft->ndim       = ndim;
   cufft->p_forward  = 0;

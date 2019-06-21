@@ -192,7 +192,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
     ierr = PetscMalloc1(stageLog->maxStages*2, &stageInfo);CHKERRQ(ierr);
-    ierr = PetscMemcpy(stageInfo, stageLog->stageInfo, stageLog->maxStages * sizeof(PetscStageInfo));CHKERRQ(ierr);
+    ierr = PetscArraycpy(stageInfo, stageLog->stageInfo, stageLog->maxStages);CHKERRQ(ierr);
     ierr = PetscFree(stageLog->stageInfo);CHKERRQ(ierr);
     stageLog->stageInfo  = stageInfo;
     stageLog->maxStages *= 2;

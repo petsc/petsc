@@ -116,7 +116,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const 
 
   /*  first count number of contributors to each processor */
   ierr = PetscMalloc2(2*size,&sizes,size,&start);CHKERRQ(ierr);
-  ierr = PetscMemzero(sizes,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(sizes,2*size);CHKERRQ(ierr);
   ierr = PetscCalloc1(n,&owner);CHKERRQ(ierr);
 
   j       = 0;
@@ -295,7 +295,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   MPI_Status        *send_status;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(aomap_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(aomap_loc,n_local);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -455,10 +455,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 
   /* create distributed indices app_loc: petsc->app and petsc_loc: app->petsc */
   n_local = map->n;
-  ierr    = PetscMalloc2(n_local, &aomems->app_loc,n_local,&aomems->petsc_loc);CHKERRQ(ierr);
+  ierr    = PetscCalloc2(n_local, &aomems->app_loc,n_local,&aomems->petsc_loc);CHKERRQ(ierr);
   ierr    = PetscLogObjectMemory((PetscObject)ao,2*n_local*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr    = PetscMemzero(aomems->app_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr    = PetscMemzero(aomems->petsc_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
   ierr    = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
 
   ierr = AOCreateMemoryScalable_private(comm,napp,petsc,myapp,ao,aomems->app_loc);CHKERRQ(ierr);

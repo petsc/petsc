@@ -1027,7 +1027,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /* Compute the update.                                                 */
       /***********************************************************************/
 
-      PetscMemcpy(e_rwrk, t_soln, sizeof(PetscReal)*t_size);
+      ierr = PetscArraycpy(e_rwrk, t_soln, t_size);CHKERRQ(ierr);
 
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
@@ -1237,11 +1237,11 @@ static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp)
 
   ierr = KSPSetWorkVecs(ksp, 3);CHKERRQ(ierr);
   if (cg->diag) {
-    ierr = PetscMemzero(cg->diag, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(cg->offd, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(cg->alpha, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(cg->beta, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(cg->norm_r, max_its*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(cg->diag, max_its);CHKERRQ(ierr);
+    ierr = PetscArrayzero(cg->offd, max_its);CHKERRQ(ierr);
+    ierr = PetscArrayzero(cg->alpha, max_its);CHKERRQ(ierr);
+    ierr = PetscArrayzero(cg->beta, max_its);CHKERRQ(ierr);
+    ierr = PetscArrayzero(cg->norm_r, max_its);CHKERRQ(ierr);
   } else {
     ierr = PetscCalloc5(max_its,&cg->diag,max_its,&cg->offd,max_its,&cg->alpha,max_its,&cg->beta,max_its,&cg->norm_r);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp, 5*max_its*sizeof(PetscReal));CHKERRQ(ierr);

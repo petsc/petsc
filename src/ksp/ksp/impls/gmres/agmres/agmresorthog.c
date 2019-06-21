@@ -137,7 +137,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(KSP_AGMRESRoddec,ksp,0,0,0);CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Rloc, N*N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(agmres->Rloc, N*N);CHKERRQ(ierr);
   /* check input arguments */
   if (nvec < 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "The number of input vectors shoud be positive");
   ierr = VecGetLocalSize(VEC_V(0), &nloc);CHKERRQ(ierr);
@@ -262,7 +262,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   pas  = 1;
   ierr = VecGetLocalSize(VEC_V(0), &nloc);CHKERRQ(ierr);
   ierr = PetscMalloc1(nvec, &y);CHKERRQ(ierr);
-  ierr = PetscMemcpy(y, In, nvec*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(y, In, nvec);CHKERRQ(ierr);
   ierr = VecGetArray(Out, &zloc);CHKERRQ(ierr);
 
   if (rank == Last) {

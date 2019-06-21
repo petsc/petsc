@@ -21,7 +21,7 @@ PETSC_EXTERN PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *me
 #else
   mat  = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
 #endif
-  ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mxGetPr(mat),array,n);CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   engPutVariable((Engine*)mengine,obj->name,mat);
 
@@ -42,7 +42,7 @@ PETSC_EXTERN PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *me
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   mat  = engGetVariable((Engine*)mengine,obj->name);
   if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get object %s from matlab",obj->name);
-  ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(array,mxGetPr(mat),n);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

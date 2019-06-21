@@ -919,7 +919,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (!Bt) { /* dense B */
       /* copy B to X */
       ierr = MatDenseGetArrayRead(B,&rbray);CHKERRQ(ierr);
-      ierr = PetscMemcpy(array,rbray,M*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(array,rbray,M*nrhs);CHKERRQ(ierr);
       ierr = MatDenseRestoreArrayRead(B,&rbray);CHKERRQ(ierr);
     } else { /* sparse B */
       ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
@@ -1869,7 +1869,7 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
 
   /* MUMPS expects Fortran style indices */
   ierr = ISGetIndices(is,&idxs);CHKERRQ(ierr);
-  ierr = PetscMemcpy(mumps->id.listvar_schur,idxs,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mumps->id.listvar_schur,idxs,size);CHKERRQ(ierr);
   for (i=0;i<size;i++) mumps->id.listvar_schur[i]++;
   ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
   if (mumps->petsc_size > 1) {
@@ -1918,7 +1918,7 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F,Mat* S)
         }
       }
     } else { /* stored by columns */
-      ierr = PetscMemcpy(array,mumps->id.schur,mumps->id.size_schur*mumps->id.size_schur*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(array,mumps->id.schur,mumps->id.size_schur*mumps->id.size_schur);CHKERRQ(ierr);
     }
   } else { /* either full or lower-triangular (not packed) */
     if (mumps->id.ICNTL(19) == 2) { /* lower triangular stored by columns */
@@ -1935,7 +1935,7 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F,Mat* S)
         }
       }
     } else if (mumps->id.ICNTL(19) == 3) { /* full matrix */
-      ierr = PetscMemcpy(array,mumps->id.schur,mumps->id.size_schur*mumps->id.size_schur*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(array,mumps->id.schur,mumps->id.size_schur*mumps->id.size_schur);CHKERRQ(ierr);
     } else { /* ICNTL(19) == 1 lower triangular stored by rows */
       PetscInt i,j,N=mumps->id.size_schur;
       for (i=0;i<N;i++) {

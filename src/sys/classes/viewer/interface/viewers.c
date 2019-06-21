@@ -93,7 +93,7 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
     int         newn = n + 64; /* add 64 new ones at a time */
 
     ierr = PetscCalloc1(newn,&v);CHKERRQ(ierr);
-    ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(PetscViewer));CHKERRQ(ierr);
+    ierr = PetscArraycpy(v,viewers->viewer,viewers->n);CHKERRQ(ierr);
     ierr = PetscFree(viewers->viewer);CHKERRQ(ierr);
 
     viewers->viewer = v;

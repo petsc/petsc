@@ -158,7 +158,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
     }
     /* Copy MZa to MZb */
-    ierr = PetscMemcpy(MZb,MZa,ldMZ*ldMZ*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(MZb,MZa,ldMZ*ldMZ);CHKERRQ(ierr);
 
     if (!bcgsl->bConvex || bcgsl->ell==1) {
       PetscBLASInt ione = 1,bell;
@@ -188,7 +188,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         }
         /* tolerance is hardwired to bell*max(s)*PETSC_MACHINE_EPSILON */
         pinv_tol = bell*max_s*PETSC_MACHINE_EPSILON;
-        ierr = PetscMemzero(&AY0c[1],bell*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(&AY0c[1],bell);CHKERRQ(ierr);
         for (i=0; i<bell; i++) {
           if (bcgsl->s[i] >= pinv_tol) {
             utb=0.;
@@ -211,7 +211,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscFunctionReturn(0);
         }
-        ierr = PetscMemcpy(&AY0c[1],&MZb[1],bcgsl->ell*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&AY0c[1],&MZb[1],bcgsl->ell);CHKERRQ(ierr);
         PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
       }
     } else {
@@ -229,12 +229,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
       }
-      ierr = PetscMemcpy(&AY0c[1],&MZb[1],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&AY0c[1],&MZb[1],bcgsl->ell-1);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
       AY0c[0]          = -1;
       AY0c[bcgsl->ell] = 0.;
 
-      ierr = PetscMemcpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],bcgsl->ell-1);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr));
 
       AYlc[0]          = 0.;

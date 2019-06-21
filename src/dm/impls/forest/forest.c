@@ -1345,7 +1345,7 @@ PetscErrorCode DMForestSetCellWeights(DM dm, PetscReal weights[], PetscCopyMode 
     if (forest->cellWeightsCopyMode != PETSC_OWN_POINTER || forest->cellWeights == weights) {
       ierr = PetscMalloc1(cEnd-cStart,&forest->cellWeights);CHKERRQ(ierr);
     }
-    ierr                        = PetscMemcpy(forest->cellWeights,weights,(cEnd-cStart)*sizeof(*weights));CHKERRQ(ierr);
+    ierr                        = PetscArraycpy(forest->cellWeights,weights,cEnd-cStart);CHKERRQ(ierr);
     forest->cellWeightsCopyMode = PETSC_OWN_POINTER;
     PetscFunctionReturn(0);
   }

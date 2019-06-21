@@ -140,9 +140,9 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
   if (H) {ierr = DMGetWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH);CHKERRQ(ierr);}
   ierr = PetscSpaceEvaluate(fem->basisSpace, npoints, points, B ? tmpB : NULL, D ? tmpD : NULL, H ? tmpH : NULL);CHKERRQ(ierr);
   /* Translate to the nodal basis */
-  if (B) {ierr = PetscMemzero(B, npoints*pdim*comp * sizeof(PetscReal));CHKERRQ(ierr);}
-  if (D) {ierr = PetscMemzero(D, npoints*pdim*comp*dim * sizeof(PetscReal));CHKERRQ(ierr);}
-  if (H) {ierr = PetscMemzero(H, npoints*pdim*comp*dim*dim * sizeof(PetscReal));CHKERRQ(ierr);}
+  if (B) {ierr = PetscArrayzero(B, npoints*pdim*comp);CHKERRQ(ierr);}
+  if (D) {ierr = PetscArrayzero(D, npoints*pdim*comp*dim);CHKERRQ(ierr);}
+  if (H) {ierr = PetscArrayzero(H, npoints*pdim*comp*dim*dim);CHKERRQ(ierr);}
   for (p = 0; p < npoints; ++p) {
     const PetscInt s = subpoints[p];
 

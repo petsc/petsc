@@ -140,10 +140,10 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal ( const PetscInt nverts, const
   PetscValidPointer(ijacobian, 10);
   PetscValidPointer(volume, 11);
   if (phypts) {
-    ierr = PetscMemzero(phypts, npts * 3 * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(phypts, npts * 3);CHKERRQ(ierr);
   }
   if (dphidx) { /* Reset arrays. */
-    ierr = PetscMemzero(dphidx, npts * nverts * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(dphidx, npts * nverts);CHKERRQ(ierr);
   }
   if (nverts == 2) { /* Linear Edge */
 
@@ -275,13 +275,13 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const
   PetscValidPointer(jacobian, 10);
   PetscValidPointer(ijacobian, 11);
   PetscValidPointer(volume, 12);
-  ierr = PetscMemzero(phi, npts * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(phi, npts);CHKERRQ(ierr);
   if (phypts) {
-    ierr = PetscMemzero(phypts, npts * 3 * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(phypts, npts * 3);CHKERRQ(ierr);
   }
   if (dphidx) { /* Reset arrays. */
-    ierr = PetscMemzero(dphidx, npts * nverts * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(dphidy, npts * nverts * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(dphidx, npts * nverts);CHKERRQ(ierr);
+    ierr = PetscArrayzero(dphidy, npts * nverts);CHKERRQ(ierr);
   }
   if (nverts == 4) { /* Linear Quadrangle */
 
@@ -299,8 +299,8 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const
       const PetscReal dNi_dxi[4]  = { -1.0 + s, 1.0 - s, s, -s };
       const PetscReal dNi_deta[4] = { -1.0 + r, -r, r, 1.0 - r };
 
-      ierr = PetscMemzero(jacobian, 4 * sizeof(PetscReal));CHKERRQ(ierr);
-      ierr = PetscMemzero(ijacobian, 4 * sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscArrayzero(jacobian, 4);CHKERRQ(ierr);
+      ierr = PetscArrayzero(ijacobian, 4);CHKERRQ(ierr);
       for (i = 0; i < nverts; ++i) {
         const PetscReal* vertices = coords + i * 3;
         jacobian[0] += dNi_dxi[i] * vertices[0];
@@ -333,8 +333,8 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const
   }
   else if (nverts == 3) { /* Linear triangle */
 
-    ierr = PetscMemzero(jacobian, 4 * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(ijacobian, 4 * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(jacobian, 4);CHKERRQ(ierr);
+    ierr = PetscArrayzero(ijacobian, 4);CHKERRQ(ierr);
 
     const PetscReal x2 = coords[2 * 3 + 0], y2 = coords[2 * 3 + 1];
 
@@ -454,14 +454,14 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
   PetscValidPointer(ijacobian, 12);
   PetscValidPointer(volume, 13);
   /* Reset arrays. */
-  ierr = PetscMemzero(phi, npts * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(phi, npts);CHKERRQ(ierr);
   if (phypts) {
-    ierr = PetscMemzero(phypts, npts * 3 * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(phypts, npts * 3);CHKERRQ(ierr);
   }
   if (dphidx) {
-    ierr = PetscMemzero(dphidx, npts * nverts * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(dphidy, npts * nverts * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(dphidz, npts * nverts * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(dphidx, npts * nverts);CHKERRQ(ierr);
+    ierr = PetscArrayzero(dphidy, npts * nverts);CHKERRQ(ierr);
+    ierr = PetscArrayzero(dphidz, npts * nverts);CHKERRQ(ierr);
   }
 
   if (nverts == 8) { /* Linear Hexahedra */
@@ -512,8 +512,8 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
                                           ( 1.0 - r ) * (       s )
                                      };
 
-      ierr = PetscMemzero(jacobian, 9 * sizeof(PetscReal));CHKERRQ(ierr);
-      ierr = PetscMemzero(ijacobian, 9 * sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscArrayzero(jacobian, 9);CHKERRQ(ierr);
+      ierr = PetscArrayzero(ijacobian, 9);CHKERRQ(ierr);
       for (i = 0; i < nverts; ++i) {
         const PetscReal* vertex = coords + i * 3;
         jacobian[0] += dNi_dxi[i]   * vertex[0];
@@ -550,8 +550,8 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
   }
   else if (nverts == 4) { /* Linear Tetrahedra */
 
-    ierr = PetscMemzero(jacobian, 9 * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(ijacobian, 9 * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(jacobian, 9);CHKERRQ(ierr);
+    ierr = PetscArrayzero(ijacobian, 9);CHKERRQ(ierr);
 
     const PetscReal x0 = coords[/*0 * 3 +*/ 0], y0 = coords[/*0 * 3 +*/ 1], z0 = coords[/*0 * 3 +*/ 2];
 
@@ -716,7 +716,7 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
   ierr = PetscQuadratureGetData(quadrature, &idim, NULL, &npoints, &quadpts, &quadwts);CHKERRQ(ierr);
   if (idim != dim) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Dimension mismatch: provided (%D) vs quadrature (%D)\n",idim,dim);
   if (jacobian_quadrature_weight_product) {
-    ierr = PetscMemcpy(jacobian_quadrature_weight_product, quadwts, npoints * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(jacobian_quadrature_weight_product, quadwts, npoints);CHKERRQ(ierr);
   }
 
   switch (dim) {
@@ -823,7 +823,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const Pets
                                     0.1381966011250105, 0.1381966011250105, 0.5854101966249685,
                                     0.1381966011250105, 0.5854101966249685, 0.1381966011250105
                                   };
-        ierr = PetscMemcpy(x, x_4, 12 * sizeof(PetscReal));CHKERRQ(ierr);
+        ierr = PetscArraycpy(x, x_4, 12);CHKERRQ(ierr);
 
         w[0] = w[1] = w[2] = w[3] = 1.0 / 24.0;
         order = 4;
@@ -840,7 +840,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const Pets
                                      0.0000000000000000, 0.5000000000000000, 0.0000000000000000,
                                      0.0000000000000000, 0.0000000000000000, 0.5000000000000000
                                    };
-        ierr = PetscMemcpy(x, x_10, 30 * sizeof(PetscReal));CHKERRQ(ierr);
+        ierr = PetscArraycpy(x, x_10, 30);CHKERRQ(ierr);
 
         w[0] = w[1] = w[2] = w[3] = 0.2177650698804054;
         w[4] = w[5] = w[6] = w[7] = w[8] = w[9] = 0.0214899534130631;
@@ -876,12 +876,12 @@ PetscErrorCode ComputeJacobian_Internal ( const PetscInt dim, const PetscInt nve
   PetscValidPointer(coordinates, 3);
   PetscValidPointer(quad, 4);
   PetscValidPointer(jacobian, 5);
-  ierr = PetscMemzero(jacobian, dim * dim * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(jacobian, dim * dim);CHKERRQ(ierr);
   if (ijacobian) {
-    ierr = PetscMemzero(ijacobian, dim * dim * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(ijacobian, dim * dim);CHKERRQ(ierr);
   }
   if (phypts) {
-    ierr = PetscMemzero(phypts, /*npts=1 * */ 3 * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(phypts, /*npts=1 * */ 3);CHKERRQ(ierr);
   }
 
   if (dim == 1) {
@@ -1086,9 +1086,9 @@ PetscErrorCode DMMoabPToRMapping( const PetscInt dim, const PetscInt nverts, con
   PetscValidPointer(xphy, 4);
   PetscValidPointer(natparam, 5);
 
-  ierr = PetscMemzero(jacobian, dim * dim * sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemzero(ijacobian, dim * dim * sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemzero(phibasis, nverts * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(jacobian, dim * dim);CHKERRQ(ierr);
+  ierr = PetscArrayzero(ijacobian, dim * dim);CHKERRQ(ierr);
+  ierr = PetscArrayzero(phibasis, nverts);CHKERRQ(ierr);
 
   /* zero initial guess */
   natparam[0] = natparam[1] = natparam[2] = 0.0;
@@ -1156,7 +1156,7 @@ PetscErrorCode DMMoabPToRMapping( const PetscInt dim, const PetscInt nverts, con
 #endif
   }
   if (phi) {
-    ierr = PetscMemcpy(phi, phibasis, nverts * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(phi, phibasis, nverts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -219,7 +219,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
 
   ierr       = PetscMalloc1(2*dof*dof+1,&v);CHKERRQ(ierr);
   v_neighbor = v + dof*dof;
-  ierr       = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr       = PetscArrayzero(v,2*dof*dof+1);CHKERRQ(ierr);
   k3         = 0;
   for (k1=0; k1<dof; k1++) {
     for (k2=0; k2<dof; k2++) {

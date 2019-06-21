@@ -438,23 +438,23 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   t->order = order;
   t->s = s;
   ierr = PetscMalloc3(s*s,&t->A,s,&t->b,s,&t->c);CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
-  if (b)  { ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr); }
+  ierr = PetscArraycpy(t->A,A,s*s);CHKERRQ(ierr);
+  if (b)  { ierr = PetscArraycpy(t->b,b,s);CHKERRQ(ierr); }
   else for (i=0; i<s; i++) t->b[i] = A[(s-1)*s+i];
-  if (c)  { ierr = PetscMemcpy(t->c,c,s*sizeof(c[0]));CHKERRQ(ierr); }
+  if (c)  { ierr = PetscArraycpy(t->c,c,s);CHKERRQ(ierr); }
   else for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
   t->FSAL = PETSC_TRUE;
   for (i=0; i<s; i++) if (t->A[(s-1)*s+i] != t->b[i]) t->FSAL = PETSC_FALSE;
 
   if (bembed) {
     ierr = PetscMalloc1(s,&t->bembed);CHKERRQ(ierr);
-    ierr = PetscMemcpy(t->bembed,bembed,s*sizeof(bembed[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->bembed,bembed,s);CHKERRQ(ierr);
   }
 
   if (!binterp) { p = 1; binterp = t->b; }
   t->p = p;
   ierr = PetscMalloc1(s*p,&t->binterp);CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->binterp,binterp,s*p*sizeof(binterp[0]));CHKERRQ(ierr);
+  ierr = PetscArraycpy(t->binterp,binterp,s*p);CHKERRQ(ierr);
 
   link->next = RKTableauList;
   RKTableauList = link;
@@ -1096,31 +1096,6 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm,VecScatter gscat,VecSca
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-/*
-static PetscErrorCode RKSetAdjCoe(RKTableau tab)
-{
-  PetscReal *A,*b;
-  PetscInt        s,i,j;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  s    = tab->s;
-  ierr = PetscMalloc2(s*s,&A,s,&b);CHKERRQ(ierr);
-
-  for (i=0; i<s; i++)
-    for (j=0; j<s; j++) {
-      A[i*s+j] = (tab->b[s-1-i]==0) ? 0: -tab->A[s-1-i+(s-1-j)*s] * tab->b[s-1-j] / tab->b[s-1-i];
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Coefficients: A[%D][%D]=%.6f\n",i,j,A[i*s+j]);CHKERRQ(ierr);
-    }
-
-  for (i=0; i<s; i++) b[i] = (tab->b[s-1-i]==0)? 0: -tab->b[s-1-i];
-
-  ierr  = PetscMemcpy(tab->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(tab->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
-  ierr  = PetscFree2(A,b);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-*/
 
 static PetscErrorCode TSRKTableauSetUp(TS ts)
 {

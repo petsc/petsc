@@ -448,7 +448,7 @@ PetscErrorCode StopWorkers(AppCtx *user)
   while(checkedin < user->size-1) {
     ierr = MPI_Recv(&f,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
     checkedin++;
-    ierr = PetscMemzero(x,NPARAMETERS*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(x,NPARAMETERS);CHKERRQ(ierr);
     ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,DIE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
