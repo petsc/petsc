@@ -1,7 +1,7 @@
 # -*- mode: makefile -*-
 #
 # The following variables specify PETSc related info, and can be picked up directly
-# by external packages (like TAO) or PETSc applications that do not use PETSc targets.
+# by external packages or PETSc applications that do not use PETSc targets.
 #
 # PETSC_LIB_DIR          - (defined from $PETSC_DIR) determines where the PETSc libraries are built.
 # PETSC_CC_INCLUDES          - locations of include files
@@ -16,7 +16,7 @@ PETSC_FCPPFLAGS	    = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS
 PETSC_C_SH_LIB_PATH = ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 PETSC_F_SH_LIB_PATH = ${FC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 #
-# The following variables are used by PETSc build targets. External Packages (like TAO) can
+# The following variables are used by PETSc build targets. External Packages can
 # redefine them appropriately.
 #
 # INSTALL_LIB_DIR   - the location where the libraries are built.
@@ -97,8 +97,6 @@ PETSC_TS_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TS_LIB_BA
 PETSC_TAO_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TAO_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_LIB                = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC}      ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_CONTRIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_CONTRIB_BASIC}
-
-PETSC_MIXED_LIB           = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR}  -lpetscsnes -lpetscvec -lpetscsys -lpetscksp_single -lpetscmat_single -lpetscvec_single  -lpetscsys_single  ${PETSC_EXTERNAL_LIB_BASIC}
 
 #
 #  Escape codes to change the text color on xterms and terminals
