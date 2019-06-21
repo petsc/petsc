@@ -203,7 +203,7 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
 {
   PetscErrorCode   ierr;
   PetscInt         dim,m,n,p,nc;
-  DMBoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
   MPI_Comm         comm;
   PetscMPIInt      size;
   PetscBool        isBAIJ;
@@ -248,9 +248,9 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
 
   /* Tell the DMDA it has 1 degree of freedom per grid point so that the coloring for BAIJ
      matrices is for the blocks, not the individual matrix elements  */
-  ierr = PetscStrcmp(da->mattype,MATBAIJ,&isBAIJ);CHKERRQ(ierr);
-  if (!isBAIJ) {ierr = PetscStrcmp(da->mattype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
-  if (!isBAIJ) {ierr = PetscStrcmp(da->mattype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  ierr = PetscStrbeginswith(da->mattype,MATBAIJ,&isBAIJ);CHKERRQ(ierr);
+  if (!isBAIJ) {ierr = PetscStrbeginswith(da->mattype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  if (!isBAIJ) {ierr = PetscStrbeginswith(da->mattype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
   if (isBAIJ) {
     dd->w  = 1;
     dd->xs = dd->xs/nc;

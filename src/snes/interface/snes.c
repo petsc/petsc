@@ -2458,7 +2458,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   ierr = VecDestroy(&f);CHKERRQ(ierr);
 
   while (jacobian) {
-    ierr = PetscObjectTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
     if (flg) {
       A    = jacobian;
       ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
@@ -2681,7 +2681,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
         Bexp = Bexp_mine;
       } else {
         /* See if the preconditioning matrix can be viewed and added directly */
-        ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+        ierr = PetscObjectBaseTypeCompareAny((PetscObject)B,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
         if (flg) Bexp = B;
         else {
           /* If the "preconditioning" matrix is itself MATSHELL or some other type without direct support */

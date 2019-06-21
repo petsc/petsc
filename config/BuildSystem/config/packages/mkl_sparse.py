@@ -18,3 +18,6 @@ class Configure(config.package.Package):
     self.deps       = [self.blasLapack]
     return
 
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    self.usesopenmp = self.blasLapack.usesopenmp

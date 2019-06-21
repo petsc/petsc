@@ -122,6 +122,6 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package] and self.defaultIndexSize == 64 and self.types.sizes['known-sizeof-void-p'] == 4:
+    if self.framework.argDB['with-'+self.package] and self.defaultIndexSize == 64 and self.types.sizes['void-p'] == 4:
       raise RuntimeError('SuiteSparse does not support 64bit indices in 32bit (pointer) mode.')
     return

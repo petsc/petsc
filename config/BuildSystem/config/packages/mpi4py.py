@@ -29,7 +29,7 @@ class Configure(config.package.Package):
     self.logResetRemoveDirectory()
     archflags = ""
     if self.setCompilers.isDarwin(self.log):
-      if self.types.sizes['known-sizeof-void-p'] == 4:
+      if self.types.sizes['void-p'] == 4:
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:
         archflags = "ARCHFLAGS=\'-arch x86_64\' "

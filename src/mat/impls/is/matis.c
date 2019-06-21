@@ -96,8 +96,8 @@ static PetscErrorCode MatGetNonzeroColumnsLocal_Private(Mat PT,IS *cis)
   PetscValidPointer(cis,2);
   ierr = PetscObjectGetComm((PetscObject)PT,&comm);CHKERRQ(ierr);
   bs   = 1;
-  ierr = PetscObjectTypeCompare((PetscObject)PT,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)PT,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)PT,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)PT,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)PT,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)PT,MATSEQBAIJ,&isseqbaij);CHKERRQ(ierr);
   if (isseqaij || isseqbaij) {
@@ -411,8 +411,8 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
     PetscFunctionReturn(0);
   }
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ ,&ismpiaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ ,&ismpiaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   switch (mode) {
   case MAT_IS_DISASSEMBLE_L2G_ND:
@@ -681,8 +681,8 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat A,MatType type,MatReuse reuse
     PetscFunctionReturn(0);
   }
   /* rectangular case, just compress out the column space */
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ ,&ismpiaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ ,&ismpiaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
   if (ismpiaij) {
     bs   = 1;
     ierr = MatMPIAIJGetSeqAIJ(A,&Ad,&Ao,&garray);CHKERRQ(ierr);
@@ -1726,8 +1726,8 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   ierr = MatGetSize(A,&rows,&cols);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isdense);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetIndices(A->rmap->mapping,&global_indices_r);CHKERRQ(ierr);
   if (A->rmap->mapping != A->cmap->mapping) {
     ierr = ISLocalToGlobalMappingGetIndices(A->cmap->mapping,&global_indices_c);CHKERRQ(ierr);
@@ -1971,10 +1971,10 @@ general_assembly:
   ierr = ISLocalToGlobalMappingGetBlockSize(mat->cmap->mapping,&cbs);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&lrows,&lcols);CHKERRQ(ierr);
   ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQBAIJ,&isseqbaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQBAIJ,&isseqbaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
   if (!isseqdense && !isseqaij && !isseqbaij && !isseqsbaij) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)(matis->A))->type_name);
 #if defined (PETSC_USE_DEBUG)
   lb[0] = isseqdense;

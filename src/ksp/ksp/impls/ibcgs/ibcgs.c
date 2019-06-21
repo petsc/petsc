@@ -40,21 +40,10 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 #define zn_1 zn
 static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,N;
-  PetscReal      rnorm,rnormin = 0.0;
-#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
-  /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem
-     on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithematic
-     rather than just 64 bit. Thus we copy our double precision values into long doubles (hoping this keeps the 16 extra bits)
-     and tell MPI to do its ALlreduces with MPI_LONG_DOUBLE.
-
-     Note for developers that does not effect the code. Intel's long double is implemented by storing the 80 bits of extended double
-     precision into a 16 byte space (the rest of the space is ignored)  */
-  long double insums[7],outsums[7];
-#else
-  PetscScalar insums[7],outsums[7];
-#endif
+  PetscErrorCode                    ierr;
+  PetscInt                          i,N;
+  PetscReal                         rnorm,rnormin = 0.0;
+  PetscScalar                       insums[7],outsums[7];
   PetscScalar                       sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin,tmp1,tmp2;
   PetscScalar                       taun_1, taun, rhon, alphan_1, alphan, omegan_1, omegan;
   const PetscScalar *PETSC_RESTRICT r0, *PETSC_RESTRICT f0, *PETSC_RESTRICT qn, *PETSC_RESTRICT b, *PETSC_RESTRICT un;
@@ -68,13 +57,6 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   PetscFunctionBegin;
   if (!ksp->vec_rhs->petscnative) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
-
- #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
-  /* since 80 bit long doubls do not fill the upper bits, we fill them initially so that
-     valgrind won't detect MPI_Allreduce() with uninitialized data */
-  ierr = PetscMemzero(insums,sizeof(insums));CHKERRQ(ierr);
-  ierr = PetscMemzero(insums,sizeof(insums));CHKERRQ(ierr);
-#endif
 
   ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
@@ -206,19 +188,11 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     insums[6] = rnormin;
 
     ierr = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
-    if (ksp->lagnorm && ksp->its > 1) {
-      ierr = MPIU_Allreduce(insums,outsums,7,MPI_LONG_DOUBLE,MPI_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-    } else {
-      ierr = MPIU_Allreduce(insums,outsums,6,MPI_LONG_DOUBLE,MPI_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-    }
-#else
     if (ksp->lagnorm && ksp->its > 1) {
       ierr = MPIU_Allreduce(insums,outsums,7,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     } else {
       ierr = MPIU_Allreduce(insums,outsums,6,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     }
-#endif
     ierr   = PetscLogEventEnd(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
     phin   = outsums[0];
     pin    = outsums[1];

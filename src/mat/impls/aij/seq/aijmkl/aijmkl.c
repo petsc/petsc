@@ -1,3 +1,4 @@
+
 /*
   Defines basic operations for the MATSEQAIJMKL matrix class.
   This class is derived from the MATSEQAIJ class and retains the
@@ -8,17 +9,15 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/aijmkl/aijmkl.h>
-
-/* MKL include files. */
-#include <mkl_spblas.h>  /* Sparse BLAS */
+#include <mkl_spblas.h>
 
 typedef struct {
-  PetscBool no_SpMV2;  /* If PETSC_TRUE, then don't use the MKL SpMV2 inspector-executor routines. */
-  PetscBool eager_inspection; /* If PETSC_TRUE, then call mkl_sparse_optimize() in MatDuplicate()/MatAssemblyEnd(). */
-  PetscBool sparse_optimized; /* If PETSC_TRUE, then mkl_sparse_optimize() has been called. */
-  PetscObjectState state;
+  PetscBool           no_SpMV2;  /* If PETSC_TRUE, then don't use the MKL SpMV2 inspector-executor routines. */
+  PetscBool           eager_inspection; /* If PETSC_TRUE, then call mkl_sparse_optimize() in MatDuplicate()/MatAssemblyEnd(). */
+  PetscBool           sparse_optimized; /* If PETSC_TRUE, then mkl_sparse_optimize() has been called. */
+  PetscObjectState    state;
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-  sparse_matrix_t csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
+  sparse_matrix_t     csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
   struct matrix_descr descr;
 #endif
 } Mat_SeqAIJMKL;

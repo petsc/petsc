@@ -390,7 +390,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   }
 
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPISELL,&isSELL);CHKERRQ(ierr);
   if (isBAIJ) {
     Mat_MPIBAIJ *baij=(Mat_MPIBAIJ*)mat->data;
@@ -631,7 +631,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   /* set default brows and bcols for speedup inserting the dense matrix into sparse Jacobian;
    bcols is chosen s.t. dy-array takes 50% of memory space as mat */
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPISELL,&isSELL);CHKERRQ(ierr);
   if (isBAIJ || m == 0) {
     c->brows = m;

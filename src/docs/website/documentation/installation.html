@@ -190,9 +190,7 @@
           </li>
 
           <li>
-            Build Complex version of PETSc [using c++ compiler]
-            (add the option <code>--with-fortran-kernels=generic</code> to get
-            possibly faster complex number performance on some systems):
+            Build Complex version of PETSc [using c++ compiler]:
             <ul>
               <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-fblaslapack --download-mpich --with-scalar-type=complex</li>
             </ul>
@@ -264,7 +262,7 @@
           <span class="def">PETSC_ARCH:</span>
           this variable gives a name to a configuration/build.
           Configure uses this value to stores the generated config
-          makefiles in ${PETSC_DIR}/${PETSC_ARCH}/conf. And make
+          makefiles in ${PETSC_DIR}/${PETSC_ARCH}. Make
           uses this value to determine this location of these
           makefiles [which intern help in locating the correct
           include and library files].
@@ -303,9 +301,8 @@
             <ul>
               <li>--with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90</li>
               <li>--with-cc=gcc --with-cxx=g++ --with-fc=gfortran</li>
-              <li>--with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-clanguage=cxx</li>
+              <li>--with-cc=gcc --with-cxx=g++ --with-fc=gfortran</li>
             </ul>
-            Note that --with-clanguage=cxx means that the PETSc source code is compiled with the C++ compiler. This is not normally needed and we don't recommend it. One can use 'c' build of PETSc from both C and C++. One can also have a complex build with C99.
           </li>
 
           <li>
@@ -327,16 +324,16 @@
             automatically look for available MPI or regular
             compilers in the user's PATH
             <ul>
-              <li>mpicc/mpiCC/mpif90 or mpif77</li>
-              <li>gcc/g++/gfortran or g77</li>
-              <li>cc/CC/f77 etc..</li>
+              <li>mpicc/mpiCC/mpif90</li>
+              <li>gcc/g++/gfortran</li>
+              <li>cc/CC etc..</li>
             </ul>
           </li>
 
           <li>
             It's best to use MPI compilers
             as this will avoid the situation where MPI is compiled
-            with one set of compilers [like gcc/g77] and user
+            with one set of compilers [like gcc/gfortran] and user
             specified incompatible compilers to PETSc [perhaps
             icc/ifort]. This can be done by either specifying
             --with-cc=mpicc or --with-mpi-dir [and not
@@ -349,8 +346,9 @@
 
           <li>
             Configure defaults to building PETSc in debug mode.
-            One can switch to using optimzed mode with the toggle
-            option --with-debugging [defaults to debug enabled].
+            One can switch to using optimzed mode with the configure
+            option --with-debugging=0 (We suggest using a different PETSC_ARCH for debug and optimized builds, for example arch-debug and arch-opt, this
+            way you can switch between debugging your code and running for performance by simply changing the value of PETSC_ARCH.
             Additionally one can specify more suitable optimization
             flags with the options COPTFLAGS, FOPTFLAGS,
             CXXOPTFLAGS. For ex: when using gnu compilers with corresponding
@@ -381,7 +379,7 @@
 
         <p>
           PETSc provides interfaces to various <a href="../miscellaneous/external.html">external packages</a>.
-          Blas/Lapack is a required package, MPI is not required if running sequentially. One can optionally use
+          BLAS/LAPACK is a required package, MPI is not required if running sequentially. One can optionally use
           <a href="linearsolvertable.html">external solvers</a> like Hypre, MUMPS, etc. from within PETSc applications.
         </p>
 
@@ -402,7 +400,7 @@
         <ul>
           <li>
             <span class="def">--download-PACKAGENAME</span>: Download specified
-            package and install it. Then configure PETSc to use this package.
+            package and install it and configure PETSc to use this package.
             <ul>
               <li>--download-fblaslapack --download-mpich</li>
               <li>--download-scalapack --download-mumps</li>
@@ -413,7 +411,7 @@
             <span class="def">--download-PACKAGENAME=/PATH/TO/package.tar.gz</span>:
             If ./configure cannot automatically download the package
             [due to network/firewall issues], one can download the
-            package by alternaive means [perhaps wget or scp via some
+            package by alternative means [perhaps wget, curl, or scp via some
             other machine]. Once the tarfile is downloaded, the path
             to this file can be specified to configure with this
             option. Configure will proceed to install this package and
@@ -435,7 +433,8 @@
             <ul>
               <li>--with-mpi-dir=/home/petsc/software/mpich2-1.0.4p1</li>
             </ul>
-            Note that except for MPI and BLAS/LAPACK we hightly recommend you have PETSc download and install the external packages rather than you installing them separately first.
+            Note that we hightly recommend you have PETSc download and install the external packages rather than you installing them separately first. The reason is
+            that this insures the packages are installed with the same compilers and compiler options etc as PETSc so that they can work together.
           </li>
 
           <li>
@@ -470,7 +469,7 @@
           <li>
             Run <code>./configure --help</code> to get the list of external
             packages and corresponding additional options [for example
-            <code>--with-mpiexec</code> for mpich]
+            <code>--with-mpiexec</code> for MPICH]
           </li>
 
           <li>
@@ -521,7 +520,7 @@
             If you want to download a compatible external package manually, then
             the URL for this package is listed in configure source for this
             package. For example, check
-            <code>config/config.packages/SuperLU.py</code> for the url for
+            <code>config/BuildSystem/config/packages/SuperLU.py</code> for the url for
             download this package.
           </li>
         </ul>
@@ -531,7 +530,7 @@
         <ul>
           <li>
             <span class="def">--with-packages-build-dir=PATH</span>: By default,
-            external packages will be unpacked and the build process is run in <code>${PETSC_DIR}/externalpackages</code>.
+            external packages will be unpacked and the build process is run in <code>${PETSC_DIR}/${PETSC_ARCH}/externalpackages</code>.
             However one can choose a different location where these packages are unpacked and the build process is run.
           </li>
         </ul>
@@ -603,7 +602,7 @@
         <p>This software provides the parallel functionality for PETSc.</p>
 
         <ul>
-          <li>Configure will automatically look for MPI compilers mpicc/mpif77 etc and use them if found in your PATH.</li>
+          <li>Configure will automatically look for MPI compilers mpicc/mpif90 etc and use them if found in your PATH.</li>
           <li>
             One can use the following options to let configure download/install MPI automatically
             <ul>
@@ -627,7 +626,7 @@
             <ul style="color: black">
               <li>
                 Vendor provided MPI might already be installed. IBM, SGI, Cray etc provide their own:<br>
-                <code>./config/confiure.py --with-cc=mpcc --with-fc=mpf77</code>
+                <code>./config/confiure.py --with-cc=mpcc --with-fc=mpf90</code>
               </li>
 
               <li>
@@ -659,7 +658,7 @@
 
         <p>
           OpenMPI defaults to building shared libraries for MPI. However, the
-          binaries generated by MPI wrappers mpicc/mpif77 etc require
+          binaries generated by MPI wrappers mpicc/mpif90 etc require
           LD_LIBRARY_PATH to be set to the location of these libraries.
         </p>
 
@@ -1004,30 +1003,49 @@
       <hr>
 
       <div id="cross">
-        <h3><a name="SP">Installing on machine requiring cross compiler or a job scheduler, such as IBM SP or IBM Blue Gene:</a></h3>
+        <h3><a name="SP">Installing packages that utilize OpenMP:</a></h3>
 
         <p>
-          If one has to use a cross compiler - or go through the job scheduler to
-          use MPI on a given machine - use the configure option
-          <code>--with-batch</code> as follows:
+          Some external packages include MKL BLAS/LAPACK, OpenBLAS, SuperLU_DIST, and Hypre support using OpenMP for
+          thread level parallelism in addition to the MPI parallelism in PETSc. To utilize this insure your compilers
+          support OpenMP and use the additional configure option  <code>--with-openmp</code>
+        </p>
+
+        <p>
+          To control the number of OpenMP threads each MPI process utilizes you can set the environmental variable <code>OMP_NUM_THREADS n</code> or
+            the PETSc command line option <code>-omp_num_threads n</code>.
+        </p>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> <!-- #cross -->
+
+      <hr>
+
+      <div id="cross">
+        <h3><a name="SP">Installing on machine requiring cross compiler or a job scheduler (Batch systems):</a></h3>
+
+        <p>
+          On systems where you need to use a job scheduler or batch submission to run jobs
+          use the configure option  <code>--with-batch</code>. On such systems the <code>make test</code> option will not work
         </p>
 
         <ul>
           <li>
-            run configure with the additional option <code>--with-batch</code> on
-            the <b>frontend node</b> (compiler server) [perhaps with the
-            additional option <code>--known-mpi-shared-libraries=0</code>]
+            You must first insure you have loaded appropriate modules for the compilers etc that you
+            wish to use. Often the compilers are provided automatically for you and you do not need to provide <code>--with-cc=XXX</code> etc
+            Consult with the documentation and local support for such systems for information on these topics.
           </li>
           <li>
-            the above configure run will create a binary <code>conftest</code>.
-            Run this binary <code>conftest</code> on <b>one compute node</b>
-            using the job scheduler.
+            On such systems you generally should not provide <code>--with-blaslapack-dir</code> or <code>--download-fblaslapack</code> since the
+            systems provide those automatically (sometimes appropriate modules must be loaded first)
           </li>
           <li>
-            The above run of conftest will create a new python script
-            <code>reconfigure</code>.  Run <code>python reconfigure</code> again
-            on the <b>frontend node</b> (compiler server) to complete the
-            configuration process
+            Some packages <code>--download-package</code> options do not work on these systems, for example HDF5. Thus you must use
+            modules to load those packages and <code>--with-package</code> to configure with the package.
+          </li>
+          <li>
+            Since building external packages on these systems is often troublesome and slow we recommend only installing PETSc with those
+            configuration packages that you need for your work, not extras.
           </li>
         </ul>
 
@@ -1069,7 +1087,7 @@
             installed.
           </li>
 
-          <li>check <code>config/examples/arch-cuda-double.py</code> for example usage.</li>
+          <li>In most cases you need only pass the configure option --with-cuda, check <code>config/examples/arch-cuda-double.py</code> for example usage.</li>
         </ul>
 
         <p>
@@ -1086,20 +1104,21 @@
 
         <ul>
           <li>
-            Requires <a href="http://viennacl.sourceforge.net/">ViennaCL</a> and the OpenCL shared library, which is shipped in the vendor graphics driver.
-            Make sure the OpenCL headers are available on your system by e.g. downloading them from the <a href="https://www.khronos.org/opencl/">Khronos Group</a> directly.
+            Requires the OpenCL shared library, which is shipped in the vendor graphics driver and the OpenCL headers, if need be you downloading them
+            from the <a href="https://www.khronos.org/opencl/">Khronos Group</a> directly.
             Package managers on Linux provide these headers through a package named 'opencl-headers' or similar.
+            On Apple systems the OpenCL drivers and headers are always available and do not need to be downloaded.
           </li>
 
           <li>
             Always make sure you have the latest GPU driver installed. There are several known issues with older driver versions.
           </li>
 
-          <li>check <code>config/examples/arch-viennacl.py</code> for example usage.</li>
+          <li>Run configure with --download-viennacl or heck <code>config/examples/arch-viennacl.py</code> for example usage.</li>
         </ul>
 
         <p>
-          OpenCL/ViennaCL builds of PETSc currently work on Apple OSX, Linux, and Microsoft Windows. OpenCL is less a burden on the build system than CUDA, so installation is often easier and works with any host compiler.
+          OpenCL/ViennaCL builds of PETSc currently work on Apple OSX, Linux, and Microsoft Windows.
         </p>
 
         <a href="#" target="_top">Return to Installation Instructions</a>

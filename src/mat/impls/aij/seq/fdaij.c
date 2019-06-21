@@ -16,7 +16,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   PetscFunctionBegin;
   /* set default brows and bcols for speedup inserting the dense matrix into sparse Jacobian */
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQSELL,&isSELL);CHKERRQ(ierr);
   if (isBAIJ) {
     c->brows = m;
@@ -185,7 +185,7 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr = ISColoringGetIS(iscoloring,PETSC_OWN_POINTER,PETSC_IGNORE,&c->isa);CHKERRQ(ierr);
 
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQSELL,&isSELL);CHKERRQ(ierr);
   if (isBAIJ) {
     Mat_SeqBAIJ *spA = (Mat_SeqBAIJ*)mat->data;

@@ -15,7 +15,6 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Types', '-known-endian=<big or little>', nargs.Arg(None, None, 'Are bytes stored in big or little endian?'))
     help.addArgument('Visibility', '-with-visibility=<bool>', nargs.ArgBool(None, 1, 'Use compiler visibility flags to limit symbol visibility'))
     return
 
@@ -207,36 +206,32 @@ void (*signal())();
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to be the size'''
     self.log.write('Checking for size of type: ' + typeName + '\n')
     typename = typeName.replace(' ', '-').replace('*', 'p')
-    argname = 'known-sizeof-' + typename
-    if argname in self.argDB:
-      size = int(self.argDB[argname])
-    else:
-      includes = '''
+    includes = '''
 #include <sys/types.h>
 #if STDC_HEADERS
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
 #endif\n'''
-      mpiFix = '''
+    mpiFix = '''
 #define MPICH_IGNORE_CXX_SEEK
 #define MPICH_SKIP_MPICXX 1
 #define OMPI_SKIP_MPICXX 1\n'''
-      if otherInclude:
-        if otherInclude == 'mpi.h':
-          includes += mpiFix
-        includes += '#include <' + otherInclude + '>\n'
-      size = None
-      with self.Language(lang):
-        for s in typeSizes:
-          body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(typeName, s)
-          if self.checkCompile(includes, body, codeBegin=codeBegin, codeEnd='\n'):
-            size = s
-            break
+    if otherInclude:
+      if otherInclude == 'mpi.h':
+        includes += mpiFix
+      includes += '#include <' + otherInclude + '>\n'
+    size = None
+    with self.Language(lang):
+      for s in typeSizes:
+        body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(typeName, s)
+        if self.checkCompile(includes, body, codeBegin=codeBegin, codeEnd='\n'):
+          size = s
+          break
     if size is None:
-      raise RuntimeError('Size of type {0} not found in sizes {1}; specify --known-sizeof-{2}'.format(typeName, typeSizes, typename))
+      raise RuntimeError('Unable to determine size of {0} not found'.format(typeName))
     if save:
-      self.sizes[argname] = size
+      self.sizes[typename] = size
       self.addDefine('SIZEOF_'+typename.replace('-', '_').upper(), str(size))
     return size
 

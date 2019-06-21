@@ -257,9 +257,9 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,P
   if (symmetric) {
     ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,PETSC_TRUE,0,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
   } else {
-    ierr = PetscCalloc1(n+1,&collengths);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n,&collengths);CHKERRQ(ierr);
     ierr = PetscMalloc1(n+1,&cia);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nz+1,&cja);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nz,&cja);CHKERRQ(ierr);
     jj   = a->j;
     for (i=0; i<nz; i++) {
       collengths[jj[i]]++;
@@ -314,10 +314,10 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool symme
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
 
-  ierr = PetscCalloc1(n+1,&collengths);CHKERRQ(ierr);
+  ierr = PetscCalloc1(n,&collengths);CHKERRQ(ierr);
   ierr = PetscMalloc1(n+1,&cia);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nz+1,&cja);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nz+1,&cspidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz,&cja);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz,&cspidx);CHKERRQ(ierr);
   jj   = a->j;
   for (i=0; i<nz; i++) {
     collengths[jj[i]]++;

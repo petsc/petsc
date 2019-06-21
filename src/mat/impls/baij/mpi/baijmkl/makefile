@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_HAVE_MKL_SPARSE'
+#requirespackage 'PETSC_HAVE_MKL_SPARSE_OPTIMIZE'
 
 ALL: lib
 

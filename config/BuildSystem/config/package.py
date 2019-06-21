@@ -91,7 +91,7 @@ class Package(config.base.Configure):
     self.hastestsdatafiles      = 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
     self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
     self.installedpetsc         = 0
-    self.installwithbatch       = 0  # install the package even though configure is running in the initial batch mode; f2blaslapack and fblaslapack for example
+    self.installwithbatch       = 1  # install the package even though configure in the batch mode; f2blaslapack and fblaslapack for example
     self.builtafterpetsc        = 0  # package is compiled/installed after PETSc is compiled
 
     self.downloaded             = 0  # 1 indicates that this package is being downloaded during this run (internal use only)
@@ -104,13 +104,16 @@ class Package(config.base.Configure):
     if self.found:
       output = self.name+':\n'
       if self.foundversion:
-        output += '  Version:  '+self.foundversion+'\n'
+        if hasattr(self,'versiontitle'):
+          output += '  '+self.versiontitle+':  '+self.foundversion+'\n'
+        else:
+          output += '  Version:  '+self.foundversion+'\n'
       else:
         if self.version: output += '  Version:  '+self.version+'\n'
       if self.include: output += '  Includes: '+self.headers.toStringNoDupes(self.include)+'\n'
       if self.lib:     output += '  Library:  '+self.libraries.toStringNoDupes(self.lib)+'\n'
       if self.executablename: output += ' '+getattr(self,self.executablename)+'\n'
-      if self.usesopenmp == 'yes': output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> or -omp_num_threads <p> to control the number of threads\n'
+      if self.usesopenmp == 'yes': output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> or -omp_num_threads <p> To control the number of threads\n'
       if self.usesopenmp == 'unknown': output += '  Unkown if this uses OpenMP (try export OMP_NUM_THREADS=<1-4> yourprogram -log_view) \n'
     return output
 
@@ -499,8 +502,10 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    if self.framework.batchBodies and not self.installwithbatch:
-      return
+    if not self.installwithbatch and self.argDB['with-batch']: raise RuntimeError('--download-'+self.name+' cannot be used on batch systems. You must either\n\
+    1) load the appropriate module on your system and use --with-'+self.name+' or \n\
+    2) locate its installation on your machine or install it yourself and use --with-'+self.name+'-dir=path\n')
+
     if self.argDB['download-'+self.package]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
@@ -921,9 +926,9 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       if str.find('.') == str.rfind('.'): return str
       return str[0:str.rfind('.')]+'.100000'
 
-    if not self.version and not self.minversion and not self.maxversion: return
-    if not self.versionname: return
+    if not self.version and not self.minversion and not self.maxversion and not self.versionname: return
     if not self.versioninclude:
+      if not self.includes: return
       self.versioninclude = self.includes[0]
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)

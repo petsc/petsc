@@ -104,7 +104,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
   else hessian = tao->hessian_pre;
 
   while (hessian) {
-    ierr = PetscObjectTypeCompareAny((PetscObject)hessian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompareAny((PetscObject)hessian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
     if (flg) {
       A    = hessian;
       ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
