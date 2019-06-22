@@ -49,6 +49,7 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
   char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
+  char           A_name[128]="A",b_name[128]="b",x0_name[128]="x0";  /* name of the matrix, RHS and initial guess */
   KSPType        ksptype;
   PetscErrorCode ierr;
   PetscBool      has;
@@ -69,6 +70,9 @@ int main(int argc,char **args)
   */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-A_name",A_name,128,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-b_name",b_name,128,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-x0_name",x0_name,128,NULL);CHKERRQ(ierr);
   /*
      Decide whether to solve the original system (-solve_normal 0)
      or the normal equation (-solve_normal 1).
@@ -122,7 +126,7 @@ int main(int argc,char **args)
      Do that only if you really insist on the given type.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)A,A_name);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   if (test_custom_layout) {
@@ -133,7 +137,7 @@ int main(int argc,char **args)
     n = rank ? n-1 : n+size-1;
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)A,A_name);CHKERRQ(ierr);
     ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr);
@@ -146,7 +150,7 @@ int main(int argc,char **args)
      Load the RHS vector if it is present in the file, otherwise use a vector of all ones.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)b,"b");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)b,b_name);CHKERRQ(ierr);
   ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecLoadIfExists_Private(b,fd,&has);CHKERRQ(ierr);
@@ -161,7 +165,7 @@ int main(int argc,char **args)
      Load the initial guess vector if it is present in the file, otherwise use a vector of all zeros.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)x,"x0");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,x0_name);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   /* load file_x0 if it is specified, otherwise try to reuse file */
@@ -298,7 +302,7 @@ int main(int argc,char **args)
 
    # Test handling failing VecLoad without abort
    testset:
-     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: double !complex !define(PETSC_USE_64BIT_INDICES)
      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
      test:
         suffix: 3
@@ -360,5 +364,27 @@ int main(int argc,char **args)
       args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
       args: -ksp_converged_reason -ksp_rtol 1e-2 -ksp_max_it 100
       args: -solve_normal 0 -ksp_type cgls
+
+
+   # Load a matrix, RHS and solution from HDF5 (Version 7.3 MAT-File). Test immediate convergence.
+   testset:
+     nsize: {{1 2 4 8}}
+     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+     args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 10
+     args: -solve_normal 0 -ksp_type lsqr
+     args: -test_custom_layout {{0 1}}
+     args: -hdf5 -x0_name x
+     test:
+        suffix: 6_hdf5
+        args: -f ${DATAFILESPATH}/matrices/matlab/small.mat
+     test:
+        suffix: 6_hdf5_rect
+        args: -f ${DATAFILESPATH}/matrices/matlab/small_rect.mat
+     test:
+        suffix: 6_hdf5_dense
+        args: -f ${DATAFILESPATH}/matrices/matlab/small_dense.mat -mat_type dense
+     test:
+        suffix: 6_hdf5_rect_dense
+        args: -f ${DATAFILESPATH}/matrices/matlab/small_rect_dense.mat -mat_type dense
 
 TEST*/

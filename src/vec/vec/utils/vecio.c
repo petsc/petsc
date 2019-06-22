@@ -7,7 +7,7 @@
 
 #include <petscsys.h>
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
-#include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load */
+#include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load_Private */
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/viewerimpl.h>
 #include <petscviewerhdf5.h>
@@ -165,7 +165,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
   ierr = PetscObjectGetName((PetscObject)xin, &vecname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Load(viewer, vecname, xin->map, scalartype, (void**)&x);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Load_Private(viewer, vecname, xin->map, scalartype, (void**)&x);CHKERRQ(ierr);
   ierr = VecSetUp(xin);CHKERRQ(ierr);
   ierr = VecReplaceArray(xin, x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

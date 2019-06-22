@@ -1179,7 +1179,7 @@ $    save example.mat A b -v7.3
    See also examples src/mat/examples/tutorials/ex10.c and src/ksp/ksp/examples/tutorials/ex27.c
 
    Current HDF5 (MAT-File) limitations:
-   This reader currently supports only real MATSEQAIJ and MATMPIAIJ matrices.
+   This reader currently supports only real MATSEQAIJ, MATMPIAIJ, MATSEQDENSE and MATMPIDENSE matrices.
 
    Corresponding MatView() is not yet implemented.
 

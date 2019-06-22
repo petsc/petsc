@@ -1,0 +1,5 @@
+  0 KSP Residual norm < 1.e-11
+Linear solve converged due to CONVERGED_RTOL iterations 0
+KSP type: lsqr
+Number of iterations =   0
+Residual norm 1.28783e-13
