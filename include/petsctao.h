@@ -7,6 +7,7 @@ PetscErrorCode VecFischer(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscReal, Vec);
 PetscErrorCode MatDFischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 
 
 /*E
