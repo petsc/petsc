@@ -372,7 +372,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF sf,PetscInt *
     ierr = PetscLayoutGetRanges(sf->map,&range);CHKERRQ(ierr);
     ierr = PetscMalloc4(size,&sf->ranks,size+1,&sf->roffset,sf->nleaves,&sf->rmine,sf->nleaves,&sf->rremote);CHKERRQ(ierr);
     for (i=0; i<size; i++) sf->ranks[i] = i;
-    ierr = PetscMemcpy(sf->roffset,range,sizeof(PetscInt)*(size+1));CHKERRQ(ierr);
+    ierr = PetscArraycpy(sf->roffset,range,size+1);CHKERRQ(ierr);
     for (i=0; i<sf->nleaves; i++) sf->rmine[i] = i; /*rmine are never NULL even for contiguous leaves */
     for (i=0; i<size; i++) {
       for (j=range[i],k=0; j<range[i+1]; j++,k++) sf->rremote[j] = k;

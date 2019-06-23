@@ -590,8 +590,8 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
      */
     ierr = ISGetLocalSize(ixx,&n);CHKERRQ(ierr); /*ixx, iyy have the same local size */
     ierr = PetscMalloc2(n,&xindices_sorted,n,&yindices_sorted);CHKERRQ(ierr);
-    ierr = PetscMemcpy(xindices_sorted,xindices,sizeof(PetscInt)*n);CHKERRQ(ierr);
-    ierr = PetscMemcpy(yindices_sorted,yindices,sizeof(PetscInt)*n);CHKERRQ(ierr);
+    ierr = PetscArraycpy(xindices_sorted,xindices,n);CHKERRQ(ierr);
+    ierr = PetscArraycpy(yindices_sorted,yindices,n);CHKERRQ(ierr);
     ierr = PetscSortIntWithArray(n,yindices_sorted,xindices_sorted);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(xx,&xstart,NULL);CHKERRQ(ierr);
     if (xcommsize == 1) {for (i=0; i<n; i++) xindices_sorted[i] += xstart;} /* Convert to global indices */

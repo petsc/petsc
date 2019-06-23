@@ -47,7 +47,7 @@
     PetscInt       i,j,k,l,step;                                                                           \
     PetscFunctionBegin;                                                                                    \
     if (!idx) {  /* idx[] is contiguous */                                                                 \
-      ierr = PetscMemcpy(p,u,sizeof(type)*bs*n);CHKERRQ(ierr);                                             \
+      ierr = PetscArraycpy(p,u,bs*n);CHKERRQ(ierr);                                             \
     } else if (!opt || !opt->optimized[r]) { /* idx[] is not optimized*/                                   \
       for (i=0; i<n; i++)                                                                                  \
         for (j=0; j<bs; j+=BS)                                                                             \
@@ -58,7 +58,7 @@
         for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) {                                        \
           l    = opt->copy_length[i]*bs; /* length in types */                                             \
           u2   = u + opt->copy_start[i]*bs;                                                                \
-          ierr = PetscMemcpy(p,u2,l*sizeof(type));CHKERRQ(ierr);                                           \
+          ierr = PetscArraycpy(p,u2,l);CHKERRQ(ierr);                                           \
           p   += l;                                                                                        \
         }                                                                                                  \
       } else { /* idx[] is strided */                                                                      \
@@ -98,9 +98,9 @@
     if (!idx) {  /* idx[] is contiguous */                                                                 \
       FILTER(type *v);                                                                                     \
       FILTER(ierr = PetscMalloc1(bs*n,&v);CHKERRQ(ierr));                                                  \
-      FILTER(ierr = PetscMemcpy(v,u,sizeof(type)*bs*n);CHKERRQ(ierr));                                     \
-             ierr = PetscMemcpy(u,p,sizeof(type)*bs*n);CHKERRQ(ierr);                                      \
-      FILTER(ierr = PetscMemcpy(p,v,sizeof(type)*bs*n);CHKERRQ(ierr));                                     \
+      FILTER(ierr = PetscArraycpy(v,u,bs*n);CHKERRQ(ierr));                                     \
+             ierr = PetscArraycpy(u,p,bs*n);CHKERRQ(ierr);                                      \
+      FILTER(ierr = PetscArraycpy(p,v,bs*n);CHKERRQ(ierr));                                     \
       FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                           \
     } else if (!opt || !opt->optimized[r]) { /* idx[] is not optimized*/                                   \
       for (i=0; i<n; i++) {                                                                                \
@@ -119,9 +119,9 @@
         for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
           l  = opt->copy_length[i]*bs; /* length in types */                                               \
           u2 = u + opt->copy_start[i]*bs;                                                                  \
-          FILTER(ierr = PetscMemcpy(v,u2,l*sizeof(type));CHKERRQ(ierr));                                   \
-                 ierr = PetscMemcpy(u2,p,l*sizeof(type));CHKERRQ(ierr);                                    \
-          FILTER(ierr = PetscMemcpy(p,v,l*sizeof(type));CHKERRQ(ierr));                                    \
+          FILTER(ierr = PetscArraycpy(v,u2,l);CHKERRQ(ierr));                                   \
+                 ierr = PetscArraycpy(u2,p,l);CHKERRQ(ierr);                                    \
+          FILTER(ierr = PetscArraycpy(p,v,l);CHKERRQ(ierr));                                    \
           p += l;                                                                                          \
         }                                                                                                  \
         FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                         \

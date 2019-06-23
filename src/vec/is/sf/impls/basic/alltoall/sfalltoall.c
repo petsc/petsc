@@ -117,7 +117,7 @@ static PetscErrorCode PetscSFCreateEmbeddedSF_Alltoall(PetscSF sf,PetscInt nsele
 
   /* Uniq selected[] and store the result in roots[] */
   ierr = PetscMalloc1(nselected,&tmproots);CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmproots,selected,nselected*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(tmproots,selected,nselected);CHKERRQ(ierr);
   ierr = PetscSortRemoveDupsInt(&nselected,tmproots);CHKERRQ(ierr); /* nselected might be changed */
   if (tmproots[0] < 0 || tmproots[nselected-1] >= sf->nroots) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max root indices %D/%D are not in [0,%D)",tmproots[0],tmproots[nselected-1],sf->nroots);
   nroots = nselected;   /* For Alltoall, we know root indices will not overflow MPI_INT */
