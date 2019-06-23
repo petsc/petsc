@@ -325,11 +325,10 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
   Vec            x=vscat->from_v,y=vscat->to_v,xx,yy;
   IS             ix=vscat->from_is,iy=vscat->to_is,ixx,iyy;
   PetscMPIInt    xcommsize,ycommsize,rank;
-  PetscInt       i,n,N,nroots,nleaves,inedges=0,*leafdata,*rootdata,*ilocal,xstart,ystart,ixsize,iysize,xlen,ylen;
-  const PetscInt *xindices,*yindices,*degree;
+  PetscInt       i,n,N,nroots,nleaves,*ilocal,xstart,ystart,ixsize,iysize,xlen,ylen;
+  const PetscInt *xindices,*yindices;
   PetscSFNode    *iremote;
   PetscLayout    xlayout,ylayout;
-  PetscSF        tmpsf;
   ISTypeID       ixid,iyid;
   PetscInt       bs,bsx,bsy,min,max,m[2],ixfirst,ixstep,iyfirst,iystep;
   PetscBool      can_do_block_opt=PETSC_FALSE;
@@ -518,15 +517,28 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
   /* Now it is ready to build SF with preprocessed (xx, yy) and (ixx, iyy) */
   ierr = ISGetIndices(ixx,&xindices);CHKERRQ(ierr);
   ierr = ISGetIndices(iyy,&yindices);CHKERRQ(ierr);
+  ierr = VecGetLayout(xx,&xlayout);CHKERRQ(ierr);
 
   if (ycommsize > 1) {
     /* PtoP or StoP */
-    ierr = VecGetLayout(xx,&xlayout);CHKERRQ(ierr);
+
+    /* Below is a piece of complex code with a very simple goal: move global index pairs (xindices[i], yindices[i]),
+       to owner process of yindices[i] according to ylayout, i = 0..n.
+
+       I did it through a temp sf, but later I thought the old design was inefficient and also distorted log view.
+       We want to mape one VecScatterCreate() call to one PetscSFCreate() call. The old design mapped to three
+       PetscSFCreate() calls. This code is on critical path of VecScatterSetUp and is used by every VecScatterCreate.
+       So I commented it out and did another optimized implementation. The commented code is left here for reference.
+     */
+#if 0
+    const PetscInt *degree;
+    PetscSF        tmpsf;
+    PetscInt       inedges=0,*leafdata,*rootdata;
+
     ierr = VecGetOwnershipRange(xx,&xstart,NULL);CHKERRQ(ierr);
     ierr = VecGetLayout(yy,&ylayout);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(yy,&ystart,NULL);CHKERRQ(ierr);
 
-    /* Each process has a set of global index pairs (i, j) to scatter xx[i] to yy[j]. We first shift (i, j) to owner process of j through a tmp SF */
     ierr = VecGetLocalSize(yy,&nroots);CHKERRQ(ierr);
     ierr = ISGetLocalSize(iyy,&nleaves);CHKERRQ(ierr);
     ierr = PetscMalloc2(nleaves,&iremote,nleaves*2,&leafdata);CHKERRQ(ierr);
@@ -564,11 +576,123 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
       ierr      = PetscLayoutFindOwnerIndex(xlayout,rootdata[2*i+1],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr); /* convert x's global index to (rank, index) */
     }
     ierr = PetscFree(rootdata);CHKERRQ(ierr);
+#else
+    PetscInt       j,k,n,disp,rlentotal,*sstart,*xindices_sorted,*yindices_sorted;
+    const PetscInt *yrange;
+    PetscMPIInt    nsend,nrecv,nreq,count,yrank,*slens,*rlens,*sendto,*recvfrom,tag1,tag2;
+    PetscInt       *rxindices,*ryindices;
+    MPI_Request    *reqs,*sreqs,*rreqs;
+
+    /* Sorting makes code simpler, faster and also helps getting rid of many O(P) arrays, which hurt scalability at large scale
+       yindices_sorted - sorted yindices
+       xindices_sorted - xindices sorted along with yindces
+     */
+    ierr = ISGetLocalSize(ixx,&n);CHKERRQ(ierr); /*ixx, iyy have the same local size */
+    ierr = PetscMalloc2(n,&xindices_sorted,n,&yindices_sorted);CHKERRQ(ierr);
+    ierr = PetscMemcpy(xindices_sorted,xindices,sizeof(PetscInt)*n);CHKERRQ(ierr);
+    ierr = PetscMemcpy(yindices_sorted,yindices,sizeof(PetscInt)*n);CHKERRQ(ierr);
+    ierr = PetscSortIntWithArray(n,yindices_sorted,xindices_sorted);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(xx,&xstart,NULL);CHKERRQ(ierr);
+    if (xcommsize == 1) {for (i=0; i<n; i++) xindices_sorted[i] += xstart;} /* Convert to global indices */
+
+    /*=============================================================================
+             Calculate info about messages I need to send
+      =============================================================================*/
+    /* nsend    - number of non-empty messages to send
+       sendto   - [nsend] ranks I will send messages to
+       sstart   - [nsend+1] sstart[i] is the start index in xsindices_sorted[] I send to rank sendto[i]
+       slens    - [ycommsize] I want to send slens[i] entries to rank i.
+     */
+    ierr = VecGetLayout(yy,&ylayout);CHKERRQ(ierr);
+    ierr = PetscLayoutGetRanges(ylayout,&yrange);CHKERRQ(ierr);
+    ierr = PetscCalloc1(ycommsize,&slens);CHKERRQ(ierr); /* The only O(P) array in this algorithm */
+
+    i = j = nsend = 0;
+    while (i < n) {
+      if (yindices_sorted[i] >= yrange[j+1]) { /* If i-th index is out of rank j's bound */
+        do {j++;} while (yindices_sorted[i] >= yrange[j+1] && j < ycommsize); /* Increase j until i-th index falls in rank j's bound */
+        if (j == ycommsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D not owned by any process, upper bound %D",yindices_sorted[i],yrange[ycommsize]);
+      }
+      i++;
+      if (!slens[j]++) nsend++;
+    }
+
+    ierr = PetscMalloc2(nsend+1,&sstart,nsend,&sendto);CHKERRQ(ierr);
+
+    sstart[0] = 0;
+    for (i=j=0; i<ycommsize; i++) {
+      if (slens[i]) {
+        sendto[j]   = (PetscMPIInt)i;
+        sstart[j+1] = sstart[j] + slens[i];
+        j++;
+      }
+    }
+
+    /*=============================================================================
+      Calculate the reverse info about messages I will recv
+      =============================================================================*/
+    /* nrecv     - number of messages I will recv
+       recvfrom  - [nrecv] ranks I recv from
+       rlens     - [nrecv] I will recv rlens[i] entries from rank recvfrom[i]
+       rlentotal - sum of rlens[]
+       rxindices - [rlentotal] recv buffer for xindices_sorted
+       ryindices - [rlentotal] recv buffer for yindices_sorted
+     */
+    ierr = PetscGatherNumberOfMessages(ycomm,NULL,slens,&nrecv);CHKERRQ(ierr);
+    ierr = PetscGatherMessageLengths(ycomm,nsend,nrecv,slens,&recvfrom,&rlens);CHKERRQ(ierr);
+    ierr = PetscFree(slens);CHKERRQ(ierr); /* Free the O(P) array ASAP */
+    rlentotal = 0; for (i=0; i<nrecv; i++) rlentotal += rlens[i];
+
+    /*=============================================================================
+      Communicate with processors in recvfrom[] to populate rxindices and ryindices
+      ============================================================================*/
+    ierr  = PetscCommGetNewTag(ycomm,&tag1);CHKERRQ(ierr);
+    ierr  = PetscCommGetNewTag(ycomm,&tag2);CHKERRQ(ierr);
+    ierr  = PetscMalloc2(rlentotal,&rxindices,rlentotal,&ryindices);CHKERRQ(ierr);
+    ierr  = PetscMPIIntCast((nsend+nrecv)*2,&nreq);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nreq,&reqs);CHKERRQ(ierr);
+    sreqs = reqs;
+    rreqs = reqs + nsend*2;
+
+    for (i=disp=0; i<nrecv; i++) {
+      count = rlens[i];
+      ierr  = MPI_Irecv(rxindices+disp,count,MPIU_INT,recvfrom[i],tag1,ycomm,rreqs+i);CHKERRQ(ierr);
+      ierr  = MPI_Irecv(ryindices+disp,count,MPIU_INT,recvfrom[i],tag2,ycomm,rreqs+nrecv+i);CHKERRQ(ierr);
+      disp += rlens[i];
+    }
+
+    for (i=0; i<nsend; i++) {
+      ierr  = PetscMPIIntCast(sstart[i+1]-sstart[i],&count);CHKERRQ(ierr);
+      ierr  = MPI_Isend(xindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag1,ycomm,sreqs+i);CHKERRQ(ierr);
+      ierr  = MPI_Isend(yindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag2,ycomm,sreqs+nsend+i);CHKERRQ(ierr);
+    }
+    ierr = MPI_Waitall(nreq,reqs,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+
+    /* Transform VecScatter into SF */
+    nleaves = rlentotal;
+    ierr    = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
+    ierr    = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
+    ierr    = MPI_Comm_rank(ycomm,&yrank);CHKERRQ(ierr);
+    for (i=disp=0; i<nrecv; i++) {
+      for (j=0; j<rlens[i]; j++) {
+        k         = disp + j; /* k-th index pair */
+        ilocal[k] = ryindices[k] - yrange[yrank]; /* Convert y's global index to local index */
+        ierr      = PetscLayoutFindOwnerIndex(xlayout,rxindices[k],&iremote[k].rank,&iremote[k].index);CHKERRQ(ierr); /* Convert x's global index to (rank, index) */
+      }
+      disp += rlens[i];
+    }
+
+    ierr = PetscFree2(sstart,sendto);CHKERRQ(ierr);
+    ierr = PetscFree(slens);CHKERRQ(ierr);
+    ierr = PetscFree(rlens);CHKERRQ(ierr);
+    ierr = PetscFree(recvfrom);CHKERRQ(ierr);
+    ierr = PetscFree(reqs);CHKERRQ(ierr);
+    ierr = PetscFree2(rxindices,ryindices);CHKERRQ(ierr);
+    ierr = PetscFree2(xindices_sorted,yindices_sorted);CHKERRQ(ierr);
+#endif
   } else {
     /* PtoS or StoS */
-    ierr = VecGetLayout(xx,&xlayout);CHKERRQ(ierr);
     ierr = ISGetLocalSize(iyy,&nleaves);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(xx,&nroots);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
     ierr = PetscArraycpy(ilocal,yindices,nleaves);CHKERRQ(ierr);
@@ -580,6 +704,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
      yy contains leaves, which are local and can be thought as part of PETSC_COMM_SELF. */
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)xx),&data->sf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(data->sf);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xx,&nroots);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(data->sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr); /* Give ilocal/iremote to petsc and no need to free them here */
 
   /* Free memory no longer needed */
