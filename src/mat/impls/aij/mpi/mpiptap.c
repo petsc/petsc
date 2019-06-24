@@ -569,7 +569,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   for (k=0; k<nrecv; k++) {/* k-th received message */
     Jptr = buf_rj[k];
     for (j=0; j<len_r[k]; j++) {
-      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
@@ -817,6 +817,8 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat,Mat,MatReuse,Mat*);
+
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
 {
   PetscErrorCode    ierr;
@@ -838,7 +840,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
   /*-----------------------------------------------------*/
   if (ptap->reuse == MAT_REUSE_MATRIX) {
     /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
-    ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_REUSE_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
+    ierr =  MatGetBrowsOfAcols_MPIXAIJ(A,P,MAT_REUSE_MATRIX,&ptap->P_oth);CHKERRQ(ierr);
   }
 
   po = (Mat_SeqAIJ*) p->B->data;
@@ -985,7 +987,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,Mat C)
   /*-----------------------------------------------------*/
   if (ptap->reuse == MAT_REUSE_MATRIX) {
     /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
-    ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_REUSE_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
+    ierr =  MatGetBrowsOfAcols_MPIXAIJ(A,P,MAT_REUSE_MATRIX,&ptap->P_oth);CHKERRQ(ierr);
   }
 
   po = (Mat_SeqAIJ*) p->B->data;
@@ -1130,7 +1132,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   ptap->algType = 2;
 
   /* Get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-  ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
+  ierr =  MatGetBrowsOfAcols_MPIXAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->P_oth);CHKERRQ(ierr);
 
   po = (Mat_SeqAIJ*)p->B->data;
   pd = (Mat_SeqAIJ*)p->A->data;
@@ -1386,7 +1388,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   ptap->algType = 3;
 
   /* 0) Get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-  ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
+  ierr =  MatGetBrowsOfAcols_MPIXAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->P_oth);CHKERRQ(ierr);
 
   po = (Mat_SeqAIJ*)p->B->data;
   pd = (Mat_SeqAIJ*)p->A->data;
@@ -1828,7 +1830,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   for (k=0; k<nrecv; k++) {/* k-th received message */
     Jptr = buf_rj[k];
     for (j=0; j<len_r[k]; j++) {
-      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
