@@ -44,8 +44,6 @@ variables:
     - make -j$(nproc) -l$(nproc) CFLAGS=-Werror
     - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=300
   after_script:
-    - ls -l /ccache/
-    - du -hs /ccache
     - ccache --show-stats
   artifacts:
     reports:
@@ -54,6 +52,7 @@ variables:
     paths:
       - /ccache/
     key: "${CI_JOB_NAME}"
+    untracked: true
 
 #
 # The following tests run on the cloud as part of test-short.
