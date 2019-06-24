@@ -1,17 +1,38 @@
+
+# test-short take only a few minutes and generally run on the cloud; they do not run the full test suite or external packages.
+#
+# test-long often runs on MCS systems and may take an hour or more. They run the full test suite and may test external packages.
+#
+# The test-long tests are only started if all of the test-short tests run without error and if the merge request has
+# been labeled with "fulltest".
+#
+
 stages:
-  - test
+  - test-short
   - test-long
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
   PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
 
+#
+# The most basic template that most tests will expand upon. It ensures that the tests are run only for merge requests.
+#
+
 .test:
-  stage: test
-  image: jedbrown/mpich-ccache
   only:
     refs:
       - merge_requests
+
+#
+#  This provides the basic order of operations and options template for cloud based test-short tests.
+#  Not all test-short need to follow this template but most will.
+#
+
+.test-short:
+  extends: .test
+  stage: test-short
+  image: jedbrown/mpich-ccache
   before_script:
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
@@ -21,8 +42,10 @@ variables:
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make -j$(nproc) -l$(nproc) CFLAGS=-Werror
-    - make allgtests-tap search="${TEST_SEARCH}"
+    - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=300
   after_script:
+    - ls -l /ccache/
+    - du -hs /ccache
     - ccache --show-stats
   artifacts:
     reports:
@@ -32,15 +55,19 @@ variables:
       - /ccache/
     key: "${CI_JOB_NAME}"
 
+#
+# The following tests run on the cloud as part of test-short.
+#
+
 mpich-cxx-py3:
-  extends: .test
+  extends: .test-short
   variables:
     PYTHON: python3
     CONFIG_OPTS: --with-mpi-dir=/usr/local --with-clanguage=cxx --with-fc=0
     TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
-  extends: .test
+  extends: .test-short
   variables:
     PYTHON: python3
     CONFIG_OPTS: <
@@ -49,7 +76,7 @@ uni-complex-float-int64:
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
 c89-mlib-static-py2:
-  extends: .test
+  extends: .test-short
   image: jedbrown/mpich-ccache:python2
   variables:
     PYTHON: python2
@@ -58,12 +85,14 @@ c89-mlib-static-py2:
       --with-single-library=0 --with-shared-libraries=0 'CFLAGS=-std=c89 -pedantic -Wno-long-long -Wno-overlength-strings'
     TEST_SEARCH: snes_tutorials-ex48%
 
-
-.mcs_test:
+#
+# This provides the basic order of operations and options template for test-long tests.
+# Not all test-long need to follow this template, but most will.
+#
+.test-long:
+  extends: .test
   stage: test-long
   only:
-    refs:
-      - merge_requests
     variables:
       - $CI_MERGE_REQUEST_LABELS =~ /fulltest/
   script:
@@ -74,6 +103,18 @@ c89-mlib-static-py2:
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
+
+#
+# The following tests run on MCS systems as part of test-long.
+#
+# The tags variable used in the tests below connects the particular test with the runners
+# listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
+# For example the test linux-gcc-complex-opt which extends .linux_mcs_test will run on
+# any runner that has the tag (in a blue box beneath it) of mcs-linux.
+#
+
+.mcs_test:
+  extends: .test-long
 
 .linux_mcs_test:
   extends: .mcs_test
@@ -104,7 +145,11 @@ c89-mlib-static-py2:
   tags:
     - mcs-osx
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+#  the stages definition defines the first line of PETSC_OPTIONS below. Do they have to be repeated here or can one use
+#  $PETSC_OPTIONS or another option so that they do not need to be repeated?
+    PETSC_OPTIONS: <
+      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+      -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
   before_script:
     - hostname
     - sw_vers -productVersion
@@ -157,11 +202,35 @@ opensolaris-cmplx-pkgs-dbg:
   variables:
     TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
 
+#
+# The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
+# that fail produce a warning, but do not block execution of a pipeline.
+#
+
+.test-experimental:
+  extends: .test
+  allow_failure: true
+
 barry-checksource:
-  stage: test
+  extends: .test-experimental
+  stage: test-short
+  variables:
+# the blank GIT_CLEAN_FLAGS below indicates that the CI should NOT clean the git directory before running the next test
+    GIT_CLEAN_FLAGS: -qn
   tags:
     - barry
   script:
-    - hostname
-    - PETSC_ARCH=arch-basic PETSC_DIR=`pwd` ./configure --with-mpi=0 --with-fc=0
-    - make checkbadSource
+    - PETSC_ARCH=arch-barry PETSC_DIR=`pwd` ./configure --with-mpi=0 --with-fc=0
+    - PETSC_ARCH=arch-barry PETSC_DIR=`pwd` make checkbadSource
+
+barry-arch-hash:
+  extends: .test-experimental
+  stage: test-short
+  variables:
+# the blank GIT_CLEAN_FLAGS below indicates that the CI should NOT clean the git directory before running the next test
+    GIT_CLEAN_FLAGS: -qn
+  tags:
+    - barry
+  script:
+    - PETSC_DIR=`pwd` ./configure --with-mpi=0 --with-fc=0 --arch-hash
+    - PETSC_DIR=`pwd` make checkbadSource
