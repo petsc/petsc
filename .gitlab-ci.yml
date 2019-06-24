@@ -42,7 +42,7 @@ variables:
     - ccache --zero-stats
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
-    - make -j$(nproc) -l$(nproc) CFLAGS=-Werror
+    - make CFLAGS=-Werror
     - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=300
   after_script:
     - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
