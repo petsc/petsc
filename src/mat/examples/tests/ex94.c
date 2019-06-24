@@ -25,7 +25,7 @@ PetscErrorCode MatNormDifference(Mat A,Mat B,PetscReal *norm)
 
 int main(int argc,char **args)
 {
-  Mat            A,A_save,B,P,R,C,C1;
+  Mat            A,A_save,B,AT,ATT,BT,BTT,P,R,C,C1;
   Vec            x,v1,v2,v3,v4;
   PetscViewer    viewer;
   PetscErrorCode ierr;
@@ -125,6 +125,26 @@ int main(int argc,char **args)
   /* ---------------------*/
   if (Test_MatMatMult) {
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
+    ierr = MatCreateTranspose(A,&AT);CHKERRQ(ierr);
+    ierr = MatCreateTranspose(AT,&ATT);CHKERRQ(ierr);
+    ierr = MatCreateTranspose(B,&BT);CHKERRQ(ierr);
+    ierr = MatCreateTranspose(BT,&BTT);CHKERRQ(ierr);
+    ierr = MatMatMult(ATT,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()\n");
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatMatMult(A,BTT,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()\n");
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatMatMult(ATT,BTT,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()\n");
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&BTT);CHKERRQ(ierr);
+    ierr = MatDestroy(&BT);CHKERRQ(ierr);
+    ierr = MatDestroy(&ATT);CHKERRQ(ierr);
+    ierr = MatDestroy(&AT);CHKERRQ(ierr);
     ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"matmatmult_");CHKERRQ(ierr); /* enable option '-matmatmult_' for matrix C */
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
