@@ -755,14 +755,19 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = PCTelescopeGetKSP(pcinner,&innerksp);CHKERRQ(ierr);
       if (innerksp) {
         ierr = KSPGetPC(innerksp,&pcinner);CHKERRQ(ierr);
-        /* TODO Cholesky if flgspd? */
         ierr = PCSetType(pcinner,PCLU);CHKERRQ(ierr);
-        //TODO remove explicit matSolverPackage
-        if (commsize == red) {
+#if defined(PETSC_HAVE_SUPERLU)
+        ierr = MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU,MAT_FACTOR_LU,&match);CHKERRQ(ierr);
+        if (match) {
           ierr = PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU);CHKERRQ(ierr);
-        } else {
+        }
+#endif
+#if defined(PETSC_HAVE_SUPERLU_DIST)
+        ierr = MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&match);CHKERRQ(ierr);
+        if (match) {
           ierr = PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
         }
+#endif
       }
     }
 
@@ -919,9 +924,9 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
     The coarse problem KSP can be controlled from the command line with prefix -def_ for the first level and -def_[lvl-1]
     from the second level onward. You can also use
     PCDeflationGetCoarseKSP() or PCDeflationSetCoarseKSP() to control it from code. The bottom level KSP defaults to
-    KSPREONLY with PCLU direct solver wrapped into PCTELESCOPE. For convenience, the reduction factor can be set by
-    PCDeflationSetReductionFactor() or -pc_deflation_recduction_factor. The default is chosen heuristically based on the
-    coarse problem size.
+    KSPREONLY with PCLU direct solver (MATSOLVERSUPERLU/MATSOLVERSUPERLU_DIST if available) wrapped into PCTELESCOPE.
+    For convenience, the reduction factor can be set by PCDeflationSetReductionFactor()
+    or -pc_deflation_recduction_factor. The default is chosen heuristically based on the coarse problem size.
 
     The additional preconditioner can be controlled from command line with prefix -def_[lvl]_pc (same rules used for
     coarse problem KSP apply for [lvl]_ part of prefix), e.g., -def_1_pc_pc_type bjacobi. You can also use
