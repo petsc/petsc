@@ -726,8 +726,11 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = PCDeflationSetLvl_Deflation(pcinner,def->lvl+1,def->maxlvl);CHKERRQ(ierr);
       /* inherit options */
       if (def->prefix) ((PC_Deflation*)(pcinner->data))->prefix = def->prefix;
-      ((PC_Deflation*)(pcinner->data))->ksptype = def->ksptype;
-      ((PC_Deflation*)(pcinner->data))->correct = def->correct;
+      ((PC_Deflation*)(pcinner->data))->init          = def->init;
+      ((PC_Deflation*)(pcinner->data))->ksptype       = def->ksptype;
+      ((PC_Deflation*)(pcinner->data))->correct       = def->correct;
+      ((PC_Deflation*)(pcinner->data))->correctfact   = def->correctfact;
+      ((PC_Deflation*)(pcinner->data))->reductionfact = def->reductionfact;
       ierr = MatDestroy(&nextDef);CHKERRQ(ierr);
     } else { /* the last level */
       ierr = KSPSetType(def->WtAWinv,KSPPREONLY);CHKERRQ(ierr);
@@ -929,6 +932,8 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
     significantly improve convergence when the deflation coarse problem is not solved with high enough accuracy. We
     recommend setting factor to some eigenvalue, e.g., the largest eigenvalue so that the preconditioner does not create
     an isolated eigenvalue.
+
+    The options are automatically inherited from previous deflation level.
 
     The preconditioner supports KSPMonitorDynamicTolerance(). This is useful for the multilevel scheme for which we also
     recommend limiting the number of iterations for the coarse problem.
