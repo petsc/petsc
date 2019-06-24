@@ -14,11 +14,12 @@ typedef struct {
   PC          pc;              /* additional preconditioner */
   Vec         work;
   Vec         *workcoarse;
+  const char  *prefix;
 
   PCDeflationSpaceType spacetype;
   PetscInt             spacesize;
-  PetscInt             nestedlvl;
-  PetscInt             maxnestedlvl;
+  PetscInt             lvl;
+  PetscInt             maxlvl;
   PetscBool            extendsp;
 } PC_Deflation;
 

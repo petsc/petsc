@@ -62,8 +62,8 @@ static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscIn
   PC_Deflation   *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
-  if (current) def->nestedlvl = current;
-  def->maxnestedlvl = max;
+  if (current) def->lvl = current;
+  def->maxlvl = max;
   PetscFunctionReturn(0);
 }
 
@@ -580,14 +580,19 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   PetscBool        match,flgspd,transp=PETSC_FALSE;
   MatCompositeType ctype;
   MPI_Comm         comm;
-  const char       *prefix;
+  char             prefix[128]="";
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (pc->setupcalled) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PCGetOperators(pc,NULL,&Amat);CHKERRQ(ierr);
-  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+  if (!def->lvl && !def->prefix) {
+    ierr = PCGetOptionsPrefix(pc,&def->prefix);CHKERRQ(ierr);
+  }
+  if (def->lvl) {
+    sprintf(prefix,"%d_",(int)def->lvl);
+  }
 
   /* compute a deflation space */
   if (def->W || def->Wt) {
@@ -614,7 +619,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   }
   if (match && ctype == MAT_COMPOSITE_MULTIPLICATIVE) {
     if (!transp) {
-      if (def->nestedlvl < def->maxnestedlvl) {
+      if (def->lvl < def->maxlvl) {
         ierr = PetscMalloc1(size,&mats);CHKERRQ(ierr);
         for (i=0; i<size; i++) {
           ierr = MatCompositeGetMat(def->W,i,&mats[i]);CHKERRQ(ierr);
@@ -636,7 +641,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         ierr = MatCompositeMerge(def->W);CHKERRQ(ierr);
       }
     } else {
-      if (def->nestedlvl < def->maxnestedlvl) {
+      if (def->lvl < def->maxlvl) {
         ierr = PetscMalloc1(size,&mats);CHKERRQ(ierr);
         for (i=0; i<size; i++) {
           ierr = MatCompositeGetMat(def->Wt,i,&mats[i]);CHKERRQ(ierr);
@@ -718,19 +723,20 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = KSPSetType(innerksp,def->ksptype);CHKERRQ(ierr); /* TODO iherit from KSP + tolerances */
       ierr = PCSetType(pcinner,PCDEFLATION);CHKERRQ(ierr); /* TODO create coarse preconditinoner M_c = WtMW ? */
       ierr = PCDeflationSetSpace(pcinner,nextDef,transp);CHKERRQ(ierr);
-      ierr = PCDeflationSetLvl_Deflation(pcinner,def->nestedlvl+1,def->maxnestedlvl);CHKERRQ(ierr);
+      ierr = PCDeflationSetLvl_Deflation(pcinner,def->lvl+1,def->maxlvl);CHKERRQ(ierr);
       /* inherit options */
+      if (def->prefix) ((PC_Deflation*)(pcinner->data))->prefix = def->prefix;
       ((PC_Deflation*)(pcinner->data))->ksptype = def->ksptype;
       ((PC_Deflation*)(pcinner->data))->correct = def->correct;
       ierr = MatDestroy(&nextDef);CHKERRQ(ierr);
     } else { /* the last level */
       ierr = KSPSetType(def->WtAWinv,KSPPREONLY);CHKERRQ(ierr);
       ierr = PCSetType(pcinner,PCTELESCOPE);CHKERRQ(ierr);
-      /* ugly hack to not have overwritten PCTELESCOPE */
-      if (prefix) {
-        ierr = KSPSetOptionsPrefix(def->WtAWinv,prefix);CHKERRQ(ierr);
+      /* do not overwrite PCTELESCOPE */
+      if (def->prefix) {
+        ierr = KSPSetOptionsPrefix(def->WtAWinv,def->prefix);CHKERRQ(ierr);
       }
-      ierr = KSPAppendOptionsPrefix(def->WtAWinv,"tel_");CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(def->WtAWinv,"def_tel_");CHKERRQ(ierr);
       ierr = PCSetFromOptions(pcinner);CHKERRQ(ierr);
       /* Reduction factor choice */
       red = def->reductionfact;
@@ -739,7 +745,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         red  = ceil((float)commsize/ceil((float)m/commsize));
         ierr = PetscObjectTypeCompareAny((PetscObject)(def->WtAW),&match,MATSEQDENSE,MATMPIDENSE,MATDENSE,"");CHKERRQ(ierr);
         if (match) red = commsize;
-        ierr = PetscInfo1(pc,"Auto choosing reduction factor %D\n",red);CHKERRQ(ierr); /* TODO add level? */
+        ierr = PetscInfo1(pc,"Auto choosing reduction factor %D\n",red);CHKERRQ(ierr);
       }
       ierr = PCTelescopeSetReductionFactor(pcinner,red);CHKERRQ(ierr);
       ierr = PCSetUp(pcinner);CHKERRQ(ierr);
@@ -758,11 +764,13 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     }
 
     if (innerksp) {
-      /* TODO use def_[lvl]_ if lvl > 0? */
-      if (prefix) {
-        ierr = KSPSetOptionsPrefix(innerksp,prefix);CHKERRQ(ierr);
+      if (def->prefix) {
+        ierr = KSPSetOptionsPrefix(innerksp,def->prefix);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
+      } else {
+        ierr = KSPSetOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
       }
-      ierr = KSPAppendOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(innerksp,prefix);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(innerksp);CHKERRQ(ierr);
       ierr = KSPSetUp(innerksp);CHKERRQ(ierr);
     }
@@ -774,10 +782,12 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     ierr = PCCreate(comm,&def->pc);CHKERRQ(ierr);
     ierr = PCSetOperators(def->pc,Amat,Amat);CHKERRQ(ierr);
     ierr = PCSetType(def->pc,PCNONE);CHKERRQ(ierr);
-    if (prefix) {
-      ierr = PCSetOptionsPrefix(def->pc,prefix);CHKERRQ(ierr);
+    if (def->prefix) {
+      ierr = PCSetOptionsPrefix(def->pc,def->prefix);CHKERRQ(ierr);
     }
-    ierr = PCAppendOptionsPrefix(def->pc,"def_pc_");CHKERRQ(ierr);
+    ierr = PCAppendOptionsPrefix(def->pc,"def_");CHKERRQ(ierr);
+    ierr = PCAppendOptionsPrefix(def->pc,prefix);CHKERRQ(ierr);
+    ierr = PCAppendOptionsPrefix(def->pc,"pc_");CHKERRQ(ierr);
     ierr = PCSetFromOptions(def->pc);CHKERRQ(ierr);
     ierr = PCSetUp(def->pc);CHKERRQ(ierr);
   }
@@ -830,7 +840,7 @@ static PetscErrorCode PCView_Deflation(PC pc,PetscViewer viewer)
                                     (double)PetscRealPart(def->correctfact),
                                     (double)PetscImaginaryPart(def->correctfact));CHKERRQ(ierr);
     }
-    if (!def->nestedlvl) {
+    if (!def->lvl) {
       ierr = PetscViewerASCIIPrintf(viewer,"deflation space type: %s\n",PCDeflationSpaceTypes[def->spacetype]);CHKERRQ(ierr);
     }
 
@@ -857,7 +867,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Deflation options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_deflation_init_only","Use only initialization step - Initdef","PCDeflationSetInitOnly",def->init,&def->init,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_deflation_max_lvl","Maximum of deflation levels","PCDeflationSetMaxLvl",def->maxnestedlvl,&def->maxnestedlvl,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_deflation_max_lvl","Maximum of deflation levels","PCDeflationSetMaxLvl",def->maxlvl,&def->maxlvl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_reduction_factor","Reduction factor for coarse problem solution using PCTELESCOPE","PCDeflationSetReductionFactor",def->reductionfact,&def->reductionfact,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_deflation_correction","Add coarse problem correction Q to P","PCDeflationSetCorrectionFactor",def->correct,&def->correct,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsScalar("-pc_deflation_correction_factor","Set multiple of Q to use as coarse problem correction","PCDeflationSetCorrectionFactor",def->correctfact,&def->correctfact,NULL);CHKERRQ(ierr);
@@ -903,15 +913,16 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
     (multiplied) to create the last deflation matrix. The maximal level defaults to 0 and can be set by
     PCDeflationSetMaxLvl() or by -pc_deflation_max_lvl.
 
-    The coarse problem KSP can be controlled from the command line with prefix -def_[lvl]. You can also use
+    The coarse problem KSP can be controlled from the command line with prefix -def_ for the first level and -def_[lvl-1]
+    from the second level onward. You can also use
     PCDeflationGetCoarseKSP() or PCDeflationSetCoarseKSP() to control it from code. The bottom level KSP defaults to
     KSPREONLY with PCLU direct solver wrapped into PCTELESCOPE. For convenience, the reduction factor can be set by
     PCDeflationSetReductionFactor() or -pc_deflation_recduction_factor. The default is chosen heuristically based on the
     coarse problem size.
 
-    The additional preconditioner can be controlled from command line with prefix -def_[lvl]_pc,
-    e.g., -def_0_pc_pc_type bjacobi. You can also use PCDeflationGetPC() or PCDeflationSetPC() to control
-    the additional preconditioner from code. It defaults to PCNONE.
+    The additional preconditioner can be controlled from command line with prefix -def_[lvl]_pc (same rules used for
+    coarse problem KSP apply for [lvl]_ part of prefix), e.g., -def_1_pc_pc_type bjacobi. You can also use
+    PCDeflationGetPC() or PCDeflationSetPC() to control the additional preconditioner from code. It defaults to PCNONE.
 
     The coarse problem correction term (factor*Q) can be turned on by -pc_deflation_correction and the factor value can
     be set by pc_deflation_correction_factor or by PCDeflationSetCorrectionFactor(). The coarse problem can
@@ -964,8 +975,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   def->spacetype     = PC_DEFLATION_SPACE_HAAR;
   def->spacesize     = 1;
   def->extendsp      = PETSC_FALSE;
-  def->nestedlvl     = 0;
-  def->maxnestedlvl  = 0;
+  def->lvl           = 0;
+  def->maxlvl        = 0;
 
   pc->ops->apply          = PCApply_Deflation;
   pc->ops->presolve       = PCPreSolve_Deflation;
