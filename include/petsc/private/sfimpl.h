@@ -37,6 +37,8 @@ struct _PetscSFOps {
   PetscErrorCode (*GetLeafRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
 };
 
+typedef struct _n_PetscSFPackOpt *PetscSFPackOpt;
+
 struct _p_PetscSF {
   PETSCHEADER(struct _PetscSFOps);
   PetscInt        nroots;       /* Number of root vertices on current process (candidates for incoming edges) */
@@ -61,6 +63,7 @@ struct _p_PetscSF {
   PetscSF         multi;        /* Internal graph used to implement gather and scatter operations */
   PetscBool       graphset;     /* Flag indicating that the graph has been set, required before calling communication routines */
   PetscBool       setupcalled;  /* Type and communication structures have been set up */
+  PetscSFPackOpt  leafpackopt;  /* Optimization plans to (un)pack leaves based on patterns in rmine[]. NULL for no optimization */
 
   void *data;                   /* Pointer to implementation */
 };
