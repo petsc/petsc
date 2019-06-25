@@ -955,24 +955,24 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
     self.log.write('For '+self.package+' need '+self.minversion+' <= '+self.foundversion+' <= '+self.maxversion+'\n')
 
     try:
-      foundversiontuble = self.versionToTuple(self.foundversion)
+      foundversiontuple = self.versionToTuple(self.foundversion)
     except:
-      self.log.write('For '+self.package+' unable to convert version string to tuble, skipping version check\n')
+      self.log.write('For '+self.package+' unable to convert version string to tuple, skipping version check\n')
       return
 
     suggest = ''
     if self.download: suggest = '\nSuggest using --download-'+self.package+' for a compatible '+self.name
     if self.minversion:
-      if self.versionToTuple(self.minversion) > foundversiontuble:
+      if self.versionToTuple(self.minversion) > foundversiontuple:
         raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at least '+self.minversion+suggest+'\n')
     elif self.version:
-      if self.versionToTuple(zeroPatch(self.version)) > foundversiontuble:
+      if self.versionToTuple(zeroPatch(self.version)) > foundversiontuple:
         self.logPrintBox('Warning: Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
     if self.maxversion:
-      if self.versionToTuple(self.maxversion) < foundversiontuble:
+      if self.versionToTuple(self.maxversion) < foundversiontuple:
         raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at most '+self.maxversion+suggest+'\n')
     elif self.version:
-      if self.versionToTuple(infinitePatch(self.version)) < foundversiontuble:
+      if self.versionToTuple(infinitePatch(self.version)) < foundversiontuple:
         self.logPrintBox('Warning: Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
     return
 
