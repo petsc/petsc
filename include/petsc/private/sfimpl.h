@@ -35,6 +35,8 @@ struct _PetscSFOps {
   PetscErrorCode (*FetchAndOpEnd)(PetscSF,MPI_Datatype,void*,const void *,void *,MPI_Op);
   PetscErrorCode (*GetRootRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
   PetscErrorCode (*GetLeafRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
+  PetscErrorCode (*CreateEmbeddedSF)(PetscSF,PetscInt,const PetscInt*,PetscSF*);
+  PetscErrorCode (*CreateEmbeddedLeafSF)(PetscSF,PetscInt,const PetscInt*,PetscSF*);
 };
 
 typedef struct _n_PetscSFPackOpt *PetscSFPackOpt;

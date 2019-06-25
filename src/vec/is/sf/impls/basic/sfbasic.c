@@ -466,6 +466,221 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF sf,PetscInt *niran
   PetscFunctionReturn(0);
 }
 
+/* An optimized PetscSFCreateEmbeddedSF. We aggresively make use of the established communication on sf.
+   We need one bcast on sf, and no communication anymore to build the embedded sf. Note that selected[]
+   was sorted before calling the routine.
+ */
+PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *newsf)
+{
+  PetscSF           esf;
+  PetscInt          esf_nranks,esf_ndranks,*esf_roffset,*esf_rmine,*esf_rremote;
+  PetscInt          i,j,k,p,q,nroots,*rootdata,*leafdata,*leafbuf,connected_leaves,*new_ilocal,nranks,ndranks,niranks,ndiranks,minleaf,maxleaf,maxlocal;
+  PetscMPIInt       *esf_ranks;
+  const PetscMPIInt *ranks,*iranks;
+  const PetscInt    *roffset,*rmine,*rremote,*ioffset,*irootloc;
+  PetscBool         connected;
+  PetscSFPack_Basic link;
+  PetscSFNode       *new_iremote;
+  PetscSF_Basic     *bas;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)sf),&esf);CHKERRQ(ierr);
+  ierr = PetscSFSetType(esf,PETSCSFBASIC);CHKERRQ(ierr); /* This optimized routine can only create a basic sf */
+
+  /* Find out which leaves are still connected to roots in the embedded sf */
+  ierr = PetscSFGetGraph(sf,&nroots,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetLeafRange(sf,&minleaf,&maxleaf);CHKERRQ(ierr);
+  /* We abused the term leafdata here, whose size is usually the number of leaf data items. Here its size is # of leaves (always >= # of leaf data items) */
+  maxlocal = (minleaf > maxleaf)? 0 : maxleaf-minleaf+1; /* maxleaf=-1 and minleaf=0 when nleaves=0 */
+  ierr = PetscCalloc2(nroots,&rootdata,maxlocal,&leafdata);CHKERRQ(ierr);
+  /* Tag selected roots */
+  for (i=0; i<nselected; ++i) rootdata[selected[i]] = 1;
+
+  /* Bcast from roots to leaves to tag connected leaves. We reuse the established bcast communication in
+     sf but do not do unpacking (from leaf buffer to leafdata). The raw data in leaf buffer is what we are
+     interested in since it tells which leaves are connected to which ranks.
+   */
+  ierr = PetscSFBcastAndOpBegin_Basic(sf,MPIU_INT,rootdata,leafdata-minleaf,MPIU_REPLACE);CHKERRQ(ierr); /* Need to give leafdata but we won't use it */
+  ierr = PetscSFPackGetInUse(sf,MPIU_INT,rootdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackWaitall_Basic(link,PETSCSF_ROOT2LEAF_BCAST);CHKERRQ(ierr);
+  ierr = PetscSFGetLeafInfo_Basic(sf,&nranks,&ndranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr); /* Get send info */
+  esf_nranks = esf_ndranks = connected_leaves = 0;
+  for (i=0; i<nranks; i++) { /* Scan leaf data to calculate some counts */
+    leafbuf   = (PetscInt*)link->leaf[i];
+    connected = PETSC_FALSE; /* Is the current process still connected to this remote root rank? */
+    for (j=roffset[i],k=0; j<roffset[i+1]; j++,k++) {
+      if (leafbuf[k]) {
+        connected_leaves++;
+        connected   = PETSC_TRUE;
+      }
+    }
+    if (connected) {esf_nranks++; if (i<ndranks) esf_ndranks++;}
+  }
+
+  /* Set graph of esf and also set up its outgoing communication (i.e., send info), which is usually done by PetscSFSetUpRanks */
+  ierr = PetscMalloc1(connected_leaves,&new_ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(connected_leaves,&new_iremote);CHKERRQ(ierr);
+  ierr = PetscMalloc4(esf_nranks,&esf_ranks,esf_nranks+1,&esf_roffset,connected_leaves,&esf_rmine,connected_leaves,&esf_rremote);CHKERRQ(ierr);
+  p    = 0; /* Counter for connected root ranks */
+  q    = 0; /* Counter for connected leaves */
+  esf_roffset[0] = 0;
+  for (i=0; i<nranks; i++) { /* Scan leaf data again to fill esf arrays */
+    leafbuf   = (PetscInt*)link->leaf[i];
+    connected = PETSC_FALSE;
+    for (j=roffset[i],k=0; j<roffset[i+1]; j++,k++) {
+        if (leafbuf[k]) {
+        esf_rmine[q]         = new_ilocal[q] = rmine[j];
+        esf_rremote[q]       = rremote[j];
+        new_iremote[q].index = rremote[j];
+        new_iremote[q].rank  = ranks[i];
+        connected            = PETSC_TRUE;
+        q++;
+      }
+    }
+    if (connected) {
+      esf_ranks[p]     = ranks[i];
+      esf_roffset[p+1] = q;
+      p++;
+    }
+  }
+
+  ierr = PetscSFPackReclaim(sf,(PetscSFPack*)&link);CHKERRQ(ierr);
+
+  /* SetGraph internally resets the SF, so we only set its fields after the call */
+  ierr         = PetscSFSetGraph(esf,nroots,connected_leaves,new_ilocal,PETSC_OWN_POINTER,new_iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  esf->nranks  = esf_nranks;
+  esf->ndranks = esf_ndranks;
+  esf->ranks   = esf_ranks;
+  esf->roffset = esf_roffset;
+  esf->rmine   = esf_rmine;
+  esf->rremote = esf_rremote;
+
+  /* Set up the incoming communication (i.e., recv info) stored in esf->data, which is usually done by PetscSFSetUp_Basic */
+  bas  = (PetscSF_Basic*)esf->data;
+  ierr = PetscSFGetRootInfo_Basic(sf,&niranks,&ndiranks,&iranks,&ioffset,&irootloc);CHKERRQ(ierr); /* Get recv info */
+  /* Embedded sf always has simpler communication than the original one. We might allocate longer arrays than needed here. But we
+     expect these arrays are usually short, so we do not care. The benefit is we can fill these arrays by just parsing irootloc once.
+   */
+  ierr = PetscMalloc2(niranks,&bas->iranks,niranks+1,&bas->ioffset);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ioffset[niranks],&bas->irootloc);CHKERRQ(ierr);
+  bas->niranks = bas->ndiranks = bas->ioffset[0] = 0;
+  p = 0; /* Counter for connected leaf ranks */
+  q = 0; /* Counter for connected roots */
+  for (i=0; i<niranks; i++) {
+    connected = PETSC_FALSE; /* Is the current process still connected to this remote leaf rank? */
+    for (j=ioffset[i]; j<ioffset[i+1]; j++) {
+      PetscInt loc;
+      ierr = PetscFindInt(irootloc[j],nselected,selected,&loc);CHKERRQ(ierr);
+      if (loc >= 0) { /* Found in selected this root is connected */
+        bas->irootloc[q++] = irootloc[j];
+        connected = PETSC_TRUE;
+      }
+    }
+    if (connected) {
+      bas->niranks++;
+      if (i<ndiranks) bas->ndiranks++; /* Note that order of ranks (including distinguished ranks) is kept */
+      bas->iranks[p]    = iranks[i];
+      bas->ioffset[p+1] = q;
+      p++;
+    }
+  }
+  bas->itotal = q;
+
+  /* Setup packing optimizations */
+  ierr = PetscSFPackSetupOptimization(esf->nranks,esf->roffset,esf->rmine,&esf->leafpackopt);CHKERRQ(ierr);
+  ierr = PetscSFPackSetupOptimization(bas->niranks,bas->ioffset,bas->irootloc,&bas->rootpackopt);CHKERRQ(ierr);
+  esf->setupcalled = PETSC_TRUE; /* We have done setup ourselves! */
+
+  ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  *newsf = esf;
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF_Basic(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *newsf)
+{
+  PetscSF           esf;
+  PetscInt          i,j,k,p,q,nroots,*rootdata,*leafdata,*new_ilocal,niranks,ndiranks,minleaf,maxleaf,maxlocal;
+  const PetscInt    *ilocal,*ioffset,*irootloc;
+  const PetscMPIInt *iranks;
+  PetscSFPack_Basic link;
+  PetscSFNode       *new_iremote;
+  const PetscSFNode *iremote;
+  PetscSF_Basic     *bas;
+  MPI_Group         group;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)sf),&esf);CHKERRQ(ierr);
+  ierr = PetscSFSetType(esf,PETSCSFBASIC);CHKERRQ(ierr); /* This optimized routine can only create a basic sf */
+
+  /* Set the graph of esf, which is easy for CreateEmbeddedLeafSF */
+  ierr = PetscSFGetGraph(sf,&nroots,NULL,&ilocal,&iremote);CHKERRQ(ierr);
+  ierr = PetscSFGetLeafRange(sf,&minleaf,&maxleaf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nselected,&new_ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nselected,&new_iremote);CHKERRQ(ierr);
+  for (i=0; i<nselected; i++) {
+    const PetscInt l     = selected[i];
+    new_ilocal[i]        = ilocal ? ilocal[l] : l;
+    new_iremote[i].rank  = iremote[l].rank;
+    new_iremote[i].index = iremote[l].index;
+  }
+
+  /* Tag selected leaves before PetscSFSetGraph since new_ilocal might turn into NULL since we use PETSC_OWN_POINTER below */
+  maxlocal = (minleaf > maxleaf)? 0 : maxleaf-minleaf+1; /* maxleaf=-1 and minleaf=0 when nleaves=0 */
+  ierr = PetscCalloc2(nroots,&rootdata,maxlocal,&leafdata);CHKERRQ(ierr);
+  for (i=0; i<nselected; i++) leafdata[new_ilocal[i]-minleaf] = 1; /* -minleaf to adjust indices according to minleaf */
+
+  ierr = PetscSFSetGraph(esf,nroots,nselected,new_ilocal,PETSC_OWN_POINTER,new_iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  /* Set up the outgoing communication (i.e., send info). We can not reuse rmine etc in sf since there is no way to
+     map rmine[i] (ilocal of leaves) back to selected[j]  (leaf indices).
+   */
+  ierr = MPI_Comm_group(PETSC_COMM_SELF,&group);CHKERRQ(ierr);
+  ierr = PetscSFSetUpRanks(esf,group);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+
+  /* Set up the incoming communication (i.e., recv info) */
+  ierr = PetscSFGetRootInfo_Basic(sf,&niranks,&ndiranks,&iranks,&ioffset,&irootloc);CHKERRQ(ierr);
+  bas  = (PetscSF_Basic*)esf->data;
+  ierr = PetscMalloc2(niranks,&bas->iranks,niranks+1,&bas->ioffset);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ioffset[niranks],&bas->irootloc);CHKERRQ(ierr);
+
+  /* Pass info about selected leaves to root buffer */
+  ierr = PetscSFReduceBegin_Basic(sf,MPIU_INT,leafdata-minleaf,rootdata,MPIU_REPLACE);CHKERRQ(ierr); /* -minleaf to re-adjust start address of leafdata */
+  ierr = PetscSFPackGetInUse(sf,MPIU_INT,leafdata-minleaf,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackWaitall_Basic(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
+
+  bas->niranks = bas->ndiranks = bas->ioffset[0] = 0;
+  p = 0; /* Counter for connected leaf ranks */
+  q = 0; /* Counter for connected roots */
+  for (i=0; i<niranks; i++) {
+    PetscInt *rootbuf = (PetscInt*)link->root[i];
+    PetscBool connected = PETSC_FALSE; /* Is the current process still connected to this remote leaf rank? */
+    for (j=ioffset[i],k=0; j<ioffset[i+1]; j++,k++) {
+      if (rootbuf[k]) {bas->irootloc[q++] = irootloc[j]; connected = PETSC_TRUE;}
+    }
+    if (connected) {
+      bas->niranks++;
+      if (i<ndiranks) bas->ndiranks++;
+      bas->iranks[p]    = iranks[i];
+      bas->ioffset[p+1] = q;
+      p++;
+    }
+  }
+  bas->itotal = q;
+  ierr = PetscSFPackReclaim(sf,(PetscSFPack*)&link);CHKERRQ(ierr);
+
+  /* Setup packing optimizations */
+  ierr = PetscSFPackSetupOptimization(esf->nranks,esf->roffset,esf->rmine,&esf->leafpackopt);CHKERRQ(ierr);
+  ierr = PetscSFPackSetupOptimization(bas->niranks,bas->ioffset,bas->irootloc,&bas->rootpackopt);CHKERRQ(ierr);
+  esf->setupcalled = PETSC_TRUE; /* We have done setup ourselves! */
+
+  ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  *newsf = esf;
+  PetscFunctionReturn(0);
+}
+
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
 {
   PetscSF_Basic  *dat;
@@ -484,6 +699,8 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
   sf->ops->FetchAndOpBegin      = PetscSFFetchAndOpBegin_Basic;
   sf->ops->FetchAndOpEnd        = PetscSFFetchAndOpEnd_Basic;
   sf->ops->GetLeafRanks         = PetscSFGetLeafRanks_Basic;
+  sf->ops->CreateEmbeddedSF     = PetscSFCreateEmbeddedSF_Basic;
+  sf->ops->CreateEmbeddedLeafSF = PetscSFCreateEmbeddedLeafSF_Basic;
 
   ierr = PetscNewLog(sf,&dat);CHKERRQ(ierr);
   sf->data = (void*)dat;
