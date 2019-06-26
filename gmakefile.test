@@ -175,12 +175,14 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 # Testing convenience targets
 .PHONY: test pre-clean
 
-test: pre-clean report_tests
+test:
+	+@${OMAKE} -f gmakefile.test pre-clean
+	+@${OMAKE} -f gmakefile.test report_tests
 
 pre-clean:
-	@$(eval STARTTIME := $(shell date +%s))
 	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGFILE)
 	@touch $(TESTLOGFILE)
+	@echo "Using MAKEFLAGS:" ${MAKEFLAGS}
 
 .PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
 testpkgs := $(foreach pkg, $(pkgs), test-$(pkg))
@@ -271,7 +273,11 @@ endif
 print-test:
 	-@echo $(TESTTARGETS)
 
-report_tests: $(TESTTARGETS)
+# time will not be completely accurate because it is one of the parallel jobs and depends on when gnumake schedules it
+starttime:
+	@$(eval STARTTIME := $(shell date +%s))
+
+report_tests: starttime $(TESTTARGETS)
 	@$(eval ENDTIME := $(shell date +%s))
 	-@elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
 	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time}
