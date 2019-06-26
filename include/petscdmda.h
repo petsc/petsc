@@ -115,6 +115,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetStencilType(DM, DMDAStencilType*);
 
 PETSC_EXTERN PetscErrorCode DMDAVecGetArray(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecRestoreArray(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecGetArrayWrite(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayWrite(DM,Vec,void *);
 
 PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOF(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOF(DM,Vec,void *);

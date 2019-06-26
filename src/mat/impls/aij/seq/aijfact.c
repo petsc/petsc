@@ -972,7 +972,7 @@ PetscErrorCode MatSolve_SeqAIJ_inplace(Mat A,Vec bb,Vec xx)
   if (!n) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -1003,7 +1003,7 @@ PetscErrorCode MatSolve_SeqAIJ_inplace(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1133,20 +1133,21 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
 
 PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ      *a    = (Mat_SeqAIJ*)A->data;
-  IS              iscol = a->col,isrow = a->row;
-  PetscErrorCode  ierr;
-  const PetscInt  *r,*c,*rout,*cout;
-  PetscInt        i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt        nz,row;
-  PetscScalar     *x,*b,*tmp,*tmps,sum;
-  const MatScalar *aa = a->a,*v;
+  Mat_SeqAIJ        *a    = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *r,*c,*rout,*cout;
+  PetscInt          i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt          nz,row;
+  PetscScalar       *x,*tmp,*tmps,sum;
+  const PetscScalar *b;
+  const MatScalar   *aa = a->a,*v;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -1178,8 +1179,8 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1206,7 +1207,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   if (!n) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(xx,&x);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   fortransolveaij_(&n,x,ai,aj,adiag,aa,b);
@@ -1236,7 +1237,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #endif
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1361,7 +1362,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ_inplace(Mat A,Vec bb,Vec xx)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -1396,7 +1397,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ_inplace(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(xx,&x);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1416,7 +1417,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -1451,7 +1452,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(xx,&x);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3116,7 +3117,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
   if (!n) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(xx,&x);CHKERRQ(ierr);
 
   /* forward solve the lower triangular */
   x[0] = b[0];
@@ -3143,7 +3144,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3162,7 +3163,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   if (!n) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -3193,7 +3194,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

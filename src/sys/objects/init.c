@@ -10,6 +10,9 @@
 #include <petsc/private/petscimpl.h>
 #include <petscvalgrind.h>
 #include <petscviewer.h>
+#if defined(PETSC_USE_LOG)
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
+#endif
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
@@ -19,6 +22,7 @@
 #endif
 #if defined(PETSC_HAVE_CUDA)
 #include <cuda_runtime.h>
+extern PetscErrorCode PetscCUBLASInitializeHandle(void);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
@@ -189,6 +193,93 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
   if (ierr) MPI_Abort(*comm,*flag); /* hopeless so get out */
 }
 
+#if defined(PETSC_HAVE_CUDA)
+/*@C
+     PetscCUDAInitialize - Initializes the CUDA device and cuBLAS on the device
+
+     Logically collective
+
+  Input Parameter:
+  comm - the MPI communicator that will utilize the CUDA devices
+
+  Options Database:
++  -cuda_initialize - do the initialization in PetscInitialize()
+.  -cuda_view - view information about the CUDA devices
+.  -cuda_synchronize - wait at the end of asynchronize CUDA calls so that their time gets credited to the current event; default with -log_view
+-  -cuda_set_device <gpu> - integer number of the device
+
+  Notes:
+   Initializing cuBLAS takes about 1/2 second there it is done by default in PetscInitialize() before logging begins
+
+@*/
+PetscErrorCode PetscCUDAInitialize(MPI_Comm comm)
+{
+  PetscErrorCode        ierr;
+  PetscInt              deviceOpt = 0;
+  PetscBool             cuda_view_flag = PETSC_FALSE,flg;
+  struct cudaDeviceProp prop;
+  int                   devCount,device,devicecnt;
+  cudaError_t           err = cudaSuccess;
+  PetscMPIInt           rank,size;
+
+  PetscFunctionBegin;
+  /*
+     If collecting logging information, by default, wait for GPU to complete its operations
+     before returning to the CPU in order to get accurate timings of each event
+  */
+  ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&PetscCUDASynchronize);CHKERRQ(ierr);
+  if (!PetscCUDASynchronize) {
+    ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&PetscCUDASynchronize);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsBegin(comm,NULL,"CUDA options","Sys");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-cuda_set_device","Set all MPI ranks to use the specified CUDA device",NULL,deviceOpt,&deviceOpt,&flg);CHKERRQ(ierr);
+  device = (int)deviceOpt;
+  ierr = PetscOptionsBool("-cuda_synchronize","Wait for the GPU to complete operations before returning to the CPU",NULL,PetscCUDASynchronize,&PetscCUDASynchronize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsDeprecated("-cuda_show_devices","-cuda_view","3.12",NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-cuda_view","Display CUDA device information and assignments",NULL,&cuda_view_flag);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (!PetscCUDAInitialized) {
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+    if (size>1 && !flg) {
+      /* check to see if we force multiple ranks to hit the same GPU */
+      /* we're not using the same GPU on multiple MPI threads. So try to allocated different   GPUs to different processes */
+
+      /* First get the device count */
+      err   = cudaGetDeviceCount(&devCount);
+      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
+
+      /* next determine the rank and then set the device via a mod */
+      ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+      device = rank % devCount;
+    }
+    err = cudaSetDevice(device);
+    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
+
+    /* set the device flags so that it can map host memory */
+    err = cudaSetDeviceFlags(cudaDeviceMapHost);
+    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
+
+    ierr = PetscCUBLASInitializeHandle();CHKERRQ(ierr);
+    PetscCUDAInitialized = PETSC_TRUE;
+  }
+  if (cuda_view_flag) {
+    ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    err = cudaGetDeviceCount(&devCount);
+    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
+    for (devicecnt = 0; devicecnt < devCount; ++devicecnt) {
+      err = cudaGetDeviceProperties(&prop,devicecnt);
+      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
+      ierr = PetscPrintf(comm, "CUDA device %d: %s\n", devicecnt, prop.name);CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedPrintf(comm,"[%d] Using CUDA device %d.\n",rank,device);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 /*@C
    PetscEnd - Calls PetscFinalize() and then ends the program. This is useful if one
      wishes a clean exit somewhere deep in the program.
@@ -264,10 +355,9 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscBool         flg4 = PETSC_FALSE;
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  int               device;
-  PetscInt          deviceOpt = 0;
-  PetscBool         cuda_view_flag = PETSC_FALSE;
+  PetscBool         initCuda = PETSC_TRUE;
 #endif
+
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -552,80 +642,11 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
-  ierr = PetscOptionsBegin(comm,NULL,"CUDA options","Sys");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-cuda_set_device","Set all MPI ranks to use the specified CUDA device",NULL,deviceOpt,&deviceOpt,&flg1);CHKERRQ(ierr);
-  device = (int)deviceOpt;
-  ierr = PetscOptionsDeprecated("-cuda_show_devices","-cuda_view","3.12",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsName("-cuda_view","Display CUDA device information and assignments",NULL,&cuda_view_flag);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"CUDA initialize","Sys");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-cuda_initialize","Initialize the CUDA devices and cuBLAS during PetscInitialize()",NULL,initCuda,&initCuda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (!PetscCUDAInitialized) {
-    PetscMPIInt size;
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-    if (size>1) {
-      int         devCount;
-      PetscMPIInt rank;
-      cudaError_t err = cudaSuccess;
-
-      /* check to see if we force multiple ranks to hit the same GPU */
-      if (flg1) {
-        err = cudaSetDevice(device);
-        if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
-      } else {
-        /* we're not using the same GPU on multiple MPI threads. So try to allocated different   GPUs to different processes */
-
-        /* First get the device count */
-        err   = cudaGetDeviceCount(&devCount);
-        if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
-
-        /* next determine the rank and then set the device via a mod */
-        ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-        device = rank % devCount;
-        err    = cudaSetDevice(device);
-        if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
-      }
-
-      /* set the device flags so that it can map host memory ... do NOT throw exception on err!=cudaSuccess
-       multiple devices may try to set the flags on the same device. So long as one of them succeeds, things
-       are ok. */
-      err = cudaSetDeviceFlags(cudaDeviceMapHost);
-      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
-    } else {
-      cudaError_t err = cudaSuccess;
-
-      /* the code below works for serial GPU simulations */
-      if (flg1) {
-        err = cudaSetDevice(device);
-        if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
-      }
-
-      /* set the device flags so that it can map host memory ... here, we error check. */
-      err = cudaSetDeviceFlags(cudaDeviceMapHost);
-      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
-    }
-
-    PetscCUDAInitialized = PETSC_TRUE;
-  }
-  if (cuda_view_flag) {
-    struct cudaDeviceProp prop;
-    int                   devCount,device;
-    cudaError_t           err = cudaSuccess;
-
-    err = cudaGetDeviceCount(&devCount);
-    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
-    for (device = 0; device < devCount; ++device) {
-      err = cudaGetDeviceProperties(&prop,device);
-      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
-      ierr = PetscPrintf(comm, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
-    }
-    err = cudaGetDevice(&device);
-    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDevice %s",cudaGetErrorString(err));
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Using CUDA device %d.\n",rank,device);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  }
-
+  if (initCuda) {ierr = PetscCUDAInitialize(PETSC_COMM_WORLD);CHKERRQ(ierr);}
 #endif
-
 
   /*
        Print basic help message
@@ -703,23 +724,23 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
   }
 
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (!flg3) {
     ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
   }
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsGetBool(NULL,NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscViennaCLSynchronize = flg3;
-#endif
-#if defined(PETSC_HAVE_CUDA)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_synchronize",&flg3,NULL);CHKERRQ(ierr);
-  PetscCUDASynchronize = flg3;
+  ierr = PetscViennaCLInit();CHKERRQ(ierr);
 #endif
 
-#if defined(PETSC_HAVE_VIENNACL)
-  ierr = PetscViennaCLInit();CHKERRQ(ierr);
+  /*
+     Creates the logging data structures; this is enabled even if logging is not turned on
+     This is the last thing we do before returning to the user code to prevent having the
+     logging numbers contaminated by any startup time associated with MPI and the GPUs
+  */
+#if defined(PETSC_USE_LOG)
+  ierr = PetscLogInitialize();CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

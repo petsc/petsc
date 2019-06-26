@@ -345,12 +345,12 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
           PetscScalar    *xx;
           ierr = VecGetOwnershipRange(B,&istart,NULL);CHKERRQ(ierr);
           ierr = VecGetLocalSize(B,&n);CHKERRQ(ierr);
-          ierr = VecGetArray(B,&xx);CHKERRQ(ierr);
+          ierr = VecGetArrayWrite(B,&xx);CHKERRQ(ierr);
           for (i=0; i<n; i++) {
             PetscScalar v = chebyhash(i+istart);
             xx[i] = v;
           }
-          ierr = VecRestoreArray(B,&xx);CHKERRQ(ierr);
+          ierr = VecRestoreArrayWrite(B,&xx);CHKERRQ(ierr);
         }
       } else {
         PC        pc;

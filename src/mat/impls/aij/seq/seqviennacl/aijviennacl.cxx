@@ -391,7 +391,6 @@ static PetscErrorCode MatPinToCPU_SeqAIJViennaCL(Mat A,PetscBool flg)
     A->ops->mult           = MatMult_SeqAIJ;
     A->ops->multadd        = MatMultAdd_SeqAIJ;
     A->ops->assemblyend    = MatAssemblyEnd_SeqAIJ;
-    A->ops->destroy        = MatDestroy_SeqAIJ;
     A->ops->duplicate      = MatDuplicate_SeqAIJ;
   } else {
     A->ops->mult           = MatMult_SeqAIJViennaCL;

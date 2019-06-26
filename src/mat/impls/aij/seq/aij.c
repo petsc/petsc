@@ -1226,8 +1226,8 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,n,*ai=a->i,*aj=a->j,nz;
-  PetscScalar    *aa=a->a,*x,zero=0.0;
+  PetscInt       i,j,n,*ai=a->i,*aj=a->j;
+  PetscScalar    *aa=a->a,*x;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
@@ -1235,17 +1235,15 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 
   if (A->factortype == MAT_FACTOR_ILU || A->factortype == MAT_FACTOR_LU) {
     PetscInt *diag=a->diag;
-    ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+    ierr = VecGetArrayWrite(v,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) x[i] = 1.0/aa[diag[i]];
-    ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
-  ierr = VecSet(v,zero);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    nz = ai[i+1] - ai[i];
-    if (!nz) x[i] = 0.0;
+    x[i] = 0.0;
     for (j=ai[i]; j<ai[i+1]; j++) {
       if (aj[j] == i) {
         x[i] = aa[j];
@@ -1253,7 +1251,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
       }
     }
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

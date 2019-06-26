@@ -8,7 +8,7 @@
 
 PetscClassId  DM_CLASSID;
 PetscClassId  DMLABEL_CLASSID;
-PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction;
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction,DM_CreateMatrix;
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_",0};
 const char *const DMBoundaryConditionTypes[] = {"INVALID","ESSENTIAL","NATURAL","INVALID","INVALID","ESSENTIAL_FIELD","NATURAL_FIELD","INVALID","INVALID","INVALID","NATURAL_RIEMANN","DMBoundaryConditionType","DM_BC_",0};
@@ -1275,6 +1275,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   ierr = MatInitializePackage();CHKERRQ(ierr);
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
+  ierr = PetscLogEventBegin(DM_CreateMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = (*dm->ops->creatematrix)(dm,mat);CHKERRQ(ierr);
   /* Handle nullspace and near nullspace */
   if (dm->Nf) {
@@ -1295,6 +1296,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
       }
     }
   }
+  ierr = PetscLogEventEnd(DM_CreateMatrix,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

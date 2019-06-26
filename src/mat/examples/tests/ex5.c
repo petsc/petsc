@@ -71,6 +71,7 @@ int main(int argc,char **args)
   }
   /* Try overlap Coomunication with the next stage XXXSetValues */
   ierr = VecAssemblyEnd(z);CHKERRQ(ierr);
+
   ierr = MatAssemblyEnd(C,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   CHKMEMQ;
   /* The Assembly for the second Stage */
@@ -81,9 +82,6 @@ int main(int argc,char **args)
   ierr = MatScale(C,alpha);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-
-  /* ------------ Test MatMult(), MatMultAdd()  ---------- */
-
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n");CHKERRQ(ierr);
   CHKMEMQ;
   ierr = MatMult(C,y,x);CHKERRQ(ierr);

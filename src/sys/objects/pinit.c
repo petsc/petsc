@@ -7,7 +7,6 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
-PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
 #endif
 
@@ -990,11 +989,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_SAWS)
   ierr = PetscInitializeSAWs(help);CHKERRQ(ierr);
-#endif
-
-  /* Creates the logging data structures; this is enabled even if logging is not turned on */
-#if defined(PETSC_USE_LOG)
-  ierr = PetscLogInitialize();CHKERRQ(ierr);
 #endif
 
   /*

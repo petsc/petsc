@@ -94,6 +94,8 @@ struct _VecOps {
   PetscErrorCode (*getlocalvectorread)(Vec,Vec);
   PetscErrorCode (*restorelocalvectorread)(Vec,Vec);
   PetscErrorCode (*pintocpu)(Vec,PetscBool);
+  PetscErrorCode (*getarraywrite)(Vec,PetscScalar**);
+  PetscErrorCode (*restorearraywrite)(Vec,PetscScalar**);
 };
 
 /*
