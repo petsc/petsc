@@ -2,7 +2,6 @@
 
 const char *const PCDeflationSpaceTypes[] = {
   "haar",
-  "jacket-haar",
   "db2",
   "db4",
   "db8",

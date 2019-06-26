@@ -78,58 +78,7 @@ PetscScalar biorth22[] = {0.0,
 //0.0,
 //0.0};
 
-PetscReal meyer[] = {0.0,-1.009999956941423e-12,8.519459636796214e-09,-1.111944952595278e-08,-1.0798819539621958e-08,6.066975741351135e-08,-1.0866516536735883e-07,8.200680650386481e-08,1.1783004497663934e-07,-5.506340565252278e-07,1.1307947017916706e-06,-1.489549216497156e-06,7.367572885903746e-07,3.20544191334478e-06,-1.6312699734552807e-05,6.554305930575149e-05,-0.0006011502343516092,-0.002704672124643725,0.002202534100911002,0.006045814097323304,-0.006387718318497156,-0.011061496392513451,0.015270015130934803,0.017423434103729693,-0.03213079399021176,-0.024348745906078023,0.0637390243228016,0.030655091960824263,-0.13284520043622938,-0.035087555656258346,0.44459300275757724,0.7445855923188063,0.44459300275757724,-0.035087555656258346,-0.13284520043622938,0.030655091960824263,0.0637390243228016,-0.024348745906078023,-0.03213079399021176,0.017423434103729693,0.015270015130934803,-0.011061496392513451,-0.006387718318497156,0.006045814097323304,0.002202534100911002,-0.002704672124643725,-0.0006011502343516092,6.554305930575149e-05,-1.6312699734552807e-05,3.20544191334478e-06,7.367572885903746e-07,-1.489549216497156e-06,1.1307947017916706e-06,-5.506340565252278e-07,1.1783004497663934e-07,8.200680650386481e-08,-1.0866516536735883e-07,6.066975741351135e-08,-1.0798819539621958e-08,-1.111944952595278e-08,8.519459636796214e-09,-1.009999956941423e-12};
-
-static PetscErrorCode PCDeflationCreateSpaceJacketHaar(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscBool jacket,Mat *H)
-{
-  PetscErrorCode ierr;
-  Mat defl;
-  PetscInt i,j,ilo,ihi,alloc=2,*Iidx;
-  PetscReal val,*row;
-
-  PetscFunctionBegin;
-  if (jacket) alloc = 3;
-  ierr = PetscMalloc1(alloc,&row);CHKERRQ(ierr);
-  ierr = PetscMalloc1(alloc,&Iidx);CHKERRQ(ierr);
-
-  val = 1./pow(2,0.5);
-  row[0] = val;
-  row[1] = val;
-
-  /* TODO pass A instead of PC? */
-  ierr = MatCreate(comm,&defl);CHKERRQ(ierr);
-  ierr = MatSetSizes(defl,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetUp(defl);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(defl,alloc,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(defl,alloc,NULL,alloc,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  
-  ierr = MatGetOwnershipRange(defl,&ilo,&ihi);CHKERRQ(ierr);
-  for (i=0; i<2; i++) Iidx[i] = i+ilo*2;
-  if (jacket && ihi==M) ihi -=2;
-  if (ihi<ilo) SETERRQ1(comm,PETSC_ERR_ARG_WRONG,"To many cores to assemble Jacket Haar matrix with %d rows",M);
-  for (i=ilo; i<ihi; i++) {
-    ierr = MatSetValues(defl,1,&i,2,Iidx,row,INSERT_VALUES);CHKERRQ(ierr);
-    for (j=0; j<2; j++) Iidx[j] += 2;
-  }
-  if (jacket && ihi == M-2) {
-    for (i=0; i<3; i++) Iidx[i] = i+ilo*2;
-    row[0] = 0.5; row[1] = 0.5; row[2] = val;
-    ierr = MatSetValues(defl,1,&ihi,3,Iidx,row,INSERT_VALUES);CHKERRQ(ierr);
-    ihi += 1;
-    row[2] = -row[2];
-    ierr = MatSetValues(defl,1,&ihi,3,Iidx,row,INSERT_VALUES);CHKERRQ(ierr);
-  }
-    
-  ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
-  ierr = PetscFree(row);CHKERRQ(ierr);
-  ierr = PetscFree(Iidx);CHKERRQ(ierr);
-  *H = defl;
-  PetscFunctionReturn(0);
-}
+PetscScalar meyer[] = {0.0,-1.009999956941423e-12,8.519459636796214e-09,-1.111944952595278e-08,-1.0798819539621958e-08,6.066975741351135e-08,-1.0866516536735883e-07,8.200680650386481e-08,1.1783004497663934e-07,-5.506340565252278e-07,1.1307947017916706e-06,-1.489549216497156e-06,7.367572885903746e-07,3.20544191334478e-06,-1.6312699734552807e-05,6.554305930575149e-05,-0.0006011502343516092,-0.002704672124643725,0.002202534100911002,0.006045814097323304,-0.006387718318497156,-0.011061496392513451,0.015270015130934803,0.017423434103729693,-0.03213079399021176,-0.024348745906078023,0.0637390243228016,0.030655091960824263,-0.13284520043622938,-0.035087555656258346,0.44459300275757724,0.7445855923188063,0.44459300275757724,-0.035087555656258346,-0.13284520043622938,0.030655091960824263,0.0637390243228016,-0.024348745906078023,-0.03213079399021176,0.017423434103729693,0.015270015130934803,-0.011061496392513451,-0.006387718318497156,0.006045814097323304,0.002202534100911002,-0.002704672124643725,-0.0006011502343516092,6.554305930575149e-05,-1.6312699734552807e-05,3.20544191334478e-06,7.367572885903746e-07,-1.489549216497156e-06,1.1307947017916706e-06,-5.506340565252278e-07,1.1783004497663934e-07,8.200680650386481e-08,-1.0866516536735883e-07,6.066975741351135e-08,-1.0798819539621958e-08,-1.111944952595278e-08,8.519459636796214e-09,-1.009999956941423e-12};
 
 static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt ncoeffs,PetscScalar *coeffs,PetscBool trunc,Mat *H)
 {
@@ -220,57 +169,6 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
   ierr = PetscFree(col);CHKERRQ(ierr);
   ierr = PetscFree(Iidx);CHKERRQ(ierr);
   *W = defl;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode PCDeflationGetSpaceJacketHaar(PC pc,Mat *W,PetscInt size)
-{
-  PetscErrorCode ierr;
-  Mat A,*H,defl;
-  PetscInt i,m,M,Mdefl,Ndefl;
-  PetscBool jh;
-  MPI_Comm comm;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&H);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr); /* NOTE: Get Pmat instead? */
-  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-  Mdefl = M;
-  Ndefl = M;
-  for (i=0; i<size; i++) {
-    if (Mdefl%2)  {
-      jh=PETSC_TRUE;
-      Mdefl = Mdefl/2 +1;
-    } else {
-      jh=PETSC_FALSE;
-      Mdefl = Mdefl/2;
-    }
-    ierr = PCDeflationCreateSpaceJacketHaar(comm,PETSC_DECIDE,m,Mdefl,Ndefl,jh,&H[i]);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(H[i],&m,NULL);CHKERRQ(ierr);
-    Ndefl = Mdefl;
-  }
-  //ierr = MatCreateProd(comm,size,H,&defl);CHKERRQ(ierr);
-  //ierr = MatCreateComposite(comm,size,H,&defl);CHKERRQ(ierr);
-  //ierr = MatCompositeSetType(defl,MAT_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
-  /* TODO allow implicit */
-  //ierr = MatCompositeMerge(defl);CHKERRQ(ierr);
-  Mat newmat;
-  defl = H[0];
-  for (i=0; i<size-1; i++) {
-    ierr = MatMatMult(H[i+1],defl,MAT_INITIAL_MATRIX,PETSC_DECIDE,&newmat);CHKERRQ(ierr);
-    ierr = MatDestroy(&defl);CHKERRQ(ierr);
-    defl = newmat ;
-  }
-
-  ierr = MatTranspose(defl,MAT_INITIAL_MATRIX,W);CHKERRQ(ierr);
-  
-  ierr = MatDestroy(&defl);CHKERRQ(ierr);
-  for (i=1; i<size; i++) {
-    ierr = MatDestroy(&H[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(H);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -437,9 +335,6 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
     case PC_DEFLATION_SPACE_HAAR:
       transp = PETSC_FALSE;
       ierr = PCDeflationGetSpaceHaar(pc,&defl,def->spacesize);CHKERRQ(ierr);break;
-    case PC_DEFLATION_SPACE_JACKET_HAAR:
-      transp = PETSC_FALSE;
-      ierr = PCDeflationGetSpaceJacketHaar(pc,&defl,def->spacesize);CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_DB2:
       ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,2,db2,!def->extendsp);CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_DB4:
