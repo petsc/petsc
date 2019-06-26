@@ -378,11 +378,14 @@ PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
 .    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: intermediate
+    
+    Notes:
+    See documentation of PetscViewerASCIISynchronizedPrintf() for more details how the synchronized output should be done properly.
 
 
-.seealso: PetscViewerASCIIPopSynchronized(), PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
-          PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
-          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
+.seealso: PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush(), PetscViewerASCIIPopSynchronized(),
+          PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType()
 @*/
 PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 {
@@ -407,11 +410,14 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 .    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: intermediate
+    
+    Notes:
+    See documentation of PetscViewerASCIISynchronizedPrintf() for more details how the synchronized output should be done properly.
 
 
-.seealso: PetscViewerASCIIPushSynchronized(), PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
-          PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
-          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
+.seealso: PetscViewerASCIIPushSynchronized(), PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush(),
+          PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType()
 @*/
 PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
 {
@@ -884,15 +890,29 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
     Level: intermediate
 
     Notes:
-    You must have previously called PetscViewerASCIISynchronizeAllow() to allow this routine to be called.
+    You must have previously called PetscViewerASCIIPushSynchronized() to allow this routine to be called.
+    Then you can do multiple independent calls to this routine.
+    The actual synchronized print is then done using PetscViewerFlush().
+    PetscViewerASCIIPopSynchronized() should be then called if we are already done with the synchronized output
+    to conclude the "synchronized session".
+    So the typical calling sequence looks like
+$ PetscViewerASCIIPushSynchronized(viewer);
+$ PetscViewerASCIISynchronizedPrintf(viewer, ...);
+$ PetscViewerASCIISynchronizedPrintf(viewer, ...);
+$ ...
+$ PetscViewerFlush(viewer);
+$ PetscViewerASCIISynchronizedPrintf(viewer, ...);
+$ PetscViewerASCIISynchronizedPrintf(viewer, ...);
+$ ...
+$ PetscViewerFlush(viewer);
+$ PetscViewerASCIIPopSynchronized(viewer);    
 
     Fortran Note:
       Can only print a single character* string
 
-.seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
-          PetscFOpen(), PetscViewerFlush(), PetscViewerASCIIGetPointer(), PetscViewerDestroy(), PetscViewerASCIIOpen(),
-          PetscViewerASCIIPrintf(), PetscViewerASCIIPushSynchronized()
-
+.seealso: PetscViewerASCIIPushSynchronized(), PetscViewerFlush(), PetscViewerASCIIPopSynchronized(),
+          PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType()
 @*/
 PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],...)
 {
