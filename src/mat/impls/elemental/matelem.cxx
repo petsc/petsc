@@ -128,6 +128,7 @@ PetscErrorCode MatSetOption_Elemental(Mat A,MatOption op,PetscBool flg)
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_SYMMETRIC:
+  case MAT_SORTED_FULL:
     break;
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;

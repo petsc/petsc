@@ -529,7 +529,7 @@ PetscErrorCode MatSetValuesRow_MPIAIJ(Mat A,PetscInt row,const PetscScalar v[])
 PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
-  PetscScalar    value;
+  PetscScalar    value = 0.0;
   PetscErrorCode ierr;
   PetscInt       i,j,rstart  = mat->rmap->rstart,rend = mat->rmap->rend;
   PetscInt       cstart      = mat->cmap->rstart,cend = mat->cmap->rend,row,col;
@@ -574,8 +574,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
       high2    = nrow2;
 
       for (j=0; j<n; j++) {
-        if (roworiented) value = v[i*n+j];
-        else             value = v[i+j*m];
+        if (v)  value = roworiented ? v[i*n+j] : v[i+j*m];
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;
           nonew = a->nonew;
@@ -819,7 +818,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyEnd(aij->A,mode);CHKERRQ(ierr);
 
   /* determine if any processor has disassembled, if so we must
-     also disassemble ourselfs, in order that we may reassemble. */
+     also disassemble ourself, in order that we may reassemble. */
   /*
      if nonzero structure of submatrix B cannot change then we know that
      no processor disassembled thus we can skip this stuff
@@ -1821,6 +1820,7 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscBool flg)
     ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
   case MAT_NEW_DIAGONALS:
+  case MAT_SORTED_FULL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
@@ -2002,12 +2002,13 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 
 PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
 {
-  Mat_MPIAIJ     *a    =(Mat_MPIAIJ*)A->data,*b;
-  Mat_SeqAIJ     *Aloc =(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data,*sub_B_diag;
-  PetscInt       M     = A->rmap->N,N=A->cmap->N,ma,na,mb,nb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,*B_diag_ilen,*B_diag_i,i,ncol,A_diag_ncol;
-  PetscErrorCode ierr;
-  Mat            B,A_diag,*B_diag;
-  MatScalar      *array;
+  Mat_MPIAIJ      *a    =(Mat_MPIAIJ*)A->data,*b;
+  Mat_SeqAIJ      *Aloc =(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data,*sub_B_diag;
+  PetscInt        M     = A->rmap->N,N=A->cmap->N,ma,na,mb,nb,row,*cols,*cols_tmp,*B_diag_ilen,i,ncol,A_diag_ncol;
+  const PetscInt  *ai,*aj,*bi,*bj,*B_diag_i;
+  PetscErrorCode  ierr;
+  Mat             B,A_diag,*B_diag;
+  const MatScalar *array;
 
   PetscFunctionBegin;
   ma = A->rmap->n; na = A->cmap->n; mb = a->B->rmap->n; nb = a->B->cmap->n;
@@ -2065,7 +2066,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   ierr = MatTranspose(A_diag,MAT_REUSE_MATRIX,B_diag);CHKERRQ(ierr);
 
   /* copy over the B part */
-  ierr  = PetscCalloc1(bi[mb],&cols);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(bi[mb],&cols);CHKERRQ(ierr);
   array = Bloc->a;
   row   = A->rmap->rstart;
   for (i=0; i<bi[mb]; i++) cols[i] = a->garray[bj[i]];
@@ -3906,7 +3907,6 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   PetscInt       m,cstart, cend,j,nnz,i,d;
   PetscInt       *d_nnz,*o_nnz,nnz_max = 0,rstart,ii;
   const PetscInt *JJ;
-  PetscScalar    *values;
   PetscErrorCode ierr;
   PetscBool      nooffprocentries;
 
@@ -3946,15 +3946,9 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
-  if (v) values = (PetscScalar*)v;
-  else {
-    ierr = PetscCalloc1(nnz_max+1,&values);CHKERRQ(ierr);
-  }
-
   for (i=0; i<m; i++) {
     ii   = i + rstart;
-    nnz  = Ii[i+1]- Ii[i];
-    ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+Ii[i],values+(v ? Ii[i] : 0),INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues_MPIAIJ(B,1,&ii,Ii[i+1] - Ii[i],J+Ii[i], v ? v + Ii[i] : NULL,INSERT_VALUES);CHKERRQ(ierr);
   }
   nooffprocentries    = B->nooffprocentries;
   B->nooffprocentries = PETSC_TRUE;
@@ -3962,9 +3956,6 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   B->nooffprocentries = nooffprocentries;
 
-  if (!v) {
-    ierr = PetscFree(values);CHKERRQ(ierr);
-  }
   ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

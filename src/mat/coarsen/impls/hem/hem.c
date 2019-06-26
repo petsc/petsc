@@ -20,10 +20,10 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out)
   ail->pool_list.array = NULL;
   ail->chk_sz          = 0;
   /* allocate array */
-  ail->size = a_size;
-  ierr      = PetscCalloc1(a_size, &ail->array);CHKERRQ(ierr);
-  ail->extra_nodes = NULL;
-  ail->mat         = NULL;
+  ail->size            = a_size;
+  ierr                 = PetscCalloc1(a_size, &ail->array);CHKERRQ(ierr);
+  ail->extra_nodes     = NULL;
+  ail->mat             = NULL;
   PetscFunctionReturn(0);
 }
 

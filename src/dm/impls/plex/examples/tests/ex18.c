@@ -286,13 +286,15 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   if (numCells < 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
 
   if (size == 1) {
+    double *dcoords;
     numVertices = numCells + 1;
-    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&coords);CHKERRQ(ierr);
+    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&dcoords);CHKERRQ(ierr);
     for (i=0; i<numCells; i++) {
       cells[2*i] = i; cells[2*i+1] = i + 1;
+      dcoords[2*i] = i; dcoords[2*i+1] = i + 1;
     }
 
-    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, (const int*)cells, spacedim, (const double*)coords, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, dcoords, dm);CHKERRQ(ierr);
     ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -308,6 +310,8 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
       ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
       cells[0] = 0; cells[1] = 1;
       cells[2] = 1; cells[3] = 2;
+      coords[0] = 0.; coords[1] = 1.;
+      coords[2] = 1.; coords[3] = 2.;
     }
     break;
     case 1:
@@ -317,6 +321,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
       ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
       for (i=0; i<numCells; i++) {
         cells[2*i] = 2+i; cells[2*i+1] = 2 + i + 1;
+        coords[2*i] = 2+i; coords[2*i+1] = 2 + i + 1;
       }
     }
     break;
@@ -345,7 +350,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
     default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
   }
-  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, (const int*)cells, spacedim, coords, NULL, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, coords, NULL, dm);CHKERRQ(ierr);
   ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

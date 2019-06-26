@@ -1028,7 +1028,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (jac->offdiag_use_amat) {
       ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
     } else {
-	    ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
     }
     ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
     /* Create work vectors for GKB algorithm */

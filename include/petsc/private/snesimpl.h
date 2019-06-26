@@ -127,8 +127,7 @@ struct _p_SNES {
   PetscInt    conv_hist_len;      /* size of convergence history array */
   PetscInt    conv_hist_max;      /* actual amount of data in conv_history */
   PetscBool   conv_hist_reset;    /* reset counter for each new SNES solve */
-  PetscBool   conv_malloc;
-
+  PetscBool   conv_hist_alloc;
   PetscBool    counters_reset;    /* reset counter for each new SNES solve */
 
   /* the next two are used for failures in the line search; they should be put elsewhere */

@@ -397,7 +397,8 @@ typedef enum {MAT_OPTION_MIN = -3,
               MAT_SUBSET_OFF_PROC_ENTRIES = 20,
               MAT_SUBMAT_SINGLEIS = 21,
               MAT_STRUCTURE_ONLY = 22,
-              MAT_OPTION_MAX = 23} MatOption;
+              MAT_SORTED_FULL = 23,
+              MAT_OPTION_MAX = 24} MatOption;
 
 PETSC_EXTERN const char *const *MatOptions;
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);

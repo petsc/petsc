@@ -146,8 +146,7 @@ int main(int argc,char **args)
     PetscScalar       *nvals;
 
     ierr = MatGetOwnershipRange(B,&rstart,NULL);CHKERRQ(ierr);
-    ierr = PetscCalloc1(2*m,&nzd);CHKERRQ(ierr);
-    ierr = PetscCalloc1(2*m,&nzo);CHKERRQ(ierr);
+    ierr = PetscCalloc2(2*m,&nzd,2*m,&nzo);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = MatGetRow(B,i+rstart,&nzl,&cols,NULL);CHKERRQ(ierr);
       for (j=0; j<nzl; j++) {
@@ -164,8 +163,7 @@ int main(int argc,char **args)
     }
     ierr = MatCreateAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J);CHKERRQ(ierr);
     ierr = PetscInfo(0,"Created empty Jacobian matrix\n");CHKERRQ(ierr);
-    ierr = PetscFree(nzd);CHKERRQ(ierr);
-    ierr = PetscFree(nzo);CHKERRQ(ierr);
+    ierr = PetscFree2(nzd,nzo);CHKERRQ(ierr);
     ierr = PetscMalloc2(nzmax,&ncols,nzmax,&nvals);CHKERRQ(ierr);
     ierr = PetscArrayzero(nvals,nzmax);CHKERRQ(ierr);
     for (i=0; i<m; i++) {

@@ -340,10 +340,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
   ierr = VecDestroy(&(*tao)->res_weights_v);CHKERRQ(ierr);
   ierr = TaoCancelMonitors(*tao);CHKERRQ(ierr);
   if ((*tao)->hist_malloc) {
-    ierr = PetscFree((*tao)->hist_obj);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->hist_resid);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->hist_cnorm);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->hist_lits);CHKERRQ(ierr);
+    ierr = PetscFree4((*tao)->hist_obj,(*tao)->hist_resid,(*tao)->hist_cnorm,(*tao)->hist_lits);CHKERRQ(ierr);
   }
   if ((*tao)->res_weights_n) {
     ierr = PetscFree((*tao)->res_weights_rows);CHKERRQ(ierr);
@@ -2603,11 +2600,8 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 
   if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
   if (!obj && !resid && !cnorm && !lits) {
-    ierr = PetscCalloc1(na,&obj);CHKERRQ(ierr);
-    ierr = PetscCalloc1(na,&resid);CHKERRQ(ierr);
-    ierr = PetscCalloc1(na,&cnorm);CHKERRQ(ierr);
-    ierr = PetscCalloc1(na,&lits);CHKERRQ(ierr);
-    tao->hist_malloc=PETSC_TRUE;
+    ierr = PetscCalloc4(na,&obj,na,&resid,na,&cnorm,na,&lits);CHKERRQ(ierr);
+    tao->hist_malloc = PETSC_TRUE;
   }
 
   tao->hist_obj = obj;

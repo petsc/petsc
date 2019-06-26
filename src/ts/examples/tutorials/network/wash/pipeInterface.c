@@ -104,7 +104,7 @@ PetscErrorCode PipeCreateJacobian(Pipe pipe,Mat *Jin,Mat *J[])
 {
   PetscErrorCode ierr;
   Mat            *Jpipe;
-  PetscInt       i,M,rows[2],cols[2],*nz;
+  PetscInt       M,rows[2],cols[2],*nz;
   PetscScalar    *aa;
 
   PetscFunctionBegin;
@@ -124,7 +124,6 @@ PetscErrorCode PipeCreateJacobian(Pipe pipe,Mat *Jin,Mat *J[])
   /* Jacobian for upstream vertex */
   ierr = MatGetSize(Jpipe[0],&M,NULL);CHKERRQ(ierr);
   ierr = PetscCalloc2(M,&nz,4,&aa);CHKERRQ(ierr);
-  for (i=0; i<4; i++) aa[i] = 0.0;
 
   ierr = MatCreate(PETSC_COMM_SELF,&Jpipe[1]);CHKERRQ(ierr);
   ierr = MatSetSizes(Jpipe[1],PETSC_DECIDE,PETSC_DECIDE,M,2);CHKERRQ(ierr);

@@ -7,7 +7,7 @@
 /*
    These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,PetscBool,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t,int,const char[],const char[],void**);
 
@@ -24,10 +24,10 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t,int,const char[],const char
    double aligned pointer to requested storage, or null if not
    available.
 */
-static PetscErrorCode PetscHBWMalloc(size_t a,int lineno,const char function[],const char filename[],void **result)
+static PetscErrorCode PetscHBWMalloc(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {
 #if !defined(PETSC_HAVE_MEMKIND)
-  return PetscMallocAlign(a,lineno,function,filename,result);
+  return PetscMallocAlign(a,clear,lineno,function,filename,result);
 #else
   if (!a) { *result = NULL; return 0; }
   /*

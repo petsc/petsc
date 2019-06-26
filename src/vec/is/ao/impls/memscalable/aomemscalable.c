@@ -115,9 +115,8 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
-  ierr = PetscMalloc2(2*size,&sizes,size,&start);CHKERRQ(ierr);
-  ierr = PetscArrayzero(sizes,2*size);CHKERRQ(ierr);
-  ierr = PetscCalloc1(n,&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&start);CHKERRQ(ierr);
+  ierr = PetscCalloc2(2*size,&sizes,n,&owner);CHKERRQ(ierr);
 
   j       = 0;
   lastidx = -1;
@@ -235,8 +234,8 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const 
   }
 
   /* free arrays */
-  ierr = PetscFree2(sizes,start);CHKERRQ(ierr);
-  ierr = PetscFree(owner);CHKERRQ(ierr);
+  ierr = PetscFree(start);CHKERRQ(ierr);
+  ierr = PetscFree2(sizes,owner);CHKERRQ(ierr);
   ierr = PetscFree2(rindices,recv_waits);CHKERRQ(ierr);
   ierr = PetscFree2(rindices2,recv_waits2);CHKERRQ(ierr);
   ierr = PetscFree3(sindices,send_waits,send_status);CHKERRQ(ierr);
@@ -314,7 +313,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
       if (idx >= owners[j] && idx < owners[j+1]) {
         sizes[2*j]  += 2; /* num of indices to be sent - in pairs (ip,ia) */
         sizes[2*j+1] = 1; /* send to proc[j] */
-        owner[i]      = j;
+        owner[i]     = j;
         break;
       }
     }

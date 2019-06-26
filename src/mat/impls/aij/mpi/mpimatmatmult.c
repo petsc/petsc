@@ -210,7 +210,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   PetscInt           *lnk,i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi;
   PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n;
   PetscBT            lnkbt;
-  PetscScalar        *apa;
   PetscReal          afill;
   MatType            mtype;
 
@@ -296,9 +295,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
   /* malloc apa to store dense row A[i,:]*P */
-  ierr = PetscCalloc1(pN,&apa);CHKERRQ(ierr);
-
-  ptap->apa = apa;
+  ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
 
   /* create and assemble symbolic parallel matrix Cmpi */
   /*----------------------------------------------------*/
@@ -710,7 +707,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   PetscInt           i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi,*lnk,apnz_max=0;
   PetscInt           am=A->rmap->n,pn=P->cmap->n,pm=P->rmap->n,lsize=pn+20;
   PetscReal          afill;
-  PetscScalar        *apa;
   MatType            mtype;
 
   PetscFunctionBegin;
@@ -819,8 +815,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
 
   /* malloc apa for assembly Cmpi */
-  ierr = PetscCalloc1(apnz_max,&apa);CHKERRQ(ierr);
-  ptap->apa = apa;
+  ierr = PetscCalloc1(apnz_max,&ptap->apa);CHKERRQ(ierr);
 
   ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Cmpi, apj, api);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -966,7 +961,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
                      *apj,apnz, *adpdi, *adpdj, *adpdJ, *poff_i, *poff_j, *j_temp, *aopothi, *aopothj;
   PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n, p_colstart, p_colend;
   PetscBT            lnkbt;
-  PetscScalar        *apa;
   PetscReal          afill;
   PetscMPIInt        rank;
   Mat                adpd, aopoth;
@@ -1100,9 +1094,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   }
 
   /* malloc apa to store dense row A[i,:]*P */
-  ierr = PetscCalloc1(pN+2,&apa);CHKERRQ(ierr);
+  ierr = PetscCalloc1(pN+2,&ptap->apa);CHKERRQ(ierr);
 
-  ptap->apa = apa;
   /* create and assemble symbolic parallel matrix Cmpi */
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,am,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -1775,7 +1768,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   PetscInt            *ai,*aj,*Jptr,anz,*prmap=p->garray,pon,nspacedouble=0,j;
   PetscReal           afill  =1.0,afill_tmp;
   PetscInt            rstart = P->cmap->rstart,rmax,aN=A->cmap->N,Armax;
-  PetscScalar         *vals;
   Mat_SeqAIJ          *a_loc,*pdt,*pot;
   PetscTable          ta;
   MatType             mtype;
@@ -2053,8 +2045,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   /* create symbolic parallel matrix Cmpi - why cannot be assembled in Numeric part   */
   /*----------------------------------------------------------------------------------*/
-  ierr = PetscCalloc1(rmax+1,&vals);CHKERRQ(ierr);
-
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(A->cmap->bs));CHKERRQ(ierr);
@@ -2067,12 +2057,10 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     row  = i + rstart;
     nnz  = bi[i+1] - bi[i];
     Jptr = bj + bi[i];
-    ierr = MatSetValues(Cmpi,1,&row,nnz,Jptr,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(Cmpi,1,&row,nnz,Jptr,NULL,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(vals);CHKERRQ(ierr);
-
   merge->bi        = bi;
   merge->bj        = bj;
   merge->coi       = coi;

@@ -27,7 +27,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
   ierr = MatGetLayouts(adj,&rmap,NULL);CHKERRQ(ierr);
   ierr = ISGetLocalSize(irows,&nlrows_is);CHKERRQ(ierr);
   ierr = ISGetIndices(irows,&irows_indices);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nlrows_is,&iremote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlrows_is,&iremote);CHKERRQ(ierr);
   /* construct sf graph*/
   nleaves = nlrows_is;
   for (i=0; i<nlrows_is; i++){
@@ -151,9 +151,9 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
     ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
     nindx = nindx>(irow_n+icol_n)? nindx:(irow_n+icol_n);
   }
-  ierr = PetscCalloc1(nindx,&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nindx,&indices);CHKERRQ(ierr);
   /* construct a submat */
-  for(i=0; i<n; i++){
+  for (i=0; i<n; i++){
     if (subcomm){
       ierr = PetscObjectGetComm((PetscObject)irow[i],&scomm_row);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)icol[i],&scomm_col);CHKERRQ(ierr);
@@ -178,8 +178,8 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
     nindx = irow_n+icol_n;
     ierr = PetscSortRemoveDupsInt(&nindx,indices);CHKERRQ(ierr);
     /* renumber columns */
-    for(j=0; j<irow_n; j++){
-      for(k=sxadj[j]; k<sxadj[j+1]; k++){
+    for (j=0; j<irow_n; j++){
+      for (k=sxadj[j]; k<sxadj[j+1]; k++){
         ierr = PetscFindInt(sadjncy[k],nindx,indices,&loc);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
         if (loc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %D",sadjncy[k]);
@@ -725,7 +725,7 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
   ierr = MPI_Allreduce(&nz,&NZ,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
 
   ierr = PetscMPIIntCast(nz,&mnz);CHKERRQ(ierr);
-  ierr = PetscCalloc2(size,&allnz,size,&dispnz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&allnz,size,&dispnz);CHKERRQ(ierr);
   ierr = MPI_Allgather(&mnz,1,MPI_INT,allnz,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   dispnz[0] = 0; for (i=1; i<size; i++) dispnz[i] = dispnz[i-1]+ allnz[i-1];
   if (adj->values) {

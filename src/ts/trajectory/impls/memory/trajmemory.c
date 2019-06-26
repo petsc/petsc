@@ -111,7 +111,7 @@ static PetscErrorCode ElementCreate(TS ts,Stack *stack,StackElement *e)
   if (stack->use_dram) {
     ierr = PetscMallocSetDRAM();CHKERRQ(ierr);
   }
-  ierr = PetscCalloc1(1,e);CHKERRQ(ierr);
+  ierr = PetscNew(e);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&(*e)->X);CHKERRQ(ierr);
   if (stack->numY > 0 && !stack->solution_only) {
@@ -1725,7 +1725,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
         diskstack->stacksize = diskblocks;
         revolve_create_offline(tjsch->stride,tjsch->max_cps_ram);
         revolve2_create_offline((tjsch->total_steps+tjsch->stride-1)/tjsch->stride,diskblocks);
-        ierr = PetscCalloc1(1,&rctx2);CHKERRQ(ierr);
+        ierr = PetscNew(&rctx2);CHKERRQ(ierr);
         rctx2->snaps_in       = diskblocks;
         rctx2->reverseonestep = PETSC_FALSE;
         rctx2->check          = 0;
@@ -1750,7 +1750,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
       default:
         break;
     }
-    ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
+    ierr = PetscNew(&rctx);CHKERRQ(ierr);
     rctx->snaps_in       = tjsch->max_cps_ram; /* for theta methods snaps_in=2*max_cps_ram */
     rctx->reverseonestep = PETSC_FALSE;
     rctx->check          = 0;
@@ -1840,7 +1840,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   tj->ops->reset          = TSTrajectoryReset_Memory;
   tj->ops->destroy        = TSTrajectoryDestroy_Memory;
 
-  ierr = PetscCalloc1(1,&tjsch);CHKERRQ(ierr);
+  ierr = PetscNew(&tjsch);CHKERRQ(ierr);
   tjsch->stype        = NONE;
   tjsch->max_cps_ram  = -1; /* -1 indicates that it is not set */
   tjsch->max_cps_disk = -1; /* -1 indicates that it is not set */

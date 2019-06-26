@@ -104,8 +104,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   /* Create PetscLayout for j and a vectors; construct ranges first */
   ierr = PetscLayoutCreate(comm,&jmap);CHKERRQ(ierr);
-  ierr = PetscCalloc1(size+1, &jmap->range);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&i[0], 1, MPIU_INT, jmap->range, 1, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+1, &jmap->range);CHKERRQ(ierr);
+  ierr = MPI_Allgather(i, 1, MPIU_INT, jmap->range, 1, MPIU_INT, comm);CHKERRQ(ierr);
   /* Last rank has global number of nonzeros (= length of j and a arrays) in i[m] (last i entry) so broadcast it */
   jmap->range[size] = i[m];
   ierr = MPI_Bcast(&jmap->range[size], 1, MPIU_INT, size-1, comm);CHKERRQ(ierr);

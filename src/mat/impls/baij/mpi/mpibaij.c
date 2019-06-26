@@ -1612,6 +1612,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscBool flg)
     ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
   case MAT_NEW_DIAGONALS:
+  case MAT_SORTED_FULL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
@@ -3468,7 +3469,8 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
     ierr = PetscBinaryRead(fd,locrowlens,mend,NULL,PETSC_INT);CHKERRQ(ierr);
     for (j=mend; j<m; j++) locrowlens[j] = 1;
     ierr = PetscMalloc1(mmax,&rowlengths);CHKERRQ(ierr);
-    ierr = PetscCalloc1(size,&procsnz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&procsnz);CHKERRQ(ierr);
+    procsnz[0] = 0;
     for (j=0; j<m; j++) {
       procsnz[0] += locrowlens[j];
     }
@@ -3478,6 +3480,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
       ierr = PetscBinaryRead(fd,rowlengths,mend,NULL,PETSC_INT);CHKERRQ(ierr);
       for (j=mend; j<browners[i+1] - browners[i]; j++) rowlengths[j] = 1;
       /* calculate the number of nonzeros on each processor */
+      procsnz[i] = 0;
       for (j=0; j<browners[i+1]-browners[i]; j++) {
         procsnz[i] += rowlengths[j];
       }
