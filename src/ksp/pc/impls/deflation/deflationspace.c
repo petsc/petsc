@@ -2,10 +2,7 @@
 
 PetscScalar db2[] = {0.7071067811865476,0.7071067811865476};
 
-//dec low high
 PetscScalar db4[] = {-0.12940952255092145,0.22414386804185735,0.836516303737469,0.48296291314469025};
-//rec low high
-//PetscScalar db4[] = {0.48296291314469025,0.836516303737469,0.22414386804185735,-0.12940952255092145};
 
 PetscScalar db8[] = {-0.010597401784997278,
 0.032883011666982945,
@@ -15,15 +12,6 @@ PetscScalar db8[] = {-0.010597401784997278,
 0.6308807679295904,
 0.7148465705525415,
 0.23037781330885523};
-
-//PetscScalar db8[] = {0.23037781330885523,
-//0.7148465705525415,
-//0.6308807679295904,
-//-0.02798376941698385,
-//-0.18703481171888114,
-//0.030841381835986965,
-//0.032883011666982945,
-//-0.010597401784997278};
 
 PetscScalar db16[] = {-0.00011747678400228192,
 0.0006754494059985568,
@@ -42,36 +30,12 @@ PetscScalar db16[] = {-0.00011747678400228192,
 0.3128715909144659,
 0.05441584224308161};
 
-//PetscScalar db16[] = {0.05441584224308161,
-//0.3128715909144659,
-//0.6756307362980128,
-//0.5853546836548691,
-//-0.015829105256023893,
-//-0.2840155429624281,
-//0.00047248457399797254,
-//0.128747426620186,
-//-0.01736930100202211,
-//-0.04408825393106472,
-//0.013981027917015516,
-//0.008746094047015655,
-//-0.00487035299301066,
-//-0.0003917403729959771,
-//0.0006754494059985568,
-//-0.00011747678400228192};
-
 PetscScalar biorth22[] = {0.0,
 -0.1767766952966369,
 0.3535533905932738,
 1.0606601717798214,
 0.3535533905932738,
 -0.1767766952966369};
-
-//PetscScalar biorth22[] = {0.0,
-//0.3535533905932738,
-//0.7071067811865476,
-//0.3535533905932738,
-//0.0,
-//0.0};
 
 PetscScalar meyer[] = {0.0,-1.009999956941423e-12,8.519459636796214e-09,-1.111944952595278e-08,-1.0798819539621958e-08,6.066975741351135e-08,-1.0866516536735883e-07,8.200680650386481e-08,1.1783004497663934e-07,-5.506340565252278e-07,1.1307947017916706e-06,-1.489549216497156e-06,7.367572885903746e-07,3.20544191334478e-06,-1.6312699734552807e-05,6.554305930575149e-05,-0.0006011502343516092,-0.002704672124643725,0.002202534100911002,0.006045814097323304,-0.006387718318497156,-0.011061496392513451,0.015270015130934803,0.017423434103729693,-0.03213079399021176,-0.024348745906078023,0.0637390243228016,0.030655091960824263,-0.13284520043622938,-0.035087555656258346,0.44459300275757724,0.7445855923188063,0.44459300275757724,-0.035087555656258346,-0.13284520043622938,0.030655091960824263,0.0637390243228016,-0.024348745906078023,-0.03213079399021176,0.017423434103729693,0.015270015130934803,-0.011061496392513451,-0.006387718318497156,0.006045814097323304,0.002202534100911002,-0.002704672124643725,-0.0006011502343516092,6.554305930575149e-05,-1.6312699734552807e-05,3.20544191334478e-06,7.367572885903746e-07,-1.489549216497156e-06,1.1307947017916706e-06,-5.506340565252278e-07,1.1783004497663934e-07,8.200680650386481e-08,-1.0866516536735883e-07,6.066975741351135e-08,-1.0798819539621958e-08,-1.111944952595278e-08,8.519459636796214e-09,-1.009999956941423e-12};
 
@@ -84,7 +48,6 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscI
   PetscFunctionBegin;
   ierr = PetscMalloc1(ncoeffs,&Iidx);CHKERRQ(ierr);
 
-  /* TODO pass A instead of PC? */
   ierr = MatCreate(comm,&defl);CHKERRQ(ierr);
   ierr = MatSetSizes(defl,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetUp(defl);CHKERRQ(ierr);
@@ -96,7 +59,7 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscI
   /* Alg 735 Taswell: fvecmat */
   k = ncoeffs -2;
   if (trunc) k = k/2;
-  
+
   ierr = MatGetOwnershipRange(defl,&ilo,&ihi);CHKERRQ(ierr);
   for (i=0; i<ncoeffs; i++) {
     Iidx[i] = i+ilo*2 -k;
@@ -109,10 +72,10 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscI
       if (Iidx[j] >= N) Iidx[j] = PETSC_MIN_INT;
     }
   }
-    
+
   ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = PetscFree(Iidx);CHKERRQ(ierr);
   *H = defl;
   PetscFunctionReturn(0);
@@ -133,17 +96,16 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
   val = 1./pow(2,size/2.);
   for (i=0; i<len; i++) col[i] = val;
 
-  /* TODO pass A instead of PC? */
-  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr); /* NOTE: Get Pmat instead? */
+  ierr = PCGetOperators(pc,NULL,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&defl);CHKERRQ(ierr);
-  ierr = MatSetSizes(defl,m,PETSC_DECIDE,M,ceil(M/(float)len));CHKERRQ(ierr);
+  ierr = MatSetSizes(defl,m,PETSC_DECIDE,M,(PetscInt)ceil(M/(float)len));CHKERRQ(ierr);
   ierr = MatSetUp(defl);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(defl,size,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(defl,size,NULL,size,NULL);CHKERRQ(ierr);
   ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   ierr = MatGetOwnershipRangeColumn(defl,&ilo,&ihi);CHKERRQ(ierr);
   for (i=0; i<len; i++) Iidx[i] = i+ilo*len;
   if (M%len && ihi == (int)ceil(M/(float)len)) ihi -= 1;
@@ -157,10 +119,10 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
     for (i=0; i<len; i++) col[i] = val;
     ierr = MatSetValues(defl,len,Iidx,1,&ihi,col,INSERT_VALUES);CHKERRQ(ierr);
   }
-    
+
   ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = PetscFree(col);CHKERRQ(ierr);
   ierr = PetscFree(Iidx);CHKERRQ(ierr);
   *W = defl;
@@ -177,7 +139,7 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoef
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PetscMalloc1(size,&H);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr); /* NOTE: Get Pmat instead? */
+  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
   Mdefl = M;
@@ -216,8 +178,7 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  /* TODO pass A instead of PC? */
-  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr); /* NOTE: Get Pmat instead? */
+  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(A,&ilo,&ihi);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -229,7 +190,6 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   ierr = MatMPIAIJSetPreallocation(defl,1,NULL,0,NULL);CHKERRQ(ierr);
   ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(defl,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  
 
   ierr = PetscMalloc1(ihi-ilo,&col);CHKERRQ(ierr);
   ierr = PetscMalloc1(ihi-ilo,&Iidx);CHKERRQ(ierr);
@@ -239,10 +199,10 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   }
   ierr = MPI_Comm_rank(comm,&i);CHKERRQ(ierr);
   ierr = MatSetValues(defl,ihi-ilo,Iidx,1,&i,col,INSERT_VALUES);CHKERRQ(ierr);
-    
+
   ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = PetscFree(col);CHKERRQ(ierr);
   ierr = PetscFree(Iidx);CHKERRQ(ierr);
   *W = defl;
@@ -256,9 +216,9 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
   PetscBool transp=PETSC_TRUE;
   PC_Deflation *def = (PC_Deflation*)pc->data;
 
-  /* TODO valid header */
   PetscFunctionBegin;
-  if (def->spacesize < 1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PC_DEFLATION Space size specified: %d",def->spacesize);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (def->spacesize < 1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PCDeflation space size specified: %D",def->spacesize);
   switch (def->spacetype) {
     case PC_DEFLATION_SPACE_HAAR:
       transp = PETSC_FALSE;
@@ -278,9 +238,9 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
     case PC_DEFLATION_SPACE_AGGREGATION:
       transp = PETSC_FALSE;
       ierr = PCDeflationGetSpaceAggregation(pc,&defl);CHKERRQ(ierr);break;
-    default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PC_DEFLATION Space Type specified");
+    default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PCDeflationSpaceType specified");
   }
-  
+
   ierr = PCDeflationSetSpace(pc,defl,transp);CHKERRQ(ierr);
   ierr = MatDestroy(&defl);CHKERRQ(ierr);
   PetscFunctionReturn(0);

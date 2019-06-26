@@ -309,7 +309,6 @@ typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, 
 
 /*E
     PCDeflationSpaceType - Type of deflation
-    Level: beginner
 
     Values:
 +   PC_DEFLATION_SPACE_HAAR        - directly assembled based on Haar (db2) wawelet with overflowed filter cuted-off
@@ -325,7 +324,9 @@ typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, 
     Notes:
       Wavelet-based space (except haar) can be used in multilevel deflation.
 
-.seealso: PCDeflatioSetSpaceToCompute(), PCDEFLATION
+    Level: intermediate
+
+.seealso: PCDeflationSetSpaceToCompute(), PCDEFLATION
 E*/
 typedef enum {
   PC_DEFLATION_SPACE_HAAR,
