@@ -228,4 +228,26 @@ int main(int argc,char **args)
    test:
       args: -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
 
+   testset:
+      suffix: deflation
+      args: -n 6 -norandom -pc_type deflation -ksp_monitor_short
+      test:
+      test:
+        nsize: 3
+        args: -pc_deflation_compute_space {{db2 aggregation}}
+
+      test:
+        suffix: pc_deflation_init_only-0
+        nsize: 4
+        args: -ksp_type fgmres -pc_deflation_compute_space db4 -pc_deflation_compute_space_size 2 -pc_deflation_max_lvl 2 -def_ksp_max_it 10
+        #TODO remove suffix and next test when this works
+        #args: -pc_deflation_init_only {{0 1}separate output}
+        args: -pc_deflation_init_only 0
+
+      test:
+        suffix: pc_deflation_init_only-1
+        nsize: 4
+        args: -ksp_type fgmres -pc_deflation_compute_space db4 -pc_deflation_compute_space_size 2 -pc_deflation_max_lvl 2 -def_ksp_max_it 10
+        args: -pc_deflation_init_only 1
+
 TEST*/
