@@ -23,6 +23,7 @@ variables:
   only:
     refs:
       - merge_requests
+      - web
 
 #
 #  This provides the basic order of operations and options template for cloud based test-short tests.
