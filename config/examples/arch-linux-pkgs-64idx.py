@@ -14,7 +14,6 @@ configure_options = [
   '--download-hypre-configure-arguments=--enable-bigint=no --enable-mixedint=yes', # HYPRE with mixed integers
   '--download-superlu_dist=1',
   '--donwload-suitesparse=1',
-  '--with-cxx-dialect=C++11',
   '--download-cmake',  # superlu_dist requires a newer cmake
   '--download-p4est=1',
   '--with-zlib=1',

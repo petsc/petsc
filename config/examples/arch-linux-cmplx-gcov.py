@@ -9,8 +9,7 @@ configure_options = [
   '--download-parmetis',
   '--download-ptscotch',
   '--download-scalapack',
-  '--download-strumpack',
-  '--with-cxx-dialect=C++11',
+  '--download-strumpack'
   ]
 
 if __name__ == '__main__':

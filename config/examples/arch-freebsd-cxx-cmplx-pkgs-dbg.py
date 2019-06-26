@@ -23,7 +23,6 @@ configure_options = [
   '--download-mumps=1',
   '--download-hdf5',
   '--with-zlib=1',
-  '--with-cxx-dialect=C++11',
   '--download-elemental=1',
   #'--download-sundials=1',
   #'--download-hypre=1',

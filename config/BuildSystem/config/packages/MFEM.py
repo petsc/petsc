@@ -55,6 +55,10 @@ class Configure(config.package.Package):
     cxx = self.setCompilers.getCompiler()
     cxxflags = self.setCompilers.getCompilerFlags()
     cxxflags = cxxflags.replace('-fvisibility=hidden','') # MFEM is currently broken with -fvisibility=hidden
+    # MFEM uses the macro MFEM_BUILD_DIR that builds a path by combining the directory plus other stuff but if the
+    # directory name contains  "-linux'" this is converted by CPP to the value 1 since that is defined in Linux header files
+    # unless the -std=C++11 or -std=C++14 flag is used; we want to support MFEM without this flag
+    cxxflags += ' -Dlinux=linux'    
     self.setCompilers.popLanguage()
     if 'download-mfem-ghv-cxx' in self.argDB and self.argDB['download-mfem-ghv-cxx']:
       ghv = self.argDB['download-mfem-ghv-cxx']

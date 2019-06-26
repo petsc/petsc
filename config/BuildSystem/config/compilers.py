@@ -45,7 +45,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-fortranlib-autodetect=<bool>',     nargs.ArgBool(None, 1, 'Autodetect Fortran compiler libraries'))
     help.addArgument('Compilers', '-with-cxxlib-autodetect=<bool>',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
     help.addArgument('Compilers', '-with-dependencies=<bool>',              nargs.ArgBool(None, 1, 'Compile with -MMD or equivalent flag if possible'))
-    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, '', 'Dialect under which to compile C++ sources (e.g., C++11)'))
+    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, 'C++11', 'Minimum dialect under which to compile C++ sources (e.g., C++11)'))
     help.addArgument('Compilers', '-with-fortran-type-initialize=<bool>',   nargs.ArgBool(None, 1, 'Initialize PETSc objects in Fortran'))
 
     return
@@ -469,6 +469,9 @@ class Configure(config.base.Configure):
     otherwise we require with-cxx-dialect=C++11 to try adding flags to
     support it.
     """
+    cxxdialect = self.argDB.get('with-cxx-dialect','').upper().replace('X','+')
+    if cxxdialect in ['','0','None']: return
+
     # Test borrowed from Jack Poulson (Elemental)
     includes = """
           #include <random>
@@ -482,25 +485,24 @@ class Configure(config.base.Configure):
           """
     self.setCompilers.saveLog()
     self.setCompilers.pushLanguage('Cxx')
-    cxxdialect = self.argDB.get('with-cxx-dialect','').upper().replace('X','+')
-    flags_to_try = ['']
     if cxxdialect == 'C++11':
-      flags_to_try += ['-std=c++11','-std=c++0x']
-    for flag in flags_to_try:
-      if self.setCompilers.checkCompilerFlag(flag, includes, body):
-        self.setCompilers.CXXCPPFLAGS += ' ' + flag
-        self.cxxdialect = 'C++11'
-        break
-    if cxxdialect == 'C++11':
-      if self.cxxdialect != 'C++11':
-        self.logWrite(self.setCompilers.restoreLog())
-        raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s,\nIf you know the flag for turning on C++11 features set it with the CXXFLAGS variables\n for example, --with-cxx-dialect=C++11 CXXFLAGS="-std=c++0x"' % (self.argDB['with-cxx-dialect']))
-    elif cxxdialect in ['C++98', 'C++03', '']:
-      self.cxxdialect = cxxdialect
-      pass                    # The user can set CXXFLAGS if they want to be strict
+      flags_to_try = ['']
+      if self.isGCXX:
+        flags_to_try += ['-std=gnu++14','-std=gnu++11']
+      else:
+        flags_to_try += ['-std=c++14','-std=c++11','-std=c++0x']
+      for flag in flags_to_try:
+        if self.setCompilers.checkCompilerFlag(flag, includes, body):
+          self.setCompilers.CXXCPPFLAGS += ' ' + flag
+          self.cxxdialect = 'C++11'
+          break
     else:
       self.logWrite(self.setCompilers.restoreLog())
       raise RuntimeError('Unknown C++ dialect: with-cxx-dialect=%s' % (self.argDB['with-cxx-dialect']))
+
+    if 'with-cxx-dialect' in self.framework.clArgDB and cxxdialect == 'C++11' and not self.cxxdialect != 'C++11':
+        self.logWrite(self.setCompilers.restoreLog())
+        raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s,\nIf you know the flag for turning on C++11 features set it with the CXXFLAGS variables\n for example, --with-cxx-dialect=C++11 CXXFLAGS="-std=c++0x"' % (self.argDB['with-cxx-dialect']))
     self.setCompilers.popLanguage()
     self.logWrite(self.setCompilers.restoreLog())
     return

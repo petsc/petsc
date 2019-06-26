@@ -28,7 +28,6 @@ configure_options = [
   '--download-zlib=1',
   '--download-petsc4py=1',
   '--download-mpi4py=1',
-  '--with-cxx-dialect=C++11',
   '--download-elemental=1'
   #'--download-sundials=1',
   #'--download-hypre=1',

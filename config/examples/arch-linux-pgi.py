@@ -10,9 +10,10 @@ configure_options = [
   '--with-hwloc=0', # ubuntu -lhwloc requires -lnuma - which conflicts with -lnuma from pgf90
   '--download-mpich=1',
   '--download-fblaslapack=1',
-  '--with-cxx-dialect=C++11',
   '--download-codipack=1',
   '--download-adblaslapack=1',
+  'CXXPPFLAGS=-std=c++11',
+  'CXXFLAGS=-std=c++11',
   ]
 
 if __name__ == '__main__':
