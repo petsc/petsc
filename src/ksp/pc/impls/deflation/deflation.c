@@ -676,7 +676,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     } else {
 #if defined(PETSC_USE_COMPLEX)
       ierr = MatHermitianTranspose(def->W,MAT_INITIAL_MATRIX,&def->Wt);CHKERRQ(ierr);
-      ierr = MatMatMult(def->W,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA);CHKERRQ(ierr);
+      ierr = MatMatMult(def->Wt,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA);CHKERRQ(ierr);
 #else
       ierr = MatTransposeMatMult(def->W,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA);CHKERRQ(ierr);
 #endif

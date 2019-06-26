@@ -128,7 +128,7 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
   PetscErrorCode ierr;
   Mat A,defl;
   PetscInt i,j,len,ilo,ihi,*Iidx,m,M;
-  PetscReal *col,val;
+  PetscScalar *col,val;
 
   PetscFunctionBegin;
   /* Haar basis wavelet, level=size */
@@ -217,7 +217,7 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   PetscErrorCode ierr;
   Mat A,defl;
   PetscInt i,ilo,ihi,*Iidx,m,M;
-  PetscReal *col;
+  PetscScalar *col;
   MPI_Comm comm;
 
   PetscFunctionBegin;
