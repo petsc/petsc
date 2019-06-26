@@ -177,7 +177,6 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   DM_DA         *da = (DM_DA*) dm->data;
-  PetscSection   section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -210,22 +209,17 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
     ierr = DMDASetStencilWidth(*subdm, da->s);CHKERRQ(ierr);
     ierr = DMDASetOwnershipRanges(*subdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
   }
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
-  if (section) {
-    ierr = DMCreateSectionSubDM(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
-  } else {
-    if (is) {
-      PetscInt *indices, cnt = 0, dof = da->w, i, j;
+  if (is) {
+    PetscInt *indices, cnt = 0, dof = da->w, i, j;
 
-      ierr = PetscMalloc1(da->Nlocal*numFields/dof, &indices);CHKERRQ(ierr);
-      for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
-        for (j = 0; j < numFields; ++j) {
-          indices[cnt++] = dof*i + fields[j];
-        }
+    ierr = PetscMalloc1(da->Nlocal*numFields/dof, &indices);CHKERRQ(ierr);
+    for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
+      for (j = 0; j < numFields; ++j) {
+        indices[cnt++] = dof*i + fields[j];
       }
-      if (cnt != da->Nlocal*numFields/dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %d does not equal expected value %d", cnt, da->Nlocal*numFields/dof);
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
     }
+    if (cnt != da->Nlocal*numFields/dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %D does not equal expected value %D", cnt, da->Nlocal*numFields/dof);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -360,9 +354,6 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
 .seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType()
 M*/
 
-extern PetscErrorCode DMProjectFunctionLocal_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
-extern PetscErrorCode DMComputeL2Diff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
-extern PetscErrorCode DMComputeL2GradientDiff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [],PetscInt, PetscScalar *, void *), void **, Vec,const PetscReal [], PetscReal *);
 extern PetscErrorCode DMLocatePoints_DA_Regular(DM,Vec,DMPointLocationType,PetscSF);
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject,PetscViewer);
 
@@ -456,9 +447,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->createdomaindecomposition   = DMCreateDomainDecomposition_DA;
   da->ops->createddscatters            = DMCreateDomainDecompositionScatters_DA;
   da->ops->getdimpoints                = DMGetDimPoints_DA;
-  da->ops->projectfunctionlocal        = DMProjectFunctionLocal_DA;
-  da->ops->computel2diff               = DMComputeL2Diff_DA;
-  da->ops->computel2gradientdiff       = DMComputeL2GradientDiff_DA;
   da->ops->getneighbors                = DMGetNeighbors_DA;
   da->ops->locatepoints                = DMLocatePoints_DA_Regular;
   da->ops->getcompatibility            = DMGetCompatibility_DA;
