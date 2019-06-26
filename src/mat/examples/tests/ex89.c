@@ -25,10 +25,10 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  M    = 20;
-  N    = 20;
+  M    = 100;
+  N    = 100;
   Z    = 10;
-  dof  = 3;
+  dof  = 10;
 
   /* Set up distributed array for fine grid */
   if (!Test_3D) {

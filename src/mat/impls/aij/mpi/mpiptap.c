@@ -166,18 +166,21 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
     case 1:
       /* do R=P^T locally, then C=R*A*P -- nonscalable */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIAIJ \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
     case 2:
       /* compute C=P^T*A*P allatonce */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIAIJ_allatonce \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
     case 3:
       /* compute C=P^T*A*P allatonce */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIAIJ_allatonce_merged \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
@@ -185,6 +188,7 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
     case 4:
       /* Use boomerAMGBuildCoarseOperator */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_AIJ_AIJ_wHYPRE \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
@@ -192,6 +196,7 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
     default:
       /* do R=P^T locally, then C=R*A*P */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIAIJ_scalable \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;

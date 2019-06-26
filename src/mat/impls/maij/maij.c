@@ -3153,10 +3153,15 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ_allatonce(Mat A,Mat P,MatReus
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIMAIJ_allatonce \n");CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3190,10 +3195,15 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ_allatonce_merged(Mat A,Mat P,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIMAIJ_allatonce_merged \n");CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce_merged(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

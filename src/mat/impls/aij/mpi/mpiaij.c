@@ -5464,6 +5464,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,PetscInt dof,MatReuse reus
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetBrowsOfAocols,A,P,0,0);CHKERRQ(ierr);
   /* If it is the first time, create an index set of off-diag nonzero columns of A,
    *  and then create a submatrix (that often is an overlapping matrix)
    * */
@@ -5517,7 +5518,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,PetscInt dof,MatReuse reus
   } else {
     SETERRQ(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown reuse type \n");
   }
-
+  ierr = PetscLogEventEnd(MAT_GetBrowsOfAocols,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
