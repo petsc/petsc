@@ -9,8 +9,6 @@ const char *const PCDeflationSpaceTypes[] = {
   "biorth22",
   "meyer",
   "aggregation",
-  "slepc",
-  "slepc-cheap",
   "user",
   "PCDeflationSpaceType",
   "PC_DEFLATION_SPACE_",

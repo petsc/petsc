@@ -320,8 +320,6 @@ typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, 
 .   PC_DEFLATION_SPACE_BIORTH22    - same as above, but with biorthogonal 2.2 (6 coefficients)
 .   PC_DEFLATION_SPACE_MEYER       - same as above, but with Meyer/FIR (62 coefficients)
 .   PC_DEFLATION_SPACE_AGGREGATION - aggregates local indices (given by operator matix distribution) into a subdomain
-.   PC_DEFLATION_SPACE_SLEPC       - computes eigenvectors using SLEPc
-.   PC_DEFLATION_SPACE_SLEPC_CHEAP - same AS DEFLATION_SPACE_SLEPC, but it directly assembles AW by scaling columns of W with eigenvalues
 -   PC_DEFLATION_SPACE_USER        - indicates space set by user
 
     Notes:
@@ -338,8 +336,6 @@ typedef enum {
   PC_DEFLATION_SPACE_BIORTH22,
   PC_DEFLATION_SPACE_MEYER,
   PC_DEFLATION_SPACE_AGGREGATION,
-  PC_DEFLATION_SPACE_SLEPC,
-  PC_DEFLATION_SPACE_SLEPC_CHEAP,
   PC_DEFLATION_SPACE_USER
 } PCDeflationSpaceType;
 

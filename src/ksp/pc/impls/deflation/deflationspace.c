@@ -1,9 +1,3 @@
-#include <../src/ksp/pc/impls/deflation/deflation.h>
-
-#if defined(HAVE_SLEPC)
-#include <slepceps.h>
-#include <slepcbv.h>
-#endif
 
 PetscScalar db2[] = {0.7071067811865476,0.7071067811865476};
 
@@ -254,73 +248,6 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDeflationGetSpaceSLEPc(PC pc,Mat *W,PetscInt size,PetscBool cheapCP)
-{
-#if defined(HAVE_SLEPC)
-  PetscErrorCode ierr;
-  PC_Deflation *def = (PC_Deflation*)pc->data;
-  Mat A,defl;
-  Vec vec;
-  EPS eps;
-  PetscScalar *data,*dataScaled,eigval;
-  PetscInt i,nconv,m,M,n=PETSC_DECIDE;
-  PetscBool slepcinit;
-  MPI_Comm comm;
-
-  PetscFunctionBegin;
-  ierr = SlepcInitialized(&slepcinit);CHKERRQ(ierr);
-  if (!slepcinit) {
-    ierr = SlepcInitialize(NULL,NULL,(char*)0,(char*)0);CHKERRQ(ierr);
-    slepcinit = PETSC_TRUE;
-  }
-  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr); /* NOTE: Get Pmat instead? */
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = EPSCreate(comm,&eps);CHKERRQ(ierr);
-  ierr = EPSSetOperators(eps,A,NULL);CHKERRQ(ierr);
-  ierr = EPSSetProblemType(eps,EPS_HEP);CHKERRQ(ierr); /* Implemented only for def */
-  ierr = EPSSetWhichEigenpairs(eps,EPS_SMALLEST_REAL);CHKERRQ(ierr);
-  ierr = EPSSetDimensions(eps,size,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  ierr = EPSSetFromOptions(eps);CHKERRQ(ierr);
-
-  ierr = EPSSolve(eps);CHKERRQ(ierr);
-  ierr = EPSGetConverged(eps,&nconv);CHKERRQ(ierr);
-  if (nconv < size) SETERRQ2(comm,PETSC_ERR_CONV_FAILED,"SLEPc: Number of converged eigenpairs (%d) is less than requested (%d)",nconv,size);
-  ierr = MatCreateVecs(A,NULL,&vec);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(comm,&n,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m*size,&data);CHKERRQ(ierr);
-  /* TODO check that eigenvalue is not 0 -> vec is not in Ker A */
-  for (i=0; i<size; i++) {
-    ierr = VecPlaceArray(vec,&data[i*m]);CHKERRQ(ierr);
-    ierr = EPSGetEigenvector(eps,i,vec,NULL);CHKERRQ(ierr);
-    ierr = VecResetArray(vec);CHKERRQ(ierr);
-  }
-  ierr = MatCreateDense(comm,m,n,M,size,data,&defl);CHKERRQ(ierr);
-
-  if (cheapCP) {
-    ierr = PetscMalloc1(m*size,&dataScaled);CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-        ierr = VecPlaceArray(vec,&dataScaled[i*m]);CHKERRQ(ierr);
-        ierr = EPSGetEigenpair(eps,i,&eigval,NULL,vec,NULL);CHKERRQ(ierr);
-        ierr = VecScale(vec,eigval);CHKERRQ(ierr);
-        ierr = VecResetArray(vec);CHKERRQ(ierr);
-    }
-    ierr = MatCreateDense(comm,m,n,M,size,dataScaled,&def->AW);CHKERRQ(ierr);
-  }
-
-  //ierr = EPSGetBV(eps,&bv);CHKERRQ(ierr);
-  //ierr = BVCreateMat(bv,&defl);CHKERRQ(ierr);
-  *W = defl;
-
-  ierr = EPSDestroy(&eps);CHKERRQ(ierr);
-  if (slepcinit) ierr = SlepcFinalize();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-#else
-  SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_CONV_FAILED,"Not compiled with SLEPc support (call make HAVE_SLEPC)");
-#endif
-}
-
 PetscErrorCode PCDeflationComputeSpace(PC pc)
 {
   PetscErrorCode ierr;
@@ -350,12 +277,6 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
     case PC_DEFLATION_SPACE_AGGREGATION:
       transp = PETSC_FALSE;
       ierr = PCDeflationGetSpaceAggregation(pc,&defl);CHKERRQ(ierr);break;
-    case PC_DEFLATION_SPACE_SLEPC:
-      transp = PETSC_FALSE;
-      ierr = PCDeflationGetSpaceSLEPc(pc,&defl,def->spacesize,PETSC_FALSE);CHKERRQ(ierr);break;
-    case PC_DEFLATION_SPACE_SLEPC_CHEAP:
-      transp = PETSC_FALSE;
-      ierr = PCDeflationGetSpaceSLEPc(pc,&defl,def->spacesize,PETSC_TRUE);CHKERRQ(ierr);break;
     default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PC_DEFLATION Space Type specified");
   }
   
