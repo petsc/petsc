@@ -13,7 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex57.c ex58.c ex59.c ex60.c ex61.c  ex64.c ex65.c \
                 ex68.c  ex71.c ex72.c ex73.c ex74.c ex75.c \
                 ex76.c ex77.c ex78.c ex80.c ex82.c ex83.c ex86.c ex87.c \
-                ex88.c ex90.c ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c ex99.c \
+                ex88.c ex89.c ex90.c ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c ex99.c \
                 ex100.c ex101.c ex102.c  ex104.c ex106.c \
                 ex108.c ex109.c ex110.c ex112.c ex113.c \
                 ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c \

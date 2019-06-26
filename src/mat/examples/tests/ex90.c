@@ -86,6 +86,7 @@ int main(int argc,char **argv)
 
    test:
      nsize: 2
+     suffix: merged
      args:   -matptap_via allatonce_merged
      output_file: output/ex90_1.out
 

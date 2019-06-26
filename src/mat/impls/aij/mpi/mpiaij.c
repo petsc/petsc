@@ -1,12 +1,10 @@
-
-
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/vecscatterimpl.h>
 #include <petsc/private/isimpl.h>
 #include <petscblaslapack.h>
 #include <petscsf.h>
-#include <petsc/private/hashseti.h>
+#include <petsc/private/hashmapi.h>
 
 /*MC
    MATAIJ - MATAIJ = "aij" - A matrix type to be used for sparse matrices.
@@ -5267,6 +5265,7 @@ PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *co
 PetscErrorCode MatDestroy_SeqAIJ_PetscSF(Mat mat)
 {
   PetscSF          sf,osf;
+  IS               map;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -5274,6 +5273,8 @@ PetscErrorCode MatDestroy_SeqAIJ_PetscSF(Mat mat)
   ierr = PetscObjectQuery((PetscObject)mat,"offdiagsf",(PetscObject*)&osf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&osf);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)mat,"aoffdiagtopothmapping",(PetscObject*)&map);CHKERRQ(ierr);
+  ierr = ISDestroy(&map);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5287,7 +5288,7 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
 {
   Mat_MPIAIJ               *p=(Mat_MPIAIJ*)P->data;
   Mat_SeqAIJ               *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data,*p_oth;
-  PetscInt                 plocalsize,nrows,*ilocal,*oilocal,i,owner,lidx,*nrcols,*nlcols;
+  PetscInt                 plocalsize,nrows,*ilocal,*oilocal,i,owner,lidx,*nrcols,*nlcols,ncol;
   PetscSFNode              *iremote,*oiremote;
   const PetscInt           *lrowindices;
   PetscErrorCode           ierr;
@@ -5322,6 +5323,7 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
   ierr = PetscSFSetGraph(sf,plocalsize,nrows,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+
   ierr = PetscCalloc1(2*(plocalsize+1),&roffsets);CHKERRQ(ierr);
   ierr = PetscCalloc1(2*plocalsize,&nrcols);CHKERRQ(ierr);
   ierr = PetscCalloc1(nrows,&pnnz);CHKERRQ(ierr);
@@ -5348,8 +5350,10 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
   ierr = PetscFree(nrcols);CHKERRQ(ierr);
   dntotalcols = 0;
   ontotalcols = 0;
+  ncol = 0;
   for (i=0;i<nrows;i++) {
     pnnz[i] = nlcols[i*2+0] + nlcols[i*2+1];
+    ncol = PetscMax(pnnz[i],ncol);
     /* diag */
     dntotalcols += nlcols[i*2+0];
     /* off diag */
@@ -5358,7 +5362,7 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
   /* We do not need to figure the right number of columns
    * since all the calculations will be done by going through the raw data
    * */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,nrows,nrows,0,pnnz,P_oth);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,nrows,ncol,0,pnnz,P_oth);CHKERRQ(ierr);
   ierr = MatSetUp(*P_oth);CHKERRQ(ierr);
   ierr = PetscFree(pnnz);CHKERRQ(ierr);
   p_oth = (Mat_SeqAIJ*) (*P_oth)->data;
@@ -5445,16 +5449,17 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
  * Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns of local A
  * This supports MPIAIJ and MAIJ
  * */
-PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,MatReuse reuse,Mat *P_oth)
+PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,PetscInt dof,MatReuse reuse,Mat *P_oth)
 {
   Mat_MPIAIJ            *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data;
-  Mat_SeqAIJ            *ao=(Mat_SeqAIJ*)(a->B)->data,*p_oth;
+  Mat_SeqAIJ            *p_oth;
   Mat_SeqAIJ            *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data;
-  IS                    rows;
-  PetscHSetI            ht;
-  PetscInt              i,htsize,*rowindices,off;
+  IS                    rows,map;
+  PetscHMapI            hamp;
+  PetscInt              i,htsize,*rowindices,off,*mapping,key,count;
   MPI_Comm              comm;
   PetscSF               sf,osf;
+  PetscBool             has;
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
@@ -5464,21 +5469,35 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,MatReuse reuse,Mat *P_oth)
    * */
   if (reuse==MAT_INITIAL_MATRIX) {
     /* Use a hash table to figure out unique keys */
-    ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
-    for (i=0;i<ao->i[a->B->rmap->n];i++) {
-      /* Convert to global keys */
-      ierr = PetscHSetIAdd(ht,a->garray[ao->j[i]]);CHKERRQ(ierr);
+    ierr = PetscHMapICreate(&hamp);CHKERRQ(ierr);
+    ierr = PetscHMapIResize(hamp,a->B->cmap->n);CHKERRQ(ierr);
+    ierr = PetscCalloc1(a->B->cmap->n,&mapping);CHKERRQ(ierr);
+    count = 0;
+    /* Assume that  a->g is sorted, otherwise the following does not make sense */
+    for (i=0;i<a->B->cmap->n;i++) {
+      key  = a->garray[i]/dof;
+      ierr = PetscHMapIHas(hamp,key,&has);CHKERRQ(ierr);
+      if (!has) {
+        mapping[i] = count;
+        ierr = PetscHMapISet(hamp,key,count++);CHKERRQ(ierr);
+      } else {
+        /* Current 'i' has the same value the previous step */
+        mapping[i] = count-1;
+      }
     }
-    ierr = PetscHSetIGetSize(ht,&htsize);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,a->B->cmap->n,mapping,PETSC_OWN_POINTER,&map);CHKERRQ(ierr);
+    ierr = PetscHMapIGetSize(hamp,&htsize);CHKERRQ(ierr);
+    if (htsize!=count) SETERRQ2(comm,PETSC_ERR_ARG_INCOMP," Size of hash map %D is inconsistent with count %D \n",htsize,count);CHKERRQ(ierr);
     ierr = PetscCalloc1(htsize,&rowindices);CHKERRQ(ierr);
     off = 0;
-    ierr = PetscHSetIGetElems(ht,&off,rowindices);CHKERRQ(ierr);
-    ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
+    ierr = PetscHMapIGetKeys(hamp,&off,rowindices);CHKERRQ(ierr);
+    ierr = PetscHMapIDestroy(&hamp);CHKERRQ(ierr);
     ierr = PetscSortInt(htsize,rowindices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,htsize,rowindices,PETSC_OWN_POINTER,&rows);CHKERRQ(ierr);
     /* In case, the matrix was already created but users want to recreate the matrix */
     ierr = MatDestroy(P_oth);CHKERRQ(ierr);
     ierr = MatCreateSeqSubMatrixWithRows_Private(P,rows,P_oth);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)*P_oth,"aoffdiagtopothmapping",(PetscObject)map);CHKERRQ(ierr);
     ierr = ISDestroy(&rows);CHKERRQ(ierr);
   } else if (reuse==MAT_REUSE_MATRIX) {
     /* If matrix was already created, we simply update values using SF objects
