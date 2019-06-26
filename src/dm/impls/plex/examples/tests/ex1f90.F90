@@ -53,7 +53,6 @@
       call DMPlexSetCone(dm, c , pEC, ierr);CHKERRA(ierr)
       call DMPlexGetCone(dm, c , pEC, ierr);CHKERRA(ierr)
       write(*,*) 'cell',c,pEC
-      call DMPlexRestoreCone(dm, c , pEC, ierr);CHKERRA(ierr)
 
       call DMPlexSymmetrize(dm, ierr);CHKERRA(ierr)
       call DMPlexStratify(dm, ierr);CHKERRA(ierr)
@@ -61,7 +60,6 @@
       v = 4
       call DMPlexGetSupport(dm, v , pES, ierr);CHKERRA(ierr)
       write(*,*) 'vertex',v,pES
-      call DMPlexRestoreSupport(dm, v , pES, ierr);CHKERRA(ierr)
 
       call DMDestroy(dm,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
