@@ -4,7 +4,18 @@
 # test-long often runs on MCS systems and may take an hour or more. They run the full test suite and may test external packages.
 #
 # The test-long tests are only started if all of the test-short tests run without error and if the merge request has
-# been labeled with "fulltest".
+# been labeled with "fulltest". You must do a commit/push on the branch to force the testing after you have added the label.
+# To provide an empty commit that forces a new pipeline you can use
+#    git commit --amend --no-edit  # updates CommitDate field
+#    git push origin +my/branch    # force push amended commit
+#
+# You can also trigger  a fulltest by using the Run Pipeline button and providing the variable CI_MERGE_REQUEST_LABELS with
+# the value fulltest. Using the Run Pipeline button with no variable will trigger a test-short
+#
+# Note that using the Run Pipeline or a WIP does NOT merge the branch into master before testing
+# https://docs.gitlab.com/ee/ci/merge_request_pipelines/   It is only merged to master after the WIP is removed and it becomes a
+# real MR. I am inclined to say we should manually do the merge to master in the scripts below
+# before running the tests. Or maybe have a label mergetomaster Barry Smith
 #
 
 stages:
