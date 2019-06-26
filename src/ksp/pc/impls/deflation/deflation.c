@@ -1,4 +1,4 @@
-#include <../src/ksp/pc/impls/deflation/deflation.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
+#include <../src/ksp/pc/impls/deflation/deflation.h> /*I "petscksp.h" I*/  /* includes for fortran wrappers */
 
 const char *const PCDeflationSpaceTypes[] = {
   "haar",

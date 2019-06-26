@@ -77,6 +77,6 @@
 #define PCMGCycleType PetscEnum
 #define PCMGGalerkinType PetscEnum
 #define PCExoticType PetscEnum
-#define PCDeflationType PetscEnum
+#define PCDeflationSpaceType PetscEnum
 #define PCFailedReason PetscEnum
 #endif

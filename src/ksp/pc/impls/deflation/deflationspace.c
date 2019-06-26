@@ -1,3 +1,4 @@
+#include <../src/ksp/pc/impls/deflation/deflation.h> /*I "petscksp.h" I*/
 
 PetscScalar db2[] = {0.7071067811865476,0.7071067811865476};
 

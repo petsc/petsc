@@ -2,6 +2,7 @@
 #define __DEFLATION_H
 
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petscksp.h>
 
 typedef struct {
   PetscBool   init;            /* do only init step - error correction of direction is omitted */
