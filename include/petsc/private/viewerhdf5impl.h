@@ -6,6 +6,15 @@
 
 #if defined(PETSC_HAVE_HDF5)
 
+#define PetscStackCallHDF5(func,args) do {                        \
+    herr_t _status;                                               \
+    PetscStackPush(#func);_status = func args;PetscStackPop; if (_status) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
+  } while (0)
+
+#define PetscStackCallHDF5Return(ret,func,args) do {              \
+    PetscStackPush(#func);ret = func args;PetscStackPop; if (ret < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)ret); \
+  } while (0)
+
 typedef struct PetscViewerHDF5GroupList {
   const char       *name;
   struct PetscViewerHDF5GroupList *next;
