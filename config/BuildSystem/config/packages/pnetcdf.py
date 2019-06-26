@@ -4,14 +4,13 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '1.9.0'
+    self.version          = '1.11.2'
     self.versionname      = 'PNETCDF_VERSION'
-    self.download         = ['http://cucis.ece.northwestern.edu/projects/PnetCDF/Release/parallel-netcdf-'+self.version+'.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parallel-netcdf-'+self.version+'.tar.gz']
+    self.download         = ['http://cucis.ece.northwestern.edu/projects/PnetCDF/Release/pnetcdf-'+self.version+'.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pnetcdf-'+self.version+'.tar.gz']
     self.functions        = ['ncmpi_create']
     self.includes         = ['pnetcdf.h']
     self.liblist          = [['libpnetcdf.a']]
-    self.downloaddirnames = ['parallel-netcdf-1.9.0']
     return
 
   def setupDependencies(self, framework):
