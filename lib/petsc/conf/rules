@@ -757,7 +757,6 @@ rmtrailingblanks:
 	done
 
 #
-#  Remove trailing blanks from source code
 uncrustify:
 	@for i in ${SOURCED} ${EXAMPLESC}; do \
 	  uncrustify -c ${PETSC_DIR}/lib/petsc/conf/uncrustify.cfg $$i; \
@@ -765,5 +764,3 @@ uncrustify:
 
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 
-# To leave executables in place, you can uncomment this line
-#RM = echo
