@@ -458,8 +458,8 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 . leafSection - The number of processes sharing a given leaf point
 - leafrank    - The rank of each process sharing a leaf point
 
-  Output Parameters:
-+ ovLabel     - DMLabel containing remote overlap contributions as point/rank pairings
+  Output Parameter:
+. ovLabel     - DMLabel containing remote overlap contributions as point/rank pairings
 
   Level: developer
 
