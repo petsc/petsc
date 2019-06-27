@@ -17,7 +17,7 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,mat->cmap->N,&mdn->lvec);CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),mat->cmap->N,0,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap->N,0,1,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap->N,0,1,&to);CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
