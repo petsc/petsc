@@ -500,6 +500,10 @@ class Configure(config.base.Configure):
     '''Determine the C compiler '''
     if hasattr(self, 'CC'):
       yield self.CC
+      if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      else: mesg = ''
+      raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-cc' in self.argDB:
       if self.isWindows(self.argDB['with-cc'], self.log):
         yield 'win32fe '+self.argDB['with-cc']
@@ -602,6 +606,7 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     if hasattr(self, 'CUDAC'):
       yield self.CUDAC
+      raise RuntimeError('Error: '+self.mesg)
     elif 'with-cudac' in self.argDB:
       yield self.argDB['with-cudac']
       raise RuntimeError('CUDA compiler you provided with -with-cudac='+self.argDB['with-cudac']+' does not work.'+'\n'+self.mesg)
@@ -678,6 +683,10 @@ class Configure(config.base.Configure):
 
     if hasattr(self, 'CXX'):
       yield self.CXX
+      if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      else: mesg = ''
+      raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-c++' in self.argDB:
       raise RuntimeError('Keyword --with-c++ is WRONG, use --with-cxx')
     if 'with-CC' in self.argDB:
@@ -812,6 +821,10 @@ class Configure(config.base.Configure):
 
     if hasattr(self, 'FC'):
       yield self.FC
+      if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      else: mesg = ''
+      raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-fc' in self.argDB:
       if self.isWindows(self.argDB['with-fc'], self.log):
         yield 'win32fe '+self.argDB['with-fc']
