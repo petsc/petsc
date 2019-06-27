@@ -2157,8 +2157,8 @@ general_assembly:
     MatISGetMPIXAIJ - Converts MATIS matrix into a parallel AIJ format
 
   Input Parameter:
-.  mat - the matrix (should be of type MATIS)
-.  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
++  mat - the matrix (should be of type MATIS)
+-  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
   Output Parameter:
 .  newmat - the matrix in AIJ format
@@ -2962,8 +2962,8 @@ static PetscErrorCode MatISSetLocalMatType_IS(Mat mat,MatType mtype)
     MatISSetLocalMatType - Specifies the type of local matrix
 
   Input Parameter:
-.  mat - the matrix
-.  mtype - the local matrix type
++  mat - the matrix
+-  mtype - the local matrix type
 
   Output Parameter:
 
@@ -3015,8 +3015,8 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat,Mat local)
   Collective on Mat
 
   Input Parameter:
-.  mat - the matrix
-.  local - the local matrix
++  mat - the matrix
+-  local - the local matrix
 
   Output Parameter:
 

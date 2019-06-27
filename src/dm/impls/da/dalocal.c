@@ -373,7 +373,7 @@ PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
 . numFields - The number of fields
 . numComp - The number of components in each field
 . numDof - The number of dofs per dimension for each field
-. numFaceDof - The number of dofs per face for each field and direction, or NULL
+- numFaceDof - The number of dofs per face for each field and direction, or NULL
 
   Level: developer
 

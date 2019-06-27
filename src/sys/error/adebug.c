@@ -21,7 +21,7 @@ static PetscBool Xterm = PETSC_TRUE;
    Not Collective
 
    Input Parameters:
-+  terminal - name of terminal and any flags required to execute a program.
+.  terminal - name of terminal and any flags required to execute a program.
               For example "xterm -e", "urxvt -e", "gnome-terminal -x".
 
    Options Database Keys:

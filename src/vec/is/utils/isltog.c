@@ -393,8 +393,8 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
     Not collective
 
     Input Parameters:
-.   mapping - mapping data structure
-.   bs - the blocksize
++   mapping - mapping data structure
+-   bs - the blocksize
 
     Level: advanced
 
@@ -1795,7 +1795,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
                                     used this is good for only small and moderate size problems.
 
    Options Database Keys:
-+   -islocaltoglobalmapping_type basic - select this method
+.   -islocaltoglobalmapping_type basic - select this method
 
    Level: beginner
 
@@ -1816,7 +1816,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Basic(ISLocalToGlobalMa
                                     used this is good for large memory problems.
 
    Options Database Keys:
-+   -islocaltoglobalmapping_type hash - select this method
+.   -islocaltoglobalmapping_type hash - select this method
 
 
    Notes:

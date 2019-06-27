@@ -296,7 +296,7 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
   Not Collective
 
   Input Parameter:
-+ viewer - The PetscViewer
+. viewer - The PetscViewer
 
   Level: intermediate
 

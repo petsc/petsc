@@ -1787,7 +1787,7 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
 - f    - The field number
 
   Output Parameters:
-+ update - update function
+. update - update function
 
   Note: The calling sequence for the callback update is given by:
 

@@ -382,8 +382,8 @@ PetscErrorCode  PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char m
   PetscViewerMathematicaGetLink - Returns the link to Mathematica
 
   Input Parameters:
-. viewer - The Mathematica viewer
-. link   - The link to Mathematica
++ viewer - The Mathematica viewer
+- link   - The link to Mathematica
 
   Level: intermediate
 
@@ -404,8 +404,8 @@ PetscErrorCode  PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
   PetscViewerMathematicaSkipPackets - Discard packets sent by Mathematica until a certain packet type is received
 
   Input Parameters:
-. viewer - The Mathematica viewer
-. type   - The packet type to search for, e.g RETURNPKT
++ viewer - The Mathematica viewer
+- type   - The packet type to search for, e.g RETURNPKT
 
   Level: advanced
 
@@ -456,8 +456,8 @@ PetscErrorCode  PetscViewerMathematicaGetName(PetscViewer viewer, const char **n
   PetscViewerMathematicaSetName - Override the default name for objects communicated to Mathematica
 
   Input Parameters:
-. viewer - The Mathematica viewer
-. name   - The name for new objects created in Mathematica
++ viewer - The Mathematica viewer
+- name   - The name for new objects created in Mathematica
 
   Level: intermediate
 

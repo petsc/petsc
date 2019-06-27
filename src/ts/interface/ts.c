@@ -107,7 +107,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_monitor_draw_error - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 .  -ts_monitor_solution [ascii binary draw][:filename][:viewerformat] - monitors the solution at each timestep
 .  -ts_monitor_solution_vtk <filename.vts,filename.vtu> - Save each time step to a binary file, use filename-%%03D.vts (filename-%%03D.vtu)
-.  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
+-  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
 
    Developer Note: We should unify all the -ts_monitor options in the way that -xxx_view has been unified
 
@@ -2359,11 +2359,11 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
    Not Collective, but Vec returned is parallel if TS is parallel
 
    Parameters :
-.  ts - the TS context obtained from TSCreate() (input parameter).
++  ts - the TS context obtained from TSCreate() (input parameter).
 .  n - If v is PETSC_NULL, then the number of solution components is
        returned through n, else the n-th solution component is
        returned in v.
-.  v - the vector containing the n-th solution component
+-  v - the vector containing the n-th solution component
        (may be PETSC_NULL to use this function to find out
         the number of solutions components).
 
@@ -2393,8 +2393,8 @@ PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
    Not Collective, but Vec returned is parallel if TS is parallel
 
    Parameters :
-.  ts - the TS context obtained from TSCreate() (input parameter).
-.  v - the vector containing the auxiliary solution
++  ts - the TS context obtained from TSCreate() (input parameter).
+-  v - the vector containing the auxiliary solution
 
    Level: intermediate
 
@@ -2425,9 +2425,9 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
    Note: MUST call after TSSetUp()
 
    Parameters :
-.  ts - the TS context obtained from TSCreate() (input parameter).
++  ts - the TS context obtained from TSCreate() (input parameter).
 .  n - current estimate (n=0) or previous one (n=-1)
-.  v - the vector containing the error (same size as the solution).
+-  v - the vector containing the error (same size as the solution).
 
    Level: intermediate
 
@@ -2457,8 +2457,8 @@ PetscErrorCode  TSGetTimeError(TS ts,PetscInt n,Vec *v)
    Not Collective, but Vec returned is parallel if TS is parallel
 
    Parameters :
-.  ts - the TS context obtained from TSCreate() (input parameter).
-.  v - the vector containing the error (same size as the solution).
++  ts - the TS context obtained from TSCreate() (input parameter).
+-  v - the vector containing the error (same size as the solution).
 
    Level: intermediate
 
@@ -5011,7 +5011,7 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
 
    Input Parameter:
 +  ts - the TS context
-.  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the
+-  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the
             manual pages for the individual convergence tests for complete lists
 
    Level: advanced
@@ -5474,9 +5474,9 @@ PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,
 -  Y - state vector to be compared to U
 
    Output Arguments:
-.  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
++  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
-.  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
+-  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
 
    Level: developer
 
@@ -5644,9 +5644,9 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
 -  Y - state vector to be compared to U
 
    Output Arguments:
-.  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
++  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
-.  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
+-  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
 
    Level: developer
 
@@ -5793,9 +5793,9 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
 -  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
    Output Arguments:
-.  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
++  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
 .  norma - weighted norm, a value of 1.0 means that the error meets the absolute tolerance set by the user
-.  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
+-  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
 
    Options Database Keys:
 .  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
@@ -5830,9 +5830,9 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscRea
 -  Y - state vector, previous time step
 
    Output Arguments:
-.  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
++  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
-.  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
+-  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
 
    Level: developer
 
@@ -6004,9 +6004,9 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
 -  Y - state vector, previous time step
 
    Output Arguments:
-.  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
++  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
-.  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
+-  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
 
    Level: developer
 
@@ -6158,9 +6158,9 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
 -  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
    Output Arguments:
-.  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
++  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
 .  norma - weighted norm, a value of 1.0 means that the error meets the absolute tolerance set by the user
-.  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
+-  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
 
    Options Database Keys:
 .  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
@@ -6239,9 +6239,9 @@ PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
    TSVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu
 
    Input Parameters:
-.  ts   - the TS context.
++  ts   - the TS context.
 .  xl   - lower bound.
-.  xu   - upper bound.
+-  xu   - upper bound.
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to
@@ -6759,7 +6759,7 @@ PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
 
    Input Parameters:
 +  ctx - the TSMonitorLG context
-.  displaynames - the names of the components, final string must be NULL
+-  displaynames - the names of the components, final string must be NULL
 
    Level: intermediate
 
@@ -6804,7 +6804,7 @@ PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char 
 
    Input Parameters:
 +  ts - the TS context
-.  displaynames - the names of the components, final string must be NULL
+-  displaynames - the names of the components, final string must be NULL
 
    Notes:
     If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored

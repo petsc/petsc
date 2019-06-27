@@ -144,7 +144,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 .    -pc_is_remove_nullspace_fixed -
 .    -pc_is_set_damping_factor_floating <fact> -
 .    -pc_is_not_damp_floating -
-+    -pc_is_not_remove_nullspace_floating -
+-    -pc_is_not_remove_nullspace_floating -
 
    Level: intermediate
 

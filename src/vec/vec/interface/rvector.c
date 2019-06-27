@@ -1429,8 +1429,8 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
    Not collective.
 
    Input parameter:
-.  v - The local portion of this vector was previously mapped into w using VecGetLocalVectorRead().
-.  w - The vector into which the local portion of v was mapped.
++  v - The local portion of this vector was previously mapped into w using VecGetLocalVectorRead().
+-  w - The vector into which the local portion of v was mapped.
 
    Level: beginner
 
@@ -1506,8 +1506,8 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec w)
    Logically collective.
 
    Input parameter:
-.  v - The local portion of this vector was previously mapped into w using VecGetLocalVector().
-.  w - The vector into which the local portion of v was mapped.
++  v - The local portion of this vector was previously mapped into w using VecGetLocalVector().
+-  w - The vector into which the local portion of v was mapped.
 
    Level: beginner
 

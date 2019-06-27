@@ -553,7 +553,7 @@ static PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char 
 
    Options Database Keys:
 +   -options_monitor <optional filename> - print options names and values as they are set
-.   -options_file <filename> - read options from a file
+-   -options_file <filename> - read options from a file
 
    Level: advanced
 
@@ -637,8 +637,8 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
    Logically Collective on PetscViewer
 
    Input Parameter:
--  options - options database, use NULL for default global database
-+  viewer - must be an PETSCVIEWERASCII viewer
++  options - options database, use NULL for default global database
+-  viewer - must be an PETSCVIEWERASCII viewer
 
    Options Database Key:
 .  -options_view - Activates PetscOptionsView() within PetscFinalize()
@@ -979,7 +979,7 @@ setvalue:
 
    Input Parameter:
 +  options - options database, use NULL for the default global database
-.  name - name of option, this SHOULD have the - prepended
+-  name - name of option, this SHOULD have the - prepended
 
    Level: intermediate
 
@@ -1517,9 +1517,9 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
 .  options - options database, use NULL for default global database
 
    Output Parameter:
-.  N - count of options not used
++  N - count of options not used
 .  names - names of options not used
-.  values - values of options not used
+-  values - values of options not used
 
    Level: advanced
 
@@ -1567,9 +1567,9 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **names
    Not Collective
 
    Input Parameter:
-.  options - options database, use NULL for default global database
++  options - options database, use NULL for default global database
 .  names - names of options not used
-.  values - values of options not used
+-  values - values of options not used
 
    Level: advanced
 
@@ -1602,7 +1602,7 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **n
                 available for options set through a file, environment variable, or on
                 the command line. Only options set after PetscInitialize() completes will
                 be monitored.
-.  -options_monitor_cancel - cancel all options database monitors
+-  -options_monitor_cancel - cancel all options database monitors
 
    Notes:
    To see all options, run your program with the -help option or consult Users-Manual: sec_gettingstarted
@@ -2013,7 +2013,7 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const c
 .  pre - the string to prepend to the name or NULL
 .  opt - option name
 .  list - the possible choices (one of these must be selected, anything else is invalid)
-.  ntext - number of choices
+-  ntext - number of choices
 
    Output Parameter:
 +  value - the index of the value to return (defaults to zero if the option name is given but no choice is listed)

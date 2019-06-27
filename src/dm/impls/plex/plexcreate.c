@@ -1756,7 +1756,7 @@ PETSC_STATIC_INLINE PetscReal DotReal(PetscInt dim, const PetscReal x[], const P
   Collective on MPI_Comm
 
   Input Parameters:
-. comm  - The communicator for the DM object
++ comm  - The communicator for the DM object
 . dim   - The dimension
 - simplex - Use simplices, or tensor product cells
 

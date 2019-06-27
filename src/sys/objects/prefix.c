@@ -65,8 +65,8 @@ PetscErrorCode  PetscObjectSetOptions(PetscObject obj,PetscOptions options)
    Collective on Object
 
    Input Parameters:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
-.  prefix - the prefix string to prepend to option requests of the object.
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+-  prefix - the prefix string to prepend to option requests of the object.
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -104,8 +104,8 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
    options of PetscObjectType in the database.
 
    Input Parameters:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
-.  prefix - the prefix string to prepend to option requests of the object.
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+-  prefix - the prefix string to prepend to option requests of the object.
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -175,8 +175,8 @@ PetscErrorCode  PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[]
    options of PetscObjectType in the database.
 
    Input Parameters:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
-.  prefix - the prefix string to prepend to option requests of the object.
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+-  prefix - the prefix string to prepend to option requests of the object.
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.

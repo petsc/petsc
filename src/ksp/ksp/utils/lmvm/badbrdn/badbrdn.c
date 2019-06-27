@@ -322,13 +322,13 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
    paradigm instead of this routine directly.
 
    Options Database Keys:
-.   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
++   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
 .   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
 .   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
 .   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
 .   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
 .   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
-.   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
+-   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
    Level: intermediate
 

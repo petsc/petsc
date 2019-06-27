@@ -972,7 +972,7 @@ M*/
    Not Collective
 
    Input Parameters:
-.  A - matrix
++  A - matrix
 .  row - row where values exist (must be local to this process)
 .  ncols - number of columns
 .  cols - columns with nonzeros

@@ -242,7 +242,7 @@ PetscErrorCode DMStagGetDOF(DM dm,PetscInt *dof0,PetscInt *dof1,PetscInt *dof2,P
   Not Collective
 
   Input Argument:
-+ dm - the DMStag object
+. dm - the DMStag object
 
   Output Arguments:
 + x,y,z - starting element indices in each direction

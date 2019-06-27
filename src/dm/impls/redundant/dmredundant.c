@@ -313,7 +313,7 @@ PetscErrorCode DMRedundantSetSize(DM dm,PetscMPIInt rank,PetscInt N)
     Not Collective
 
     Input Parameter:
-+   dm - redundant DM
+.   dm - redundant DM
 
     Output Parameters:
 +   rank - rank of process to own redundant degrees of freedom (or NULL)

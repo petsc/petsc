@@ -26,7 +26,7 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface,c
 . tag             - If non-zero, block size will be taken from the tag size
 . range           - If non-empty, Vec corresponds to these entities, otherwise to the entities set on the DMMoab
 . is_global_vec   - If true, this is a local representation of the Vec (including ghosts in parallel), otherwise a truly parallel one
-. destroy_tag     - If true, MOAB tag is destroyed with Vec, otherwise it is left on MOAB
+- destroy_tag     - If true, MOAB tag is destroyed with Vec, otherwise it is left on MOAB
 
   Output Parameter:
 . vec             - The created vector
@@ -121,8 +121,8 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
   Collective on MPI_Comm
 
   Input Parameter:
-. dm              - The DMMoab object being set
-. vec             - The Vector whose underlying data is requested
++ dm              - The DMMoab object being set
+- vec             - The Vector whose underlying data is requested
 
   Output Parameter:
 . array           - The local data array
@@ -211,7 +211,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
   Input Parameter:
 + dm              - The DMMoab object being set
 . vec             - The Vector whose underlying data is requested
-. array           - The local data array
+- array           - The local data array
 
   Level: intermediate
 
@@ -294,7 +294,7 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
 
   Input Parameter:
 + dm              - The DMMoab object being set
-. vec             - The Vector whose underlying data is requested
+- vec             - The Vector whose underlying data is requested
 
   Output Parameter:
 . array           - The local data array
@@ -379,7 +379,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
   Input Parameter:
 + dm              - The DMMoab object being set
 . vec             - The Vector whose underlying data is requested
-. array           - The local data array
+- array           - The local data array
 
   Level: intermediate
 

@@ -164,8 +164,8 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
    the Jacobian argument for the routine SNESSetJacobian().
 
    Input Parameters:
-.  snes - the SNES context
-.  x - vector where SNES solution is to be stored.
++  snes - the SNES context
+-  x - vector where SNES solution is to be stored.
 
    Output Parameter:
 .  J - the matrix-free matrix

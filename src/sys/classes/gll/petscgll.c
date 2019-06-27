@@ -185,7 +185,7 @@ PetscErrorCode PetscGLLDestroy(PetscGLL *gll)
 
    Input Parameter:
 +  gll - the nodes
-.  viewer - the viewer
+-  viewer - the viewer
 
    Level: beginner
 
@@ -221,7 +221,7 @@ PetscErrorCode PetscGLLView(PetscGLL *gll,PetscViewer viewer)
 
    Input Parameter:
 +  gll - the nodes
-.  f - the function values at the nodes
+-  f - the function values at the nodes
 
    Output Parameter:
 .  in - the value of the integral

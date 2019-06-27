@@ -11,7 +11,7 @@
   Input Parameters:
 + dm     - the discretization manager object
 . ifield - the index of the field as set before via DMMoabSetFieldName.
-. fvec - the Vector solution corresponding to the field (component)
+- fvec - the Vector solution corresponding to the field (component)
 
   Level: intermediate
 
@@ -73,7 +73,7 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 
   Input Parameters:
 + dm     - the discretization manager object
-. fvec - the global Vector solution corresponding to all the fields managed by DM
+- fvec - the global Vector solution corresponding to all the fields managed by DM
 
   Level: intermediate
 
@@ -157,7 +157,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   Input Parameters:
 + dm     - the discretization manager object
 . numFields - the total number of fields
-. fields - the array containing the names of each field (component); Can be NULL.
+- fields - the array containing the names of each field (component); Can be NULL.
 
   Level: intermediate
 
@@ -204,7 +204,7 @@ PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields
 
   Input Parameter:
 + dm     - the discretization manager object
-. field - field number for the DMMoab (0, 1, ... dof-1), where dof indicates the
+- field - field number for the DMMoab (0, 1, ... dof-1), where dof indicates the
         number of degrees of freedom per node within the DMMoab
 
   Output Parameter:
@@ -238,7 +238,7 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
   Input Parameters:
 + dm     - the discretization manager object
 . field - the field number
-. fieldName - the field (component) name
+- fieldName - the field (component) name
 
   Level: intermediate
   Notes:
@@ -277,10 +277,10 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
   Input Parameters:
 + dm     - the discretization manager object
 . point - the MOAB EntityHandle container which holds the field degree-of-freedom values
-. field - the field (component) index
+- field - the field (component) index
 
   Output Parameter:
-+ dof - the global degree-of-freedom index corresponding to the field in the discrete representation (Vec, Mat)
+. dof - the global degree-of-freedom index corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: beginner
 
@@ -312,10 +312,10 @@ PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field
 + dm     - the discretization manager object
 . npoints - the total number of Entities in the points array
 . points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
-. field - the field (component) index
+- field - the field (component) index
 
   Output Parameter:
-+ dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
+. dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: intermediate
 
@@ -358,10 +358,10 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHan
 + dm     - the discretization manager object
 . npoints - the total number of Entities in the points array
 . points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
-. field - the field (component) index
+- field - the field (component) index
 
   Output Parameter:
-+ dof - the local degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
+. dof - the local degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: intermediate
 
@@ -404,10 +404,10 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::Enti
   Input Parameters:
 + dm     - the discretization manager object
 . npoints - the total number of Entities in the points array
-. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+- points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
 
   Output Parameter:
-+ dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
+. dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: intermediate
 
@@ -451,10 +451,10 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* 
   Input Parameters:
 + dm     - the discretization manager object
 . npoints - the total number of Entities in the points array
-. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+- points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
 
   Output Parameter:
-+ dof - the local degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
+. dof - the local degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: intermediate
 
@@ -500,10 +500,10 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHan
   Input Parameters:
 + dm     - the discretization manager object
 . npoints - the total number of Entities in the points array
-. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+- points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
 
   Output Parameter:
-+ dof - the blocked global degree-of-freedom index array in the discrete representation (Vec, Mat)
+. dof - the blocked global degree-of-freedom index array in the discrete representation (Vec, Mat)
 
   Level: intermediate
 
@@ -543,10 +543,10 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
   Input Parameters:
 + dm     - the discretization manager object
 . npoints - the total number of Entities in the points array
-. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+- points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
 
   Output Parameter:
-+ dof - the blocked local degree-of-freedom index array in the discrete representation (Vec, Mat)
+. dof - the blocked local degree-of-freedom index array in the discrete representation (Vec, Mat)
 
   Level: intermediate
 
@@ -583,10 +583,10 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::En
   Not Collective
 
   Input Parameters:
-+ dm     - the discretization manager object
+. dm     - the discretization manager object
 
   Output Parameter:
-+ dof - the blocked global degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
+. dof - the blocked global degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
 
   Level: intermediate
 
@@ -615,10 +615,10 @@ PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt** dof)
   Not Collective
 
   Input Parameters:
-+ dm     - the discretization manager object
+. dm     - the discretization manager object
 
   Output Parameter:
-+ dof - the blocked local degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
+. dof - the blocked local degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
 
   Level: intermediate
 

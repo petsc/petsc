@@ -237,7 +237,7 @@ PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
 . da  - The DMDA
 
   Output Parameters:
-+ Nsub   - Number of local subdomains created upon decomposition
+. Nsub   - Number of local subdomains created upon decomposition
 
   Level: intermediate
 
@@ -375,7 +375,7 @@ PetscErrorCode  DMDAGetOffset(DM da,PetscInt *xo,PetscInt *yo,PetscInt *zo,Petsc
 . zs  - The start of the region in z
 . xs  - The size of the region in x
 . ys  - The size of the region in y
-. zs  - The size of the region in z
+- zs  - The size of the region in z
 
   Level: intermediate
 
@@ -410,7 +410,7 @@ PetscErrorCode  DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, P
 . zs  - The start of the region in z
 . xs  - The size of the region in x
 . ys  - The size of the region in y
-. zs  - The size of the region in z
+- zs  - The size of the region in z
 
   Level: intermediate
 
@@ -617,7 +617,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
 
    Input Parameter:
 +  da - initial distributed array
-.  ctype - DMDA_Q1 and DMDA_Q0 are currently the only supported forms
+-  ctype - DMDA_Q1 and DMDA_Q0 are currently the only supported forms
 
    Level: intermediate
 
