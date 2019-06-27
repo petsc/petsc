@@ -4750,7 +4750,7 @@ Note that the routine \lstinline{MatFDColoringCreate()} currently is only suppor
 \label{sec_vi}
 
 \lstinline{SNES} can also solve variational inequalities with box constraints. 
-That are nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu_i \le u_i \le Hu_i $.
+These are nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu_i \le u_i \le Hu_i $.
 Some or all of the lower bounds may be negative infinity (indicated to PETSc with \lstinline{SNES_VI_NINF}) and some or all of the upper bounds may be infinity (indicated by \lstinline{SNES_VI_INF}). The command
 \begin{lstlisting}
 SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
