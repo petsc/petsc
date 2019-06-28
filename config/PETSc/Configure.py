@@ -813,6 +813,8 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'with-clean' in args:
       del args['with-clean']
+    if 'force' in args:
+      del args['force']
     if 'configModules' in args:
       if nargs.Arg.parseArgument(args['configModules'])[1] == 'PETSc.Configure':
         del args['configModules']
