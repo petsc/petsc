@@ -1568,10 +1568,10 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm, fd, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n");CHKERRQ(ierr);
   }
   #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
-  ierr = PetscFPrintf(comm, fd, "   CpuToGpu Count: total number of CPU to GPU copies over all processors\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies)\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   GpuToCpu Count: total number of GPU to CPU copies over all processors\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies)\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies per processor)\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies per processor)\n");CHKERRQ(ierr);
   #endif
   ierr = PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
@@ -1594,7 +1594,14 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd,"  Count   Size   Count   Size");CHKERRQ(ierr); 
   #endif
   ierr = PetscFPrintf(comm, fd,"\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd,"------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd,"------------------------------------------------------------------------------------------------------------------------");CHKERRQ(ierr);
+  if (PetscLogMemory) {
+    ierr = PetscFPrintf(comm, fd,"-----------------------------");CHKERRQ(ierr);
+  }
+  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
+  ierr = PetscFPrintf(comm, fd,"-----------------------------");CHKERRQ(ierr); 
+  #endif
+  ierr = PetscFPrintf(comm, fd,"\n");CHKERRQ(ierr);
 
   /* Problem: The stage name will not show up unless the stage executed on proc 1 */
   for (stage = 0; stage < numStages; stage++) {
@@ -1719,7 +1726,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
           ierr = PetscFPrintf(comm, fd," %5.0f   %5.0f   %5.0f   %5.0f",mal/1.0e6,emalmax/1.0e6,malmax/1.0e6,mem/1.0e6);CHKERRQ(ierr);
         } 
         #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
-        ierr = PetscFPrintf(comm, fd,"    %4.0f %3.2e %4.0f %3.2e", cct, csz/1.0e6, gct, gsz/1.0e6);CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fd,"    %4.0f %3.2e %4.0f %3.2e",cct/size,csz/(1.0e6*size),gct/size,gsz/(1.0e6*size));CHKERRQ(ierr);
         #endif
         ierr = PetscFPrintf(comm, fd,"\n");CHKERRQ(ierr);
       }
@@ -1727,7 +1734,14 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   }
 
   /* Memory usage and object creation */
-  ierr = PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------");CHKERRQ(ierr);
+  if (PetscLogMemory) {
+    ierr = PetscFPrintf(comm, fd, "-----------------------------");CHKERRQ(ierr);
+  }
+  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
+  ierr = PetscFPrintf(comm, fd, "-----------------------------");CHKERRQ(ierr); 
+  #endif
+  ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "Memory usage is given in bytes:\n\n");CHKERRQ(ierr);
 

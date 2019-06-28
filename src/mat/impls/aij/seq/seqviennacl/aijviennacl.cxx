@@ -56,6 +56,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
             col_buffer.set(i, (a->j)[i]);
 
           viennaclstruct->compressed_mat->set(row_buffer.get(), row_indices.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->compressedrow.nrows, a->nz);
+          ierr = PetscLogCpuToGpu(((2*a->compressedrow.nrows)+1+a->nz)*sizeof(PetscInt) + (a->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
         } else {
           if (!viennaclstruct->mat) viennaclstruct->mat = new ViennaCLAIJMatrix();
 
@@ -71,6 +72,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
             col_buffer.set(i, (a->j)[i]);
 
           viennaclstruct->mat->set(row_buffer.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->nz);
+          ierr = PetscLogCpuToGpu(((A->rmap->n+1)+a->nz)*sizeof(PetscInt)+(a->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
         }
         ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
@@ -153,6 +155,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
         // copy nonzero entries directly to destination (no conversion required)
         viennacl::backend::memory_read(Agpu->handle(), 0, sizeof(PetscScalar)*Agpu->nnz(), a->a);
 
+        ierr = PetscLogGpuToCpu(row_buffer.raw_size()+col_buffer.raw_size()+(Agpu->nnz()*sizeof(PetscScalar)));CHKERRQ(ierr);
         ViennaCLWaitForGPU();
         /* TODO: Once a->diag is moved out of MatAssemblyEnd(), invalidate it here. */
       }

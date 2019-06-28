@@ -101,6 +101,7 @@ PetscErrorCode VecCUDACopyToGPUSome(Vec v, PetscCUDAIndices ci,ScatterMode mode)
     /* Note : this code copies the smallest contiguous chunk of data
        containing ALL of the indices */
     err = cudaMemcpy(gpuPtr,cpuPtr,n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(err);
+    ierr = PetscLogCpuToGpu(n*sizeof(PetscScalar));CHKERRQ(ierr);
 
     // Set the buffer states
     v->valid_GPU_array = PETSC_OFFLOAD_BOTH;
@@ -171,6 +172,7 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci,ScatterMode mod
     /* Note : this code copies the smallest contiguous chunk of data
        containing ALL of the indices */
     err = cudaMemcpy(cpuPtr,gpuPtr,n*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
+    ierr = PetscLogGpuToCpu(n*sizeof(PetscScalar));CHKERRQ(ierr);
 
     ierr = VecCUDARestoreArrayRead(v,&varray);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
