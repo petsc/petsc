@@ -1,0 +1,30 @@
+  0 SNES Function norm 4.888635593992e-01 
+Norm of search step 0.201359
+  1 SNES Function norm 3.529815872906e-01 
+Norm of search step 0.402718
+  2 SNES Function norm 1.795666562179e-01 
+Norm of search step 0.530195
+  3 SNES Function norm 1.302982064238e-01 
+Norm of search step 0.604077
+Norm of search step 0.181223
+  4 SNES Function norm 1.182015558277e-01 
+Norm of search step 0.135917
+Norm of search step 0.0407752
+  5 SNES Function norm 1.156940848047e-01 
+Norm of search step 0.0815504
+Norm of search step 0.0244651
+Norm of search step 0.00733953
+Norm of search step 0.00220186
+Norm of search step 0.000660558
+Norm of search step 0.000198167
+Norm of search step 5.94502e-05
+Norm of search step 1.78351e-05
+Norm of search step 5.35052e-06
+Norm of search step 1.60516e-06
+Norm of search step 4.81547e-07
+Norm of search step 1.44464e-07
+Norm of search step 4.33392e-08
+Norm of search step 1.30018e-08
+  6 SNES Function norm 1.156940848047e-01 
+Nonlinear solve did not converge due to DIVERGED_INNER iterations 5
+Number of SNES iterations = 5
