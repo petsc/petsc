@@ -430,6 +430,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
   ierr = PetscFree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
 
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)pc, PCHMG);CHKERRQ(ierr);
   ierr = PetscNew(&hmg);CHKERRQ(ierr);
 
   mg                      = (PC_MG*) pc->data;
