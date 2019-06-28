@@ -136,9 +136,6 @@ class Configure(config.base.Configure):
     self.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
-    self.getExecutable('gzip', getFullPath=1, resultName = 'GZIP')
-    if hasattr(self, 'GZIP'):
-      self.addDefine('HAVE_GZIP', 1)
     import sys
     self.addMakeMacro('PYTHON',sys.executable)
     self.getExecutable('m4', getFullPath=1, resultName = 'M4')
