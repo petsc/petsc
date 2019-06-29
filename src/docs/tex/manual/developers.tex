@@ -367,7 +367,6 @@ For example,
 \begin{itemize}
 \item \lstinline{MatStashCreate_Private} is marked \lstinline{PETSC_INTERN} as it is used across compilation units, but only within the \lstinline{Mat} package;
 \item all functions, such as \lstinline{KSPCreate()}, included in the public headers (\trl{include/petsc*.h}) should be marked \lstinline{PETSC_EXTERN};
-\item \lstinline{MatHeaderReplace()} is not intended for users (it is in \trl{include/petsc/private/matimpl.h}) but is marked \lstinline{PETSC_EXTERN} since it is used both by implementations of the \lstinline{Mat} class (which could be defined in plugin implementations) and by functions in the \lstinline{DM} and \lstinline{KSP} packages.
 \end{itemize}
 \item Before removing or renaming an API function, type, or enumerator,
 \lstinline{PETSC_DEPRECATED_XXX()} should be used in the relevant header file to indicate the new, correct usage and the version number where the deprecation will first appear. For example,
