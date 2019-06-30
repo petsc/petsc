@@ -561,6 +561,7 @@ class Configure(config.base.Configure):
       try:
         if self.getExecutable(compiler, resultName = 'CC'):
           self.checkCompiler('C')
+          self.executeShellCommand(self.CC+' --version', log = self.log)
           break
       except RuntimeError as e:
         import os
@@ -769,6 +770,7 @@ class Configure(config.base.Configure):
         try:
           if self.getExecutable(compiler, resultName = 'CXX'):
             self.checkCompiler('Cxx')
+            self.executeShellCommand(self.CXX+' --version', log = self.log)
             break
         except RuntimeError as e:
           import os
@@ -899,6 +901,7 @@ class Configure(config.base.Configure):
       try:
         if self.getExecutable(compiler, resultName = 'FC'):
           self.checkCompiler('FC')
+          self.executeShellCommand(self.FC+' --version', log = self.log)
           break
       except RuntimeError as e:
         self.mesg = str(e)
@@ -1473,10 +1476,10 @@ if (dlclose(handle)) {
   return -1;
 }
 ''' % oldLib
-          if self.checkLink(includes = '#include<dlfcn.h>', body = code):
-            os.remove(oldLib)
+          if self.checkLink(includes = '#include <dlfcn.h>\n#include <stdio.h>', body = code):
             self.dynamicLibraries = 1
             self.logPrint('Using dynamic linker '+self.dynamicLinker+' with flags '+str(self.dynamicLibraryFlags)+' and library extension '+self.dynamicLibraryExt)
+            os.remove(oldLib)
             break
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.dynamicLinker

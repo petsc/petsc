@@ -399,7 +399,7 @@ def petsc_configure(configure_options):
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
-    +'                ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
+    +'    TypeError or ValueError possibly related to ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
@@ -436,6 +436,7 @@ def petsc_configure(configure_options):
 
   print(msg)
   if not framework is None:
+    import traceback
     framework.logClear()
     if hasattr(framework, 'log'):
       try:
@@ -447,19 +448,21 @@ def petsc_configure(configure_options):
           framework.outputCHeader(framework.log)
       except Exception as e:
         framework.log.write('Problem writing headers to log: '+str(e))
-      import traceback
       try:
         framework.log.write(msg+se)
         traceback.print_tb(sys.exc_info()[2], file = framework.log)
         print_final_timestamp(framework)
         if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
-      except:
-        pass
+      except Exception as e:
+        print('Error printing error message from exception or printing the traceback:'+str(e))
+        traceback.print_tb(sys.exc_info()[2])
       sys.exit(1)
+    else:
+      print(se)
+      traceback.print_tb(sys.exc_info()[2])
   else:
     print(se)
-    import traceback
     traceback.print_tb(sys.exc_info()[2])
   if hasattr(framework,'log'): framework.log.close()
 
