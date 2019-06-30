@@ -74,13 +74,13 @@ class Configure(config.base.Configure):
   def haveHeader(self, header):
     return self.getDefineName(header) in self.defines
 
-  def check(self, header):
+  def check(self, header, adddefine = 1):
     '''Checks for "header", and defines HAVE_"header" if found'''
     self.log.write('Checking for header: '+header+'\n')
     found = 0
     if self.checkPreprocess('#include <'+header+'>\n'):
       found = 1
-      self.addDefine(self.getDefineName(header), found)
+      if adddefine: self.addDefine(self.getDefineName(header), found)
     return found
 
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
@@ -131,8 +131,8 @@ class Configure(config.base.Configure):
         exit(0);
       '''
       if not self.checkRun(includes, body): haveStdC = 0
-    if haveStdC:
-      self.framework.addDefine('STDC_HEADERS',1)
+    if not haveStdC:
+      raise RuntimeError("Cannot locate all the standard C header files needed by PETSc")
     return
 
   def checkStat(self):
@@ -202,7 +202,7 @@ class Configure(config.base.Configure):
 
   def checkMath(self):
     '''Checks for the math headers and defines'''
-    haveMath = self.check('math.h')
+    haveMath = self.check('math.h',adddefine=0)
     if haveMath:
       if self.checkCompile('#include <math.h>\n', 'double pi = M_PI;\n\nif (pi);\n'):
         self.logPrint('Found math #defines, like M_PI')
@@ -211,13 +211,8 @@ class Configure(config.base.Configure):
         self.logPrint('Activated Windows math #defines, like M_PI')
       else:
         self.logPrint('Missing math #defines, like M_PI')
-      if self.checkCompile('#include <math.h>\n', 'double f = INFINITY;\n\nif (f);\n'):
-        self.framework.addDefine('HAVE_MATH_INFINITY', 1)
-        self.logPrint('Found math INFINITY')
-      else:
-        self.logPrint('Unable to find INFINITY in math.h or the compiler generates a warning/error message when used')
     else:
-      self.logPrint('Missing math.h')
+      raise RuntimeError("PETSc requires math.h")
     return
 
   def checkRecursiveMacros(self):

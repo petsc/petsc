@@ -1511,9 +1511,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 
 #include <stddef.h>
 #include <string.h>             /* for memcpy, memset */
-#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
-#endif
 
 #if defined(PETSC_HAVE_XMMINTRIN_H) && !defined(__CUDACC__)
 #include <xmmintrin.h>

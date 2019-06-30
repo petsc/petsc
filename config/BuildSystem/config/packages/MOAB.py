@@ -15,6 +15,7 @@ class Configure(config.package.GNUPackage):
     self.cxx               = 1
     self.precisions        = ['single','double']
     self.hastests          = 1
+    self.useddirectly      = 0
     return
 
   def setupHelp(self, help):

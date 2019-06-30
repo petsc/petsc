@@ -743,7 +743,7 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char str
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CLOSURES)
+#if defined(PETSC_HAVE_CLOSURE)
 int (^SwiftClosure)(const char*) = 0;
 
 PetscErrorCode PetscVFPrintfToString(FILE *fd,const char format[],va_list Argp)
@@ -757,7 +757,7 @@ PetscErrorCode PetscVFPrintfToString(FILE *fd,const char format[],va_list Argp)
     size_t length;
     char   buff[PETSCDEFAULTBUFFERSIZE];
 
-    ierr = PetscVSNPrintf(buf,size(buff),format,&length,Argp);CHKERRQ(ierr);
+    ierr = PetscVSNPrintf(buff,sizeof(buff),format,&length,Argp);CHKERRQ(ierr);
     ierr = SwiftClosure(buff);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

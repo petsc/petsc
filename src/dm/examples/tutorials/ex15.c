@@ -260,7 +260,7 @@ int main(int argc,char **args)
    test:
       suffix: 3
       nsize: 12
-      requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
+      requires: define(PETSC_HAVE_MPIIO)
       args: -usempiio
 
 TEST*/

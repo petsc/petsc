@@ -10,6 +10,7 @@ class Configure(config.package.CMakePackage):
     self.includes          = ['metis.h']
     self.liblist           = [['libmetis.a'],['libmetis.a','libexecinfo.a']]
     self.hastests          = 1
+    self.useddirectly      = 0
     return
 
   def setupHelp(self, help):

@@ -1,15 +1,8 @@
-#if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
-#define MKL_ILP64
-#endif
-
 #include <../src/mat/impls/aij/seq/aij.h>        /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
+#if defined(PETSC_HAVE_MKL_INTEL_ILP64)
 #define MKL_ILP64
 #endif
 #include <mkl_pardiso.h>
@@ -35,7 +28,7 @@ PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int);
 #define IPARM_SIZE 64
 
 #if defined(PETSC_USE_64BIT_INDICES)
- #if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
+ #if defined(PETSC_HAVE_MKL_INTEL_ILP64)
   #define INT_TYPE long long int
   #define MKL_PARDISO pardiso
   #define MKL_PARDISO_INIT pardisoinit

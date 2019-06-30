@@ -123,6 +123,4 @@ triangle_shared:
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
-    if self.found:
-      self.framework.addDefine('ANSI_DECLARATORS', 1)
     return

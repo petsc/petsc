@@ -12,6 +12,7 @@ class Configure(config.package.GNUPackage):
     self.includes        = ['netcdf.h']
     self.liblist         = [['libnetcdf.a']]
     self.cxx             = 1
+    self.useddirectly    = 0
     return
 
   def setupDependencies(self, framework):

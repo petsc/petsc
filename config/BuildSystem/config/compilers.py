@@ -447,20 +447,6 @@ class Configure(config.base.Configure):
     self.logWrite(self.setCompilers.restoreLog())
     return
 
-  def checkCxxNamespace(self):
-    '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
-    self.pushLanguage('C++')
-    self.cxxNamespace = 0
-    if self.checkCompile('namespace petsc {int dummy;}'):
-      if self.checkCompile('template <class dummy> struct a {};\nnamespace trouble{\ntemplate <class dummy> struct a : public ::a<dummy> {};\n}\ntrouble::a<int> uugh;\n'):
-        self.cxxNamespace = 1
-    self.popLanguage()
-    if self.cxxNamespace:
-      self.logPrint('C++ has namespaces', 4, 'compilers')
-      self.addDefine('HAVE_CXX_NAMESPACE', 1)
-    else:
-      self.logPrint('C++ does not have namespaces', 4, 'compilers')
-    return
 
   def checkCxxDialect(self):
     """Determine the Cxx dialect supported by the compiler [and correspoding compiler option - if any].
@@ -1744,7 +1730,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         restoredlog = 1
         self.framework.logPrint('Accepted C99 compile flag: '+flag)
         break
-    if self.c99flag == '': self.addDefine('HAVE_C99', 1)
     self.setCompilers.popLanguage()
     if not restoredlog:
       self.logWrite(self.setCompilers.restoreLog())
@@ -1767,7 +1752,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     if hasattr(self.setCompilers, 'CXX'):
       self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX, self.log)
       self.executeTest(self.checkRestrict,['Cxx'])
-      self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxInline)
       if self.argDB['with-cxxlib-autodetect']:

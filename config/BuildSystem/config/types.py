@@ -29,11 +29,9 @@ class Configure(config.base.Configure):
     self.log.write('Checking for type: '+typeName+'\n')
     include = '''
 #include <sys/types.h>
-#if STDC_HEADERS
 #include <stdlib.h>
 #include <stddef.h>
 %s
-#endif
     ''' % ('\n'.join(['#include<%s>' % inc for inc in includes]))
     found = self.checkCompile(include,typeName+' a;')
     if not found and defaultType:
@@ -79,27 +77,6 @@ class Configure(config.base.Configure):
     if self.outputPreprocess('#include <sys/types.h>').find('uid_t') < 0:
       self.addDefine('uid_t', 'int')
       self.addDefine('gid_t', 'int')
-    return
-
-  def checkSignal(self):
-    '''Checks the return type of signal() and defines RETSIGTYPE to that type name'''
-    includes = '''
-#include <sys/types.h>
-#include <signal.h>
-#ifdef signal
-#undef signal
-#endif
-#ifdef __cplusplus
-extern "C" void (*signal (int, void(*)(int)))(int);
-#else
-void (*signal())();
-#endif
-    '''
-    if self.checkCompile(includes, ''):
-      returnType = 'void'
-    else:
-      returnType = 'int'
-    self.addDefine('RETSIGTYPE', returnType)
     return
 
   def checkC99Complex(self):
@@ -208,12 +185,10 @@ void (*signal())();
     typename = typeName.replace(' ', '-').replace('*', 'p')
     includes = '''
 #include <sys/types.h>
-#if STDC_HEADERS
 #include <stdlib.h>
 #include <stdio.h>
-#include <stddef.h>
-#endif\n'''
-    mpiFix = '''
+#include <stddef.h>'''
+      mpiFix = '''
 #define MPICH_IGNORE_CXX_SEEK
 #define MPICH_SKIP_MPICXX 1
 #define OMPI_SKIP_MPICXX 1\n'''
@@ -266,7 +241,6 @@ void (*signal())();
     self.executeTest(self.checkIntegerTypes)
     self.executeTest(self.checkPID)
     self.executeTest(self.checkUID)
-    self.executeTest(self.checkSignal)
     self.executeTest(self.checkC99Complex)
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkCxxComplex)
