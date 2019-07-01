@@ -525,9 +525,12 @@ class Configure(config.base.Configure):
             self.logPrint('C++ requires -lc++ to link with C compiler', 3, 'compilers')
           else:
             self.logWrite(self.setCompilers.restoreLog())
+            self.setCompilers.LIBS = oldLibs
+            self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefor will determine needed C++ libraries')
             skipcxxlibaries = 0
         if not skipcxxlibraries: 
           self.setCompilers.saveLog()
+          oldLibs = self.setCompilers.LIBS
           self.setCompilers.LIBS = '-lstdc++ '+self.setCompilers.LIBS
           if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
             self.logWrite(self.setCompilers.restoreLog())
@@ -536,7 +539,7 @@ class Configure(config.base.Configure):
           else:
             self.logWrite(self.setCompilers.restoreLog())
             self.setCompilers.LIBS = oldLibs
-            self.logPrint('C++ code cannot directly be linked with C linker, therefor will determine needed C++ libraries')
+            self.logPrint('C++ code cannot directly be linked with C linker using -lstdc++, therefor will determine needed C++ libraries')
             skipcxxlibraries = 0
     except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
@@ -717,6 +720,9 @@ class Configure(config.base.Configure):
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Cxx libraries cannot directly be used with C as linker', 4, 'compilers')
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+      raise RuntimeError("Cxx libraries cannot directly be used with C as linker.\n\
+If you don't need the C++ compiler to build external packages or for you application you can run\n\
+./configure with --with-cxx=0. Otherwise you need a different combination of C and C++ compilers")
     else:
       self.logWrite(self.setCompilers.restoreLog())
     self.setCompilers.LIBS = oldLibs
