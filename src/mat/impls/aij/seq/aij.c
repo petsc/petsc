@@ -3907,6 +3907,10 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+
+  /* Check local size. If zero, then return */
+  if (!A->rmap->n) PetscFunctionReturn(0);
+
   a = (Mat_SeqAIJ*)A->data;
   /* if no saved info, we error out */
   if (!a->ipre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"No saved preallocation info \n");
