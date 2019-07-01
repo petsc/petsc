@@ -999,6 +999,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   xGPU = thrust::device_pointer_cast(xarray);
   bGPU = thrust::device_pointer_cast(barray);
 
+  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
   /* First, reorder with the row permutation */
   thrust::copy(thrust::make_permutation_iterator(bGPU, cusparseTriFactors->rpermIndices->begin()),
                thrust::make_permutation_iterator(bGPU+n, cusparseTriFactors->rpermIndices->end()),
@@ -1021,6 +1022,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
                         loTriFactorT->csrMat->column_indices->data().get(),
                         loTriFactorT->solveInfo,
                         tempGPU->data().get(), xarray);CHKERRCUDA(stat);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   /* Last, copy the solution, xGPU, into a temporary with the column permutation ... can't be done in place. */
   thrust::copy(thrust::make_permutation_iterator(xGPU, cusparseTriFactors->cpermIndices->begin()),
@@ -1034,8 +1036,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
-
-  ierr = PetscLogFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1062,6 +1063,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec
   ierr = VecCUDAGetArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(bb,&barray);CHKERRQ(ierr);
 
+  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
   /* First, solve U */
   stat = cusparse_solve(cusparseTriFactors->handle, upTriFactorT->solveOp,
                         upTriFactorT->csrMat->num_rows, &PETSC_CUSPARSE_ONE, upTriFactorT->descr,
@@ -1079,12 +1081,13 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec
                         loTriFactorT->csrMat->column_indices->data().get(),
                         loTriFactorT->solveInfo,
                         tempGPU->data().get(), xarray);CHKERRCUDA(stat);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   /* restore */
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
-  ierr = PetscLogFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1109,6 +1112,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   xGPU = thrust::device_pointer_cast(xarray);
   bGPU = thrust::device_pointer_cast(barray);
 
+  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
   /* First, reorder with the row permutation */
   thrust::copy(thrust::make_permutation_iterator(bGPU, cusparseTriFactors->rpermIndices->begin()),
                thrust::make_permutation_iterator(bGPU, cusparseTriFactors->rpermIndices->end()),
@@ -1131,6 +1135,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
                         upTriFactor->csrMat->column_indices->data().get(),
                         upTriFactor->solveInfo,
                         tempGPU->data().get(), xarray);CHKERRCUDA(stat);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   /* Last, copy the solution, xGPU, into a temporary with the column permutation ... can't be done in place. */
   thrust::copy(thrust::make_permutation_iterator(xGPU, cusparseTriFactors->cpermIndices->begin()),
@@ -1143,7 +1148,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
-  ierr = PetscLogFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1163,6 +1168,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
   ierr = VecCUDAGetArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(bb,&barray);CHKERRQ(ierr);
 
+  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
   /* First, solve L */
   stat = cusparse_solve(cusparseTriFactors->handle, loTriFactor->solveOp,
                         loTriFactor->csrMat->num_rows, &PETSC_CUSPARSE_ONE, loTriFactor->descr,
@@ -1180,11 +1186,12 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
                         upTriFactor->csrMat->column_indices->data().get(),
                         upTriFactor->solveInfo,
                         tempGPU->data().get(), xarray);CHKERRCUDA(stat);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
-  ierr = PetscLogFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1370,6 +1377,7 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   ierr = VecSet(yy,0);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
 
+  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
   if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
     CsrMatrix *mat = (CsrMatrix*)matstructT->mat;
     stat = cusparse_csr_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
@@ -1387,12 +1395,13 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
                              yarray);CHKERRCUDA(stat);
 #endif
   }
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(yy,&yarray);CHKERRQ(ierr);
   if (!cusparsestruct->stream) {
     ierr = WaitForGPU();CHKERRCUDA(ierr);
   }
-  ierr = PetscLogFlops(2.0*a->nz - cusparsestruct->nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(2.0*a->nz - cusparsestruct->nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1417,6 +1426,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
     dptr = cusparsestruct->workVector->size() == (thrust::detail::vector_base<PetscScalar, thrust::device_malloc_allocator<PetscScalar> >::size_type)(A->rmap->n) ? zarray : cusparsestruct->workVector->data().get();
     beta = (yy == zz && dptr == zarray) ? matstruct->beta_one : matstruct->beta_zero;
 
+    ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
     /* csr_spmv is multiply add */
     if (cusparsestruct->format == MAT_CUSPARSE_CSR) {
       /* here we need to be careful to set the number of rows in the multiply to the
@@ -1440,6 +1450,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
       }
 #endif
     }
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
     if (yy) {
       if (dptr != zarray) {
@@ -1451,6 +1462,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = VecSet(zz,0);CHKERRQ(ierr);
     }
     /* scatter the data from the temporary into the full vector with a += operation */
+    ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
     if (dptr != zarray) {
       thrust::device_ptr<PetscScalar> zptr;
 
@@ -1459,6 +1471,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
                        thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstruct->cprowIndices->begin()))) + cusparsestruct->workVector->size(),
                        VecCUDAPlusEquals());
     }
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);
   } catch(char *ex) {
@@ -1469,7 +1482,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = WaitForGPU();CHKERRCUDA(ierr);
     }
   }
-  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1499,6 +1512,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
     ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);
     zptr = thrust::device_pointer_cast(zarray);
 
+    ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
     /* multiply add with matrix transpose */
     if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
       CsrMatrix *mat = (CsrMatrix*)matstructT->mat;
@@ -1527,7 +1541,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
     thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstructT->cprowIndices->begin()))),
         thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstructT->cprowIndices->begin()))) + A->cmap->n,
         VecCUDAPlusEquals());
-
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);
 
@@ -1535,7 +1549,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
   }
   ierr = WaitForGPU();CHKERRCUDA(ierr);
-  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

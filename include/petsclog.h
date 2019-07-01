@@ -5,6 +5,7 @@
 #if !defined(__PetscLog_H)
 #define __PetscLog_H
 #include <petscsys.h>
+#include <petsctime.h>
 
 /* General logging of information; different from event logging */
 PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],void*,const char[],...);
@@ -63,6 +64,8 @@ PETSC_EXTERN PetscLogDouble petsc_ctog_ct;
 PETSC_EXTERN PetscLogDouble petsc_gtoc_ct;
 PETSC_EXTERN PetscLogDouble petsc_ctog_sz;
 PETSC_EXTERN PetscLogDouble petsc_gtoc_sz;
+PETSC_EXTERN PetscLogDouble petsc_gflops;
+PETSC_EXTERN PetscLogDouble petsc_gtime;
 #endif
 
 /* We must make the following structures available to access the event
@@ -145,11 +148,13 @@ typedef struct {
   PetscLogDouble mallocIncrease;/* How much the maximum malloced space has increased in this event */
   PetscLogDouble mallocSpace;   /* How much the space was malloced and kept during this event */
   PetscLogDouble mallocIncreaseEvent;  /* Maximum of the high water mark with in event minus memory available at the end of the event */
-  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
+  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscLogDouble CpuToGpuCount; /* The total number of CPU to GPU copies */
   PetscLogDouble GpuToCpuCount; /* The total number of GPU to CPU copies */
   PetscLogDouble CpuToGpuSize;  /* The total size of CPU to GPU copies */
   PetscLogDouble GpuToCpuSize;  /* The total size of GPU to CPU copies */
+  PetscLogDouble GpuFlops;      /* The flops done on a GPU in this event */
+  PetscLogDouble GpuTime;       /* The time spent on a GPU in this event */
   #endif
 } PetscEventPerfInfo;
 
@@ -232,13 +237,36 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
 PETSC_STATIC_INLINE PetscErrorCode PetscLogCpuToGpu(PetscLogDouble size){
+  PetscFunctionBegin;
   petsc_ctog_ct += 1;
   petsc_ctog_sz += size;
   PetscFunctionReturn(0);
 }
 PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpu(PetscLogDouble size){
+  PetscFunctionBegin;
   petsc_gtoc_ct += 1;
   petsc_gtoc_sz += size;
+  PetscFunctionReturn(0);
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n){
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot log negative flops");
+#endif
+  petsc_TotalFlops += PETSC_FLOPS_PER_OP*n;
+  petsc_gflops += PETSC_FLOPS_PER_OP*n;
+  PetscFunctionReturn(0);
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeStart(){
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscTimeSubtract(&petsc_gtime);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeEnd(){
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscTimeAdd(&petsc_gtime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
