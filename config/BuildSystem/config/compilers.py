@@ -516,19 +516,23 @@ class Configure(config.base.Configure):
         self.logPrint('C++ libraries are not needed when using C linker')
       else:
         self.logWrite(self.setCompilers.restoreLog())
-        oldLibs = self.setCompilers.LIBS
-        self.setCompilers.LIBS = '-lc++ '+self.setCompilers.LIBS
-        self.setCompilers.saveLog()
-        if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
-          self.logWrite(self.setCompilers.restoreLog())
-          self.logPrint('C++ requires -lc++ to link with C compiler', 3, 'compilers')
-        else:
-          self.logWrite(self.setCompilers.restoreLog())
+        if self.setCompilers.isDarwin(self.log) and config.setCompilers.Configure.isClang(self.getCompiler('C'), self.log):
+          oldLibs = self.setCompilers.LIBS
+          self.setCompilers.LIBS = '-lc++ '+self.setCompilers.LIBS
+          self.setCompilers.saveLog()
+          if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
+            self.logWrite(self.setCompilers.restoreLog())
+            self.logPrint('C++ requires -lc++ to link with C compiler', 3, 'compilers')
+          else:
+            self.logWrite(self.setCompilers.restoreLog())
+            skipcxxlibaries = 0
+        if not skipcxxlibraries: 
           self.setCompilers.saveLog()
           self.setCompilers.LIBS = '-lstdc++ '+self.setCompilers.LIBS
           if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
             self.logWrite(self.setCompilers.restoreLog())
             self.logPrint('C++ requires -lstdc++ to link with C compiler', 3, 'compilers')
+            skipcxxlibaries = 1
           else:
             self.logWrite(self.setCompilers.restoreLog())
             self.setCompilers.LIBS = oldLibs

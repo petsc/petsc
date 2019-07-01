@@ -164,7 +164,7 @@ class Configure(config.base.Configure):
   def isClang(compiler, log):
     '''Returns true if the compiler is a Clang/LLVM compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 500', log = log)
       output = output + error
       return any([s in output for s in ['Emit Clang AST']])
     except RuntimeError:
