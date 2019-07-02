@@ -805,11 +805,6 @@ int main(int argc, char **argv)
     suffix: 2
     nsize: 3
     args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
-  test:
-    requires:
-    suffix: 2b
-    nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
 
   testset:
     # the same as 1% for 3D
