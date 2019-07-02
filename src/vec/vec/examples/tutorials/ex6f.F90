@@ -9,6 +9,7 @@ program main
   integer     ::      fd
   PetscInt    ::   i,sz
   PetscInt,parameter   ::   m = 10
+  PetscInt,parameter   ::   one = 1
   PetscInt, allocatable,dimension(:) :: t
   PetscScalar, pointer, dimension(:) :: avec
   PetscScalar, pointer, dimension(:) :: array
@@ -51,7 +52,7 @@ program main
   call PetscViewerBinaryGetDescriptor(view_out,fd,ierr);CHKERRA(ierr)
   
   ! Write binary output
-  call PetscBinaryWrite(fd,t,1,PETSC_INT,PETSC_FALSE,ierr);CHKERRA(ierr)
+  call PetscBinaryWrite(fd,t,one,PETSC_INT,PETSC_FALSE,ierr);CHKERRA(ierr)
   call PetscBinaryWrite(fd,array,m,PETSC_SCALAR,PETSC_FALSE,ierr);CHKERRA(ierr)
   
   ! Destroy the output viewer and work array
@@ -74,7 +75,7 @@ program main
   call VecGetArrayF90(vec,avec,ierr);CHKERRA(ierr)
 
   ! Read data into vector
-  call PetscBinaryRead(fd,t,1,PETSC_NULL_INTEGER,PETSC_INT,ierr);CHKERRA(ierr)
+  call PetscBinaryRead(fd,t,one,PETSC_NULL_INTEGER,PETSC_INT,ierr);CHKERRA(ierr)
   sz=t(1)
   
   if (sz <= 0) then
