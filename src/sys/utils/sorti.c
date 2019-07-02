@@ -1,52 +1,160 @@
 
 /*
    This file contains routines for sorting integers. Values are sorted in place.
+   One can use src/sys/examples/tests/ex52.c for benchmarking.
  */
 #include <petsc/private/petscimpl.h>                /*I  "petscsys.h"  I*/
 
-#define SWAP(a,b,t) {t=a;a=b;b=t;}
-
-#define MEDIAN3(v,a,b,c)                        \
-  (v[a]<v[b]                                    \
-   ? (v[b]<v[c]                                 \
-      ? b                                       \
-      : (v[a]<v[c] ? c : a))                    \
-   : (v[c]<v[b]                                 \
-      ? b                                       \
-      : (v[a]<v[c] ? a : c)))
+#define MEDIAN3(v,a,b,c)                                                        \
+  (v[a]<v[b]                                                                    \
+   ? (v[b]<v[c]                                                                 \
+      ? (b)                                                                     \
+      : (v[a]<v[c] ? (c) : (a)))                                                \
+   : (v[c]<v[b]                                                                 \
+      ? (b)                                                                     \
+      : (v[a]<v[c] ? (a) : (c))))
 
 #define MEDIAN(v,right) MEDIAN3(v,right/4,right/2,right/4*3)
 
-/* -----------------------------------------------------------------------*/
+/* Swap one, two or three pairs. Each pair can have its own type */
+#define SWAP1(a,b,t1)               do {t1=a;a=b;b=t1;} while(0)
+#define SWAP2(a,b,c,d,t1,t2)        do {t1=a;a=b;b=t1; t2=c;c=d;d=t2;} while(0)
+#define SWAP3(a,b,c,d,e,f,t1,t2,t3) do {t1=a;a=b;b=t1; t2=c;c=d;d=t2; t3=e;e=f;f=t3;} while(0)
+
+/* Swap a & b, *c & *d. c, d, t2 are pointers to a type of size <siz> */
+#define SWAP2Data(a,b,c,d,t1,t2,siz)                                             \
+  do {                                                                           \
+    PetscErrorCode ierr;                                                         \
+    t1=a; a=b; b=t1;                                                             \
+    ierr = PetscMemcpy(t2,c,siz);CHKERRQ(ierr);                                  \
+    ierr = PetscMemcpy(c,d,siz);CHKERRQ(ierr);                                   \
+    ierr = PetscMemcpy(d,t2,siz);CHKERRQ(ierr);                                  \
+  } while(0)
 
 /*
-   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
-   Assumes 0 origin for v, number of elements = right+1 (right is index of
-   right-most member).
-*/
-static void PetscSortInt_Private(PetscInt *v,PetscInt right)
-{
-  PetscInt i,j,pivot,tmp;
+   Partition X[lo,hi] into two parts: X[lo,l) <= pivot; X[r,hi] > pivot
 
-  if (right <= 1) {
-    if (right == 1) {
-      if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
-    }
-    return;
-  }
-  i = MEDIAN(v,right);          /* Choose a pivot */
-  SWAP(v[0],v[i],tmp);          /* Move it out of the way */
-  pivot = v[0];
-  for (i=0,j=right+1;; ) {
-    while (++i < j && v[i] <= pivot) ; /* Scan from the left */
-    while (v[--j] > pivot) ;           /* Scan from the right */
-    if (i >= j) break;
-    SWAP(v[i],v[j],tmp);
-  }
-  SWAP(v[0],v[j],tmp);          /* Put pivot back in place. */
-  PetscSortInt_Private(v,j-1);
-  PetscSortInt_Private(v+j+1,right-(j+1));
-}
+   Input Parameters:
+    + X         - array to partition
+    . pivot     - a pivot of X[]
+    . t1        - temp variable for X
+    - lo,hi     - lower and upper bound of the array
+
+   Output Parameters:
+    + l,r       - of type PetscInt
+
+   Notes:
+    The TwoWayPartition2/3 variants also partition other arrays along with X.
+    These arrays can have different types, so they provide their own temp t2,t3
+ */
+#define TwoWayPartition1(X,pivot,t1,lo,hi,l,r)                                   \
+  do {                                                                           \
+    l = lo;                                                                      \
+    r = hi;                                                                      \
+    while(1) {                                                                   \
+      while (X[l] < pivot) l++;                                                  \
+      while (X[r] > pivot) r--;                                                  \
+      if (l >= r) {r++; break;}                                                  \
+      SWAP1(X[l],X[r],t1);                                                       \
+      l++;                                                                       \
+      r--;                                                                       \
+    }                                                                            \
+  } while(0)
+
+#define TwoWayPartition2(X,Y,pivot,t1,t2,lo,hi,l,r)                              \
+  do {                                                                           \
+    l = lo;                                                                      \
+    r = hi;                                                                      \
+    while(1) {                                                                   \
+      while (X[l] < pivot) l++;                                                  \
+      while (X[r] > pivot) r--;                                                  \
+      if (l >= r) {r++; break;}                                                  \
+      SWAP2(X[l],X[r],Y[l],Y[r],t1,t2);                                          \
+      l++;                                                                       \
+      r--;                                                                       \
+    }                                                                            \
+  } while(0)
+
+#define TwoWayPartition3(X,Y,Z,pivot,t1,t2,t3,lo,hi,l,r)                         \
+  do {                                                                           \
+    l = lo;                                                                      \
+    r = hi;                                                                      \
+    while(1) {                                                                   \
+      while (X[l] < pivot) l++;                                                  \
+      while (X[r] > pivot) r--;                                                  \
+      if (l >= r) {r++; break;}                                                  \
+      SWAP3(X[l],X[r],Y[l],Y[r],Z[l],Z[r],t1,t2,t3);                             \
+      l++;                                                                       \
+      r--;                                                                       \
+    }                                                                            \
+  } while(0)
+
+/* Templates for similar functions used below */
+#define QuickSort1(FuncName,X,n,pivot,t1,ierr)                                   \
+  do {                                                                           \
+    PetscInt i,j,p,l,r,hi=n-1;                                                   \
+    if (n < 8) {                                                                 \
+      for (i=0; i<n; i++) {                                                      \
+        pivot = X[i];                                                            \
+        for (j=i+1; j<n; j++) {                                                  \
+          if (pivot > X[j]) {                                                    \
+            SWAP1(X[i],X[j],t1);                                                 \
+            pivot = X[i];                                                        \
+          }                                                                      \
+        }                                                                        \
+      }                                                                          \
+    } else {                                                                     \
+      p     = MEDIAN(X,hi);                                                      \
+      pivot = X[p];                                                              \
+      TwoWayPartition1(X,pivot,t1,0,hi,l,r);                                     \
+      ierr  = FuncName(l,X);CHKERRQ(ierr);                                       \
+      ierr  = FuncName(hi-r+1,X+r);CHKERRQ(ierr);                                \
+    }                                                                            \
+  } while(0)
+
+#define QuickSort2(FuncName,X,Y,n,pivot,t1,t2,ierr)                              \
+  do {                                                                           \
+    PetscInt i,j,p,l,r,hi=n-1;                                                   \
+    if (n < 8) {                                                                 \
+      for (i=0; i<n; i++) {                                                      \
+        pivot = X[i];                                                            \
+        for (j=i+1; j<n; j++) {                                                  \
+          if (pivot > X[j]) {                                                    \
+            SWAP2(X[i],X[j],Y[i],Y[j],t1,t2);                                    \
+            pivot = X[i];                                                        \
+          }                                                                      \
+        }                                                                        \
+      }                                                                          \
+    } else {                                                                     \
+      p     = MEDIAN(X,hi);                                                      \
+      pivot = X[p];                                                              \
+      TwoWayPartition2(X,Y,pivot,t1,t2,0,hi,l,r);                                \
+      ierr  = FuncName(l,X,Y);CHKERRQ(ierr);                                     \
+      ierr  = FuncName(hi-r+1,X+r,Y+r);CHKERRQ(ierr);                            \
+    }                                                                            \
+  } while(0)
+
+#define QuickSort3(FuncName,X,Y,Z,n,pivot,t1,t2,t3,ierr)                         \
+  do {                                                                           \
+    PetscInt i,j,p,l,r,hi=n-1;                                                   \
+    if (n < 8) {                                                                 \
+      for (i=0; i<n; i++) {                                                      \
+        pivot = X[i];                                                            \
+        for (j=i+1; j<n; j++) {                                                  \
+          if (pivot > X[j]) {                                                    \
+            SWAP3(X[i],X[j],Y[i],Y[j],Z[i],Z[j],t1,t2,t3);                       \
+            pivot = X[i];                                                        \
+          }                                                                      \
+        }                                                                        \
+      }                                                                          \
+    } else {                                                                     \
+      p     = MEDIAN(X,hi);                                                      \
+      pivot = X[p];                                                              \
+      TwoWayPartition3(X,Y,Z,pivot,t1,t2,t3,0,hi,l,r);                           \
+      ierr  = FuncName(l,X,Y,Z);CHKERRQ(ierr);                                   \
+      ierr  = FuncName(hi-r+1,X+r,Y+r,Z+r);CHKERRQ(ierr);                        \
+    }                                                                            \
+  } while(0)
 
 /*@
    PetscSortInt - Sorts an array of integers in place in increasing order.
@@ -55,28 +163,19 @@ static void PetscSortInt_Private(PetscInt *v,PetscInt right)
 
    Input Parameters:
 +  n  - number of values
--  i  - array of integers
+-  X  - array of integers
 
    Level: intermediate
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
+PetscErrorCode  PetscSortInt(PetscInt n,PetscInt *X)
 {
-  PetscInt j,k,tmp,ik;
+  PetscErrorCode ierr;
+  PetscInt       pivot,t1;
 
   PetscFunctionBegin;
-  if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = i[k];
-      for (j=k+1; j<n; j++) {
-        if (ik > i[j]) {
-          SWAP(i[k],i[j],tmp);
-          ik = i[k];
-        }
-      }
-    }
-  } else PetscSortInt_Private(i,n-1);
+  QuickSort1(PetscSortInt,X,n,pivot,t1,ierr);
   PetscFunctionReturn(0);
 }
 
@@ -87,7 +186,7 @@ PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
 
    Input Parameters:
 +  n  - number of values
--  ii  - sorted array of integers
+-  X  - sorted array of integers
 
    Output Parameter:
 .  n - number of non-redundant values
@@ -96,15 +195,15 @@ PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
 
 .seealso: PetscSortInt()
 @*/
-PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt ii[])
+PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt X[])
 {
   PetscInt i,s = 0,N = *n, b = 0;
 
   PetscFunctionBegin;
   for (i=0; i<N-1; i++) {
-    if (PetscUnlikely(ii[b+s+1] < ii[b])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input array is not sorted");
-    if (ii[b+s+1] != ii[b]) {
-      ii[b+1] = ii[b+s+1]; b++;
+    if (PetscUnlikely(X[b+s+1] < X[b])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input array is not sorted");
+    if (X[b+s+1] != X[b]) {
+      X[b+1] = X[b+s+1]; b++;
     } else s++;
   }
   *n = N - s;
@@ -118,7 +217,7 @@ PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt ii[])
 
    Input Parameters:
 +  n  - number of values
--  ii  - array of integers
+-  X  - array of integers
 
    Output Parameter:
 .  n - number of non-redundant values
@@ -127,13 +226,13 @@ PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt ii[])
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortedRemoveDupsInt()
 @*/
-PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
+PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt X[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSortInt(*n,ii);CHKERRQ(ierr);
-  ierr = PetscSortedRemoveDupsInt(n,ii);CHKERRQ(ierr);
+  ierr = PetscSortInt(*n,X);CHKERRQ(ierr);
+  ierr = PetscSortedRemoveDupsInt(n,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +244,7 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
    Input Parameters:
 +  key - the integer to locate
 .  n   - number of values in the array
--  ii  - array of integers
+-  X  - array of integers
 
    Output Parameter:
 .  loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
@@ -154,20 +253,20 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
 
 .seealso: PetscSortInt(), PetscSortIntWithArray(), PetscSortRemoveDupsInt()
 @*/
-PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], PetscInt *loc)
+PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscInt *loc)
 {
   PetscInt lo = 0,hi = n;
 
   PetscFunctionBegin;
   PetscValidPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
-  PetscValidPointer(ii,3);
+  PetscValidPointer(X,3);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
-    if (key < ii[mid]) hi = mid;
+    if (key < X[mid]) hi = mid;
     else               lo = mid;
   }
-  *loc = key == ii[lo] ? lo : -(lo + (key > ii[lo]) + 1);
+  *loc = key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
   PetscFunctionReturn(0);
 }
 
@@ -179,7 +278,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], Petsc
    Input Parameters:
 +  key - the integer to locate
 .  n   - number of values in the array
--  ii  - array of integers
+-  X   - array of integers
 
    Output Parameter:
 .  loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
@@ -188,52 +287,20 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], Petsc
 
 .seealso: PetscSortInt(), PetscSortIntWithArray(), PetscSortRemoveDupsInt()
 @*/
-PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt ii[], PetscInt *loc)
+PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[], PetscInt *loc)
 {
   PetscInt lo = 0,hi = n;
 
   PetscFunctionBegin;
   PetscValidPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
-  PetscValidPointer(ii,3);
+  PetscValidPointer(X,3);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
-    if (key < ii[mid]) hi = mid;
+    if (key < X[mid]) hi = mid;
     else               lo = mid;
   }
-  *loc = key == ii[lo] ? lo : -(lo + (key > ii[lo]) + 1);
-  PetscFunctionReturn(0);
-}
-
-/* -----------------------------------------------------------------------*/
-#define SWAP2(a,b,c,d,t) {t=a;a=b;b=t;t=c;c=d;d=t;}
-
-/*
-   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
-   Assumes 0 origin for v, number of elements = right+1 (right is index of
-   right-most member).
-*/
-static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,PetscInt right)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,vl,last,tmp;
-
-  PetscFunctionBegin;
-  if (right <= 1) {
-    if (right == 1) {
-      if (v[0] > v[1]) SWAP2(v[0],v[1],V[0],V[1],tmp);
-    }
-    PetscFunctionReturn(0);
-  }
-  SWAP2(v[0],v[right/2],V[0],V[right/2],tmp);
-  vl   = v[0];
-  last = 0;
-  for (i=1; i<=right; i++) {
-    if (v[i] < vl) {last++; SWAP2(v[last],v[i],V[last],V[i],tmp);}
-  }
-  SWAP2(v[0],v[last],V[0],V[last],tmp);
-  ierr = PetscSortIntWithArray_Private(v,V,last-1);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
+  *loc = key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
   PetscFunctionReturn(0);
 }
 
@@ -245,64 +312,20 @@ static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,Pets
 
    Input Parameters:
 +  n  - number of values
-.  i  - array of integers
--  I - second array of integers
+.  X  - array of integers
+-  Y  - second array of integers
 
    Level: intermediate
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
+PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt *X,PetscInt *Y)
 {
   PetscErrorCode ierr;
-  PetscInt       j,k,tmp,ik;
+  PetscInt       pivot,t1,t2;
 
   PetscFunctionBegin;
-  if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = i[k];
-      for (j=k+1; j<n; j++) {
-        if (ik > i[j]) {
-          SWAP2(i[k],i[j],Ii[k],Ii[j],tmp);
-          ik = i[k];
-        }
-      }
-    }
-  } else {
-    ierr = PetscSortIntWithArray_Private(i,Ii,n-1);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#define SWAP3(a,b,c,d,e,f,t) {t=a;a=b;b=t;t=c;c=d;d=t;t=e;e=f;f=t;}
-
-/*
-   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
-   Assumes 0 origin for v, number of elements = right+1 (right is index of
-   right-most member).
-*/
-static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *L,PetscInt *J, PetscInt *K, PetscInt right)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,vl,last,tmp;
-
-  PetscFunctionBegin;
-  if (right <= 1) {
-    if (right == 1) {
-      if (L[0] > L[1]) SWAP3(L[0],L[1],J[0],J[1],K[0],K[1],tmp);
-    }
-    PetscFunctionReturn(0);
-  }
-  SWAP3(L[0],L[right/2],J[0],J[right/2],K[0],K[right/2],tmp);
-  vl   = L[0];
-  last = 0;
-  for (i=1; i<=right; i++) {
-    if (L[i] < vl) {last++; SWAP3(L[last],L[i],J[last],J[i],K[last],K[i],tmp);}
-  }
-  SWAP3(L[0],L[last],J[0],J[last],K[0],K[last],tmp);
-  ierr = PetscSortIntWithArrayPair_Private(L,J,K,last-1);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArrayPair_Private(L+last+1,J+last+1,K+last+1,right-(last+1));CHKERRQ(ierr);
+  QuickSort2(PetscSortIntWithArray,X,Y,n,pivot,t1,t2,ierr);
   PetscFunctionReturn(0);
 }
 
@@ -314,64 +337,22 @@ static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *L,PetscInt *J,
 
    Input Parameters:
 +  n  - number of values
-.  I  - array of integers
-.  J  - second array of integers (first array of the pair)
--  K  - third array of integers  (second array of the pair)
+.  X  - array of integers
+.  Y  - second array of integers (first array of the pair)
+-  Z  - third array of integers  (second array of the pair)
 
    Level: intermediate
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt L[],PetscInt J[], PetscInt K[])
+PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *X,PetscInt *Y,PetscInt *Z)
 {
   PetscErrorCode ierr;
-  PetscInt       j,k,tmp,ik;
+  PetscInt       pivot,t1,t2,t3;
 
   PetscFunctionBegin;
-  if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = L[k];
-      for (j=k+1; j<n; j++) {
-        if (ik > L[j]) {
-          SWAP3(L[k],L[j],J[k],J[j],K[k],K[j],tmp);
-          ik = L[k];
-        }
-      }
-    }
-  } else {
-    ierr = PetscSortIntWithArrayPair_Private(L,J,K,n-1);CHKERRQ(ierr);
-  }
+  QuickSort3(PetscSortIntWithArrayPair,X,Y,Z,n,pivot,t1,t2,t3,ierr);
   PetscFunctionReturn(0);
-}
-
-/*
-   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
-   Assumes 0 origin for v, number of elements = right+1 (right is index of
-   right-most member).
-*/
-static void PetscSortMPIInt_Private(PetscMPIInt *v,PetscInt right)
-{
-  PetscInt          i,j;
-  PetscMPIInt       pivot,tmp;
-
-  if (right <= 1) {
-    if (right == 1) {
-      if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
-    }
-    return;
-  }
-  i = MEDIAN(v,right);          /* Choose a pivot */
-  SWAP(v[0],v[i],tmp);          /* Move it out of the way */
-  pivot = v[0];
-  for (i=0,j=right+1;; ) {
-    while (++i < j && v[i] <= pivot) ; /* Scan from the left */
-    while (v[--j] > pivot) ;           /* Scan from the right */
-    if (i >= j) break;
-    SWAP(v[i],v[j],tmp);
-  }
-  SWAP(v[0],v[j],tmp);          /* Put pivot back in place. */
-  PetscSortMPIInt_Private(v,j-1);
-  PetscSortMPIInt_Private(v+j+1,right-(j+1));
 }
 
 /*@
@@ -381,29 +362,19 @@ static void PetscSortMPIInt_Private(PetscMPIInt *v,PetscInt right)
 
    Input Parameters:
 +  n  - number of values
--  i  - array of integers
+-  X  - array of integers
 
    Level: intermediate
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt i[])
+PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt *X)
 {
-  PetscInt    j,k;
-  PetscMPIInt tmp,ik;
+  PetscErrorCode ierr;
+  PetscMPIInt    pivot,t1;
 
   PetscFunctionBegin;
-  if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = i[k];
-      for (j=k+1; j<n; j++) {
-        if (ik > i[j]) {
-          SWAP(i[k],i[j],tmp);
-          ik = i[k];
-        }
-      }
-    }
-  } else PetscSortMPIInt_Private(i,n-1);
+  QuickSort1(PetscSortMPIInt,X,n,pivot,t1,ierr);
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +385,7 @@ PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt i[])
 
    Input Parameters:
 +  n  - number of values
--  ii  - array of integers
+-  X  - array of integers
 
    Output Parameter:
 .  n - number of non-redundant values
@@ -423,48 +394,19 @@ PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt i[])
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
 @*/
-PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt ii[])
+PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt X[])
 {
   PetscErrorCode ierr;
   PetscInt       i,s = 0,N = *n, b = 0;
 
   PetscFunctionBegin;
-  ierr = PetscSortMPIInt(N,ii);CHKERRQ(ierr);
+  ierr = PetscSortMPIInt(N,X);CHKERRQ(ierr);
   for (i=0; i<N-1; i++) {
-    if (ii[b+s+1] != ii[b]) {
-      ii[b+1] = ii[b+s+1]; b++;
+    if (X[b+s+1] != X[b]) {
+      X[b+1] = X[b+s+1]; b++;
     } else s++;
   }
   *n = N - s;
-  PetscFunctionReturn(0);
-}
-
-/*
-   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
-   Assumes 0 origin for v, number of elements = right+1 (right is index of
-   right-most member).
-*/
-static PetscErrorCode PetscSortMPIIntWithArray_Private(PetscMPIInt *v,PetscMPIInt *V,PetscMPIInt right)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    i,vl,last,tmp;
-
-  PetscFunctionBegin;
-  if (right <= 1) {
-    if (right == 1) {
-      if (v[0] > v[1]) SWAP2(v[0],v[1],V[0],V[1],tmp);
-    }
-    PetscFunctionReturn(0);
-  }
-  SWAP2(v[0],v[right/2],V[0],V[right/2],tmp);
-  vl   = v[0];
-  last = 0;
-  for (i=1; i<=right; i++) {
-    if (v[i] < vl) {last++; SWAP2(v[last],v[i],V[last],V[i],tmp);}
-  }
-  SWAP2(v[0],v[last],V[0],V[last],tmp);
-  ierr = PetscSortMPIIntWithArray_Private(v,V,last-1);CHKERRQ(ierr);
-  ierr = PetscSortMPIIntWithArray_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -476,65 +418,20 @@ static PetscErrorCode PetscSortMPIIntWithArray_Private(PetscMPIInt *v,PetscMPIIn
 
    Input Parameters:
 +  n  - number of values
-.  i  - array of integers
--  I - second array of integers
+.  X  - array of integers
+-  Y  - second array of integers
 
    Level: intermediate
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPIInt Ii[])
+PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt *X,PetscMPIInt *Y)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    j,k,tmp,ik;
+  PetscMPIInt    pivot,t1,t2;
 
   PetscFunctionBegin;
-  if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = i[k];
-      for (j=k+1; j<n; j++) {
-        if (ik > i[j]) {
-          SWAP2(i[k],i[j],Ii[k],Ii[j],tmp);
-          ik = i[k];
-        }
-      }
-    }
-  } else {
-    ierr = PetscSortMPIIntWithArray_Private(i,Ii,n-1);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/* -----------------------------------------------------------------------*/
-#define SWAP2MPIIntInt(a,b,c,d,t1,t2) {t1=a;a=b;b=t1;t2=c;c=d;d=t2;}
-
-/*
-   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
-   Assumes 0 origin for v, number of elements = right+1 (right is index of
-   right-most member).
-*/
-static PetscErrorCode PetscSortMPIIntWithIntArray_Private(PetscMPIInt *v,PetscInt *V,PetscMPIInt right)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    i,vl,last,t1;
-  PetscInt       t2;
-
-  PetscFunctionBegin;
-  if (right <= 1) {
-    if (right == 1) {
-      if (v[0] > v[1]) SWAP2MPIIntInt(v[0],v[1],V[0],V[1],t1,t2);
-    }
-    PetscFunctionReturn(0);
-  }
-  SWAP2MPIIntInt(v[0],v[right/2],V[0],V[right/2],t1,t2);
-  vl   = v[0];
-  last = 0;
-  for (i=1; i<=right; i++) {
-    if (v[i] < vl) {last++; SWAP2MPIIntInt(v[last],v[i],V[last],V[i],t1,t2);}
-  }
-  SWAP2MPIIntInt(v[0],v[last],V[0],V[last],t1,t2);
-  ierr = PetscSortMPIIntWithIntArray_Private(v,V,last-1);CHKERRQ(ierr);
-  ierr = PetscSortMPIIntWithIntArray_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
+  QuickSort2(PetscSortMPIIntWithArray,X,Y,n,pivot,t1,t2,ierr);
   PetscFunctionReturn(0);
 }
 
@@ -546,8 +443,8 @@ static PetscErrorCode PetscSortMPIIntWithIntArray_Private(PetscMPIInt *v,PetscIn
 
    Input Parameters:
 +  n  - number of values
-.  i  - array of MPI integers
--  I - second array of Petsc integers
+.  X  - array of MPI integers
+-  Y  - second array of Petsc integers
 
    Level: intermediate
 
@@ -555,57 +452,14 @@ static PetscErrorCode PetscSortMPIIntWithIntArray_Private(PetscMPIInt *v,PetscIn
 
 .seealso: PetscSortMPIIntWithArray()
 @*/
-PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n,PetscMPIInt i[],PetscInt Ii[])
+PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n,PetscMPIInt *X,PetscInt *Y)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    j,k,t1,ik;
+  PetscMPIInt    pivot,t1;
   PetscInt       t2;
 
   PetscFunctionBegin;
-  if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = i[k];
-      for (j=k+1; j<n; j++) {
-        if (ik > i[j]) {
-          SWAP2MPIIntInt(i[k],i[j],Ii[k],Ii[j],t1,t2);
-          ik = i[k];
-        }
-      }
-    }
-  } else {
-    ierr = PetscSortMPIIntWithIntArray_Private(i,Ii,n-1);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/* -----------------------------------------------------------------------*/
-#define SWAP2IntScalar(a,b,c,d,t,ts) {t=a;a=b;b=t;ts=c;c=d;d=ts;}
-
-/*
-   Modified from PetscSortIntWithArray_Private().
-*/
-static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScalar *V,PetscInt right)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,vl,last,tmp;
-  PetscScalar    stmp;
-
-  PetscFunctionBegin;
-  if (right <= 1) {
-    if (right == 1) {
-      if (v[0] > v[1]) SWAP2IntScalar(v[0],v[1],V[0],V[1],tmp,stmp);
-    }
-    PetscFunctionReturn(0);
-  }
-  SWAP2IntScalar(v[0],v[right/2],V[0],V[right/2],tmp,stmp);
-  vl   = v[0];
-  last = 0;
-  for (i=1; i<=right; i++) {
-    if (v[i] < vl) {last++; SWAP2IntScalar(v[last],v[i],V[last],V[i],tmp,stmp);}
-  }
-  SWAP2IntScalar(v[0],v[last],V[0],V[last],tmp,stmp);
-  ierr = PetscSortIntWithScalarArray_Private(v,V,last-1);CHKERRQ(ierr);
-  ierr = PetscSortIntWithScalarArray_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
+  QuickSort2(PetscSortMPIIntWithIntArray,X,Y,n,pivot,t1,t2,ierr);
   PetscFunctionReturn(0);
 }
 
@@ -617,69 +471,21 @@ static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScala
 
    Input Parameters:
 +  n  - number of values
-.  i  - array of integers
--  I - second array of scalars
+.  X  - array of integers
+-  Y  - second array of scalars
 
    Level: intermediate
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar Ii[])
+PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt *X,PetscScalar *Y)
 {
   PetscErrorCode ierr;
-  PetscInt       j,k,tmp,ik;
-  PetscScalar    stmp;
+  PetscInt       pivot,t1;
+  PetscScalar    t2;
 
   PetscFunctionBegin;
-  if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = i[k];
-      for (j=k+1; j<n; j++) {
-        if (ik > i[j]) {
-          SWAP2IntScalar(i[k],i[j],Ii[k],Ii[j],tmp,stmp);
-          ik = i[k];
-        }
-      }
-    }
-  } else {
-    ierr = PetscSortIntWithScalarArray_Private(i,Ii,n-1);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#define SWAP2IntData(a,b,c,d,t,td,siz)          \
-  do {                                          \
-  PetscErrorCode _ierr;                         \
-  t=a;a=b;b=t;                                  \
-  _ierr = PetscMemcpy(td,c,siz);CHKERRQ(_ierr); \
-  _ierr = PetscMemcpy(c,d,siz);CHKERRQ(_ierr);  \
-  _ierr = PetscMemcpy(d,td,siz);CHKERRQ(_ierr); \
-} while(0)
-
-/*
-   Modified from PetscSortIntWithArray_Private().
-*/
-static PetscErrorCode PetscSortIntWithDataArray_Private(PetscInt *v,char *V,PetscInt right,size_t size,void *work)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,vl,last,tmp;
-
-  PetscFunctionBegin;
-  if (right <= 1) {
-    if (right == 1) {
-      if (v[0] > v[1]) SWAP2IntData(v[0],v[1],V,V+size,tmp,work,size);
-    }
-    PetscFunctionReturn(0);
-  }
-  SWAP2IntData(v[0],v[right/2],V,V+size*(right/2),tmp,work,size);
-  vl   = v[0];
-  last = 0;
-  for (i=1; i<=right; i++) {
-    if (v[i] < vl) {last++; SWAP2IntData(v[last],v[i],V+size*last,V+size*i,tmp,work,size);}
-  }
-  SWAP2IntData(v[0],v[last],V,V + size*last,tmp,work,size);
-  ierr = PetscSortIntWithDataArray_Private(v,V,last-1,size,work);CHKERRQ(ierr);
-  ierr = PetscSortIntWithDataArray_Private(v+last+1,V+size*(last+1),right-(last+1),size,work);CHKERRQ(ierr);
+  QuickSort2(PetscSortIntWithScalarArray,X,Y,n,pivot,t1,t2,ierr);
   PetscFunctionReturn(0);
 }
 
@@ -692,38 +498,51 @@ static PetscErrorCode PetscSortIntWithDataArray_Private(PetscInt *v,char *V,Pets
 
    Input Parameters:
 +  n  - number of values
-.  i  - array of integers
-.  Ii - second array of data
+.  X  - array of integers
+.  Y  - second array of data
 .  size - sizeof elements in the data array in bytes
--  work - workspace of "size" bytes used when sorting
+-  t2   - workspace of "size" bytes used when sorting
 
    Level: intermediate
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_t size,void *work)
+PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt *X,void *Y,size_t size,void *t2)
 {
-  char           *V = (char *) Ii;
   PetscErrorCode ierr;
-  PetscInt       j,k,tmp,ik;
+  char           *YY = (char*)Y;
+  PetscInt       i,j,p,t1,pivot,hi=n-1,l,r;
 
   PetscFunctionBegin;
   if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = i[k];
-      for (j=k+1; j<n; j++) {
-        if (ik > i[j]) {
-          SWAP2IntData(i[k],i[j],V+size*k,V+size*j,tmp,work,size);
-          ik = i[k];
+    for (i=0; i<n; i++) {
+      pivot = X[i];
+      for (j=i+1; j<n; j++) {
+        if (pivot > X[j]) {
+          SWAP2Data(X[i],X[j],YY+size*i,YY+size*j,t1,t2,size);
+          pivot = X[i];
         }
       }
     }
   } else {
-    ierr = PetscSortIntWithDataArray_Private(i,V,n-1,size,work);CHKERRQ(ierr);
+    /* Two way partition */
+    p     = MEDIAN(X,hi);
+    pivot = X[p];
+    l     = 0;
+    r     = hi;
+    while(1) {
+      while (X[l] < pivot) l++;
+      while (X[r] > pivot) r--;
+      if (l >= r) {r++; break;}
+      SWAP2Data(X[l],X[r],YY+size*l,YY+size*r,t1,t2,size);
+      l++;
+      r--;
+    }
+    ierr = PetscSortIntWithDataArray(l,X,Y,size,t2);CHKERRQ(ierr);
+    ierr = PetscSortIntWithDataArray(hi-r+1,X+r,YY+size*r,size,t2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@
    PetscMergeIntArray -     Merges two SORTED integer arrays, removes duplicate elements.
@@ -744,7 +563,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn, const PetscInt bI[],  PetscInt *n, PetscInt **L)
+PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn, const PetscInt bI[], PetscInt *n, PetscInt **L)
 {
   PetscErrorCode ierr;
   PetscInt       *L_ = *L, ak, bk, k;
@@ -799,11 +618,11 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn,
 
    Output Parameters:
 +  n   - number of values in the merged array (== an + bn)
-.  L   - merged sorted array 
+.  L   - merged sorted array
 -  J   - merged additional array
 
    Notes:
-    if L or J point to non-null arrays then this routine will assume they are of the approproate size and use them, otherwise this routine will allocate space for them 
+    if L or J point to non-null arrays then this routine will assume they are of the approproate size and use them, otherwise this routine will allocate space for them
    Level: intermediate
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
