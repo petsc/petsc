@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.2.0'
+    self.version          = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
     self.gitcommit        = 'v'+self.version+'-p1'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
