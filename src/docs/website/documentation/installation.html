@@ -698,46 +698,55 @@
             Are you sure you want to use Microsoft Windows? We recommend using Linux
             if possible [and minimize troubleshooting Microsoft windows related issues].
             
-        <h4>Installation With GNU gcc/g++/gfortran compilers:</h4>
+        <h3>Installation With GNU gcc/g++/gfortran compilers:</h3>
         
         The following configurations are much like regular Linux systems. Our regular [Linux] instructions
-        should work with them. Most externalpackages will also work. (These do not support Microsoft/Intel Windows compilers).
+        should work with them. Most externalpackages will also work. The configure option --download-mpich should work
+        for these systems. (These do not support Microsoft/Intel Windows compilers; nor can you use MS-MPI or Intel-MPI).
         
         <ul>
           <li>
+            <a href="http://www.cygwin.com">Cygwin</a> Unix emulator for Microsoft Windows. See the instructions below for
+            installing Cygwin for PETSc. Be sure to install the GNU compilers, do not use the win32fe script.
+          </li>
+          <li>
             <a href="https://devblogs.microsoft.com/commandline/announcing-wsl-2/">Windows Subsystem for Linux 2 (WLS2)</a>.
-          </li>            
-          <li>            
+            Untested, let us know your experience.
+          </li>
+          <li>
+            <a href="https://docs.docker.com/docker-for-windows/">Docker for Windows</a>.
+            Untested, let us know your experience.
+          </li>
+          <li>
             <a href="https://www.atlassian.com/git/tutorials/git-bash">Git bash</a>. You must
             also install the GNU compilers via
             <a href="https://yichaoou.github.io/tutorials/software/2016/06/28/git-bash-install-gcc">MinGW</a>.
-          </li>
-          <li>
-            <a href="http://www.cygwin.com">Cygwin</a> Unix emulator for Microsoft Windows.
+            Untested, let us know your experience.
           </li>
           <li>
             Linux virtual machine via <a href="https://www.virtualbox.org/">VirtualBox</a>.
-            One sample tutorial is at 
+            One sample tutorial is at
             <a href="https://www.psychocats.net/ubuntu/virtualbox">https://www.psychocats.net/ubuntu/virtualbox</a>.
             Google can provide more tutorials.
+            Untested, let us know your experience.
           </li>
          </ul>
 
 
-        <h4>Installation With Microsoft/Intel Windows Compilers:</h4>
+        <h3>Installation With Microsoft/Intel Windows Compilers:</h3>
         <p>
           Microsoft Windows does not provide the same unix shell enviornment
           as the other OSes. Also the default Microsoft/Intel compilers behave
           differently than other unix compilers. So to install PETSc on Microsoft
-          Windows - one has to install <a href="http://www.cygwin.com">cygwin</a>
+          Windows - one has to install <a href="http://www.cygwin.com">Cygwin</a>
           [for the unix enviornment] and use <a href="#win32fe">win32fe</a> [part
           of PETSc sources,to interface to Microsoft/Intel compilers].
         </p>
 
         <p>
           <span class="def">Install Cygwin: </span>Please download and install
-          cygwin package from <a href="http://www.cygwin.com">http://www.cygwin.com</a>.
-          Make sure the following cygwin components are installed.
+          Cygwin package from <a href="http://www.cygwin.com">http://www.cygwin.com</a>.
+          Make sure the following Cygwin components are installed.
         </p>
 
         <ul>
@@ -749,7 +758,7 @@
         <p>
           <span class="def">Remove Cygwin link.exe: </span>Cygwin link.exe can
           conflict with Intel ifort compiler. If you are using ifort -
-          please do [from cygwin terminal/bash-shell]:
+          please do [from Cygwin terminal/bash-shell]:
         </p>
 
         <ul>
@@ -757,8 +766,8 @@
         </ul>
 
         <p>
-          <span class="def">Setup cygwin terminal/bash-shell with Working Compilers:
-          </span>We require the compilers to be setup properly in a cygwin bash
+          <span class="def">Setup Cygwin terminal/bash-shell with Working Compilers:
+          </span>We require the compilers to be setup properly in a Cygwin bash
           command shell, so that "<code>cl foo.c</code>" or "<code>ifort
             foo.f</code>" works from this shell. For example - if using VS2005
           C and Intel 10 Fortran one can do:
@@ -773,7 +782,7 @@
           </li>
 
           <li>
-            Within this shell - run cygwin terminal/bash-shell mintty.exe as:
+            Within this shell - run Cygwin terminal/bash-shell mintty.exe as:
             <code>c:\cygwin\bin\mintty.exe</code>
           </li>
 
@@ -781,7 +790,7 @@
             Within mintty.exe - run:<code>/usr/bin/bash --login</code>
           </li>
           
-          <li>verify if the compilers are useable [by running cl, ifort in this cygwin terminal/bash-shell]</li>
+          <li>verify if the compilers are useable [by running cl, ifort in this Cygwin terminal/bash-shell]</li>
 
           <li>Now run configure with win32fe and then build the libraries with make [as per the usual instructions]</li>
         </ul>
@@ -829,7 +838,7 @@
           </li>
 
           <li>
-            try compiling the example from cygwin bash shell - using makefile - for eg:
+            try compiling the example from Cygwin bash shell - using makefile - for eg:
             <ul>
               <li>cd src/ksp/ksp/examples/tutorials</li>
               <li>make ex2</li>
@@ -860,18 +869,31 @@
         </p>
 
         <p>
-          <span class="def">Using Cygwin gcc/g++/gfortran:</span> One can install
-          and use PETSc with gcc/gfortran compilers from cygwin.  In this case
-          follow the regular Unix instructions.
-        </p>
-
-        <p>
           <span class="def"><a name="win32fe">PETSc Win32 front end - win32fe</a>:</span>
-          This tool is used as a wrapper to Microsoft/ Borland/ Intel compilers
-          and associated tools - to enable building PETSc libraries using cygwin
+          This tool is used as a wrapper to Microsoft and Intel compilers
+          and associated tools - to enable building PETSc libraries using Cygwin
           make and other UNIX tools. For additional info, run
           <code>${PETSC_DIR}/bin/win32/win32fe</code> without any options.
         </p>
+
+
+         <p><span class="def">Notes on using other systems besides Cygwin to compile with Microsoft and Intel compilers:</span>
+        For any alternate system, we would have to redo win32fe functionality for that system. This includes
+
+         <ul>
+           <li>
+             Marshal gcc type compiler options to Cl (Microsoft compiler).
+          </li>
+          <li>
+             Convert paths in some of these options from this system (for example Cygwin paths) to Windows paths.
+          </li>
+          <li>
+             Have python that works with system path notation.
+          </li>
+          <li>
+             Have the ability equivalent to Windows process spawning; Cygwin process spawning produces Windows processes. WSL1 lacked this.
+          </li>
+        </ul>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
       </div> <!-- #windows -->
