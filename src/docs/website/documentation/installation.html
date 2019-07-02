@@ -559,7 +559,7 @@
         <ul>
           <li> <h4> Intel MKL</h4>
             Intel provides blas/lapack via  <a href="https://software.intel.com/en-us/mkl">MKL</a> library.
-            It usually works from GNU/Intel compilers on linux and MS/Intel compilers on Windows.
+            It usually works from GNU/Intel compilers on Linux and MS/Intel compilers on Windows.
             One can specify it to PETSc configure with for eg: <code>--with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl</code>
             <br>
             If the above option does not work - one could determine the correct library list for your compilers using
@@ -695,12 +695,12 @@
       <div>
         <h3><a name="windows">Microsoft Windows Installation:</a></h3>
 
-            Are you sure you want to use Microsoft Windows? We recommend using linux
+            Are you sure you want to use Microsoft Windows? We recommend using Linux
             if possible [and minimize troubleshooting Microsoft windows related issues].
             
         <h4>Installation With GNU gcc/g++/gfortran compilers:</h4>
         
-        The following configurations are much like regular Linux systems. Our regular [linux] instructions 
+        The following configurations are much like regular Linux systems. Our regular [Linux] instructions
         should work with them. Most externalpackages will also work. (These do not support Microsoft/Intel Windows compilers).
         
         <ul>
@@ -724,14 +724,14 @@
          </ul>
 
 
-        <h4>Installation With Microsoft/Intel/Compaq Windows Compilers:</h4>
+        <h4>Installation With Microsoft/Intel Windows Compilers:</h4>
         <p>
           Microsoft Windows does not provide the same unix shell enviornment
-          as the other OSes. Also the default Microsoft/Intel/Compaq compilers behave
+          as the other OSes. Also the default Microsoft/Intel compilers behave
           differently than other unix compilers. So to install PETSc on Microsoft
           Windows - one has to install <a href="http://www.cygwin.com">cygwin</a>
           [for the unix enviornment] and use <a href="#win32fe">win32fe</a> [part
-          of PETSc sources,to interface to Microsoft/Intel/Compaq compilers].
+          of PETSc sources,to interface to Microsoft/Intel compilers].
         </p>
 
         <p>
@@ -748,8 +748,8 @@
 
         <p>
           <span class="def">Remove Cygwin link.exe: </span>Cygwin link.exe can
-          conflict with Intel ifort and Comapq F90 compilers. If you are using
-          these compilers - please do [from cygwin terminal/bash-shell]:
+          conflict with Intel ifort compiler. If you are using ifort -
+          please do [from cygwin terminal/bash-shell]:
         </p>
 
         <ul>
@@ -789,32 +789,23 @@
         <h4>Example Configure usage with Windows Compilers:</h4>
 
         <p>
-          Use configure with VC2005 C and Intel Fortran 10 [With MPICH2 installed].
+          Use configure with VC2005 C and Intel Fortran 10 [Without MPI].
         </p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --download-fblaslapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --with-mpi=0 --download-fblaslapack</code></li>
         </ul>
 
-        <p>If fortran usage is not required, use:</p>
+        <p>If fortran, c++ usage is not required, use:</p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc=0 --download-f2cblaslapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc=0 --with-cxx=0 --download-f2cblaslapack</code></li>
         </ul>
 
-        <h4>Using Compaq F90:</h4>
+        <h4>Using MPI:</h4>
 
-        <p>Using Microsoft C/C++ 6.0 &amp; Compaq Fortran 6.0 with MPICH2 configure command to use:</p>
+        <p>We support both <a href="https://www.microsoft.com/en-us/download/details.aspx?id=57467">MS-MPI</a> [64-bit] and <a href="https://software.intel.com/en-us/mpi-library">Intel MPI</a> on Windows. For example usages, check <code>config/examples/arch-mswin*.py</code></p>
 
-        <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe f90' --download-fblaslapack</code></li>
-        </ul>
-
-        <p>
-          <b>Note</b>: MPICH2 mpif.h needs a fix for it to work with Compaq F90
-          [specifically remove line with MPI_DISPLACEMENT_CURRENT - which uses
-          'integer*8' - which is unsupported by Compaq F90]
-        </p>
 
         <p>
           <span class="def">ExternalPackages</span>: The <code>--download-package
