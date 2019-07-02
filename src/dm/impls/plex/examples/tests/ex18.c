@@ -801,10 +801,15 @@ int main(int argc, char **argv)
       suffix: 1_1d_dist1
       args: -dim 1 -distribute 1
 
-  test:
-    suffix: 2
+  testset:
     nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -testnum 1 -interpolate serial -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    test:
+      suffix: 2
+      args: -dm_view ascii::ascii_info_detail 
+    test:
+      suffix: 2a
+      args: -dm_plex_check_cones_conform_on_interfaces_verbose
 
   testset:
     # the same as 1% for 3D

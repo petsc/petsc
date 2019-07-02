@@ -1,0 +1,105 @@
+============
+DMPlexCheckConesConformOnInterfaces output
+============
+[0] --------
+  r=0 ranks[r]=1 sntCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.
+  1.
+  0.
+  1.
+  0.5
+  0.5
+  r=1 ranks[r]=2 sntCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.
+  0.
+  0.5
+  0.5
+  0.5
+  0.5
+  0.
+  0.
+  ----------
+  ----------
+[1] --------
+  r=0 ranks[r]=2 sntCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.5
+  0.5
+  1.
+  1.
+  1.
+  1.
+  0.5
+  0.5
+  ----------
+  r=0 iranks[r]=0 refCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.
+  1.
+  0.
+  1.
+  0.5
+  0.5
+  ----------
+  r=0 iranks[r]=0 recCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.
+  1.
+  0.
+  1.
+  0.5
+  0.5
+[2] --------
+  ----------
+  r=0 iranks[r]=0 refCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.
+  0.
+  0.5
+  0.5
+  0.5
+  0.5
+  0.
+  0.
+  r=1 iranks[r]=1 refCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.5
+  0.5
+  1.
+  1.
+  1.
+  1.
+  0.5
+  0.5
+  ----------
+  r=0 iranks[r]=0 recCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.
+  0.
+  0.5
+  0.5
+  0.5
+  0.5
+  0.
+  0.
+  r=1 iranks[r]=1 recCoordinatesPerRank[r]:
+  Vec Object: 1 MPI processes
+    type: seq
+  0.5
+  0.5
+  1.
+  1.
+  1.
+  1.
+  0.5
+  0.5
