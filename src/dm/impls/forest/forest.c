@@ -1506,7 +1506,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
     ierr = DMForestSetBaseDM(dm,NULL);CHKERRQ(ierr);
   }
   ierr = DMForestGetAdjacencyDimension(dm,&adjDim);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-dm_forest_adjacency_dimension","set the dimension of points that define adjacency in the forest","DMForestSetAdjacencyDimension",adjDim,&adjDim,&flg,1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-dm_forest_adjacency_dimension","set the dimension of points that define adjacency in the forest","DMForestSetAdjacencyDimension",adjDim,&adjDim,&flg,0);CHKERRQ(ierr);
   if (flg) {
     ierr = DMForestSetAdjacencyDimension(dm,adjDim);CHKERRQ(ierr);
   } else {
