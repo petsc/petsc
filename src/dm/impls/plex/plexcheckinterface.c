@@ -191,6 +191,7 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   PetscInt            r;
   PetscMPIInt         commsize, myrank;
   PetscBool           same;
+  PetscBool           verbose=PETSC_FALSE;
   MPI_Comm            comm;
   PetscErrorCode      ierr;
 
@@ -227,6 +228,36 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
 
   /* Send the coordinates */
   ierr = ExchangeVecByRank_Private((PetscObject)sf, nranks, ranks, sntCoordinatesPerRank, niranks, iranks, &recCoordinatesPerRank);CHKERRQ(ierr);
+
+  /* verbose output */
+  ierr = PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_check_cones_conform_on_interfaces_verbose", &verbose, NULL);CHKERRQ(ierr);
+  if (verbose) {
+    PetscViewer v = PETSC_VIEWER_STDOUT_SELF;
+    ierr = PetscSequentialPhaseBegin(comm,1);CHKERRQ(ierr);
+    if (!myrank) {ierr = PetscViewerASCIIPrintf(v, "============\nDMPlexCheckConesConformOnInterfaces output\n============\n");}
+    ierr = PetscViewerASCIIPrintf(v, "[%d] --------\n", myrank);
+    for (r=0; r<nranks; r++) {
+      ierr = PetscViewerASCIIPrintf(v, "  r=%D ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]);
+      ierr = PetscViewerASCIIPushTab(v);
+      ierr = VecView(sntCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);
+    }
+    ierr = PetscViewerASCIIPrintf(v, "  ----------\n");
+    for (r=0; r<niranks; r++) {
+      ierr = PetscViewerASCIIPrintf(v, "  r=%D iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]);
+      ierr = PetscViewerASCIIPushTab(v);
+      ierr = VecView(refCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);
+    }
+    ierr = PetscViewerASCIIPrintf(v, "  ----------\n");
+    for (r=0; r<niranks; r++) {
+      ierr = PetscViewerASCIIPrintf(v, "  r=%D iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]);
+      ierr = PetscViewerASCIIPushTab(v);
+      ierr = VecView(recCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);
+    }
+    ierr = PetscSequentialPhaseEnd(comm,1);CHKERRQ(ierr);
+  }
 
   /* Compare recCoordinatesPerRank with refCoordinatesPerRank */
   for (r=0; r<niranks; r++) {
