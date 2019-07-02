@@ -569,7 +569,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
 - overlapSF   - The SF mapping ghost points in overlap to owner points on other processes
 
   Output Parameters:
-+ migrationSF - An SF that maps original points in old locations to points in new locations
+. migrationSF - An SF that maps original points in old locations to points in new locations
 
   Level: developer
 
@@ -1321,10 +1321,10 @@ PetscErrorCode DMPlexSetPartitionBalance(DM dm, PetscBool flg)
   DMPlexGetPartitionBalance - Does distribution of the DM attempt to balance the shared point partition?
 
   Input Parameter:
-+ dm - The DMPlex object
+. dm - The DMPlex object
 
   Output Parameter:
-+ flg - Balance the partition?
+. flg - Balance the partition?
 
   Level: intermediate
 

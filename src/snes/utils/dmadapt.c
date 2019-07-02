@@ -937,10 +937,10 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 - ax  - The adapted solution
 
   Options database keys:
-. -snes_adapt <strategy> : initial, sequential, multigrid
++ -snes_adapt <strategy> : initial, sequential, multigrid
 . -adapt_gradient_view : View the Clement interpolant of the solution gradient
 . -adapt_hessian_view : View the Clement interpolant of the solution Hessian
-. -adapt_metric_view : View the metric tensor for adaptive mesh refinement
+- -adapt_metric_view : View the metric tensor for adaptive mesh refinement
 
   Note: The available adaptation strategies are:
 $ 1) Adapt the intial mesh until a quality metric, e,g, a priori error bound, is satisfied

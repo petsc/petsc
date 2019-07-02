@@ -3637,8 +3637,8 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
    MatMPIBAIJSetHashTableFactor - Sets the factor required to compute the size of the HashTable.
 
    Input Parameters:
-.  mat  - the matrix
-.  fact - factor
++  mat  - the matrix
+-  fact - factor
 
    Not Collective, each process can use a different factor
 

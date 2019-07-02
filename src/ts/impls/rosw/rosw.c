@@ -801,7 +801,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
 .  a3 - design parameter or PETSC_DEFAULT to satisfy one of the order five conditions (Eq 7.22)
 .  b3 - design parameter, see Table 7.2 of Hairer&Wanner
 .  beta43 - design parameter or PETSC_DEFAULT to use Equation 7.21 of Hairer&Wanner
-.  e4 - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
+-  e4 - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
 
    Notes:
    This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.

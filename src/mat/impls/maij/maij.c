@@ -159,10 +159,10 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   The matrix type is based on MATSEQAIJ for sequential matrices, and MATMPIAIJ for distributed matrices.
 
   Operations provided:
-. MatMult
++ MatMult
 . MatMultTranspose
 . MatMultAdd
-. MatMultTransposeAdd
+- MatMultTransposeAdd
 
   Level: advanced
 

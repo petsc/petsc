@@ -38,8 +38,8 @@
 .   mem - memory usage in bytes
 
    Options Database Key:
-.  -memory_view - Print memory usage at end of run
-.  -malloc_log - Activate logging of memory usage
++  -memory_view - Print memory usage at end of run
+-  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
 
@@ -125,8 +125,8 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
 .   mem - memory usage in bytes
 
    Options Database Key:
-.  -memory_view - Print memory usage at end of run
-.  -malloc_log - Activate logging of memory usage
++  -memory_view - Print memory usage at end of run
+-  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
 
@@ -157,8 +157,8 @@ PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
    Not Collective
 
    Options Database Key:
-.  -memory_view - Print memory usage at end of run
-.  -malloc_log - Activate logging of memory usage
++  -memory_view - Print memory usage at end of run
+-  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
 

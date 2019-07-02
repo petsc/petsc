@@ -2127,7 +2127,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
 
   Output Parameters:
 + cellgeom - A Vec of PetscFVCellGeom data
-. facegeom - A Vec of PetscFVFaceGeom data
+- facegeom - A Vec of PetscFVFaceGeom data
 
   Level: developer
 
@@ -3068,7 +3068,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
                as a multilinear map for tensor-product elements
 . cell       - the cell whose map is used.
 . numPoints  - the number of points to locate
-+ refCoords  - (numPoints x dimension) array of reference coordinates (see DMGetDimension())
+- refCoords  - (numPoints x dimension) array of reference coordinates (see DMGetDimension())
 
   Output Parameters:
 . realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())

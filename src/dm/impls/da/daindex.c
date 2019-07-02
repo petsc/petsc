@@ -55,8 +55,8 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
    Collective on da
 
    Input Parameter:
-.  da - the distributed array
-.  aotype - type of AO
++  da - the distributed array
+-  aotype - type of AO
 
    Output Parameters:
 

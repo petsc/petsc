@@ -235,8 +235,8 @@ PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,MatPartition
    Not collective
 
    Input Parameter:
-.  partitioning - the partitioning context
-.  n - the number of partitions
++  partitioning - the partitioning context
+-  n - the number of partitions
 
    Level: intermediate
 
@@ -359,8 +359,8 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
    Collective on Mat
 
    Input Parameters:
-.  matp - the matrix partitioning object
-.  partitioning - the partitioning. For each local node this tells the processor
++  matp - the matrix partitioning object
+-  partitioning - the partitioning. For each local node this tells the processor
                    number that that node is assigned to.
 
    Output Parameters:
@@ -401,8 +401,8 @@ PetscErrorCode  MatPartitioningImprove(MatPartitioning matp,IS *partitioning)
    Collective on MatPartitioning
 
    Input Parameters:
-.  matp - the matrix partitioning object
-.  partitioning - the partitioning. For each local node this tells the processor
++  matp - the matrix partitioning object
+-  partitioning - the partitioning. For each local node this tells the processor
                    number that that node is assigned to.
 
    Options Database Keys:
@@ -608,8 +608,8 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
    Collective on MatPartitioning
 
    Input Parameters:
-.  part - the partitioning context
-.  viewer - optional visualization context
++  part - the partitioning context
+-  viewer - optional visualization context
 
    Level: intermediate
 
@@ -660,8 +660,8 @@ PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
    Collective on MatPartitioning
 
    Input Parameter:
-.  part - the partitioning context.
-.  type - a known method
++  part - the partitioning context.
+-  type - a known method
 
    Options Database Command:
 $  -mat_partitioning_type  <type>

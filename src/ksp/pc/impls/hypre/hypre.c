@@ -2525,7 +2525,7 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
 . -pc_syspfmg_num_pre_relax <steps> number of smoothing steps before coarse grid
 . -pc_syspfmg_num_post_relax <steps> number of smoothing steps after coarse grid
 . -pc_syspfmg_tol <tol> tolerance of SysPFMG
-. -pc_syspfmg_relax_type -relaxation type for the up and down cycles, one of Weighted-Jacobi,Red/Black-Gauss-Seidel
+- -pc_syspfmg_relax_type -relaxation type for the up and down cycles, one of Weighted-Jacobi,Red/Black-Gauss-Seidel
 
    Notes:
     This is for CELL-centered descretizations

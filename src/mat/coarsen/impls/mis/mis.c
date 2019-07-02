@@ -324,7 +324,7 @@ PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
 .  coarse - the coarsen context
 
    Options Database Keys:
-+  -mat_coarsen_MIS_xxx -
+.  -mat_coarsen_MIS_xxx -
 
    Level: beginner
 

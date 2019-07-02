@@ -200,8 +200,8 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer viewer)
 . fem - the PetscFE object to set options for
 
   Options Database:
-. -petscfe_num_blocks  the number of cell blocks to integrate concurrently
-. -petscfe_num_batches the number of cell batches to integrate serially
++ -petscfe_num_blocks  - the number of cell blocks to integrate concurrently
+- -petscfe_num_batches - the number of cell batches to integrate serially
 
   Level: developer
 

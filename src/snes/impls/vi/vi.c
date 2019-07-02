@@ -438,9 +438,9 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
    SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu.
 
    Input Parameters:
-.  snes - the SNES context.
++  snes - the SNES context.
 .  xl   - lower bound.
-.  xu   - upper bound.
+-  xu   - upper bound.
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to

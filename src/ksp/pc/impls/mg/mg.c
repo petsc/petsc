@@ -1160,8 +1160,8 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PCMGGalerkinType  *galerkin)
 +  mg - the multigrid context
 -  n - the number of smoothing steps
 
-   Options Database Key:
-+  -mg_levels_ksp_max_it <n> - Sets number of pre and post-smoothing steps
+   Options Database Key: 
+.  -mg_levels_ksp_max_it <n> - Sets number of pre and post-smoothing steps
 
    Level: advanced
 

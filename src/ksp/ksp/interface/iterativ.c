@@ -379,7 +379,7 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,PetscViewerA
 +  ksp   - iterative context
 .  n     - iteration number (not used)
 .  fnorm - the current residual norm
-.  dummy - some context as a C struct. fields:
+-  dummy - some context as a C struct. fields:
              coef: a scaling coefficient. default 1.0. can be passed through
                    -sub_ksp_dynamic_tolerance_param
              bnrm: norm of the right-hand side. store it to avoid repeated calculation

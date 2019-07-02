@@ -423,7 +423,7 @@ static PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
 
    Input Parameters:
 +  pc - the preconditioner context
-.  destroy - the application-provided destroy routine
+-  destroy - the application-provided destroy routine
 
    Calling sequence of destroy:
 .vb
@@ -458,7 +458,7 @@ PetscErrorCode  PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
 
    Input Parameters:
 +  pc - the preconditioner context
-.  setup - the application-provided setup routine
+-  setup - the application-provided setup routine
 
    Calling sequence of setup:
 .vb

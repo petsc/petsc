@@ -1624,7 +1624,7 @@ PetscErrorCode PetscFVRestoreTabulation(PetscFV fvm, PetscInt npoints, const Pet
   Input Parameters:
 + fvm      - The PetscFV object
 . numFaces - The number of cell faces which are not constrained
-. dx       - The vector from the cell centroid to the neighboring cell centroid for each face
+- dx       - The vector from the cell centroid to the neighboring cell centroid for each face
 
   Level: developer
 

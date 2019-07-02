@@ -1740,7 +1740,7 @@ static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **
 
     Input Parameters:
 +   pc  - the preconditioner context
-+   is - the index set that defines the indices to which the fieldsplit is to be restricted
+-   is - the index set that defines the indices to which the fieldsplit is to be restricted
 
     Level: advanced
 
@@ -2396,7 +2396,7 @@ PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
 
     Input Parameters:
 +   pc      - the preconditioner context
-.   S       - the Schur complement matrix
+-   S       - the Schur complement matrix
 
     Level: advanced
 
@@ -2809,8 +2809,8 @@ static PetscErrorCode  PCFieldSplitSetBlockSize_FieldSplit(PC pc,PetscInt bs)
    Collective on PC
 
    Input Parameter:
-.  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE (default), PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
++  pc - the preconditioner context
+-  type - PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE (default), PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
 
    Options Database Key:
 .  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type

@@ -35,7 +35,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 .   A  - the matrix
 
   Options Database Keys:
-+ -mat_fft_type - set FFT type
+. -mat_fft_type - set FFT type
 
    Level: intermediate
 

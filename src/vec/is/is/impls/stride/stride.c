@@ -75,8 +75,8 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 .  is - the index set
 
    Output Parameters:
-.  first - the first index
-.  step - the stride width
++  first - the first index
+-  step - the stride width
 
    Level: intermediate
 

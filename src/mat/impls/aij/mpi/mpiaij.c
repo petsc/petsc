@@ -5062,7 +5062,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm,Mat seqmat,PetscInt m,Pets
 
    Input Parameters:
 +    A - the matrix
-.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
 .    A_loc - the local sequential matrix generated

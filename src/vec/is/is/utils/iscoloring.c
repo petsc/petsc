@@ -330,8 +330,8 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     Collective on IS
 
     Input Parameters
-.   ito - an IS describes where we will go. Negative target rank will be ignored
-.   toindx - an IS describes what indices should send. NULL means sending natural numbering
++   ito - an IS describes where we will go. Negative target rank will be ignored
+-   toindx - an IS describes what indices should send. NULL means sending natural numbering
 
     Output Parameter:
 .   rows - contains new numbers from remote or local

@@ -2404,9 +2404,9 @@ M*/
 
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the
++   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.   -mat_block_size - size of the blocks to use
+-   -mat_block_size - size of the blocks to use
 
    Notes:
 
@@ -2512,10 +2512,10 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 .  A - the matrix
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the
++   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
 .   -mat_block_size - size of the blocks to use
-.   -mat_mpi - use the parallel matrix data structures even on one processor
+-   -mat_mpi - use the parallel matrix data structures even on one processor
                (defaults to using SeqBAIJ format on one processor)
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),

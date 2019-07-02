@@ -497,7 +497,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
 . dim - The spatial dimension
 . bounds - The bounds of the box specified with [x-left, x-right, y-bottom, y-top, z-bottom, z-top] depending on the spatial dimension
 . nele - The number of discrete elements in each direction
-. user_nghost - The number of ghosted layers needed in the partitioned mesh
+- user_nghost - The number of ghosted layers needed in the partitioned mesh
 
   Output Parameter:
 . dm  - The DM object
@@ -805,7 +805,8 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 + comm - The communicator for the DM object
 . dim - The spatial dimension
 . filename - The name of the mesh file to be loaded
-. usrreadopts - The options string to read a MOAB mesh.
+- usrreadopts - The options string to read a MOAB mesh.
+
   Reference (Parallel Mesh Initialization: https://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html#fivetwo)
 
   Output Parameter:
@@ -896,7 +897,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   Collective
 
   Input Parameters:
-+ dm  - The DM object
+. dm  - The DM object
 
   Level: advanced
 

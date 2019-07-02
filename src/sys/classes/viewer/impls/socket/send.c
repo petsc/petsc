@@ -282,8 +282,8 @@ $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
 
    Environmental variables:
-+   PETSC_VIEWER_SOCKET_PORT portnumber
--   PETSC_VIEWER_SOCKET_MACHINE machine name
++   PETSC_VIEWER_SOCKET_PORT - portnumber
+-   PETSC_VIEWER_SOCKET_MACHINE - machine name
 
      Currently the only socket client available is MATLAB. See
      src/dm/examples/tests/ex12.c and ex12.m for an example of usage.
@@ -486,8 +486,8 @@ $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
 
    Environmental variables:
-+   PETSC_VIEWER_SOCKET_PORT portnumber
--   PETSC_VIEWER_SOCKET_MACHINE machine name
++   PETSC_VIEWER_SOCKET_PORT - portnumber
+-   PETSC_VIEWER_SOCKET_MACHINE - machine name
 
      Notes:
      Unlike almost all other PETSc routines, PetscViewer_SOCKET_ does not return

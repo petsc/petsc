@@ -279,6 +279,7 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
 
     Input Parameters:
 .    viewer - obtained with PetscViewerASCIIOpen()
+
     Output Parameters:
 .    tabs - number of tabs
 

@@ -4193,8 +4193,8 @@ PetscErrorCode  MatSeqAIJGetMaxRowNonzeros(Mat A,PetscInt *nz)
    Not Collective
 
    Input Parameters:
-.  mat - a MATSEQAIJ matrix
-.  array - pointer to the data
++  mat - a MATSEQAIJ matrix
+-  array - pointer to the data
 
    Level: intermediate
 

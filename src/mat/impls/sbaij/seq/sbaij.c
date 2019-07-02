@@ -1850,8 +1850,8 @@ PetscErrorCode  MatSeqSBAIJGetArray(Mat A,PetscScalar **array)
    Not Collective
 
    Input Parameters:
-.  mat - a MATSEQSBAIJ matrix
-.  array - pointer to the data
++  mat - a MATSEQSBAIJ matrix
+-  array - pointer to the data
 
    Level: intermediate
 
@@ -1991,9 +1991,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
          diagonal portion of each block (possibly different for each block row) or NULL
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the
++   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.   -mat_block_size - size of the blocks to use (only works if a negative bs is passed in
+-   -mat_block_size - size of the blocks to use (only works if a negative bs is passed in
 
    Level: intermediate
 
@@ -2079,9 +2079,9 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
 .  A - the symmetric matrix
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the
++   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.    -mat_block_size - size of the blocks to use
+-   -mat_block_size - size of the blocks to use
 
    Level: intermediate
 

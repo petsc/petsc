@@ -367,7 +367,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 + nv    - number of vertices (local)
 . ne    - number of edges (local)
 . vtx   - local vertices for this subnetwork
-. edge  - local edges for this subnetwork
+- edge  - local edges for this subnetwork
 
   Notes:
   Cannot call this routine before DMNetworkLayoutSetup()
@@ -470,7 +470,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,Pet
   Not Collective
 
   Input Parameters:
-+ dm - The DMNetwork object
+. dm - The DMNetwork object
 
   Output Paramters:
 + vStart - The first vertex point
@@ -496,7 +496,7 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
   Not Collective
 
   Input Parameters:
-+ dm - The DMNetwork object
+. dm - The DMNetwork object
 
   Output Paramters:
 + eStart - The first edge point
@@ -705,7 +705,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,voi
 
   Input Parameters:
 + dm - The DMNetwork object
-. p  - vertex/edge point
+- p  - vertex/edge point
 
   Output Parameters:
 . numcomponents - Number of components at the vertex/edge
@@ -1326,7 +1326,7 @@ PetscErrorCode DMNetworkGetConnectedVertices(DM dm,PetscInt edge,const PetscInt 
 
   Input Parameters:
 + dm - The DMNetwork object
-. p  - the vertex point
+- p  - the vertex point
 
   Output Parameter:
 . isghost - TRUE if the vertex is a ghost point

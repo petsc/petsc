@@ -15,12 +15,12 @@ PetscClassId IS_CLASSID;
    Collective on IS
 
    Input Parmeters:
-.  subset - the index set
-.  subset_mult - the multiplcity of each entry in subset (optional, can be NULL)
++  subset - the index set
+-  subset_mult - the multiplcity of each entry in subset (optional, can be NULL)
 
    Output Parameters:
-.  N - the maximum entry of the new IS
-.  subset_n - the new IS
++  N - the maximum entry of the new IS
+-  subset_n - the new IS
 
    Level: intermediate
 
@@ -176,8 +176,8 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
    Collective on IS
 
    Input Parmeters:
-.  is - the index set
-.  comps - which components we will extract from is
++  is - the index set
+-  comps - which components we will extract from is
 
    Output Parameters:
 .  subis - the new sub index set
@@ -308,7 +308,7 @@ PetscErrorCode  ISSetIdentity(IS is)
    Input Parmeters:
 +  is - the index set
 .  gstart - global start
-.  gend - global end
+-  gend - global end
 
    Output Parameters:
 +  start - start of contiguous block, as an offset from gstart
@@ -1342,8 +1342,8 @@ M*/
     Not collective
 
     Input Parameters:
-.   x - index set
-.   xx_v - the Fortran90 pointer to the array
++   x - index set
+-   xx_v - the Fortran90 pointer to the array
 
     Output Parameter:
 .   ierr - error code

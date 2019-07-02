@@ -666,7 +666,7 @@ PetscErrorCode MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
    Not Collective
 
    Input Parameters:
-+  mat - the matrix
+.  mat - the matrix
 
    Notes:
    The flag is to ensure that users are aware of MatGetRow() only provides the upper trianglular part of the row for the matrices in MATSBAIJ format.
@@ -696,7 +696,7 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
    Not Collective
 
    Input Parameters:
-+  mat - the matrix
+.  mat - the matrix
 
    Notes:
    This routine should be called after you have finished MatGetRow/MatRestoreRow().
@@ -3868,7 +3868,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 .  x - the solution (can contain an initial guess, use option SOR_ZERO_INITIAL_GUESS to indicate no guess)
 
    SOR Flags:
-.     SOR_FORWARD_SWEEP - forward SOR
++     SOR_FORWARD_SWEEP - forward SOR
 .     SOR_BACKWARD_SWEEP - backward SOR
 .     SOR_SYMMETRIC_SWEEP - SSOR (symmetric SOR)
 .     SOR_LOCAL_FORWARD_SWEEP - local forward SOR
@@ -3877,7 +3877,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 .     SOR_APPLY_UPPER, SOR_APPLY_LOWER - applies
          upper/lower triangular part of matrix to
          vector (with omega)
-.     SOR_ZERO_INITIAL_GUESS - zero initial guess
+-     SOR_ZERO_INITIAL_GUESS - zero initial guess
 
    Notes:
    SOR_LOCAL_FORWARD_SWEEP, SOR_LOCAL_BACKWARD_SWEEP, and
@@ -6516,7 +6516,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 
    Output Arguments:
 +  rows - rows in which this process owns elements
-.  cols - columns in which this process owns elements
+-  cols - columns in which this process owns elements
 
    Level: intermediate
 
@@ -7099,8 +7099,8 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
 .  mat - the matrix
 
    Output Parameter:
-.  rbs - row block size
-.  cbs - column block size
++  rbs - row block size
+-  cbs - column block size
 
    Notes:
     Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
@@ -9078,7 +9078,7 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
    Logically Collective on Mat
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor()
+.  F - the factored matrix obtained by calling MatGetFactor()
 
    Notes:
     Must be called after MatFactorSetSchurIS().
@@ -9111,7 +9111,7 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
    Logically Collective on Mat
 
    Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor()
+.  F - the factored matrix obtained by calling MatGetFactor()
 
    Notes:
     Must be called after MatFactorSetSchurIS().
@@ -9759,7 +9759,7 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
    and for pairs of MPIDense matrices.
 
    Options Database Keys:
-+  -matmattransmult_mpidense_mpidense_via {allgatherv,cyclic} - Choose between algorthims for MPIDense matrices: the
+.  -matmattransmult_mpidense_mpidense_via {allgatherv,cyclic} - Choose between algorthims for MPIDense matrices: the
                                                                 first redundantly copies the transposed B matrix on each process and requiers O(log P) communication complexity;
                                                                 the second never stores more than one portion of the B matrix at a time by requires O(P) communication complexity.
 
