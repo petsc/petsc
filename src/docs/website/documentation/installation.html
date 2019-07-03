@@ -89,33 +89,50 @@
             <li>make all test</li>
           </ul>
         </li>
+        <li>
+          <a style="color: rgb(204,102,0);" href="#windows"><b>Check here for MS Windows installation</b></a> and <a style="color: rgb(204,102,0);" href="#doemachines"><b>here for DOE large scale systems installation</b></a>
+        </li>
       </ul>
 
-      <a style="color: rgb(204,102,0);" href="#windows"><b>Check here for MS Windows Installation</b></a>
+
 
       <h3>Encounter problems?</h3>
 
       <ul>
         <li><b>Read the error message from ./configure!</b></li>
-        <li><a href="installation.html#blaslapack">BLAS and LAPACK problems</a></li>
-        <li><a href="installation.html#mpi">MPI problems</a>. I <a href="installation.html#i-dont-want-to-use-mpi">don't want MPI</a></li>
+        <li>Read help <code>./configure --help</code></li>
+        <li>Refer to <a href="#exampleusage">example usages</a> (e.g., build PETSc without a Fortran compiler)</li>
         <li><i><b>make</i></b> problems? Just copy/paste <i><b>make</i></b> command printed by configure including PETSC_DIR and PETSC_ARCH options</li>
-        <li>Do not have fortran compiler? check <a href=#exampleusage>examples</a> below
         <li> Check the <a href="https://www.mcs.anl.gov/petsc/documentation/bugreporting.html">bug-reporting</a> section</li>
       </ul>
 
 
       <h3>Notes:</h3>
-
       <ul>
         <li>Please obtain PETSc via the <a href="../download/index.html">repository</a> or download the <b>latest</b> patched tarball
+        <li>To extract the sources use: <code>gunzip -c petsc-&#60;version number&#62;.tar.gz | tar -xof -</code></li>
         <li>We highly recommend installing PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
-        <li>To extract the sources use: <code>gunzip -c petsc-3.11.0.tar.gz | tar -xof -</code></li>
-        <li>Please check: <code>./configure --help</code></li>
-        <li>Please check <a href="#exampleusage">example usages</a></li>
-        <li>To install in <a href="#root">system directories</a> and for <a href="#packagemanagers">package managers.</a></li> 
-        <li><a href="#pkgconfig">Pkgconfig</a> and <a href="#pkgconfig">module files.</a></li> 
       </ul>
+
+      <h3>Table of Contents:</h3>
+
+      <ul>
+        <li><a href="#exampleusage">Example usages</a></li>
+        <li><a href="#compilers">Specify compilers and compiler options used to build PETSc [and perhaps external packages]</a></li>
+        <li><a href="#external">External packages</a></li>
+        <li><a href="#blaslapack">BLAS and LAPACK problems</a></li>
+        <li><a href="#mpi">MPI problems / I don't want MPI</a></li>
+        <li><a href="#windows">Microsoft Windows installation</a></li>
+        <li><a href="#root">Installing PETSc in system directories where sudo or root privileges are required / For package managers</a></li>
+        <li><a href="#pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></li>
+        <li><a href="#SP">Installing on machine requiring cross compiler or a job scheduler, such as IBM SP or IBM Blue Gene</a></li>
+        <li><a href="#usingtau">Installing with TAU instrumentation package</a></li>
+        <li><a href="#CUDA">Installing PETSc to use NVidia GPUs (aka CUDA)</a></li>
+        <li><a href="#OpenCL">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></li>
+        <li><a href="#doemachines">Installing on large scale DOE systems</a></li>
+        <li><a href="#iosandroid">Installing PETSc on an iOS or Android platform</a></li>
+      </ul>
+
 
     </div>
 
@@ -1067,6 +1084,67 @@
       </div> <!-- #OpenCL -->
 
       <hr>
+
+      <div>
+        <h3><a name="doemachines">Installing on Large Scale DOE Systems</a></h3>
+
+        <ul>
+          <li>
+            NERSC - CORI machine.
+            <ul>
+              <li>
+                Project ID: m3353
+              </li>
+              <li>
+                PI: Richard Mills
+            </li>
+              <li>
+                Notes on usage:
+            </li>
+            </ul>
+          </li>
+          <li>
+            ALCF - Argonne National Laboratory - theta machine - Intel KNL based system
+            <ul>
+              <li>
+                Project ID: 
+              </li>
+              <li>
+                PI:
+            </li>
+              <li>
+                Notes on usage:
+                <ul>
+                  <li> Log into theta.alcf.anl.gov </li>
+                  </li>
+            </li>
+            </ul>
+          </li>
+            </ul>
+          <li>
+            LLCF - Oak Ridge National Laboratory - summit machine - Nvidia GPUs and IBM Power PC processors
+            <ul>
+              <li>
+                Project ID: CSC314
+              </li>
+              <li>
+                PI: Barry Smith
+            </li>
+              <li>
+                Notes on usage:
+                <ul>
+                 <li>  <a href="https://www.olcf.ornl.gov/support/getting-started/olcf-user-account-application/">Getting Started</a> </li>
+             </li>
+            </ul>
+        </ul>
+
+</ul>
+</ul>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div>
+
+    <hr>
 
       <div>
         <h3><a name="iosandroid">Installing PETSc on an iOS or Android platform</a></h3>
