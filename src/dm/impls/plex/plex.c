@@ -1716,69 +1716,174 @@ PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetConeRecursive_Private(DM dm, PetscInt *n_inout, const PetscInt points[], PetscInt *offset_inout, PetscInt buf[])
-{
-  PetscInt p, n, cn, i;
-  const PetscInt *cone;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  n = *n_inout;
-  *n_inout = 0;
-  for (i=0; i<n; i++) {
-    p = points[i];
-    ierr = DMPlexGetConeSize(dm, p, &cn);CHKERRQ(ierr);
-    if (!cn) {
-      cn = 1;
-      if (buf) {
-        buf[*offset_inout] = p;
-        ++(*offset_inout);
-      }
-    } else {
-      ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-      ierr = DMPlexGetConeRecursive_Private(dm, &cn, cone, offset_inout, buf);CHKERRQ(ierr);
-    }
-    *n_inout += cn;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  DMPlexGetConeRecursive - Like DMPlexGetConeTuple() but recursive, i.e. each cone point is expanded into a set of its own cone points until a vertex (DAG point with no cone) is reached.
+/*@
+  DMPlexGetConeRecursiveVertices - Expand each given point into its cone points and do that recursively until we end up just with vertices.
 
   Not collective
 
   Input Parameters:
 + dm - The DMPlex
-- p - The IS of points, which must lie in the chart set with DMPlexSetChart()
+- points - The IS of points, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameter:
-. pCones - An array of recursively expanded cones, i.e. containing only vertices, and each of them can be present multiple times
+. expandedPoints - An array of vertices recursively expanded from input points
 
   Level: advanced
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeTuple()
+  Notes:
+  Like DMPlexGetConeRecursive but returns only the 0-depth IS (i.e. vertices only) and no sections.
+  There is no corresponding Restore function, just call ISDestroy() on the returned IS to deallocate.
+
+.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeTuple(), DMPlexGetConeRecursive(), DMPlexRestoreConeRecursive(), DMPlexGetDepth()
 @*/
-PetscErrorCode DMPlexGetConeRecursive(DM dm, IS p, IS *pCones)
+PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoints)
 {
-  const PetscInt      *arr=NULL;
-  PetscInt            *cpoints=NULL;
-  PetscInt            n, cn;
-  PetscInt            zero;
+  IS                  *expandedPointsAll;
+  PetscInt            depth;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(p, &n);CHKERRQ(ierr);
-  ierr = ISGetIndices(p, &arr);CHKERRQ(ierr);
-  zero = 0;
-  /* first figure out the total number of returned points */
-  cn = n;
-  ierr = DMPlexGetConeRecursive_Private(dm, &cn, arr, &zero, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(cn, &cpoints);CHKERRQ(ierr);
-  /* now get recursive cones themselves */
-  ierr = DMPlexGetConeRecursive_Private(dm, &n, arr, &zero, cpoints);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)p), n, cpoints, PETSC_OWN_POINTER, pCones);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(p, &arr);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(points, IS_CLASSID, 2);
+  PetscValidPointer(expandedPoints, 3);
+  ierr = DMPlexGetConeRecursive(dm, points, &depth, &expandedPointsAll, NULL);CHKERRQ(ierr);
+  *expandedPoints = expandedPointsAll[0];
+  ierr = PetscObjectReference((PetscObject)expandedPointsAll[0]);
+  ierr = DMPlexRestoreConeRecursive(dm, points, &depth, &expandedPointsAll, NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetConeRecursive - Expand each given point into its cone points and do that recursively until we end up just with vertices (DAG points of depth 0, i.e. without cones).
+
+  Not collective
+
+  Input Parameters:
++ dm - The DMPlex
+- points - The IS of points, which must lie in the chart set with DMPlexSetChart()
+
+  Output Parameter:
++ depth - (optional) Size of the output arrays, equal to DMPlex depth, returned by DMPlexGetDepth()
+. expandedPoints - (optional) An array of index sets with recursively expanded cones
+- sections - (optional) An array of sections which describe mappings from points to their cone points
+
+  Level: advanced
+
+  Notes:
+  Like DMPlexGetConeTuple() but recursive.
+
+  Array expandedPoints has size equal to depth. Each expandedPoints[d] contains DAG points with maximum depth d, recursively cone-wise expanded from the input points.
+  For example, for d=0 it contains only vertices, for d=1 it can contain vertices and edges, etc.
+
+  Array section has size equal to depth.  Each PetscSection sections[d] realizes mapping from expandedPoints[d+1] (section points) to expandedPoints[d] (section dofs) as follows:
+  (1) DAG points in expandedPoints[d+1] with depth d+1 to their cone points in expandedPoints[d];
+  (2) DAG points in expandedPoints[d+1] with depth in [0,d] to the same points in expandedPoints[d].
+
+.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeTuple(), DMPlexRestoreConeRecursive(), DMPlexGetConeRecursiveVertices(), DMPlexGetDepth()
+@*/
+PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[])
+{
+  const PetscInt      *arr0=NULL, *cone=NULL;
+  PetscInt            *arr=NULL, *newarr=NULL;
+  PetscInt            d, depth_, i, n, newn, cn, co, start, end;
+  IS                  *expandedPoints_;
+  PetscSection        *sections_;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(points, IS_CLASSID, 2);
+  if (depth) PetscValidIntPointer(depth, 3);
+  if (expandedPoints) PetscValidPointer(expandedPoints, 4);
+  if (sections) PetscValidPointer(sections, 5);
+  ierr = ISGetLocalSize(points, &n);CHKERRQ(ierr);
+  ierr = ISGetIndices(points, &arr0);CHKERRQ(ierr);
+  if (!n) PetscFunctionReturn(0);
+  ierr = DMPlexGetDepth(dm, &depth_);CHKERRQ(ierr);
+  ierr = PetscCalloc1(depth_, &expandedPoints_);CHKERRQ(ierr);
+  ierr = PetscCalloc1(depth_, &sections_);CHKERRQ(ierr);
+  arr = (PetscInt*) arr0; /* this is ok because first generation of arr is not modified */
+  for (d=depth_-1; d>=0; d--) {
+    ierr = PetscSectionCreate(PETSC_COMM_SELF, &sections_[d]);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(sections_[d], 0, n);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      ierr = DMPlexGetDepthStratum(dm, d+1, &start, &end);CHKERRQ(ierr);
+      if (arr[i] >= start && arr[i] < end) {
+        ierr = DMPlexGetConeSize(dm, arr[i], &cn);CHKERRQ(ierr);
+        ierr = PetscSectionSetDof(sections_[d], i, cn);CHKERRQ(ierr);
+      } else {
+        ierr = PetscSectionSetDof(sections_[d], i, 1);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscSectionSetUp(sections_[d]);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(sections_[d], &newn);CHKERRQ(ierr);
+    ierr = PetscMalloc1(newn, &newarr);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      ierr = PetscSectionGetDof(sections_[d], i, &cn);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(sections_[d], i, &co);CHKERRQ(ierr);
+      if (cn > 1) {
+        ierr = DMPlexGetCone(dm, arr[i], &cone);CHKERRQ(ierr);
+        ierr = PetscMemcpy(&newarr[co], cone, cn*sizeof(PetscInt));CHKERRQ(ierr);
+      } else {
+        newarr[co] = arr[i];
+      }
+    }
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, newn, newarr, PETSC_OWN_POINTER, &expandedPoints_[d]);CHKERRQ(ierr);
+    arr = newarr;
+    n = newn;
+  }
+  *depth = depth_;
+  if (expandedPoints) *expandedPoints = expandedPoints_;
+  else {
+    for (d=0; d<depth_; d++) {ierr = ISDestroy(&expandedPoints_[d]);CHKERRQ(ierr);}
+    ierr = PetscFree(expandedPoints_);CHKERRQ(ierr);
+  }
+  if (sections) *sections = sections_;
+  else {
+    for (d=0; d<depth_; d++) {ierr = PetscSectionDestroy(&sections_[d]);CHKERRQ(ierr);}
+    ierr = PetscFree(sections_);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexRestoreConeRecursive - Deallocates arrays created by DMPlexGetConeRecursive
+
+  Not collective
+
+  Input Parameters:
++ dm - The DMPlex
+- points - The IS of points, which must lie in the chart set with DMPlexSetChart()
+
+  Output Parameter:
++ depth - (optional) Size of the output arrays, equal to DMPlex depth, returned by DMPlexGetDepth()
+. expandedPoints - (optional) An array of recursively expanded cones
+- sections - (optional) An array of sections which describe mappings from points to their cone points
+
+  Level: advanced
+
+  Notes:
+  See DMPlexGetConeRecursive() for details.
+
+.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeTuple(), DMPlexGetConeRecursive(), DMPlexGetConeRecursiveVertices(), DMPlexGetDepth()
+@*/
+PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[])
+{
+  PetscInt            d, depth_;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth_);CHKERRQ(ierr);
+  if (depth && *depth != depth_) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "depth changed since last call to DMPlexGetConeRecursive");
+  if (depth) *depth = 0;
+  if (expandedPoints) {
+    for (d=0; d<depth_; d++) {ierr = ISDestroy(&((*expandedPoints)[d]));CHKERRQ(ierr);}
+    ierr = PetscFree(*expandedPoints);CHKERRQ(ierr);
+  }
+  if (sections)  {
+    for (d=0; d<depth_; d++) {ierr = PetscSectionDestroy(&((*sections)[d]));CHKERRQ(ierr);}
+    ierr = PetscFree(*sections);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

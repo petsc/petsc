@@ -121,7 +121,7 @@ static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF 
     o = roffset[r];
     n = roffset[r+1] - o;
     ierr = ISCreateGeneral(PETSC_COMM_SELF, n, &rmine[o], PETSC_USE_POINTER, &pointsPerRank);CHKERRQ(ierr);
-    ierr = DMPlexGetConeRecursive(dm, pointsPerRank, &conesPerRank);CHKERRQ(ierr);
+    ierr = DMPlexGetConeRecursiveVertices(dm, pointsPerRank, &conesPerRank);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocalTuple(dm, conesPerRank, NULL, &(*coordinatesPerRank)[r]);CHKERRQ(ierr);
     ierr = ISDestroy(&pointsPerRank);CHKERRQ(ierr);
     ierr = ISDestroy(&conesPerRank);CHKERRQ(ierr);
