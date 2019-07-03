@@ -999,7 +999,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   xGPU = thrust::device_pointer_cast(xarray);
   bGPU = thrust::device_pointer_cast(barray);
 
-  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   /* First, reorder with the row permutation */
   thrust::copy(thrust::make_permutation_iterator(bGPU, cusparseTriFactors->rpermIndices->begin()),
                thrust::make_permutation_iterator(bGPU+n, cusparseTriFactors->rpermIndices->end()),
@@ -1063,7 +1063,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec
   ierr = VecCUDAGetArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(bb,&barray);CHKERRQ(ierr);
 
-  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   /* First, solve U */
   stat = cusparse_solve(cusparseTriFactors->handle, upTriFactorT->solveOp,
                         upTriFactorT->csrMat->num_rows, &PETSC_CUSPARSE_ONE, upTriFactorT->descr,
@@ -1112,7 +1112,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   xGPU = thrust::device_pointer_cast(xarray);
   bGPU = thrust::device_pointer_cast(barray);
 
-  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   /* First, reorder with the row permutation */
   thrust::copy(thrust::make_permutation_iterator(bGPU, cusparseTriFactors->rpermIndices->begin()),
                thrust::make_permutation_iterator(bGPU, cusparseTriFactors->rpermIndices->end()),
@@ -1168,7 +1168,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
   ierr = VecCUDAGetArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(bb,&barray);CHKERRQ(ierr);
 
-  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   /* First, solve L */
   stat = cusparse_solve(cusparseTriFactors->handle, loTriFactor->solveOp,
                         loTriFactor->csrMat->num_rows, &PETSC_CUSPARSE_ONE, loTriFactor->descr,
@@ -1377,7 +1377,7 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   ierr = VecSet(yy,0);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
 
-  ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
     CsrMatrix *mat = (CsrMatrix*)matstructT->mat;
     stat = cusparse_csr_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
@@ -1426,7 +1426,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
     dptr = cusparsestruct->workVector->size() == (thrust::detail::vector_base<PetscScalar, thrust::device_malloc_allocator<PetscScalar> >::size_type)(A->rmap->n) ? zarray : cusparsestruct->workVector->data().get();
     beta = (yy == zz && dptr == zarray) ? matstruct->beta_one : matstruct->beta_zero;
 
-    ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     /* csr_spmv is multiply add */
     if (cusparsestruct->format == MAT_CUSPARSE_CSR) {
       /* here we need to be careful to set the number of rows in the multiply to the
@@ -1462,7 +1462,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = VecSet(zz,0);CHKERRQ(ierr);
     }
     /* scatter the data from the temporary into the full vector with a += operation */
-    ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     if (dptr != zarray) {
       thrust::device_ptr<PetscScalar> zptr;
 
@@ -1512,7 +1512,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
     ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);
     zptr = thrust::device_pointer_cast(zarray);
 
-    ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     /* multiply add with matrix transpose */
     if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
       CsrMatrix *mat = (CsrMatrix*)matstructT->mat;

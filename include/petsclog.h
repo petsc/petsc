@@ -257,7 +257,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n){
   petsc_gflops += PETSC_FLOPS_PER_OP*n;
   PetscFunctionReturn(0);
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeStart(){
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeBegin(){
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscTimeSubtract(&petsc_gtime);CHKERRQ(ierr);

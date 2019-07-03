@@ -184,7 +184,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
   if (A->rmap->n > 0 && A->cmap->n > 0 && a->nz) {
     ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
-    ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       if (a->compressedrow.use) {
         *ygpu = viennacl::linalg::prod(*viennaclstruct->compressed_mat, *xgpu);
@@ -219,7 +219,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
       ierr = VecViennaCLGetArrayRead(yy,&ygpu);CHKERRQ(ierr);
       ierr = VecViennaCLGetArrayWrite(zz,&zgpu);CHKERRQ(ierr);
-      ierr = PetscLogGpuTimeStart();CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       if (a->compressedrow.use) {
         ViennaCLVector temp = viennacl::linalg::prod(*viennaclstruct->compressed_mat, *xgpu);
         *zgpu = *ygpu + temp;
