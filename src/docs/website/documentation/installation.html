@@ -576,7 +576,7 @@
         <ul>
           <li> <h4> Intel MKL</h4>
             Intel provides blas/lapack via  <a href="https://software.intel.com/en-us/mkl">MKL</a> library.
-            It usually works from GNU/Intel compilers on linux and MS/Intel compilers on Windows.
+            It usually works from GNU/Intel compilers on Linux and MS/Intel compilers on Windows.
             One can specify it to PETSc configure with for eg: <code>--with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl</code>
             <br>
             If the above option does not work - one could determine the correct library list for your compilers using
@@ -712,40 +712,58 @@
       <div>
         <h3><a name="windows">Microsoft Windows Installation:</a></h3>
 
+            Are you sure you want to use Microsoft Windows? We recommend using Linux
+            if possible [and minimize troubleshooting Microsoft windows related issues].
+            
+        <h3>Installation With GNU gcc/g++/gfortran compilers:</h3>
+        
+        The following configurations are much like regular Linux systems. Our regular [Linux] instructions
+        should work with them. Most externalpackages will also work. The configure option --download-mpich should work
+        for these systems. (These do not support Microsoft/Intel Windows compilers; nor can you use MS-MPI or Intel-MPI).
+        
         <ul>
           <li>
-            Are you sure you want to use MS/Windows? We recommend using linux
-            if possible [and minimize troubleshooting windows related issues].
-            And most externalpackages will not work on windows.
+            <a href="http://www.cygwin.com">Cygwin</a> Unix emulator for Microsoft Windows. See the instructions below for
+            installing Cygwin for PETSc. Be sure to install the GNU compilers, do not use the win32fe script.
           </li>
           <li>
-            If you have access to only a windows machine and not a linux machine,
-            consider using linux virtual machine via <a href="https://www.virtualbox.org/">VirtualBox</a>.
-            One sample tutorial is at <a href="https://www.psychocats.net/ubuntu/virtualbox">https://www.psychocats.net/ubuntu/virtualbox</a>.
+            <a href="https://devblogs.microsoft.com/commandline/announcing-wsl-2/">Windows Subsystem for Linux 2 (WLS2)</a>.
+            Untested, let us know your experience.
+          </li>
+          <li>
+            <a href="https://docs.docker.com/docker-for-windows/">Docker for Windows</a>.
+            Untested, let us know your experience.
+          </li>
+          <li>
+            <a href="https://www.atlassian.com/git/tutorials/git-bash">Git bash</a>. You must
+            also install the GNU compilers via
+            <a href="https://yichaoou.github.io/tutorials/software/2016/06/28/git-bash-install-gcc">MinGW</a>.
+            Untested, let us know your experience.
+          </li>
+          <li>
+            Linux virtual machine via <a href="https://www.virtualbox.org/">VirtualBox</a>.
+            One sample tutorial is at
+            <a href="https://www.psychocats.net/ubuntu/virtualbox">https://www.psychocats.net/ubuntu/virtualbox</a>.
             Google can provide more tutorials.
+            Untested, let us know your experience.
           </li>
-          <li>
-            You can consider using GNU compilers from <a href="http://www.cygwin.com">cygwin</a>.
-            Our regular [linux] instructions would work with cygwin/gnu compilers.
-            And most externalpackages will also work.
-          </li>
-        </ul>
+         </ul>
 
 
-        <h4>Installation With MS/Intel/Compaq Compilers:</h4>
+        <h3>Installation With Microsoft/Intel Windows Compilers:</h3>
         <p>
-          Microsoft Windows OS does not provide the same unix shell enviornment
-          as the other OSes. Also the default MS/Intel/Compaq compilers behave
+          Microsoft Windows does not provide the same unix shell enviornment
+          as the other OSes. Also the default Microsoft/Intel compilers behave
           differently than other unix compilers. So to install PETSc on Microsoft
-          Windows - one has to install <a href="http://www.cygwin.com">cygwin</a>
+          Windows - one has to install <a href="http://www.cygwin.com">Cygwin</a>
           [for the unix enviornment] and use <a href="#win32fe">win32fe</a> [part
-          of PETSc sources,to interface to MS/Intel/Compaq compilers].
+          of PETSc sources,to interface to Microsoft/Intel compilers].
         </p>
 
         <p>
           <span class="def">Install Cygwin: </span>Please download and install
-          cygwin package from <a href="http://www.cygwin.com">http://www.cygwin.com</a>.
-          Make sure the following cygwin components are installed.
+          Cygwin package from <a href="http://www.cygwin.com">http://www.cygwin.com</a>.
+          Make sure the following Cygwin components are installed.
         </p>
 
         <ul>
@@ -756,8 +774,8 @@
 
         <p>
           <span class="def">Remove Cygwin link.exe: </span>Cygwin link.exe can
-          conflict with Intel ifort and Comapq F90 compilers. If you are using
-          these compilers - please do [from cygwin terminal/bash-shell]:
+          conflict with Intel ifort compiler. If you are using ifort -
+          please do [from Cygwin terminal/bash-shell]:
         </p>
 
         <ul>
@@ -765,8 +783,8 @@
         </ul>
 
         <p>
-          <span class="def">Setup cygwin terminal/bash-shell with Working Compilers:
-          </span>We require the compilers to be setup properly in a cygwin bash
+          <span class="def">Setup Cygwin terminal/bash-shell with Working Compilers:
+          </span>We require the compilers to be setup properly in a Cygwin bash
           command shell, so that "<code>cl foo.c</code>" or "<code>ifort
             foo.f</code>" works from this shell. For example - if using VS2005
           C and Intel 10 Fortran one can do:
@@ -781,7 +799,7 @@
           </li>
 
           <li>
-            Within this shell - run cygwin terminal/bash-shell mintty.exe as:
+            Within this shell - run Cygwin terminal/bash-shell mintty.exe as:
             <code>c:\cygwin\bin\mintty.exe</code>
           </li>
 
@@ -789,7 +807,7 @@
             Within mintty.exe - run:<code>/usr/bin/bash --login</code>
           </li>
           
-          <li>verify if the compilers are useable [by running cl, ifort in this cygwin terminal/bash-shell]</li>
+          <li>verify if the compilers are useable [by running cl, ifort in this Cygwin terminal/bash-shell]</li>
 
           <li>Now run configure with win32fe and then build the libraries with make [as per the usual instructions]</li>
         </ul>
@@ -797,32 +815,23 @@
         <h4>Example Configure usage with Windows Compilers:</h4>
 
         <p>
-          Use configure with VC2005 C and Intel Fortran 10 [With MPICH2 installed].
+          Use configure with VC2005 C and Intel Fortran 10 [Without MPI].
         </p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --download-fblaslapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --with-mpi=0 --download-fblaslapack</code></li>
         </ul>
 
-        <p>If fortran usage is not required, use:</p>
+        <p>If fortran, c++ usage is not required, use:</p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc=0 --download-f2cblaslapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc=0 --with-cxx=0 --download-f2cblaslapack</code></li>
         </ul>
 
-        <h4>Using Compaq F90:</h4>
+        <h4>Using MPI:</h4>
 
-        <p>Using Microsoft C/C++ 6.0 &amp; Compaq Fortran 6.0 with MPICH2 configure command to use:</p>
+        <p>We support both <a href="https://www.microsoft.com/en-us/download/details.aspx?id=57467">MS-MPI</a> [64-bit] and <a href="https://software.intel.com/en-us/mpi-library">Intel MPI</a> on Windows. For example usages, check <code>config/examples/arch-mswin*.py</code></p>
 
-        <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe f90' --download-fblaslapack</code></li>
-        </ul>
-
-        <p>
-          <b>Note</b>: MPICH2 mpif.h needs a fix for it to work with Compaq F90
-          [specifically remove line with MPI_DISPLACEMENT_CURRENT - which uses
-          'integer*8' - which is unsupported by Compaq F90]
-        </p>
 
         <p>
           <span class="def">ExternalPackages</span>: The <code>--download-package
@@ -846,7 +855,7 @@
           </li>
 
           <li>
-            try compiling the example from cygwin bash shell - using makefile - for eg:
+            try compiling the example from Cygwin bash shell - using makefile - for eg:
             <ul>
               <li>cd src/ksp/ksp/examples/tutorials</li>
               <li>make ex2</li>
@@ -877,18 +886,31 @@
         </p>
 
         <p>
-          <span class="def">Using Cygwin gcc/g++/gfortran:</span> One can install
-          and use PETSc with gcc/gfortran compilers from cygwin.  In this case
-          follow the regular Unix instructions.
-        </p>
-
-        <p>
           <span class="def"><a name="win32fe">PETSc Win32 front end - win32fe</a>:</span>
-          This tool is used as a wrapper to Microsoft/ Borland/ Intel compilers
-          and associated tools - to enable building PETSc libraries using cygwin
+          This tool is used as a wrapper to Microsoft and Intel compilers
+          and associated tools - to enable building PETSc libraries using Cygwin
           make and other UNIX tools. For additional info, run
           <code>${PETSC_DIR}/bin/win32/win32fe</code> without any options.
         </p>
+
+
+         <p><span class="def">Notes on using other systems besides Cygwin to compile with Microsoft and Intel compilers:</span>
+        For any alternate system, we would have to redo win32fe functionality for that system. This includes
+
+         <ul>
+           <li>
+             Marshal gcc type compiler options to Cl (Microsoft compiler).
+          </li>
+          <li>
+             Convert paths in some of these options from this system (for example Cygwin paths) to Windows paths.
+          </li>
+          <li>
+             Have python that works with system path notation.
+          </li>
+          <li>
+             Have the ability equivalent to Windows process spawning; Cygwin process spawning produces Windows processes. WSL1 lacked this.
+          </li>
+        </ul>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
       </div> <!-- #windows -->
