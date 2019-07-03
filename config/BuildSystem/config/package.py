@@ -67,6 +67,7 @@ class Package(config.base.Configure):
     self.license                = None # optional license text
     self.excludedDirs           = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
     self.downloadonWindows      = 0  # 1 means the --download-package works on Microsoft Windows
+    self.requirescxx14          = 0
     self.requirescxx11          = 0
     self.publicInstall          = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
                                      # during the configuration/installation process such as sowing, make etc should be marked as 0
@@ -862,7 +863,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       if (self.cxx and not hasattr(self.compilers, 'CXX')) or \
          (self.fc and not hasattr(self.compilers, 'FC')) or \
          (self.noMPIUni and self.mpi.usingMPIUni) or \
-         (self.requirescxx11 and self.compilers.cxxdialect != 'C++11') or \
+         (self.requirescxx14 and self.compilers.cxxdialect not in ['C++14']) or \
+         (self.requirescxx11 and self.compilers.cxxdialect not in ['C++11','C++14']) or \
          (not self.defaultPrecision.lower() in self.precisions) or \
          (not self.complex and self.defaultScalarType.lower() == 'complex') or \
          (self.defaultIndexSize == 64 and self.requires32bitint) or \
@@ -878,7 +880,9 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if self.requirescxx11 and self.compilers.cxxdialect != 'C++11':
+      if self.requirescxx14 and self.compilers.cxxdialect not in ['C++14']:
+        raise RuntimeError('Cannot use '+self.name+' without enabling C++14, see --with-cxx-dialect=C++14')
+      if self.requirescxx11 and self.compilers.cxxdialect not in ['C++11','C++14']:
         raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
       if self.download and self.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
