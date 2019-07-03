@@ -1047,8 +1047,10 @@ PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat A,PetscBool  *missing,PetscInt *d)
     if (d) *d = 0;
     ierr = PetscInfo(A,"Matrix has no entries therefore is missing diagonal\n");CHKERRQ(ierr);
   } else {
+    PetscInt n;
+    n = PetscMin(a->mbs, a->nbs);
     diag = a->diag;
-    for (i=0; i<a->mbs; i++) {
+    for (i=0; i<n; i++) {
       if (diag[i] >= ii[i+1]) {
         *missing = PETSC_TRUE;
         if (d) *d = i;
