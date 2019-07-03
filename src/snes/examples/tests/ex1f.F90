@@ -126,7 +126,8 @@
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,1,'Lambda out of range '); endif
-      N       = mx*my
+      N  = mx*my
+      pc = PETSC_FALSE
       call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-pc',pc,PETSC_NULL_BOOL,ierr);
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
