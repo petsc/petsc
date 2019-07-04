@@ -10,6 +10,16 @@
       End Interface
 
       Interface
+        Subroutine DMPlexRestoreCone(m,p,cone,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscInt, pointer :: cone(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine DMPlexGetConeOrientation(m,p,coneOrient,ierr)
           use petscdmdef
           PetscInt     p
@@ -21,6 +31,16 @@
 
       Interface
         Subroutine DMPlexGetSupport(m,p,support,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscInt, pointer :: support(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreSupport(m,p,support,ierr)
           use petscdmdef
           PetscInt     p
           PetscInt, pointer :: support(:)

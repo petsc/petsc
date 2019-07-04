@@ -1703,6 +1703,8 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
+  You must also call DMPlexRestoreConeOrientation() after you finish using the returned array.
+
 .seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetCone(), DMPlexSetChart()
 @*/
 PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneOrientation[])
@@ -1916,6 +1918,8 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
   Fortran Notes:
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
+
+  You must also call DMPlexRestoreSupport() after you finish using the returned array.
 
 .seealso: DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart(), DMPlexGetCone()
 @*/
