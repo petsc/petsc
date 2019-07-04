@@ -85,6 +85,8 @@ PetscLogDouble petsc_ctog_ct         = 0.0;  /* The total number of CPU to GPU c
 PetscLogDouble petsc_gtoc_ct         = 0.0;  /* The total number of GPU to CPU copies */
 PetscLogDouble petsc_ctog_sz         = 0.0;  /* The total size of CPU to GPU copies */
 PetscLogDouble petsc_gtoc_sz         = 0.0;  /* The total size of GPU to CPU copies */
+PetscLogDouble petsc_gflops          = 0.0;  /* The flops done on a GPU */
+PetscLogDouble petsc_gtime           = 0.0;  /* The time spent on a GPU */
 #endif
 
 /* Logging functions */
@@ -182,6 +184,8 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   petsc_gtoc_ct               = 0.0; 
   petsc_ctog_sz               = 0.0; 
   petsc_gtoc_sz               = 0.0; 
+  petsc_gflops                = 0.0;
+  petsc_gtime                 = 0.0;
   #endif
   PETSC_LARGEST_EVENT         = PETSC_EVENT;
   PetscLogPHC                 = NULL;
@@ -1364,7 +1368,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   PetscLogDouble     min, max, tot, ratio, avg, x, y;
   PetscLogDouble     minf, maxf, totf, ratf, mint, maxt, tott, ratt, ratC, totm, totml, totr, mal, malmax, emalmax;
   #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
-  PetscLogDouble     cct, gct, csz, gsz;
+  PetscLogDouble     cct, gct, csz, gsz, gmaxt, gflops, gflopr, fracgflops;
   #endif
   PetscMPIInt        minC, maxC;
   PetscMPIInt        size, rank;
@@ -1568,10 +1572,12 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm, fd, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n");CHKERRQ(ierr);
   }
   #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
+  ierr = PetscFPrintf(comm, fd, "   GPU Mflop/s: 10e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies per processor)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies per processor)\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   GPU %%F: percent flops on GPU in this event\n");CHKERRQ(ierr);
   #endif
   ierr = PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
@@ -1583,7 +1589,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm, fd,"  Malloc EMalloc MMalloc RMI");CHKERRQ(ierr);
   } 
   #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
-  ierr = PetscFPrintf(comm, fd,"   - CpuToGpu -   - GpuToCpu -");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd,"   GPU    - CpuToGpu -   - GpuToCpu - GPU");CHKERRQ(ierr);
   #endif
   ierr = PetscFPrintf(comm, fd,"\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd,"                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s");CHKERRQ(ierr);
@@ -1591,7 +1597,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm, fd," Mbytes Mbytes Mbytes Mbytes");CHKERRQ(ierr);
   }
   #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
-  ierr = PetscFPrintf(comm, fd,"  Count   Size   Count   Size");CHKERRQ(ierr); 
+  ierr = PetscFPrintf(comm, fd," Mflop/s Count   Size   Count   Size  %%F");CHKERRQ(ierr); 
   #endif
   ierr = PetscFPrintf(comm, fd,"\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd,"------------------------------------------------------------------------------------------------------------------------");CHKERRQ(ierr);
@@ -1599,7 +1605,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm, fd,"-----------------------------");CHKERRQ(ierr);
   }
   #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
-  ierr = PetscFPrintf(comm, fd,"-----------------------------");CHKERRQ(ierr); 
+  ierr = PetscFPrintf(comm, fd,"---------------------------------------");CHKERRQ(ierr); 
   #endif
   ierr = PetscFPrintf(comm, fd,"\n");CHKERRQ(ierr);
 
@@ -1663,6 +1669,8 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         ierr  = MPI_Allreduce(&eventInfo[event].GpuToCpuCount,    &gct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
         ierr  = MPI_Allreduce(&eventInfo[event].CpuToGpuSize,     &csz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
         ierr  = MPI_Allreduce(&eventInfo[event].GpuToCpuSize,     &gsz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+        ierr  = MPI_Allreduce(&eventInfo[event].GpuFlops,         &gflops,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+        ierr  = MPI_Allreduce(&eventInfo[event].GpuTime,          &gmaxt ,1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
         #endif
         name = stageLog->eventLog->eventInfo[event].name;
       } else {
@@ -1689,6 +1697,8 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         ierr  = MPI_Allreduce(&zero,                          &gct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
         ierr  = MPI_Allreduce(&zero,                          &csz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
         ierr  = MPI_Allreduce(&zero,                          &gsz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &gflops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &gmaxt , 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
         #endif
         name  = "";
       }
@@ -1725,8 +1735,10 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         if (PetscLogMemory) {
           ierr = PetscFPrintf(comm, fd," %5.0f   %5.0f   %5.0f   %5.0f",mal/1.0e6,emalmax/1.0e6,malmax/1.0e6,mem/1.0e6);CHKERRQ(ierr);
         } 
-        #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
-        ierr = PetscFPrintf(comm, fd,"    %4.0f %3.2e %4.0f %3.2e",cct/size,csz/(1.0e6*size),gct/size,gsz/(1.0e6*size));CHKERRQ(ierr);
+        #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+        if (totf  != 0.0) fracgflops = gflops/totf;  else fracgflops = 0.0;
+        if (gmaxt != 0.0) gflopr     = gflops/gmaxt; else gflopr     = 0.0;
+        ierr = PetscFPrintf(comm, fd,"   %5.0f   %4.0f %3.2e %4.0f %3.2e% 3.0f",PetscAbs(gflopr)/1.0e6,cct/size,csz/(1.0e6*size),gct/size,gsz/(1.0e6*size),100.0*fracgflops);CHKERRQ(ierr);
         #endif
         ierr = PetscFPrintf(comm, fd,"\n");CHKERRQ(ierr);
       }
@@ -1739,7 +1751,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm, fd, "-----------------------------");CHKERRQ(ierr);
   }
   #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
-  ierr = PetscFPrintf(comm, fd, "-----------------------------");CHKERRQ(ierr); 
+  ierr = PetscFPrintf(comm, fd, "---------------------------------------");CHKERRQ(ierr); 
   #endif
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);

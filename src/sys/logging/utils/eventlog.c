@@ -168,6 +168,8 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
   eventInfo->GpuToCpuCount = 0.0;
   eventInfo->CpuToGpuSize  = 0.0;
   eventInfo->GpuToCpuSize  = 0.0;
+  eventInfo->GpuFlops      = 0.0;
+  eventInfo->GpuTime       = 0.0;
   #endif
   PetscFunctionReturn(0);
 }
@@ -670,6 +672,8 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event,int t,PetscObject o
   eventLog->eventInfo[event].GpuToCpuCount -= petsc_gtoc_ct;
   eventLog->eventInfo[event].CpuToGpuSize  -= petsc_ctog_sz;
   eventLog->eventInfo[event].GpuToCpuSize  -= petsc_gtoc_sz;
+  eventLog->eventInfo[event].GpuFlops      -= petsc_gflops;
+  eventLog->eventInfo[event].GpuTime       -= petsc_gtime;
   #endif
   PetscFunctionReturn(0);
 }
@@ -715,6 +719,8 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event,int t,PetscObject o1,
   eventLog->eventInfo[event].GpuToCpuCount += petsc_gtoc_ct;
   eventLog->eventInfo[event].CpuToGpuSize  += petsc_ctog_sz;
   eventLog->eventInfo[event].GpuToCpuSize  += petsc_gtoc_sz;
+  eventLog->eventInfo[event].GpuFlops      += petsc_gflops;
+  eventLog->eventInfo[event].GpuTime       += petsc_gtime;
   #endif
   PetscFunctionReturn(0);
 }
