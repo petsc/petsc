@@ -30,6 +30,7 @@ M*/
 
 PETSC_EXTERN PetscErrorCode DMDASetInterpolationType(DM,DMDAInterpolationType);
 PETSC_EXTERN PetscErrorCode DMDAGetInterpolationType(DM,DMDAInterpolationType*);
+PETSC_EXTERN PetscErrorCode DMDACreateAggregates(DM,DM,Mat*);
 
 /* FEM */
 PETSC_EXTERN PetscErrorCode DMDASetElementType(DM,DMDAElementType);

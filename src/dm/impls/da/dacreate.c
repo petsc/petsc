@@ -126,7 +126,6 @@ extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMRefineHierarchy_DA(DM,PetscInt,DM[]);
 extern PetscErrorCode  DMCoarsenHierarchy_DA(DM,PetscInt,DM[]);
 extern PetscErrorCode  DMCreateInjection_DA(DM,DM,Mat*);
-extern PetscErrorCode  DMCreateAggregates_DA(DM,DM,Mat*);
 extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
@@ -434,7 +433,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->coarsenhierarchy            = DMCoarsenHierarchy_DA;
   da->ops->createinjection             = DMCreateInjection_DA;
   da->ops->hascreateinjection          = DMHasCreateInjection_DA;
-  da->ops->getaggregates               = DMCreateAggregates_DA;
   da->ops->destroy                     = DMDestroy_DA;
   da->ops->view                        = 0;
   da->ops->setfromoptions              = DMSetFromOptions_DA;

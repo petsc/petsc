@@ -3181,34 +3181,6 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
   PetscFunctionReturn(0);
 }
 
-/*@
-   DMCreateAggregates - Gets the aggregates that map between
-   grids associated with two DMs.
-
-   Collective on dmc
-
-   Input Parameters:
-+  dmc - the coarse grid DM
--  dmf - the fine grid DM
-
-   Output Parameters:
-.  rest - the restriction matrix (transpose of the projection matrix)
-
-   Level: intermediate
-
-.seealso: DMRefine(), DMCreateInjection(), DMCreateInterpolation()
-@*/
-PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dmc,DM_CLASSID,1);
-  PetscValidHeaderSpecific(dmf,DM_CLASSID,2);
-  ierr = (*dmc->ops->getaggregates)(dmc, dmf, rest);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*@C
     DMSetApplicationContextDestroy - Sets a user function that will be called to destroy the application context when the DM is destroyed
 
