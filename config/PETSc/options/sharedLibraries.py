@@ -85,8 +85,6 @@ class Configure(config.base.Configure):
     else:
       self.addMakeRule('shared_arch','')
       self.addMakeMacro('BUILDSHAREDLIB','no')
-    if self.setCompilers.sharedLibraries:
-      self.addDefine('HAVE_SHARED_LIBRARIES', 1)
     if self.useShared:
       self.addDefine('USE_SHARED_LIBRARIES', 1)
     else:

@@ -196,8 +196,6 @@ class Configure(config.base.Configure):
     '''Checks if you can safely include both <sys/time.h> and <time.h>, and if so defines TIME_WITH_SYS_TIME'''
     self.check('time.h')
     self.check('sys/time.h')
-    if self.checkCompile('#include <sys/types.h>\n#include <sys/time.h>\n#include <time.h>\n', 'struct tm *tp = 0;\n\nif (tp);\n'):
-      self.addDefine('TIME_WITH_SYS_TIME', 1)
     return
 
   def checkMath(self):

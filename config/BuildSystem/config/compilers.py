@@ -1382,7 +1382,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
   def checkFortranTypeInitialize(self):
     '''Determines if PETSc objects in Fortran are initialized by default (doesn't work with common blocks)'''
     if self.argDB['with-fortran-type-initialize']:
-      self.addDefine('HAVE_FORTRAN_TYPE_INITIALIZE', -2)
       self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = -2')
       self.logPrint('Initializing Fortran objects')
     else:

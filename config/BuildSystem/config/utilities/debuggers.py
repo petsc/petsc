@@ -20,27 +20,36 @@ class Configure(config.base.Configure):
 
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
-    # We use the framework in order to remove the PETSC_ namespace
+    '''If Darwin first try lldb, next try gdb and dbx'''
+    # Use the framework in order to remove the PETSC_ namespace
     if 'with-debugger' in self.argDB:
       self.getExecutable(self.argDB['with-debugger'], getFullPath = 1)
       if not hasattr(self,self.argDB['with-debugger']):
         raise RuntimeError('Cannot locate debugger indicated using --with-debugger='+self.argDB['with-debugger'])
+      self.addDefine('USE_DEBUGGER','"'+self.argDB['with-debugger']+'"')
     else:
-      self.getExecutable('gdb', getFullPath = 1)
-      self.getExecutable('dbx', getFullPath = 1)
-      self.getExecutable('xdb', getFullPath = 1)
+      if config.setCompilers.Configure.isDarwin(self.log):
+        self.getExecutable('lldb', getFullPath = 1)
+        if hasattr(self,'lldb'):
+          self.addDefine('USE_DEBUGGER','"lldb"')
+      if not hasattr(self,'lldb'):
+        self.getExecutable('gdb', getFullPath = 1)
+        if hasattr(self,'gdb'):
+          self.addDefine('USE_DEBUGGER','"gdb"')
+        else:
+          self.getExecutable('dbx', getFullPath = 1)
+          if hasattr(self,'dbx'):
+            self.addDefine('USE_DEBUGGER','"dbx"')
+
     if config.setCompilers.Configure.isDarwin(self.log):
       self.getExecutable('dsymutil', getFullPath = 1)
     else:
       self.dsymutil = 'true'
     self.addMakeMacro('DSYMUTIL', self.dsymutil)
 
-    if hasattr(self, 'gdb'):
-      self.addDefine('USE_GDB_DEBUGGER', 1)
-    elif hasattr(self, 'dbx'):
+    if hasattr(self, 'dbx'):
       import re
       if self.argDB['with-batch']: return
-      self.addDefine('USE_DBX_DEBUGGER', 1)
       f = open('conftest', 'w')
       f.write('quit\n')
       f.close()
@@ -82,9 +91,6 @@ class Configure(config.base.Configure):
                 break
         except RuntimeError: pass
       os.remove('conftest')
-    elif hasattr(self, 'xdb'):
-      self.addDefine('USE_XDB_DEBUGGER', 1)
-      self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1)
     return
 
   def configure(self):
