@@ -35,7 +35,7 @@ struct _DMOps {
   PetscErrorCode (*createmassmatrix)(DM,DM,Mat*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
   PetscErrorCode (*hascreateinjection)(DM,PetscBool*);
-  PetscErrorCode (*getinjection)(DM,DM,Mat*);
+  PetscErrorCode (*createinjection)(DM,DM,Mat*);
 
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
   PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
@@ -266,6 +266,7 @@ PETSC_EXTERN PetscLogEvent DM_Coarsen;
 PETSC_EXTERN PetscLogEvent DM_Refine;
 PETSC_EXTERN PetscLogEvent DM_CreateInterpolation;
 PETSC_EXTERN PetscLogEvent DM_CreateRestriction;
+PETSC_EXTERN PetscLogEvent DM_CreateInjection;
 PETSC_EXTERN PetscLogEvent DM_CreateMatrix;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);

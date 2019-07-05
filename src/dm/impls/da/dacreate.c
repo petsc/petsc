@@ -432,7 +432,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->coarsen                     = DMCoarsen_DA;
   da->ops->refinehierarchy             = DMRefineHierarchy_DA;
   da->ops->coarsenhierarchy            = DMCoarsenHierarchy_DA;
-  da->ops->getinjection                = DMCreateInjection_DA;
+  da->ops->createinjection             = DMCreateInjection_DA;
   da->ops->hascreateinjection          = DMHasCreateInjection_DA;
   da->ops->getaggregates               = DMCreateAggregates_DA;
   da->ops->destroy                     = DMDestroy_DA;

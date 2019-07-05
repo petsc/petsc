@@ -276,7 +276,7 @@ PetscErrorCode DMInitialize_Network(DM dm)
   dm->ops->creatematrix                    = DMCreateMatrix_Network;
   dm->ops->createinterpolation             = 0;
   dm->ops->getaggregates                   = 0;
-  dm->ops->getinjection                    = 0;
+  dm->ops->createinjection                 = 0;
   dm->ops->refine                          = 0;
   dm->ops->coarsen                         = 0;
   dm->ops->refinehierarchy                 = 0;

@@ -1492,7 +1492,7 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
   dm->ops->creatematrix                    = DMCreateMatrix_Moab;
   dm->ops->createinterpolation             = DMCreateInterpolation_Moab;
   dm->ops->getaggregates                   = NULL;
-  dm->ops->getinjection                    = NULL /* DMCreateInjection_Moab */;
+  dm->ops->createinjection                 = NULL /* DMCreateInjection_Moab */;
   dm->ops->refine                          = DMRefine_Moab;
   dm->ops->coarsen                         = DMCoarsen_Moab;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Moab;
