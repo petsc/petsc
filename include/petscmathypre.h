@@ -1,5 +1,5 @@
-#ifndef __PETSCMATHYPRE_H
-#define __PETSCMATHYPRE_H
+#ifndef PETSCMATHYPRE_H
+#define PETSCMATHYPRE_H
 
 #include <petscmat.h>
 #include <_hypre_parcsr_mv.h>

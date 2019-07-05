@@ -1,5 +1,5 @@
-#if !defined(_PETSCDSIMPL_H)
-#define _PETSCDSIMPL_H
+#if !defined(PETSCDSIMPL_H)
+#define PETSCDSIMPL_H
 
 #include <petscds.h>
 #include <petsc/private/petscimpl.h>

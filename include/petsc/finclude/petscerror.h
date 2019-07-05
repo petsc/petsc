@@ -3,8 +3,8 @@
 !  Include file for Fortran error codes
 !    These are also in include/petscerror.h
 !
-#if !defined (__PETSCERRORDEF_H)
-#define __PETSCERRORDEF_H
+#if !defined (PETSCERRORDEF_H)
+#define PETSCERRORDEF_H
 
 #define PETSC_ERR_MEM              55
 #define PETSC_ERR_SUP              56

@@ -2,8 +2,8 @@
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
 */
-#if !defined(__PETSCSYS_H)
-#define __PETSCSYS_H
+#if !defined(PETSCSYS_H)
+#define PETSCSYS_H
 /* ========================================================================== */
 /*
    petscconf.h is contained in ${PETSC_ARCH}/include/petscconf.h it is

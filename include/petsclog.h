@@ -2,8 +2,8 @@
     Defines profile/logging in PETSc.
 */
 
-#if !defined(__PetscLog_H)
-#define __PetscLog_H
+#if !defined(PETSCLOG_H)
+#define PETSCLOG_H
 #include <petscsys.h>
 
 /* General logging of information; different from event logging */

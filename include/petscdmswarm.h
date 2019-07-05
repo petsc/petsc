@@ -1,5 +1,5 @@
-#if !defined(__PETSCDMSWARM_H)
-#define __PETSCDMSWARM_H
+#if !defined(PETSCDMSWARM_H)
+#define PETSCDMSWARM_H
 
 #include <petscdm.h>
 

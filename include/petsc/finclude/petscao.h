@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the AO (application ordering) package in PETSc
 !
-#if !defined (__PETSCAODEF_H)
-#define __PETSCAODEF_H
+#if !defined (PETSCAODEF_H)
+#define PETSCAODEF_H
 
 #include "petsc/finclude/petscis.h"
 

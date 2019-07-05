@@ -1,5 +1,5 @@
-#if !defined(__PETSCDMSHELL_H)
-#define __PETSCDMSHELL_H
+#if !defined(PETSCDMSHELL_H)
+#define PETSCDMSHELL_H
 
 #include <petscdm.h>
 

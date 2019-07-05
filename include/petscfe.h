@@ -1,8 +1,8 @@
 /*
       Objects which encapsulate finite element spaces and operations
 */
-#if !defined(__PETSCFE_H)
-#define __PETSCFE_H
+#if !defined(PETSCFE_H)
+#define PETSCFE_H
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfetypes.h>

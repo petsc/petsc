@@ -1,8 +1,8 @@
 /*
   DMPatch, for domains covered by sets of patches.
 */
-#if !defined(__PETSCDMPATCH_H)
-#define __PETSCDMPATCH_H
+#if !defined(PETSCDMPATCH_H)
+#define PETSCDMPATCH_H
 #include <petscdm.h>
 
 /*S

@@ -1,5 +1,5 @@
-#if !defined(_PETSCFETYPES_H)
-#define _PETSCFETYPES_H
+#if !defined(PETSCFETYPES_H)
+#define PETSCFETYPES_H
 
 /*S
   PetscSpace - PETSc object that manages a linear space, e.g. the space of d-dimensional polynomials of given degree

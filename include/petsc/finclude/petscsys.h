@@ -7,8 +7,8 @@
 ! No spaces for #defines as some compilers (PGI) also adds
 ! those additional spaces during preprocessing - bad for fixed format
 !
-#if !defined (__PETSCSYSDEF_H)
-#define __PETSCSYSDEF_H
+#if !defined (PETSCSYSDEF_H)
+#define PETSCSYSDEF_H
 #include "petscconf.h"
 #if defined (PETSC_HAVE_MPIUNI)
 #include "petsc/mpiuni/mpiunifdef.h"

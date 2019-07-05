@@ -1,5 +1,5 @@
-#ifndef _PETSCDRAWTYPES_H
-#define _PETSCDRAWTYPES_H
+#ifndef PETSCDRAWTYPES_H
+#define PETSCDRAWTYPES_H
 
 /*J
     PetscDrawType - String with the name of a PetscDraw

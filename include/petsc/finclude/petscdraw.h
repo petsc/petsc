@@ -3,8 +3,8 @@
 !  Include file for Fortran use of the PetscDraw package in PETSc
 !
 
-#if !defined (__PETSCDRAWDEF_H)
-#define __PETSCDRAWDEF_H
+#if !defined (PETSCDRAWDEF_H)
+#define PETSCDRAWDEF_H
 
 #define PetscDraw PetscFortranAddr
 #define PetscDrawLG PetscFortranAddr

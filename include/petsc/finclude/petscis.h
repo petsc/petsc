@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the IS (index set) package in PETSc
 !
-#if !defined (__PETSCISDEF_H)
-#define __PETSCISDEF_H
+#if !defined (PETSCISDEF_H)
+#define PETSCISDEF_H
 
 #include "petsc/finclude/petscsys.h"
 #include "petsc/finclude/petscviewer.h"

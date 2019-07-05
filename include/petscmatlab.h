@@ -2,8 +2,8 @@
     Defines an interface to the MATLAB Engine from PETSc
 */
 
-#if !defined(__PETSCMATLAB_H)
-#define __PETSCMATLAB_H
+#if !defined(PETSCMATLAB_H)
+#define PETSCMATLAB_H
 
 PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 

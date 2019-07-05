@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
-#if !defined (__PETSCPCDEF_H)
-#define __PETSCPCDEF_H
+#if !defined (PETSCPCDEF_H)
+#define PETSCPCDEF_H
 
 #include "petsc/finclude/petscmat.h"
 #include "petsc/finclude/petscdm.h"

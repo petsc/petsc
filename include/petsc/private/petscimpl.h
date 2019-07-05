@@ -3,8 +3,8 @@
     Defines the basic header of all PETSc objects.
 */
 
-#if !defined(_PETSCHEAD_H)
-#define _PETSCHEAD_H
+#if !defined(PETSCIMPL_H)
+#define PETSCIMPL_H
 #include <petscsys.h>
 
 /* These are used internally by PETSc ASCII IO routines*/
@@ -910,4 +910,4 @@ PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
 PETSC_EXTERN int64_t Petsc_adios_group;
 #endif
 
-#endif /* _PETSCHEAD_H */
+#endif /* PETSCIMPL_H */

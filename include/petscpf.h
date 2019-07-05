@@ -1,8 +1,8 @@
 /*
       mathematical function module.
 */
-#if !defined(__PETSCPF_H)
-#define __PETSCPF_H
+#if !defined(PETSCPF_H)
+#define PETSCPF_H
 #include <petscvec.h>
 
 /*

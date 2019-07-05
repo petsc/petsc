@@ -1,8 +1,8 @@
 /*
       Objects which encapsulate mesh adaptation operation
 */
-#if !defined(__PETSCDMADAPTOR_H)
-#define __PETSCDMADAPTOR_H
+#if !defined(PETSCDMADAPTOR_H)
+#define PETSCDMADAPTOR_H
 #include <petscdm.h>
 #include <petscconvest.h>
 

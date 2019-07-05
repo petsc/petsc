@@ -1,5 +1,5 @@
-#if !defined(__PETSCCUDA_H)
-#define __PETSCCUDA_H
+#if !defined(PETSCCUDA_H)
+#define PETSCCUDA_H
 
 #include <petscvec.h>
 #include <cublas_v2.h>

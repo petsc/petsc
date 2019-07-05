@@ -1,8 +1,8 @@
 !
 !  Include file for Fortran use of the TS (timestepping) package in PETSc
 !
-#if !defined (__PETSCTSDEF_H)
-#define __PETSCTSDEF_H
+#if !defined (PETSCTSDEF_H)
+#define PETSCTSDEF_H
 
 #include "petsc/finclude/petscsnes.h"
 

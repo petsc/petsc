@@ -1,8 +1,8 @@
 /*
   DMNetwork, for parallel unstructured network problems.
 */
-#if !defined(__PETSCDMNETWORK_H)
-#define __PETSCDMNETWORK_H
+#if !defined(PETSCDMNETWORK_H)
+#define PETSCDMNETWORK_H
 
 #include <petscdm.h>
 #include <petscviewer.h>

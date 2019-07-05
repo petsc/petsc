@@ -1,5 +1,5 @@
-#if !defined(__PETSCDMFIELD_H)
-#define      __PETSCDMFIELD_H
+#if !defined(PETSCDMFIELD_H)
+#define      PETSCDMFIELD_H
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfe.h>

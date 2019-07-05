@@ -1,5 +1,5 @@
-#if !defined(_PETSC_HASHMAP_H)
-#define _PETSC_HASHMAP_H
+#if !defined(PETSC_HASHMAP_H)
+#define PETSC_HASHMAP_H
 
 #include <petsc/private/hashtable.h>
 
@@ -703,4 +703,4 @@ PetscErrorCode Petsc##HashT##GetVals(Petsc##HashT ht,PetscInt *off,ValType array
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
 
-#endif /* _PETSC_HASHMAP_H */
+#endif /* PETSC_HASHMAP_H */

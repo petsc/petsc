@@ -1,8 +1,8 @@
 /*
       Preconditioner module.
 */
-#if !defined(__PETSCPC_H)
-#define __PETSCPC_H
+#if !defined(PETSCPC_H)
+#define PETSCPC_H
 #include <petscmat.h>
 #include <petscdmtypes.h>
 #include <petscpctypes.h>
@@ -409,4 +409,4 @@ PETSC_EXTERN PetscErrorCode PCLMVMClearIS(PC);
 
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
-#endif /* __PETSCPC_H */
+#endif /* PETSCPC_H */

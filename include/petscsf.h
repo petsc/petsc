@@ -1,8 +1,8 @@
 /*
    A star forest (SF) describes a communication pattern
 */
-#if !defined(__PETSCSF_H)
-#define __PETSCSF_H
+#if !defined(PETSCSF_H)
+#define PETSCSF_H
 #include <petscsys.h>
 #include <petscsftypes.h>
 

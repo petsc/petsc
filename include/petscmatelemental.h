@@ -1,5 +1,5 @@
-#if !defined(__PETSCMATELEMENTAL_H)
-#define __PETSCMATELEMENTAL_H
+#if !defined(PETSCMATELEMENTAL_H)
+#define PETSCMATELEMENTAL_H
 
 #include <petscmat.h>
 
@@ -14,4 +14,4 @@ PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
 #endif
 
-#endif /* __PETSCMATELEMENTAL_H */
+#endif /* PETSCMATELEMENTAL_H */

@@ -1,5 +1,5 @@
-#if !defined(_PETSCDMTYPES_H)
-#define _PETSCDMTYPES_H
+#if !defined(PETSCDMTYPES_H)
+#define PETSCDMTYPES_H
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object and its interactions with the algebraic solvers

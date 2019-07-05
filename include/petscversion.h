@@ -1,5 +1,5 @@
-#if !defined(__PETSCVERSION_H)
-#define __PETSCVERSION_H
+#if !defined(PETSCVERSION_H)
+#define PETSCVERSION_H
 
 #define PETSC_VERSION_RELEASE    1
 #define PETSC_VERSION_MAJOR      3

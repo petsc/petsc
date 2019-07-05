@@ -2,8 +2,8 @@
      PetscViewers are objects where other objects can be looked at or stored.
 */
 
-#if !defined(__PETSCVIEWER_H)
-#define __PETSCVIEWER_H
+#if !defined(PETSCVIEWER_H)
+#define PETSCVIEWER_H
 
 #include <petscsys.h>
 #include <petscviewertypes.h>

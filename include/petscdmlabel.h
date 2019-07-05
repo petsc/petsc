@@ -1,5 +1,5 @@
-#if !defined(__PETSCDMLABEL_H)
-#define __PETSCDMLABEL_H
+#if !defined(PETSCDMLABEL_H)
+#define PETSCDMLABEL_H
 #include <petscis.h>
 
 /*S

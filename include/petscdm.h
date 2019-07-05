@@ -1,8 +1,8 @@
 /*
       Objects to manage the interactions between the mesh data structures and the algebraic objects
 */
-#if !defined(__PETSCDM_H)
-#define __PETSCDM_H
+#if !defined(PETSCDM_H)
+#define PETSCDM_H
 #include <petscmat.h>
 #include <petscdmtypes.h>
 #include <petscfetypes.h>

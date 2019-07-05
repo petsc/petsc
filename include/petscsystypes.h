@@ -1,5 +1,5 @@
-#if !defined(__PETSCSYSTYPES_H)
-#define __PETSCSYSTYPES_H
+#if !defined(PETSCSYSTYPES_H)
+#define PETSCSYSTYPES_H
 
 #include <petscconf.h>
 #include <petscfix.h>

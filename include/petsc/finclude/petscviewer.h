@@ -1,8 +1,8 @@
 !
 !  Include file for Fortran use of the PetscViewer package in PETSc
 !
-#if !defined (__PETSCVIEWERDEF_H)
-#define __PETSCVIEWERDEF_H
+#if !defined (PETSCVIEWERDEF_H)
+#define PETSCVIEWERDEF_H
 
 
 #define PetscViewer type(tPetscViewer)

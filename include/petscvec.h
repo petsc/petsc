@@ -4,8 +4,8 @@
   on a grid. They have more mathematical structure then simple arrays.
 */
 
-#ifndef __PETSCVEC_H
-#define __PETSCVEC_H
+#ifndef PETSCVEC_H
+#define PETSCVEC_H
 #include <petscis.h>
 #include <petscviewer.h>
 

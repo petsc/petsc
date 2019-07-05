@@ -1,5 +1,5 @@
-#ifndef __PETSCGLL_H
-#define __PETSCGLL_H
+#ifndef PETSCGLL_H
+#define PETSCGLL_H
 #include <petscsys.h>
 
 /*S

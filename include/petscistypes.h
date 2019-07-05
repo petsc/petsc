@@ -1,5 +1,5 @@
-#if !defined(_PETSCISTYPES_H)
-#define _PETSCISTYPES_H
+#if !defined(PETSCISTYPES_H)
+#define PETSCISTYPES_H
 
 /*S
      IS - Abstract PETSc object that allows indexing.

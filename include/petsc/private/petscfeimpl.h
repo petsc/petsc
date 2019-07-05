@@ -1,5 +1,5 @@
-#if !defined(_PETSCFEIMPL_H)
-#define _PETSCFEIMPL_H
+#if !defined(PETSCFEIMPL_H)
+#define PETSCFEIMPL_H
 
 #include <petscfe.h>
 #include <petscds.h>

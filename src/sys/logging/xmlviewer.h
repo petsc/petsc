@@ -1,5 +1,5 @@
-#if !defined(__XMLVIEWER_H)
-#define __XMLVIEWER_H
+#if !defined(PETSCXMLVIEWER_H)
+#define PETSCXMLVIEWER_H
 
 PETSC_INTERN PetscErrorCode PetscViewerInitASCII_XML(PetscViewer);
 PETSC_INTERN PetscErrorCode PetscViewerFinalASCII_XML(PetscViewer);

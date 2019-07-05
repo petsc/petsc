@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
-#if !defined (__PETSCKSPDEF_H)
-#define __PETSCKSPDEF_H
+#if !defined (PETSCKSPDEF_H)
+#define PETSCKSPDEF_H
 
 #include "petsc/finclude/petscpc.h"
 
