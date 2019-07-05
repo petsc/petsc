@@ -1514,12 +1514,11 @@ PETSC_EXTERN PetscErrorCode DMClone_Moab(DM dm, DM *newdm)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject) * newdm, DMMOAB);CHKERRQ(ierr);
-
   /* get all the necessary handles from the private DM object */
   (*newdm)->data = (DM_Moab*) dm->data;
   ((DM_Moab*)dm->data)->refct++;
 
+  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMMOAB);CHKERRQ(ierr);
   ierr = DMInitialize_Moab(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

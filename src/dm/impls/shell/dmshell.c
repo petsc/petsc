@@ -1114,8 +1114,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   ierr     = PetscNewLog(dm,&shell);CHKERRQ(ierr);
   dm->data = shell;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)dm,DMSHELL);CHKERRQ(ierr);
-
   dm->ops->destroy            = DMDestroy_Shell;
   dm->ops->createglobalvector = DMCreateGlobalVector_Shell;
   dm->ops->createlocalvector  = DMCreateLocalVector_Shell;

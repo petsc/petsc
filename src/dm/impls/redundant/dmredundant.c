@@ -387,8 +387,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   ierr     = PetscNewLog(dm,&red);CHKERRQ(ierr);
   dm->data = red;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)dm,DMREDUNDANT);CHKERRQ(ierr);
-
   dm->ops->setup               = DMSetUp_Redundant;
   dm->ops->view                = DMView_Redundant;
   dm->ops->createglobalvector  = DMCreateGlobalVector_Redundant;

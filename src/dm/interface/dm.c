@@ -3509,11 +3509,11 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
-    ierr             = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
-    dm->ops->destroy = NULL;
+    ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
   }
-  ierr = (*r)(dm);CHKERRQ(ierr);
+  ierr = PetscMemzero(dm->ops,sizeof(*dm->ops));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)dm,method);CHKERRQ(ierr);
+  ierr = (*r)(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
