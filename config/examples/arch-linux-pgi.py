@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 configure_options = [
+  # the machine this runs on does not support PGI std-C++11 functionality
+  '--with-cxx=dialect=0',
   'CC=pgcc',
   'CXX=pgc++',
   'FC=pgf90',
@@ -12,8 +14,6 @@ configure_options = [
   '--download-fblaslapack=1',
   '--download-codipack=1',
   '--download-adblaslapack=1',
-  'CXXPPFLAGS=-std=c++11',
-  'CXXFLAGS=-std=c++11',
   ]
 
 if __name__ == '__main__':
