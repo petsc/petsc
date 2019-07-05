@@ -2,7 +2,7 @@
 
 configure_options = [
   # the machine this runs on does not support PGI std-C++11 functionality
-  '--with-cxx=dialect=0',
+  '--with-cxx-dialect=cxx11',
   'CC=pgcc',
   'CXX=pgc++',
   'FC=pgf90',
