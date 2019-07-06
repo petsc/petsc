@@ -72,22 +72,102 @@ PetscErrorCode  MatKAIJGetAIJ(Mat A,Mat *B)
    Input Parameter:
 .  A - the KAIJ matrix
 
-   Output Parameter:
-.  S - the S matrix, in form of a scalar array in column-major format
+   Output Parameters:
++  m - the number of rows in S
+.  n - the number of columns in S
+-  S - the S matrix, in form of a scalar array in column-major format
 
-   Notes:
-   The dimensions of the output array can be determined by calling MatGetBlockSizes() on the KAIJ matrix.
-   The row block and column block sizes returned will correspond to the number of rows and columns, respectively, in S.
+   Note: All output parameters are optional (pass NULL or PETSC_IGNORE if not desired)
 
    Level: advanced
 
 .seealso: MatCreateKAIJ(), MatGetBlockSizes()
 @*/
-PetscErrorCode  MatKAIJGetS(Mat A,const PetscScalar **S)
+PetscErrorCode MatKAIJGetS(Mat A,PetscInt *m,PetscInt *n,PetscScalar **S)
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ*)A->data;
   PetscFunctionBegin;
-  *S = b->S;
+  if (m) *m = b->p;
+  if (n) *n = b->q;
+  if (S) *S = b->S;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatKAIJGetSRead - Get a read-only pointer to the S matrix describing the shift action of the KAIJ matrix
+
+   Not Collective; the entire S is stored and returned independently on all processes.
+
+   Input Parameter:
+.  A - the KAIJ matrix
+
+   Output Parameters:
++  m - the number of rows in S
+.  n - the number of columns in S
+-  S - the S matrix, in form of a scalar array in column-major format
+
+   Note: All output parameters are optional (pass NULL or PETSC_IGNORE if not desired)
+
+   Level: advanced
+
+.seealso: MatCreateKAIJ(), MatGetBlockSizes()
+@*/
+PetscErrorCode MatKAIJGetSRead(Mat A,PetscInt *m,PetscInt *n,const PetscScalar **S)
+{
+  Mat_SeqKAIJ *b = (Mat_SeqKAIJ*)A->data;
+  PetscFunctionBegin;
+  if (m) *m = b->p;
+  if (n) *n = b->q;
+  if (S) *S = b->S;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  MatKAIJRestoreS - Restore array obtained with MatKAIJGetS()
+
+  Not collective
+
+  Input Parameter:
+. A - the KAIJ matrix
+
+  Output Parameter:
+. S - location of pointer to array obtained with MatKAIJGetS()
+
+  Note: This routine zeros the array pointer to prevent accidental reuse after it has been restored.
+  If NULL is passed, it will not attempt to zero the array pointer.
+
+  Level: advanced
+.seealso: MatKAIJGetS(), MatKAIJGetSRead(), MatKAIJRestoreSRead()
+@*/
+PetscErrorCode MatKAIJRestoreS(Mat A,PetscScalar **S)
+{
+  PetscFunctionBegin;
+  if (S) *S = NULL;
+  PetscObjectStateIncrease((PetscObject)A);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  MatKAIJRestoreSRead - Restore array obtained with MatKAIJGetSRead()
+
+  Not collective
+
+  Input Parameter:
+. A - the KAIJ matrix
+
+  Output Parameter:
+. S - location of pointer to array obtained with MatKAIJGetS()
+
+  Note: This routine zeros the array pointer to prevent accidental reuse after it has been restored.
+  If NULL is passed, it will not attempt to zero the array pointer.
+
+  Level: advanced
+.seealso: MatKAIJGetS(), MatKAIJGetSRead(), MatKAIJRestoreSRead()
+@*/
+PetscErrorCode MatKAIJRestoreSRead(Mat A,const PetscScalar **S)
+{
+  PetscFunctionBegin;
+  if (S) *S = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -100,21 +180,101 @@ PetscErrorCode  MatKAIJGetS(Mat A,const PetscScalar **S)
 .  A - the KAIJ matrix
 
    Output Parameter:
-.  T - the T matrix, in form of a scalar array in column-major format
++  m - the number of rows in T
+.  n - the number of columns in T
+-  T - the T matrix, in form of a scalar array in column-major format
 
-   Notes:
-   The dimensions of the output array can be determined by calling MatGetBlockSizes() on the KAIJ matrix.
-   The row block and column block sizes returned will correspond to the number of rows and columns, respectively, in T.
+   Note: All output parameters are optional (pass NULL or PETSC_IGNORE if not desired)
 
    Level: advanced
 
 .seealso: MatCreateKAIJ(), MatGetBlockSizes()
 @*/
-PetscErrorCode  MatKAIJGetT(Mat A,const PetscScalar **T)
+PetscErrorCode MatKAIJGetT(Mat A,PetscInt *m,PetscInt *n,PetscScalar **T)
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ*)A->data;
   PetscFunctionBegin;
-  *T = b->T;
+  if (m) *m = b->p;
+  if (n) *n = b->q;
+  if (T) *T = b->T;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatKAIJGetTRead - Get a read-only pointer to the transformation matrix T associated with the KAIJ matrix
+
+   Not Collective; the entire T is stored and returned independently on all processes
+
+   Input Parameter:
+.  A - the KAIJ matrix
+
+   Output Parameter:
++  m - the number of rows in T
+.  n - the number of columns in T
+-  T - the T matrix, in form of a scalar array in column-major format
+
+   Note: All output parameters are optional (pass NULL or PETSC_IGNORE if not desired)
+
+   Level: advanced
+
+.seealso: MatCreateKAIJ(), MatGetBlockSizes()
+@*/
+PetscErrorCode MatKAIJGetTRead(Mat A,PetscInt *m,PetscInt *n,const PetscScalar **T)
+{
+  Mat_SeqKAIJ *b = (Mat_SeqKAIJ*)A->data;
+  PetscFunctionBegin;
+  if (m) *m = b->p;
+  if (n) *n = b->q;
+  if (T) *T = b->T;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  MatKAIJRestoreT - Restore array obtained with MatKAIJGetT()
+
+  Not collective
+
+  Input Parameter:
+. A - the KAIJ matrix
+
+  Output Parameter:
+. T - location of pointer to array obtained with MatKAIJGetS()
+
+  Note: This routine zeros the array pointer to prevent accidental reuse after it has been restored.
+  If NULL is passed, it will not attempt to zero the array pointer.
+
+  Level: advanced
+.seealso: MatKAIJGetT(), MatKAIJGetTRead(), MatKAIJRestoreTRead()
+@*/
+PetscErrorCode MatKAIJRestoreT(Mat A,PetscScalar **T)
+{
+  PetscFunctionBegin;
+  if (T) *T = NULL;
+  PetscObjectStateIncrease((PetscObject)A);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  MatKAIJRestoreTRead - Restore array obtained with MatKAIJGetTRead()
+
+  Not collective
+
+  Input Parameter:
+. A - the KAIJ matrix
+
+  Output Parameter:
+. T - location of pointer to array obtained with MatKAIJGetS()
+
+  Note: This routine zeros the array pointer to prevent accidental reuse after it has been restored.
+  If NULL is passed, it will not attempt to zero the array pointer.
+
+  Level: advanced
+.seealso: MatKAIJGetT(), MatKAIJGetTRead(), MatKAIJRestoreTRead()
+@*/
+PetscErrorCode MatKAIJRestoreTRead(Mat A,const PetscScalar **T)
+{
+  PetscFunctionBegin;
+  if (T) *T = NULL;
   PetscFunctionReturn(0);
 }
 
