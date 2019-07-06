@@ -103,7 +103,7 @@ c89-mlib-static-py2:
   stage: stage-2
   only:
     variables:
-      - $STAGE != /1/
+      - $STAGE != "1"
   script:
     - ./config/examples/${TEST_ARCH}.py
     - make
