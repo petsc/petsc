@@ -1,49 +1,47 @@
-
-# test-short take only a few minutes and generally run on the cloud; they do not run the full test suite or external packages.
 #
-# test-long often runs on MCS systems and may take an hour or more. They run the full test suite and may test external packages.
+# stage-1 take only a few minutes and generally run on the cloud; they do not run the full test suite or external packages.
 #
-# The test-long tests are only started if all of the test-short tests run without error and if the merge request has
-# been labeled with "fulltest". You must do a commit/push on the branch to force the testing after you have added the label.
-# To provide an empty commit that forces a new pipeline you can use
-#    git commit --amend --no-edit  # updates CommitDate field
-#    git push origin +my/branch    # force push amended commit
+# stage-2 runs on MCS systems and may take 10 to 15 minutes. They run the full test suite but with limited mixture of external packages
 #
-# You can also trigger  a fulltest by using the Run Pipeline button and providing the variable CI_MERGE_REQUEST_LABELS with
-# the value fulltest. Using the Run Pipeline button with no variable will trigger a test-short
+# stage-3 runs on MCS systems and may take an hour or more. They run the full test suite and heavily test external packages, utilize valgrind etc
+#         (not yet implemented)
 #
-# Note that using the Run Pipeline or a WIP does NOT merge the branch into master before testing
-# https://docs.gitlab.com/ee/ci/merge_request_pipelines/   It is only merged to master after the WIP is removed and it becomes a
-# real MR. I am inclined to say we should manually do the merge to master in the scripts below
-# before running the tests. Or maybe have a label mergetomaster Barry Smith
+# The stage-(n) tests are only started if all of the stage-(n-1) tests run without error
+#   You can limit the testing by using the variable STAGE with value 1 or 2
+#
+# By default the test branch is merged to master before testing. (not yet implemented)
+#   You can limite this by using the variable MERGETOMASTER with value 0 (not yet implemented)
 #
 
 stages:
-  - test-short
-  - test-long
+  - stage-1
+  - stage-2
+  - stage-3
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
   PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
 
 #
-# The most basic template that most tests will expand upon. It ensures that the tests are run only for merge requests.
+# The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
 #
 
 .test:
   only:
     refs:
-      - merge_requests
+#     Set with CI/CD Shedules - New Schedule
+      - schedules
+#     Set with CI/CD Pipelines - Run Pipeline
       - web
 
 #
-#  This provides the basic order of operations and options template for cloud based test-short tests.
+#  This provides the basic order of operations and options template for cloud based stage 1 tests.
 #  Not all test-short need to follow this template but most will.
 #
 
-.test-short:
+.stage-1:
   extends: .test
-  stage: test-short
+  stage: stage-1
   image: jedbrown/mpich-ccache
   before_script:
     - echo nproc=$(nproc)
@@ -71,14 +69,14 @@ variables:
 #
 
 mpich-cxx-py3:
-  extends: .test-short
+  extends: .stage-1
   variables:
     PYTHON: python3
     CONFIG_OPTS: --with-mpi-dir=/usr/local --with-clanguage=cxx --with-fc=0
     TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
-  extends: .test-short
+  extends: .stage-1
   variables:
     PYTHON: python3
     CONFIG_OPTS: <
@@ -87,7 +85,7 @@ uni-complex-float-int64:
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
 c89-mlib-static-py2:
-  extends: .test-short
+  extends: .stage-1
   image: jedbrown/mpich-ccache:python2
   variables:
     PYTHON: python2
@@ -97,15 +95,15 @@ c89-mlib-static-py2:
     TEST_SEARCH: snes_tutorials-ex48%
 
 #
-# This provides the basic order of operations and options template for test-long tests.
-# Not all test-long need to follow this template, but most will.
+# This provides the basic order of operations and options template for stage-2 tests.
+# Not all stage-2 need to follow this template, but most will.
 #
-.test-long:
+.stage-2:
   extends: .test
-  stage: test-long
+  stage: stage-2
   only:
     variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /fulltest/
+      - $STAGE != /1/
   script:
     - ./config/examples/${TEST_ARCH}.py
     - make
@@ -116,7 +114,7 @@ c89-mlib-static-py2:
       junit: ${TEST_ARCH}/tests/testresults.xml
 
 #
-# The following tests run on MCS systems as part of test-long.
+# The following tests run on MCS systems as part of stage-2.
 #
 # The tags variable used in the tests below connects the particular test with the runners
 # listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
@@ -125,7 +123,7 @@ c89-mlib-static-py2:
 #
 
 .mcs_test:
-  extends: .test-long
+  extends: .stage-2
 
 .linux_mcs_test:
   extends: .mcs_test
@@ -224,7 +222,7 @@ opensolaris-cmplx-pkgs-dbg:
 
 barry-checksource:
   extends: .test-experimental
-  stage: test-short
+  stage: stage-1
   variables:
 # the blank GIT_CLEAN_FLAGS below indicates that the CI should NOT clean the git directory before running the next test
     GIT_CLEAN_FLAGS: -qn
@@ -236,7 +234,7 @@ barry-checksource:
 
 barry-arch-hash:
   extends: .test-experimental
-  stage: test-short
+  stage: stage-1
   variables:
 # the blank GIT_CLEAN_FLAGS below indicates that the CI should NOT clean the git directory before running the next test
     GIT_CLEAN_FLAGS: -qn
