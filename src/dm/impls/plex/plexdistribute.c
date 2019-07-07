@@ -764,11 +764,11 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
 + dm - The DMPlex object
 . pointSF - The PetscSF describing the communication pattern
 . originalSection - The PetscSection for existing data layout
-- originalVec - The existing data
+- originalVec - The existing data in a local vector
 
   Output Parameters:
 + newSection - The PetscSF describing the new data layout
-- newVec - The new data
+- newVec - The new data in a local vector
 
   Level: developer
 
