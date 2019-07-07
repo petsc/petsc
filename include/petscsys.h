@@ -141,7 +141,7 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
       * an extra include path -I/something (which contains the unexpected mpi.h) is being passed to the compiler
 */
 #if defined(PETSC_HAVE_MPIUNI)
-#  if !defined(__MPIUNI_H)
+#  if !defined(MPIUNI_H)
 #    error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
 #  endif
 #elif defined(PETSC_HAVE_I_MPI_NUMVERSION)

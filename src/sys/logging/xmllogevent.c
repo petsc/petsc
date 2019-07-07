@@ -1401,13 +1401,13 @@ PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
 
 PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
 {
-#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
   PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
   petsc_send_ct++;
-#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
   ierr = PetscMPITypeSize(&petsc_send_len,count, MPI_Type_f2c((MPI_Fint) datatype)); CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -1415,13 +1415,13 @@ PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
 
 PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
 {
-#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
   PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
   petsc_recv_ct++;
-#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
   ierr = PetscMPITypeSize(&petsc_recv_len,count, MPI_Type_f2c((MPI_Fint) datatype)); CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);

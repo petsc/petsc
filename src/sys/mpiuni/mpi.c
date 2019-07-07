@@ -3,7 +3,7 @@
     with C macros
 */
 #include <petscsys.h>
-#if !defined(__MPIUNI_H)
+#if !defined(MPIUNI_H)
 #error "Wrong mpi.h included! require mpi.h from MPIUNI"
 #endif
 #if !defined(PETSC_STDCALL)
