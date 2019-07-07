@@ -569,6 +569,9 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   genCtx.M = genCtx.N = genCtx.K = 1;
   genCtx.A = genCtx.B = genCtx.C = 1;
+  genCtx.blockSizeElementXYZ[0] = 0;
+  genCtx.blockSizeElementXYZ[1] = 0;
+  genCtx.blockSizeElementXYZ[2] = 0;
 
   ierr = PetscOptionsBegin(comm, "", "DMMoab Creation Options", "DMMOAB");CHKERRQ(ierr);
   /* Handle DMMoab spatial resolution */
