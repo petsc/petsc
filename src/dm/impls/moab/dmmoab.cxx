@@ -1491,8 +1491,7 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
   dm->ops->getcoloring                     = NULL;
   dm->ops->creatematrix                    = DMCreateMatrix_Moab;
   dm->ops->createinterpolation             = DMCreateInterpolation_Moab;
-  dm->ops->getaggregates                   = NULL;
-  dm->ops->getinjection                    = NULL /* DMCreateInjection_Moab */;
+  dm->ops->createinjection                 = NULL /* DMCreateInjection_Moab */;
   dm->ops->refine                          = DMRefine_Moab;
   dm->ops->coarsen                         = DMCoarsen_Moab;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Moab;
@@ -1514,12 +1513,11 @@ PETSC_EXTERN PetscErrorCode DMClone_Moab(DM dm, DM *newdm)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject) * newdm, DMMOAB);CHKERRQ(ierr);
-
   /* get all the necessary handles from the private DM object */
   (*newdm)->data = (DM_Moab*) dm->data;
   ((DM_Moab*)dm->data)->refct++;
 
+  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMMOAB);CHKERRQ(ierr);
   ierr = DMInitialize_Moab(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

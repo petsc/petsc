@@ -1791,7 +1791,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   PetscFunctionBegin;
   ierr          = PetscNewLog(p,&com);CHKERRQ(ierr);
   p->data       = com;
-  ierr          = PetscObjectChangeTypeName((PetscObject)p,"DMComposite");CHKERRQ(ierr);
   com->n        = 0;
   com->nghost   = 0;
   com->next     = NULL;

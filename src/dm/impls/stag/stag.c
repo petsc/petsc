@@ -436,7 +436,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   PetscValidPointer(dm,1);
   ierr = PetscNewLog(dm,&stag);CHKERRQ(ierr);
   dm->data = stag;
-  ierr = PetscObjectChangeTypeName((PetscObject)dm,DMSTAG);CHKERRQ(ierr);
 
   stag->gton                                          = NULL;
   stag->gtol                                          = NULL;

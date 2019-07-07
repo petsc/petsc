@@ -1393,7 +1393,36 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
+/*@
+   DMCreateAggregates - Deprecated, see DMDACreateAggregates.
+@*/
+PetscErrorCode DMCreateAggregates(DM dm1,DM dm2,Mat *mat)
+{
+  return DMDACreateAggregates(dm1,dm2,mat);
+}
+
+/*@
+   DMDACreateAggregates - Gets the aggregates that map between
+   grids associated with two DMDAs.
+
+   Collective on dmc
+
+   Input Parameters:
++  dmc - the coarse grid DMDA
+-  dmf - the fine grid DMDA
+
+   Output Parameters:
+.  rest - the restriction matrix (transpose of the projection matrix)
+
+   Level: intermediate
+
+   Note: This routine is not used by PETSc.
+   It is not clear what its use case is and it may be removed in a future release.
+   Users should contact petsc-maint@mcs.anl.gov if they plan to use it.
+
+.seealso: DMRefine(), DMCreateInjection(), DMCreateInterpolation()
+@*/
+PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
 {
   PetscErrorCode         ierr;
   PetscInt               dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
@@ -1417,8 +1446,8 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   ISLocalToGlobalMapping ltogmf,ltogmc;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac,DM_CLASSID,1);
-  PetscValidHeaderSpecific(daf,DM_CLASSID,2);
+  PetscValidHeaderSpecificType(dac,DM_CLASSID,1,DMDA);
+  PetscValidHeaderSpecificType(daf,DM_CLASSID,2,DMDA);
   PetscValidPointer(rest,3);
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);

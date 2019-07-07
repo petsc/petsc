@@ -275,8 +275,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
   ierr    = PetscNewLog(p,&slice);CHKERRQ(ierr);
   p->data = slice;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)p,DMSLICED);CHKERRQ(ierr);
-
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
   p->ops->creatematrix       = DMCreateMatrix_Sliced;
   p->ops->globaltolocalbegin = DMGlobalToLocalBegin_Sliced;

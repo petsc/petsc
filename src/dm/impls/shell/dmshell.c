@@ -893,7 +893,7 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
-  dm->ops->getinjection = inject;
+  dm->ops->createinjection = inject;
   PetscFunctionReturn(0);
 }
 
@@ -921,26 +921,10 @@ PetscErrorCode DMShellGetCreateInjection(DM dm, PetscErrorCode (**inject)(DM,DM,
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
-  *inject = dm->ops->getinjection;
+  *inject = dm->ops->createinjection;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMHasCreateInjection_Shell(DM dm, PetscBool *flg)
-{
-  PetscErrorCode ierr;
-  PetscBool      isshell;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(flg,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
-  if (!isshell) {
-    *flg = PETSC_FALSE;
-  } else {
-    *flg = dm->ops->getinjection ? PETSC_TRUE : PETSC_FALSE;
-  }
-  PetscFunctionReturn(0);
-}
 /*@C
    DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the shell DM
 
@@ -1130,8 +1114,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   ierr     = PetscNewLog(dm,&shell);CHKERRQ(ierr);
   dm->data = shell;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)dm,DMSHELL);CHKERRQ(ierr);
-
   dm->ops->destroy            = DMDestroy_Shell;
   dm->ops->createglobalvector = DMCreateGlobalVector_Shell;
   dm->ops->createlocalvector  = DMCreateLocalVector_Shell;
@@ -1145,7 +1127,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->localtolocalbegin  = DMLocalToLocalBeginDefaultShell;
   dm->ops->localtolocalend    = DMLocalToLocalEndDefaultShell;
   dm->ops->createsubdm        = DMCreateSubDM_Shell;
-  dm->ops->hascreateinjection = DMHasCreateInjection_Shell;
   PetscFunctionReturn(0);
 }
 

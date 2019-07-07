@@ -1365,8 +1365,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   dm->ops->getcoloring                     = NULL;
   dm->ops->creatematrix                    = NULL;
   dm->ops->createinterpolation             = NULL;
-  dm->ops->getaggregates                   = NULL;
-  dm->ops->getinjection                    = NULL;
+  dm->ops->createinjection                 = NULL;
   dm->ops->createmassmatrix                = DMCreateMassMatrix_Swarm;
   dm->ops->refine                          = NULL;
   dm->ops->coarsen                         = NULL;

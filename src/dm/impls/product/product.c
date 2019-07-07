@@ -38,7 +38,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm)
   PetscValidPointer(dm,1);
   ierr = PetscNewLog(dm,&product);CHKERRQ(ierr);
   dm->data = product;
-  ierr = PetscObjectChangeTypeName((PetscObject)dm,DMPRODUCT);CHKERRQ(ierr);
 
   for (d=0; d<DMPRODUCT_MAX_DIM; ++d) product->dm[d]  = NULL;
   for (d=0; d<DMPRODUCT_MAX_DIM; ++d) product->dim[d] = -1;

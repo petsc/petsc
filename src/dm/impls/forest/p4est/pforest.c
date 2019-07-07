@@ -4608,16 +4608,6 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
   PetscFunctionReturn(0);
 }
 
-#define DMHasCreateInjection_pforest _append_pforest(DMHasCreateInjection)
-static PetscErrorCode DMHasCreateInjection_pforest(DM dm, PetscBool *flg)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(flg,2);
-  *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 static void transfer_func_0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                             const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                             const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -5235,8 +5225,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->view                      = DMView_pforest;
   dm->ops->clone                     = DMClone_pforest;
   dm->ops->createinterpolation       = DMCreateInterpolation_pforest;
-  dm->ops->getinjection              = DMCreateInjection_pforest;
-  dm->ops->hascreateinjection        = DMHasCreateInjection_pforest;
+  dm->ops->createinjection           = DMCreateInjection_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
