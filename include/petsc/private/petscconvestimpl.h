@@ -1,5 +1,5 @@
-#if !defined(_PETSCCEIMPL_H)
-#define _PETSCCEIMPL_H
+#if !defined(PETSCCEIMPL_H)
+#define PETSCCEIMPL_H
 
 #include <petscconvest.h>
 #include <petsc/private/petscimpl.h>

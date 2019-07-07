@@ -1,5 +1,5 @@
-#if !defined(__PETSCGL_H)
-#define __PETSCGL_H
+#if !defined(PETSCGL_H)
+#define PETSCGL_H
 
 #include <petsc/private/tsimpl.h>
 

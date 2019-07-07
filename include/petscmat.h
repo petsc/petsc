@@ -1,8 +1,8 @@
 /*
      Include file for the matrix component of PETSc
 */
-#ifndef __PETSCMAT_H
-#define __PETSCMAT_H
+#ifndef PETSCMAT_H
+#define PETSCMAT_H
 #include <petscvec.h>
 
 /*S

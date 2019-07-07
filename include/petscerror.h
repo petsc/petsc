@@ -1,8 +1,8 @@
 /*
     Contains all error handling interfaces for PETSc.
 */
-#if !defined(__PETSCERROR_H)
-#define __PETSCERROR_H
+#if !defined(PETSCERROR_H)
+#define PETSCERROR_H
 
 /*
      These are the generic error codes. These error codes are used

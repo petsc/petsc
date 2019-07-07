@@ -1,5 +1,5 @@
-#if !defined(_PETSCDMPLEXTYPES_H)
-#define _PETSCDMPLEXTYPES_H
+#if !defined(PETSCDMPLEXTYPES_H)
+#define PETSCDMPLEXTYPES_H
 
 /*E
   DMPlexCellType - Common mesh celltypes

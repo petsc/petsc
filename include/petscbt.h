@@ -1,6 +1,6 @@
 
-#if !defined(__PETSCBT_H)
-#define __PETSCBT_H
+#if !defined(PETSCBT_H)
+#define PETSCBT_H
 
 #include <petscconf.h>
 #include <petscviewer.h>

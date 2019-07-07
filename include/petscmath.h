@@ -8,8 +8,8 @@
 
 */
 
-#if !defined(__PETSCMATH_H)
-#define __PETSCMATH_H
+#if !defined(PETSCMATH_H)
+#define PETSCMATH_H
 #include <math.h>
 #include <petscsystypes.h>
 

@@ -1,5 +1,5 @@
-#if !defined(_PETSC_HASHSET_H)
-#define _PETSC_HASHSET_H
+#if !defined(PETSC_HASHSET_H)
+#define PETSC_HASHSET_H
 
 #include <petsc/private/hashtable.h>
 
@@ -476,4 +476,4 @@ PetscErrorCode Petsc##HashT##GetElems(Petsc##HashT ht,PetscInt *off,KeyType arra
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
 
-#endif /* _PETSC_HASHSET_H */
+#endif /* PETSC_HASHSET_H */

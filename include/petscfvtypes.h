@@ -1,5 +1,5 @@
-#if !defined(_PETSCFVTYPES_H)
-#define _PETSCFVTYPES_H
+#if !defined(PETSCFVTYPES_H)
+#define PETSCFVTYPES_H
 
 /*S
   PetscLimiter - PETSc object that manages a finite volume slope limiter

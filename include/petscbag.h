@@ -1,6 +1,6 @@
 
-#if !defined(__PETSCBAG_H)
-#define __PETSCBAG_H
+#if !defined(PETSCBAG_H)
+#define PETSCBAG_H
 #include <petscsys.h>
 
 /*S

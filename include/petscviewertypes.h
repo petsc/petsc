@@ -2,8 +2,8 @@
      PetscViewers are objects where other objects can be looked at or stored.
 */
 
-#if !defined(_PETSCVIEWERTYPES_H)
-#define _PETSCVIEWERTYPES_H
+#if !defined(PETSCVIEWERTYPES_H)
+#define PETSCVIEWERTYPES_H
 
 /*S
      PetscViewer - Abstract PETSc object that helps view (in ASCII, binary, graphically etc)

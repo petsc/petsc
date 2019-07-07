@@ -1,5 +1,5 @@
-#if !defined(__PETSCDMDA_H)
-#define __PETSCDMDA_H
+#if !defined(PETSCDMDA_H)
+#define PETSCDMDA_H
 
 #include <petscdm.h>
 #include <petscdmdatypes.h>

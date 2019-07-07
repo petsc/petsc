@@ -97,8 +97,8 @@
 
 */
 
-#if !defined(__MPIUNI_H)
-#define __MPIUNI_H
+#if !defined(MPIUNI_H)
+#define MPIUNI_H
 
 /* Required by abort() in mpi.c & for win64 */
 #include <petscconf.h>

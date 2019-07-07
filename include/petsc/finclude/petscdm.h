@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the DM package in PETSc
 !
-#if !defined (__PETSCDMDEF_H)
-#define __PETSCDMDEF_H
+#if !defined (PETSCDMDEF_H)
+#define PETSCDMDEF_H
 
 #include "petsc/finclude/petscis.h"
 #include "petsc/finclude/petscvec.h"

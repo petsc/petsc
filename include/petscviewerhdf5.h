@@ -1,6 +1,6 @@
 
-#if !defined(__PETSCVIEWERHDF5_H)
-#define __PETSCVIEWERHDF5_H
+#if !defined(PETSCVIEWERHDF5_H)
+#define PETSCVIEWERHDF5_H
 
 #include <petscviewer.h>
 

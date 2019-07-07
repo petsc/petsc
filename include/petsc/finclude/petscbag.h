@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the Bag package in PETSc
 !
-#if !defined (__PETSCBAGDEF_H)
-#define __PETSCBAGDEF_H
+#if !defined (PETSCBAGDEF_H)
+#define PETSCBAGDEF_H
 
 #define PetscBag PetscFortranAddr
 

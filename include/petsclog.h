@@ -2,8 +2,8 @@
     Defines profile/logging in PETSc.
 */
 
-#if !defined(__PetscLog_H)
-#define __PetscLog_H
+#if !defined(PETSCLOG_H)
+#define PETSCLOG_H
 #include <petscsys.h>
 #include <petsctime.h>
 
@@ -379,7 +379,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 
      It does not work with Windows because winmpich lacks MPI_Type_size()
 */
-#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*
    Logging of MPI activities
 */
@@ -489,7 +489,7 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define MPI_Start_isend(count,datatype,requests) \
   (MPI_Start((requests)))
 
-#endif /* !__MPIUNI_H && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
+#endif /* !MPIUNI_H && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 

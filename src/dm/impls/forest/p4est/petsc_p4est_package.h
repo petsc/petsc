@@ -1,5 +1,5 @@
-#if !defined(__PETSC_P4EST_PACKAGE_H)
-#define      __PETSC_P4EST_PACKAGE_H
+#if !defined(PETSC_P4EST_PACKAGE_H)
+#define      PETSC_P4EST_PACKAGE_H
 #include <petscsys.h>
 #include <p4est_base.h>
 

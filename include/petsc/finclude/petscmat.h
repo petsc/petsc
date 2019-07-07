@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
-#if !defined (__PETSCMATDEF_H)
-#define __PETSCMATDEF_H
+#if !defined (PETSCMATDEF_H)
+#define PETSCMATDEF_H
 
 #include "petsc/finclude/petscvec.h"
 

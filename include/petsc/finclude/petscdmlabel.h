@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the DMLabel package in PETSc
 !
-#if !defined (__PETSCDMLABELDEF_H)
-#define __PETSCDMLABELDEF_H
+#if !defined (PETSCDMLABELDEF_H)
+#define PETSCDMLABELDEF_H
 
 #include "petsc/finclude/petscdm.h"
 

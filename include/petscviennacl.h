@@ -1,5 +1,5 @@
-#if !defined(__PETSCVIENNACL_H)
-#define __PETSCVIENNACL_H
+#if !defined(PETSCVIENNACL_H)
+#define PETSCVIENNACL_H
 
 #include <petscvec.h>
 

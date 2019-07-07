@@ -1,8 +1,8 @@
 /*
   Common tools for constructing discretizations
 */
-#if !defined(__PETSCDT_H)
-#define __PETSCDT_H
+#if !defined(PETSCDT_H)
+#define PETSCDT_H
 
 #include <petscsys.h>
 

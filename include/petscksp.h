@@ -1,8 +1,8 @@
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
-#ifndef __PETSCKSP_H
-#define __PETSCKSP_H
+#ifndef PETSCKSP_H
+#define PETSCKSP_H
 #include <petscpc.h>
 
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);

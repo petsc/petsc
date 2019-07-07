@@ -1,8 +1,8 @@
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
-#if !defined (__PETSCSNESDEF_H)
-#define __PETSCSNESDEF_H
+#if !defined (PETSCSNESDEF_H)
+#define PETSCSNESDEF_H
 
 #include "petsc/finclude/petscksp.h"
 

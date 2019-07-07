@@ -1,6 +1,6 @@
 
-#if !defined(__PETSCF90_H)
-#define __PETSCF90_H
+#if !defined(PETSCF90_H)
+#define PETSCF90_H
 #include <petsc/private/fortranimpl.h>
 
 /* PGI compilers pass in f90 pointers as 2 arguments */

@@ -1,8 +1,8 @@
 /*
   This is the include file for source code that needs to know if the code is being run under valgrind
 */
-#if !defined(__PETSCVALGRIND_H)
-#define __PETSCVALGRIND_H
+#if !defined(PETSCVALGRIND_H)
+#define PETSCVALGRIND_H
 
 #if defined(PETSC_HAVE_VALGRIND)
 #  include <valgrind/valgrind.h>

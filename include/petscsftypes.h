@@ -1,5 +1,5 @@
-#if !defined(_PETSCSFTYPES_H)
-#define _PETSCSFTYPES_H
+#if !defined(PETSCSFTYPES_H)
+#define PETSCSFTYPES_H
 
 /*S
    PetscSF - PETSc object for setting up and managing the communication of certain entries of arrays and Vecs between MPI processes.

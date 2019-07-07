@@ -3,8 +3,8 @@
   ordering (the ordering that is "natural" for the application) and
   the parallel ordering that PETSc uses.
 */
-#if !defined(__PETSCAO_H)
-#define __PETSCAO_H
+#if !defined(PETSCAO_H)
+#define PETSCAO_H
 #include <petscis.h>
 
 /*S

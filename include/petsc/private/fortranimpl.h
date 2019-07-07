@@ -1,7 +1,7 @@
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
-#if !defined(_FORTRANIMPL_H)
-#define _FORTRANIMPL_H
+#if !defined(PETSCFORTRANIMPL_H)
+#define PETSCFORTRANIMPL_H
 
 #include <petsc/private/petscimpl.h>
 

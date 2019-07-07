@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the DMNetwork
 !
-#if !defined (__PETSCDMNETWORKDEF_H)
-#define __PETSCDMNETWORKDEF_H
+#if !defined (PETSCDMNETWORKDEF_H)
+#define PETSCDMNETWORKDEF_H
 
 #define DMNetworkMonitor PetscFortranAddr
 
