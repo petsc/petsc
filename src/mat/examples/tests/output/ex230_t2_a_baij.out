@@ -1,0 +1,24 @@
+Mat Object: 1 MPI processes
+  type: seqbaij
+row 0: (0, 0.)  (9, 0.) 
+row 1:
+row 2: (4, 0.) 
+row 3:
+row 4: (2, 0.)  (4, 0.) 
+row 5:
+row 6:
+row 7:
+row 8:
+row 9: (9, 0.) 
+Mat Object: 1 MPI processes
+  type: seqbaij
+row 0: (0, 1.)  (9, 33.3) 
+row 1:
+row 2: (4, 1.) 
+row 3:
+row 4: (2, 1.)  (4, 1.) 
+row 5:
+row 6:
+row 7:
+row 8:
+row 9: (9, 1.) 
