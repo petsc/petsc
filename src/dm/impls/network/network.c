@@ -2180,7 +2180,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   i         = nroots - nleaves; /* local number of vertices, excluding ghosts */
   vrange[0] = 0;
   ierr = MPI_Allgatherv(&i,1,MPIU_INT,vrange+1,recvcounts,displs,MPIU_INT,comm);CHKERRQ(ierr);
-  for (i=2; i<=size+1; i++) {vrange[i] += vrange[i-1];}
+  for (i=2; i<size+1; i++) {vrange[i] += vrange[i-1];}
 
   ierr = PetscMalloc1(nroots, &vltog);CHKERRQ(ierr);
   network->vltog = vltog;
