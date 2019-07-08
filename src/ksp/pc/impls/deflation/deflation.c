@@ -368,7 +368,7 @@ static PetscErrorCode PCDeflationGetCoarseKSP_Deflation(PC pc,KSP *ksp)
 
    Level: advanced
 
-.seealso: PCDeflationSetCoarseKSP(), PCDEFLATION
+.seealso: PCDEFLATION
 @*/
 PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
 {
@@ -378,44 +378,6 @@ PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
   ierr = PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PCDeflationSetCoarseKSP_Deflation(PC pc,KSP ksp)
-{
-  PC_Deflation     *def = (PC_Deflation*)pc->data;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = KSPDestroy(&def->WtAWinv);CHKERRQ(ierr);
-  def->WtAWinv = ksp;
-  ierr = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtAWinv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-   PCDeflationSetCoarseKSP - Set the coarse problem KSP.
-
-   Collective
-
-   Input Parameters:
-+  pc  - preconditioner context
--  ksp - coarse problem KSP context
-
-   Level: developer
-
-.seealso: PCDeflationGetCoarseKSP(), PCDEFLATION
-@*/
-PetscErrorCode  PCDeflationSetCoarseKSP(PC pc,KSP ksp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
-  PetscCheckSameComm(pc,1,ksp,2);
-  ierr = PetscTryMethod(pc,"PCDeflationSetCoarseKSP_C",(PC,KSP),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -441,7 +403,7 @@ static PetscErrorCode PCDeflationGetPC_Deflation(PC pc,PC *apc)
 
    Level: advanced
 
-.seealso: PCDeflationSetPC(), PCDEFLATION
+.seealso: PCDEFLATION
 @*/
 PetscErrorCode PCDeflationGetPC(PC pc,PC *apc)
 {
@@ -451,44 +413,6 @@ PetscErrorCode PCDeflationGetPC(PC pc,PC *apc)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(pc,2);
   ierr = PetscTryMethod(pc,"PCDeflationGetPC_C",(PC,PC*),(pc,apc));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PCDeflationSetPC_Deflation(PC pc,PC apc)
-{
-  PC_Deflation   *def = (PC_Deflation*)pc->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PCDestroy(&def->pc);CHKERRQ(ierr);
-  def->pc = apc;
-  ierr = PetscObjectReference((PetscObject)apc);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->pc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-   PCDeflationSetPC - Set the additional preconditioner.
-
-   Collective
-
-   Input Parameters:
-+  pc  - the preconditioner context
--  apc - additional preconditioner
-
-   Level: developer
-
-.seealso: PCDeflationGetPC(), PCDEFLATION
-@*/
-PetscErrorCode PCDeflationSetPC(PC pc,PC apc)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(apc,PC_CLASSID,2);
-  PetscCheckSameComm(pc,1,apc,2);
-  ierr = PetscTryMethod(pc,"PCDeflationSetPC_C",(PC,PC),(pc,apc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -921,14 +845,14 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
 
     The coarse problem KSP can be controlled from the command line with prefix -def_ for the first level and -def_[lvl-1]
     from the second level onward. You can also use
-    PCDeflationGetCoarseKSP() or PCDeflationSetCoarseKSP() to control it from code. The bottom level KSP defaults to
+    PCDeflationGetCoarseKSP() to control it from code. The bottom level KSP defaults to
     KSPPREONLY with PCLU direct solver (MATSOLVERSUPERLU/MATSOLVERSUPERLU_DIST if available) wrapped into PCTELESCOPE.
     For convenience, the reduction factor can be set by PCDeflationSetReductionFactor()
     or -pc_deflation_recduction_factor. The default is chosen heuristically based on the coarse problem size.
 
     The additional preconditioner can be controlled from command line with prefix -def_[lvl]_pc (same rules used for
     coarse problem KSP apply for [lvl]_ part of prefix), e.g., -def_1_pc_pc_type bjacobi. You can also use
-    PCDeflationGetPC() or PCDeflationSetPC() to control the additional preconditioner from code. It defaults to PCNONE.
+    PCDeflationGetPC() to control the additional preconditioner from code. It defaults to PCNONE.
 
     The coarse problem correction term (factor*Q) can be turned on by -pc_deflation_correction and the factor value can
     be set by pc_deflation_correction_factor or by PCDeflationSetCorrectionFactor(). The coarse problem can
@@ -963,8 +887,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
            PCDeflationSetInitOnly(), PCDeflationSetLevels(), PCDeflationSetReductionFactor(),
            PCDeflationSetCorrectionFactor(), PCDeflationSetSpaceToCompute(),
            PCDeflationSetSpace(), PCDeflationSpaceType, PCDeflationSetProjectionNullSpaceMat(),
-           PCDeflationSetCoarseMat(), PCDeflationSetCoarseKSP(), PCDeflationGetCoarseKSP(),
-           PCDeflationGetPC(), PCDeflationSetPC()
+           PCDeflationSetCoarseMat(), PCDeflationGetCoarseKSP(), PCDeflationGetPC()
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
@@ -1003,9 +926,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetProjectionNullSpaceMat_C",PCDeflationSetProjectionNullSpaceMat_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseMat_C",PCDeflationSetCoarseMat_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",PCDeflationGetCoarseKSP_Deflation);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseKSP_C",PCDeflationSetCoarseKSP_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetPC_C",PCDeflationSetPC_Deflation);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

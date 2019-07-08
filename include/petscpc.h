@@ -426,7 +426,6 @@ PETSC_EXTERN PetscErrorCode PCDeflationSetSpace(PC,Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode PCDeflationSetProjectionNullSpaceMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationSetCoarseMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationGetPC(PC,PC*);
-PETSC_EXTERN PetscErrorCode PCDeflationSetPC(PC,PC);
 
 #endif /* PETSCPC_H */
 
