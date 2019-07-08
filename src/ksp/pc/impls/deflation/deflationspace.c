@@ -54,7 +54,7 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscI
   ierr = MatSeqAIJSetPreallocation(defl,ncoeffs,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(defl,ncoeffs,NULL,ncoeffs,NULL);CHKERRQ(ierr);
   ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Alg 735 Taswell: fvecmat */
   k = ncoeffs -2;
@@ -182,7 +182,7 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   ierr = MatSeqAIJSetPreallocation(defl,1,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(defl,1,NULL,0,NULL);CHKERRQ(ierr);
   ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(ihi-ilo,&col,ihi-ilo,&Iidx);CHKERRQ(ierr);
   for (i=ilo; i<ihi; i++) {
