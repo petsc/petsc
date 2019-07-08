@@ -311,7 +311,7 @@ typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, 
     PCDeflationSpaceType - Type of deflation
 
     Values:
-+   PC_DEFLATION_SPACE_HAAR        - directly assembled based on Haar (db2) wawelet with overflowed filter cuted-off
++   PC_DEFLATION_SPACE_HAAR        - directly assembled based on Haar (db2) wavelet with overflowed filter cuted-off
 .   PC_DEFLATION_SPACE_DB2         - MATCOMPOSITE of 1-lvl matices based on db2 (2 coefficient Daubechies / Haar wavelet)
 .   PC_DEFLATION_SPACE_DB4         - same as above, but with db4 (4 coefficient Daubechies)
 .   PC_DEFLATION_SPACE_DB8         - same as above, but with db8 (8 coefficient Daubechies)
@@ -322,7 +322,7 @@ typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, 
 -   PC_DEFLATION_SPACE_USER        - indicates space set by user
 
     Notes:
-      Wavelet-based space (except haar) can be used in multilevel deflation.
+      Wavelet-based space (except Haar) can be used in multilevel deflation.
 
     Level: intermediate
 

@@ -238,7 +238,7 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transp
 }
 
 /*@
-   PCDeflationSetSpace - Set the deflation space matrix (or its (hermitian) transpose).
+   PCDeflationSetSpace - Set the deflation space matrix (or its (Hermitian) transpose).
 
    Logically Collective
 
@@ -356,7 +356,7 @@ static PetscErrorCode PCDeflationGetCoarseKSP_Deflation(PC pc,KSP *ksp)
 }
 
 /*@
-   PCDeflationGetCoarseKSP - Returns a pointer to the coarse problem KSP.
+   PCDeflationGetCoarseKSP - Returns the coarse problem KSP.
 
    Not Collective
 
@@ -391,7 +391,7 @@ static PetscErrorCode PCDeflationGetPC_Deflation(PC pc,PC *apc)
 }
 
 /*@
-   PCDeflationGetPC - Returns a pointer to the additional preconditioner.
+   PCDeflationGetPC - Returns the additional preconditioner M^{-1}.
 
    Not Collective
 
@@ -822,7 +822,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
 -    -pc_deflation_compute_space_size <1>     - size of the deflation space (corresponds to number of levels for wavelet-based deflation)
 
    Notes:
-    Given a (complex - transpose is always hermitian) full rank deflation matrix W, the deflation (introduced in [1,2])
+    Given a (complex - transpose is always Hermitian) full rank deflation matrix W, the deflation (introduced in [1,2])
     preconditioner uses projections Q = W*(W'*A*W)^{-1}*W' and P = I - Q*A, where A is pmat.
 
     The deflation computes initial guess x0 = x_{-1} - Q*r_{-1}, which is the solution on the deflation space.
