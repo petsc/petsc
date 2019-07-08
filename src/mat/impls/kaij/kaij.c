@@ -325,6 +325,7 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
 -  S - the S matrix, in form of a scalar array in column-major format
 
    Notes: The dimensions p and q must match those of the transformation matrix T associated with the KAIJ matrix. 
+   The S matrix is copied, so the user can destroy this array.
 
    Level: Advanced
 
@@ -359,6 +360,7 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
 -  T - the T matrix, in form of a scalar array in column-major format
 
    Notes: The dimensions p and q must match those of the shift matrix S associated with the KAIJ matrix. 
+   The T matrix is copied, so the user can destroy this array.
 
    Level: Advanced
 
