@@ -661,7 +661,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       if (def->prefix) {
         ierr = KSPSetOptionsPrefix(def->WtAWinv,def->prefix);CHKERRQ(ierr);
       }
-      ierr = KSPAppendOptionsPrefix(def->WtAWinv,"def_tel_");CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(def->WtAWinv,"deflation_tel_");CHKERRQ(ierr);
       ierr = PCSetFromOptions(pcinner);CHKERRQ(ierr);
       /* Reduction factor choice */
       red = def->reductionfact;
@@ -696,9 +696,9 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     if (innerksp) {
       if (def->prefix) {
         ierr = KSPSetOptionsPrefix(innerksp,def->prefix);CHKERRQ(ierr);
-        ierr = KSPAppendOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(innerksp,"deflation_");CHKERRQ(ierr);
       } else {
-        ierr = KSPSetOptionsPrefix(innerksp,"def_");CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(innerksp,"deflation_");CHKERRQ(ierr);
       }
       ierr = KSPAppendOptionsPrefix(innerksp,prefix);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(innerksp);CHKERRQ(ierr);
@@ -716,7 +716,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     if (def->prefix) {
       ierr = PCSetOptionsPrefix(def->pc,def->prefix);CHKERRQ(ierr);
     }
-    ierr = PCAppendOptionsPrefix(def->pc,"def_");CHKERRQ(ierr);
+    ierr = PCAppendOptionsPrefix(def->pc,"deflation_");CHKERRQ(ierr);
     ierr = PCAppendOptionsPrefix(def->pc,prefix);CHKERRQ(ierr);
     ierr = PCAppendOptionsPrefix(def->pc,"pc_");CHKERRQ(ierr);
     ierr = PCSetFromOptions(def->pc);CHKERRQ(ierr);
@@ -843,15 +843,15 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
     (multiplied) to create the last deflation matrix. The maximum level defaults to 0 and can be set by
     PCDeflationSetLevels() or by -pc_deflation_levels.
 
-    The coarse problem KSP can be controlled from the command line with prefix -def_ for the first level and -def_[lvl-1]
+    The coarse problem KSP can be controlled from the command line with prefix -deflation_ for the first level and -deflation_[lvl-1]
     from the second level onward. You can also use
     PCDeflationGetCoarseKSP() to control it from code. The bottom level KSP defaults to
     KSPPREONLY with PCLU direct solver (MATSOLVERSUPERLU/MATSOLVERSUPERLU_DIST if available) wrapped into PCTELESCOPE.
     For convenience, the reduction factor can be set by PCDeflationSetReductionFactor()
     or -pc_deflation_recduction_factor. The default is chosen heuristically based on the coarse problem size.
 
-    The additional preconditioner can be controlled from command line with prefix -def_[lvl]_pc (same rules used for
-    coarse problem KSP apply for [lvl]_ part of prefix), e.g., -def_1_pc_pc_type bjacobi. You can also use
+    The additional preconditioner can be controlled from command line with prefix -deflation_[lvl]_pc (same rules used for
+    coarse problem KSP apply for [lvl]_ part of prefix), e.g., -deflation_1_pc_pc_type bjacobi. You can also use
     PCDeflationGetPC() to control the additional preconditioner from code. It defaults to PCNONE.
 
     The coarse problem correction term (factor*Q) can be turned on by -pc_deflation_correction and the factor value can
