@@ -204,12 +204,6 @@ class BaseTestDA(object):
         rda = da.refine()
         scatter = da.createInjection(rda)
 
-    def testCreateAggregates(self):
-        da = self.da
-        if da.dim == 1: return
-        rda = da.refine()
-        mat = da.createAggregates(rda)
-
 
 MIRROR   = PETSc.DMDA.BoundaryType.MIRROR
 GHOSTED  = PETSc.DMDA.BoundaryType.GHOSTED

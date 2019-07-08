@@ -707,25 +707,19 @@ cdef class TS(Object):
             vm = [ref_Vec(vecm[i]) for i from 0 <= i < n]
         return (vl, vm)
 
-    def setCostIntegrand(self, Vec cost or None, rfunction,
-                         n=0, drdyfunction=None, drdpfunction=None,
-                         forward=True, args=None, kargs=None):
-        cdef PetscInt ival = asInt(n)
-        cdef PetscVec vec = NULL
-        cdef int (*R   )(PetscTS,PetscReal,PetscVec,PetscVec,  void*) nogil except PETSC_ERR_PYTHON
-        cdef int (*DRDY)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) nogil except PETSC_ERR_PYTHON
-        cdef int (*DRDP)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) nogil except PETSC_ERR_PYTHON
-        R = NULL; DRDY = NULL; DRDP = NULL;
-        if cost is not None: vec = (<Vec>cost).vec
-        if rfunction    is not None: R    = TSAdjoint_CostIntegrand
-        if drdyfunction is not None: DRDY = TSAdjoint_CostIntegrand_DY
-        if drdpfunction is not None: DRDP = TSAdjoint_CostIntegrand_DP
+    def createQuadratureTS(self, forward=True):
+        cdef TS qts = TS()
         cdef PetscBool fwd = forward
-        if args  is None: args  = ()
-        if kargs is None: kargs = {}
-        context = ((rfunction, drdyfunction, drdpfunction), args, kargs)
-        self.set_attr('__costintegrand__', context)
-        CHKERR( TSSetCostIntegrand(self.ts, ival, vec, R, DRDY, DRDP, fwd, <void*>context) )
+        CHKERR( TSCreateQuadratureTS(self.ts, fwd, &qts.ts) )
+        PetscINCREF(qts.obj)
+        return qts
+
+    def getQuadratureTS(self):
+        cdef TS qts = TS()
+        cdef PetscBool fwd = PETSC_FALSE
+        CHKERR( TSGetQuadratureTS(self.ts, &fwd, &qts.ts) )
+        PetscINCREF(qts.obj)
+        return (toBool(fwd), qts)
 
     def setRHSJacobianP(self, rhsjacobianp, Mat A=None, args=None, kargs=None):
         cdef PetscMat Amat=NULL

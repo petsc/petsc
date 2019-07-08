@@ -204,9 +204,10 @@ cdef extern from * nogil:
     int TSSetSaveTrajectory(PetscTS)
     int TSSetCostGradients(PetscTS,PetscInt,PetscVec*,PetscVec*)
     int TSGetCostGradients(PetscTS,PetscInt*,PetscVec**,PetscVec**)
+    int TSCreateQuadratureTS(PetscTS,PetscBool,PetscTS*)
+    int TSGetQuadratureTS(PetscTS,PetscBool*,PetscTS*)
     int TSGetCostIntegral(PetscTS,PetscVec*)
 
-    int TSSetCostIntegrand(PetscTS,PetscInt,PetscVec,PetscTSAdjointR,PetscTSAdjointDRDY,PetscTSAdjointDRDP,PetscBool,void*)
     int TSComputeCostIntegrand(PetscTS,PetscReal,PetscVec,PetscVec)
     int TSSetRHSJacobianP(PetscTS,PetscMat,PetscTSRHSJacobianPFunction,void*)
     int TSComputeRHSJacobianP(PetscTS,PetscReal,PetscVec,PetscMat)
@@ -460,58 +461,6 @@ cdef int TS_PostStep(
     return 0
 
 # -----------------------------------------------------------------------------
-
-cdef int TSAdjoint_CostIntegrand(
-    PetscTS   ts,
-    PetscReal t,
-    PetscVec  y,
-    PetscVec  r,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
-    cdef TS  Ts   = ref_TS(ts)
-    cdef Vec Yvec = ref_Vec(y)
-    cdef Vec Rvec = ref_Vec(r)
-    cdef object context = Ts.get_attr('__costintegrand__')
-    if context is None and ctx != NULL: context = <object>ctx
-    ((rfunction, _, _), args, kargs) = context
-    rfunction(Ts, toReal(t), Yvec, Rvec, *args, **kargs)
-    return 0
-
-cdef int TSAdjoint_CostIntegrand_DY(
-    PetscTS   ts,
-    PetscReal t,
-    PetscVec  y,
-    PetscVec  drdy[],
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
-    cdef TS  Ts   = ref_TS(ts)
-    cdef Vec Yvec = ref_Vec(y)
-    cdef PetscInt i = 0, n = 0
-    CHKERR( TSGetCostGradients(ts, &n, NULL, NULL) )
-    cdef list vecs = [ref_Vec(drdy[i]) for i from 0 <= i < n]
-    cdef object context = Ts.get_attr('__costintegrand__')
-    if context is None and ctx != NULL: context = <object>ctx
-    ((_, drdyfunction, _), args, kargs) = context
-    drdyfunction(Ts, toReal(t), Yvec, vecs, *args, **kargs)
-    return 0
-
-cdef int TSAdjoint_CostIntegrand_DP(
-    PetscTS   ts,
-    PetscReal t,
-    PetscVec  y,
-    PetscVec  drdp[],
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
-    cdef TS  Ts   = ref_TS(ts)
-    cdef Vec Yvec = ref_Vec(y)
-    cdef PetscInt i = 0, n = 0
-    CHKERR( TSGetCostGradients(ts, &n, NULL, NULL) )
-    cdef list vecs = [ref_Vec(drdp[i]) for i from 0 <= i < n]
-    cdef object context = Ts.get_attr('__costintegrand__')
-    if context is None and ctx != NULL: context = <object>ctx
-    ((_, _, drdpfunction), args, kargs) = context
-    drdpfunction(Ts, toReal(t), Yvec, vecs, *args, **kargs)
-    return 0
 
 cdef int TS_RHSJacobianP(
     PetscTS   ts,

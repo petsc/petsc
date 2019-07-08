@@ -308,9 +308,9 @@ cdef class DM(Object):
         CHKERR( DMCreateInjection(self.dm, dm.dm, &inject.mat) )
         return inject
 
-    def createAggregates(self, DM dm):
+    def createRestriction(self, DM dm):
         cdef Mat mat = Mat()
-        CHKERR( DMCreateAggregates(self.dm, dm.dm, &mat.mat) )
+        CHKERR( DMCreateRestriction(self.dm, dm.dm, &mat.mat) )
         return mat
 
     def convert(self, dm_type):
