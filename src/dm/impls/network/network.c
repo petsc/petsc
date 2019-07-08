@@ -1975,6 +1975,9 @@ PetscErrorCode DMDestroy_Network(DM dm)
   ierr = ISLocalToGlobalMappingDestroy(&network->vertex.mapping);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&network->vertex.DofSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&network->vertex.GlobalDofSection);CHKERRQ(ierr);
+  if (network->vltog) {
+    ierr = PetscFree(network->vltog);CHKERRQ(ierr);
+  }
   if (network->vertex.sf) {
     ierr = PetscSFDestroy(&network->vertex.sf);CHKERRQ(ierr);
   }
@@ -2140,12 +2143,11 @@ PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,Petsc
 PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
 {
   PetscErrorCode    ierr;
-  DM_Network        *network = (DM_Network*)dm->data;
+  DM_Network        *network=(DM_Network*)dm->data;
   MPI_Comm          comm;
   PetscMPIInt       rank,size,*displs,*recvcounts;
   PetscBool         ghost;
   PetscInt          *vltog,nroots,nleaves,i,*vrange,k=0,kg=0;
-  const PetscInt    *ilocal;
   const PetscSFNode *iremote;
   PetscSF           vsf;
 
@@ -2169,13 +2171,9 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   ierr = DMNetworkSetSubMap_private(network->vStart,network->vEnd,&network->vertex.mapping);CHKERRQ(ierr);
   ierr = PetscSFGetSubSF(network->plex->sf, network->vertex.mapping, &network->vertex.sf);CHKERRQ(ierr);
   vsf = network->vertex.sf;
-  /*
-   ierr = PetscPrintf(MPI_COMM_WORLD,"\n DMNetworkVertexLocalToGlobalOrdering, network->vertex.sf:\n");CHKERRQ(ierr);
-   ierr = PetscSFView(network->vertex.sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-   */
 
   ierr = PetscMalloc3(size+1,&vrange,size+1,&displs,size,&recvcounts);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(vsf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(vsf,&nroots,&nleaves,NULL,&iremote);CHKERRQ(ierr);
 
   for (i=0; i<size; i++) { displs[i] = i; recvcounts[i] = 1;}
 
@@ -2196,5 +2194,6 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
       vltog[i] = vrange[iremote[kg].rank] + iremote[kg].index; kg++;
     }
   }
+  ierr = PetscFree3(vrange,displs,recvcounts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
