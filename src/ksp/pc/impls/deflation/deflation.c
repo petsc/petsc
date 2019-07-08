@@ -54,7 +54,7 @@ PetscErrorCode PCDeflationSetInitOnly(PC pc,PetscBool flg)
 }
 
 
-static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscInt max)
+static PetscErrorCode PCDeflationSetLevels_Deflation(PC pc,PetscInt current,PetscInt max)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;
 
@@ -65,7 +65,7 @@ static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscIn
 }
 
 /*@
-   PCDeflationSetMaxLvl - Set the maximum level of deflation nesting.
+   PCDeflationSetLevels - Set the maximum level of deflation nesting.
 
    Logically Collective
 
@@ -80,14 +80,14 @@ static PetscErrorCode PCDeflationSetLvl_Deflation(PC pc,PetscInt current,PetscIn
 
 .seealso: PCDeflationSetSpaceToCompute(), PCDeflationSetSpace(), PCDEFLATION
 @*/
-PetscErrorCode PCDeflationSetMaxLvl(PC pc,PetscInt max)
+PetscErrorCode PCDeflationSetLevels(PC pc,PetscInt max)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,max,2);
-  ierr = PetscTryMethod(pc,"PCDeflationSetLvl_C",(PC,PetscInt,PetscInt),(pc,0,max));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCDeflationSetLevels_C",(PC,PetscInt,PetscInt),(pc,0,max));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -207,7 +207,7 @@ static PetscErrorCode PCDeflationSetSpaceToCompute_Deflation(PC pc,PCDeflationSp
 
    Level: intermediate
 
-.seealso: PCDeflationSetMaxLvl(), PCDEFLATION
+.seealso: PCDeflationSetLevels(), PCDEFLATION
 @*/
 PetscErrorCode PCDeflationSetSpaceToCompute(PC pc,PCDeflationSpaceType type,PetscInt size)
 {
@@ -252,13 +252,13 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transp
     deflation. If W = W0*W1*W2*...*Wn, W0 is taken as the first deflation space and
     the coarse problem (W0'*A*W0)^{-1} is again preconditioned by deflation with
     W1 as the deflation matrix. This repeats until the maximum level set by
-    PCDeflationSetMaxLvl is reached or there are no more matrices available.
+    PCDeflationSetLevels() is reached or there are no more matrices available.
     If there are matrices left after reaching the maximum level,
     they are merged into a deflation matrix ...*W{n-1}*Wn.
 
    Level: intermediate
 
-.seealso: PCDeflationSetMaxLvl(), PCDEFLATION
+.seealso: PCDeflationSetLevels(), PCDEFLATION
 @*/
 PetscErrorCode PCDeflationSetSpace(PC pc,Mat W,PetscBool transpose)
 {
@@ -721,7 +721,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = KSPSetType(innerksp,def->ksptype);CHKERRQ(ierr); /* TODO iherit from KSP + tolerances */
       ierr = PCSetType(pcinner,PCDEFLATION);CHKERRQ(ierr); /* TODO create coarse preconditinoner M_c = WtMW ? */
       ierr = PCDeflationSetSpace(pcinner,nextDef,transp);CHKERRQ(ierr);
-      ierr = PCDeflationSetLvl_Deflation(pcinner,def->lvl+1,def->maxlvl);CHKERRQ(ierr);
+      ierr = PCDeflationSetLevels_Deflation(pcinner,def->lvl+1,def->maxlvl);CHKERRQ(ierr);
       /* inherit options */
       if (def->prefix) ((PC_Deflation*)(pcinner->data))->prefix = def->prefix;
       ((PC_Deflation*)(pcinner->data))->init          = def->init;
@@ -874,7 +874,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Deflation options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_deflation_init_only","Use only initialization step - Initdef","PCDeflationSetInitOnly",def->init,&def->init,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_deflation_max_lvl","Maximum of deflation levels","PCDeflationSetMaxLvl",def->maxlvl,&def->maxlvl,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_deflation_levels","Maximum of deflation levels","PCDeflationSetLevels",def->maxlvl,&def->maxlvl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_deflation_reduction_factor","Reduction factor for coarse problem solution using PCTELESCOPE","PCDeflationSetReductionFactor",def->reductionfact,&def->reductionfact,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_deflation_correction","Add coarse problem correction Q to P","PCDeflationSetCorrectionFactor",def->correct,&def->correct,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsScalar("-pc_deflation_correction_factor","Set multiple of Q to use as coarse problem correction","PCDeflationSetCorrectionFactor",def->correctfact,&def->correctfact,NULL);CHKERRQ(ierr);
@@ -917,7 +917,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
     by deflation with deflation matrix being the next matrix in the MATCOMPOSITE. This scheme repeats until the maximum
     level is reached or there are no more matrices. If the maximum level is reached, the remaining matrices are merged
     (multiplied) to create the last deflation matrix. The maximum level defaults to 0 and can be set by
-    PCDeflationSetMaxLvl() or by -pc_deflation_max_lvl.
+    PCDeflationSetLevels() or by -pc_deflation_levels.
 
     The coarse problem KSP can be controlled from the command line with prefix -def_ for the first level and -def_[lvl-1]
     from the second level onward. You can also use
@@ -960,7 +960,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
    Level: intermediate
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCDeflationSetInitOnly(), PCDeflationSetMaxLvl(), PCDeflationSetReductionFactor(),
+           PCDeflationSetInitOnly(), PCDeflationSetLevels(), PCDeflationSetReductionFactor(),
            PCDeflationSetCorrectionFactor(), PCDeflationSetSpaceToCompute(),
            PCDeflationSetSpace(), PCDeflationSpaceType, PCDeflationSetProjectionNullSpaceMat(),
            PCDeflationSetCoarseMat(), PCDeflationSetCoarseKSP(), PCDeflationGetCoarseKSP(),
@@ -995,7 +995,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   pc->ops->view           = PCView_Deflation;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetInitOnly_C",PCDeflationSetInitOnly_Deflation);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLvl_C",PCDeflationSetLvl_Deflation);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLevels_C",PCDeflationSetLevels_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetReductionFactor_C",PCDeflationSetReductionFactor_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCorrectionFactor_C",PCDeflationSetCorrectionFactor_Deflation);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpaceToCompute_C",PCDeflationSetSpaceToCompute_Deflation);CHKERRQ(ierr);

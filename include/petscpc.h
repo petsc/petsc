@@ -418,7 +418,7 @@ PETSC_EXTERN PetscErrorCode PCLMVMClearIS(PC);
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
 PETSC_EXTERN PetscErrorCode PCDeflationSetInitOnly(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCDeflationSetMaxLvl(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCDeflationSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCDeflationSetReductionFactor(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCDeflationSetCorrectionFactor(PC,PetscScalar);
 PETSC_EXTERN PetscErrorCode PCDeflationSetSpaceToCompute(PC,PCDeflationSpaceType,PetscInt);
@@ -427,7 +427,6 @@ PETSC_EXTERN PetscErrorCode PCDeflationSetProjectionNullSpaceMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationSetCoarseMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationGetPC(PC,PC*);
 PETSC_EXTERN PetscErrorCode PCDeflationSetPC(PC,PC);
-
 
 #endif /* PETSCPC_H */
 
