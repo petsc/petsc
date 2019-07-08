@@ -1029,6 +1029,7 @@ PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend, ISLoca
   Level: intermediate
 
 @*/
+
 PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 {
   PetscErrorCode ierr;
@@ -1051,23 +1052,22 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 
   if (size > 1) {
     ierr = PetscSFGetSubSF(network->plex->sf, network->vertex.mapping, &network->vertex.sf);CHKERRQ(ierr);
-    ierr = PetscSectionCreateGlobalSection(network->vertex.DofSection, network->vertex.sf, PETSC_FALSE, PETSC_FALSE, &network->vertex.GlobalDofSection);CHKERRQ(ierr);
-  ierr = PetscSFGetSubSF(network->plex->sf, network->edge.mapping, &network->edge.sf);CHKERRQ(ierr);
-  ierr = PetscSectionCreateGlobalSection(network->edge.DofSection, network->edge.sf, PETSC_FALSE, PETSC_FALSE, &network->edge.GlobalDofSection);CHKERRQ(ierr);
-  } else {
-  /* create structures for vertex */
-  ierr = PetscSectionClone(network->vertex.DofSection,&network->vertex.GlobalDofSection);CHKERRQ(ierr);
-  /* create structures for edge */
-  ierr = PetscSectionClone(network->edge.DofSection,&network->edge.GlobalDofSection);CHKERRQ(ierr);
-  }
 
+    ierr = PetscSectionCreateGlobalSection(network->vertex.DofSection, network->vertex.sf, PETSC_FALSE, PETSC_FALSE, &network->vertex.GlobalDofSection);CHKERRQ(ierr);
+    ierr = PetscSFGetSubSF(network->plex->sf, network->edge.mapping, &network->edge.sf);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(network->edge.DofSection, network->edge.sf, PETSC_FALSE, PETSC_FALSE, &network->edge.GlobalDofSection);CHKERRQ(ierr);
+  } else {
+    /* create structures for vertex */
+    ierr = PetscSectionClone(network->vertex.DofSection,&network->vertex.GlobalDofSection);CHKERRQ(ierr);
+    /* create structures for edge */
+    ierr = PetscSectionClone(network->edge.DofSection,&network->edge.GlobalDofSection);CHKERRQ(ierr);
+  }
 
   /* Add viewers */
   ierr = PetscObjectSetName((PetscObject)network->edge.GlobalDofSection,"Global edge dof section");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)network->vertex.GlobalDofSection,"Global vertex dof section");CHKERRQ(ierr);
   ierr = PetscSectionViewFromOptions(network->edge.GlobalDofSection, NULL, "-edge_global_section_view");CHKERRQ(ierr);
   ierr = PetscSectionViewFromOptions(network->vertex.GlobalDofSection, NULL, "-vertex_global_section_view");CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1188,6 +1188,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   }
 
   newDM->setupcalled = (*dm)->setupcalled;
+  newDMnetwork->distributecalled = PETSC_TRUE;
 
   /* Destroy point SF */
   ierr = PetscSFDestroy(&pointsf);CHKERRQ(ierr);
@@ -2094,5 +2095,106 @@ PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 
   PetscFunctionBegin;
   ierr = DMLocalToGlobalEnd(network->plex,l,mode,g);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMNetworkSetVertexLocalToGlobalOrdering - Create and setup vertex local to globle map
+
+  Not collective
+
+  Input Parameters
++ dm - the dm object
+- vloc - local vertex ordering, start from 0
+
+  Output Parameters
++  vg  - global vertex ordering, start from 0
+
+  Level: Advanced
+
+.seealso: DMNetworkSetVertexLocalToGlobalOrdering()
+@*/
+PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,PetscInt *vg)
+{
+  DM_Network  *network = (DM_Network*)dm->data;
+  PetscInt    *vltog = network->vltog;
+
+  PetscFunctionBegin;
+  if (!vltog) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Must call DMNetworkSetVertexLocalToGlobalOrdering() first");
+  *vg = vltog[vloc];
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMNetworkSetVertexLocalToGlobalOrdering - Create and setup vertex local to globle map
+
+  Collective
+
+  Input Parameters:
++ dm - the dm object
+
+  Level: Advanced
+
+.seealso: DMNetworkCreate()
+@*/
+PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
+{
+  PetscErrorCode    ierr;
+  DM_Network        *network = (DM_Network*)dm->data;
+  MPI_Comm          comm;
+  PetscMPIInt       rank,size,*displs,*recvcounts;
+  PetscBool         ghost;
+  PetscInt          *vltog,nroots,nleaves,i,*vrange,k=0,kg=0;
+  const PetscInt    *ilocal;
+  const PetscSFNode *iremote;
+  PetscSF           vsf;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+
+  if (size == 1) {
+    nroots = network->vEnd - network->vStart;
+    ierr = PetscMalloc1(nroots, &vltog);CHKERRQ(ierr);
+    for (i=0; i<nroots; i++) vltog[i] = i;
+    network->vltog = vltog;
+    PetscFunctionReturn(0);
+  }
+
+  if (!network->distributecalled) SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE,"Must call DMNetworkDistribute() first");
+  if (network->vltog) {
+    ierr = PetscFree(network->vltog);CHKERRQ(ierr);
+  }
+
+  ierr = DMNetworkSetSubMap_private(network->vStart,network->vEnd,&network->vertex.mapping);CHKERRQ(ierr);
+  ierr = PetscSFGetSubSF(network->plex->sf, network->vertex.mapping, &network->vertex.sf);CHKERRQ(ierr);
+  vsf = network->vertex.sf;
+  /*
+   ierr = PetscPrintf(MPI_COMM_WORLD,"\n DMNetworkVertexLocalToGlobalOrdering, network->vertex.sf:\n");CHKERRQ(ierr);
+   ierr = PetscSFView(network->vertex.sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+   */
+
+  ierr = PetscMalloc3(size+1,&vrange,size+1,&displs,size,&recvcounts);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(vsf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+
+  for (i=0; i<size; i++) { displs[i] = i; recvcounts[i] = 1;}
+
+  i         = nroots - nleaves; /* local number of vertices, excluding ghosts */
+  vrange[0] = 0;
+  ierr = MPI_Allgatherv(&i,1,MPIU_INT,vrange+1,recvcounts,displs,MPIU_INT,comm);CHKERRQ(ierr);
+  for (i=2; i<=size+1; i++) {vrange[i] += vrange[i-1];}
+
+  ierr = PetscMalloc1(nroots, &vltog);CHKERRQ(ierr);
+  network->vltog = vltog;
+
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  for (i=0; i<nroots; i++) {
+    ierr = DMNetworkIsGhostVertex(dm,i+network->vStart,&ghost);CHKERRQ(ierr);
+    if (!ghost) {
+      vltog[i] = vrange[rank] + k; k++;
+    } else {
+      vltog[i] = vrange[iremote[kg].rank] + iremote[kg].index; kg++;
+    }
+  }
   PetscFunctionReturn(0);
 }
