@@ -41,9 +41,9 @@ PetscScalar meyer[] = {0.0,-1.009999956941423e-12,8.519459636796214e-09,-1.11194
 
 static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt ncoeffs,PetscScalar *coeffs,PetscBool trunc,Mat *H)
 {
+  Mat            defl;
+  PetscInt       i,j,k,ilo,ihi,*Iidx;
   PetscErrorCode ierr;
-  Mat defl;
-  PetscInt i,j,k,ilo,ihi,*Iidx;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(ncoeffs,&Iidx);CHKERRQ(ierr);
@@ -83,10 +83,10 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscI
 
 PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
 {
+  Mat            A,defl;
+  PetscInt       i,j,len,ilo,ihi,*Iidx,m,M;
+  PetscScalar    *col,val;
   PetscErrorCode ierr;
-  Mat A,defl;
-  PetscInt i,j,len,ilo,ihi,*Iidx,m,M;
-  PetscScalar *col,val;
 
   PetscFunctionBegin;
   /* Haar basis wavelet, level=size */
@@ -129,10 +129,10 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
 
 PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoeffs,PetscScalar *coeffs,PetscBool trunc)
 {
+  Mat            A,*H,defl;
+  PetscInt       i,m,M,Mdefl,Ndefl;
+  MPI_Comm       comm;
   PetscErrorCode ierr;
-  Mat A,*H,defl;
-  PetscInt i,m,M,Mdefl,Ndefl;
-  MPI_Comm comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
@@ -164,11 +164,11 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoef
 
 PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
 {
+  Mat            A,defl;
+  PetscInt       i,ilo,ihi,*Iidx,m,M;
+  PetscScalar    *col;
+  MPI_Comm       comm;
   PetscErrorCode ierr;
-  Mat A,defl;
-  PetscInt i,ilo,ihi,*Iidx,m,M;
-  PetscScalar *col;
-  MPI_Comm comm;
 
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr);
@@ -202,10 +202,10 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
 
 PetscErrorCode PCDeflationComputeSpace(PC pc)
 {
+  Mat            defl;
+  PetscBool      transp=PETSC_TRUE;
+  PC_Deflation   *def = (PC_Deflation*)pc->data;
   PetscErrorCode ierr;
-  Mat defl;
-  PetscBool transp=PETSC_TRUE;
-  PC_Deflation *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
