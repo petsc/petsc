@@ -11,7 +11,7 @@ configure_options = [
 
   # mpich does not build with -g - compiler bug?
   #'--download-mpich=1',
-  '--with-mpi-dir=/export/home/petsc/soft/mpich-3.1.3',
+  '--with-mpi-dir=/export/home/petsc/soft/mpich-3.3.1',
   '--with-c2html=0',
 
   '--download-cmake=1',

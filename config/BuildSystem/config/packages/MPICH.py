@@ -4,12 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['http://www.mpich.org/static/downloads/3.3b1/mpich-3.3.1.tar.gz',
+    self.download         = ['https://www.mpich.org/static/downloads/3.3.1/mpich-3.3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3.1.tar.gz']
     self.download_31      = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
-    self.download_33a2    = ['http://www.mpich.org/static/downloads/3.3a2/mpich-3.3a2.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3a2.tar.gz']
     self.downloaddirnames  = ['mpich']
     self.skippackagewithoptions = 1
     self.isMPI = 1
@@ -67,7 +65,5 @@ class Configure(config.package.GNUPackage):
   def configure(self):
     if config.setCompilers.Configure.isCygwin(self.log) and config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
       self.download = self.download_31
-    elif config.setCompilers.Configure.isSolaris(self.log):
-      self.download = self.download_33a2
     return config.package.Package.configure(self)
 
