@@ -287,6 +287,10 @@ PetscErrorCode MatKAIJRestoreTRead(Mat A,const PetscScalar **T)
 +  A - the KAIJ matrix
 -  B - the AIJ matrix
 
+   Notes:
+   This function increases the reference count on the AIJ matrix, so the user is free to destroy the matrix if it is not needed.
+   Changes to the entries of the AIJ matrix will immediately affect the KAIJ matrix.
+
    Level: advanced
 
 .seealso: MatKAIJGetAIJ(), MatKAIJSetS(), MatKAIJSetT()
@@ -305,6 +309,7 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
     Mat_MPIKAIJ *a = (Mat_MPIKAIJ*)A->data;
     a->A = B;
   }
+  ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -425,7 +430,6 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     ierr = PetscLayoutSetBlockSize(A->cmap,seqkaij->q);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)seqkaij->AIJ);CHKERRQ(ierr);
   } else {
     Mat_MPIKAIJ *a;
     Mat_MPIAIJ  *mpiaij;
@@ -441,7 +445,6 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     ierr = PetscLayoutSetBlockSize(A->cmap,seqkaij->q);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)a->A);CHKERRQ(ierr);
 
     if (a->isTI) {
       /* If the transformation matrix associated with the parallel matrix A is the identity matrix, then a->T will be NULL.
