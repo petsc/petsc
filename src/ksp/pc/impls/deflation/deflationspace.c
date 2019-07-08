@@ -91,8 +91,7 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
   PetscFunctionBegin;
   /* Haar basis wavelet, level=size */
   len = pow(2,size);
-  ierr = PetscMalloc1(len,&col);CHKERRQ(ierr);
-  ierr = PetscMalloc1(len,&Iidx);CHKERRQ(ierr);
+  ierr = PetscMalloc2(len,&col,len,&Iidx);CHKERRQ(ierr);
   val = 1./pow(2,size/2.);
   for (i=0; i<len; i++) col[i] = val;
 
@@ -123,8 +122,7 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
   ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscFree(col);CHKERRQ(ierr);
-  ierr = PetscFree(Iidx);CHKERRQ(ierr);
+  ierr = PetscFree2(col,Iidx);CHKERRQ(ierr);
   *W = defl;
   PetscFunctionReturn(0);
 }
@@ -146,14 +144,9 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoef
   Ndefl = M;
   for (i=0; i<size; i++) {
     if (Mdefl%2)  {
-      if (trunc) {
-        Mdefl = (PetscInt)PetscCeilReal(Mdefl/2.);
-      } else {
-        Mdefl = (PetscInt)PetscFloorReal((ncoeffs+Mdefl-1)/2.);
-      }
-    } else {
-      Mdefl = Mdefl/2;
-    }
+      if (trunc) Mdefl = (PetscInt)PetscCeilReal(Mdefl/2.);
+      else       Mdefl = (PetscInt)PetscFloorReal((ncoeffs+Mdefl-1)/2.);
+    } else       Mdefl = Mdefl/2;
     ierr = PCDeflationCreateSpaceWave(comm,PETSC_DECIDE,m,Mdefl,Ndefl,ncoeffs,coeffs,trunc,&H[i]);CHKERRQ(ierr);
     ierr = MatGetLocalSize(H[i],&m,NULL);CHKERRQ(ierr);
     Ndefl = Mdefl;
@@ -191,8 +184,7 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(defl,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(ihi-ilo,&col);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ihi-ilo,&Iidx);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ihi-ilo,&col,ihi-ilo,&Iidx);CHKERRQ(ierr);
   for (i=ilo; i<ihi; i++) {
     Iidx[i-ilo] = i;
     col[i-ilo] = 1;
@@ -203,8 +195,7 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscFree(col);CHKERRQ(ierr);
-  ierr = PetscFree(Iidx);CHKERRQ(ierr);
+  ierr = PetscFree2(col,Iidx);CHKERRQ(ierr);
   *W = defl;
   PetscFunctionReturn(0);
 }

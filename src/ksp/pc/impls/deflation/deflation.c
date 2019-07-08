@@ -315,9 +315,9 @@ static PetscErrorCode PCDeflationSetCoarseMat_Deflation(PC pc,Mat mat)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = MatDestroy(&def->WtAW);CHKERRQ(ierr);
   def->WtAW = mat;
-  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtAW);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -588,7 +588,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     ierr = PCGetOptionsPrefix(pc,&def->prefix);CHKERRQ(ierr);
   }
   if (def->lvl) {
-    sprintf(prefix,"%d_",(int)def->lvl);
+    (void) sprintf(prefix,"%d_",(int)def->lvl);
   }
 
   /* compute a deflation space */
