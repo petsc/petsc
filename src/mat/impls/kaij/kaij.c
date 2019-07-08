@@ -535,7 +535,7 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
 /* --------------------------------------------------------------------------------------*/
 
 /* zz = yy + Axx */
-PetscErrorCode KAIJMultAdd_Seq(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqKAIJ       *b = (Mat_SeqKAIJ*)A->data;
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)b->AIJ->data;
@@ -612,7 +612,7 @@ PetscErrorCode MatMult_SeqKAIJ_N(Mat A,Vec xx,Vec yy)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = KAIJMultAdd_Seq(A,xx,PETSC_NULL,yy);CHKERRQ(ierr);
+  ierr = MatMultAdd_SeqKAIJ(A,xx,PETSC_NULL,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -620,7 +620,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = KAIJMultAdd_Seq(A,xx,yy,zz);CHKERRQ(ierr);
+  ierr = MatMultAdd_SeqKAIJ(A,xx,yy,zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -981,7 +981,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 
 /*===================================================================================*/
 
-PetscErrorCode KAIJMultAdd_MPI(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_MPIKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIKAIJ    *b = (Mat_MPIKAIJ*)A->data;
   PetscErrorCode ierr;
@@ -1004,7 +1004,7 @@ PetscErrorCode MatMult_MPIKAIJ_dof(Mat A,Vec xx,Vec yy)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = KAIJMultAdd_MPI(A,xx,PETSC_NULL,yy);CHKERRQ(ierr);
+  ierr = MatMultAdd_MPIKAIJ(A,xx,PETSC_NULL,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1012,7 +1012,7 @@ PetscErrorCode MatMultAdd_MPIKAIJ_dof(Mat A,Vec xx,Vec yy, Vec zz)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = KAIJMultAdd_MPI(A,xx,yy,zz);CHKERRQ(ierr);
+  ierr = MatMultAdd_MPIKAIJ(A,xx,yy,zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
