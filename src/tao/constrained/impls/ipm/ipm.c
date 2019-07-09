@@ -710,6 +710,8 @@ PetscErrorCode IPMUpdateAi(Tao tao)
   PetscInt          r2,r3,r4;
   PetscMPIInt       size;
   PetscErrorCode    ierr;
+  Vec               solu;
+  PetscInt          nloc;
 
   PetscFunctionBegin;
   r2 = ipmP->mi;
@@ -735,7 +737,10 @@ PetscErrorCode IPMUpdateAi(Tao tao)
     }
     ierr = MatCreate(comm,&ipmP->Ai);CHKERRQ(ierr);
     ierr = MatSetType(ipmP->Ai,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSetSizes(ipmP->Ai,PETSC_DECIDE,PETSC_DECIDE,ipmP->nb,ipmP->n);CHKERRQ(ierr);
+
+    ierr = TaoGetSolutionVector(tao,&solu);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(solu,&nloc);CHKERRQ(ierr);
+    ierr = MatSetSizes(ipmP->Ai,PETSC_DECIDE,nloc,ipmP->nb,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetFromOptions(ipmP->Ai);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(ipmP->Ai,ipmP->nb,NULL,ipmP->nb,NULL);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(ipmP->Ai,PETSC_DEFAULT,nonzeros);CHKERRQ(ierr);
