@@ -60,6 +60,7 @@ static PetscErrorCode ConvertToAIJ(MatType intype,MatType *outtype)
   PetscBool      flg;
 
   PetscFunctionBegin;
+  *outtype = MATAIJ;
   for (i=0; i<3; i++) {
     ierr = PetscStrbeginswith(intype,types[i],&flg);CHKERRQ(ierr);
     if (flg) {
@@ -67,7 +68,6 @@ static PetscErrorCode ConvertToAIJ(MatType intype,MatType *outtype)
       PetscFunctionReturn(0);
     }
   }
-  *outtype = MATAIJ;
   PetscFunctionReturn(0);
 }
 
