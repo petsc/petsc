@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.functions        = ['triangulate']
     self.includes         = ['triangle.h']
     self.liblist          = [['libtriangle.a']]
-    self.precisions       = ['single','double']
+    self.precisions       = ['double']
     self.hastests         = 1
     return
 
