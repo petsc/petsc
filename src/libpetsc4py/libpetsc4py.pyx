@@ -1824,6 +1824,7 @@ cdef PetscErrorCode SNESCreate_Python(
     FunctionBegin(b"SNESCreate_Python")
     #
     cdef SNESOps ops   = snes.ops
+    cdef PetscSNESLineSearch ls = NULL
     ops.reset          = SNESReset_Python
     ops.destroy        = SNESDestroy_Python
     ops.setup          = SNESSetUp_Python
@@ -1837,6 +1838,10 @@ cdef PetscErrorCode SNESCreate_Python(
     #
     cdef ctx = PySNES(NULL)
     snes.data = <void*> ctx
+
+    # Ensure that the SNES has a linesearch object early enough that
+    # it gets setFromOptions.
+    CHKERR( SNESGetLineSearch(snes, &ls) )
     Py_INCREF(<PyObject*>snes.data)
     return FunctionEnd()
 
