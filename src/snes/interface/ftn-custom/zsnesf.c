@@ -85,7 +85,7 @@ static PetscErrorCode ourtrpostcheckfunction(SNES snes,Vec x,Vec y,Vec w,PetscBo
   PetscObjectUseFortranCallback(snes,_cb.trpostcheck,(SNES*,Vec*,Vec*,Vec *,PetscBool *,void*,PetscErrorCode* PETSC_F90_2PTR_PROTO_NOVAR),(&snes,&x,&y,&w,changed_w,_ctx,&ierr PETSC_F90_2PTR_PARAM(ptr)));
 }
 
-PETSC_EXTERN void PETSC_STDCALL snesnewtontrsetpostcheck_(SNES *snes, void (PETSC_STDCALL *func)(SNES,Vec,Vec,Vec,PetscBool*,void*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL snesnewtontrsetpostcheck_(SNES *snes, void (PETSC_STDCALL *func)(SNES,Vec,Vec,Vec,PetscBool*,void*),void *ctx,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.trpostcheck,(PetscVoidFunction)func,ctx);if (*ierr) return;
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
