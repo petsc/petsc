@@ -21,7 +21,6 @@
       PetscEnum SNES_CONVERGED_FNORM_RELATIVE
       PetscEnum SNES_CONVERGED_SNORM_RELATIVE
       PetscEnum SNES_CONVERGED_ITS
-      PetscEnum SNES_CONVERGED_TR_DELTA
 
       PetscEnum SNES_DIVERGED_FUNCTION_DOMAIN
       PetscEnum SNES_DIVERGED_FUNCTION_COUNT
@@ -32,13 +31,14 @@
       PetscEnum SNES_DIVERGED_INNER
       PetscEnum SNES_DIVERGED_LOCAL_MIN
       PetscEnum SNES_DIVERGED_DTOL
+      PetscEnum SNES_DIVERGED_JACOBIAN_DOMAIN
+      PetscEnum SNES_DIVERGED_TR_DELTA
       PetscEnum SNES_CONVERGED_ITERATING
 
       parameter (SNES_CONVERGED_FNORM_ABS         =  2)
       parameter (SNES_CONVERGED_FNORM_RELATIVE    =  3)
       parameter (SNES_CONVERGED_SNORM_RELATIVE    =  4)
       parameter (SNES_CONVERGED_ITS               =  5)
-      parameter (SNES_CONVERGED_TR_DELTA          =  7)
 
       parameter (SNES_DIVERGED_FUNCTION_DOMAIN    = -1)
       parameter (SNES_DIVERGED_FUNCTION_COUNT     = -2)
@@ -49,6 +49,8 @@
       parameter (SNES_DIVERGED_INNER              = -7)
       parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
       parameter (SNES_DIVERGED_DTOL               = -9)
+      parameter (SNES_DIVERGED_JACOBIAN_DOMAIN    = -10)
+      parameter (SNES_DIVERGED_TR_DELTA           = -11)
       parameter (SNES_CONVERGED_ITERATING         =  0)
 !
 !     SNESLineSearchReason
