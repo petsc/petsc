@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Spectral/tensor element restrictions",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim","Topological dimension",NULL,dim,&dim,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim","Topological dimension",NULL,dim,&dim,NULL,1,3);CHKERRQ(ierr);
   tmp = dim;
   ierr = PetscOptionsIntArray("-cells","Number of cells per dimension",NULL,cells,&tmp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

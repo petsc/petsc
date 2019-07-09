@@ -569,22 +569,25 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   genCtx.M = genCtx.N = genCtx.K = 1;
   genCtx.A = genCtx.B = genCtx.C = 1;
+  genCtx.blockSizeElementXYZ[0] = 0;
+  genCtx.blockSizeElementXYZ[1] = 0;
+  genCtx.blockSizeElementXYZ[2] = 0;
 
   ierr = PetscOptionsBegin(comm, "", "DMMoab Creation Options", "DMMOAB");CHKERRQ(ierr);
   /* Handle DMMoab spatial resolution */
-  PetscOptionsInt("-dmb_grid_x", "Number of grid points in x direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[0], &genCtx.blockSizeElementXYZ[0], &genCtx.usrxyzgrid);
-  if (dim > 1) {PetscOptionsInt("-dmb_grid_y", "Number of grid points in y direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[1], &genCtx.blockSizeElementXYZ[1], &genCtx.usrxyzgrid);}
-  if (dim > 2) {PetscOptionsInt("-dmb_grid_z", "Number of grid points in z direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[2], &genCtx.blockSizeElementXYZ[2], &genCtx.usrxyzgrid);}
+  ierr = PetscOptionsInt("-dmb_grid_x", "Number of grid points in x direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[0], &genCtx.blockSizeElementXYZ[0], &genCtx.usrxyzgrid);CHKERRQ(ierr);
+  if (dim > 1) {ierr = PetscOptionsInt("-dmb_grid_y", "Number of grid points in y direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[1], &genCtx.blockSizeElementXYZ[1], &genCtx.usrxyzgrid);CHKERRQ(ierr);}
+  if (dim > 2) {ierr = PetscOptionsInt("-dmb_grid_z", "Number of grid points in z direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[2], &genCtx.blockSizeElementXYZ[2], &genCtx.usrxyzgrid);CHKERRQ(ierr);}
 
   /* Handle DMMoab parallel distibution */
-  PetscOptionsInt("-dmb_processors_x", "Number of processors in x direction", "DMMoabSetNumProcs", genCtx.M, &genCtx.M, &genCtx.usrprocgrid);
-  if (dim > 1) {PetscOptionsInt("-dmb_processors_y", "Number of processors in y direction", "DMMoabSetNumProcs", genCtx.N, &genCtx.N, &genCtx.usrprocgrid);}
-  if (dim > 2) {PetscOptionsInt("-dmb_processors_z", "Number of processors in z direction", "DMMoabSetNumProcs", genCtx.K, &genCtx.K, &genCtx.usrprocgrid);}
+  ierr = PetscOptionsInt("-dmb_processors_x", "Number of processors in x direction", "DMMoabSetNumProcs", genCtx.M, &genCtx.M, &genCtx.usrprocgrid);CHKERRQ(ierr);
+  if (dim > 1) {ierr = PetscOptionsInt("-dmb_processors_y", "Number of processors in y direction", "DMMoabSetNumProcs", genCtx.N, &genCtx.N, &genCtx.usrprocgrid);CHKERRQ(ierr);}
+  if (dim > 2) {ierr = PetscOptionsInt("-dmb_processors_z", "Number of processors in z direction", "DMMoabSetNumProcs", genCtx.K, &genCtx.K, &genCtx.usrprocgrid);CHKERRQ(ierr);}
 
   /* Handle DMMoab block refinement */
-  PetscOptionsInt("-dmb_refine_x", "Number of refinement blocks in x direction", "DMMoabSetRefinement", genCtx.A, &genCtx.A, &genCtx.usrrefgrid);
-  if (dim > 1) {PetscOptionsInt("-dmb_refine_y", "Number of refinement blocks in y direction", "DMMoabSetRefinement", genCtx.B, &genCtx.B, &genCtx.usrrefgrid);}
-  if (dim > 2) {PetscOptionsInt("-dmb_refine_z", "Number of refinement blocks in z direction", "DMMoabSetRefinement", genCtx.C, &genCtx.C, &genCtx.usrrefgrid);}
+  ierr = PetscOptionsInt("-dmb_refine_x", "Number of refinement blocks in x direction", "DMMoabSetRefinement", genCtx.A, &genCtx.A, &genCtx.usrrefgrid);
+  if (dim > 1) {ierr = PetscOptionsInt("-dmb_refine_y", "Number of refinement blocks in y direction", "DMMoabSetRefinement", genCtx.B, &genCtx.B, &genCtx.usrrefgrid);CHKERRQ(ierr);}
+  if (dim > 2) {ierr = PetscOptionsInt("-dmb_refine_z", "Number of refinement blocks in z direction", "DMMoabSetRefinement", genCtx.C, &genCtx.C, &genCtx.usrrefgrid);CHKERRQ(ierr);}
   PetscOptionsEnd();
 
   ierr = DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele);CHKERRQ(ierr);

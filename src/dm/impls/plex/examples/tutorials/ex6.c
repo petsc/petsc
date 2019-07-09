@@ -22,8 +22,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->k   = NULL;
 
   ierr = PetscOptionsBegin(comm, "", "SEM Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "Problem dimension", "ex6.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_fields", "The number of fields", "ex6.c", options->Nf, &options->Nf, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "Problem dimension", "ex6.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_fields", "The number of fields", "ex6.c", options->Nf, &options->Nf, NULL,0);CHKERRQ(ierr);
   if (options->Nf) {
     len  = options->Nf;
     ierr = PetscMalloc1(len, &options->Nc);CHKERRQ(ierr);

@@ -31,11 +31,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   gridSize       = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Patch Test Options", "DMPATCH");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The spatial dimension", "ex1.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-patch_size", "The patch size in each dimension", "ex1.c", patchSize, &patchSize, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-comm_size", "The comm size in each dimension", "ex1.c", commSize, &commSize, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-grid_size", "The grid size in each dimension", "ex1.c", gridSize, &gridSize, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The spatial dimension", "ex1.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-patch_size", "The patch size in each dimension", "ex1.c", patchSize, &patchSize, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-comm_size", "The comm size in each dimension", "ex1.c", commSize, &commSize, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-grid_size", "The grid size in each dimension", "ex1.c", gridSize, &gridSize, NULL,1);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   options->patchSize.i = options->patchSize.j = options->patchSize.k = 1;
