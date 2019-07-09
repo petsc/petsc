@@ -1,9 +1,13 @@
 # --------------------------------------------------------------------
 
 class PartitionerType(object):
-    CHACO    = S_(PETSCPARTITIONERCHACO)
-    PARMETIS = S_(PETSCPARTITIONERPARMETIS)
-    SHELL    = S_(PETSCPARTITIONERSHELL)
+    CHACO           = S_(PETSCPARTITIONERCHACO)
+    PARMETIS        = S_(PETSCPARTITIONERPARMETIS)
+    PTSCOTCH        = S_(PETSCPARTITIONERPTSCOTCH)
+    SHELL           = S_(PETSCPARTITIONERSHELL)
+    SIMPLE          = S_(PETSCPARTITIONERSIMPLE)
+    GATHER          = S_(PETSCPARTITIONERGATHER)
+    MATPARTITIONING = S_(PETSCPARTITIONERMATPARTITIONING)
 
 # --------------------------------------------------------------------
 
