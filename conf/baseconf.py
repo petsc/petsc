@@ -179,9 +179,6 @@ class PetscConfig:
                             extdict[key].append(value)
 
     def configure_extension(self, extension):
-        # define macros
-        macros = [('PETSC_DIR',  self['PETSC_DIR'])]
-        extension.define_macros.extend(macros)
         # includes and libraries
         petsc_inc = flaglist(self['PETSC_CC_INCLUDES'])
         petsc_lib = flaglist(
