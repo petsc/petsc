@@ -147,7 +147,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
 
    Level: intermediate
 
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny(), PetscObjectBaseTypeCompareAny()
 
 @*/
 PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
@@ -181,7 +181,7 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
 
    Level: intermediate
 
-.seealso: PetscObjectTypeCompare(), PetscObjectTypeCompareAny()
+.seealso: PetscObjectTypeCompare(), PetscObjectTypeCompareAny(), PetscObjectBaseTypeCompareAny()
 
 @*/
 PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
@@ -216,7 +216,7 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
 
    Level: intermediate
 
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare()
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
 
 @*/
 PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
@@ -231,6 +231,47 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
   while (type_name && type_name[0]) {
     PetscBool found;
     ierr = PetscObjectTypeCompare(obj,type_name,&found);CHKERRQ(ierr);
+    if (found) {
+      *match = PETSC_TRUE;
+      break;
+    }
+    type_name = va_arg(Argp,const char*);
+  }
+  va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+   PetscObjectBaseTypeCompareAny - Determines whether a PETSc object has the base type of any of a list of types.
+
+   Not Collective
+
+   Input Parameters:
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+         This must be cast with a (PetscObject), for example, PetscObjectBaseTypeCompareAny((PetscObject)mat,...);
+-  type_name - string containing a type name, pass the empty string "" to terminate the list
+
+   Output Parameter:
+.  match - PETSC_TRUE if the type of obj matches any in the list, else PETSC_FALSE
+
+   Level: intermediate
+
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
+
+@*/
+PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
+{
+  PetscErrorCode ierr;
+  va_list        Argp;
+
+  PetscFunctionBegin;
+  PetscValidPointer(match,3);
+  *match = PETSC_FALSE;
+  va_start(Argp,type_name);
+  while (type_name && type_name[0]) {
+    PetscBool found;
+    ierr = PetscObjectBaseTypeCompare(obj,type_name,&found);CHKERRQ(ierr);
     if (found) {
       *match = PETSC_TRUE;
       break;

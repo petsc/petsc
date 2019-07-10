@@ -8,7 +8,9 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.defaultPrecision    = 'double'
-    self.f2c                 = 0  # indicates either the f2c BLAS/LAPACK are used (with or without Fortran compiler) or there is no Fortran compiler (and system BLAS/LAPACK is used)
+    self.versionname         = 'INTEL_MKL_VERSION'
+    self.versioninclude      = 'mkl_version.h'
+    self.f2c                 = 0  # indicates either the f2cblaslapack are used or there is no Fortran compiler (and system BLAS/LAPACK is used)
     self.has64bitindices     = 0
     self.mkl                 = 0  # indicates BLAS/LAPACK library used is Intel MKL
     self.separateBlas        = 1
@@ -16,6 +18,7 @@ class Configure(config.package.Package):
     self.lookforbydefault    = 1
     self.alternativedownload = 'f2cblaslapack'
     self.missingRoutines     = []
+    self.versiontitle        = 'Intel MKL Version'
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -43,7 +46,7 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.ArgLibrary(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
     help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64 bit integers for BLAS/LAPACK; will error if not available'))
-    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
+    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if using 64 bit integer BLAS'))
     return
 
   def getPrefix(self):
@@ -621,6 +624,20 @@ class Configure(config.package.Package):
       self.log.write('64 bit blas indices based on the BLAS/LAPACK library being used\n')
     elif self.known64 == '32':
       self.log.write('32 bit blas indices based on the BLAS/LAPACK library being used\n')
+    elif 'known-64-bit-blas-indices' in self.argDB:
+      if self.argDB['known-64-bit-blas-indices']:
+        self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
+        self.has64bitindices = 1
+      else:
+        self.has64bitindices = 0
+    elif self.argDB['with-batch']:
+      self.logPrintBox('***** WARNING: Cannot determine if BLAS/LAPACK uses 32 bit or 64 bit integers\n\
+in batch-mode! Assuming 32 bit integers. Run with --known-64-bit-blas-indices\n\
+if you know they are 64 bit. Run with --known-64-bit-blas-indices=0 to remove\n\
+this warning message.\n\
+warning message *****')
+      self.has64bitindices = 0
+      self.log.write('In batch mode with unknown size of BLAS/LAPACK defaulting to 32 bit\n')
     else:
       includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
       t = self.getType()
@@ -656,8 +673,18 @@ class Configure(config.package.Package):
         self.log.write('Checking for 64 bit blas indices: program did not return therefor assuming 64 bit blas indices\n')
     if not self.defaultPrecision == 'single': return
     self.log.write('Checking if sdot() returns a float or a double\n')
-    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
-    body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(const int*,const float*,const int *,const float*,const int*);
+    if 'known-sdot-returns-double' in self.argDB:
+      if self.argDB['known-sdot-returns-double']:
+        self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+    elif self.argDB['with-batch']:
+      self.logPrintBox('***** WARNING: Cannot determine if BLAS sdot() returns a float or a double\n\
+in batch-mode! Assuming float. Run with --known-sdot-returns-double=1\n\
+if you know it returns a double (very unlikely). Run with\n\
+--known-sdor-returns-double=0 to remove this warning message.\n\
+warning message *****')
+    else:
+      includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+      body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(const int*,const float*,const int *,const float*,const int*);
                   float x1[1] = {3.0};
                   int one1 = 1;
                   long long int ione1 = 1;
@@ -669,18 +696,28 @@ class Configure(config.package.Package):
                        sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''((const int*)&ione1,x1,(const int*)&ione1,x1,(const int*)&ione1);
                      }
                   fprintf(output, "--known-sdot-returns-double=%d",sdotresult != 9);\n'''
-    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib,nobatch=1)
-    if result:
-      self.log.write('Checking for sdot return double: result ' +str(result)+'\n')
-      result = int(result)
+      result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib,nobatch=1)
       if result:
-        self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
-        self.log.write('Checking sdot(): Program did return with not 1 for output so assume returns double\n')
-    else:
-      self.log.write('Checking sdot(): Program did not return with output so assume returns single\n')
+        self.log.write('Checking for sdot() return double: result ' +str(result)+'\n')
+        result = int(result)
+        if result:
+          self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+          self.log.write('Checking sdot(): Program did return with not 1 for output so assume returns double\n')
+      else:
+        self.log.write('Checking sdot(): Program did not return with output so assume returns single\n')
     self.log.write('Checking if snrm() returns a float or a double\n')
-    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
-    body     = '''extern float '''+self.mangleBlasNoPrefix('snrm2')+'''(const int*,const float*,const int*);
+    if 'known-snrm2-returns-double' in self.argDB:
+      if self.argDB['known-snrm2-returns-double']:
+        self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
+    elif self.argDB['with-batch']:
+      self.logPrintBox('***** WARNING: Cannot determine if BLAS snrm2() returns a float or a double\n\
+in batch-mode! Assuming float. Run with --known-snrm2-returns-double=1\n\
+if you know it returns a double (very unlikely). Run with\n\
+--known-snrm2-returns-double=0 to remove this warning message.\n\
+warning message *****')
+    else:
+      includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+      body     = '''extern float '''+self.mangleBlasNoPrefix('snrm2')+'''(const int*,const float*,const int*);
                   float x2[1] = {3.0};
                   int one2 = 1;
                   long long int ione2 = 1;
@@ -692,12 +729,12 @@ class Configure(config.package.Package):
                        normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''((const int*)&ione2,x2,(const int*)&ione2);
                      }
                   fprintf(output, "--known-snrm2-returns-double=%d",normresult != 3);\n'''
-    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib,nobatch=1)
-    if result:
-      self.log.write('Checking for snrm2 return double: result ' +str(result)+'\n')
-      result = int(result)
+      result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib,nobatch=1)
       if result:
-        self.log.write('Checking sdot(): Program did eturn with 1 for output so assume returns double\n')
-        self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
-    else:
-      self.log.write('Checking snrm(): Program did not return with output so assume returns single\n')
+        self.log.write('Checking for snrm2() return double: result ' +str(result)+'\n')
+        result = int(result)
+        if result:
+          self.log.write('Checking snrm2(): Program did return with 1 for output so assume returns double\n')
+          self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
+      else:
+        self.log.write('Checking snrm2(): Program did not return with output so assume returns single\n')

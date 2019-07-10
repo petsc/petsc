@@ -12,11 +12,6 @@ class Configure(config.base.Configure):
   def getDefineName(self, funcName):
     return 'HAVE_'+funcName.upper()
 
-  def setupHelp(self, help):
-    import nargs
-    help.addArgument('Functions', '-known-memcmp-ok=<bool>', nargs.ArgBool(None, None, 'Does memcmp() work correctly?'))
-    return
-
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.compilers = self.framework.require('config.compilers', self)
@@ -109,27 +104,12 @@ builtin and then its argument prototype would still apply. */
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
-    if 'known-memcmp-ok' in self.argDB:
-      if self.argDB['known-memcmp-ok'] == 0:
-        raise RuntimeError('No 8-bit clean memcmp() exists. Cannot proceed')
-      else:
-        return
     if not self.argDB['with-batch']:
       self.logPrint('Making executable to test memcmp()')
       if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
         raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed.')
     else:
-      self.framework.addBatchInclude('#include <string.h>')
-      self.framework.addBatchBody(['{',
-                                   '  char c0 = 0x40;',
-                                   '  char c1 = (char) 0x80;',
-                                   '  char c2 = (char) 0x81;',
-                                   '  if (memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1) {',
-                                   '    fprintf(output, "  \'--known-memcmp-ok=0\',\\n");',
-                                   '  } else {',
-                                   '    fprintf(output, "  \'--known-memcmp-ok=1\',\\n");',
-                                   '  }',
-                                   '}'])
+      self.log.write('Skipping testing of memcmp() on batch system\n')
     return
 
   def checkSysinfo(self):

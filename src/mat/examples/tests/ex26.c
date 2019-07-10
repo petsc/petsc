@@ -12,8 +12,8 @@ PetscErrorCode DumpCSR(Mat A,PetscInt shift,PetscBool symmetric,PetscBool compre
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQBAIJ,&isseqbaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATSEQBAIJ,&isseqbaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
   if (isseqbaij || isseqsbaij) {
     ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   }

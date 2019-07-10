@@ -60,8 +60,8 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionBegin;
   if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SL may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
     ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   }
@@ -171,8 +171,8 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionBegin;
   if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
     ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   }
@@ -281,8 +281,8 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionBegin;
   if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IDO may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
     ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   }

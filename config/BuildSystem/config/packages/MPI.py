@@ -145,7 +145,7 @@ class Configure(config.package.Package):
         if not 'known-mpi-shared-libraries' in self.argDB:
           self.logPrintBox('***** WARNING: Cannot verify that MPI is a shared library - in\n\
 batch-mode! If MPI is a static library but linked into multiple shared\n\
-libraries that the application uses, sometimes compiles go through -\n\
+libraries that the application uses, sometimes compiles work -\n\
 but one might get run-time errors. If you know that the MPI library is\n\
 shared - run with --known-mpi-shared-libraries=1 option to remove this\n\
 warning message *****')
@@ -153,14 +153,14 @@ warning message *****')
           raise RuntimeError('Provided MPI library is flagged as static library! If its linked\n\
 into multipe shared libraries that an application uses, sometimes\n\
 compiles go through - but one might get run-time errors.  Either\n\
-rebuild PETSc with --with-shared-libraries=0 or provide MPI with\n\
-shared libraries and flag it with --known-mpi-shared-libraries=1')
+reconfigure PETSc with --with-shared-libraries=0 or provide MPI with\n\
+shared libraries and run with --known-mpi-shared-libraries=1')
       return
     try:
       self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
     except RuntimeError as e:
       if self.argDB['with-shared-libraries']:
-        raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared-libraries=0 or rebuild MPI with shared library support')
+        raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither reconfigure with --with-shared-libraries=0 or rebuild MPI with shared library support')
       self.logPrint('MPI libraries cannot be used with shared libraries')
       self.shared = 0
     return
@@ -313,7 +313,7 @@ shared libraries and flag it with --known-mpi-shared-libraries=1')
     if self.getDefaultLanguage() == 'C': mpitypes.extend([('MPI_C_DOUBLE_COMPLEX', 'c-double-complex')])
     for datatype, name in mpitypes:
       includes = '#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n'
-      body     = 'MPI_Aint size;\nint ierr;\nMPI_Init(0,0);\nierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\nMPI_Finalize();\n'
+      body     = 'int size;\nint ierr;\nMPI_Init(0,0);\nierr = MPI_Type_size('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\nMPI_Finalize();\n'
       if self.checkCompile(includes, body):
         if 'known-mpi-'+name in self.argDB:
           if int(self.argDB['known-mpi-'+name]):
@@ -324,24 +324,12 @@ shared libraries and flag it with --known-mpi-shared-libraries=1')
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
-          if self.needBatchMPI:
-            self.framework.addBatchSetup('if (MPI_Init(&argc, &argv));')
-            self.framework.addBatchCleanup('if (MPI_Finalize());')
-            self.needBatchMPI = 0
-          self.framework.addBatchInclude(['#include <stdlib.h>', '#define MPICH_IGNORE_CXX_SEEK', '#define MPICH_SKIP_MPICXX 1', '#define OMPI_SKIP_MPICXX 1', '#include <mpi.h>'])
-          self.framework.addBatchBody('''
-{
-  MPI_Aint size=0;
-  int ierr=0;
-  if (MPI_LONG_DOUBLE != MPI_DATATYPE_NULL) {
-    ierr = MPI_Type_extent(%s, &size);
-  }
-  if(!ierr && (size != 0)) {
-    fprintf(output, "  \'--known-mpi-%s=1\',\\n");
-  } else {
-    fprintf(output, "  \'--known-mpi-%s=0\',\\n");
-  }
-}''' % (datatype, name, name))
+         self.logPrintBox('***** WARNING: Cannot determine if '+datatype+' works on your system\n\
+in batch-mode! Assuming it does work. Run with --known-mpi-'+name+'=0\n\
+if you know it does not work (very unlikely). Run with --known-mpi-'+name+'=1\n\
+to remove this warning message.\n\
+warning message *****')
+         self.addDefine('HAVE_'+datatype, 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     return

@@ -1,9 +1,8 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,MatType,MatReuse,Mat*);
 
-PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJMKL(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt *d_nnz,PetscInt o_nz,const PetscInt *o_nnz)
+static PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJMKL(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt *d_nnz,PetscInt o_nz,const PetscInt *o_nnz)
 {
   Mat_MPIBAIJ     *b = (Mat_MPIBAIJ*)B->data;
   PetscErrorCode ierr;
@@ -15,7 +14,7 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJMKL(Mat B,PetscInt bs,PetscInt
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -30,7 +29,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,Mat
   *newmat = B;
   PetscFunctionReturn(0);
 }
-#endif
+
 /*@C
    MatCreateBAIJMKL - Creates a sparse parallel matrix in block AIJ format
    (block compressed row).  
@@ -145,20 +144,10 @@ PetscErrorCode  MatCreateBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
     ierr = MatSetType(*A,MATMPIBAIJMKL);CHKERRQ(ierr);
-#else    
-    ierr = PetscInfo(A,"MKL baij routines are not supported for used version of MKL. Using PETSc default routines. \n Please use version of MKL 11.3 and higher. \n");  
-    ierr = MatSetType(*A,MATMPIBAIJ);CHKERRQ(ierr);
-#endif
     ierr = MatMPIBAIJSetPreallocation(*A,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
   } else {
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
     ierr = MatSetType(*A,MATSEQBAIJMKL);CHKERRQ(ierr);
-#else
-    ierr = PetscInfo(A,"MKL baij routines are not supported for used version of MKL. Using PETSc default routines. \n Please use version of MKL 11.3 and higher. \n");  
-    ierr = MatSetType(*A,MATSEQBAIJ);CHKERRQ(ierr);    
-#endif    
     ierr = MatSeqBAIJSetPreallocation(*A,bs,d_nz,d_nnz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -170,11 +159,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   ierr = MatConvert_MPIBAIJ_MPIBAIJMKL(A,MATMPIBAIJMKL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-#else
-  ierr = PetscInfo(A,"MKL baij routines are not supported for used version of MKL. Using PETSc default routines. \n Please use version of MKL 11.3 and higher. \n");
-#endif
   PetscFunctionReturn(0);
 }
 

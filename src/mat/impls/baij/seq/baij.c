@@ -2492,9 +2492,9 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmetric,
   if (!ia) PetscFunctionReturn(0);
   if (symmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for BAIJ matrices");
   else {
-    ierr = PetscCalloc1(n+1,&collengths);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n,&collengths);CHKERRQ(ierr);
     ierr = PetscMalloc1(n+1,&cia);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nz+1,&cja);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nz,&cja);CHKERRQ(ierr);
     jj   = a->j;
     for (i=0; i<nz; i++) {
       collengths[jj[i]]++;
@@ -2547,10 +2547,10 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat A,PetscInt oshift,PetscBool symm
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
 
-  ierr = PetscCalloc1(n+1,&collengths);CHKERRQ(ierr);
+  ierr = PetscCalloc1(n,&collengths);CHKERRQ(ierr);
   ierr = PetscMalloc1(n+1,&cia);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nz+1,&cja);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nz+1,&cspidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz,&cja);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz,&cspidx);CHKERRQ(ierr);
   jj   = a->j;
   for (i=0; i<nz; i++) {
     collengths[jj[i]]++;

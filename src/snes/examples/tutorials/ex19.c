@@ -1106,5 +1106,16 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       requires: cuda
       args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 3
 
+   test:
+      suffix: seqbaijmkl
+      nsize: 1
+      requires: define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+      args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
+
+   test:
+      suffix: mpibaijmkl
+      nsize: 2
+      requires:  define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+      args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
 
 TEST*/

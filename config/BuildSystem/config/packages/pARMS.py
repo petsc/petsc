@@ -49,7 +49,7 @@ class Configure(config.package.Package):
       g.write('CFDEFS     = \n')
     else:
       raise RuntimeError('Unknown blas mangling: cannot proceed with pARMS: '+str(self.blasLapack.mangling))
-    g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void-p'])+'\n')
+    g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['void-p'])+'\n')
 
     g.write('RM         = rm\n')
     g.write('RMFLAGS    = -rf\n')

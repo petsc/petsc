@@ -45,9 +45,8 @@ class Configure(config.package.Package):
     '''Checks if the CUDA compiler agrees with the C compiler on what size of void * should be'''
     self.log.write('Checking if sizeof(void*) in CUDA is the same as with regular compiler\n')
     size = self.types.checkSizeof('void *', (8, 4), lang='CUDA', save=False)
-    if size != self.types.sizes['known-sizeof-void-p']:
+    if size != self.types.sizes['void-p']:
       raise RuntimeError('CUDA Error: sizeof(void*) with CUDA compiler is ' + str(size) + ' which differs from sizeof(void*) with C compiler')
-    self.argDB['known-cuda-sizeof-void-p'] = size
     return
 
   def configureTypes(self):
