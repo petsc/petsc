@@ -606,7 +606,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMult_SeqKAIJ_N(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMult_SeqKAIJ(Mat A,Vec xx,Vec yy)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -614,17 +614,9 @@ PetscErrorCode MatMult_SeqKAIJ_N(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultAdd_SeqKAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = MatMultAdd_SeqKAIJ(A,xx,yy,zz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #include <petsc/private/kernels/blockinvert.h>
 
-PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ_N(Mat A,const PetscScalar **values)
+PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A,const PetscScalar **values)
 {
   Mat_SeqKAIJ       *b  = (Mat_SeqKAIJ*)A->data;
   Mat_SeqAIJ        *a  = (Mat_SeqAIJ*)b->AIJ->data;
@@ -710,7 +702,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 
   if (!m) PetscFunctionReturn(0);
 
-  if (!kaij->ibdiagvalid) { ierr = MatInvertBlockDiagonal_SeqKAIJ_N(A,NULL);CHKERRQ(ierr); }
+  if (!kaij->ibdiagvalid) { ierr = MatInvertBlockDiagonal_SeqKAIJ(A,NULL);CHKERRQ(ierr); }
   idiag = kaij->ibdiag;
   diag  = a->diag;
 
@@ -998,7 +990,7 @@ PetscErrorCode MatMultAdd_MPIKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMult_MPIKAIJ_dof(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMult_MPIKAIJ(Mat A,Vec xx,Vec yy)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1006,15 +998,7 @@ PetscErrorCode MatMult_MPIKAIJ_dof(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultAdd_MPIKAIJ_dof(Mat A,Vec xx,Vec yy, Vec zz)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = MatMultAdd_MPIKAIJ(A,xx,yy,zz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ_dof(Mat A,const PetscScalar **values)
+PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A,const PetscScalar **values)
 {
   Mat_MPIKAIJ     *b = (Mat_MPIKAIJ*)A->data;
   PetscErrorCode  ierr;
@@ -1328,9 +1312,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
     A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_SeqKAIJ;
     A->ops->view                = MatView_SeqKAIJ;
-    A->ops->mult                = MatMult_SeqKAIJ_N;
-    A->ops->multadd             = MatMultAdd_SeqKAIJ_N;
-    A->ops->invertblockdiagonal = MatInvertBlockDiagonal_SeqKAIJ_N;
+    A->ops->mult                = MatMult_SeqKAIJ;
+    A->ops->multadd             = MatMultAdd_SeqKAIJ;
+    A->ops->invertblockdiagonal = MatInvertBlockDiagonal_SeqKAIJ;
     A->ops->getrow              = MatGetRow_SeqKAIJ;
     A->ops->restorerow          = MatRestoreRow_SeqKAIJ;
     A->ops->sor                 = MatSOR_SeqKAIJ;
@@ -1339,9 +1323,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
     A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_MPIKAIJ;
     A->ops->view                = MatView_MPIKAIJ;
-    A->ops->mult                = MatMult_MPIKAIJ_dof;
-    A->ops->multadd             = MatMultAdd_MPIKAIJ_dof;
-    A->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ_dof;
+    A->ops->mult                = MatMult_MPIKAIJ;
+    A->ops->multadd             = MatMultAdd_MPIKAIJ;
+    A->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ;
     A->ops->getrow              = MatGetRow_MPIKAIJ;
     A->ops->restorerow          = MatRestoreRow_MPIKAIJ;
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIKAIJ);CHKERRQ(ierr);
