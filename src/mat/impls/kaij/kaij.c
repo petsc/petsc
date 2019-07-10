@@ -463,7 +463,9 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     } else T = a->T;
     ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr); 
     ierr = MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ);CHKERRQ(ierr);
-    ierr = PetscFree(T);CHKERRQ(ierr);
+    if (a->isTI) {
+      ierr = PetscFree(T);CHKERRQ(ierr);
+    }
 
     ierr = VecGetSize(mpiaij->lvec,&n);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_SELF,&a->w);CHKERRQ(ierr);
