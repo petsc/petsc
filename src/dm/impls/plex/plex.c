@@ -6842,6 +6842,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
       const PetscInt *cone, *ornt, *faces;
       PetscInt        numFaces, faceSize, coneSize,f;
       PetscInt       *closure = NULL, closureSize, cl, numCorners = 0;
+
       if (pMax[dim-h] >= 0 && c >= pMax[dim-h]) continue;
       ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
@@ -6890,7 +6891,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
 {
   PetscReal      detJ, J[9], refVol = 1.0;
   PetscReal      vol;
-  PetscInt       dim, depth, d, cStart, cEnd, c;
+  PetscInt       dim, depth, d, cStart, cEnd, c, cMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6898,7 +6899,9 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) refVol *= 2.0;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  cMax = cMax < 0 ? cEnd : cMax;
+  for (c = cStart; c < cMax; ++c) {
     ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, |J| = %g", c, (double) detJ);
     ierr = PetscInfo2(dm, "Cell %D FEM Volume %g\n", c, (double) detJ*refVol);CHKERRQ(ierr);
