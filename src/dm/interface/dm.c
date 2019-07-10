@@ -7065,6 +7065,7 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   tmpLabel->output = PETSC_TRUE;
   tmpLabel->next   = dm->labels->next;
   dm->labels->next = tmpLabel;
+  ierr = PetscObjectReference((PetscObject)label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -7109,6 +7110,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
       if (hasLabel) {
         dm->depthLabel = NULL;
       }
+      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
       ierr = PetscFree(next);CHKERRQ(ierr);
       break;
     }
@@ -7228,6 +7230,7 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB)
     ierr = DMGetLabel(dmA, name, &label);CHKERRQ(ierr);
     ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
     ierr = DMAddLabel(dmB, labelNew);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
