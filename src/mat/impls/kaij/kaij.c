@@ -588,8 +588,6 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   }
   if (s) {
     for (i=0; i<m; i++) {
-      jrow = ii[i];
-      n    = ii[i+1] - jrow;
       sums = y + p*i;
       bx   = x + q*i;
       if (i < b->AIJ->cmap->n) {
