@@ -31,7 +31,7 @@
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
 #define snesnewtontrssetpostcheck_       SNESNEWTONTRSETPOSTCHECK
-#Elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
 #define snescomputejacobiandefault_      snescomputejacobiandefault
