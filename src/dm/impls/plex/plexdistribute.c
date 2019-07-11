@@ -1690,8 +1690,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     /* oldRemote: original root point mapping to original leaf point
        newRemote: original leaf point mapping to overlapped leaf point */
     if (oldLeaves) {
-      /* After stratification, the migration remotes may not be in root order, so we reorder using the leaf numbering */
-      ierr = PetscMalloc1(nroots, &permRemote);CHKERRQ(ierr);
+      /* After stratification, the migration remotes may not be in root (canonical) order, so we reorder using the leaf numbering */
+      ierr = PetscMalloc1(noldleaves, &permRemote);CHKERRQ(ierr);
       for (l = 0; l < noldleaves; ++l) permRemote[oldLeaves[l]] = oldRemote[l];
       oldRemote = permRemote;
     }
