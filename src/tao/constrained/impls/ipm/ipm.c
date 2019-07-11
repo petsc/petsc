@@ -723,9 +723,9 @@ PetscErrorCode IPMUpdateAi(Tao tao)
   /* Create Ai matrix if it doesn't exist yet */
   if (!ipmP->Ai) {
     comm = ((PetscObject)(tao->solution))->comm;
-    ierr = PetscMalloc1(ipmP->nb,&nonzeros);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     if (size == 1) {
+      ierr = PetscMalloc1(ipmP->nb,&nonzeros);CHKERRQ(ierr);
       for (i=0;i<ipmP->mi;i++) {
         ierr = MatGetRow(tao->jacobian_inequality,i,&ncols,NULL,NULL);CHKERRQ(ierr);
         nonzeros[i] = ncols;
