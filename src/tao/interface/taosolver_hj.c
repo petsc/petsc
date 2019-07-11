@@ -132,7 +132,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
 
     if (complete_print) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded Hessian ----------\n");CHKERRQ(ierr);
-      ierr = MatView(hessian,mviewer);CHKERRQ(ierr);
+      ierr = MatView(A,mviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Hessian ----------\n");CHKERRQ(ierr);
       ierr = MatView(B,mviewer);CHKERRQ(ierr);
     }
