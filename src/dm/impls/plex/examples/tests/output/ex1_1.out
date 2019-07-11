@@ -3568,3 +3568,35 @@ Label 'marker':
 [0]: 51 (1)
 [0]: 52 (1)
 [0]: 53 (1)
+[0] DMPlexCheckGeometry(): Cell 0 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 1 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 2 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 3 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 4 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 5 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 6 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 7 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 8 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 9 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 10 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 11 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 12 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 13 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 14 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 15 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 16 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 17 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 18 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 19 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 20 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 21 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 22 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 23 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 24 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 25 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 26 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 27 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 28 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 29 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 30 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 31 FEM Volume 0.25

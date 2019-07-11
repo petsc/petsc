@@ -31,6 +31,8 @@ typedef struct {
   PetscInt      extrude_layers;                  /* Layers to be extruded */
   PetscBool     testp4est[2];
   PetscBool     redistribute;
+  PetscBool     final_ref;                       /* Run refinement at the end */
+  PetscBool     final_diagnostics;               /* Run diagnostics on the final mesh */
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -69,6 +71,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->testp4est[0]      = PETSC_FALSE;
   options->testp4est[1]      = PETSC_FALSE;
   options->redistribute      = PETSC_FALSE;
+  options->final_ref         = PETSC_FALSE;
+  options->final_diagnostics = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
@@ -108,6 +112,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_p4est_seq", "Test p4est with sequential base DM", "ex1.c", options->testp4est[0], &options->testp4est[0], NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_p4est_par", "Test p4est with parallel base DM", "ex1.c", options->testp4est[1], &options->testp4est[1], NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_redistribute", "Test redistribution", "ex1.c", options->redistribute, &options->redistribute, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-final_ref", "Run uniform refinement on the final mesh", "ex1.c", options->final_ref, &options->final_ref, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-final_diagnostics", "Run diagnostics on the final mesh", "ex1.c", options->final_diagnostics, &options->final_diagnostics, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -376,8 +382,35 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     user->cellSimplex = PETSC_FALSE;
   }
+
+  if (user->final_ref) {
+    DM refinedMesh = NULL;
+
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
+    if (refinedMesh) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = refinedMesh;
+    }
+  }
+
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  if (user->final_diagnostics) {
+    PetscBool interpolated = PETSC_TRUE;
+    PetscInt  dim, depth;
+
+    ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(*dm, &depth);CHKERRQ(ierr);
+    if (depth >= 0 && dim != depth) interpolated = PETSC_FALSE;
+
+    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+    if (interpolated) {
+      ierr = DMPlexCheckFaces(*dm, 0);CHKERRQ(ierr);
+    }
+    ierr = DMPlexCheckSkeleton(*dm, 0);CHKERRQ(ierr);
+    ierr = DMPlexCheckGeometry(*dm);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
@@ -533,10 +566,11 @@ int main(int argc, char **argv)
     suffix: gmsh_5
     requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
+  # TODO: it seems the mesh is not a valid gmsh (inverted cell)
   test:
     suffix: gmsh_6
     requires: !single
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view -final_diagnostics 0
   test:
     suffix: gmsh_7
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere_bin.msh -dm_view ::ascii_info_detail -interpolate -test_shape
@@ -564,11 +598,12 @@ int main(int argc, char **argv)
     test:
       suffix: gmsh_11_periodic_0
       args: -dm_plex_gmsh_periodic 0
+  # TODO: it seems the mesh is not a valid gmsh (inverted cell)
   test:
     suffix: gmsh_12
     nsize: 4
     requires: !single mpiio
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -viewer_binary_mpiio -petscpartitioner_type simple -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -viewer_binary_mpiio -petscpartitioner_type simple -interpolate 1 -dm_view -final_diagnostics 0
   test:
     suffix: gmsh_13_hybs2t
     nsize: 4
@@ -586,7 +621,7 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_faces -dm_plex_check_symmetry -dm_plex_check_skeleton
   test:
     suffix: gmsh_15_hyb3d_vtk
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view vtk:
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view vtk: -dm_plex_gmsh_hybrid
   test:
     suffix: gmsh_15_hyb3d_s2t
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_faces -dm_plex_check_symmetry -dm_plex_check_skeleton -simplex2tensor -test_shape
@@ -682,24 +717,25 @@ int main(int argc, char **argv)
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh -viewer_binary_mpiio
 
   # Fluent mesh reader tests
+  # TODO: Geometry checks fail
   test:
     suffix: fluent_0
     requires: !complex
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view -final_diagnostics 0
   test:
     suffix: fluent_1
     nsize: 3
     requires: !complex
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -test_partition -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -test_partition -dm_view -final_diagnostics 0
   test:
     suffix: fluent_2
     requires: !complex
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view -final_diagnostics 0
   test:
     suffix: fluent_3
     requires: !complex
     TODO: broken
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view -final_diagnostics 0
 
   # Med mesh reader tests, including parallel file reads
   test:
@@ -920,9 +956,10 @@ int main(int argc, char **argv)
     test:
       suffix: p4est_par_ovl_periodic
       args: -dim 2 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -domain_box_sizes 3,5 -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash
+    #TODO Mesh cell 201 is inverted, vol = 0. (FVM Volume. Is it correct? -> Diagnostics disabled)
     test:
       suffix: p4est_par_ovl_periodic_3d
-      args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash
+      args: -dim 3 -domain_shape box -cell_simplex 0 -x_periodicity periodic -y_periodicity periodic -z_periodicity -domain_box_sizes 3,5,4 -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash -final_diagnostics 0
     test:
       suffix: p4est_par_ovl_gmsh_periodic
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
@@ -967,4 +1004,7 @@ int main(int argc, char **argv)
     suffix: glvis_3d_hyb
     args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple
 
+  test:
+    suffix: glvis_3d_hyb_s2t
+    args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_3d_cube.msh -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple -simplex2tensor
 TEST*/
