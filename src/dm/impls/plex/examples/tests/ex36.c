@@ -76,7 +76,7 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
 
     for (c = start_cell; c < end_cell; ++c) {
        ierr = PetscSectionGetOffset(cell_section, c, &offset);CHKERRQ(ierr);
-       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d c %D centroid %g,%g,%g vol %g\n", rank, c, cell_array[offset+0], cell_array[offset+1], cell_array[offset+2], cell_array[offset+3]);CHKERRQ(ierr);
+       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d c %D centroid %g,%g,%g vol %g\n", rank, c, (double) cell_array[offset+0], (double) cell_array[offset+1], (double) cell_array[offset+2], (double) cell_array[offset+3]);CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(cell_geom, &cell_array);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
        ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
        if (supportSize > 1) {
           ierr = PetscSectionGetOffset(face_section, f, &offset);CHKERRQ(ierr);
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d f %D cells %D,%D normal %g,%g,%g centroid %g,%g,%g\n", rank, f, cells[0], cells[1], face_array[offset+0], face_array[offset+1], face_array[offset+2], face_array[offset+3], face_array[offset+4], face_array[offset+5]);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d f %D cells %D,%D normal %g,%g,%g centroid %g,%g,%g\n", rank, f, cells[0], cells[1], (double) face_array[offset+0], (double) face_array[offset+1], (double) face_array[offset+2], (double) face_array[offset+3], (double) face_array[offset+4], (double) face_array[offset+5]);CHKERRQ(ierr);
        }
     }
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
