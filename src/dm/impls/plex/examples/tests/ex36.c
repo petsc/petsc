@@ -101,13 +101,14 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
 
 int main(int argc, char **argv)
 {
-  DM             dm, dist_dm, redist_dm;
-  PetscSF        dist_sf, redist_sf;
-  Vec            cell_geom, face_geom;
-  PetscInt       overlap = 1, overlap2 = 1;
-  PetscMPIInt    rank;
-  const char    *filename = "gminc_1d.exo";
-  PetscErrorCode ierr;
+  DM               dm, dist_dm, redist_dm;
+  PetscPartitioner part;
+  PetscSF          dist_sf, redist_sf;
+  Vec              cell_geom, face_geom;
+  PetscInt         overlap = 1, overlap2 = 1;
+  PetscMPIInt      rank;
+  const char      *filename = "gminc_1d.exo";
+  PetscErrorCode   ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -118,6 +119,8 @@ int main(int argc, char **argv)
   }
   ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
 
+  ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL, NULL, "-overlap", &overlap, NULL);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, overlap, &dist_sf, &dist_dm);CHKERRQ(ierr);
   if (dist_dm) {
@@ -130,6 +133,8 @@ int main(int argc, char **argv)
   ierr = dm_view_geometry(dm, cell_geom, face_geom);CHKERRQ(ierr);
 
   /* redistribute */
+  ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL, NULL, "-overlap2", &overlap2, NULL);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, overlap2, &redist_sf, &redist_dm);CHKERRQ(ierr);
   if (redist_dm) {
@@ -155,6 +160,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     nsize: 3
-    args: -overlap 1 -overlap2 1 -dm_plex_box_faces 8,1,1
+    args: -overlap 1 -overlap2 1 -dm_plex_box_faces 8,1,1 -petscpartitioner_type simple
 
 TEST*/
