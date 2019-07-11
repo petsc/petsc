@@ -733,19 +733,19 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         nz = diag[i] - ai[i];
 
         if (T) {                /* b - T (Arow * x) */
-          for (k=0; k<bs; k++) w[k] = 0;
+          ierr = PetscMemzero(w,bs*sizeof(PetscScalar));
           for (j=0; j<nz; j++) {
             for (k=0; k<bs; k++) w[k] -= v[j] * x[vi[j]*bs+k];
           }
           PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs,w,T,&t[i2]);
           for (k=0; k<bs; k++) t[i2+k] += b[i2+k];
         } else if (kaij->isTI) {
-          for (k=0; k<bs; k++) t[i2+k] = b[i2+k];
+          ierr = PetscMemcpy(t+i2,b+i2,bs*sizeof(PetscScalar));CHKERRQ(ierr);
           for (j=0; j<nz; j++) {
             for (k=0; k<bs; k++) t[i2+k] -= v[j] * x[vi[j]*bs+k];
           }
         } else {
-          for (k=0; k<bs; k++) t[i2+k] = b[i2+k];
+          ierr = PetscMemcpy(t+i2,b+i2,bs*sizeof(PetscScalar));CHKERRQ(ierr);
         }
 
         PetscKernel_w_gets_Ar_times_v(bs,bs,t+i2,idiag,y);
@@ -786,7 +786,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
           }
           PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,arr,work);
         } else if (kaij->isTI) {
-          for (k=0; k<bs; k++) w[k] = t[i2+k];
+          ierr = PetscMemcpy(w,t+i2,bs*sizeof(PetscScalar));CHKERRQ(ierr);
           for (j=0; j<nz; j++) {
             for (k=0; k<bs; k++) w[k] -= v[j] * x[vi[j]*bs+k];
           }
