@@ -2,8 +2,11 @@
 ! DMPlexComputeCellGeometryFVM()
 ! Contributed by Adrian Croucher <a.croucher@auckland.ac.nz>
       program main
+      use petscsys
+      use petscdmplex
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdmplex.h>
       implicit none
-#include <petsc/finclude/petsc.h90>
       DM :: dm, dmi
       PetscFV :: fvm
       PetscInt, parameter :: dim = 3
@@ -67,7 +70,7 @@
 
       do i = 0, 1
         call DMPlexComputeCellGeometryFVM(dm, i, vol, pcentroid, pnormal, ierr);CHKERRA(ierr)
-        write(*, '(a, i2, a, f8.4, a, 3(f8.4, 1x))'),'cell: ', i, ' volume: ', vol, ' centroid: ',pcentroid(1), pcentroid(2), pcentroid(3)
+        write(*, '(a, i2, a, f8.4, a, 3(f8.4, 1x))') 'cell: ', i, ' volume: ', vol, ' centroid: ',pcentroid(1), pcentroid(2), pcentroid(3)
         call DMPlexComputeCellGeometryAffineFEM(dm, i, pv0, pJ, pinvJ,detJ, ierr);CHKERRA(ierr)
       end do
 
@@ -78,3 +81,10 @@
       call DMDestroy(dm, ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end program main
+
+!/*TEST
+!
+!   test:
+!      suffix: 0
+!
+!TEST*/
