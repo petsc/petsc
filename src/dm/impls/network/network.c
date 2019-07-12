@@ -2138,22 +2138,27 @@ PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,Petsc
 
   Level: Advanced
 
-.seealso: DMNetworkCreate()
+.seealso: DMNetworkGetGlobalVertexIndex()
 @*/
 PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
 {
   PetscErrorCode    ierr;
   DM_Network        *network=(DM_Network*)dm->data;
   MPI_Comm          comm;
-  PetscMPIInt       rank,size,*displs,*recvcounts;
+  PetscMPIInt       rank,size,*displs,*recvcounts,remoterank;
   PetscBool         ghost;
-  PetscInt          *vltog,nroots,nleaves,i,*vrange,k=0,kg=0;
+  PetscInt          *vltog,nroots,nleaves,i,*vrange,k,N,lidx;
   const PetscSFNode *iremote;
   PetscSF           vsf;
+  Vec               Vleaves,Vleaves_seq;
+  VecScatter        ctx;
+  PetscScalar       *varr,val;
+  const PetscScalar *varr_read;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (size == 1) {
     nroots = network->vEnd - network->vStart;
@@ -2185,15 +2190,60 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   ierr = PetscMalloc1(nroots, &vltog);CHKERRQ(ierr);
   network->vltog = vltog;
 
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  /* Set vltog for non-ghost vertices */
+  k = 0;
   for (i=0; i<nroots; i++) {
     ierr = DMNetworkIsGhostVertex(dm,i+network->vStart,&ghost);CHKERRQ(ierr);
-    if (!ghost) {
-      vltog[i] = vrange[rank] + k; k++;
-    } else {
-      vltog[i] = vrange[iremote[kg].rank] + iremote[kg].index; kg++;
-    }
+    if (ghost) continue;
+    vltog[i] = vrange[rank] + k++;
   }
   ierr = PetscFree3(vrange,displs,recvcounts);CHKERRQ(ierr);
+
+  /* Set vltog for ghost vertices */
+  /* (a) create parallel Vleaves and sequential Vleaves_seq to convert local iremote[*].index to global index */
+  ierr = VecCreate(comm,&Vleaves);CHKERRQ(ierr);
+  ierr = VecSetSizes(Vleaves,2*nleaves,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(Vleaves);CHKERRQ(ierr);
+  ierr = VecGetArray(Vleaves,&varr);CHKERRQ(ierr);
+  for (i=0; i<nleaves; i++) {
+    varr[2*i]   = (PetscScalar)(iremote[i].rank);  /* rank of remote process */
+    varr[2*i+1] = (PetscScalar)(iremote[i].index); /* local index in remote process */
+  }
+  ierr = VecRestoreArray(Vleaves,&varr);CHKERRQ(ierr);
+
+  /* (b) scatter local info to remote processes via VecScatter() */
+  ierr = VecScatterCreateToAll(Vleaves,&ctx,&Vleaves_seq);CHKERRQ(ierr);
+  ierr = VecScatterBegin(ctx,Vleaves,Vleaves_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,Vleaves,Vleaves_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  /* (c) convert local indices to global indices in parallel vector Vleaves */
+  ierr = VecGetSize(Vleaves_seq,&N);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Vleaves_seq,&varr_read);CHKERRQ(ierr);
+  for (i=0; i<N; i+=2) {
+    remoterank = (PetscMPIInt)varr_read[i];
+    if (remoterank == rank) {
+      k = i+1; /* row number */
+      lidx = (PetscInt)varr_read[i+1];
+      val  = (PetscScalar)vltog[lidx]; /* global index for non-ghost vertex computed above */
+      ierr = VecSetValues(Vleaves,1,&k,&val,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecRestoreArrayRead(Vleaves_seq,&varr_read);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(Vleaves);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(Vleaves);CHKERRQ(ierr);
+
+  /* (d) Set vltog for ghost vertices by copying local values of Vleaves */
+  ierr = VecGetArrayRead(Vleaves,&varr_read);CHKERRQ(ierr);
+  k = 0;
+  for (i=0; i<nroots; i++) {
+    ierr = DMNetworkIsGhostVertex(dm,i+network->vStart,&ghost);CHKERRQ(ierr);
+    if (!ghost) continue;
+    vltog[i] = (PetscInt)varr_read[2*k+1]; k++;
+  }
+  ierr = VecRestoreArrayRead(Vleaves,&varr_read);CHKERRQ(ierr);
+
+  ierr = VecDestroy(&Vleaves);CHKERRQ(ierr);
+  ierr = VecDestroy(&Vleaves_seq);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
