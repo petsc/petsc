@@ -30,15 +30,15 @@ int main(int argc,char **argv)
    test:
       suffix: 1
       requires: yaml
-      args: -f petsc.yml
-      filter:  egrep -v "(malloc_dump|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
+      args: -f petsc.yml -options_left 0
+      filter:  egrep -v "(malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
       localrunfiles: petsc.yml
 
    test:
       suffix: 2
       requires: yaml
-      args: -options_file_yaml petsc.yml
-      filter:  egrep -v "(malloc_dump|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
+      args: -options_file_yaml petsc.yml -options_left 0
+      filter:  egrep -v "(malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
       localrunfiles: petsc.yml
 
 TEST*/
