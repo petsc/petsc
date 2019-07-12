@@ -1222,26 +1222,23 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
     I is the identity matrix
   The resulting matrix is (np \times nq)
   
-  The matrix type is based on MATSEQAIJ for a sequential matrix A, and MATMPIAIJ for a distributed matrix A. 
-  S is always stored independently on all processes as a PetscScalar array in column-major format.
+  S and T are always stored independently on all processes as PetscScalar arrays in column-major format.
   
   Collective
 
   Input Parameters:
 + A - the AIJ matrix
-. S - the S matrix, stored as a PetscScalar array (column-major)
-. T - the T matrix, stored as a PetscScalar array (column-major)
 . p - number of rows in S and T
-- q - number of columns in S and T
+. q - number of columns in S and T
+. S - the S matrix (can be PETSC_NULL), stored as a PetscScalar array (column-major)
+- T - the T matrix (can be PETSC_NULL), stored as a PetscScalar array (column-major)
 
   Output Parameter:
 . kaij - the new KAIJ matrix
 
-  Operations provided:
-+ MatMult
-. MatMultAdd
-. MatInvertBlockDiagonal
-- MatView
+  Notes:
+  This function increases the reference count on the AIJ matrix, so the user is free to destroy the matrix if it is not needed.
+  Changes to the entries of the AIJ matrix will immediately affect the KAIJ matrix.
 
   Level: advanced
 
@@ -1279,14 +1276,7 @@ PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],
     I is the identity matrix
   The resulting matrix is (np \times nq)
   
-  The matrix type is based on MATSEQAIJ for a sequential matrix A, and MATMPIAIJ for a distributed matrix A. 
-  S and T are always stored independently on all processes as a PetscScalar array in column-major format.
-
-  Operations provided:
-+ MatMult
-. MatMultAdd
-. MatInvertBlockDiagonal
-- MatView
+  S and T are always stored independently on all processes as PetscScalar arrays in column-major format.
 
   Level: advanced
 
