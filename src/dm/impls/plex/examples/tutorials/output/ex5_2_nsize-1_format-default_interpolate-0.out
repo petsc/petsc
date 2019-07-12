@@ -1029,9 +1029,9 @@ Process 0:
   ( 178) dim  3 offset 366 -0.25 -0.433013 -1.
   ( 179) dim  3 offset 369 1. 0.5 -1.
   ( 180) dim  3 offset 372 1. 1. -1.
-DM Object: (new_) 1 MPI processes
+DM Object: Mesh_new (new_) 1 MPI processes
   type: plex
-DM_0x84000000_0 in 3 dimensions:
+Mesh_new in 3 dimensions:
 Supports:
 [0] Max support size: 8
 [0]: 56 ----> 0
