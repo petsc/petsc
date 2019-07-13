@@ -3,11 +3,7 @@
 
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
-#if CUDA_VERSION>=4020
 #include <cusparse_v2.h>
-#else
-#include <cusparse.h>
-#endif
 
 #include <algorithm>
 #include <vector>
