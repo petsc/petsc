@@ -1373,6 +1373,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
 class GNUPackage(Package):
   def __init__(self, framework):
     Package.__init__(self,framework)
+    self.builddir = 'no' # requires build be done in a subdirectory, not in the directory tree
     return
 
   def setupHelp(self, help):
@@ -1442,23 +1443,8 @@ class GNUPackage(Package):
     return args
 
   def Install(self):
-    # hypre had configure inside src directory ugh
-    if not os.path.isfile(os.path.join(self.packageDir,'configure')) and not os.path.isfile(os.path.join(self.packageDir,'src','configure')):
-      if not self.programs.autoreconf:
-        raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)!')
-      if not self.programs.libtoolize:
-        raise RuntimeError('libtoolize required for ' + self.PACKAGE+' not found!')
-      try:
-        self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand(self.programs.libtoolize, cwd=self.packageDir, timeout=100, log=self.log)
-        if ret:
-          raise RuntimeError('Error in libtoolize: ' + str(e))
-        output,err,ret  = config.base.Configure.executeShellCommand([self.programs.autoreconf, '--force', '--install'], cwd=self.packageDir, timeout=200, log = self.log)
-      except RuntimeError as e:
-        raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
-
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
-    args = self.formGNUConfigureArgs()
+    args = self.formGNUConfigureArgs()  # allow package to change self.packageDir
     if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
        args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     args = ' '.join(args)
@@ -1469,10 +1455,39 @@ class GNUPackage(Package):
     ### Use conffile to check whether a reconfigure/rebuild is required
     if not self.installNeeded(conffile):
       return self.installDir
+
+    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+      if not self.programs.autoreconf:
+        raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)! Use your package manager to install autoconf')
+      if not self.programs.libtoolize:
+        raise RuntimeError('libtoolize required for ' + self.PACKAGE+' not found! Use your package manager to install libtool')
+      try:
+        self.logPrintBox('Running libtoolize on ' +self.PACKAGE+'; this may take several minutes')
+        output,err,ret  = config.base.Configure.executeShellCommand(self.programs.libtoolize, cwd=self.packageDir, timeout=100, log=self.log)
+        if ret:
+          raise RuntimeError('Error in libtoolize: ' + str(e))
+        self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
+        output,err,ret  = config.base.Configure.executeShellCommand([self.programs.autoreconf, '--force', '--install'], cwd=self.packageDir, timeout=200, log = self.log)
+        if ret:
+          raise RuntimeError('Error in autoreconf: ' + str(e))
+      except RuntimeError as e:
+        raise RuntimeError('Error running libtoolize or autoreconf on ' + self.PACKAGE+': '+str(e))
+
+    if self.builddir == 'yes':
+      folder = os.path.join(self.packageDir, 'petsc-build')
+      if os.path.isdir(folder):
+        import shutil
+        shutil.rmtree(folder)
+      os.mkdir(folder)
+      self.packageDir = folder
+      dot = '..'
+    else:
+      dot = '.'
+
     ### Configure and Build package
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand('./configure '+args, cwd=self.packageDir, timeout=2000, log = self.log)
+      output1,err1,ret1  = config.base.Configure.executeShellCommand(dot+'/configure '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:

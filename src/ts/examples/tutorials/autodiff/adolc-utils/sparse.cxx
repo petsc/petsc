@@ -57,7 +57,7 @@ PetscErrorCode GenerateSeedMatrix(ISColoring iscoloring,PetscScalar **S)
   const PetscInt *indices;
 
   PetscFunctionBegin;
-  ierr = ISColoringGetIS(iscoloring,&p,&is);CHKERRQ(ierr);
+  ierr = ISColoringGetIS(iscoloring,PETSC_USE_POINTER,&p,&is);CHKERRQ(ierr);
   for (colour=0; colour<p; colour++) {
     ierr = ISGetLocalSize(is[colour],&size);CHKERRQ(ierr);
     ierr = ISGetIndices(is[colour],&indices);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ PetscErrorCode GenerateSeedMatrix(ISColoring iscoloring,PetscScalar **S)
       S[indices[j]][colour] = 1.;
     ierr = ISRestoreIndices(is[colour],&indices);CHKERRQ(ierr);
   }
-  ierr = ISColoringRestoreIS(iscoloring,&is);CHKERRQ(ierr);
+  ierr = ISColoringRestoreIS(iscoloring,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -89,7 +89,7 @@ PetscErrorCode GenerateSeedMatrixPlusRecovery(ISColoring iscoloring,PetscScalar 
   const PetscInt *indices;
 
   PetscFunctionBegin;
-  ierr = ISColoringGetIS(iscoloring,&p,&is);CHKERRQ(ierr);
+  ierr = ISColoringGetIS(iscoloring,PETSC_USE_POINTER,&p,&is);CHKERRQ(ierr);
   for (colour=0; colour<p; colour++) {
     ierr = ISGetLocalSize(is[colour],&size);CHKERRQ(ierr);
     ierr = ISGetIndices(is[colour],&indices);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ PetscErrorCode GenerateSeedMatrixPlusRecovery(ISColoring iscoloring,PetscScalar 
     }
     ierr = ISRestoreIndices(is[colour],&indices);CHKERRQ(ierr);
   }
-  ierr = ISColoringRestoreIS(iscoloring,&is);CHKERRQ(ierr);
+  ierr = ISColoringRestoreIS(iscoloring,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
