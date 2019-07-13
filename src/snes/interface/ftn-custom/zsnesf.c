@@ -30,7 +30,7 @@
 #define snesmonitorlgresidualnorm_       SNESMONITORLGRESIDUALNORM
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
-#define snesnewtontrssetpostcheck_       SNESNEWTONTRSETPOSTCHECK
+#define snesnewtontrsetpostcheck_        SNESNEWTONTRSETPOSTCHECK
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
@@ -58,7 +58,7 @@
 #define snesmonitorsolution_             snesmonitorsolution
 #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
 #define snesmonitorset_                  snesmonitorset
-#define snesnewtontrssetpostcheck_       snesnewtontrssetpostcheck
+#define snesnewtontrsetpostcheck_        snesnewtontrsetpostcheck
 #endif
 
 static struct {
