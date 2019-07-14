@@ -159,8 +159,8 @@ PetscErrorCode SNESSetJacobianDomainError(SNES snes)
    Logically Collective on SNES
 
    Input Parameters:
-.  snes - the SNES context
-.  flg  - indicates if or not to check jacobian domain error after each Jacobian evaluation
++  snes - the SNES context
+-  flg  - indicates if or not to check jacobian domain error after each Jacobian evaluation
 
    Level: advanced
 
@@ -1295,8 +1295,8 @@ PetscErrorCode  SNESGetIterationNumber(SNES snes,PetscInt *iter)
    Not Collective
 
    Input Parameter:
-.  snes - SNES context
-.  iter - iteration number
++  snes - SNES context
+-  iter - iteration number
 
    Level: developer
 
@@ -3560,7 +3560,7 @@ PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pets
 -  divtol - the divergence tolerance. Use -1 to deactivate the test.
 
    Options Database Keys:
-+    -snes_divergence_tolerance <divtol> - Sets divtol
+.    -snes_divergence_tolerance <divtol> - Sets divtol
 
    Notes:
    The default divergence tolerance is 1e4.
@@ -4077,7 +4077,7 @@ PETSC_EXTERN mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
 .  snes - iterative context obtained from SNESCreate()
 
    Output Parameters:
-.  a   - array to hold history
++  a   - array to hold history
 .  its - integer array holds the number of linear iterations (or
          negative if not converged) for each solve.
 -  na  - size of a and its
@@ -4113,11 +4113,11 @@ PetscErrorCode  SNESGetConvergenceHistory(SNES snes,PetscReal *a[],PetscInt *its
   Logically Collective on SNES
 
   Input Parameters:
-. snes - The nonlinear solver context
-. func - The function
++ snes - The nonlinear solver context
+- func - The function
 
   Calling sequence of func:
-. func (SNES snes, PetscInt step);
+$ func (SNES snes, PetscInt step);
 
 . step - The current step of the iteration
 
@@ -4489,7 +4489,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
    See "petsc/include/petscsnes.h" for available methods (for instance)
 +    SNESNEWTONLS - Newton's method with line search
      (systems of nonlinear equations)
-.    SNESNEWTONTR - Newton's method with trust region
+-    SNESNEWTONTR - Newton's method with trust region
      (systems of nonlinear equations)
 
   Normally, it is best to use the SNESSetFromOptions() command and then

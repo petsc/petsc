@@ -555,9 +555,9 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
    indicate it to the KSP object.
 
    References:
-.   1. - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
++   1. - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
-.   2. - Josef Malek and Zdenek Strakos, Preconditioning and the Conjugate Gradient Method in the Context of Solving PDEs, 
+-   2. - Josef Malek and Zdenek Strakos, Preconditioning and the Conjugate Gradient Method in the Context of Solving PDEs, 
     SIAM, 2014.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,

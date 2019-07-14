@@ -1409,8 +1409,8 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
 -  currentvalue - the current value
 
    Output Parameter:
-.  flg - PETSC_TRUE or PETSC_FALSE
-.  set - PETSC_TRUE if found, else PETSC_FALSE
++  flg - PETSC_TRUE or PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Notes:
        TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE

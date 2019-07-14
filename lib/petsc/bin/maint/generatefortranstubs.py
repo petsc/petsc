@@ -210,7 +210,7 @@ def processf90interfaces(petscdir,verbose):
           txt = fdr.readline()
           while txt:
             fd.write(txt)
-            if txt.find('subroutine ') > -1:
+            if txt.find('subroutine ') > -1 and txt.find('end subroutine') == -1:
               while txt.endswith('&\n'):
                 txt = fdr.readline()
                 fd.write(txt)

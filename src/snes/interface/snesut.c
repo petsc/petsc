@@ -737,8 +737,8 @@ PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
   SNESSetWorkVecs - Gets a number of work vectors.
 
   Input Parameters:
-. snes  - the SNES context
-. nw - number of work vectors to allocate
++ snes  - the SNES context
+- nw - number of work vectors to allocate
 
   Level: developer
 

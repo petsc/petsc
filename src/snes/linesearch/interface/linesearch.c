@@ -1269,8 +1269,8 @@ PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,PetscInt *order
    SNESLineSearchSetOrder - Sets the maximum order of the polynomial fit used in the line search
 
    Input Parameters:
-.  linesearch - linesearch context
-.  order - The damping parameter
++  linesearch - linesearch context
+-  order - The damping parameter
 
    Level: intermediate
 

@@ -11,11 +11,11 @@
   Collective
 
   Input Parameter:
-+ dmb  - The DMMoab object
+. dmb  - The DMMoab object
 
   Output Parameter:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
-. ldegrees  - The degree of refinement at each level in the hierarchy
+- ldegrees  - The degree of refinement at each level in the hierarchy
 
   Level: beginner
 
@@ -87,11 +87,11 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   Collective
 
   Input Parameter:
-+ dm  - The DMMoab object
+. dm  - The DMMoab object
 
   Output Parameter:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
-. dmf  - The DM objects after successive refinement of the hierarchy
+- dmf  - The DM objects after successive refinement of the hierarchy
 
   Level: beginner
 
@@ -117,11 +117,11 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM 
   Collective
 
   Input Parameter:
-+ dm  - The DMMoab object
+. dm  - The DMMoab object
 
   Output Parameter:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
-. dmc  - The DM objects after successive coarsening of the hierarchy
+- dmc  - The DM objects after successive coarsening of the hierarchy
 
   Level: beginner
 
@@ -395,8 +395,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
 . dmb  - The DMMoab object
 
   Output Parameter:
-. nlevels   - The number of levels of refinement needed to generate the hierarchy
-+ ldegrees  - The degree of refinement at each level in the hierarchy
++ nlevels   - The number of levels of refinement needed to generate the hierarchy
+- ldegrees  - The degree of refinement at each level in the hierarchy
 
   Level: beginner
 
@@ -541,7 +541,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
   Collective on dm
 
   Input Parameter:
-. dm  - The DMMoab object
++ dm  - The DMMoab object
 - comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
   Output Parameter:

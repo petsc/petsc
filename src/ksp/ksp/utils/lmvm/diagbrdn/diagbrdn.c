@@ -591,13 +591,13 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
    paradigm instead of this routine directly.
 
    Options Database Keys:
-.   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
++   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
 .   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
 .   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
 .   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
 .   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling.
 .   -mat_lmvm_tol - (developer) tolerance for bounding the denominator of the rescaling away from 0.
-.   -mat_lmvm_forward - (developer) whether or not to use the forward or backward Broyden update to the diagonal
+-   -mat_lmvm_forward - (developer) whether or not to use the forward or backward Broyden update to the diagonal
 
    Level: intermediate
 

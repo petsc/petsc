@@ -375,12 +375,12 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
    Level: advanced
 
    Calling sequence of func:
-.  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscBool  *flag);
+$  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscBool  *flag);
 
-.  update - latest solution vector
++  update - latest solution vector
 .  ctx - [optional] timestep context
 .  newdt - the timestep to use for the next step
-.  flag - flag indicating whether the last time step was acceptable
+-  flag - flag indicating whether the last time step was acceptable
 
    Notes:
    The routine set here will be called by TSPseudoVerifyTimeStep()
@@ -499,10 +499,10 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
    Level: intermediate
 
    Calling sequence of func:
-.  func (TS ts,PetscReal *newdt,void *ctx);
+$  func (TS ts,PetscReal *newdt,void *ctx);
 
-.  newdt - the newly computed timestep
-.  ctx - [optional] timestep context
++  newdt - the newly computed timestep
+-  ctx - [optional] timestep context
 
    Notes:
    The routine set here will be called by TSPseudoComputeTimeStep()
@@ -673,8 +673,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
    Collective on TS
 
    Input Parameters:
-.  ts - the timestep context
-.  dtctx - unused timestep context
++  ts - the timestep context
+-  dtctx - unused timestep context
 
    Output Parameter:
 .  newdt - the timestep to use for the next step

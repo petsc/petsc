@@ -175,7 +175,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 +   -mat_coloring_type - the type of coloring algorithm used
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
-.   -mat_coloring_view - print information about the coloring and the produced index sets
+-   -mat_coloring_view - print information about the coloring and the produced index sets
 
    Level: beginner
 
@@ -224,9 +224,9 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 
    Logically Collective on MatColoring
 
-   Input Parameter:
-.  mc - the MatColoring context
-.  dist - the distance the coloring should compute
+   Input Parameters:
++  mc - the MatColoring context
+-  dist - the distance the coloring should compute
 
    Level: beginner
 

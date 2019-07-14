@@ -6300,7 +6300,7 @@ static PetscErrorCode DMPlexCreateDimStratum(DM dm, DMLabel depthLabel, DMLabel 
   DMPlexSetHybridBounds - Set the first mesh point of each dimension which is a hybrid
 
   Input Parameters:
-. dm   - The DMPlex object
++ dm   - The DMPlex object
 . cMax - The first hybrid cell
 . fMax - The first hybrid face
 . eMax - The first hybrid edge

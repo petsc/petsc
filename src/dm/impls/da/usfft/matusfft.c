@@ -146,13 +146,13 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
    Collective
 
    Input Parameter:
-+   da - geometry of the domain encoded by a DMDA
+.   da - geometry of the domain encoded by a DMDA
 
    Output Parameter:
 .   A  - the matrix
 
   Options Database Keys:
-+ -mat_usfft_plannerflags - set the FFTW planner flags
+. -mat_usfft_plannerflags - set the FFTW planner flags
 
    Level: intermediate
 

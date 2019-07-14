@@ -1342,11 +1342,11 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   Logically Collective on Tao
 
   Input Parameters:
-. tao - The tao solver context
-. func - The function
++ tao - The tao solver context
+- func - The function
 
   Calling sequence of func:
-. func (Tao tao, PetscInt step);
+$ func (Tao tao, PetscInt step);
 
 . step - The current step of the iteration
 
@@ -2290,8 +2290,8 @@ PetscErrorCode  TaoGetResidualNorm(Tao tao,PetscReal *value)
    Not Collective
 
    Input Parameter:
-.  tao - Tao context
-.  iter - iteration number
++  tao - Tao context
+-  iter - iteration number
 
    Level: developer
 
@@ -2345,8 +2345,8 @@ PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
    Not Collective
 
    Input Parameter:
-.  tao - Tao context
-.  iter - iteration number
++  tao - Tao context
+-  iter - iteration number
 
    Level: developer
 

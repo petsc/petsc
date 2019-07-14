@@ -2934,7 +2934,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Options Database Keys (some of them, run with -h for a complete list):
 
-.    -pc_bddc_use_vertices <true> - use or not vertices in primal space
++    -pc_bddc_use_vertices <true> - use or not vertices in primal space
 .    -pc_bddc_use_edges <true> - use or not edges in primal space
 .    -pc_bddc_use_faces <false> - use or not faces in primal space
 .    -pc_bddc_symmetric <true> - symmetric computation of primal basis functions. Specify false for unsymmetric problems

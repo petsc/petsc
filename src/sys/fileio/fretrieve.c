@@ -220,7 +220,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 
    Options Database Keys:
 +    -shared_working_directory
-.    -not_shared_working_directory
+-    -not_shared_working_directory
 
    Environmental Variables:
 +     PETSC_SHARED_WORKING_DIRECTORY

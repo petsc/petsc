@@ -452,7 +452,7 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A,MatSolverType *
 . -mat_strumpack_max_rank                   - Maximum rank in HSS compression, when using pctype ilu (None)
 . -mat_strumpack_leaf_size                  - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
 . -mat_strumpack_reordering <METIS>         - Sparsity reducing matrix reordering (choose one of) NATURAL METIS PARMETIS SCOTCH PTSCOTCH RCM (None)
-. -mat_strumpack_iterative_solver <DIRECT>  - Select iterative solver from STRUMPACK (choose one of) AUTO DIRECT REFINE PREC_GMRES GMRES PREC_BICGSTAB BICGSTAB (None)
+- -mat_strumpack_iterative_solver <DIRECT>  - Select iterative solver from STRUMPACK (choose one of) AUTO DIRECT REFINE PREC_GMRES GMRES PREC_BICGSTAB BICGSTAB (None)
 
  Level: beginner
 

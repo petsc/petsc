@@ -300,7 +300,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 
     Input Parameter:
 +   petsc_comm - a communicator some PETSc object (for example, a matrix) lives in
-.   nthreads   - number of threads per MPI rank to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
+-   nthreads   - number of threads per MPI rank to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
 
     Output Parameter:
 .   pctrl      - a PETSc OpenMP controler

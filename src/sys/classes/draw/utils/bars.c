@@ -303,7 +303,7 @@ PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
   Input Parameters:
 + bar - The bar graph context
 . sort - PETSC_TRUE to sort the values
-. tolerance - discard values less than tolerance
+- tolerance - discard values less than tolerance
 
   Level: intermediate
 

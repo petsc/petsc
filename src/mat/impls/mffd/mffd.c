@@ -949,7 +949,7 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
 -  period - 1 for everytime, 2 for every second etc
 
    Options Database Keys:
-+  -mat_mffd_period <period>
+.  -mat_mffd_period <period>
 
    Level: advanced
 
@@ -980,7 +980,7 @@ PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
                the relative error in the function evaluations)
 
    Options Database Keys:
-+  -mat_mffd_err <error_rel> - Sets error_rel
+.  -mat_mffd_err <error_rel> - Sets error_rel
 
    Level: advanced
 

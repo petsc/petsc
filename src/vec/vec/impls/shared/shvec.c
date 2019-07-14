@@ -165,9 +165,9 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
    VecCreateShared - Creates a parallel vector that uses shared memory.
 
    Input Parameters:
-.  comm - the MPI communicator to use
++  comm - the MPI communicator to use
 .  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
-.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+-  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 
    Output Parameter:
 .  vv - the vector

@@ -8,7 +8,7 @@
 +     a - first floating point number
 .     b - second floating point number
 .     rtol - relative tolerance
-+     atol - absolute tolerances
+-     atol - absolute tolerances
 
     Notes: https://www.python.org/dev/peps/pep-0485/
 

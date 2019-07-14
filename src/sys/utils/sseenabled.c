@@ -107,8 +107,8 @@ PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
 .    comm - the MPI Communicator
 
      Output Parameters:
-.    lflag - Local Flag:  PETSC_TRUE if enabled in this process
-.    gflag - Global Flag: PETSC_TRUE if enabled for all processes in comm
++    lflag - Local Flag:  PETSC_TRUE if enabled in this process
+-    gflag - Global Flag: PETSC_TRUE if enabled for all processes in comm
 
      Notes:
      NULL can be specified for lflag or gflag if either of these values are not desired.

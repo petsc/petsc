@@ -446,7 +446,7 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao,PetscReal epsilon)
 
    Input Parameters:
 +  tao  - the Tao context
-.  dict - the user specified dictionary matrix.  We allow to set a null dictionary, which means identity matrix by default
+-  dict - the user specified dictionary matrix.  We allow to set a null dictionary, which means identity matrix by default
 
     Level: advanced
 @*/

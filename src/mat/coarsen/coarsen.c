@@ -223,8 +223,8 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
    Collective on MatCoarsen
 
    Input Parameters:
-.  agg - the coarsen context
-.  viewer - optional visualization context
++  agg - the coarsen context
+-  viewer - optional visualization context
 
    Level: advanced
 

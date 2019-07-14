@@ -363,7 +363,7 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
    Options Database Keys:
 
-+  -ksp_bcgsl_pinv - use pseudoinverse
+.  -ksp_bcgsl_pinv - use pseudoinverse
 
    Level: intermediate
 
@@ -391,7 +391,7 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
    Options Database Keys:
 
 +  -ksp_bcgsl_cxpoly - use enhanced polynomial
-.  -ksp_bcgsl_mrpoly - use standard polynomial
+-  -ksp_bcgsl_mrpoly - use standard polynomial
 
    Level: intermediate
 

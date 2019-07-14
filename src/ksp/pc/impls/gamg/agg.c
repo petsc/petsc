@@ -57,7 +57,7 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 
    Input Parameters:
 +  pc - the preconditioner context
-.  n - PETSC_TRUE or PETSC_FALSE
+-  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
 .  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation

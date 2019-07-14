@@ -1853,8 +1853,8 @@ PetscErrorCode  MatDenseGetArray(Mat A,PetscScalar **array)
    Logically Collective on Mat
 
    Input Parameters:
-.  mat - a MATSEQDENSE or MATMPIDENSE matrix
-.  array - pointer to the data
++  mat - a MATSEQDENSE or MATMPIDENSE matrix
+-  array - pointer to the data
 
    Level: intermediate
 
@@ -1901,8 +1901,8 @@ PetscErrorCode  MatDenseGetArrayRead(Mat A,const PetscScalar **array)
    Not Collective
 
    Input Parameters:
-.  mat - a MATSEQDENSE or MATMPIDENSE matrix
-.  array - pointer to the data
++  mat - a MATSEQDENSE or MATMPIDENSE matrix
+-  array - pointer to the data
 
    Level: intermediate
 

@@ -172,7 +172,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
 -  use - PETSC_TRUE to use noisy
 
    Options Database:
-+  -ksp_chebyshev_esteig_noisy <true,false>
+.  -ksp_chebyshev_esteig_noisy <true,false>
 
   Notes:
     This alledgely works better for multigrid smoothers

@@ -610,9 +610,9 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsOb
   KSPPIPEFCG - Implements a Pipelined, Flexible Conjugate Gradient method.
 
   Options Database Keys:
-.   -ksp_pipefcg_mmax <N> - The number of previous search directions to store
++   -ksp_pipefcg_mmax <N> - The number of previous search directions to store
 .   -ksp_pipefcg_nprealloc <N> - The number of previous search directions to preallocate
-.   -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
+-   -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
   Notes:
    Supports left preconditioning only.

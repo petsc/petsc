@@ -780,10 +780,10 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
      KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method.
 
   Options Database Keys:
-.   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
++   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
 .   -ksp_pipegcr_unroll_w - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: PETSC_TRUE)
 .   -ksp_pipegcr_nprealloc <N> - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
-.   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
+-   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
 
 
   Notes:

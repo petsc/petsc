@@ -482,8 +482,8 @@ $    FILE_MODE_APPEND - open existing file for binary output
 .  hdf5v - PetscViewer for HDF5 input/output to use with the specified file
 
   Options Database:
-.  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
-.  -viewer_hdf5_sp_output - forces (if true) the viewer to write data in single precision independent on the precision of PetscReal
++  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
+-  -viewer_hdf5_sp_output - forces (if true) the viewer to write data in single precision independent on the precision of PetscReal
 
    Level: beginner
 

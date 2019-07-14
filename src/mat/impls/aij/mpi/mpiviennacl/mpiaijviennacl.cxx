@@ -144,7 +144,7 @@ PetscErrorCode  MatCreateAIJViennaCL(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
    the above preallocation routines for simplicity.
 
    Options Database Keys:
-+  -mat_type mpiaijviennacl - sets the matrix type to "mpiaijviennacl" during a call to MatSetFromOptions()
+.  -mat_type mpiaijviennacl - sets the matrix type to "mpiaijviennacl" during a call to MatSetFromOptions()
 
   Level: beginner
 

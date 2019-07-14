@@ -3365,9 +3365,9 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
    [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the
++   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.    -mat_block_size - size of the blocks to use
+-    -mat_block_size - size of the blocks to use
 
    Level: intermediate
 
@@ -3419,9 +3419,9 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
          (possibly different for each block row) or NULL
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the
++   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.   -mat_block_size - size of the blocks to use
+-   -mat_block_size - size of the blocks to use
 
    Level: intermediate
 

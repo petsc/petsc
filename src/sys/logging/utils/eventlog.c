@@ -957,7 +957,7 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
   Input Parameters:
 + event - The event id to log
 . n     - The error index, in [0, 8)
-. error - The error
+- error - The error
 
   Database Options:
 . -log_view - Activates log summary

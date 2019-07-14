@@ -189,11 +189,11 @@ PetscErrorCode  PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
 .  type - PetscViewer type (see below)
 
    Available Types Include:
-.  PETSCVIEWERSOCKET - Socket PetscViewer
++  PETSCVIEWERSOCKET - Socket PetscViewer
 .  PETSCVIEWERASCII - ASCII PetscViewer
 .  PETSCVIEWERBINARY - binary file PetscViewer
 .  PETSCVIEWERSTRING - string PetscViewer
-.  PETSCVIEWERDRAW - drawing PetscViewer
+-  PETSCVIEWERDRAW - drawing PetscViewer
 
    Level: intermediate
 

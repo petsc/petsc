@@ -372,7 +372,7 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 .  part - the partitioning context
 
    Options Database Keys:
-+  -mat_partitioning_parmetis_coarse_sequential - use sequential PARMETIS coarse partitioner
+.  -mat_partitioning_parmetis_coarse_sequential - use sequential PARMETIS coarse partitioner
 
    Level: beginner
 

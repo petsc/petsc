@@ -1065,7 +1065,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
 . TAOLINESEARCH_HALTED_USER - user can set this reason to stop line search
 . TAOLINESEARCH_HALTED_OTHER - any other reason
 
-+ TAOLINESEARCH_SUCCESS - successful line search
+- TAOLINESEARCH_SUCCESS - successful line search
 
   Level: developer
 

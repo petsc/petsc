@@ -367,7 +367,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 .  bs - number of elements in each block, one for each block and count of block not indices
 .   n - the length of the index set (the number of blocks)
 .  idx - the list of integers, these are by block, not by location
-+  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported
+-  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported
 
 
    Notes:
