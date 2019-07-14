@@ -231,7 +231,7 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
   SNESMSTableau   t      = ms->tableau;
   const PetscReal *gamma = t->gamma,*delta = t->delta,*betasub = t->betasub;
   Vec             S1,S2,S3,Y;
-  PetscInt        i,nstages = t->nstages;;
+  PetscInt        i,nstages = t->nstages;
 
 
   PetscFunctionBegin;
@@ -241,19 +241,19 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
   S3   = snes->work[2];
   ierr = VecZeroEntries(S2);CHKERRQ(ierr);
   ierr = VecCopy(X,S3);CHKERRQ(ierr);
-  for (i=0; i<nstages; i++) {
+  for (i = 0; i < nstages; i++) {
     Vec         Ss[4];
     PetscScalar scoeff[4];
 
     Ss[0] = S1; Ss[1] = S2; Ss[2] = S3; Ss[3] = Y;
 
-    scoeff[0] = gamma[0*nstages+i]-(PetscReal)1.0;
+    scoeff[0] = gamma[0*nstages+i] - 1;
     scoeff[1] = gamma[1*nstages+i];
     scoeff[2] = gamma[2*nstages+i];
     scoeff[3] = -betasub[i]*ms->damping;
 
     ierr = VecAXPY(S2,delta[i],S1);CHKERRQ(ierr);
-    if (i>0) {
+    if (i > 0) {
       ierr = SNESComputeFunction(snes,S1,F);CHKERRQ(ierr);
     }
     ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
@@ -262,79 +262,80 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SNESMSStep_Norms(SNES snes,PetscInt iter,Vec F)
+{
+  SNES_MS        *ms = (SNES_MS*)snes->data;
+  PetscReal      fnorm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ms->norms) {
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+    SNESCheckFunctionNorm(snes,fnorm);
+    /* Monitor convergence */
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    snes->iter = iter;
+    snes->norm = fnorm;
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
+    ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+    /* Test for convergence */
+    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  } else if (iter > 0) {
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    snes->iter = iter;
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 static PetscErrorCode SNESSolve_MS(SNES snes)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
   Vec            X   = snes->vec_sol,F = snes->vec_func;
-  PetscReal      fnorm;
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
+
   snes->reason = SNES_CONVERGED_ITERATING;
   ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter   = 0;
-  snes->norm   = 0.;
+  snes->norm   = 0;
   ierr         = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (snes->jacobian) {         /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
-    ierr = SNESComputeJacobian(snes,snes->vec_sol,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
-    SNESCheckJacobianDomainerror(snes);
-  }
-  if (ms->norms) {
-    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    SNESCheckFunctionNorm(snes,fnorm);
-    /* Monitor convergence */
-    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
-    snes->iter = 0;
-    snes->norm = fnorm;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-    ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
-    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+  ierr = SNESMSStep_Norms(snes,0,F);CHKERRQ(ierr);
+  if (snes->reason) PetscFunctionReturn(0);
 
-    /* Test for convergence */
-    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-    if (snes->reason) PetscFunctionReturn(0);
-  }
-
-  /* Call general purpose update function */
-  if (snes->ops->update) {
-    ierr = (*snes->ops->update)(snes,snes->iter);CHKERRQ(ierr);
-  }
   for (i = 0; i < snes->max_its; i++) {
-    ierr = SNESMSStep_3Sstar(snes,X,F);CHKERRQ(ierr);
-
-    if (i+1 < snes->max_its || ms->norms) {
-      ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-    }
-
-    if (ms->norms) {
-      ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-      SNESCheckFunctionNorm(snes,fnorm);
-
-      /* Monitor convergence */
-      ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
-      snes->iter = i+1;
-      snes->norm = fnorm;
-      ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-      ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
-      ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
-
-      /* Test for convergence */
-      ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-      if (snes->reason) PetscFunctionReturn(0);
-    }
 
     /* Call general purpose update function */
     if (snes->ops->update) {
-      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+      ierr = (*snes->ops->update)(snes,snes->iter);CHKERRQ(ierr);
     }
+
+    if (i == 0 && snes->jacobian) {
+      /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
+      ierr = SNESComputeJacobian(snes,snes->vec_sol,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+      SNESCheckJacobianDomainerror(snes);
+      ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    }
+
+    ierr = SNESMSStep_3Sstar(snes,X,F);CHKERRQ(ierr);
+
+    if (i < snes->max_its-1 || ms->norms) {
+      ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    }
+
+    ierr = SNESMSStep_Norms(snes,i+1,F);CHKERRQ(ierr);
+    if (snes->reason) PetscFunctionReturn(0);
   }
   if (!snes->reason) snes->reason = SNES_CONVERGED_ITS;
   PetscFunctionReturn(0);
@@ -364,8 +365,9 @@ static PetscErrorCode SNESDestroy_MS(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = SNESReset_MS(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
