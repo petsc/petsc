@@ -196,7 +196,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,Mat
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = PetscObjectTypeCompare((PetscObject)*newmat,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
-    if (!isseqdense) SETERRQ1(PetscObjectComm((PetscObject)*newmat),PETSC_ERR_USER,"Cannot reuse matrix of type %s",((PetscObject)(*newmat))->type);
+    if (!isseqdense) SETERRQ1(PetscObjectComm((PetscObject)*newmat),PETSC_ERR_USER,"Cannot reuse matrix of type %s",((PetscObject)(*newmat))->type_name);
   }
   if (reuse != MAT_REUSE_MATRIX) {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);

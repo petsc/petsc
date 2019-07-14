@@ -819,7 +819,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
     PetscBool ismatis,isnest;
 
     ierr = PetscObjectTypeCompare((PetscObject)*newmat,MATIS,&ismatis);CHKERRQ(ierr);
-    if (!ismatis) SETERRQ1(PetscObjectComm((PetscObject)*newmat),PETSC_ERR_USER,"Cannot reuse matrix of type %s",((PetscObject)(*newmat))->type);
+    if (!ismatis) SETERRQ1(PetscObjectComm((PetscObject)*newmat),PETSC_ERR_USER,"Cannot reuse matrix of type %s",((PetscObject)(*newmat))->type_name);
     ierr = MatISGetLocalMat(*newmat,&lA);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)lA,MATNEST,&isnest);CHKERRQ(ierr);
     if (isnest) {
