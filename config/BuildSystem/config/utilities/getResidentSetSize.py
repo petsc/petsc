@@ -100,8 +100,6 @@ class Configure(config.base.Configure):
             printf("unable to determine if uses bytes, 1024 or getpagesize() chunks in getrusage()\\n");
             return -2;''')
         if status > 0:
-          if status == 1:
-            self.addDefine('USE_BYTES_FOR_SIZE',1)
           if status == 2:
             self.addDefine('USE_KBYTES_FOR_SIZE',1)
           if status == 3:

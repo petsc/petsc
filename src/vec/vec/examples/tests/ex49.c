@@ -3,8 +3,6 @@ static const char help[] = "Test VEC_SUBSET_OFF_PROC_ENTRIES\n\n";
 #include <petsc.h>
 #include <petscvec.h>
 
-#include <stdlib.h>
-
 /* Unlike most finite element applications, IBAMR does assembly on many cells
    that are not locally owned; in some cases the processor may own zero finite
    element cells but still do assembly on a small number of cells anyway. To

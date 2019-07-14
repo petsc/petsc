@@ -1,14 +1,8 @@
-#if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
-#define MKL_ILP64
-#endif
 
 #include <../src/mat/impls/aij/seq/aij.h>                       /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
+#if defined(PETSC_HAVE_MKL_INTEL_ILP64)
 #define MKL_ILP64
 #endif
 #include <mkl.h>

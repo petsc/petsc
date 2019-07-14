@@ -89,12 +89,6 @@
     configurations for ssh/rsh/daemons etc..]. This should not be a
     reason to avoid these packages for sequential use.
 
-    Instructions for building standalone MPIUNI [for eg: linux/gcc+gfortran]:
-    - extract include/mpiuni/mpi.h,mpif.f, src/sys/mpiuni/mpi.c from PETSc
-    - remove reference to petscconf.h from mpi.h
-    - gcc -c mpi.c -DPETSC_HAVE_STDLIB_H -DPETSC_HAVE_FORTRAN_UNDERSCORE
-    - ar cr libmpiuni.a mpi.o
-
 */
 
 #if !defined(MPIUNI_H)

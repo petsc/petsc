@@ -65,13 +65,11 @@ class Configure(config.base.Configure):
       if self.libraries.haveLib('socket') and self.libraries.haveLib('nsl'):
         # check if it can find the function
         if self.functions.check('socket',['-lsocket','-lnsl']):
-          self.addDefine('HAVE_SOCKET', 1)
           self.compilers.LIBS += ' -lsocket -lnsl'
 
       # Windows requires Ws2_32.lib for socket(), uses stdcall, and declspec prototype decoration
       if self.libraries.add('Ws2_32.lib','socket',prototype='#include <Winsock2.h>',call='socket(0,0,0);'):
         self.addDefine('HAVE_WINSOCK2_H',1)
-        self.addDefine('HAVE_SOCKET', 1)
         if self.checkLink('#include <Winsock2.h>','closesocket(0)'):
           self.addDefine('HAVE_CLOSESOCKET',1)
         if self.checkLink('#include <Winsock2.h>','WSAGetLastError()'):
@@ -122,9 +120,7 @@ if (getdomainname_ptr(test,10)) return 1;
 
   def configureMissingSrandPrototype(self):
     head = self.featureTestMacros() + '''
-#ifdef PETSC_HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 '''
     code = '''
 double (*drand48_ptr)(void) = drand48;

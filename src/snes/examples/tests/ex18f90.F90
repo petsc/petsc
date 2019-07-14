@@ -132,6 +132,6 @@ end program ex18f90
 !/*TEST
 !
 !   test:
-!     requires: !libpgf90
+!     requires: !pgf90_compiler
 !
 !TEST*/

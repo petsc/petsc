@@ -42,9 +42,6 @@ List of cases and their names in the code:-
 */
 
 #include <petscts.h>
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h>             /* strcmp */
-#endif
 
 /* Function declarations */
 PetscErrorCode (*RHSFunction) (TS,PetscReal,Vec,Vec,void*);

@@ -447,20 +447,6 @@ class Configure(config.base.Configure):
     self.logWrite(self.setCompilers.restoreLog())
     return
 
-  def checkCxxNamespace(self):
-    '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
-    self.pushLanguage('C++')
-    self.cxxNamespace = 0
-    if self.checkCompile('namespace petsc {int dummy;}'):
-      if self.checkCompile('template <class dummy> struct a {};\nnamespace trouble{\ntemplate <class dummy> struct a : public ::a<dummy> {};\n}\ntrouble::a<int> uugh;\n'):
-        self.cxxNamespace = 1
-    self.popLanguage()
-    if self.cxxNamespace:
-      self.logPrint('C++ has namespaces', 4, 'compilers')
-      self.addDefine('HAVE_CXX_NAMESPACE', 1)
-    else:
-      self.logPrint('C++ does not have namespaces', 4, 'compilers')
-    return
 
   def checkCxxDialect(self):
     """Determine the Cxx dialect supported by the compiler [and correspoding compiler option - if any].
@@ -1025,15 +1011,20 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         output = output[0:loc]+' -lU77 -lV77 '+output[loc:]
 
     # PGI/Windows: to properly resolve symbols, we need to list the fortran runtime libraries before -lpgf90
+    # PGI Fortran compiler uses PETSC_HAVE_F90_2PTR_ARG which is incompatible with
+    # certain PETSc example uses of Fortran (like passing classes) hence we need to define
+    # HAVE_PGF90_COMPILER so those examples are not run
     if output.find(' -lpgf90') >= 0 and output.find(' -lkernel32') >= 0:
       loc  = output.find(' -lpgf90')
       loc2 = output.find(' -lpgf90rtl -lpgftnrtl')
       if loc2 >= -1:
         output = output[0:loc] + ' -lpgf90rtl -lpgftnrtl' + output[loc:]
+      self.addDefine('HAVE_PGF90_COMPILER','1')
     elif output.find(' -lpgf90rtl -lpgftnrtl') >= 0:
       # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
       self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in librarylist')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
+      self.addDefine('HAVE_PGF90_COMPILER','1')
 
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
@@ -1396,7 +1387,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
   def checkFortranTypeInitialize(self):
     '''Determines if PETSc objects in Fortran are initialized by default (doesn't work with common blocks)'''
     if self.argDB['with-fortran-type-initialize']:
-      self.addDefine('HAVE_FORTRAN_TYPE_INITIALIZE', -2)
       self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = -2')
       self.logPrint('Initializing Fortran objects')
     else:
@@ -1744,7 +1734,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         restoredlog = 1
         self.framework.logPrint('Accepted C99 compile flag: '+flag)
         break
-    if self.c99flag == '': self.addDefine('HAVE_C99', 1)
     self.setCompilers.popLanguage()
     if not restoredlog:
       self.logWrite(self.setCompilers.restoreLog())
@@ -1767,7 +1756,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     if hasattr(self.setCompilers, 'CXX'):
       self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX, self.log)
       self.executeTest(self.checkRestrict,['Cxx'])
-      self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxInline)
       if self.argDB['with-cxxlib-autodetect']:

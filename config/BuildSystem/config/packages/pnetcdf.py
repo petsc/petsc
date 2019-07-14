@@ -11,6 +11,7 @@ class Configure(config.package.GNUPackage):
     self.functions        = ['ncmpi_create']
     self.includes         = ['pnetcdf.h']
     self.liblist          = [['libpnetcdf.a']]
+    self.useddirectly     = 0
     return
 
   def setupDependencies(self, framework):

@@ -8,9 +8,6 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <petscbt.h>
 #include <../src/sys/utils/ftn-kernels/fcopy.h>
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h>
-#endif
 
 /*@
    PetscMemcmp - Compares two byte streams in memory.

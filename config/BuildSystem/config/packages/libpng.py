@@ -22,3 +22,9 @@ class Configure(config.package.GNUPackage):
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
     return args
+
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    # removed from the list of defines because there is already and entry from checking the library exists
+    # note the duplication that would otherwise occur comes from the package having a lib at the beginning of the name
+    self.libraries.delDefine('HAVE_LIBPNG')

@@ -50,7 +50,6 @@ class Configure(config.base.Configure):
         self.addDefine('USE_CXXCOMPLEX',1)
     elif not self.scalartype == 'real':
       raise RuntimeError('--with-scalar-type must be real or complex')
-    self.addDefine('USE_SCALAR_'+self.scalartype.upper(), '1')
     self.logPrint('Scalar type is '+str(self.scalartype))
     # On apple isinf() and isnan() do not work when <complex> is included
     self.pushLanguage(self.languages.clanguage)

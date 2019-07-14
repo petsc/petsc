@@ -116,14 +116,10 @@ builtin and then its argument prototype would still apply. */
     '''Check whether sysinfo takes three arguments, and if it does define HAVE_SYSINFO_3ARG'''
     self.check('sysinfo')
     if self.getDefineName('sysinfo') in self.defines:
-      map(self.headers.check, ['linux/kernel.h', 'sys/sysinfo.h', 'sys/systeminfo.h'])
+      map(self.headers.check, ['sys/sysinfo.h', 'sys/systeminfo.h'])
       includes = '''
-#ifdef HAVE_LINUX_KERNEL_H
-#  include <linux/kernel.h>
-#  include <linux/sys.h>
-#  ifdef HAVE_SYS_SYSINFO_H
-#    include <sys/sysinfo.h>
-#  endif
+#ifdef HAVE_SYS_SYSINFO_H
+#  include <sys/sysinfo.h>
 #elif defined(HAVE_SYS_SYSTEMINFO_H)
 #  include <sys/systeminfo.h>
 #else
@@ -137,14 +133,12 @@ builtin and then its argument prototype would still apply. */
 
   def checkVPrintf(self):
     '''Checks whether vprintf requires a char * last argument, and if it does defines HAVE_VPRINTF_CHAR'''
-    self.check('vprintf')
     if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvprintf( "%d", Argp );\n'):
       self.addDefine('HAVE_VPRINTF_CHAR', 1)
     return
 
   def checkVFPrintf(self):
     '''Checks whether vfprintf requires a char * last argument, and if it does defines HAVE_VFPRINTF_CHAR'''
-    self.check('vfprintf')
     if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvfprintf(stdout, "%d", Argp );\n'):
       self.addDefine('HAVE_VFPRINTF_CHAR', 1)
     return

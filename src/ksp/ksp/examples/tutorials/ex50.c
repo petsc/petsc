@@ -189,7 +189,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
 
    test:
       suffix: tut_2
-      requires: superlu_dist metis
+      requires: superlu_dist parmetis
       nsize: 4
       args: -da_grid_x 120 -da_grid_y 120 -pc_type lu -pc_factor_mat_solver_type superlu_dist -ksp_monitor -ksp_view
 

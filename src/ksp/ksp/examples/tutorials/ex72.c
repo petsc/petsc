@@ -729,10 +729,20 @@ int main(int argc,char **args)
       test:
          args: -mat_type aij -mat_mumps_icntl_7 5
          TODO: Need to determine if deprecated
-      test:
-         nsize: 2
-         args: -mat_type mpiaij -mat_mumps_icntl_28 2 -mat_mumps_icntl_29 2
-         TODO: Need to determine if deprecated
+
+   test:
+      suffix: mumps_lu_parmetis
+      output_file: output/ex72_mumps.out
+      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps parmetis
+      nsize: 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2 -mat_type mpiaij -mat_mumps_icntl_28 2 -mat_mumps_icntl_29 2
+
+   test:
+      suffix: mumps_lu_ptscotch
+      output_file: output/ex72_mumps.out
+      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps ptscotch
+      nsize: 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2 -mat_type mpiaij -mat_mumps_icntl_28 2 -mat_mumps_icntl_29 1
 
    testset:
       # The output file here is the same as mumps

@@ -66,7 +66,7 @@
 #undef getarg_
 #define iargc_ petsccommandargumentcount_
 #define getarg_ petscgetcommandargument_
-#elif defined(PETSC_HAVE_GFORTRAN_IARGC) /* gfortran from gcc4 */
+#elif defined(PETSC_HAVE__GFORTRAN_IARGC) /* gfortran from gcc4 */
 #undef iargc_
 #undef getarg_
 #define iargc_  _gfortran_iargc

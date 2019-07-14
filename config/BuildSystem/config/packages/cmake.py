@@ -13,6 +13,7 @@ class Configure(config.package.GNUPackage):
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.linkedbypetsc     = 0
     self.executablename    = 'cmake'
+    self.useddirectly      = 0
     return
 
   def setupHelp(self, help):
