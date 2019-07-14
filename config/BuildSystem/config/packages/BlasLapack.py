@@ -8,8 +8,6 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.defaultPrecision    = 'double'
-    self.versionname         = 'INTEL_MKL_VERSION'
-    self.versioninclude      = 'mkl_version.h'
     self.f2c                 = 0  # indicates either the f2cblaslapack are used or there is no Fortran compiler (and system BLAS/LAPACK is used)
     self.has64bitindices     = 0
     self.mkl                 = 0  # indicates BLAS/LAPACK library used is Intel MKL
@@ -18,7 +16,6 @@ class Configure(config.package.Package):
     self.lookforbydefault    = 1
     self.alternativedownload = 'f2cblaslapack'
     self.missingRoutines     = []
-    self.versiontitle        = 'Intel MKL Version'
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -252,7 +249,7 @@ class Configure(config.package.Package):
       usePardiso=0
       if self.argDB['with-mkl_cpardiso'] or 'with-mkl_cpardiso-dir' in self.argDB or 'with-mkl_cpardiso-lib' in self.argDB:
         useCPardiso=1
-        #  the free version of MKL on MacOS doesn't appear to have the blacs libraries
+        #  The version of MKL on MacOS doesn't appear to have the blacs libraries, because no MPI presumably
         #  TODO: this is hardwared to blacs_intelmpi when it should also support blacs_mpich, but how to determine which one to use based on the MPI.
         mkl_blacs_64=['mkl_blacs_intelmpi'+ILP64+'']
         mkl_blacs_32=['mkl_blacs_intelmpi']
@@ -409,7 +406,6 @@ class Configure(config.package.Package):
         self.functionalBlasLapack.append((name, blasLibrary, lapackLibrary))
         if not self.argDB['with-alternatives']:
           break
-    # User chooses one or take first (sort by version)
     if self.foundBlas and self.foundLapack:
       name, self.blasLibrary, self.lapackLibrary = self.functionalBlasLapack[0]
       if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
@@ -511,6 +507,10 @@ class Configure(config.package.Package):
             self.logPrint('Unable to find MKL include directory!')
           else:
             self.logPrint('MKL include path set to ' + str(self.include))
+      self.versionname         = 'INTEL_MKL_VERSION'
+      self.versioninclude      = 'mkl_version.h'
+      self.versiontitle        = 'Intel MKL Version'
+      self.checkVersion()
     self.logWrite(self.libraries.restoreLog())
     return
 
