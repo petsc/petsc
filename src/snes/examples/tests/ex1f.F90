@@ -32,10 +32,29 @@
 !  The parallel version of this code is snes/examples/tutorials/ex5f.F
 !
 !  --------------------------------------------------------------------------
+      subroutine postcheck(snes,x,y,w,changed_w,ctx,ierr)
+#include <petsc/finclude/petscsnes.h>
+      use petscsnes
+      implicit none
+      SNES           snes
+      PetscReal      norm
+      Vec            tmp,x,y,w
+      PetscBool      changed_w
+      PetscErrorCode ierr
+      PetscInt       ctx
+      PetscScalar    mone
+
+      call VecDuplicate(x,tmp,ierr)
+      mone = -1.0
+      call VecWAXPY(tmp,mone,x,w,ierr)
+      call VecNorm(tmp,NORM_2,norm,ierr)
+      call VecDestroy(tmp,ierr)
+      print*, 'Norm of search step ',norm
+      return
+      end
 
       program main
 #include <petsc/finclude/petscdraw.h>
-#include <petsc/finclude/petscsnes.h>
       use petscsnes
       implicit none
 #if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
@@ -67,6 +86,8 @@
       PetscReal   lambda_max,lambda_min,lambda
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
+      PetscBool          pc
+      external           postcheck
 
       PetscScalar        lx_v(0:1)
       PetscOffset        lx_i
@@ -105,13 +126,20 @@
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,1,'Lambda out of range '); endif
-      N       = mx*my
+      N  = mx*my
+      pc = PETSC_FALSE
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-pc',pc,PETSC_NULL_BOOL,ierr);
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
+
+      if (pc .eqv. PETSC_TRUE) then
+        call SNESSetType(snes,SNESNEWTONTR,ierr)
+        call SNESNewtonTRSetPostCheck(snes, postcheck,snes,ierr)
+      endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine
@@ -661,5 +689,11 @@
 !      args: -snes_monitor_short -nox -snes_fd_coloring -mat_coloring_type sl -ksp_gmres_cgs_refinement_type refine_always
 !      filter: sort -b
 !      filter_output: sort -b
+!
+!   test:
+!     suffix: 4
+!     args: -pc -par 6.807 -snes_monitor -snes_converged_reason -nox
+!     filter: sort -b
+!     filter_output: sort -b
 !
 !TEST*/

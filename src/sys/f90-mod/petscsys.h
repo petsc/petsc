@@ -38,11 +38,7 @@
 !
       PetscBool  PETSC_TRUE
       PetscBool  PETSC_FALSE
-#if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
-      parameter (PETSC_TRUE = 1,PETSC_FALSE = 0)
-#else
       parameter (PETSC_TRUE = .true.,PETSC_FALSE = .false.)
-#endif
       PetscInt   PETSC_DECIDE,PETSC_DETERMINE
       parameter (PETSC_DECIDE=-1,PETSC_DETERMINE=-1)
 
