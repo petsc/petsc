@@ -108,6 +108,11 @@ class Configure(config.package.GNUPackage):
         minor = int(gver.group(2))
         if (major,minor) >= self.versionToTuple(self.minversion): haveGNUMake = 1
         if (major > 3): haveGNUMake4 = 1
+        else:
+          self.logPrintBox('***** WARNING: You have an older version of Gnu make, it will work,\n\
+but may not support all the parallel testing options. You can install the \n\
+latest Gnu make with your package manager, such as brew or macports, or use\n\
+the --download-make option to get the latest Gnu make warning message *****')
         self.foundversion = ".".join([str(major),str(minor)])
     except RuntimeError as e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
