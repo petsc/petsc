@@ -367,6 +367,7 @@ def petsc_configure(configure_options):
   import config.base
   import config.framework
   import pickle
+  import traceback
 
   framework = None
   try:
@@ -436,7 +437,6 @@ def petsc_configure(configure_options):
 
   print(msg)
   if not framework is None:
-    import traceback
     framework.logClear()
     if hasattr(framework, 'log'):
       try:
