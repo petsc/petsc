@@ -718,7 +718,7 @@
         
         The following configurations are much like regular Linux systems. Our regular [Linux] instructions
         should work with them. Most externalpackages will also work. The configure option --download-mpich should work
-        for these systems. (These do not support Microsoft/Intel Windows compilers; nor can you use MS-MPI or Intel-MPI).
+        for these systems. (These do not support Microsoft/Intel Windows compilers; nor can you use MS-MPI, Intel-MPI or MPICH2).
         
         <ul>
           <li>
@@ -756,11 +756,11 @@
           differently than other unix compilers. So to install PETSc on Microsoft
           Windows - one has to install <a href="http://www.cygwin.com">Cygwin</a>
           [for the unix enviornment] and use <a href="#win32fe">win32fe</a> [part
-          of PETSc sources,to interface to Microsoft/Intel compilers].
+          of PETSc sources, to interface to Microsoft/Intel compilers].
         </p>
 
         <p>
-          <span class="def">Install Cygwin: </span>Please download and install
+          <strong>Install Cygwin: </strong>Please download and install
           Cygwin package from <a href="http://www.cygwin.com">http://www.cygwin.com</a>.
           Make sure the following Cygwin components are installed.
         </p>
@@ -772,7 +772,7 @@
         </ul>
 
         <p>
-          <span class="def">Remove Cygwin link.exe: </span>Cygwin link.exe can
+          <strong>Remove Cygwin link.exe: </strong>Cygwin link.exe can
           conflict with Intel ifort compiler. If you are using ifort -
           please do [from Cygwin terminal/bash-shell]:
         </p>
@@ -782,8 +782,8 @@
         </ul>
 
         <p>
-          <span class="def">Setup Cygwin terminal/bash-shell with Working Compilers:
-          </span>We require the compilers to be setup properly in a Cygwin bash
+          <strong>Setup Cygwin terminal/bash-shell with Working Compilers:
+          </strong>We require the compilers to be setup properly in a Cygwin bash
           command shell, so that "<code>cl foo.c</code>" or "<code>ifort
             foo.f</code>" works from this shell. For example - if using VS2005
           C and Intel 10 Fortran one can do:
@@ -811,7 +811,7 @@
           <li>Now run configure with win32fe and then build the libraries with make [as per the usual instructions]</li>
         </ul>
 
-        <h4>Example Configure usage with Windows Compilers:</h4>
+        <strong>Example Configure usage with Windows Compilers:</strong>
 
         <p>
           Use configure with VC2005 C and Intel Fortran 10 [Without MPI].
@@ -827,19 +827,18 @@
           <li><code>./configure --with-cc='win32fe cl' --with-fc=0 --with-cxx=0 --download-f2cblaslapack</code></li>
         </ul>
 
-        <h4>Using MPI:</h4>
-
-        <p>We support both <a href="https://www.microsoft.com/en-us/download/details.aspx?id=57467">MS-MPI</a> [64-bit] and <a href="https://software.intel.com/en-us/mpi-library">Intel MPI</a> on Windows. For example usages, check <code>config/examples/arch-mswin*.py</code></p>
+        <p> <strong>Using MPI:</strong>
+        We support both <a href="https://www.microsoft.com/en-us/download/details.aspx?id=57467">MS-MPI</a> [64-bit] and <a href="https://software.intel.com/en-us/mpi-library">Intel MPI</a> on Windows (MPICH2 does not work, do not use it). For example usages, check <code>config/examples/arch-mswin*.py</code></p>
 
 
         <p>
-          <span class="def">ExternalPackages</span>: The <code>--download-package
+          <strong>ExternalPackages</strong>: The <code>--download-package
           </code> option does not work with many external packages on Microsoft
           Windows.
         </p>
 
         <p>
-          <span class="def">Project Files:</span> We cannot provide Microsoft
+          <strong>Project Files:</strong> We cannot provide Microsoft
           Visual Studio project files for users as they are specific to the
           configure options, location of external packages, compiler versions
           etc. used for any given build of PETSc, so they are potentially
@@ -874,7 +873,7 @@
         </ul>
 
         <p>
-          <span class="def">Debugger:</span> Running PETSc probrams with
+          <strong>Debugger:</strong> Running PETSc probrams with
           -start_in_debugger is not supported on this platform, so debuggers will
           need to be initiated manually.  Make sure your environment is properly
           configured to use the appropriate debugger for your compiler. The
@@ -885,20 +884,23 @@
         </p>
 
         <p>
-          <span class="def"><a name="win32fe">PETSc Win32 front end - win32fe</a>:</span>
+          <strong><a name="win32fe">PETSc win32 front end</a>:</strong>
           This tool is used as a wrapper to Microsoft and Intel compilers
           and associated tools - to enable building PETSc libraries using Cygwin
           make and other UNIX tools. For additional info, run
-          <code>${PETSC_DIR}/bin/win32/win32fe</code> without any options.
+          <code>${PETSC_DIR}/lib/petsc/bin/win32/win32fe</code> without any options.
         </p>
 
+        <h3>Using MinGW with Microsoft/Intel Windows Compilers:</h3>
+        Users report that it is possible to build to build PETSc using MinGW and link against them using the Microsoft/Intel Windows Compilers.
+        We have no experience with this, nor knowledge on how it can be accomplished. Let us know your experience.
 
-         <p><span class="def">Notes on using other systems besides Cygwin to compile with Microsoft and Intel compilers:</span>
+         <h3>Notes on using other systems besides Cygwin to compile with Microsoft and Intel compilers</h3>
         For any alternate system, we would have to redo win32fe functionality for that system. This includes
 
          <ul>
            <li>
-             Marshal gcc type compiler options to Cl (Microsoft compiler).
+             Marshal unix type compiler options to Cl (Microsoft compiler).
           </li>
           <li>
              Convert paths in some of these options from this system (for example Cygwin paths) to Windows paths.
@@ -1157,13 +1159,15 @@
                 Notes on usage:
                 <ul>
                   <li> Log into theta.alcf.anl.gov </li>
-                  </li>
+                  <li> module load cray-hdf5-parallel cray-netcdf-hdf5parallel cray-parallel-netcdf</li>
+                  <li> Use config/examples/arch-cray-xc40-knl-opt.py as a template for running configure </li>
+                  <li> If you need to use exodusii then use the configure options --with-hdf5=1 --with-pnetcdf-dir=$PARALLEL_NETCDF_DIR --with-netcdf-dir=$NETCDF_DIR --download-chaco=1 --download-metis=1 --download-parmetis=1 --download-exodusii</li>
             </li>
             </ul>
           </li>
             </ul>
           <li>
-            LLCF - Oak Ridge National Laboratory - summit machine - Nvidia GPUs and IBM Power PC processors
+            OLCF - Oak Ridge National Laboratory - Summit machine - Nvidia GPUs and IBM Power PC processors
             <ul>
               <li>
                 Project ID: CSC314
@@ -1174,8 +1178,18 @@
               <li>
                 Notes on usage:
                 <ul>
-                 <li>  <a href="https://www.olcf.ornl.gov/support/getting-started/olcf-user-account-application/">Getting Started</a> </li>
-             </li>
+                  <li>  <a href="https://www.olcf.ornl.gov/support/getting-started/olcf-user-account-application/">Getting Started</a> </li>
+                  <li> Log into what? </li>
+                  <li>  module load cmake hdf5 cuda</li>
+                   <ul>
+                     <li>  module load pgi (for PGI compilers)   </li>
+                     <li>  module load essl netlib-lapack xl (for IBM compilers)   </li>
+                     <li>  module load gcc (for GNU compilers)   </li>
+                     </ul>
+                  <li> Use config/examples/arch-olcf-opt.py as a template for running configure </li>
+                  <li> You configure PETSc and build examples in your home directory, but launch them from your "work" directory. </li>
+                  <li> Use the bsub command to submit jobs to the queue. See the "Batch Scripts" section here
+                       <a href="https://www.olcf.ornl.gov/for-users/system-user-guides/summit/summit-user-guide/#running-jobs.">running jobs</a> </li>
             </ul>
         </ul>
 
