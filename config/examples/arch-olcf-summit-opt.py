@@ -23,7 +23,8 @@ if __name__ == '__main__':
     ############################################################
 
     # The GCC, PGI, and IBM XL compilers are supported on Summit.
-    # Make sure that the correct compiler suite module is loaded, 
+    # Make sure that the correct compiler suite module is loaded,
+    #   module load gcc, pgi, or xl
     # and then comment/uncomment the appropriate stanzas below.
     # For optimized cases, more aggressive compilation flags can be tried,
     # but the examples below provide a reasonable start.
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     '--download-triangle=1',
     '--download-ctetgen=1',
 
-    # The below options do not work with the IBM XL compilers.
+    # The options below do not work with the IBM XL compilers.
     # Trying to use the OLCF-provided 'hypre' module also does not work.
     '--download-hypre=1',
     '--download-ml=1',
