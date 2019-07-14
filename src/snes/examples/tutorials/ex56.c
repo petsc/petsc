@@ -208,7 +208,7 @@ int main(int argc,char **args)
   KSP            ksp;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscLogStage  stage[7];
+  PetscLogStage  stage[17];
   PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE,attach_nearnullspace=PETSC_FALSE;
   Vec            xx,bb;
   PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7],run_type=1;
@@ -251,12 +251,14 @@ int main(int argc,char **args)
     if (!flg || i!=3) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER, "'-mat_block_size 3' must be set (%D) and = 3 (%D)",flg,flg? i : 3);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Mesh Setup", &stage[6]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("1st Setup", &stage[0]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("1st Solve", &stage[1]);CHKERRQ(ierr);
-
+  ierr = PetscLogStageRegister("Mesh Setup", &stage[16]);CHKERRQ(ierr);
+  for (iter=0 ; iter<max_conv_its ; iter++) {
+    char str[] = "Solve 0";
+    str[6] += iter;
+    ierr = PetscLogStageRegister(str, &stage[iter]);CHKERRQ(ierr);
+  }
   /* create DM, Plex calls DMSetup */
-  ierr = PetscLogStagePush(stage[6]);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[16]);CHKERRQ(ierr);
   ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, cells, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
   {
     DMLabel         label;
@@ -368,7 +370,7 @@ int main(int argc,char **args)
   basedm = dm; dm = NULL;
 
   for (iter=0 ; iter<max_conv_its ; iter++) {
-    ierr = PetscLogStagePush(stage[6]);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[16]);CHKERRQ(ierr);
     /* make new DM */
     ierr = DMClone(basedm, &dm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_");CHKERRQ(ierr);
@@ -449,7 +451,7 @@ int main(int argc,char **args)
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
     ierr = DMSetUp(dm);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[16]);CHKERRQ(ierr);
     /* ksp */
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
@@ -468,7 +470,7 @@ int main(int argc,char **args)
     ierr = PetscInfo2(snes,"%D equations in vector, %D vertices\n",i,i/dim);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     /* solve */
-    ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[iter]);CHKERRQ(ierr);
     ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     ierr = VecNorm(xx,NORM_INFINITY,&mdisp[iter]);CHKERRQ(ierr);
@@ -573,5 +575,11 @@ int main(int argc,char **args)
     nsize: 4
     requires: !single
     args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type fetidp -fetidp_ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -mat_block_size 3 -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type sbaij -fetidp_bddc_pc_bddc_monolithic -attach_mat_nearnullspace
+
+  test:
+    suffix: cuda
+    nsize: 2
+    requires: cuda
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -mat_block_size 3 -run_type 1 -ex56_dm_mat_type aijcusparse -ex56_dm_vec_type cuda -ksp_monitor_short 
 
 TEST*/
