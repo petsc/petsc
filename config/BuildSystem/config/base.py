@@ -226,6 +226,10 @@ class Configure(script.Script):
        - If found, the path is stored in the variable "name", or "resultName" if given
        - By default, a make macro "resultName" will hold the path'''
     found = 0
+    if isinstance(names,str) and names.startswith('/'):
+      path = os.path.dirname(names)
+      names = os.path.basename(names)
+
     if isinstance(names, str):
       names = [names]
     if isinstance(path, str):

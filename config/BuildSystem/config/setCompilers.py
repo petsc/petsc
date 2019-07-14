@@ -572,6 +572,10 @@ class Configure(config.base.Configure):
         del self.CC
     if not hasattr(self, 'CC'):
       raise RuntimeError('Could not locate a functional C compiler')
+    try:
+      self.executeShellCommand(self.CC+' --version', log = self.log)
+    except:
+      pass
     return
 
   def generateCPreprocessorGuesses(self):
@@ -779,6 +783,10 @@ class Configure(config.base.Configure):
           self.delMakeMacro('CXX')
           del self.CXX
       if hasattr(self, 'CXX'):
+        try:
+          self.executeShellCommand(self.CXX+' --version', log = self.log)
+        except:
+          pass
         break
     return
 
@@ -907,6 +915,11 @@ class Configure(config.base.Configure):
           self.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         self.delMakeMacro('FC')
         del self.FC
+    if hasattr(self, 'FC'):
+      try:
+        self.executeShellCommand(self.FC+' --version', log = self.log)
+      except:
+        pass
     return
 
   def checkFortranComments(self):
@@ -1473,10 +1486,10 @@ if (dlclose(handle)) {
   return -1;
 }
 ''' % oldLib
-          if self.checkLink(includes = '#include<dlfcn.h>', body = code):
-            os.remove(oldLib)
+          if self.checkLink(includes = '#include <dlfcn.h>\n#include <stdio.h>', body = code):
             self.dynamicLibraries = 1
             self.logPrint('Using dynamic linker '+self.dynamicLinker+' with flags '+str(self.dynamicLibraryFlags)+' and library extension '+self.dynamicLibraryExt)
+            os.remove(oldLib)
             break
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.dynamicLinker
