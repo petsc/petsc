@@ -139,7 +139,7 @@ function petsc_testrun() {
 
   # Handle filters separately and assume no timeout check needed
   if test -n "$filter"; then
-    cmd="cat $2 | $filter > $2.tmp 2>> $3 && mv $2.tmp $2"
+    cmd="cat $2 | $filter > $2.tmp 2>> $3 ; mv $2.tmp $2"
     echo "$cmd" >> ${tlabel}.sh
     eval "$cmd"
   fi
