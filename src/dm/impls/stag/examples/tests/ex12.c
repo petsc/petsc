@@ -41,7 +41,7 @@ int main(int argc,char **argv)
     for (i=startx; i<startx + nx; ++i) {
       for (d=0; d<dofTotal; ++d) {
         if (a1[j][i][d] != 1.0) {
-          PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,a1[j][i][d],1.0);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,(double)PetscRealPart(a1[j][i][d]),1.0);CHKERRQ(ierr);
         }
         a2[j][i][d] = 0.0;
         for (js = -stencilWidth; js <= stencilWidth; ++js) {
@@ -57,8 +57,8 @@ int main(int argc,char **argv)
   ierr = DMStagVecRestoreArrayDOFRead(dm,vecLocal1,&a1);CHKERRQ(ierr);
   ierr = DMStagVecRestoreArrayDOF(dm,vecLocal2,&a2);CHKERRQ(ierr);
 
-  DMLocalToGlobalBegin(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
-  DMLocalToGlobalEnd(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
 
   /* For the all-periodic case, some additional checks */
   ierr = DMStagGetBoundaryTypes(dm,&boundaryTypex,&boundaryTypey,NULL);CHKERRQ(ierr);
@@ -68,14 +68,14 @@ int main(int argc,char **argv)
     expected = (ngx*ngy - 4*stencilWidth*stencilWidth)*dofTotal;
     ierr = VecSum(vecLocal1,&sum);CHKERRQ(ierr);
     if (sum != expected) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected sum of local entries %g (expected %g)\n",rank,sum,expected);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected sum of local entries %g (expected %g)\n",rank,(double)PetscRealPart(sum),(double)PetscRealPart(expected));CHKERRQ(ierr);
     }
 
     ierr = VecGetArray(vec,&a);CHKERRQ(ierr);
     expected = 1 + 4*stencilWidth;
     for (i=0; i<ny*nx*dofTotal; ++i) {
       if (a[i] != expected) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,a[i],expected);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,(double)PetscRealPart(a[i]),(double)PetscRealPart(expected));CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(vec,&a);CHKERRQ(ierr);

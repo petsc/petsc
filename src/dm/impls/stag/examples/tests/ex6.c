@@ -19,7 +19,7 @@ int main(int argc,char **argv)
 
   /* All element values */
   {
-    DM da;
+    DM  da;
     Vec vecda;
     ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-3,&da,&vecda);CHKERRQ(ierr);
     ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
 
   /* Pad element values */
   {
-    DM da;
+    DM  da;
     Vec vecda;
     ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-5,&da,&vecda);CHKERRQ(ierr);
     ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
 
   /* 2 element values */
   {
-    DM da;
+    DM  da;
     Vec vecda;
     ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-2,&da,&vecda);CHKERRQ(ierr);
     ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
 
   /* One corner value */
   {
-    DM da;
+    DM  da;
     Vec vecda;
     ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_FRONT_DOWN_LEFT,2,&da,&vecda);CHKERRQ(ierr);
     ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
 
   /* One edge value */
   {
-    DM da;
+    DM  da;
     Vec vecda;
     ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_BACK_RIGHT,1,&da,&vecda);CHKERRQ(ierr);
     ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
 
   /* One face value */
   {
-    DM da;
+    DM  da;
     Vec vecda;
     ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_DOWN,0,&da,&vecda);CHKERRQ(ierr);
     ierr = DMDestroy(&da);CHKERRQ(ierr);

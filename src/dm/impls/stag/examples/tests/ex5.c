@@ -89,7 +89,7 @@ int main(int argc,char **argv)
     ierr = VecNorm(solRef,NORM_2,&normsolRef);CHKERRQ(ierr);
     errRel = errAbs/normsolRef;
     if (errAbs > 1e14 || errRel > 1e14) {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)dmSol),"Error (abs): %g\nError (rel): %g\n",errAbs,errRel);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)dmSol),"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel);CHKERRQ(ierr);
       ierr = PetscPrintf(PetscObjectComm((PetscObject)dmSol),"Non-zero error. Probable failure.\n");CHKERRQ(ierr);
     }
     ierr = VecDestroy(&diff);CHKERRQ(ierr);

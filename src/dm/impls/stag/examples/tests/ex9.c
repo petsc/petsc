@@ -43,7 +43,7 @@ int main(int argc,char **argv)
       for (i=startx; i<startx + nx; ++i) {
         for (d=0; d<dofTotal; ++d) {
           if (a1[k][j][i][d] != 1.0) {
-            PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,a1[k][j][i][d],1.0);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,(double)PetscRealPart(a1[k][j][i][d]),1.0);CHKERRQ(ierr);
           }
           a2[k][j][i][d] = 0.0;
           for (ks = -stencilWidth; ks <= stencilWidth; ++ks) {
@@ -74,14 +74,14 @@ int main(int argc,char **argv)
     expected = (ngx*ngy*ngz - 8*stencilWidth*stencilWidth*stencilWidth - 4*stencilWidth*stencilWidth*(nx + ny + nz))*dofTotal;
     ierr = VecSum(vecLocal1,&sum);CHKERRQ(ierr);
     if (sum != expected) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected sum of local entries %g (expected %g)\n",rank,sum,expected);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected sum of local entries %g (expected %g)\n",rank,(double)PetscRealPart(sum),(double)PetscRealPart(expected));CHKERRQ(ierr);
     }
 
     ierr = VecGetArray(vec,&a);CHKERRQ(ierr);
     expected = 1 + 6*stencilWidth;
     for (i=0; i<nz*ny*nx*dofTotal; ++i) {
       if (a[i] != expected) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,a[i],expected);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,(double)PetscRealPart(a[i]),(double)PetscRealPart(expected));CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(vec,&a);CHKERRQ(ierr);
