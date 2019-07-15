@@ -4,11 +4,12 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     import os
     config.package.CMakePackage.__init__(self, framework)
-    self.download          = ['hg://https://bitbucket.org/eigen/eigen/','https://bitbucket.org/eigen/eigen/get/3.3.4.tar.gz']
+    self.download          = ['hg://https://bitbucket.org/eigen/eigen/','https://bitbucket.org/eigen/eigen/get/3.3.7.tar.bz2']
     self.functions         = []
     self.includes          = ['Eigen/Core']
     self.liblist           = []
     self.cxx               = 1
+    self.pkgname           = 'eigen3'
     self.includedir        = os.path.join('include', 'eigen3')
     self.useddirectly      = 0
     return

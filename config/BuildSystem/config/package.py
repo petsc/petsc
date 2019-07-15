@@ -405,7 +405,7 @@ class Package(config.base.Configure):
 
       l,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --libs', timeout=5, log = self.log)
       l = l.strip()
-      i,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --variable=includedir', timeout=5, log = self.log)
+      i,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --cflags', timeout=5, log = self.log)
       i = i.strip()
       if self.argDB['with-'+self.package+'-pkg-config']:
         if path: os.environ['PKG_CONFIG_PATH'] = path
