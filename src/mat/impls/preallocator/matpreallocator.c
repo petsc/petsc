@@ -34,7 +34,8 @@ PetscErrorCode MatSetUp_Preallocator(Mat A)
   ierr = MatGetLocalSize(A, &m, NULL);CHKERRQ(ierr);
   ierr = PetscHSetIJCreate(&p->ht);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A, &bs);CHKERRQ(ierr);
-  ierr = MatStashCreate_Private(PetscObjectComm((PetscObject) A), bs, &A->stash);CHKERRQ(ierr);
+  /* Do not bother bstash since MatPreallocator does not implement MatSetValuesBlocked */
+  ierr = MatStashCreate_Private(PetscObjectComm((PetscObject) A), 1, &A->stash);CHKERRQ(ierr);
   /* arrays are for blocked rows/cols */
   mbs  = m/bs;
   ierr = PetscCalloc4(mbs, &p->dnz, mbs, &p->onz, mbs, &p->dnzu, mbs, &p->onzu);CHKERRQ(ierr);
