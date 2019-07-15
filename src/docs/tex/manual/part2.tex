@@ -6047,7 +6047,7 @@ problem. Very often, this influence pattern is determined jointly by the computa
 discretization. \lstinline{DMCreateMatrix} must compute this pattern when it automatically creates the properly
 preallocated Jacobian matrix. In \lstinline{DMDA} the influence pattern, or what we will call
 variable \textit{adjacency}\sindex{adjacency}, depends only on the stencil since the topology is Cartesian and the
-discretization is implicitly finite difference. In lstinline{DMPlex}, we allow the user to specify the adjacency
+discretization is implicitly finite difference. In \lstinline{DMPlex}, we allow the user to specify the adjacency
 topologically, while maintaining good defaults.
 
 The pattern is controlled by two flags. The first flag, \lstinline{useCone}, indicates whether variables couple first to
