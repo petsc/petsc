@@ -27,7 +27,6 @@ typedef struct {
   PetscMPIInt       rank[DMSTAG_MAX_DIM];         /* Location in grid of ranks         */
   PetscMPIInt       *neighbors;                   /* dim^3 local ranks                 */
   PetscInt          *l[DMSTAG_MAX_DIM];           /* Elements/rank in each direction   */
-  VecScatter        gton;                         /* Global --> Natural                */
   VecScatter        gtol;                         /* Global --> Local                  */
   PetscInt          *locationOffsets;             /* Offsets for points in loc. rep.   */
 

@@ -28,7 +28,6 @@ static PetscErrorCode DMDestroy_Stag(DM dm)
       ierr = PetscFree(stag->l[i]);CHKERRQ(ierr);
     }
   }
-  if (stag->gton)            {ierr = VecScatterDestroy(&stag->gton);CHKERRQ(ierr);}
   if (stag->gtol)            {ierr = VecScatterDestroy(&stag->gtol);CHKERRQ(ierr);}
   if (stag->neighbors)       {ierr = PetscFree(stag->neighbors);CHKERRQ(ierr);}
   if (stag->locationOffsets) {ierr = PetscFree(stag->locationOffsets);CHKERRQ(ierr);}
@@ -437,7 +436,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   ierr = PetscNewLog(dm,&stag);CHKERRQ(ierr);
   dm->data = stag;
 
-  stag->gton                                          = NULL;
   stag->gtol                                          = NULL;
   for (i=0; i<DMSTAG_MAX_STRATA; ++i) stag->dof[i]    = 0;
   for (i=0; i<DMSTAG_MAX_DIM;    ++i) stag->l[i]      = NULL;
