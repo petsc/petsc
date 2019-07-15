@@ -239,6 +239,17 @@ def chkcygwinpython():
 ===============================================================================''')
   return 0
 
+def chkcygwinwindowscompilers():
+  '''Adds win32fe for Microsoft/Intel compilers'''
+  if os.path.exists('/usr/bin/cygcheck.exe'):
+    for l in range(1,len(sys.argv)):
+      option = sys.argv[l]
+      for i in ['cl','icl','ifort']:
+        if option.startswith(i):
+          sys.argv[l] = 'win32fe '+option
+          break
+  return 0
+
 def chkrhl9():
   if os.path.exists('/etc/redhat-release'):
     try:
@@ -356,6 +367,7 @@ def petsc_configure(configure_options):
   chkcygwinpython()
   chkcygwinlink()
   chkdosfiles()
+  chkcygwinwindowscompilers()
 
   # Should be run from the toplevel
   configDir = os.path.abspath('config')
