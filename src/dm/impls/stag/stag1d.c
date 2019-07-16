@@ -430,7 +430,7 @@ static PetscErrorCode DMStagComputeLocationOffsets_1d(DM dm)
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
-  const PetscInt epe = stag->entriesPerElement;
+  const PetscInt  epe = stag->entriesPerElement;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(DMSTAG_NUMBER_LOCATIONS,&stag->locationOffsets);CHKERRQ(ierr);

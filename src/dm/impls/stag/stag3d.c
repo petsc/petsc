@@ -729,7 +729,7 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
   PetscFunctionReturn(0);
 }
 
-/* A helper function to reduce code duplicaion as we loop over various ranges.
+/* A helper function to reduce code duplication as we loop over various ranges.
    i,j,k refer to element numbers on the rank where an element lives in the global
    representation (without ghosts) to be offset by a global offset per rank.
    ig,jg,kg refer to element numbers in the local (this rank) ghosted numbering.
