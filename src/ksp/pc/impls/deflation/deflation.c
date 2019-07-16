@@ -227,13 +227,15 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transp
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* possibly allows W' = Wt (which is valid but not tested) */
+  ierr = PetscObjectReference((PetscObject)W);CHKERRQ(ierr);
   if (transpose) {
+    ierr = MatDestroy(&def->Wt);CHKERRQ(ierr);
     def->Wt = W;
-    def->W = NULL;
   } else {
+    ierr = MatDestroy(&def->W);CHKERRQ(ierr);
     def->W = W;
   }
-  ierr = PetscObjectReference((PetscObject)W);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -278,9 +280,9 @@ static PetscErrorCode PCDeflationSetProjectionNullSpaceMat_Deflation(PC pc,Mat m
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = MatDestroy(&def->WtA);CHKERRQ(ierr);
   def->WtA = mat;
-  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -908,6 +910,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   def->extendsp      = PETSC_FALSE;
   def->lvl           = 0;
   def->maxlvl        = 0;
+  def->W             = NULL;
+  def->Wt            = NULL;
 
   pc->ops->apply          = PCApply_Deflation;
   pc->ops->presolve       = PCPreSolve_Deflation;
