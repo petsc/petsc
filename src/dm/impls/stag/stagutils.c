@@ -178,10 +178,14 @@ PETSC_EXTERN PetscErrorCode DMStagGet1dCoordinateLocationSlot(DM dm,DMStagStenci
   Output Parameters:
 + x,y,z - starting element indices in each direction
 . m,n,p - element widths in each direction
-- nExtrax,nExtray,nExtraz - number of extra partial elements in each direction. The number is 1 on the right, top, and front boundaries of the grid, otherwise 0.
+- nExtrax,nExtray,nExtraz - number of extra partial elements in each direction.
 
   Notes:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+
+  The number of extra partial elements is either 1 or 0.
+  The value is 1 on right, top, and front non-periodic domain ("physical") boundaries,
+  in the x, y, and z directions respectively, and otherwise 0.
 
   Level: beginner
 
@@ -199,9 +203,9 @@ PetscErrorCode DMStagGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscI
   if (m) *m = stag->n[0];
   if (n) *n = stag->n[1];
   if (p) *p = stag->n[2];
-  if (nExtrax) *nExtrax = stag->lastRank[0] ? 1 : 0;
-  if (nExtray) *nExtray = stag->lastRank[1] ? 1 : 0;
-  if (nExtraz) *nExtraz = stag->lastRank[2] ? 1 : 0;
+  if (nExtrax) *nExtrax = stag->boundaryType[0] != DM_BOUNDARY_PERIODIC && stag->lastRank[0] ? 1 : 0;
+  if (nExtray) *nExtray = stag->boundaryType[1] != DM_BOUNDARY_PERIODIC && stag->lastRank[1] ? 1 : 0;
+  if (nExtraz) *nExtraz = stag->boundaryType[2] != DM_BOUNDARY_PERIODIC && stag->lastRank[2] ? 1 : 0;
   PetscFunctionReturn(0);
 }
 
