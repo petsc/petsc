@@ -161,4 +161,10 @@ int main(int argc,char **argv)
       suffix: 6
       nsize: 9
       args: -stag_dof_0 2 -stag_dof_1 2 -stag_dof_2 1 -stag_dof_2 1 -stag_boundary_type_y ghosted -stag_grid_x 9 -stag_grid_y 13 -stag_ranks_x 3 -stag_ranks_y 3 -stag_stencil_width 1
+
+   test:
+      suffix: 7
+      nsize: 1
+      args: -stag_dof_0 2 -stag_dof_1 2 -stag_dof_2 1 -stag_dof_2 1 stag_grid_x 9 -stag_grid_y 13 -stag_stencil_width 1
+
 TEST*/

@@ -1,0 +1,56 @@
+DM Object: 12 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 9 x 9 x 13
+Parallel decomposition: 3 x 2 x 2 ranks
+Boundary ghosting: PERIODIC PERIODIC PERIODIC
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:1 2:1 3:1
+[0] Rank coordinates (0,0,0)
+[0] Local elements : 2 x 4 x 6 (4 x 6 x 8 with ghosts)
+[0] Local native entries: 384
+[0] Local entries total : 1536
+[1] Rank coordinates (1,0,0)
+[1] Local elements : 3 x 4 x 6 (5 x 6 x 8 with ghosts)
+[1] Local native entries: 576
+[1] Local entries total : 1920
+[2] Rank coordinates (2,0,0)
+[2] Local elements : 4 x 4 x 6 (6 x 6 x 8 with ghosts)
+[2] Local native entries: 768
+[2] Local entries total : 2304
+[3] Rank coordinates (0,1,0)
+[3] Local elements : 2 x 5 x 6 (4 x 7 x 8 with ghosts)
+[3] Local native entries: 480
+[3] Local entries total : 1792
+[4] Rank coordinates (1,1,0)
+[4] Local elements : 3 x 5 x 6 (5 x 7 x 8 with ghosts)
+[4] Local native entries: 720
+[4] Local entries total : 2240
+[5] Rank coordinates (2,1,0)
+[5] Local elements : 4 x 5 x 6 (6 x 7 x 8 with ghosts)
+[5] Local native entries: 960
+[5] Local entries total : 2688
+[6] Rank coordinates (0,0,1)
+[6] Local elements : 2 x 4 x 7 (4 x 6 x 9 with ghosts)
+[6] Local native entries: 448
+[6] Local entries total : 1728
+[7] Rank coordinates (1,0,1)
+[7] Local elements : 3 x 4 x 7 (5 x 6 x 9 with ghosts)
+[7] Local native entries: 672
+[7] Local entries total : 2160
+[8] Rank coordinates (2,0,1)
+[8] Local elements : 4 x 4 x 7 (6 x 6 x 9 with ghosts)
+[8] Local native entries: 896
+[8] Local entries total : 2592
+[9] Rank coordinates (0,1,1)
+[9] Local elements : 2 x 5 x 7 (4 x 7 x 9 with ghosts)
+[9] Local native entries: 560
+[9] Local entries total : 2016
+[10] Rank coordinates (1,1,1)
+[10] Local elements : 3 x 5 x 7 (5 x 7 x 9 with ghosts)
+[10] Local native entries: 840
+[10] Local entries total : 2520
+[11] Rank coordinates (2,1,1)
+[11] Local elements : 4 x 5 x 7 (6 x 7 x 9 with ghosts)
+[11] Local native entries: 1120
+[11] Local entries total : 3024

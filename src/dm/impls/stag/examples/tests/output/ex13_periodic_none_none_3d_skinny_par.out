@@ -1,0 +1,24 @@
+DM Object: 4 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 3 x 6 x 5
+Parallel decomposition: 1 x 2 x 2 ranks
+Boundary ghosting: PERIODIC NONE NONE
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:1 2:1 3:1
+[0] Rank coordinates (0,0,0)
+[0] Local elements : 3 x 3 x 3 (5 x 4 x 4 with ghosts)
+[0] Local native entries: 216
+[0] Local entries total : 640
+[1] Rank coordinates (0,1,0)
+[1] Local elements : 3 x 3 x 3 (5 x 5 x 4 with ghosts)
+[1] Local native entries: 252
+[1] Local entries total : 800
+[2] Rank coordinates (0,0,1)
+[2] Local elements : 3 x 3 x 2 (5 x 4 x 4 with ghosts)
+[2] Local native entries: 180
+[2] Local entries total : 640
+[3] Rank coordinates (0,1,1)
+[3] Local elements : 3 x 3 x 2 (5 x 5 x 4 with ghosts)
+[3] Local native entries: 210
+[3] Local entries total : 800

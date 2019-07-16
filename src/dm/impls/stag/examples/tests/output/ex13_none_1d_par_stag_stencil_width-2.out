@@ -1,0 +1,16 @@
+DM Object: 3 MPI processes
+  type: stag
+Dimension: 1
+Global size: 9
+Boundary ghosting: GHOSTED
+Elementwise ghost stencil: BOX, width 2
+Stratum dof: 0:1 1:1
+[0] Local elements : 2 (6 with ghosts)
+[0] Local native entries: 4
+[0] Local entries total : 12
+[1] Local elements : 3 (7 with ghosts)
+[1] Local native entries: 6
+[1] Local entries total : 14
+[2] Local elements : 4 (8 with ghosts)
+[2] Local native entries: 9
+[2] Local entries total : 16
