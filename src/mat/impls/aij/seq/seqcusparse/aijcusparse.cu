@@ -1030,7 +1030,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 
   /* Copy the temporary to the full solution. */
   thrust::copy(tempGPU->begin(), tempGPU->end(), xGPU);
-  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr); // hannah moved this here
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   /* restore */
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
