@@ -78,6 +78,7 @@ static PetscErrorCode TestFields(DM dmstag)
   PetscErrorCode ierr;
   Vec            vecLocal,vecGlobal;
   PetscReal      norm2;
+
   PetscFunctionBeginUser;
   ierr = DMCreateLocalVector(dmstag,&vecLocal);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmstag,&vecGlobal);CHKERRQ(ierr);

@@ -36,14 +36,14 @@ int main(int argc,char **argv)
   for (i=1; i<=2; ++i) {
     PetscBool compatible,set;
     ierr = DMGetCompatibility(dms[0],dms[i],&compatible,&set);CHKERRQ(ierr);
-    if (!set || !compatible) SETERRQ2(PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %D not determined compatible with DM %D",i,0);CHKERRQ(ierr);
+    if (!set || !compatible) SETERRQ2(PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %D not determined compatible with DM %d",i,0);CHKERRQ(ierr);
   }
 
   /* Check expected incompatibility */
   {
     PetscBool compatible,set;
     ierr = DMGetCompatibility(dms[0],dms[3],&compatible,&set);CHKERRQ(ierr);
-    if (!set || compatible) SETERRQ2(PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %D not determined incompatible with DM %D",i,0);CHKERRQ(ierr);
+    if (!set || compatible) SETERRQ2(PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %D not determined incompatible with DM %d",i,0);CHKERRQ(ierr);
   }
 
   for (i=0; i<NDMS; ++i) {
