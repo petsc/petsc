@@ -219,9 +219,9 @@ PetscErrorCode DMStagGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscI
 
   Output Parameters:
 + dof0 - the number of points per 0-cell (vertex/node)
-. dof1 - the number of points per 1-cell (elementin 1D, edge in 2D and 3D)
+. dof1 - the number of points per 1-cell (element in 1D, edge in 2D and 3D)
 . dof2 - the number of points per 2-cell (element in 2D, face in 3D)
-- dof3 - the number of points per 3-cell (elementin 3D)
+- dof3 - the number of points per 3-cell (element in 3D)
 
   Level: beginner
 
