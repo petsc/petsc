@@ -184,6 +184,20 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
       }
       break;
     case DM_BOUNDARY_GHOSTED:
+      switch (stag->stencilType) {
+        case DMSTAG_STENCIL_NONE :
+          stag->startGhost[0] = stag->start[0];
+          stag->nGhost[0]     = stag->n[0] + (stag->lastRank[0] ? 1 : 0);
+          break;
+        case DMSTAG_STENCIL_STAR :
+        case DMSTAG_STENCIL_BOX :
+          stag->startGhost[0] = stag->start[0] - stag->stencilWidth; /* This value may be negative */
+          stag->nGhost[0]     = stag->n[0] + 2*stag->stencilWidth + (stag->lastRank[0] && stag->stencilWidth == 0 ? 1 : 0);
+          break;
+        default :
+          SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unrecognized ghost stencil type %d",stag->stencilType);
+      }
+      break;
     case DM_BOUNDARY_PERIODIC:
       switch (stag->stencilType) {
         case DMSTAG_STENCIL_NONE :
@@ -192,8 +206,8 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
           break;
         case DMSTAG_STENCIL_STAR :
         case DMSTAG_STENCIL_BOX :
-          stag->startGhost[0] = stag->start[0] - stag->stencilWidth; /* Note that this value may be negative */
-          stag->nGhost[0] = stag->n[0] + 2*stag->stencilWidth;
+          stag->startGhost[0] = stag->start[0] - stag->stencilWidth; /* This value may be negative */
+          stag->nGhost[0]     = stag->n[0] + 2*stag->stencilWidth;
           break;
         default :
           SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unrecognized ghost stencil type %d",stag->stencilType);

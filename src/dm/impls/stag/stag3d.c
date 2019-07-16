@@ -309,8 +309,22 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
             SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unrecognized ghost stencil type %d",stag->stencilType);
         }
         break;
-      case DM_BOUNDARY_PERIODIC:
       case DM_BOUNDARY_GHOSTED:
+        switch (stag->stencilType) {
+          case DMSTAG_STENCIL_NONE :
+            stag->startGhost[d] = stag->start[d];
+            stag->nGhost[d]     = stag->n[d] + (stag->lastRank[d] ? 1 : 0);
+            break;
+          case DMSTAG_STENCIL_STAR :
+          case DMSTAG_STENCIL_BOX :
+            stag->startGhost[d] = stag->start[d] - stag->stencilWidth; /* This value may be negative */
+            stag->nGhost[d]     = stag->n[d] + 2*stag->stencilWidth + (stag->lastRank[d] && stag->stencilWidth == 0 ? 1 : 0);
+            break;
+          default :
+            SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unrecognized ghost stencil type %d",stag->stencilType);
+        }
+        break;
+      case DM_BOUNDARY_PERIODIC:
         switch (stag->stencilType) {
           case DMSTAG_STENCIL_NONE : /* only the extra one on the right/top edges */
             stag->nGhost[d] = stag->n[d];
