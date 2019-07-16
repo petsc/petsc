@@ -165,7 +165,8 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoef
 PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
 {
   Mat            A,defl;
-  PetscInt       i,ilo,ihi,*Iidx,m,M;
+  PetscInt       ilo,ihi,*Iidx,M;
+  PetscMPIInt    i,m;
   PetscScalar    *col;
   MPI_Comm       comm;
   PetscErrorCode ierr;
