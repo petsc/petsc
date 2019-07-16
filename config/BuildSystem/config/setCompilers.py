@@ -1359,6 +1359,24 @@ class Configure(config.base.Configure):
       self.popLanguage()
     return
 
+  def checkLinkerWindows(self):
+    '''Turns off linker warning about unknown .o files extension'''
+    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC'}
+    languages = ['C']
+    if hasattr(self, 'CXX'):
+      languages.append('Cxx')
+    for language in languages:
+      self.pushLanguage(language)
+      for testFlag in ['-Qwd10161']:  #Warning for Intel icl,  there appear to be no way to remove warnings with Microsoft cl
+        if self.checkLinkerFlag(testFlag):
+          # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
+          linker_flag_var = langMap[language]+'_LINKER_FLAGS'
+          val = getattr(self,linker_flag_var)
+          val.append(testFlag)
+          setattr(self,linker_flag_var,val)
+      self.popLanguage()
+    return
+
   def checkSharedLinkerPaths(self):
     '''Determine the shared linker path options
        - IRIX: -rpath
@@ -1664,6 +1682,8 @@ if (dlclose(handle)) {
     self.executeTest(self.checkSharedLinker)
     if Configure.isDarwin(self.log):
       self.executeTest(self.checkLinkerMac)
+    if Configure.isCygwin(self.log):
+      self.executeTest(self.checkLinkerWindows)
     self.executeTest(self.checkPIC)
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkLibC)
