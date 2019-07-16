@@ -238,7 +238,6 @@ typedef enum {/* converged */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
               SNES_CONVERGED_SNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < stol || x ||*/
               SNES_CONVERGED_ITS               =  5, /* maximum iterations reached */
-              SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */
               SNES_DIVERGED_FUNCTION_DOMAIN     = -1, /* the new x location passed the function is not in the domain of F */
               SNES_DIVERGED_FUNCTION_COUNT      = -2,
@@ -250,6 +249,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_DIVERGED_DTOL                = -9, /* || F || > divtol*||F_initial|| */
               SNES_DIVERGED_JACOBIAN_DOMAIN     = -10, /* Jacobian calculation does not make sense */
+              SNES_DIVERGED_TR_DELTA            = -11,
 
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
 PETSC_EXTERN const char *const*SNESConvergedReasons;
