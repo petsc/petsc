@@ -215,17 +215,17 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
       transp = PETSC_FALSE;
       ierr = PCDeflationGetSpaceHaar(pc,&defl,def->spacesize);CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_DB2:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,2,db2,!def->extendsp);CHKERRQ(ierr);break;
+      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,2,db2,PetscNot(def->extendsp));CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_DB4:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,4,db4,!def->extendsp);CHKERRQ(ierr);break;
+      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,4,db4,PetscNot(def->extendsp));CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_DB8:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,8,db8,!def->extendsp);CHKERRQ(ierr);break;
+      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,8,db8,PetscNot(def->extendsp));CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_DB16:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,16,db16,!def->extendsp);CHKERRQ(ierr);break;
+      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,16,db16,PetscNot(def->extendsp));CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_BIORTH22:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,6,biorth22,!def->extendsp);CHKERRQ(ierr);break;
+      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,6,biorth22,PetscNot(def->extendsp));CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_MEYER:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,62,meyer,!def->extendsp);CHKERRQ(ierr);break;
+      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,62,meyer,PetscNot(def->extendsp));CHKERRQ(ierr);break;
     case PC_DEFLATION_SPACE_AGGREGATION:
       transp = PETSC_FALSE;
       ierr = PCDeflationGetSpaceAggregation(pc,&defl);CHKERRQ(ierr);break;
