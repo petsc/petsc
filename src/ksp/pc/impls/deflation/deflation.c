@@ -514,7 +514,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     ierr = PCGetOptionsPrefix(pc,&def->prefix);CHKERRQ(ierr);
   }
   if (def->lvl) {
-    (void) sprintf(prefix,"%d_",(int)def->lvl);
+    ierr = PetscSNPrintf(prefix,sizeof(prefix),"%d_",(int)def->lvl);CHKERRQ(ierr);
   }
 
   /* compute a deflation space */
