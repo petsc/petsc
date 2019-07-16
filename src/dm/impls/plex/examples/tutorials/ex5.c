@@ -52,6 +52,7 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], Petsc
   ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dmnew, prefix);CHKERRQ(ierr);
   ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)dmnew,"Mesh_new");CHKERRQ(ierr);
 
   ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
