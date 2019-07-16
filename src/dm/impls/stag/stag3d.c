@@ -348,6 +348,13 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
   ierr = DMStagSetUpBuildScatter_3d(dm,globalOffsets);CHKERRQ(ierr);
   ierr = DMStagSetUpBuildL2G_3d(dm,globalOffsets);CHKERRQ(ierr);
 
+  /* In special cases, create a dedicated injective local-to-global map */
+  if ((stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) ||
+      (stag->boundaryType[1] == DM_BOUNDARY_PERIODIC && stag->nRanks[1] == 1) ||
+      (stag->boundaryType[2] == DM_BOUNDARY_PERIODIC && stag->nRanks[2] == 1)) {
+    ierr = DMStagPopulateLocalToGlobalInjective(dm);CHKERRQ(ierr);
+  }
+
   /* Free global offsets */
   ierr = PetscFree(globalOffsets);CHKERRQ(ierr);
 
@@ -3311,5 +3318,65 @@ static PetscErrorCode DMStagComputeLocationOffsets_3d(DM dm)
   stag->locationOffsets[DMSTAG_FRONT_UP_LEFT]    = stag->locationOffsets[DMSTAG_FRONT_DOWN_LEFT] + epr;
   stag->locationOffsets[DMSTAG_FRONT_UP]         = stag->locationOffsets[DMSTAG_FRONT_DOWN]      + epr;
   stag->locationOffsets[DMSTAG_FRONT_UP_RIGHT]   = stag->locationOffsets[DMSTAG_FRONT_UP_LEFT]   + epe;
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM dm)
+{
+  PetscErrorCode  ierr;
+  DM_Stag * const stag = (DM_Stag*)dm->data;
+  PetscInt        *idxLocal,*idxGlobal,*globalOffsetsRecomputed;
+  const PetscInt  *globalOffsets;
+  PetscInt        count,d,entriesPerEdge,entriesPerFace,eprGhost,eplGhost,ghostOffsetStart[3],ghostOffsetEnd[3];
+  IS              isLocal,isGlobal;
+  PetscBool       dummyEnd[3];
+
+  PetscFunctionBegin;
+  ierr = DMStagSetUpBuildGlobalOffsets_3d(dm,&globalOffsetsRecomputed);CHKERRQ(ierr); /* note that we don't actually use all of these. An available optimization is to pass them, when available */
+  globalOffsets = globalOffsetsRecomputed;
+  ierr = PetscMalloc1(stag->entries,&idxLocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(stag->entries,&idxGlobal);CHKERRQ(ierr);
+  for (d=0; d<3; ++d) dummyEnd[d]   = (PetscBool)(stag->lastRank[d] && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC);
+  entriesPerFace                      = stag->dof[0] + 2*stag->dof[1] + stag->dof[2];
+  entriesPerEdge                      = stag->dof[0] + stag->dof[1];
+  eprGhost                            = stag->nGhost[0]*stag->entriesPerElement; /* epr = entries per (element) row   */
+  eplGhost                            = stag->nGhost[1]*eprGhost;                /* epl = entries per (element) layer */
+  count = 0;
+  for (d=0; d<3; ++d) ghostOffsetStart[d] = stag->start[d] - stag->startGhost[d];
+  for (d=0; d<3; ++d) ghostOffsetEnd[d]   = stag->startGhost[d]+stag->nGhost[d] - (stag->start[d]+stag->n[d]);
+  {
+    const PetscInt  neighbor     = 13;
+    const PetscInt  epr          = stag->entriesPerElement * stag->n[0] + (dummyEnd[0] ? entriesPerFace : 0); /* We may be a right boundary */
+    const PetscInt  epl          = epr                     * stag->n[1] + (dummyEnd[1] ? stag->n[0] * entriesPerFace + (dummyEnd[0] ? entriesPerEdge : 0) : 0); /* We may be a top boundary */
+    const PetscInt  epFaceRow    = entriesPerFace          * stag->n[0] + (dummyEnd[0] ? entriesPerEdge : 0); /* We may be a right boundary */
+    const PetscInt  start0       = 0;
+    const PetscInt  start1       = 0;
+    const PetscInt  start2       = 0;
+    const PetscInt  startGhost0  = ghostOffsetStart[0];
+    const PetscInt  startGhost1  = ghostOffsetStart[1];
+    const PetscInt  startGhost2  = ghostOffsetStart[2];
+    const PetscInt  endGhost0    = stag->nGhost[0] - ghostOffsetEnd[0];
+    const PetscInt  endGhost1    = stag->nGhost[1] - ghostOffsetEnd[1];
+    const PetscInt  endGhost2    = stag->nGhost[2] - ghostOffsetEnd[2];
+    const PetscBool extra0       = dummyEnd[0];
+    const PetscBool extra1       = dummyEnd[1];
+    const PetscBool extra2       = dummyEnd[2];
+    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,epr,epl,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxLocal,PETSC_OWN_POINTER,&isLocal);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxGlobal,PETSC_OWN_POINTER,&isGlobal);CHKERRQ(ierr);
+  {
+    Vec local,global;
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local);CHKERRQ(ierr);
+    ierr = VecScatterCreate(local,isLocal,global,isGlobal,&stag->ltog_injective);CHKERRQ(ierr);
+    ierr = VecDestroy(&global);CHKERRQ(ierr);
+    ierr = VecDestroy(&local);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&isLocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isGlobal);CHKERRQ(ierr);
+  if (globalOffsetsRecomputed) {
+    ierr = PetscFree(globalOffsetsRecomputed);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

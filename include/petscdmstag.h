@@ -99,6 +99,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetStencilType(DM,DMStagStencilType*);
 PETSC_EXTERN PetscErrorCode DMStagGetStencilWidth(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagMatSetValuesStencil(DM,Mat,PetscInt,const DMStagStencil*,PetscInt,const DMStagStencil*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagMigrateVec(DM,Vec,DM,Vec);
+PETSC_EXTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM);
 PETSC_EXTERN PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode DMStagSetBoundaryTypes(DM,DMBoundaryType,DMBoundaryType,DMBoundaryType);
 PETSC_EXTERN PetscErrorCode DMStagSetCoordinateDMType(DM,DMType);

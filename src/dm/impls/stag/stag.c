@@ -29,6 +29,7 @@ static PetscErrorCode DMDestroy_Stag(DM dm)
     }
   }
   if (stag->gtol)            {ierr = VecScatterDestroy(&stag->gtol);CHKERRQ(ierr);}
+  if (stag->ltog_injective)  {ierr = VecScatterDestroy(&stag->ltog_injective);CHKERRQ(ierr);}
   if (stag->neighbors)       {ierr = PetscFree(stag->neighbors);CHKERRQ(ierr);}
   if (stag->locationOffsets) {ierr = PetscFree(stag->locationOffsets);CHKERRQ(ierr);}
   ierr = PetscFree(stag);CHKERRQ(ierr);
@@ -218,17 +219,16 @@ static PetscErrorCode DMLocalToGlobalBegin_Stag(DM dm,Vec l,InsertMode mode,Vec 
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
-  PetscInt        dim,d;
 
   PetscFunctionBegin;
   if (mode == ADD_VALUES) {
     ierr = VecScatterBegin(stag->gtol,l,g,mode,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
-    ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-    for (d=0; d<dim; ++d) {
-      if (stag->nRanks[d] == 1 && stag->stencilWidth > 0 && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED && stag->boundaryType[d] != DM_BOUNDARY_NONE) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Local to Global scattering with INSERT_VALUES is not supported for single rank in a direction with boundary conditions (e.g. periodic) inducing a non-injective local->global map. Either change the boundary conditions, use a stencil width of zero, or use more than one rank in the relevant direction (e.g. -stag_ranks_x 2)");
+    if (stag->ltog_injective) {
+      ierr = VecScatterBegin(stag->ltog_injective,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+    } else {
+      ierr = VecScatterBegin(stag->gtol,l,g,mode,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
     }
-    ierr = VecScatterBegin(stag->gtol,l,g,mode,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported InsertMode");
   PetscFunctionReturn(0);
 }
@@ -242,7 +242,11 @@ static PetscErrorCode DMLocalToGlobalEnd_Stag(DM dm,Vec l,InsertMode mode,Vec g)
   if (mode == ADD_VALUES) {
     ierr = VecScatterEnd(stag->gtol,l,g,mode,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
-    ierr = VecScatterEnd(stag->gtol,l,g,mode,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
+    if (stag->ltog_injective) {
+      ierr = VecScatterEnd(stag->ltog_injective,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+    } else {
+      ierr = VecScatterEnd(stag->gtol,l,g,mode,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
+    }
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported InsertMode");
   PetscFunctionReturn(0);
 }
@@ -437,6 +441,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   dm->data = stag;
 
   stag->gtol                                          = NULL;
+  stag->ltog_injective                                = NULL;
   for (i=0; i<DMSTAG_MAX_STRATA; ++i) stag->dof[i]    = 0;
   for (i=0; i<DMSTAG_MAX_DIM;    ++i) stag->l[i]      = NULL;
   stag->stencilType                                   = DMSTAG_STENCIL_NONE;
