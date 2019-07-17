@@ -1022,7 +1022,6 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
                         loTriFactorT->csrMat->column_indices->data().get(),
                         loTriFactorT->solveInfo,
                         tempGPU->data().get(), xarray);CHKERRCUDA(stat);
-  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   /* Last, copy the solution, xGPU, into a temporary with the column permutation ... can't be done in place. */
   thrust::copy(thrust::make_permutation_iterator(xGPU, cusparseTriFactors->cpermIndices->begin()),
@@ -1031,6 +1030,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 
   /* Copy the temporary to the full solution. */
   thrust::copy(tempGPU->begin(), tempGPU->end(), xGPU);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   /* restore */
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
