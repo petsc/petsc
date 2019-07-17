@@ -2219,10 +2219,10 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   ierr = VecGetSize(Vleaves_seq,&N);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Vleaves_seq,&varr_read);CHKERRQ(ierr);
   for (i=0; i<N; i+=2) {
-    remoterank = (PetscMPIInt)varr_read[i];
+    remoterank = (PetscMPIInt)PetscRealPart(varr_read[i]);
     if (remoterank == rank) {
       k = i+1; /* row number */
-      lidx = (PetscInt)varr_read[i+1];
+      lidx = (PetscInt)PetscRealPart(varr_read[i+1]);
       val  = (PetscScalar)vltog[lidx]; /* global index for non-ghost vertex computed above */
       ierr = VecSetValues(Vleaves,1,&k,&val,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -2237,7 +2237,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   for (i=0; i<nroots; i++) {
     ierr = DMNetworkIsGhostVertex(dm,i+network->vStart,&ghost);CHKERRQ(ierr);
     if (!ghost) continue;
-    vltog[i] = (PetscInt)varr_read[2*k+1]; k++;
+    vltog[i] = (PetscInt)PetscRealPart(varr_read[2*k+1]); k++;
   }
   ierr = VecRestoreArrayRead(Vleaves,&varr_read);CHKERRQ(ierr);
 
