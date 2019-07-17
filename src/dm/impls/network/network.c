@@ -1029,7 +1029,6 @@ PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend, ISLoca
   Level: intermediate
 
 @*/
-
 PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 {
   PetscErrorCode ierr;
