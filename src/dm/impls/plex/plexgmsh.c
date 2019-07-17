@@ -326,6 +326,21 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElements_v22(GmshFile* gmsh, PETSC_UN
       numNodes = 3;
       numNodesIgnore = 3;
       break;
+    case 10: /* 9-node 2nd order quadrangle */
+      dim = 2;
+      numNodes = 4;
+      numNodesIgnore = 5;
+      break;
+    case 11: /* 10-node 2nd order tetrahedron */
+      dim  = 3;
+      numNodes = 4;
+      numNodesIgnore = 6;
+      break;
+    case 12: /* 27-node 2nd order hexhedron */
+      dim  = 3;
+      numNodes = 8;
+      numNodesIgnore = 19;
+      break;
     case 13: /* 18-node 2nd wedge */
       dim = 3;
       numNodes = 6;
@@ -336,9 +351,6 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElements_v22(GmshFile* gmsh, PETSC_UN
       numNodes = 1;
       break;
     case 7: /* 5-node pyramid */
-    case 10: /* 9-node 2nd order quadrangle */
-    case 11: /* 10-node 2nd order tetrahedron */
-    case 12: /* 27-node 2nd order hexhedron */
     case 14: /* 14-node 2nd order pyramid */
     default:
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
@@ -1288,19 +1300,19 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       }
       if (dim == 3) {
         /* Tetrahedra are inverted */
-        if (gmsh_elem[c].cellType == 4) {
+        if (gmsh_elem[c].cellType == 4 || gmsh_elem[c].cellType == 11) {
           PetscInt tmp = pcone[0];
           pcone[0] = pcone[1];
           pcone[1] = tmp;
         }
         /* Hexahedra are inverted */
-        if (gmsh_elem[c].cellType == 5) {
+        if (gmsh_elem[c].cellType == 5 || gmsh_elem[c].cellType == 12) {
           PetscInt tmp = pcone[1];
           pcone[1] = pcone[3];
           pcone[3] = tmp;
         }
         /* Prisms are inverted */
-        if (gmsh_elem[c].cellType == 6) {
+        if (gmsh_elem[c].cellType == 6 || gmsh_elem[c].cellType == 13) {
           PetscInt tmp;
 
           tmp      = pcone[1];
@@ -1312,7 +1324,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         }
       } else if (dim == 2 && hybridMap && hybridMap[cell] >= cMax) { /* hybrid cells */
         /* quads are input to PLEX as prisms */
-        if (gmsh_elem[c].cellType == 3) {
+        if (gmsh_elem[c].cellType == 3 || gmsh_elem[c].cellType == 10) {
           PetscInt tmp = pcone[2];
           pcone[2] = pcone[3];
           pcone[3] = tmp;
@@ -1453,19 +1465,19 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           }
           if (dim == 3) {
             /* Tetrahedra are inverted */
-            if (gmsh_elem[c].cellType == 4) {
+            if (gmsh_elem[c].cellType == 4 || gmsh_elem[c].cellType == 11) {
               PetscInt tmp = pcone[0];
               pcone[0] = pcone[1];
               pcone[1] = tmp;
             }
             /* Hexahedra are inverted */
-            if (gmsh_elem[c].cellType == 5) {
+            if (gmsh_elem[c].cellType == 5 || gmsh_elem[c].cellType == 12) {
               PetscInt tmp = pcone[1];
               pcone[1] = pcone[3];
               pcone[3] = tmp;
             }
             /* Prisms are inverted */
-            if (gmsh_elem[c].cellType == 6) {
+            if (gmsh_elem[c].cellType == 6 || gmsh_elem[c].cellType == 13) {
               PetscInt tmp;
 
               tmp      = pcone[1];
@@ -1477,7 +1489,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
             }
           } else if (dim == 2 && hybridMap && hybridMap[cell] >= cMax) { /* hybrid cells */
             /* quads are input to PLEX as prisms */
-            if (gmsh_elem[c].cellType == 3) {
+            if (gmsh_elem[c].cellType == 3 || gmsh_elem[c].cellType == 10) {
               PetscInt tmp = pcone[2];
               pcone[2] = pcone[3];
               pcone[3] = tmp;

@@ -671,6 +671,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     const char  *name, *color;
     const char  *defcolors[3]  = {"gray", "orange", "green"};
     const char  *deflcolors[4] = {"blue", "cyan", "red", "magenta"};
+    char         lname[PETSC_MAX_PATH_LEN];
     PetscReal    scale         = 2.0;
     PetscReal    tikzscale     = 1.0;
     PetscBool    useNumbers    = PETSC_TRUE, useLabels, useColors;
@@ -679,7 +680,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt     numLabels, l, numColors, numLColors, dim, depth, cStart, cEnd, c, vStart, vEnd, v, eStart = 0, eEnd = 0, e, p;
     PetscMPIInt  rank, size;
     char         **names, **colors, **lcolors;
-    PetscBool    plotEdges, flg;
+    PetscBool    plotEdges, flg, lflg;
+    PetscBT      wp = NULL;
+    PetscInt     pEnd, pStart;
 
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -703,10 +706,39 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       numLColors = 4;
       for (c = 0; c < numLColors; ++c) {ierr = PetscStrallocpy(deflcolors[c], &lcolors[c]);CHKERRQ(ierr);}
     }
+    ierr = PetscOptionsGetString(((PetscObject) viewer)->options, ((PetscObject) viewer)->prefix, "-dm_plex_view_label_filter", lname, PETSC_MAX_PATH_LEN, &lflg);CHKERRQ(ierr);
     plotEdges = (PetscBool)(depth > 1 && useNumbers && dim < 3);
     ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_edges", &plotEdges, &flg);CHKERRQ(ierr);
     if (flg && plotEdges && depth < dim) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh must be interpolated");
     if (depth < dim) plotEdges = PETSC_FALSE;
+
+    /* filter points with labelvalue != labeldefaultvalue */
+    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+    if (lflg) {
+      DMLabel lbl;
+
+      ierr = DMGetLabel(dm, lname, &lbl);CHKERRQ(ierr);
+      if (lbl) {
+        PetscInt val, defval;
+
+        ierr = DMLabelGetDefaultValue(lbl, &defval);CHKERRQ(ierr);
+        ierr = PetscBTCreate(pEnd-pStart, &wp);CHKERRQ(ierr);
+        for (c = pStart;  c < pEnd; c++) {
+          PetscInt *closure = NULL;
+          PetscInt  closureSize;
+
+          ierr = DMLabelGetValue(lbl, c, &val);CHKERRQ(ierr);
+          if (val == defval) continue;
+
+          ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+          for (p = 0; p < closureSize*2; p += 2) {
+            ierr = PetscBTSet(wp, closure[p] - pStart);CHKERRQ(ierr);
+          }
+          ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        }
+      }
+    }
+
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
@@ -729,6 +761,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, ".\n\n\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n", tikzscale);CHKERRQ(ierr);
+
     /* Plot vertices */
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -737,6 +770,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       PetscInt  off, dof, d;
       PetscBool isLabeled = PETSC_FALSE;
 
+      if (wp && !PetscBTLookup(wp,v - pStart)) continue;
       ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\path (");CHKERRQ(ierr);
@@ -772,6 +806,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       for (e = eStart; e < eEnd; ++e) {
         const PetscInt *cone;
 
+        if (wp && !PetscBTLookup(wp,e - pStart)) continue;
         color = colors[rank%numColors];
         for (l = 0; l < numLabels; ++l) {
           PetscInt val;
@@ -786,6 +821,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         PetscInt *closure = NULL;
         PetscInt  closureSize, firstPoint = -1;
 
+        if (wp && !PetscBTLookup(wp,c - pStart)) continue;
         ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] ", colors[rank%numColors]);CHKERRQ(ierr);
         for (p = 0; p < closureSize*2; p += 2) {
@@ -808,6 +844,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       PetscInt *closure    = NULL;
       PetscInt  closureSize, dof, d, n = 0;
 
+      if (wp && !PetscBTLookup(wp,c - pStart)) continue;
       ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\path (");CHKERRQ(ierr);
       for (p = 0; p < closureSize*2; p += 2) {
@@ -853,6 +890,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         const PetscInt *cone;
         PetscInt        coneSize, offA, offB, dof, d;
 
+        if (wp && !PetscBTLookup(wp,e - pStart)) continue;
         ierr = DMPlexGetConeSize(dm, e, &coneSize);CHKERRQ(ierr);
         if (coneSize != 2) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Edge %D cone should have two vertices, not %D", e, coneSize);
         ierr = DMPlexGetCone(dm, e, &cone);CHKERRQ(ierr);
@@ -890,6 +928,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     for (c = 0; c < numColors;  ++c) {ierr = PetscFree(colors[c]);CHKERRQ(ierr);}
     for (c = 0; c < numLColors; ++c) {ierr = PetscFree(lcolors[c]);CHKERRQ(ierr);}
     ierr = PetscFree3(names, colors, lcolors);CHKERRQ(ierr);
+    ierr = PetscBTDestroy(&wp);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_LOAD_BALANCE) {
     Vec                    cown,acown;
     VecScatter             sct;
@@ -6871,7 +6910,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
 {
   PetscReal      detJ, J[9], refVol = 1.0;
   PetscReal      vol;
-  PetscInt       dim, depth, d, cStart, cEnd, c;
+  PetscInt       dim, depth, d, cStart, cEnd, c, cMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6879,7 +6918,9 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) refVol *= 2.0;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  cMax = cMax < 0 ? cEnd : cMax;
+  for (c = cStart; c < cMax; ++c) {
     ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, |J| = %g", c, (double) detJ);
     ierr = PetscInfo2(dm, "Cell %D FEM Volume %g\n", c, (double) detJ*refVol);CHKERRQ(ierr);

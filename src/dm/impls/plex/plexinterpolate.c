@@ -644,6 +644,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         PetscInt        fv[4] = {0, 1, 2, 3};
         const PetscInt *cone;
         PetscInt        coneSize, ornt, i, j, f;
+        PetscBool       q2h = PETSC_FALSE;
 
         ierr = PetscHashIJKLIterGet(faceTable, iter, &f);CHKERRQ(ierr);
         ierr = DMPlexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
@@ -652,21 +653,45 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         ierr = DMPlexGetCone(idm, f, &cone);CHKERRQ(ierr);
         if (coneSize != faceSizeH) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %D for face %D should be %D", coneSize, f, faceSizeH);
         /* Hybrid faces are stored as tensor products of edges, so to compare them to normal faces, we have to flip */
-        if (faceSize == 4 && c >= pMax && faceSizeAll != faceSizeAllT && f < pEnd[faceDepth] - faceH) {fv[2] = 3; fv[3] = 2;}
+        if (faceSize == 4 && c >= pMax && faceSizeAll != faceSizeAllT && f < pEnd[faceDepth] - faceH) {q2h = PETSC_TRUE; fv[2] = 3; fv[3] = 2;}
         /* - First find the initial vertex */
         for (i = 0; i < faceSizeH; ++i) if (cellFace[fv[0]] == cone[i]) break;
-        /* - Try forward comparison */
-        for (j = 0; j < faceSizeH; ++j) if (cellFace[fv[j]] != cone[(i+j)%faceSizeH]) break;
-        if (j == faceSizeH) {
-          if ((faceSizeH == 2) && (i == 1)) ornt = -2;
-          else                              ornt = i;
-        } else {
-          /* - Try backward comparison */
-          for (j = 0; j < faceSizeH; ++j) if (cellFace[fv[j]] != cone[(i+faceSizeH-j)%faceSizeH]) break;
+        if (q2h) { /* Matt's case: hybrid faces meeting with non-hybrid faces. This is a case that is not (and will not be) supported in general by the refinements */
+          /* - Try forward comparison */
+          for (j = 0; j < faceSizeH; ++j) if (cellFace[fv[j]] != cone[(i+j)%faceSizeH]) break;
           if (j == faceSizeH) {
-            if (i == 0) ornt = -faceSizeH;
-            else        ornt = -i;
-          } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine orientation of face %D in cell %D", f, c);
+            if ((faceSizeH == 2) && (i == 1)) ornt = -2;
+            else                              ornt = i;
+          } else {
+            /* - Try backward comparison */
+            for (j = 0; j < faceSizeH; ++j) if (cellFace[fv[j]] != cone[(i+faceSizeH-j)%faceSizeH]) break;
+            if (j == faceSizeH) {
+              if (i == 0) ornt = -faceSizeH;
+              else        ornt = -i;
+            } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine orientation of face %D in cell %D", f, c);
+          }
+        } else {
+          /* when matching hybrid faces in 3D, only few cases are possible.
+             Face traversal however can no longer follow the usual convention, this seems a serious issue to me */
+          PetscInt tquad_map[4][4] = { {PETSC_MIN_INT,            0,PETSC_MIN_INT,PETSC_MIN_INT},
+                                       {           -1,PETSC_MIN_INT,PETSC_MIN_INT,PETSC_MIN_INT},
+                                       {PETSC_MIN_INT,PETSC_MIN_INT,PETSC_MIN_INT,            1},
+                                       {PETSC_MIN_INT,PETSC_MIN_INT,           -2,PETSC_MIN_INT} };
+          PetscInt i2;
+
+          /* find the second vertex */
+          for (i2 = 0; i2 < faceSizeH; ++i2) if (cellFace[fv[1]] == cone[i2]) break;
+          switch (faceSizeH) {
+          case 2:
+            ornt = i ? -2 : 0;
+            break;
+          case 4:
+            ornt = tquad_map[i][i2];
+            break;
+          default:
+            SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unhandled face size %D for face %D in cell %D", faceSizeH, f, c);
+
+          }
         }
         ierr = DMPlexInsertConeOrientation(idm, c, cf, ornt);CHKERRQ(ierr);
       }

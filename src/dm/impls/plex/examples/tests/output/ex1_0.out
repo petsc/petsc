@@ -303,3 +303,9 @@ Label 'marker':
 [0]: 11 (1)
 [0]: 12 (1)
 [0]: 13 (1)
+[0] DMPlexCheckGeometry(): Cell 0 FEM Volume 1.
+[0] DMPlexCheckGeometry(): Cell 1 FEM Volume 1.
+[0] DMPlexCheckGeometry(): Cell 2 FEM Volume 1.
+[0] DMPlexCheckGeometry(): Cell 3 FEM Volume 1.
+[0] DMPlexCheckGeometry(): Cell 4 FEM Volume 1.
+[0] DMPlexCheckGeometry(): Cell 5 FEM Volume 1.
