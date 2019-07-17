@@ -196,7 +196,7 @@ int main(int argc,char **argv)
 /*TEST
 
     testset:
-      requires: !single
+      requires: !single !complex
       args: -da_grid_x 5 -da_grid_y 5 -da_refine 2 -dm_view -ts_type bdf -ts_adapt_type none -ts_dt 1e-3 -ts_monitor -ts_max_steps 5 -ts_view -snes_rtol 1e-6 -snes_type ngmres -npc_snes_type fas
       filter: grep -v "total number of"
       test:
@@ -207,11 +207,9 @@ int main(int argc,char **argv)
         args: -prefix_push npc_fas_levels_ -snes_type ms -snes_max_it 5 -ksp_type preonly -prefix_pop
         nsize: 2
       test:
-        requires: !complex
         suffix: 1_bdf_ngmres_fas_ngs
         args: -prefix_push npc_fas_levels_ -snes_type ngs -snes_max_it 5 -prefix_pop
       test:
-        requires: !complex
         suffix: 2_bdf_ngmres_fas_ngs
         args: -prefix_push npc_fas_levels_ -snes_type ngs -snes_max_it 5 -prefix_pop
         nsize: 2
