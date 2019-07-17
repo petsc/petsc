@@ -194,26 +194,27 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 */
 #if !defined(PETSC_USE_DEBUG)
 
-#define PetscValidHeaderSpecific(h,ck,arg) do {} while (0)
-#define PetscValidHeaderSpecificType(h,ck,arg,t) do {} while (0)
-#define PetscValidHeader(h,arg) do {} while (0)
-#define PetscValidPointer(h,arg) do {} while (0)
-#define PetscValidCharPointer(h,arg) do {} while (0)
-#define PetscValidIntPointer(h,arg) do {} while (0)
-#define PetscValidScalarPointer(h,arg) do {} while (0)
-#define PetscValidRealPointer(h,arg) do {} while (0)
-#define PetscValidFunction(h,arg) do {} while (0)
+#define PetscValidHeaderSpecific(h,ck,arg) do {(void)(h);} while (0)
+#define PetscValidHeaderSpecificType(h,ck,arg,t) do {(void)(h);} while (0)
+#define PetscValidHeader(h,arg) do {(void)(h);} while (0)
+#define PetscValidPointer(h,arg) do {(void)(h);} while (0)
+#define PetscValidCharPointer(h,arg) do {(void)(h);} while (0)
+#define PetscValidIntPointer(h,arg) do {(void)(h);} while (0)
+#define PetscValidBoolPointer(h,arg) do {(void)(h);} while (0)
+#define PetscValidScalarPointer(h,arg) do {(void)(h);} while (0)
+#define PetscValidRealPointer(h,arg) do {(void)(h);} while (0)
+#define PetscValidFunction(h,arg) do {(void)(h);} while (0)
 
 #else
 
 /*  This check is for subtype methods such as DMDAGetCorners() that do not use the PetscTryMethod() or PetscUseMethod() paradigm */
 #define PetscValidHeaderSpecificType(h,ck,arg,t) \
   do {   \
-    PetscErrorCode __ierr; \
-    PetscBool      same; \
+    PetscErrorCode _7_ierr; \
+    PetscBool      _7_same; \
     PetscValidHeaderSpecific(h,ck,arg); \
-    __ierr = PetscObjectTypeCompare((PetscObject)h,t,&same);CHKERRQ(__ierr);      \
-    if (!same) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)h)->type_name); \
+    _7_ierr = PetscObjectTypeCompare((PetscObject)h,t,&_7_same);CHKERRQ(_7_ierr);      \
+    if (!_7_same) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)h)->type_name); \
   } while (0)
 
 #define PetscValidHeaderSpecific(h,ck,arg)                              \
@@ -249,7 +250,13 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidIntPointer(h,arg)                                     \
   do {                                                                  \
     if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg); \
-    if (!PetscCheckPointer(h,PETSC_INT)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Int: Parameter # %d",arg); \
+    if (!PetscCheckPointer(h,PETSC_INT)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscInt: Parameter # %d",arg); \
+  } while (0)
+
+#define PetscValidBoolPointer(h,arg)                                    \
+  do {                                                                  \
+    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg); \
+    if (!PetscCheckPointer(h,PETSC_BOOL)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscBool: Parameter # %d",arg); \
   } while (0)
 
 #define PetscValidScalarPointer(h,arg)                                  \
@@ -273,18 +280,18 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 
 #if !defined(PETSC_USE_DEBUG)
 
-#define PetscCheckSameType(a,arga,b,argb) do {} while (0)
-#define PetscCheckTypeName(a,type) do {} while (0)
-#define PetscCheckTypeNames(a,type1,type2) do {} while (0)
-#define PetscValidType(a,arg) do {} while (0)
-#define PetscCheckSameComm(a,arga,b,argb) do {} while (0)
-#define PetscCheckSameTypeAndComm(a,arga,b,argb) do {} while (0)
-#define PetscValidLogicalCollectiveScalar(a,b,c) do {} while (0)
-#define PetscValidLogicalCollectiveReal(a,b,c) do {} while (0)
-#define PetscValidLogicalCollectiveInt(a,b,c) do {} while (0)
-#define PetscValidLogicalCollectiveMPIInt(a,b,c) do {} while (0)
-#define PetscValidLogicalCollectiveBool(a,b,c) do {} while (0)
-#define PetscValidLogicalCollectiveEnum(a,b,c) do {} while (0)
+#define PetscCheckSameType(a,arga,b,argb) do {(void)(a);(void)(b);} while (0)
+#define PetscCheckTypeName(a,type) do {(void)(a);} while (0)
+#define PetscCheckTypeNames(a,type1,type2) do {(void)(a);} while (0)
+#define PetscValidType(a,arg) do {(void)(a);} while (0)
+#define PetscCheckSameComm(a,arga,b,argb) do {(void)(a);(void)(b);} while (0)
+#define PetscCheckSameTypeAndComm(a,arga,b,argb) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveScalar(a,b,c) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveReal(a,b,c) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveInt(a,b,c) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveMPIInt(a,b,c) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveBool(a,b,c) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveEnum(a,b,c) do {(void)(a);(void)(b);} while (0)
 
 #else
 
@@ -301,18 +308,18 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 */
 #define PetscCheckTypeName(a,type)                                      \
   do {                                                                  \
-    PetscBool      __match;                                             \
+    PetscBool      _7_match;                                             \
     PetscErrorCode _7_ierr;                                             \
-    _7_ierr = PetscObjectTypeCompare(((PetscObject)a),(type),&__match);CHKERRQ(_7_ierr); \
-    if (!__match) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s",(char*)(((PetscObject)a)->type_name),type); \
+    _7_ierr = PetscObjectTypeCompare(((PetscObject)a),(type),&_7_match);CHKERRQ(_7_ierr); \
+    if (!_7_match) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s",(char*)(((PetscObject)a)->type_name),type); \
   } while (0)
 
 #define PetscCheckTypeNames(a,type1,type2)                              \
   do {                                                                  \
-    PetscBool       __match;                                            \
+    PetscBool      _7_match;                                            \
     PetscErrorCode _7_ierr;                                             \
-    _7_ierr = PetscObjectTypeCompareAny(((PetscObject)a),&__match,(type1),(type2),"");CHKERRQ(_7_ierr); \
-    if (!__match) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s or %s",(char*)(((PetscObject)a)->type_name),type1,type2); \
+    _7_ierr = PetscObjectTypeCompareAny(((PetscObject)a),&_7_match,(type1),(type2),"");CHKERRQ(_7_ierr); \
+    if (!_7_match) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s or %s",(char*)(((PetscObject)a)->type_name),type1,type2); \
   } while (0)
 /*
    Use this macro to check if the type is set
@@ -326,9 +333,10 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 */
 #define PetscCheckSameComm(a,arga,b,argb)                               \
   do {                                                                  \
-    PetscErrorCode _6_ierr,__flag;                                      \
-    _6_ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)a),PetscObjectComm((PetscObject)b),&__flag);CHKERRQ(_6_ierr);                                                   \
-    if (__flag != MPI_CONGRUENT && __flag != MPI_IDENT) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d flag %d",arga,argb,__flag); \
+    PetscErrorCode _7_ierr;                                             \
+    PetscMPIInt    _7_flag;                                             \
+    _7_ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)a),PetscObjectComm((PetscObject)b),&_7_flag);CHKERRQ(_7_ierr);                                                   \
+    if (_7_flag != MPI_CONGRUENT && _7_flag != MPI_IDENT) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d flag %d",arga,argb,_7_flag); \
   } while (0)
 
 #define PetscCheckSameTypeAndComm(a,arga,b,argb)        \
@@ -342,7 +350,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr;                                             \
     PetscReal b1[5],b2[5];                                              \
     if (PetscIsNanScalar(b)) {b1[4] = 1;} else {b1[4] = 0;};            \
-    b1[0] = -PetscRealPart(b); b1[1] = PetscRealPart(b);b1[2] = -PetscImaginaryPart(b); b1[3] = PetscImaginaryPart(b);         \
+    b1[0] = -PetscRealPart(b); b1[1] = PetscRealPart(b); b1[2] = -PetscImaginaryPart(b); b1[3] = PetscImaginaryPart(b); \
     _7_ierr = MPI_Allreduce(b1,b2,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
     if (!(b2[4] > 0) && !(PetscEqualReal(-b2[0],b2[1]) && PetscEqualReal(-b2[2],b2[3]))) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",c); \
   } while (0)
@@ -397,9 +405,9 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 .seealso: PetscUseMethod()
 */
 #define  PetscTryMethod(obj,A,B,C) \
-  0; do { PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,&f);CHKERRQ(__ierr); \
-    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);} \
+  0; do { PetscErrorCode (*_7_f)B, _7_ierr; \
+    _7_ierr = PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f);CHKERRQ(_7_ierr); \
+    if (_7_f) {_7_ierr = (*_7_f)C;CHKERRQ(_7_ierr);} \
   } while(0)
 
 /*
@@ -411,10 +419,10 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 .seealso: PetscTryMethod()
 */
 #define  PetscUseMethod(obj,A,B,C) \
-  0; do { PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,&f);CHKERRQ(__ierr); \
-    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);} \
-    else SETERRQ1(PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
+  0; do { PetscErrorCode (*_7_f)B, _7_ierr; \
+    _7_ierr = PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f);CHKERRQ(_7_ierr); \
+    if (_7_f) {_7_ierr = (*_7_f)C;CHKERRQ(_7_ierr);} \
+    else SETERRQ1(PetscObjectComm((PetscObject)(obj)),PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
   } while(0)
 
 /*MC
@@ -460,7 +468,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject);
-PETSC_EXTERN PetscInt         PetscObjectComposedDataMax;
+PETSC_EXTERN PetscInt       PetscObjectComposedDataMax;
 /*MC
    PetscObjectComposedDataSetInt - attach integer data to a PetscObject
 
