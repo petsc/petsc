@@ -26,12 +26,10 @@
 # error "unsupported real precision"
 #endif
 
-#if   defined(PETSC_USE_SCALAR_COMPLEX)
+#if   defined(PETSC_USE_COMPLEX)
 # define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_COMPLEX
-#elif defined(PETSC_USE_SCALAR_REAL)
-# define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_REAL
 #else
-# error "unsupported scalar type"
+# define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_REAL
 #endif
 
 PETSC_STATIC_INLINE

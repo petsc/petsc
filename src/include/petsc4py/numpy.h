@@ -50,12 +50,10 @@
 #  error "unsupported real precision"
 #endif
 
-#if   defined(PETSC_USE_SCALAR_COMPLEX)
+#if   defined(PETSC_USE_COMPLEX)
 #  define NPY_PETSC_SCALAR  NPY_PETSC_COMPLEX
-#elif defined(PETSC_USE_SCALAR_REAL)
-#  define NPY_PETSC_SCALAR  NPY_PETSC_REAL
 #else
-#  error "unsupported scalar type"
+#  define NPY_PETSC_SCALAR  NPY_PETSC_REAL
 #endif
 
 #endif /* !PETSC4PY_NUMPY_H */
