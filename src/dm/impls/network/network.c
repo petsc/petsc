@@ -2102,7 +2102,7 @@ PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 }
 
 /*@
-  DMNetworkSetVertexLocalToGlobalOrdering - Create and setup vertex local to globle map
+  DMNetworkGetVertexLocalToGlobalOrdering - Get vertex globle index
 
   Not collective
 
