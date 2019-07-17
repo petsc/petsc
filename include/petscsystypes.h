@@ -331,21 +331,10 @@ typedef enum {PETSC_DATATYPE_UNKNOWN = 0,
               PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 13, PETSC___FP16 = 14, PETSC_STRUCT = 15,
               PETSC_INT = 16, PETSC_INT64 = 17} PetscDataType;
 
-#if defined(PETSC_USE_COMPLEX)
-#  define PETSC_SCALAR PETSC_COMPLEX
-#else
-#  if defined(PETSC_USE_REAL_SINGLE)
-#    define PETSC_SCALAR PETSC_FLOAT
-#  elif defined(PETSC_USE_REAL___FLOAT128)
-#    define PETSC_SCALAR PETSC___FLOAT128
-#  elif defined(PETSC_USE_REAL___FP16)
-#    define PETSC_SCALAR PETSC___FP16
-#  else
-#    define PETSC_SCALAR PETSC_DOUBLE
-#  endif
-#endif
 #if defined(PETSC_USE_REAL_SINGLE)
 #  define PETSC_REAL PETSC_FLOAT
+#elif defined(PETSC_USE_REAL_DOUBLE)
+#  define PETSC_REAL PETSC_DOUBLE
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #  define PETSC_REAL PETSC___FLOAT128
 #elif defined(PETSC_USE_REAL___FP16)
@@ -353,6 +342,13 @@ typedef enum {PETSC_DATATYPE_UNKNOWN = 0,
 #else
 #  define PETSC_REAL PETSC_DOUBLE
 #endif
+
+#if defined(PETSC_USE_COMPLEX)
+#  define PETSC_SCALAR PETSC_COMPLEX
+#else
+#  define PETSC_SCALAR PETSC_REAL
+#endif
+
 #define PETSC_FORTRANADDR PETSC_LONG
 
 /*S
