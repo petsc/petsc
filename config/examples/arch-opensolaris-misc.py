@@ -13,7 +13,7 @@ configure_options = [
   '--with-single-library=0',
 
   '--with-c2html=0',
-  '--with-mpi-dir=/export/home/petsc/soft/mpich-3.1.3',
+  '--with-mpi-dir=/export/home/petsc/soft/mpich-3.3.1',
   ]
 
 if __name__ == '__main__':

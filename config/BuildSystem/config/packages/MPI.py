@@ -529,11 +529,19 @@ warning message *****')
 
 
   def configureLibrary(self):
+    import platform
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     if 'with-'+self.package+'-shared' in self.argDB:
       self.argDB['with-'+self.package] = 1
     config.package.Package.configureLibrary(self)
     self.executeTest(self.checkMPICHorOpenMPI)
+    if any(x in platform.processor() for x in ['i386','x86','i86pc']) and config.setCompilers.Configure.isSolaris(self.log) and hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) >= 30301300:
+      # this is only needed if MPICH/HWLOC were compiled with optimization
+      self.logWrite('Setting environmental variable to work around buggy HWLOC\nhttps://github.com/open-mpi/hwloc/issues/290\n')
+      os.environ['HWLOC_COMPONENTS'] = '-x86'
+      self.addDefine('HAVE_HWLOC_SOLARIS_BUG',1)
+      self.logPrintBox('***** WARNING: This MPI implementation may have a bug in it that causes programs to hang.\n\
+You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to prevent such hangs. warning message *****')
     self.executeTest(self.configureMPI2)
     self.executeTest(self.configureMPI3) #depends on checkMPICHorOpenMPI for self.mpich_numversion
     self.executeTest(self.configureTypes)

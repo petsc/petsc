@@ -636,6 +636,17 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
 }
 #endif
 
+/* Things must be done before MPI_Init() when MPI is not yet initialized, and can be shared between C init and Fortran init */
+PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private(void)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_HWLOC_SOLARIS_BUG)
+    /* see MPI.py for details on this bug */
+    (void) setenv("HWLOC_COMPONENTS","-x86",1);
+#endif
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_ADIOS)
 #include <adios.h>
 #include <adios_read.h>
@@ -835,7 +846,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 #endif
 
-
   /* these must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
@@ -860,6 +870,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
     if (PETSC_COMM_WORLD != MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
+    ierr = PetscPreMPIInit_Private();CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_INIT_THREAD)
     {
       PetscMPIInt provided;
@@ -870,6 +881,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
     PetscBeganMPI = PETSC_TRUE;
   }
+
   if (argc && args) {
     PetscGlobalArgc = *argc;
     PetscGlobalArgs = *args;

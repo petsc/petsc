@@ -249,6 +249,7 @@ PETSC_INTERN PetscErrorCode  PetscInitializeSAWs(const char[]);
 #endif
 
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm,PetscMPIInt,void *,void *);
+PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private();
 
 /*
     petscinitialize - Version called from Fortran.
@@ -314,6 +315,8 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
     PetscMPIInt mierr;
 
     if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
+
+    *ierr = PetscPreMPIInit_Private(); if(*ierr) return;
     mpi_init_(&mierr);
     if (mierr) {
       *ierr = mierr;
