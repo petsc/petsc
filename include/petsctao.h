@@ -1,5 +1,5 @@
-#ifndef __TAO_H
-#define __TAO_H
+#ifndef PETSCTAO_H
+#define PETSCTAO_H
 
 #include <petscksp.h>
 

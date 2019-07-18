@@ -1,5 +1,5 @@
-#ifndef __TAOLINESEARCH_H
-#define __TAOLINESEARCH_H
+#ifndef PETSCTAOLINESEARCH_H
+#define PETSCTAOLINESEARCH_H
 #include <petscvec.h>
 
 typedef struct _p_TaoLineSearch* TaoLineSearch;
