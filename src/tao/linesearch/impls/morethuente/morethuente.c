@@ -43,20 +43,6 @@ static PetscErrorCode TaoLineSearchMonitor_MT(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-/* @ TaoApply_LineSearch - This routine takes step length of 1.0.
-
-   Input Parameters:
-+  tao - Tao context
-.  X - current iterate (on output X contains new iterate, X + step*S)
-.  f - objective function evaluated at X
-.  G - gradient evaluated at X
--  D - search direction
-
-
-   Info is set to 0.
-
-@ */
-
 static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
   PetscErrorCode   ierr;
@@ -306,6 +292,22 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscFunctionReturn(0);
 }
 
+/*MC 
+   TAOLINESEARCHMT - Line-search type with cubic interpolation that satisfies both the sufficient decrease and 
+   curvature conditions. This method can take step lenghts greater than 1.
+
+   More-Thuente line-search can be selected with "-tao_ls_type more-thuente".
+
+   References:
+.     1. - JORGE J. MORE AND DAVID J. THUENTE, LINE SEARCH ALGORITHMS WITH GUARANTEED SUFFICIENT DECREASE.
+          ACM Trans. Math. Software 20, no. 3 (1994): 286-307.
+
+   Level: developer
+
+.seealso: TaoLineSearchCreate(), TaoLineSearchSetType(), TaoLineSearchApply()
+
+.keywords: Tao, linesearch
+M*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 {
   PetscErrorCode   ierr;

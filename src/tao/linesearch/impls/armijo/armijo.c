@@ -284,6 +284,18 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   PetscFunctionReturn(0);
 }
 
+/*MC 
+   TAOLINESEARCHARMIJO - Backtracking line-search that satisfies only the (nonmonotone) Armijo condition 
+   (i.e., sufficient decrease).
+
+   Armijo line-search type can be selected with "-tao_ls_type armijo".
+
+   Level: developer
+
+.seealso: TaoLineSearchCreate(), TaoLineSearchSetType(), TaoLineSearchApply()
+
+.keywords: Tao, linesearch
+M*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP;

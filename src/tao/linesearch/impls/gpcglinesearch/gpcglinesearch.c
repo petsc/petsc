@@ -193,6 +193,15 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
 }
 
 /* ---------------------------------------------------------- */
+
+/*MC 
+   TAOLINESEARCHGPCG - Special line-search method for the Gradient-Projected Conjugate Gradient (TAOGPCG) algorithm. 
+   Should not be used with any other algorithm.
+
+   Level: developer
+
+.keywords: Tao, linesearch
+M*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
 {
   PetscErrorCode     ierr;
