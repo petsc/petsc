@@ -492,27 +492,72 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatView_SeqKAIJ(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_KAIJ(Mat A,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  Mat            B;
+  PetscViewerFormat format;
+  Mat_SeqKAIJ       *a = (Mat_SeqKAIJ*)A->data;
+  Mat               B;
+  PetscInt          i;
+  PetscErrorCode    ierr;
+  PetscBool         ismpikaij;
 
   PetscFunctionBegin;
-  ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIKAIJ,&ismpikaij);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_IMPL) {
+    ierr = PetscViewerASCIIPrintf(viewer,"S and T have %D rows and %D columns\n",a->p,a->q);CHKERRQ(ierr);
 
-PetscErrorCode MatView_MPIKAIJ(Mat A,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  Mat            B;
+    /* Print appropriate details for S. */
+    if (!a->S) {
+      ierr = PetscViewerASCIIPrintf(viewer,"S is NULL\n");
+    } else if (format == PETSC_VIEWER_ASCII_IMPL) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Entries of S are ");CHKERRQ(ierr);
+      for (i=0; i<(a->p * a->q); i++) {
+#if defined(PETSC_USE_COMPLEX)
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e ",(double)PetscRealPart(a->S[i]),(double)PetscImaginaryPart(a->S[i]));CHKERRQ(ierr);
+#else
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e ",(double)PetscRealPart(a->S[i]));CHKERRQ(ierr);
+#endif
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
 
-  PetscFunctionBegin;
-  ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+    /* Print appropriate details for T. */
+    if (a->isTI) {
+      ierr = PetscViewerASCIIPrintf(viewer,"T is the identity matrix\n");
+    } else if (!a->T) {
+      ierr = PetscViewerASCIIPrintf(viewer,"T is NULL\n");
+    } else if (format == PETSC_VIEWER_ASCII_IMPL) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Entries of T are ");CHKERRQ(ierr);
+      for (i=0; i<(a->p * a->q); i++) {
+#if defined(PETSC_USE_COMPLEX)
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e ",(double)PetscRealPart(a->T[i]),(double)PetscImaginaryPart(a->T[i]));CHKERRQ(ierr);
+#else
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e ",(double)PetscRealPart(a->T[i]));CHKERRQ(ierr);
+#endif
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+
+    /* Now print details for the AIJ matrix, using the AIJ viewer. */
+    ierr = PetscViewerASCIIPrintf(viewer,"Now viewing the associated AIJ matrix:\n");CHKERRQ(ierr);
+    if (ismpikaij) {
+      Mat_MPIKAIJ *b = (Mat_MPIKAIJ*)A->data;
+      ierr = MatView(b->A,viewer);CHKERRQ(ierr);
+    } else {
+      ierr = MatView(a->AIJ,viewer);CHKERRQ(ierr);
+    }
+
+  } else {
+    /* For all other matrix viewer output formats, simply convert to an AIJ matrix and call MatView() on that. */
+    if (ismpikaij) {
+      ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    } else {
+      ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    }
+    ierr = MatView(B,viewer);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1303,7 +1348,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ);CHKERRQ(ierr);
     A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_SeqKAIJ;
-    A->ops->view                = MatView_SeqKAIJ;
+    A->ops->view                = MatView_KAIJ;
     A->ops->mult                = MatMult_SeqKAIJ;
     A->ops->multadd             = MatMultAdd_SeqKAIJ;
     A->ops->invertblockdiagonal = MatInvertBlockDiagonal_SeqKAIJ;
@@ -1314,7 +1359,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIKAIJ);CHKERRQ(ierr);
     A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_MPIKAIJ;
-    A->ops->view                = MatView_MPIKAIJ;
+    A->ops->view                = MatView_KAIJ;
     A->ops->mult                = MatMult_MPIKAIJ;
     A->ops->multadd             = MatMultAdd_MPIKAIJ;
     A->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ;
