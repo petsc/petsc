@@ -1764,6 +1764,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
       self.executeTest(self.checkCxxDialect)
+      # To skip Sun C++ compiler warnings/errors
+      if config.setCompilers.Configure.isSun(self.setCompilers.CXX, self.log):
+        self.addDefine('HAVE_SUN_CXX', 1)
     else:
       self.isGCXX = 0
     if hasattr(self.setCompilers, 'FC'):
