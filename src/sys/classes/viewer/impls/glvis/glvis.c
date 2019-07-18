@@ -798,7 +798,7 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
   SETERRQ(comm,PETSC_ERR_SUP,"Not implemented for Windows");
 #else
   FILE           *stream = NULL;
-  int            fd;
+  int            fd=0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
