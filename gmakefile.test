@@ -175,9 +175,7 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 # Testing convenience targets
 .PHONY: test pre-clean
 
-test:
-	+@${OMAKE} -f gmakefile.test pre-clean
-	+@${OMAKE} -f gmakefile.test report_tests
+test: report_tests
 
 pre-clean:
 	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGFILE)
@@ -273,8 +271,11 @@ endif
 print-test:
 	-@echo $(TESTTARGETS)
 
-# time will not be completely accurate because it is one of the parallel jobs and depends on when gnumake schedules it
-starttime:
+# Don't start running tests until starttime has completed
+$(alltesttargets:%=$(TESTDIR)/counts/%.counts) : starttime
+
+# Ensure that libpetsc (if it is a prerequisite) has been built and clean the counts/logs before starting timer
+starttime: pre-clean $(libpetscall)
 	@$(eval STARTTIME := $(shell date +%s))
 
 report_tests: starttime $(TESTTARGETS)
