@@ -169,8 +169,8 @@ static PetscErrorCode Test2_1d(DM dm)
         if (arr[i][idxElement+c] != val) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Invalid value");
       }
     } else {
-      for (c=0; c<dof0; ++c) {
         if (arr[i][idxElement+c] != -1.0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Invalid value");
+      for (c=0; c<dof1; ++c) {
       }
     }
   }
