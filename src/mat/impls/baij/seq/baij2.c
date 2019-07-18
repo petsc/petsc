@@ -1,5 +1,6 @@
 
 #include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/dense/seq/dense.h>
 #include <petsc/private/kernels/blockinvert.h>
 #include <petscbt.h>
 #include <petscblaslapack.h>
@@ -2471,5 +2472,87 @@ PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscArrayzero(a->a,a->bs2*a->i[a->mbs]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatMatMult_SeqBAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_SeqBAIJ_SeqDense(A,B,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric_SeqBAIJ_SeqDense(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatMultSymbolic_SeqDense_SeqDense(A,B,0.0,C);CHKERRQ(ierr);
+
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqBAIJ_SeqDense;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqDense      *bd = (Mat_SeqDense*)B->data;
+  Mat_SeqDense      *cd = (Mat_SeqDense*)B->data;
+  PetscErrorCode    ierr;
+  PetscInt          cm=cd->lda,cn=B->cmap->n,bm=bd->lda,am=A->rmap->n;
+  PetscInt          mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  PetscBLASInt      bbs,bcn,bbm,bcm;
+  PetscScalar       *z = 0;
+  PetscScalar       *c,*b;
+  const MatScalar   *v;
+  const PetscInt    *idx,*ii,*ridx=NULL;
+  PetscScalar       _DOne=1.0;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+  if (!cm || !cn) PetscFunctionReturn(0);
+  if (B->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,B->rmap->n);
+  if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
+  if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
+  b = bd->v;
+  ierr = PetscBLASIntCast(bs,&bbs);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(cn,&bcn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(bm,&bbm);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(cm,&bcm);CHKERRQ(ierr);
+  ierr = MatZeroEntries(C);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = c;
+  }
+  for (i=0; i<mbs; i++) {
+    n = ii[1] - ii[0]; ii++;
+    if (usecprow) z = c + bs*ridx[i];
+    for (j=0; j<n; j++) {
+      PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DOne,z,&bcm));
+      v += bs2;
+    }
+    if (!usecprow) z += bs;
+  }
+  ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogFlops((2.0*a->nz*bs2 - bs*a->nonzerorowcnt)*cn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 
-static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
+static char help[] = "Tests various routines in MatMPISBAIJ format.\n";
 
 #include <petscmat.h>
 
