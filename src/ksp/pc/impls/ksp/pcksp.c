@@ -12,6 +12,7 @@ static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
   PetscErrorCode ierr;
   const char     *prefix;
   PC_KSP         *jac = (PC_KSP*)pc->data;
+  DM             dm;
 
   PetscFunctionBegin;
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp);CHKERRQ(ierr);
@@ -20,6 +21,11 @@ static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(jac->ksp,"ksp_");CHKERRQ(ierr);
+  ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
+  if (dm) {
+    ierr = KSPSetDM(jac->ksp, dm);CHKERRQ(ierr);
+    ierr = KSPSetDMActive(jac->ksp, PETSC_FALSE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
