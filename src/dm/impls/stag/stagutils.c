@@ -60,8 +60,9 @@ PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm,void* arrX,void* arrY,vo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim > DMSTAG_MAX_DIM) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
+  arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   ierr = DMGetCoordinateDM(dm,&dmCoord);CHKERRQ(ierr);
   if (!dmCoord) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM does not have a coordinate DM");
   {
@@ -825,6 +826,7 @@ PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *arrX,void *arr
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim > DMSTAG_MAX_DIM) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
   arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   ierr = DMGetCoordinateDM(dm,&dmCoord);CHKERRQ(ierr);
   for (d=0; d<dim; ++d) {
