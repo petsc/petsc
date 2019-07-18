@@ -688,7 +688,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
      PetscInt __i; \
     __m256d S0,S1,S2,S3,S4,S5,S6,S7,S8,B0,B1,B2,B6,B7,B8,A0,A1,A2,A3,A4,A5,A6,A7,A8; \
 \
-    PetscArraycpy(W,A,81); \
+    ierr = PetscArraycpy(W,A,81);CHKERRQ(ierr); \
     for (__i=0; __i<3; __i++) {\
 \
       S0 = _mm256_setzero_pd(); S1 = _mm256_setzero_pd(); S2 = _mm256_setzero_pd(); \
@@ -759,7 +759,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 #else
 #define PetscKernel_A_gets_A_times_B_9(A,B,W) 0; \
   { \
-    PetscArraycpy(W,A,81); \
+    ierr = PetscArraycpy(W,A,81);CHKERRQ(ierr); \
     A[ 0] = W[0]*B[ 0] + W[ 9]*B[ 1] + W[18]*B[ 2] + W[27]*B[ 3] + W[36]*B[ 4] + W[45]*B[ 5] + W[54]*B[ 6] + W[63]*B[ 7] + W[72]*B[ 8]; \
     A[ 1] = W[1]*B[ 0] + W[10]*B[ 1] + W[19]*B[ 2] + W[28]*B[ 3] + W[37]*B[ 4] + W[46]*B[ 5] + W[55]*B[ 6] + W[64]*B[ 7] + W[73]*B[ 8]; \
     A[ 2] = W[2]*B[ 0] + W[11]*B[ 1] + W[20]*B[ 2] + W[29]*B[ 3] + W[38]*B[ 4] + W[47]*B[ 5] + W[56]*B[ 6] + W[65]*B[ 7] + W[74]*B[ 8]; \
@@ -1033,7 +1033,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 */
 #define PetscKernel_A_gets_A_times_B_11(A,B,W) 0; \
   { \
-    PetscArraycpy(W,A,121); \
+    ierr = PetscArraycpy(W,A,121);CHKERRQ(ierr); \
     A[0]  =  W[0]*B[0]   + W[11]*B[1]   + W[22]*B[2]   + W[33]*B[3]  + W[44]*B[4]  + W[55]*B[5]  + W[66]*B[6] + W[77]*B[7] + W[88]*B[8] + W[99]*B[9] + W[110]*B[10]; \
     A[1]  =  W[1]*B[0]   + W[12]*B[1]   + W[23]*B[2]   + W[34]*B[3]  + W[45]*B[4]  + W[56]*B[5]  + W[67]*B[6] + W[78]*B[7] + W[89]*B[8] + W[100]*B[9]+ W[111]*B[10]; \
     A[2]  =  W[2]*B[0]   + W[13]*B[1]   + W[24]*B[2]   + W[35]*B[3]  + W[46]*B[4]  + W[57]*B[5]  + W[68]*B[6] + W[79]*B[7] + W[90]*B[8] + W[101]*B[9]+ W[112]*B[10]; \
@@ -1313,7 +1313,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
 #define PetscKernel_A_gets_A_times_B_15(A,B,W) 0; \
   {        \
-    PetscArraycpy(W,A,225); \
+    ierr = PetscArraycpy(W,A,225);CHKERRQ(ierr); \
     A[0]   = W[0]*B[0] + W[15]*B[1] + W[30]*B[2] + W[45]*B[3] + W[60]*B[4] + W[75]*B[5] + W[90]*B[6] + W[105]*B[7] + W[120]*B[8] + W[135]*B[9] + W[150]*B[10] + W[165]*B[11] + W[180]*B[12] + W[195]*B[13] + W[210]*B[14]; \
     A[1]   = W[1]*B[0] + W[16]*B[1] + W[31]*B[2] + W[46]*B[3] + W[61]*B[4] + W[76]*B[5] + W[91]*B[6] + W[106]*B[7] + W[121]*B[8] + W[136]*B[9] + W[151]*B[10] + W[166]*B[11] + W[181]*B[12] + W[196]*B[13] + W[211]*B[14]; \
     A[2]   = W[2]*B[0] + W[17]*B[1] + W[32]*B[2] + W[47]*B[3] + W[62]*B[4] + W[77]*B[5] + W[92]*B[6] + W[107]*B[7] + W[122]*B[8] + W[137]*B[9] + W[152]*B[10] + W[167]*B[11] + W[182]*B[12] + W[197]*B[13] + W[212]*B[14]; \
