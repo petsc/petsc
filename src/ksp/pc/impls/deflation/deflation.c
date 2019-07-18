@@ -499,7 +499,8 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   KSP              innerksp;
   PC               pcinner;
   Mat              Amat,nextDef=NULL,*mats;
-  PetscInt         i,m,red,size,commsize;
+  PetscInt         i,m,red,size;
+  PetscMPIInt      commsize;
   PetscBool        match,flgspd,transp=PETSC_FALSE;
   MatCompositeType ctype;
   MPI_Comm         comm;
