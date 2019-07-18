@@ -53,15 +53,15 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *
   PetscFunctionReturn(0);
 }
 
-/*@C
-   TaoCreateUnitLineSearch - Always use step length of 1.0
+/*MC
+   TAOLINESEARCHUNIT - Line-search type that disables line search and accepts the unit step length every time
 
-   Input Parameters:
-.  tao - Tao context
+   Level: developer
 
-   Level: advanced
+.seealso: TaoLineSearchCreate(), TaoLineSearchSetType(), TaoLineSearchApply()
 
-@*/
+.keywords: Tao, linesearch
+M*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {
   PetscFunctionBegin;
