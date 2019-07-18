@@ -24,14 +24,12 @@ static PetscErrorCode DMDestroy_Stag(DM dm)
   PetscFunctionBegin;
   stag = (DM_Stag*)dm->data;
   for (i=0; i<DMSTAG_MAX_DIM; ++i) {
-    if (stag->l[i]) {
-      ierr = PetscFree(stag->l[i]);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(stag->l[i]);CHKERRQ(ierr);
   }
-  if (stag->gtol)            {ierr = VecScatterDestroy(&stag->gtol);CHKERRQ(ierr);}
-  if (stag->ltog_injective)  {ierr = VecScatterDestroy(&stag->ltog_injective);CHKERRQ(ierr);}
-  if (stag->neighbors)       {ierr = PetscFree(stag->neighbors);CHKERRQ(ierr);}
-  if (stag->locationOffsets) {ierr = PetscFree(stag->locationOffsets);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&stag->gtol);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&stag->ltog_injective);CHKERRQ(ierr);
+  ierr = PetscFree(stag->neighbors);CHKERRQ(ierr);
+  ierr = PetscFree(stag->locationOffsets);CHKERRQ(ierr);
   ierr = PetscFree(stag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
