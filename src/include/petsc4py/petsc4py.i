@@ -213,9 +213,9 @@ SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
           fragment=SWIG_From_frag(PetscReal),
           fragment=SWIG_From_frag(PetscComplex))
 {
-%#if   defined(PETSC_USE_SCALAR_COMPLEX)
+%#if   defined(PETSC_USE_COMPLEX)
 %define_as(SWIG_From(PetscScalar), SWIG_From(PetscComplex))
-%#elif defined(PETSC_USE_SCALAR_REAL)
+%#else
 %define_as(SWIG_From(PetscScalar), SWIG_From(PetscReal))
 %#endif
 }
@@ -223,9 +223,9 @@ SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
           fragment=SWIG_AsVal_frag(PetscReal),
           fragment=SWIG_AsVal_frag(PetscComplex))
 {
-%#if   defined(PETSC_USE_SCALAR_COMPLEX)
+%#if   defined(PETSC_USE_COMPLEX)
 %define_as(SWIG_AsVal(PetscScalar), SWIG_AsVal(PetscComplex))
-%#elif defined(PETSC_USE_SCALAR_REAL)
+%#else
 %define_as(SWIG_AsVal(PetscScalar), SWIG_AsVal(PetscReal))
 %#endif
 }
