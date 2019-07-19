@@ -2502,6 +2502,55 @@ PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Ma
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatMatMult_SeqBAIJ_2_Private(Mat A,PetscScalar* b,PetscInt bm,PetscScalar* c,PetscInt cm,PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,sum1,sum2,*zarray;
+  const PetscScalar *x,*xb;
+  PetscScalar       x1,x2;
+  const MatScalar   *v,*vv;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,*idx,*ii,j,*jj,n,k,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = c;
+  }
+
+  for (i=0; i<mbs; i++) {
+    n           = ii[1] - ii[0]; ii++;
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    if (usecprow) z = c + 2*ridx[i];
+    jj = idx;
+    vv = v;
+    for (k=0; k<cn; k++) {
+      idx = jj;
+      v = vv;
+      sum1    = 0.0; sum2 = 0.0;
+      for (j=0; j<n; j++) {
+        xb    = b + 2*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm];
+        sum1 += v[0]*x1 + v[2]*x2;
+        sum2 += v[1]*x1 + v[3]*x2;
+        v    += 4;
+      }
+      z[0+k*cm] = sum1; z[1+k*cm] = sum2;
+    }
+    if (!usecprow) z += 2;
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -2515,7 +2564,7 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
   PetscScalar       *c,*b;
   const MatScalar   *v;
   const PetscInt    *idx,*ii,*ridx=NULL;
-  PetscScalar       _DOne=1.0;
+  PetscScalar       _DZero=0.0,_DOne=1.0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -2524,31 +2573,42 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
   if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
   if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
   b = bd->v;
-  ierr = PetscBLASIntCast(bs,&bbs);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(cn,&bcn);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(bm,&bbm);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(cm,&bcm);CHKERRQ(ierr);
-  ierr = MatZeroEntries(C);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
-  idx = a->j;
-  v   = a->a;
-  if (usecprow) {
-    mbs  = a->compressedrow.nrows;
-    ii   = a->compressedrow.i;
-    ridx = a->compressedrow.rindex;
-  } else {
-    mbs = a->mbs;
-    ii  = a->i;
-    z   = c;
+  if (a->nonzerorowcnt != A->rmap->n) {
+    ierr = MatZeroEntries(C);CHKERRQ(ierr);
   }
-  for (i=0; i<mbs; i++) {
-    n = ii[1] - ii[0]; ii++;
-    if (usecprow) z = c + bs*ridx[i];
-    for (j=0; j<n; j++) {
-      PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DOne,z,&bcm));
-      v += bs2;
+  ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
+  if (bs == 2) {
+    ierr = MatMatMult_SeqBAIJ_2_Private(A, b, bm, c, cm, cn);
+  }
+  else {
+    ierr = PetscBLASIntCast(bs,&bbs);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(cn,&bcn);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(bm,&bbm);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(cm,&bcm);CHKERRQ(ierr);
+    idx = a->j;
+    v   = a->a;
+    if (usecprow) {
+      mbs  = a->compressedrow.nrows;
+      ii   = a->compressedrow.i;
+      ridx = a->compressedrow.rindex;
+    } else {
+      mbs = a->mbs;
+      ii  = a->i;
+      z   = c;
     }
-    if (!usecprow) z += bs;
+    for (i=0; i<mbs; i++) {
+      n = ii[1] - ii[0]; ii++;
+      if (usecprow) z = c + bs*ridx[i];
+      if (n) {
+        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DZero,z,&bcm));
+        v += bs2;
+      }
+      for (j=1; j<n; j++) {
+        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DOne,z,&bcm));
+        v += bs2;
+      }
+      if (!usecprow) z += bs;
+    }
   }
   ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
