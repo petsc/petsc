@@ -501,6 +501,8 @@ class Configure(config.base.Configure):
         if self.setCompilers.checkCompilerFlag(flag, includes, body+body14):
           self.setCompilers.CXXCPPFLAGS += ' ' + flag
           self.cxxdialect = 'C++14'
+          self.addDefine('HAVE_CXX_DIALECT_CXX14',1)
+          self.addDefine('HAVE_CXX_DIALECT_CXX11',1)
           break
 
     if cxxdialect == 'C++14' and self.cxxdialect != 'C++14':
@@ -517,6 +519,7 @@ class Configure(config.base.Configure):
         if self.setCompilers.checkCompilerFlag(flag, includes, body):
           self.setCompilers.CXXCPPFLAGS += ' ' + flag
           self.cxxdialect = 'C++11'
+          self.addDefine('HAVE_CXX_DIALECT_CXX11',1)
           break
 
     if cxxdialect == 'C++11' and self.cxxdialect != 'C++11':
