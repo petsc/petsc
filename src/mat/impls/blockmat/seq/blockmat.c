@@ -14,8 +14,6 @@ typedef struct {
   Vec left,right,middle,workb;                 /* dummy vectors to perform local parts of product */
 } Mat_BlockMat;
 
-extern PetscErrorCode  MatBlockMatSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt*);
-
 static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_BlockMat      *a = (Mat_BlockMat*)A->data;
