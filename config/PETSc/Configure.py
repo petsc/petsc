@@ -131,12 +131,14 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath',  'usleep', 'sleep', '_sleep',
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror',
-                 '_set_output_format','_mkdir']
-    libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
+                 '_set_output_format','_mkdir','socket','gethostbyname']
+    libraries = [(['fpe'], 'handle_sigfpes')]
+    librariessock = [(['socket', 'nsl'], 'socket')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
-    self.libraries.libraries.extend(libraries1)
-
+    self.libraries.libraries.extend(libraries)
+    if not hasattr(self,'socket'):
+      self.libraries.libraries.extend(librariessock)
     return
 
   def DumpPkgconfig(self):
