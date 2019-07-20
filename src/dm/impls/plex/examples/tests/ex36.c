@@ -141,7 +141,7 @@ int main(int argc, char **argv)
     ierr = redistribute_vec(redist_dm, redist_sf, &cell_geom);CHKERRQ(ierr);
     ierr = redistribute_vec(redist_dm, redist_sf, &face_geom);CHKERRQ(ierr);
     ierr = PetscObjectViewFromOptions((PetscObject) redist_sf, NULL, "-rd2_sf_view");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "redistributed:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "redistributed:\n");CHKERRQ(ierr);
     ierr = dm_view_geometry(redist_dm, cell_geom, face_geom);CHKERRQ(ierr);
   }
 
