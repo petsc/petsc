@@ -260,9 +260,10 @@ static PetscErrorCode DMCreateLocalVector_Network(DM dm,Vec *vec)
 
 PetscErrorCode DMInitialize_Network(DM dm)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
+  ierr = DMSetDimension(dm,1); CHKERRQ(ierr);
   dm->ops->view                            = DMView_Network;
   dm->ops->setfromoptions                  = DMSetFromOptions_Network;
   dm->ops->clone                           = DMClone_Network;

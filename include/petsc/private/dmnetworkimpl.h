@@ -66,6 +66,8 @@ typedef struct {
   PetscSection                      DataSection; /* Section for managing parameter distribution */
   PetscSection                      DofSection;  /* Section for managing data distribution */
   PetscSection                      GlobalDofSection; /* Global Dof section */
+  PetscBool                         distributecalled; /* Flag if DMNetworkDistribute() is called */
+  PetscInt                          *vltog;           /* Maps vertex local ordering to global ordering, include ghost vertices */
 
   DMNetworkVertexInfo               vertex;
   DMNetworkEdgeInfo                 edge;
