@@ -1,0 +1,43 @@
+rank 0 c 0 centroid 0.0625,0.5,0.5 vol 0.125
+rank 0 c 1 centroid 0.1875,0.5,0.5 vol 0.125
+rank 0 c 2 centroid 0.3125,0.5,0.5 vol 0.125
+rank 0 c 3 centroid 0.4375,0.5,0.5 vol 0.125
+rank 1 c 0 centroid 0.4375,0.5,0.5 vol 0.125
+rank 1 c 1 centroid 0.5625,0.5,0.5 vol 0.125
+rank 1 c 2 centroid 0.6875,0.5,0.5 vol 0.125
+rank 1 c 3 centroid 0.3125,0.5,0.5 vol 0.125
+rank 1 c 4 centroid 0.8125,0.5,0.5 vol 0.125
+rank 2 c 0 centroid 0.8125,0.5,0.5 vol 0.125
+rank 2 c 1 centroid 0.9375,0.5,0.5 vol 0.125
+rank 2 c 2 centroid 0.6875,0.5,0.5 vol 0.125
+rank 0 f 25 cells 0,1 normal 1.,0.,0. centroid 0.125,0.5,0.5
+rank 0 f 26 cells 1,2 normal 1.,0.,0. centroid 0.25,0.5,0.5
+rank 0 f 39 cells 2,3 normal 1.,0.,0. centroid 0.375,0.5,0.5
+rank 1 f 29 cells 0,3 normal -1.,-0.,-0. centroid 0.375,0.5,0.5
+rank 1 f 30 cells 0,1 normal 1.,0.,0. centroid 0.5,0.5,0.5
+rank 1 f 31 cells 1,2 normal 1.,0.,0. centroid 0.625,0.5,0.5
+rank 1 f 49 cells 2,4 normal 1.,0.,0. centroid 0.75,0.5,0.5
+rank 2 f 19 cells 0,2 normal -1.,-0.,-0. centroid 0.75,0.5,0.5
+rank 2 f 20 cells 0,1 normal 1.,0.,0. centroid 0.875,0.5,0.5
+redistributed:
+rank 0 c 0 centroid 0.0625,0.5,0.5 vol 0.125
+rank 0 c 1 centroid 0.1875,0.5,0.5 vol 0.125
+rank 0 c 2 centroid 0.3125,0.5,0.5 vol 0.125
+rank 0 c 3 centroid 0.4375,0.5,0.5 vol 0.125
+rank 1 c 0 centroid 0.4375,0.5,0.5 vol 0.125
+rank 1 c 1 centroid 0.5625,0.5,0.5 vol 0.125
+rank 1 c 2 centroid 0.6875,0.5,0.5 vol 0.125
+rank 1 c 3 centroid 0.3125,0.5,0.5 vol 0.125
+rank 1 c 4 centroid 0.8125,0.5,0.5 vol 0.125
+rank 2 c 0 centroid 0.8125,0.5,0.5 vol 0.125
+rank 2 c 1 centroid 0.9375,0.5,0.5 vol 0.125
+rank 2 c 2 centroid 0.6875,0.5,0.5 vol 0.125
+rank 0 f 25 cells 0,1 normal 1.,0.,0. centroid 0.125,0.5,0.5
+rank 0 f 26 cells 1,2 normal 1.,0.,0. centroid 0.25,0.5,0.5
+rank 0 f 39 cells 2,3 normal -1.,-0.,-0. centroid 0.375,0.5,0.5
+rank 1 f 29 cells 0,3 normal -1.,-0.,-0. centroid 0.375,0.5,0.5
+rank 1 f 30 cells 0,1 normal 1.,0.,0. centroid 0.5,0.5,0.5
+rank 1 f 31 cells 1,2 normal 1.,0.,0. centroid 0.625,0.5,0.5
+rank 1 f 49 cells 2,4 normal -1.,-0.,-0. centroid 0.75,0.5,0.5
+rank 2 f 19 cells 0,2 normal -1.,-0.,-0. centroid 0.75,0.5,0.5
+rank 2 f 20 cells 0,1 normal 1.,0.,0. centroid 0.875,0.5,0.5

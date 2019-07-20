@@ -764,11 +764,11 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
 + dm - The DMPlex object
 . pointSF - The PetscSF describing the communication pattern
 . originalSection - The PetscSection for existing data layout
-- originalVec - The existing data
+- originalVec - The existing data in a local vector
 
   Output Parameters:
 + newSection - The PetscSF describing the new data layout
-- newVec - The new data
+- newVec - The new data in a local vector
 
   Level: developer
 
@@ -1668,8 +1668,9 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   if (overlap > 0) {
     DM                 dmOverlap;
-    PetscInt           nroots, nleaves;
-    PetscSFNode       *newRemote;
+    PetscInt           nroots, nleaves, noldleaves, l;
+    const PetscInt    *oldLeaves;
+    PetscSFNode       *newRemote, *permRemote;
     const PetscSFNode *oldRemote;
     PetscSF            sfOverlap, sfOverlapPoint;
 
@@ -1683,11 +1684,20 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     }
 
     /* Re-map the migration SF to establish the full migration pattern */
-    ierr = PetscSFGetGraph(sfMigration, &nroots, NULL, NULL, &oldRemote);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfMigration, &nroots, &noldleaves, &oldLeaves, &oldRemote);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(sfOverlap, NULL, &nleaves, NULL, NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves, &newRemote);CHKERRQ(ierr);
+    /* oldRemote: original root point mapping to original leaf point
+       newRemote: original leaf point mapping to overlapped leaf point */
+    if (oldLeaves) {
+      /* After stratification, the migration remotes may not be in root (canonical) order, so we reorder using the leaf numbering */
+      ierr = PetscMalloc1(noldleaves, &permRemote);CHKERRQ(ierr);
+      for (l = 0; l < noldleaves; ++l) permRemote[oldLeaves[l]] = oldRemote[l];
+      oldRemote = permRemote;
+    }
     ierr = PetscSFBcastBegin(sfOverlap, MPIU_2INT, oldRemote, newRemote);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sfOverlap, MPIU_2INT, oldRemote, newRemote);CHKERRQ(ierr);
+    if (oldLeaves) {ierr = PetscFree(oldRemote);CHKERRQ(ierr);}
     ierr = PetscSFCreate(comm, &sfOverlapPoint);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(sfOverlapPoint, nroots, nleaves, NULL, PETSC_OWN_POINTER, newRemote, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfOverlap);CHKERRQ(ierr);
