@@ -36,10 +36,13 @@ extern PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat,Mat,Pets
 extern PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat,Mat,Mat);
 extern PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat,Mat,Mat);
+extern PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat);
 
 PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatMatMult_SeqBAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 

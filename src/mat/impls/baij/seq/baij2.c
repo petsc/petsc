@@ -1,5 +1,6 @@
 
 #include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/dense/seq/dense.h>
 #include <petsc/private/kernels/blockinvert.h>
 #include <petscbt.h>
 #include <petscblaslapack.h>
@@ -2471,5 +2472,356 @@ PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscArrayzero(a->a,a->bs2*a->i[a->mbs]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatMatMult_SeqBAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_SeqBAIJ_SeqDense(A,B,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric_SeqBAIJ_SeqDense(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatMultSymbolic_SeqDense_SeqDense(A,B,0.0,C);CHKERRQ(ierr);
+
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqBAIJ_SeqDense;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A,PetscScalar* b,PetscInt bm,PetscScalar* c,PetscInt cm,PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,sum1;
+  const PetscScalar *xb;
+  PetscScalar       x1;
+  const MatScalar   *v,*vv;
+  PetscInt          mbs,i,*idx,*ii,j,*jj,n,k,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = c;
+  }
+
+  for (i=0; i<mbs; i++) {
+    n           = ii[1] - ii[0]; ii++;
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    if (usecprow) z = c + ridx[i];
+    jj = idx;
+    vv = v;
+    for (k=0; k<cn; k++) {
+      idx = jj;
+      v = vv;
+      sum1    = 0.0;
+      for (j=0; j<n; j++) {
+        xb    = b + (*idx++); x1 = xb[0+k*cm];
+        sum1 += v[0]*x1;
+        v    += 1;
+      }
+      z[0+k*cm] = sum1;;
+    }
+    if (!usecprow) z += 1;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMult_SeqBAIJ_2_Private(Mat A,PetscScalar* b,PetscInt bm,PetscScalar* c,PetscInt cm,PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,sum1,sum2;
+  const PetscScalar *xb;
+  PetscScalar       x1,x2;
+  const MatScalar   *v,*vv;
+  PetscInt          mbs,i,*idx,*ii,j,*jj,n,k,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = c;
+  }
+
+  for (i=0; i<mbs; i++) {
+    n           = ii[1] - ii[0]; ii++;
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    if (usecprow) z = c + 2*ridx[i];
+    jj = idx;
+    vv = v;
+    for (k=0; k<cn; k++) {
+      idx = jj;
+      v = vv;
+      sum1    = 0.0; sum2 = 0.0;
+      for (j=0; j<n; j++) {
+        xb    = b + 2*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm];
+        sum1 += v[0]*x1 + v[2]*x2;
+        sum2 += v[1]*x1 + v[3]*x2;
+        v    += 4;
+      }
+      z[0+k*cm] = sum1; z[1+k*cm] = sum2;
+    }
+    if (!usecprow) z += 2;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMult_SeqBAIJ_3_Private(Mat A,PetscScalar* b,PetscInt bm,PetscScalar* c,PetscInt cm,PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,sum1,sum2,sum3;
+  const PetscScalar *xb;
+  PetscScalar       x1,x2,x3;
+  const MatScalar   *v,*vv;
+  PetscInt          mbs,i,*idx,*ii,j,*jj,n,k,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = c;
+  }
+
+  for (i=0; i<mbs; i++) {
+    n           = ii[1] - ii[0]; ii++;
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    if (usecprow) z = c + 3*ridx[i];
+    jj = idx;
+    vv = v;
+    for (k=0; k<cn; k++) {
+      idx = jj;
+      v = vv;
+      sum1    = 0.0; sum2 = 0.0; sum3 = 0.0;
+      for (j=0; j<n; j++) {
+        xb    = b + 3*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm]; x3 = xb[2+k*cm];
+        sum1 += v[0]*x1 + v[3]*x2 + v[6]*x3;
+        sum2 += v[1]*x1 + v[4]*x2 + v[7]*x3;
+        sum3 += v[2]*x1 + v[5]*x2 + v[8]*x3;
+        v    += 9;
+      }
+      z[0+k*cm] = sum1; z[1+k*cm] = sum2; z[2+k*cm] = sum3;
+    }
+    if (!usecprow) z += 3;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMult_SeqBAIJ_4_Private(Mat A,PetscScalar* b,PetscInt bm,PetscScalar* c,PetscInt cm,PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,sum1,sum2,sum3,sum4;
+  const PetscScalar *xb;
+  PetscScalar       x1,x2,x3,x4;
+  const MatScalar   *v,*vv;
+  PetscInt          mbs,i,*idx,*ii,j,*jj,n,k,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = c;
+  }
+
+  for (i=0; i<mbs; i++) {
+    n           = ii[1] - ii[0]; ii++;
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    if (usecprow) z = c + 4*ridx[i];
+    jj = idx;
+    vv = v;
+    for (k=0; k<cn; k++) {
+      idx = jj;
+      v = vv;
+      sum1    = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
+      for (j=0; j<n; j++) {
+        xb    = b + 4*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm]; x3 = xb[2+k*cm]; x4 = xb[3+k*cm];
+        sum1 += v[0]*x1 + v[4]*x2 + v[8]*x3   + v[12]*x4;
+        sum2 += v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4;
+        sum3 += v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
+        sum4 += v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
+        v    += 16;
+      }
+      z[0+k*cm] = sum1; z[1+k*cm] = sum2; z[2+k*cm] = sum3; z[3+k*cm] = sum4;
+    }
+    if (!usecprow) z += 4;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMult_SeqBAIJ_5_Private(Mat A,PetscScalar* b,PetscInt bm,PetscScalar* c,PetscInt cm,PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,sum1,sum2,sum3,sum4,sum5;
+  const PetscScalar *xb;
+  PetscScalar       x1,x2,x3,x4,x5;
+  const MatScalar   *v,*vv;
+  PetscInt          mbs,i,*idx,*ii,j,*jj,n,k,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = c;
+  }
+
+  for (i=0; i<mbs; i++) {
+    n           = ii[1] - ii[0]; ii++;
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    if (usecprow) z = c + 5*ridx[i];
+    jj = idx;
+    vv = v;
+    for (k=0; k<cn; k++) {
+      idx = jj;
+      v = vv;
+      sum1    = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
+      for (j=0; j<n; j++) {
+        xb    = b + 5*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm]; x3 = xb[2+k*cm]; x4 = xb[3+k*cm]; x5 = xb[4+k*cm];
+        sum1 += v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
+        sum2 += v[1]*x1 + v[6]*x2 + v[11]*x3  + v[16]*x4 + v[21]*x5;
+        sum3 += v[2]*x1 + v[7]*x2 + v[12]*x3  + v[17]*x4 + v[22]*x5;
+        sum4 += v[3]*x1 + v[8]*x2 + v[13]*x3  + v[18]*x4 + v[23]*x5;
+        sum5 += v[4]*x1 + v[9]*x2 + v[14]*x3  + v[19]*x4 + v[24]*x5;
+        v    += 25;
+      }
+      z[0+k*cm] = sum1; z[1+k*cm] = sum2; z[2+k*cm] = sum3; z[3+k*cm] = sum4; z[4+k*cm] = sum5;
+    }
+    if (!usecprow) z += 5;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqDense      *bd = (Mat_SeqDense*)B->data;
+  Mat_SeqDense      *cd = (Mat_SeqDense*)B->data;
+  PetscErrorCode    ierr;
+  PetscInt          cm=cd->lda,cn=B->cmap->n,bm=bd->lda;
+  PetscInt          mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  PetscBLASInt      bbs,bcn,bbm,bcm;
+  PetscScalar       *z = 0;
+  PetscScalar       *c,*b;
+  const MatScalar   *v;
+  const PetscInt    *idx,*ii,*ridx=NULL;
+  PetscScalar       _DZero=0.0,_DOne=1.0;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+  if (!cm || !cn) PetscFunctionReturn(0);
+  if (B->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,B->rmap->n);
+  if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
+  if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
+  b = bd->v;
+  if (a->nonzerorowcnt != A->rmap->n) {
+    ierr = MatZeroEntries(C);CHKERRQ(ierr);
+  }
+  ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
+  switch (bs) {
+  case 1:
+    ierr = MatMatMult_SeqBAIJ_1_Private(A, b, bm, c, cm, cn);
+    break;
+  case 2:
+    ierr = MatMatMult_SeqBAIJ_2_Private(A, b, bm, c, cm, cn);
+    break;
+  case 3:
+    ierr = MatMatMult_SeqBAIJ_3_Private(A, b, bm, c, cm, cn);
+    break;
+  case 4:
+    ierr = MatMatMult_SeqBAIJ_4_Private(A, b, bm, c, cm, cn);
+    break;
+  case 5:
+    ierr = MatMatMult_SeqBAIJ_5_Private(A, b, bm, c, cm, cn);
+    break;
+  default: /* block sizes larger than 5 by 5 are handled by BLAS */
+    ierr = PetscBLASIntCast(bs,&bbs);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(cn,&bcn);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(bm,&bbm);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(cm,&bcm);CHKERRQ(ierr);
+    idx = a->j;
+    v   = a->a;
+    if (usecprow) {
+      mbs  = a->compressedrow.nrows;
+      ii   = a->compressedrow.i;
+      ridx = a->compressedrow.rindex;
+    } else {
+      mbs = a->mbs;
+      ii  = a->i;
+      z   = c;
+    }
+    for (i=0; i<mbs; i++) {
+      n = ii[1] - ii[0]; ii++;
+      if (usecprow) z = c + bs*ridx[i];
+      if (n) {
+        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DZero,z,&bcm));
+        v += bs2;
+      }
+      for (j=1; j<n; j++) {
+        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DOne,z,&bcm));
+        v += bs2;
+      }
+      if (!usecprow) z += bs;
+    }
+  }
+  ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogFlops((2.0*a->nz*bs2 - bs*a->nonzerorowcnt)*cn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
