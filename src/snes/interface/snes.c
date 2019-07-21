@@ -2399,6 +2399,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   PetscErrorCode    ierr;
   PetscReal         nrm,gnorm;
   PetscReal         threshold = 1.e-5;
+  MatType           mattype;
   PetscInt          m,n,M,N;
   void              *functx;
   PetscBool         complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE,flg;
@@ -2458,7 +2459,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   ierr = VecDestroy(&f);CHKERRQ(ierr);
 
   while (jacobian) {
-    ierr = PetscObjectBaseTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
     if (flg) {
       A    = jacobian;
       ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
@@ -2466,11 +2467,14 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       ierr = MatComputeOperator(jacobian,MATAIJ,&A);CHKERRQ(ierr);
     }
 
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetType(B,mattype);CHKERRQ(ierr);
     ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
-    ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(B,A,A);CHKERRQ(ierr);
     ierr = MatSetUp(B);CHKERRQ(ierr);
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
@@ -2498,12 +2502,14 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       const PetscInt    *bcols;
       const PetscScalar *bvals;
 
-      ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
+      ierr = MatSetType(C,mattype);CHKERRQ(ierr);
       ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
-      ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
+      ierr = MatSetBlockSizesFromMats(C,A,A);CHKERRQ(ierr);
       ierr = MatSetUp(C);CHKERRQ(ierr);
       ierr = MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+
+      ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatGetOwnershipRange(B,&Istart,&Iend);CHKERRQ(ierr);
 
       for (row = Istart; row < Iend; row++) {
