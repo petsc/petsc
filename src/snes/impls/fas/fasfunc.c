@@ -767,7 +767,7 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   fas = (SNES_FAS*)snes->data;
   if (fas->level == fas->levels - 1) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;

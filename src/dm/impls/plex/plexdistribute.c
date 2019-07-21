@@ -1336,7 +1336,7 @@ PetscErrorCode DMPlexGetPartitionBalance(DM dm, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(flg, 2);
+  PetscValidBoolPointer(flg, 2);
   *flg = mesh->partitionBalance;
   PetscFunctionReturn(0);
 }

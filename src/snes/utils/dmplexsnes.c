@@ -2380,7 +2380,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, Vec u, PetscErrorCode
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (error) PetscValidPointer(error, 6);
+  if (error) PetscValidRealPointer(error, 6);
   ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
@@ -2452,7 +2452,7 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (residual) PetscValidPointer(residual, 5);
+  if (residual) PetscValidRealPointer(residual, 5);
   ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
@@ -2516,8 +2516,8 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (isLinear) PetscValidPointer(isLinear, 5);
-  if (convRate) PetscValidPointer(convRate, 5);
+  if (isLinear) PetscValidBoolPointer(isLinear, 5);
+  if (convRate) PetscValidRealPointer(convRate, 5);
   ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);

@@ -363,7 +363,7 @@ PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer viewer,PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
 
   ierr = PetscUseMethod(viewer,"PetscViewerHDF5GetCollective_C",(PetscViewer,PetscBool*),(viewer,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);

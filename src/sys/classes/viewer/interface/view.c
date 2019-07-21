@@ -490,7 +490,7 @@ PetscErrorCode  PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidIntPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   ierr = PetscObjectQueryFunction((PetscObject)viewer, "PetscViewerFileGetMode_C", &f);CHKERRQ(ierr);
   *flg = PETSC_FALSE;
   if (!f) PetscFunctionReturn(0);
@@ -532,7 +532,7 @@ PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidIntPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   ierr = PetscObjectQueryFunction((PetscObject)viewer, "PetscViewerFileGetMode_C", &f);CHKERRQ(ierr);
   *flg = PETSC_TRUE;
   if (!f) PetscFunctionReturn(0);

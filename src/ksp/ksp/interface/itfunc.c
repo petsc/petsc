@@ -1302,7 +1302,7 @@ PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscValidBoolPointer(flag,2);
   if (ksp->guess_zero) *flag = PETSC_FALSE;
   else *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1357,7 +1357,7 @@ PetscErrorCode  KSPGetErrorIfNotConverged(KSP ksp,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscValidBoolPointer(flag,2);
   *flag = ksp->errorifnotconverged;
   PetscFunctionReturn(0);
 }
@@ -1406,7 +1406,7 @@ PetscErrorCode  KSPGetInitialGuessKnoll(KSP ksp,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscValidBoolPointer(flag,2);
   *flag = ksp->guess_knoll;
   PetscFunctionReturn(0);
 }
@@ -1442,7 +1442,7 @@ PetscErrorCode  KSPGetComputeSingularValues(KSP ksp,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   *flg = ksp->calc_sings;
   PetscFunctionReturn(0);
 }
@@ -1505,7 +1505,7 @@ PetscErrorCode  KSPGetComputeEigenvalues(KSP ksp,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   *flg = ksp->calc_sings;
   PetscFunctionReturn(0);
 }

@@ -675,11 +675,11 @@ PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   if ((label->pStart == -1) && (label->pEnd == -1)) {ierr = DMLabelComputeIndex(label);CHKERRQ(ierr);}
   if (pStart) {
-    PetscValidPointer(pStart, 2);
+    PetscValidIntPointer(pStart, 2);
     *pStart = label->pStart;
   }
   if (pEnd) {
-    PetscValidPointer(pEnd, 3);
+    PetscValidIntPointer(pEnd, 3);
     *pEnd = label->pEnd;
   }
   PetscFunctionReturn(0);
@@ -708,7 +708,7 @@ PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contain
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidPointer(contains, 3);
+  PetscValidBoolPointer(contains, 3);
   ierr = DMLabelLookupStratum(label, value, &v);CHKERRQ(ierr);
   *contains = v < 0 ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -738,7 +738,7 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidPointer(contains, 3);
+  PetscValidBoolPointer(contains, 3);
   ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   if (!label->bt) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call DMLabelCreateIndex() before DMLabelHasPoint()");
@@ -772,7 +772,7 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidPointer(contains, 4);
+  PetscValidBoolPointer(contains, 4);
   *contains = PETSC_FALSE;
   ierr = DMLabelLookupStratum(label, value, &v);CHKERRQ(ierr);
   if (v < 0) PetscFunctionReturn(0);

@@ -4871,7 +4871,7 @@ PetscErrorCode MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
-  PetscValidPointer(flg,3);
+  PetscValidBoolPointer(flg,3);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsTranspose_C",&f);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsTranspose_C",&g);CHKERRQ(ierr);
   *flg = PETSC_FALSE;
@@ -4947,7 +4947,7 @@ PetscErrorCode MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
-  PetscValidPointer(flg,3);
+  PetscValidBoolPointer(flg,3);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsHermitianTranspose_C",&f);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsHermitianTranspose_C",&g);CHKERRQ(ierr);
   if (f && g) {
@@ -5025,7 +5025,7 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   PetscValidType(A,1);
   PetscValidType(B,2);
-  PetscValidIntPointer(flg,3);
+  PetscValidBoolPointer(flg,3);
   PetscCheckSameComm(A,1,B,2);
   MatCheckPreallocated(B,2);
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -8503,7 +8503,7 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
 
   if (!A->symmetric_set) {
     if (!A->ops->issymmetric) {
@@ -8558,7 +8558,7 @@ PetscErrorCode MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
 
   if (!A->hermitian_set) {
     if (!A->ops->ishermitian) {
@@ -8614,7 +8614,7 @@ PetscErrorCode MatIsSymmetricKnown(Mat A,PetscBool  *set,PetscBool  *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(set,2);
-  PetscValidPointer(flg,3);
+  PetscValidBoolPointer(flg,3);
   if (A->symmetric_set) {
     *set = PETSC_TRUE;
     *flg = A->symmetric;
@@ -8648,7 +8648,7 @@ PetscErrorCode MatIsHermitianKnown(Mat A,PetscBool *set,PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(set,2);
-  PetscValidPointer(flg,3);
+  PetscValidBoolPointer(flg,3);
   if (A->hermitian_set) {
     *set = PETSC_TRUE;
     *flg = A->hermitian;
@@ -8679,7 +8679,7 @@ PetscErrorCode MatIsStructurallySymmetric(Mat A,PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   if (!A->structurally_symmetric_set) {
     if (!A->ops->isstructurallysymmetric) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix does not support checking for structural symmetric");
     ierr = (*A->ops->isstructurallysymmetric)(A,&A->structurally_symmetric);CHKERRQ(ierr);

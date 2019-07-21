@@ -198,9 +198,9 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   PetscValidCharPointer(name,1);
   if (nstages < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have at least one stage");
   if (nregisters != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 3-register form");
-  PetscValidPointer(gamma,4);
-  PetscValidPointer(delta,5);
-  PetscValidPointer(betasub,6);
+  PetscValidRealPointer(gamma,4);
+  PetscValidRealPointer(delta,5);
+  PetscValidRealPointer(betasub,6);
 
   ierr          = SNESMSInitializePackage();CHKERRQ(ierr);
   ierr          = PetscNew(&link);CHKERRQ(ierr);
