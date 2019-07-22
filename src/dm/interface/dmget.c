@@ -295,7 +295,7 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm,const char *name,PetscBool *exists)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidCharPointer(name,2);
-  PetscValidPointer(exists,3);
+  PetscValidBoolPointer(exists,3);
   *exists = PETSC_FALSE;
   for (link=dm->namedglobal; link; link=link->next) {
     PetscBool match;

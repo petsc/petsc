@@ -104,7 +104,7 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidPointer(ob,3);
+  PetscValidRealPointer(ob,3);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (sdm->ops->computeobjective) {

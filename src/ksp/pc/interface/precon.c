@@ -140,7 +140,7 @@ PetscErrorCode  PCGetDiagonalScale(PC pc,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscValidBoolPointer(flag,2);
   *flag = pc->diagonalscale;
   PetscFunctionReturn(0);
 }
@@ -590,7 +590,7 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   if (pc->ops->applytranspose) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(0);

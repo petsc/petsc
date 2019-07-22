@@ -60,7 +60,7 @@ PetscErrorCode  SNESGetErrorIfNotConverged(SNES snes,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscValidBoolPointer(flag,2);
   *flag = snes->errorifnotconverged;
   PetscFunctionReturn(0);
 }
@@ -193,7 +193,7 @@ PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(flg, 2);
+  PetscValidBoolPointer(flg,2);
   *flg = snes->checkjacdomainerror;
   PetscFunctionReturn(0);
 }
@@ -217,7 +217,7 @@ PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(domainerror, 2);
+  PetscValidBoolPointer(domainerror,2);
   *domainerror = snes->domainerror;
   PetscFunctionReturn(0);
 }
@@ -241,7 +241,7 @@ PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(domainerror, 2);
+  PetscValidBoolPointer(domainerror,2);
   *domainerror = snes->jacobiandomainerror;
   PetscFunctionReturn(0);
 }
@@ -4969,7 +4969,7 @@ PetscErrorCode  SNESKSPGetUseEW(SNES snes, PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscValidBoolPointer(flag,2);
   *flag = snes->ksp_ewconv;
   PetscFunctionReturn(0);
 }

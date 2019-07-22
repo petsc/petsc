@@ -1561,7 +1561,7 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec1,VEC_CLASSID,1);
   PetscValidHeaderSpecific(vec2,VEC_CLASSID,2);
-  PetscValidPointer(flg,3);
+  PetscValidBoolPointer(flg,3);
   if (vec1 == vec2) *flg = PETSC_TRUE;
   else {
     ierr = VecGetSize(vec1,&N1);CHKERRQ(ierr);
