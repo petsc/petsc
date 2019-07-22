@@ -340,8 +340,15 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
   PetscErrorCode ierr;
   PetscInt       *row,*col;
   Mat_SeqSBAIJ   *aa=(Mat_SeqSBAIJ*)A->data;
+#if defined(PETSC_USE_COMPLEX)
+  PetscBool      hermitian;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MatGetOption(A,MAT_HERMITIAN,&hermitian);CHKERRQ(ierr);
+  if (hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
+#endif
   *v = aa->a;
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = aa->nz;
@@ -375,8 +382,15 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
   PetscInt          *row,*col;
   Mat_SeqAIJ        *aa=(Mat_SeqAIJ*)A->data;
   PetscBool         missing;
+#if defined(PETSC_USE_COMPLEX)
+  PetscBool         hermitian;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MatGetOption(A,MAT_HERMITIAN,&hermitian);CHKERRQ(ierr);
+  if (hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
+#endif
   ai    = aa->i; aj = aa->j; av = aa->a;
   adiag = aa->diag;
   ierr  = MatMissingDiagonal_SeqAIJ(A,&missing,&i);CHKERRQ(ierr);
@@ -475,10 +489,22 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse re
   Mat_MPISBAIJ      *mat = (Mat_MPISBAIJ*)A->data;
   Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ*)(mat->A)->data;
   Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ*)(mat->B)->data;
+#if defined(PETSC_USE_COMPLEX)
+  PetscBool         hermitian;
+#endif
 
   PetscFunctionBegin;
-  ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= A->rmap->rstart;
-  av=aa->a; bv=bb->a;
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MatGetOption(A,MAT_HERMITIAN,&hermitian);CHKERRQ(ierr);
+  if (hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
+#endif
+  rstart = A->rmap->rstart;
+  ai = aa->i;
+  aj = aa->j;
+  bi = bb->i;
+  bj = bb->j;
+  av = aa->a;
+  bv = bb->a;
 
   garray = mat->garray;
 
@@ -536,8 +562,13 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A,int shift,MatReuse reuse,
   Mat_SeqAIJ        *bb  = (Mat_SeqAIJ*)(mat->B)->data;
 
   PetscFunctionBegin;
-  ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= A->rmap->rstart;
-  av=aa->a; bv=bb->a;
+  rstart = A->rmap->rstart;
+  ai = aa->i;
+  aj = aa->j;
+  bi = bb->i;
+  bj = bb->j;
+  av = aa->a;
+  bv = bb->a;
 
   garray = mat->garray;
 
@@ -662,11 +693,23 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
   Mat_MPIAIJ        *mat =  (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ        *aa  =(Mat_SeqAIJ*)(mat->A)->data;
   Mat_SeqAIJ        *bb  =(Mat_SeqAIJ*)(mat->B)->data;
+#if defined(PETSC_USE_COMPLEX)
+  PetscBool         hermitian;
+#endif
 
   PetscFunctionBegin;
-  ai=aa->i; aj=aa->j; adiag=aa->diag;
-  bi=bb->i; bj=bb->j; garray = mat->garray;
-  av=aa->a; bv=bb->a;
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MatGetOption(A,MAT_HERMITIAN,&hermitian);CHKERRQ(ierr);
+  if (hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
+#endif
+  ai     = aa->i;
+  aj     = aa->j;
+  adiag  = aa->diag;
+  bi     = bb->i;
+  bj     = bb->j;
+  garray = mat->garray;
+  av     = aa->a;
+  bv     = bb->a;
 
   rstart = A->rmap->rstart;
 
@@ -2469,6 +2512,8 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
   Level: beginner
 
     Notes:
+    MUMPS Cholesky does not handle (complex) Hermitian matrices http://mumps.enseeiht.fr/doc/userguide_5.2.1.pdf so using it will error if the matrix is Hermitian.
+
     When a MUMPS factorization fails inside a KSP solve, for example with a KSP_DIVERGED_PC_FAILED, one can find the MUMPS information about the failure by calling
 $          KSPGetPC(ksp,&pc);
 $          PCFactorGetMatrix(pc,&mat);
