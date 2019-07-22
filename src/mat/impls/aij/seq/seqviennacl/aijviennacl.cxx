@@ -257,6 +257,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   if (!A->pinnedtocpu) {
     ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
   }

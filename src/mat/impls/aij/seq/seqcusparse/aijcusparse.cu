@@ -1197,7 +1197,6 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
 
 static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 {
-
   Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct *matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
@@ -1559,10 +1558,10 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  if (A->factortype==MAT_FACTOR_NONE) {
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (A->factortype == MAT_FACTOR_NONE) {
     ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   }
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   A->ops->mult             = MatMult_SeqAIJCUSPARSE;
   A->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
   A->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
@@ -1765,7 +1764,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqAIJCUSPARSE(B);
+  ierr = MatConvert_SeqAIJ_SeqAIJCUSPARSE(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
