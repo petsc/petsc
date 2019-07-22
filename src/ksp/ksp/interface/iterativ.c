@@ -401,7 +401,8 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   PetscInt       outer_maxits,nksp,first,i;
   KSPDynTolCtx   *scale   = (KSPDynTolCtx*)dummy;
   KSP            *subksp = NULL;
-  PetscBool      isksp;
+  KSP            kspinner;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
@@ -417,21 +418,30 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   /*ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %g\n", (double)inner_rtol);CHKERRQ(ierr);*/
 
   /* if pc is ksp */
-  ierr = PetscObjectTypeCompare((PetscObject)pc,PCKSP,&isksp);CHKERRQ(ierr);
-  if (isksp) {
-    KSP kspinner;
-
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCKSP,&flg);CHKERRQ(ierr);
+  if (flg) {
     ierr = PCKSPGetKSP(pc, &kspinner);CHKERRQ(ierr);
     ierr = KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
   /* if pc is bjacobi */
-  ierr = PCBJacobiGetSubKSP(pc, &nksp, &first, &subksp);CHKERRQ(ierr);
-  if (subksp) {
-    for (i=0; i<nksp; i++) {
-      ierr = KSPSetTolerances(subksp[i], inner_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCBJacobiGetSubKSP(pc, &nksp, &first, &subksp);CHKERRQ(ierr);
+    if (subksp) {
+      for (i=0; i<nksp; i++) {
+        ierr = KSPSetTolerances(subksp[i], inner_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
+      }
+      PetscFunctionReturn(0);
     }
+  }
+
+  /* if pc is deflation*/
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCDEFLATION,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCDeflationGetCoarseKSP(pc,&kspinner);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(kspinner,inner_rtol,outer_abstol,outer_dtol,PETSC_DEFAULT);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

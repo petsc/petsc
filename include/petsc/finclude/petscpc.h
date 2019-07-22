@@ -71,10 +71,12 @@
 #define PCGAMG 'gamg'
 #define PCBDDC 'bddc'
 #define PCPATCH 'patch'
+#define PCDEFLATION 'deflation'
 
 #define PCMGType PetscEnum
 #define PCMGCycleType PetscEnum
 #define PCMGGalerkinType PetscEnum
 #define PCExoticType PetscEnum
+#define PCDeflationSpaceType PetscEnum
 #define PCFailedReason PetscEnum
 #endif
