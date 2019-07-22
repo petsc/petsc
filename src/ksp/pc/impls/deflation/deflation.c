@@ -618,15 +618,17 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = MatSetOption(def->WtAW,MAT_SPD,flgspd);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
       /* Check columns of W are not in kernel of A */
-      PetscReal *norms;
-      ierr = PetscMalloc1(m,&norms);CHKERRQ(ierr);
-      ierr = MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms);CHKERRQ(ierr);
-      for (i=0; i<m; i++) {
-        if (norms[i] < 100*PETSC_MACHINE_EPSILON) {
-          SETERRQ1(comm,PETSC_ERR_SUP,"Column %D of W is in kernel of A.",i);
+      {
+        PetscReal *norms;
+        ierr = PetscMalloc1(m,&norms);CHKERRQ(ierr);
+        ierr = MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms);CHKERRQ(ierr);
+        for (i=0; i<m; i++) {
+          if (norms[i] < 100*PETSC_MACHINE_EPSILON) {
+            SETERRQ1(comm,PETSC_ERR_SUP,"Column %D of W is in kernel of A.",i);
+          }
         }
+        ierr = PetscFree(norms);CHKERRQ(ierr);
       }
-      ierr = PetscFree(norms);CHKERRQ(ierr);
 #endif
     } else {
       ierr = MatGetOption(def->WtAW,MAT_SPD,&flgspd);CHKERRQ(ierr);
