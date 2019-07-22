@@ -8,16 +8,11 @@ int main(int argc, char **argv)
 {
   PetscInt    ierr;
   PetscSF     sf;
-  Vec         A,Aout;
-  Vec         B,Bout;
-  PetscScalar *bufA;
-  PetscScalar *bufAout;
-  PetscScalar *bufB;
-  PetscScalar *bufBout;
-  PetscMPIInt rank, size;
-  PetscInt    nroots, nleaves;
-  PetscInt    i;
-  PetscInt    *ilocal;
+  Vec         A,B,Aout,Bout;
+  PetscScalar *bufA,*bufB,*bufAout,*bufBout;
+  PetscInt    a,b,aout,bout,*bufa,*bufb,*bufaout,*bufbout;
+  PetscMPIInt rank,size;
+  PetscInt    i,*ilocal,nroots,nleaves;
   PetscSFNode *iremote;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
@@ -73,10 +68,12 @@ int main(int argc, char **argv)
   ierr = VecGetArrayRead(B,(const PetscScalar**)&bufB);CHKERRQ(ierr);
   ierr = VecGetArray(Aout,&bufAout);CHKERRQ(ierr);
   ierr = VecGetArray(Bout,&bufBout);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout);CHKERRQ(ierr);
+
+  /* Testing overlapped PetscSFBcast with different rootdata and leafdata */
+  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,bufA,bufAout);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,bufB,bufBout);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd  (sf,MPIU_SCALAR,bufA,bufAout);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd  (sf,MPIU_SCALAR,bufB,bufBout);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(A,(const PetscScalar**)&bufA);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(B,(const PetscScalar**)&bufB);CHKERRQ(ierr);
   ierr = VecRestoreArray(Aout,&bufAout);CHKERRQ(ierr);
@@ -90,6 +87,102 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&Bout);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
+  /* Another very simple graph: rank 0 has one root, zero leaves; rank 1 has zero roots, one leave.
+     Zero roots or leaves will result in NULL rootdata or leafdata. Therefore, one can not use that
+     as key to identify pending communications.
+   */
+  if (!rank) {
+    nroots  = 1;
+    nleaves = 0;
+  } else {
+    nroots  = 0;
+    nleaves = 1;
+  }
+
+  ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
+  if (rank) {
+    ilocal[0]        = 0;
+    iremote[0].rank  = 0;
+    iremote[0].index = 0;
+  }
+
+  ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+
+  if (!rank) {
+    a       = 1;
+    b       = 10;
+    bufa    = &a;
+    bufb    = &b;
+    bufaout = NULL;
+    bufbout = NULL;
+  } else {
+    bufa    = NULL;
+    bufb    = NULL;
+    bufaout = &aout;
+    bufbout = &bout;
+  }
+
+  /* Do Bcast to challenge PetscSFBcast if it uses rootdata to identify pending communications.
+                    Rank 0             Rank 1
+      rootdata:   bufa=XXX (1)       bufa=NULL
+                  bufb=YYY (10)      bufb=NULL
+
+      leafdata:   bufaout=NULL       bufaout=WWW
+                  bufbout=NULL       bufbout=ZZZ
+   */
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,bufa,bufaout);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,bufb,bufbout);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd  (sf,MPIU_INT,bufa,bufaout);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd  (sf,MPIU_INT,bufb,bufbout);CHKERRQ(ierr);
+  if (rank) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"On rank 1, aout=%D, bout=%D\n",aout,bout);CHKERRQ(ierr);} /* On rank 1, aout=1, bout=10 */
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,NULL);CHKERRQ(ierr);
+
+  /* Do Reduce to challenge PetscSFReduce if it uses leafdata to identify pending communications.
+                    Rank 0             Rank 1
+      rootdata:   bufa=XXX (1)       bufa=NULL
+                  bufb=YYY (10)      bufb=NULL
+
+      leafdata:   bufaout=NULL       bufaout=WWW (1)
+                  bufbout=NULL       bufbout=ZZZ (10)
+   */
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,bufaout,bufa,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,bufbout,bufb,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd  (sf,MPIU_INT,bufaout,bufa,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd  (sf,MPIU_INT,bufbout,bufb,MPI_SUM);CHKERRQ(ierr);
+  if (!rank) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"On rank 0, a   =%D, b   =%D\n",a,b);CHKERRQ(ierr);} /* On rank 0, a=2, b=20 */
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,NULL);CHKERRQ(ierr);
+
+/*  A difficult case PETSc can not handle correctly. So comment out. */
+#if 0
+  /*  Note on rank 0, the following overlapped Bcast have the same rootdata (bufa) and leafdata (NULL).
+      It challenges PetscSF if it uses (rootdata, leafdata) as key to identify pending communications.
+                    Rank 0             Rank 1
+      rootdata:   bufa=XXX (2)       bufa=NULL
+
+      leafdata:   bufaout=NULL       bufaout=WWW (1)
+                  bufbout=NULL       bufbout=ZZZ (10)
+   */
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,bufa,bufaout);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,bufa,bufbout);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd  (sf,MPIU_INT,bufa,bufaout);CHKERRQ(ierr); /* Buggy PetscSF could match a wrong PetscSFBcastBegin */
+  ierr = PetscSFBcastEnd  (sf,MPIU_INT,bufa,bufbout);CHKERRQ(ierr);
+  if (rank) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"On rank 1, aout=%D, bout=%D\n",aout,bout);CHKERRQ(ierr);} /* On rank 1, aout=2, bout=2 */
+
+  /* The above Bcasts may successfully populate leafdata with correct values. But communinication contexts (i.e., the links,
+     each with a unique MPI tag) may have retired in different order in the ->avail list. Processes doing the following
+     PetscSFReduce will get tag-unmatched links from the ->avail list, resulting in dead lock.
+   */
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,bufaout,bufa,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd  (sf,MPIU_INT,bufaout,bufa,MPI_SUM);CHKERRQ(ierr);
+  if (!rank) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"On rank 0, a   =%D, b   =%D\n",a,b);CHKERRQ(ierr);} /* On rank 0, a=4, b=20 */
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,NULL);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
