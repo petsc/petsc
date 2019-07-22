@@ -5,7 +5,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.version          = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
-    self.gitcommit        = 'v'+self.version+'-p1'
+    self.gitcommit        = 'v'+self.version+'-p2'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
                              'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps','MUMPS']
