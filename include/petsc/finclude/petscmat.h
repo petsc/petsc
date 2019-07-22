@@ -104,6 +104,7 @@
 #define MATSHELL           'shell'
 #define MATDENSE           'dense'
 #define MATSEQDENSE        'seqdense'
+#define MATSEQDENSECUDA    'seqdensecuda'
 #define MATMPIDENSE        'mpidense'
 #define MATELEMENTAL       'elemental'
 #define MATBAIJ            'baij'
@@ -166,6 +167,7 @@
 #define MATSOLVERPETSC           'petsc'
 #define MATSOLVERBAS             'bas'
 #define MATSOLVERCUSPARSE        'cusparse'
+#define MATSOLVERCUDA            'cuda'
 
 !
 ! GPU Storage Formats for CUSPARSE

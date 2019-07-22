@@ -1,15 +1,15 @@
+#requirespackage   'PETSC_HAVE_CUDA'
 
 ALL: lib
 
-DIRS     = cuda
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dense.c densehdf5.c
+SOURCECU = densecuda.cu
 SOURCEF  =
-SOURCEH  = dense.h
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/dense/seq/
+LOCDIR   = src/mat/impls/dense/seq/cuda
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
