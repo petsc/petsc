@@ -121,9 +121,12 @@ static PetscErrorCode Test1(DM dm)
 #define TEST_FUNCTION(i,j,k,idx,c) (8.33 * i + 7.343 * j + 1.234 * idx + 99.011 * c)
 
 /* Helper function to check */
-static PetscErrorCode CompareExact(PetscInt i,PetscInt j, PetscInt k, PetscScalar val, PetscScalar valRef) {
+static PetscErrorCode CompareValues(PetscInt i,PetscInt j, PetscInt k, PetscInt c, PetscScalar val, PetscScalar valRef) {
   PetscFunctionBeginUser;
-  if (val != valRef) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(%D,%D,%D) Value %g does not match the expected %g",i,j,k,(double)PetscRealPart(val),(double)PetscRealPart(valRef));
+  if (val != valRef && PetscAbsScalar(val-valRef)/PetscAbsScalar(valRef) > 10*PETSC_MACHINE_EPSILON)
+  {
+    SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(%D,%D,%D,%D) Value %.17g does not match the expected %.17g",i,j,k,c,(double)PetscRealPart(val),(double)PetscRealPart(valRef));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -170,19 +173,19 @@ static PetscErrorCode Test2_1d(DM dm)
     for (c=0; c<dof0; ++c) {
       const PetscScalar valRef = TEST_FUNCTION(i,0,0,idxLeft,c);
       const PetscScalar val    = arr[i][idxLeft+c];
-      ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+      ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
     }
     if (i < startx+nx) {
       for (c=0; c<dof1; ++c) {
         const PetscScalar valRef = TEST_FUNCTION(i,0,0,idxElement,c);
         const PetscScalar val    = arr[i][idxElement+c];
-        ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+        ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
       }
     } else {
       for (c=0; c<dof1; ++c) {
         const PetscScalar valRef = -1.0;
         const PetscScalar val    = arr[i][idxElement+c];
-        ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+        ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
       }
     }
   }
@@ -255,45 +258,45 @@ static PetscErrorCode Test2_2d(DM dm)
       for (c=0; c<dof0; ++c) {
         const PetscScalar valRef = TEST_FUNCTION(i,j,0,idxDownLeft,c);
         const PetscScalar val    = arr[j][i][idxDownLeft+c];
-        ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+        ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
       }
       if (j < starty+ny) {
         for (c=0; c<dof1; ++c) {
           const PetscScalar valRef = TEST_FUNCTION(i,j,0,idxLeft,c);
           const PetscScalar val    = arr[j][i][idxLeft+c];
-          ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+          ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
         }
       } else {
         for (c=0; c<dof1; ++c) {
           const PetscScalar valRef = -1.0;
           const PetscScalar val    = arr[j][i][idxLeft+c];
-          ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+          ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
         }
       }
       if (i < startx+nx) {
         for (c=0; c<dof1; ++c) {
           const PetscScalar valRef = TEST_FUNCTION(i,j,0,idxDown,c);
           const PetscScalar val    = arr[j][i][idxDown+c];
-          ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+          ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
         }
       } else {
         for (c=0; c<dof1; ++c) {
           const PetscScalar valRef = -1.0;
           const PetscScalar val    = arr[j][i][idxDown+c];
-          ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+          ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
         }
       }
       if (i < startx+nx && j < starty+ny) {
         for (c=0; c<dof2; ++c) {
           const PetscScalar valRef = TEST_FUNCTION(i,j,0,idxElement,c);
           const PetscScalar val    = arr[j][i][idxElement+c];
-          ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+          ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
         }
       } else {
         for (c=0; c<dof2; ++c) {
           const PetscScalar valRef = -1.0;
           const PetscScalar val    = arr[j][i][idxElement+c];
-          ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+          ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
         }
       }
     }
@@ -399,97 +402,97 @@ static PetscErrorCode Test2_3d(DM dm)
         for (c=0; c<dof0; ++c) {
           const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxBackDownLeft,c);
           const PetscScalar val    = arr[k][j][i][idxBackDownLeft+c];
-          ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+          ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
         }
         if (k < startz+nz) {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxDownLeft,c);
             const PetscScalar val    =  arr[k][j][i][idxDownLeft+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         } else {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxDownLeft+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         }
         if (j < starty+ny) {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxBackLeft,c);
             const PetscScalar val    = arr[k][j][i][idxBackLeft+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         } else {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxBackLeft+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         }
         if (i < startx+nx) {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxBackDown,c);
             const PetscScalar val    = arr[k][j][i][idxBackDown+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         } else {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxBackDown+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         }
         if (j < starty+ny && k < startz+nz) {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxLeft,c);
             const PetscScalar val    = arr[k][j][i][idxLeft+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         } else {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxLeft+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         }
         if (i < startx+nx && k < startz+nz) {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxDown,c);
             const PetscScalar val    = arr[k][j][i][idxDown+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         } else {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxDown+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         }
         if (i < startx+nx && j < starty+ny) {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxBack,c);
             const PetscScalar val    = arr[k][j][i][idxBack+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         } else {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxBack+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         }
         if (i < startx+nx && j < starty+ny && k < startz+nz) {
           for (c=0; c<dof3; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxElement,c);
             const PetscScalar val    = arr[k][j][i][idxElement+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         } else {
           for (c=0; c<dof3; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxElement+c];
-            ierr = CompareExact(i,j,k,val,valRef);CHKERRQ(ierr);
+            ierr = CompareValues(i,j,k,c,val,valRef);CHKERRQ(ierr);
           }
         }
       }
