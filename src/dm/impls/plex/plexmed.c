@@ -143,12 +143,6 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
     PetscInt *pcone = &cellList[c*numCorners];
 
     if (meshDim == 3) {
-      /* Tetrahedra are inverted */
-      if (numCorners == 4) {
-        PetscInt tmp = pcone[0];
-        pcone[0] = pcone[1];
-        pcone[1] = tmp;
-      }
       /* Hexahedra are inverted */
       if (numCorners == 8) {
         PetscInt tmp = pcone[4+1];
