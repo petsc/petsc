@@ -362,6 +362,9 @@ PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
 
   PetscFunctionBegin;
   ierr = PetscArraycpy(a->a+ai[row],v,ai[row+1]-ai[row]);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED && ai[row+1]-ai[row]) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -387,9 +390,9 @@ PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],
   MatScalar      *ap,value,*aa = a->a;
   const PetscInt *ridx = A->rmap->mapping->indices,*cidx = A->cmap->mapping->indices;
 
-  row = ridx[im[0]];
+  row  = ridx[im[0]];
   rp   = aj + ai[row];
-  ap = aa + ai[row];
+  ap   = aa + ai[row];
   nrow = ailen[row];
   low  = 0;
   high = nrow;
@@ -413,6 +416,9 @@ PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],
       }
     }
   }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED && m*n) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   return 0;
 }
 
@@ -426,6 +432,9 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   MatScalar      *ap=NULL,value=0.0,*aa = a->a;
   PetscBool      ignorezeroentries = a->ignorezeroentries;
   PetscBool      roworiented       = a->roworiented;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  PetscBool      inserted          = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over added rows */
@@ -465,6 +474,9 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
               (void)PetscLogFlops(1.0);
             }
             else ap[i] = value;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+            inserted = PETSC_TRUE;
+#endif
           }
           low = i + 1;
           goto noinsert;
@@ -488,10 +500,16 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       }
       low = i + 1;
       A->nonzerostate++;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      inserted = PETSC_TRUE;
+#endif
 noinsert:;
     }
     ailen[row] = nrow;
   }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED && inserted) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -523,6 +541,9 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A,PetscInt m,const PetscInt im
     ailen[row] = n;
     a->nz      += n;
   }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED && m*n) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1083,6 +1104,9 @@ PetscErrorCode MatRealPart_SeqAIJ(Mat A)
   PetscFunctionBegin;
   for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1096,6 +1120,9 @@ PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
   PetscFunctionBegin;
   for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1107,6 +1134,9 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
   PetscFunctionBegin;
   ierr = PetscArrayzero(a->a,a->i[A->rmap->n]);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -2034,6 +2064,9 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     }
     A->nonzerostate++;
   }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   ierr = (*A->ops->assemblyend)(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2089,6 +2122,9 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
       }
     }
   }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   ierr = (*A->ops->assemblyend)(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2361,6 +2397,9 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
     ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -2608,6 +2647,9 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&oalpha,a->a,&one));
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(inA);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (inA->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) inA->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -2917,6 +2959,13 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
+    /* the MatAXPY_Basic* subroutines calls MatAssembly, so the matrix on the GPU
+       will be updated */
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+    if (Y->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
+      Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+    }
+#endif
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   } else {
@@ -2948,6 +2997,9 @@ PetscErrorCode  MatConjugate_SeqAIJ(Mat mat)
   nz = aij->nz;
   a  = aij->a;
   for (i=0; i<nz; i++) a[i] = PetscConj(a[i]);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
 #else
   PetscFunctionBegin;
 #endif

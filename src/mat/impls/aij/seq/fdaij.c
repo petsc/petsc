@@ -34,7 +34,6 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
     }
 
     bs    = 1; /* only bs=1 is supported for SeqAIJ matrix */
-
     mem   = nz*(sizeof(PetscScalar) + sizeof(PetscInt)) + 3*m*sizeof(PetscInt);
     bcols = (PetscInt)(0.5*mem /(m*sizeof(PetscScalar)));
     brows = 1000/bcols;
@@ -78,7 +77,8 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
   color_start[bcols] = 0;
 
   if (c->htype[0] == 'd') { /* ----  c->htype == 'ds', use MatEntry --------*/
-    MatEntry       *Jentry_new,*Jentry=c->matentry;
+    MatEntry *Jentry_new,*Jentry=c->matentry;
+
     ierr = PetscMalloc1(nz,&Jentry_new);CHKERRQ(ierr);
     for (i=0; i<nis; i+=bcols) { /* loop over colors */
       if (i + bcols > nis) {
@@ -120,7 +120,8 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
     ierr = PetscFree(Jentry);CHKERRQ(ierr);
     c->matentry = Jentry_new;
   } else { /* ---------  c->htype == 'wp', use MatEntry2 ------------------*/
-    MatEntry2      *Jentry2_new,*Jentry2=c->matentry2;
+    MatEntry2 *Jentry2_new,*Jentry2=c->matentry2;
+
     ierr = PetscMalloc1(nz,&Jentry2_new);CHKERRQ(ierr);
     for (i=0; i<nis; i+=bcols) { /* loop over colors */
       if (i + bcols > nis) {
@@ -189,31 +190,34 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQSELL,&isSELL);CHKERRQ(ierr);
   if (isBAIJ) {
     Mat_SeqBAIJ *spA = (Mat_SeqBAIJ*)mat->data;
+
     A_val = spA->a;
     nz    = spA->nz;
   } else if (isSELL) {
-    Mat_SeqSELL  *spA = (Mat_SeqSELL*)mat->data;
+    Mat_SeqSELL *spA = (Mat_SeqSELL*)mat->data;
+
     A_val = spA->val;
     nz    = spA->nz;
     bs    = 1; /* only bs=1 is supported for SeqSELL matrix */
   } else {
-    Mat_SeqAIJ  *spA = (Mat_SeqAIJ*)mat->data;
+    Mat_SeqAIJ *spA = (Mat_SeqAIJ*)mat->data;
+
     A_val = spA->a;
     nz    = spA->nz;
     bs    = 1; /* only bs=1 is supported for SeqAIJ matrix */
   }
 
-  ierr       = PetscMalloc2(nis,&c->ncolumns,nis,&c->columns);CHKERRQ(ierr);
-  ierr       = PetscMalloc1(nis,&c->nrows);CHKERRQ(ierr); /* nrows is freeed seperately from ncolumns and columns */ 
-  ierr       = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc2(nis,&c->ncolumns,nis,&c->columns);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nis,&c->nrows);CHKERRQ(ierr); /* nrows is freeed seperately from ncolumns and columns */
+  ierr = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
 
   if (c->htype[0] == 'd') {
-    ierr       = PetscMalloc1(nz,&Jentry);CHKERRQ(ierr);
-    ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
+    ierr        = PetscMalloc1(nz,&Jentry);CHKERRQ(ierr);
+    ierr        = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
     c->matentry = Jentry;
   } else if (c->htype[0] == 'w') {
-    ierr       = PetscMalloc1(nz,&Jentry2);CHKERRQ(ierr);
-    ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry2));CHKERRQ(ierr);
+    ierr         = PetscMalloc1(nz,&Jentry2);CHKERRQ(ierr);
+    ierr         = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry2));CHKERRQ(ierr);
     c->matentry2 = Jentry2;
   } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"htype is not supported");
 

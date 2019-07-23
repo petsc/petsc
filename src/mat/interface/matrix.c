@@ -386,11 +386,6 @@ PetscErrorCode MatRealPart(Mat mat)
   if (!mat->ops->realpart) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
   ierr = (*mat->ops->realpart)(mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -456,11 +451,6 @@ PetscErrorCode MatImaginaryPart(Mat mat)
   if (!mat->ops->imaginarypart) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
   ierr = (*mat->ops->imaginarypart)(mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -595,15 +585,10 @@ PetscErrorCode MatConjugate(Mat mat)
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->conjugate) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not provided for this matrix format, send email to petsc-maint@mcs.anl.gov");
   ierr = (*mat->ops->conjugate)(mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
+#else
+  PetscFunctionBegin;
 #endif
   PetscFunctionReturn(0);
-#else
-  return 0;
-#endif
 }
 
 /*@C
@@ -1387,11 +1372,6 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1432,11 +1412,6 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
   PetscValidScalarPointer(v,2);
   ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,1,&row,&globalrow);CHKERRQ(ierr);
   ierr = MatSetValuesRow(mat,globalrow,v);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1488,11 +1463,6 @@ PetscErrorCode MatSetValuesRow(Mat mat,PetscInt row,const PetscScalar v[])
   if (!mat->ops->setvaluesrow) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->setvaluesrow)(mat,row,v);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1716,11 +1686,6 @@ PetscErrorCode MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil id
   }
   ierr = MatSetValuesBlockedLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
   ierr = PetscFree2(bufm,bufn);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1888,11 +1853,6 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
     ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -2168,11 +2128,6 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
     ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -2271,11 +2226,6 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt iro
     ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -5100,11 +5050,6 @@ PetscErrorCode MatDiagonalScale(Mat mat,Vec l,Vec r)
   ierr = (*mat->ops->diagonalscale)(mat,l,r);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -5141,11 +5086,6 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
   if (a != (PetscScalar)1.0) {
     ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-      mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-    }
-#endif
   }
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5329,8 +5269,8 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
   /* Flush assembly is not a true assembly */
   if (type != MAT_FLUSH_ASSEMBLY) {
-    mat->assembled        = PETSC_TRUE;
     mat->num_ass++;
+    mat->assembled        = PETSC_TRUE;
     mat->ass_nonzerostate = mat->nonzerostate;
   }
 
@@ -5342,11 +5282,6 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
     mat->hermitian_set              = PETSC_FALSE;
     mat->structurally_symmetric_set = PETSC_FALSE;
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
 
@@ -5656,11 +5591,6 @@ PetscErrorCode MatZeroEntries(Mat mat)
   ierr = (*mat->ops->zeroentries)(mat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -5716,11 +5646,6 @@ PetscErrorCode MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[]
   ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
   ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -5836,11 +5761,6 @@ PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscS
   ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
   ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -6167,11 +6087,6 @@ PetscErrorCode MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],P
     ierr = ISDestroy(&is);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -6283,11 +6198,6 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt r
   ierr = ISDestroy(&newis);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (mat->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 

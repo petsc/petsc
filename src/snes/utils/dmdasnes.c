@@ -194,7 +194,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
        */
       ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
     }
-    ierr  = MatFDColoringApply(B,fdcoloring,X,snes);CHKERRQ(ierr);
+    ierr = MatFDColoringApply(B,fdcoloring,X,snes);CHKERRQ(ierr);
   }
   /* This will be redundant if the user called both, but it's too common to forget. */
   if (A != B) {
