@@ -1,6 +1,6 @@
 pipelines:
-  branches:
-    maint: &default-step
+  custom:
+    default: &default-step
       - step:
           script:
             - sudo apt-get update
@@ -10,7 +10,12 @@ pipelines:
             - export PETSC_OPTIONS='-check_pointer_intensity 0 -malloc_test'
             - make check
             - make alltests ALLTESTS_CHECK_FAILURES=yes TIMEOUT=600
+  branches:
+    maint:   *default-step
     master:  *default-step
     next:    *default-step
     pr*/*/*: *default-step
     ci/*/*:  *default-step
+
+clone:
+  depth: 3
