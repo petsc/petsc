@@ -111,6 +111,8 @@ PETSC_INTERN PetscErrorCode PetscSetUseTrMalloc_Private(void)
    Level: advanced
 
    Notes:
+    This is only run if PetscMallocDebug() has been called which is set by -malloc_test (if debugging is turned on) or -malloc_debug (any time)
+
     You should generally use CHKMEMQ as a short cut for calling this
     routine.
 
@@ -129,6 +131,7 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
   char         *a;
   PetscClassId *nend;
 
+  if (!TRdebugLevel) return 0;
   PetscFunctionBegin;
   head = TRhead; lasthead = NULL;
   while (head) {
@@ -181,9 +184,7 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,PetscBool clear,int lineno,const c
   /* Do not try to handle empty blocks */
   if (!a) { *result = NULL; PetscFunctionReturn(0); }
 
-  if (TRdebugLevel) {
-    ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);
-  }
+  ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);
 
   nsize = (a + (PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1);
   ierr  = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscClassId),clear,lineno,function,filename,(void**)&inew);CHKERRQ(ierr);
@@ -267,9 +268,7 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
   /* Do not try to handle empty blocks */
   if (!a) PetscFunctionReturn(0);
 
-  if (TRdebugLevel) {
-    ierr = PetscMallocValidate(line,function,file);CHKERRQ(ierr);
-  }
+  ierr = PetscMallocValidate(line,function,file);CHKERRQ(ierr);
 
   ahead = a;
   a     = a - sizeof(TrSPACE);
@@ -360,7 +359,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
     PetscFunctionReturn(0);
   }
 
-  if (TRdebugLevel) {ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);}
+  ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);
 
   ahead = a;
   a     = a - sizeof(TrSPACE);
