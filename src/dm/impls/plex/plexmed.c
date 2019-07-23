@@ -97,7 +97,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   ngeo = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,MED_GEO_ALL, MED_CONNECTIVITY,
                         MED_NODAL, &coordinatechangement, &geotransformation);
   if (ngeo < 1) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
-  if (ngeo > 2) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Currently no support for hybrid meshes in .med mesh file: %s", major, minor, release, filename);
+  if (ngeo > 2) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Currently no support for hybrid meshes in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
   ierr = MEDmeshEntityInfo(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, 1, geotypename, &(geotype[0]));CHKERRQ(ierr);
   if (ngeo > 1) {ierr = MEDmeshEntityInfo(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, 2, geotypename, &(geotype[1]));CHKERRQ(ierr);}
   else geotype[1] = 0;
