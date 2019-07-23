@@ -42,7 +42,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Alltoall(PetscSF sf,MPI_Datatype un
   void                 *recvbuf;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Alltoall(sf,unit,rootdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Alltoall(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
 
   if (op != MPIU_REPLACE) {
@@ -63,7 +63,7 @@ static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf,MPI_Datatype unit,c
   void                 *recvbuf;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Alltoall(sf,unit,leafdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Alltoall(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
 
   if (op != MPIU_REPLACE) {

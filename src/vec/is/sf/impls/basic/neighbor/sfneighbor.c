@@ -51,7 +51,7 @@ static PetscErrorCode PetscSFGetDistComm_Neighbor(PetscSF sf,PetscSFDirection di
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFPackGet_Neighbor(PetscSF sf,MPI_Datatype unit,const void *key,PetscSFDirection direction,PetscSFPack_Neighbor *mylink)
+static PetscErrorCode PetscSFPackGet_Neighbor(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey,PetscSFDirection direction,PetscSFPack_Neighbor *mylink)
 {
   PetscErrorCode       ierr;
   PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
@@ -61,6 +61,7 @@ static PetscErrorCode PetscSFPackGet_Neighbor(PetscSF sf,MPI_Datatype unit,const
   PetscSFPack_Neighbor link;
 
   PetscFunctionBegin;
+  ierr = PetscSFPackSetErrorOnUnsupportedOverlap(sf,unit,rkey,lkey);CHKERRQ(ierr);
   ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,NULL,&rootoffset,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetLeafInfo_Basic(sf,&nleafranks,&ndleafranks,NULL,&leafoffset,NULL,NULL);CHKERRQ(ierr);
 
@@ -95,7 +96,8 @@ static PetscErrorCode PetscSFPackGet_Neighbor(PetscSF sf,MPI_Datatype unit,const
   }
 
 found:
-  link->key  = key;
+  link->rkey = rkey;
+  link->lkey = lkey;
   link->next = dat->inuse;
   dat->inuse = (PetscSFPack)link;
   *mylink    = link;
@@ -190,7 +192,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Neighbor(PetscSF sf,MPI_Datatype un
   PetscFunctionBegin;
   ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,NULL,&rootoffset,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFGetLeafInfo_Basic(sf,&nleafranks,&ndleafranks,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscSFPackGet_Neighbor(sf,unit,rootdata,PETSCSF_ROOT2LEAF_BCAST,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Neighbor(sf,unit,rootdata,leafdata,PETSCSF_ROOT2LEAF_BCAST,&link);CHKERRQ(ierr);
 
   /* Pack root data */
   for (i=0; i<nrootranks; i++) {
@@ -225,7 +227,7 @@ static PetscErrorCode PetscSFReduceBegin_Neighbor(PetscSF sf,MPI_Datatype unit,c
   PetscFunctionBegin;
   ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetLeafInfo_Basic(sf,&nleafranks,&ndleafranks,NULL,&leafoffset,&leafloc,NULL);CHKERRQ(ierr);
-  ierr = PetscSFPackGet_Neighbor(sf,unit,leafdata,PETSCSF_LEAF2ROOT_REDUCE,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Neighbor(sf,unit,rootdata,leafdata,PETSCSF_LEAF2ROOT_REDUCE,&link);CHKERRQ(ierr);
 
   /* Pack leaf data */
   for (i=0; i<nleafranks; i++) {
@@ -259,7 +261,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Neighbor(PetscSF sf,MPI_Datatype unit
   void              *sbuf,*rbuf;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGetInUse(sf,unit,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = PetscSFPackWaitall_Basic(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
 
   ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);

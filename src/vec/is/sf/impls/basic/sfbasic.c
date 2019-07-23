@@ -59,7 +59,7 @@ static PetscErrorCode PetscSFPackGetReqs_Basic(PetscSF sf,MPI_Datatype unit,Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFPackGet_Basic(PetscSF sf,MPI_Datatype unit,const void *key,PetscSFDirection direction,PetscSFPack_Basic *mylink)
+static PetscErrorCode PetscSFPackGet_Basic(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey,PetscSFDirection direction,PetscSFPack_Basic *mylink)
 {
   PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
   PetscErrorCode    ierr;
@@ -69,6 +69,8 @@ static PetscErrorCode PetscSFPackGet_Basic(PetscSF sf,MPI_Datatype unit,const vo
   PetscSFPack_Basic link;
 
   PetscFunctionBegin;
+  ierr = PetscSFPackSetErrorOnUnsupportedOverlap(sf,unit,rkey,lkey);CHKERRQ(ierr);
+
   /* Look for types in cache */
   for (p=&bas->avail; (link=(PetscSFPack_Basic)*p); p=&link->next) {
     PetscBool match;
@@ -103,7 +105,8 @@ static PetscErrorCode PetscSFPackGet_Basic(PetscSF sf,MPI_Datatype unit,const vo
   }
 
 found:
-  link->key  = key;
+  link->rkey = rkey;
+  link->lkey = lkey;
   link->next = bas->inuse;
   bas->inuse = (PetscSFPack)link;
 
@@ -271,7 +274,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Basic(PetscSF sf,MPI_Datatype unit,
   PetscFunctionBegin;
   ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFGetLeafInfo_Basic(sf,&nleafranks,&ndleafranks,&leafranks,&leafoffset,&leafloc,NULL);CHKERRQ(ierr);
-  ierr = PetscSFPackGet_Basic(sf,unit,rootdata,PETSCSF_ROOT2LEAF_BCAST,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Basic(sf,unit,rootdata,leafdata,PETSCSF_ROOT2LEAF_BCAST,&link);CHKERRQ(ierr);
 
   ierr = PetscSFPackGetReqs_Basic(sf,unit,link,PETSCSF_ROOT2LEAF_BCAST,&rootreqs,&leafreqs);CHKERRQ(ierr);
   /* Eagerly post leaf receives, but only from non-distinguished ranks -- distinguished ranks will receive via shared memory */
@@ -299,7 +302,7 @@ PETSC_INTERN PetscErrorCode PetscSFBcastAndOpEnd_Basic(PetscSF sf,MPI_Datatype u
   PetscMPIInt       typesize = -1;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGetInUse(sf,unit,rootdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = PetscSFPackWaitall_Basic(link,PETSCSF_ROOT2LEAF_BCAST);CHKERRQ(ierr);
   ierr = PetscSFGetLeafInfo_Basic(sf,&nleafranks,&ndleafranks,NULL,&leafoffset,&leafloc,NULL);CHKERRQ(ierr);
   ierr = PetscSFPackGetUnpackAndOp(sf,(PetscSFPack)link,op,&UnpackAndOp);CHKERRQ(ierr);
@@ -339,7 +342,7 @@ static PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,cons
   PetscFunctionBegin;
   ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFGetLeafInfo_Basic(sf,&nleafranks,&ndleafranks,&leafranks,&leafoffset,&leafloc,NULL);CHKERRQ(ierr);
-  ierr = PetscSFPackGet_Basic(sf,unit,leafdata,PETSCSF_LEAF2ROOT_REDUCE,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Basic(sf,unit,rootdata,leafdata,PETSCSF_LEAF2ROOT_REDUCE,&link);CHKERRQ(ierr);
 
   ierr = PetscSFPackGetReqs_Basic(sf,unit,link,PETSCSF_LEAF2ROOT_REDUCE,&rootreqs,&leafreqs);CHKERRQ(ierr);
   /* Eagerly post root receives for non-distinguished ranks */
@@ -368,7 +371,7 @@ PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,
   PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGetInUse(sf,unit,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   /* This implementation could be changed to unpack as receives arrive, at the cost of non-determinism */
   ierr = PetscSFPackWaitall_Basic(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
   ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,NULL,NULL,&rootoffset,&rootloc);CHKERRQ(ierr);
@@ -424,7 +427,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGetInUse(sf,unit,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   /* This implementation could be changed to unpack as receives arrive, at the cost of non-determinism */
   ierr = PetscSFPackWaitall_Basic(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
   ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
@@ -502,7 +505,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF sf,PetscInt ns
      interested in since it tells which leaves are connected to which ranks.
    */
   ierr = PetscSFBcastAndOpBegin_Basic(sf,MPIU_INT,rootdata,leafdata-minleaf,MPIU_REPLACE);CHKERRQ(ierr); /* Need to give leafdata but we won't use it */
-  ierr = PetscSFPackGetInUse(sf,MPIU_INT,rootdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,MPIU_INT,rootdata,leafdata-minleaf,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = PetscSFPackWaitall_Basic(link,PETSCSF_ROOT2LEAF_BCAST);CHKERRQ(ierr);
   ierr = PetscSFGetLeafInfo_Basic(sf,&nranks,&ndranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr); /* Get send info */
   esf_nranks = esf_ndranks = connected_leaves = 0;
@@ -648,7 +651,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF_Basic(PetscSF sf,PetscIn
 
   /* Pass info about selected leaves to root buffer */
   ierr = PetscSFReduceBegin_Basic(sf,MPIU_INT,leafdata-minleaf,rootdata,MPIU_REPLACE);CHKERRQ(ierr); /* -minleaf to re-adjust start address of leafdata */
-  ierr = PetscSFPackGetInUse(sf,MPIU_INT,leafdata-minleaf,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,MPIU_INT,rootdata,leafdata-minleaf,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = PetscSFPackWaitall_Basic(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
 
   bas->niranks = bas->ndiranks = bas->ioffset[0] = 0;

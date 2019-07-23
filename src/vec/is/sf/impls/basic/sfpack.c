@@ -414,7 +414,7 @@ PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype
 }
 #endif
 
-PetscErrorCode PetscSFPackGetInUse(PetscSF sf,MPI_Datatype unit,const void *key,PetscCopyMode cmode,PetscSFPack *mylink)
+PetscErrorCode PetscSFPackGetInUse(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey,PetscCopyMode cmode,PetscSFPack *mylink)
 {
   PetscErrorCode    ierr;
   PetscSFPack       link,*p;
@@ -425,7 +425,7 @@ PetscErrorCode PetscSFPackGetInUse(PetscSF sf,MPI_Datatype unit,const void *key,
   for (p=&bas->inuse; (link=*p); p=&link->next) {
     PetscBool match;
     ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-    if (match && (key == link->key)) {
+    if (match && (rkey == link->rkey) && (lkey == link->lkey)) {
       switch (cmode) {
       case PETSC_OWN_POINTER: *p = link->next; break; /* Remove from inuse list */
       case PETSC_USE_POINTER: break;
@@ -444,10 +444,28 @@ PetscErrorCode PetscSFPackReclaim(PetscSF sf,PetscSFPack *link)
   PetscSF_Basic     *bas=(PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
-  (*link)->key  = NULL;
+  (*link)->rkey = NULL;
+  (*link)->lkey = NULL;
   (*link)->next = bas->avail;
   bas->avail    = *link;
   *link         = NULL;
+  PetscFunctionReturn(0);
+}
+
+/* Error out on unsupported overlapped communications */
+PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey)
+{
+  PetscErrorCode    ierr;
+  PetscSFPack       link,*p;
+  PetscSF_Basic     *bas=(PetscSF_Basic*)sf->data;
+  PetscBool         match;
+
+  PetscFunctionBegin;
+  /* Look up links in use and error out if there is a match */
+  for (p=&bas->inuse; (link=*p); p=&link->next) {
+    ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
+    if (match && (rkey == link->rkey) && (lkey == link->lkey)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for overlapped PetscSF communications with the same SF, rootdata, leafdatadata and data type. You can undo the overlap to avoid the error.");
+  }
   PetscFunctionReturn(0);
 }
 

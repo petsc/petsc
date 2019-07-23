@@ -19,7 +19,7 @@ typedef struct {
 } PetscSF_Allgatherv;
 
 PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgatherv(PetscSF);
-PETSC_INTERN PetscErrorCode PetscSFPackGet_Allgatherv(PetscSF,MPI_Datatype,const void*,PetscSFPack_Allgatherv*);
+PETSC_INTERN PetscErrorCode PetscSFPackGet_Allgatherv(PetscSF,MPI_Datatype,const void*,const void*,PetscSFPack_Allgatherv*);
 PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFDestroy_Allgatherv(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFBcastAndOpEnd_Allgatherv(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);

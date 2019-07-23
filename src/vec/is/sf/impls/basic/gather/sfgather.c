@@ -15,7 +15,7 @@ PETSC_INTERN PetscErrorCode PetscSFBcastAndOpBegin_Gather(PetscSF sf,MPI_Datatyp
   void                 *recvbuf;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Gatherv(sf,unit,rootdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Gatherv(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
 
   if (op == MPIU_REPLACE) {
@@ -40,7 +40,7 @@ static PetscErrorCode PetscSFReduceBegin_Gather(PetscSF sf,MPI_Datatype unit,con
   void                 *recvbuf;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Gatherv(sf,unit,leafdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Gatherv(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
 
   if (op == MPIU_REPLACE) {

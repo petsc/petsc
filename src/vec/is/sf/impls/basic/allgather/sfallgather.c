@@ -17,7 +17,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Allgather(PetscSF sf,MPI_Datatype u
   MPI_Comm              comm;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Allgather(sf,unit,rootdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Allgather(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(sf->nroots,&sendcount);CHKERRQ(ierr);
 
@@ -39,7 +39,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf,MPI_Datatype unit,
   PetscFunctionBegin;
   ierr = PetscSFBcastAndOpBegin_Gather(sf,unit,rootdata,leafdata,MPIU_REPLACE);CHKERRQ(ierr);
   /* A simplified PetscSFBcastAndOpEnd_Allgatherv */
-  ierr = PetscSFPackGetInUse(sf,unit,rootdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = MPI_Wait(&link->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   ierr = PetscSFPackReclaim(sf,(PetscSFPack*)&link);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -54,7 +54,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf,MPI_Datatype unit,
   MPI_Comm              comm;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Allgather(sf,unit,leafdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Allgather(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 

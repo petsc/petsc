@@ -57,7 +57,7 @@ typedef struct _n_PetscSFPack* PetscSFPack;
   PetscBool      isbuiltin;   /* Is unit an MPI builtin datatype? If it is true, basicunit=unit, bs=1 */           \
   size_t         unitbytes;   /* Number of bytes in a unit */                                                      \
   PetscInt       bs;          /* Number of basic units in a unit */                                                \
-  const void     *key;        /* Array used as key for operation */                                                \
+  const void     *rkey,*lkey; /* rootdata and leafdata used as keys for operation */                                                \
   PetscSFPack    next
 
 /* An abstract class that defines a communication link, which includes how to
@@ -68,11 +68,13 @@ struct _n_PetscSFPack {
   SFPACKHEADER;
 };
 
-PETSC_INTERN PetscErrorCode PetscSFPackGetInUse(PetscSF,MPI_Datatype,const void*,PetscCopyMode,PetscSFPack*);
+PETSC_INTERN PetscErrorCode PetscSFPackGetInUse(PetscSF,MPI_Datatype,const void*,const void*,PetscCopyMode,PetscSFPack*);
 PETSC_INTERN PetscErrorCode PetscSFPackReclaim(PetscSF,PetscSFPack*);
 PETSC_INTERN PetscErrorCode PetscSFPackSetupType(PetscSFPack,MPI_Datatype);
 PETSC_INTERN PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSF,PetscSFPack,MPI_Op,PetscErrorCode (**UnpackAndOp)(PetscInt,PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,const void*));
 PETSC_INTERN PetscErrorCode PetscSFPackGetFetchAndOp(PetscSF,PetscSFPack,MPI_Op,PetscErrorCode (**FetchAndOp)(PetscInt,PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,void*));
 PETSC_INTERN PetscErrorCode PetscSFPackSetupOptimization(PetscInt,const PetscInt*,const PetscInt*,PetscSFPackOpt*);
 PETSC_INTERN PetscErrorCode PetscSFPackDestoryOptimization(PetscSFPackOpt *out);
+PETSC_INTERN PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF,MPI_Datatype,const void*,const void*);
+
 #endif

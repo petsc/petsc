@@ -5,7 +5,7 @@ PETSC_INTERN PetscErrorCode PetscSFBcastAndOpBegin_Gatherv(PetscSF,MPI_Datatype,
 /*===================================================================================*/
 /*              Internal routines for PetscSFPack_Allgatherv                         */
 /*===================================================================================*/
-PETSC_INTERN PetscErrorCode PetscSFPackGet_Allgatherv(PetscSF sf,MPI_Datatype unit,const void *key,PetscSFPack_Allgatherv *mylink)
+PETSC_INTERN PetscErrorCode PetscSFPackGet_Allgatherv(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey,PetscSFPack_Allgatherv *mylink)
 {
   PetscSF_Allgatherv     *dat = (PetscSF_Allgatherv*)sf->data;
   PetscSFPack_Allgatherv link;
@@ -13,6 +13,7 @@ PETSC_INTERN PetscErrorCode PetscSFPackGet_Allgatherv(PetscSF sf,MPI_Datatype un
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSFPackSetErrorOnUnsupportedOverlap(sf,unit,rkey,lkey);CHKERRQ(ierr);
   /* Look for types in cache */
   for (p=&dat->avail; (link=(PetscSFPack_Allgatherv)*p); p=&link->next) {
     PetscBool match;
@@ -32,7 +33,8 @@ PETSC_INTERN PetscErrorCode PetscSFPackGet_Allgatherv(PetscSF sf,MPI_Datatype un
 
   /* DO NOT allocate link->root/leaf. We use lazy allocation since these buffers are likely not needed */
 found:
-  link->key  = key;
+  link->rkey = rkey;
+  link->lkey = lkey;
   link->next = dat->inuse;
   dat->inuse = (PetscSFPack)link;
 
@@ -141,7 +143,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Allgatherv(PetscSF sf,MPI_Datatype 
   PetscSF_Allgatherv     *dat = (PetscSF_Allgatherv*)sf->data;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Allgatherv(sf,unit,rootdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Allgatherv(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(sf->nroots,&sendcount);CHKERRQ(ierr);
 
@@ -161,7 +163,7 @@ PETSC_INTERN PetscErrorCode PetscSFBcastAndOpEnd_Allgatherv(PetscSF sf,MPI_Datat
   PetscSFPack_Allgatherv link;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGetInUse(sf,unit,rootdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = PetscSFPackGetUnpackAndOp(sf,(PetscSFPack)link,op,&UnpackAndOp);CHKERRQ(ierr);
   ierr = MPI_Wait(&link->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
 
@@ -192,7 +194,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf,MPI_Datatype unit
   MPI_Comm               comm;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Allgatherv(sf,unit,leafdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Allgatherv(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -218,7 +220,7 @@ PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF sf,MPI_Datatype 
   PetscSFPack_Allgatherv link;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGetInUse(sf,unit,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = MPI_Wait(&link->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   if (op != MPIU_REPLACE) {
     ierr = PetscSFPackGetUnpackAndOp(sf,(PetscSFPack)link,op,&UnpackAndOp);CHKERRQ(ierr);
@@ -246,7 +248,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgatherv(PetscSF sf,MPI_Datatype unit
   PetscFunctionBegin;
   ierr = PetscSFBcastAndOpBegin_Gatherv(sf,unit,rootdata,leafdata,MPIU_REPLACE);CHKERRQ(ierr);
   /* A simplified PetscSFBcastAndOpEnd_Allgatherv */
-  ierr = PetscSFPackGetInUse(sf,unit,rootdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = MPI_Wait(&link->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   ierr = PetscSFPackReclaim(sf,(PetscSFPack*)&link);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -322,9 +324,9 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Allgatherv(PetscSF sf,MPI_Dat
 
   PetscFunctionBegin;
   /* Copy leafdata to leafupdate */
-  ierr = PetscSFPackGet_Allgatherv(sf,unit,leafdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Allgatherv(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscMemcpy(leafupdate,leafdata,sf->nleaves*link->unitbytes);CHKERRQ(ierr);
-  ierr = PetscSFPackGetInUse(sf,unit,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
 
   /* Exscan on leafupdate and then BcastAndOp rootdata to leafupdate */
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
