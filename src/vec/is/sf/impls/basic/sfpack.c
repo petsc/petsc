@@ -461,10 +461,13 @@ PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype u
   PetscBool         match;
 
   PetscFunctionBegin;
+  /* NULL rootdata and leafdata imply this process does not participate in communication, so that we can ignore the potential overlapping. */
+  if (rkey == NULL && lkey == NULL) PetscFunctionReturn(0);
+
   /* Look up links in use and error out if there is a match */
   for (p=&bas->inuse; (link=*p); p=&link->next) {
     ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-    if (match && (rkey == link->rkey) && (lkey == link->lkey)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for overlapped PetscSF communications with the same SF, rootdata, leafdatadata and data type. You can undo the overlap to avoid the error.");
+    if (match && (rkey == link->rkey) && (lkey == link->lkey)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for overlapped PetscSF communications with the same SF, rootdata(%p), leafdata(%p) and data type. You can undo the overlap to avoid the error.",rkey,lkey);
   }
   PetscFunctionReturn(0);
 }
