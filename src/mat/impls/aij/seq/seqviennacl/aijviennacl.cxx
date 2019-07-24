@@ -394,16 +394,16 @@ static PetscErrorCode MatPinToCPU_SeqAIJViennaCL(Mat A,PetscBool flg)
   PetscFunctionBegin;
   A->pinnedtocpu = flg;
   if (flg) {
-    A->ops->mult           = MatMult_SeqAIJ;
-    A->ops->multadd        = MatMultAdd_SeqAIJ;
-    A->ops->assemblyend    = MatAssemblyEnd_SeqAIJ;
-    A->ops->duplicate      = MatDuplicate_SeqAIJ;
+    A->ops->mult        = MatMult_SeqAIJ;
+    A->ops->multadd     = MatMultAdd_SeqAIJ;
+    A->ops->assemblyend = MatAssemblyEnd_SeqAIJ;
+    A->ops->duplicate   = MatDuplicate_SeqAIJ;
   } else {
-    A->ops->mult           = MatMult_SeqAIJViennaCL;
-    A->ops->multadd        = MatMultAdd_SeqAIJViennaCL;
-    A->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
-    A->ops->destroy        = MatDestroy_SeqAIJViennaCL;
-    A->ops->duplicate      = MatDuplicate_SeqAIJViennaCL;
+    A->ops->mult        = MatMult_SeqAIJViennaCL;
+    A->ops->multadd     = MatMultAdd_SeqAIJViennaCL;
+    A->ops->assemblyend = MatAssemblyEnd_SeqAIJViennaCL;
+    A->ops->destroy     = MatDestroy_SeqAIJViennaCL;
+    A->ops->duplicate   = MatDuplicate_SeqAIJViennaCL;
   }
   PetscFunctionReturn(0);
 }
