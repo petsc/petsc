@@ -115,6 +115,8 @@ struct  _p_PetscCUDAIndices {
 #define cublasXnrm2(a,b,c,d,e)     cublasScnrm2((a),(b),(cuComplex*)(c),(d),(e))
 #define cublasIXamax(a,b,c,d,e)    cublasIcamax((a),(b),(cuComplex*)(c),(d),(e))
 #define cublasXasum(a,b,c,d,e)     cublasScasum((a),(b),(cuComplex*)(c),(d),(e))
+#define cublasXgemv(a,b,c,d,e,f,g,h,i,j,k,l) cublasCgemv((a),(b),(c),(d),(cuComplex*)(e),(cuComplex*)(f),(g),(cuComplex*)(h),(i),(cuComplex*)(j),(cuComplex*)(k),(l))
+#define cublasXgemm(a,b,c,d,e,f,g,h,i,j,k,l,m,n) cublasCgemm((a),(b),(c),(d),(e),(f),(cuComplex*)(g),(cuComplex*)(h),(i),(cuComplex*)(j),(k),(cuComplex*)(l),(cuComplex*)(m),(n))
 #else /* complex double */
 #define cublasXaxpy(a,b,c,d,e,f,g) cublasZaxpy((a),(b),(cuDoubleComplex*)(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g))
 #define cublasXscal(a,b,c,d,e)     cublasZscal((a),(b),(cuDoubleComplex*)(c),(cuDoubleComplex*)(d),(e))
@@ -124,6 +126,8 @@ struct  _p_PetscCUDAIndices {
 #define cublasXnrm2(a,b,c,d,e)     cublasDznrm2((a),(b),(cuDoubleComplex*)(c),(d),(e))
 #define cublasIXamax(a,b,c,d,e)    cublasIzamax((a),(b),(cuDoubleComplex*)(c),(d),(e))
 #define cublasXasum(a,b,c,d,e)     cublasDzasum((a),(b),(cuDoubleComplex*)(c),(d),(e))
+#define cublasXgemv(a,b,c,d,e,f,g,h,i,j,k,l) cublasZgemv((a),(b),(c),(d),(cuDoubleComplex*)(e),(cuDoubleComplex*)(f),(g),(cuDoubleComplex*)(h),(i),(cuDoubleComplex*)(j),(cuDoubleComplex*)(k),(l))
+#define cublasXgemm(a,b,c,d,e,f,g,h,i,j,k,l,m,n) cublasZgemm((a),(b),(c),(d),(e),(f),(cuDoubleComplex*)(g),(cuDoubleComplex*)(h),(i),(cuDoubleComplex*)(j),(k),(cuDoubleComplex*)(l),(cuDoubleComplex*)(m),(n))
 #endif
 #else /* real single */
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -135,6 +139,8 @@ struct  _p_PetscCUDAIndices {
 #define cublasXnrm2  cublasSnrm2
 #define cublasIXamax cublasIsamax
 #define cublasXasum  cublasSasum
+#define cublasXgemv  cublasSgemv
+#define cublasXgemm  cublasSgemm
 #else /* real double */
 #define cublasXaxpy  cublasDaxpy
 #define cublasXscal  cublasDscal
@@ -144,6 +150,8 @@ struct  _p_PetscCUDAIndices {
 #define cublasXnrm2  cublasDnrm2
 #define cublasIXamax cublasIdamax
 #define cublasXasum  cublasDasum
+#define cublasXgemv  cublasDgemv
+#define cublasXgemm  cublasDgemm
 #endif
 #endif
 
