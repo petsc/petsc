@@ -78,6 +78,7 @@ branches:
     - maint
     - master
     - next
+    - /^pr\/.*$/
     - /^ci\/.*$/
 
 addons:
