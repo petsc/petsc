@@ -774,6 +774,7 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
   }
   ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   ierr = DMPlexRestoreConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
