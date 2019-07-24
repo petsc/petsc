@@ -3024,6 +3024,7 @@ $                   Run with the option -info to determine an optimal value to u
 PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
+  MatFactorInfo  tinfo;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -3040,6 +3041,10 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFacto
     SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic LU using solver package %s",((PetscObject)mat)->type_name,spackage);
   }
   MatCheckPreallocated(mat,2);
+  if (!info) {
+    ierr = MatFactorInfoInitialize(&tinfo);CHKERRQ(ierr);
+    info = &tinfo;
+  }
 
   ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
   ierr = (fact->ops->lufactorsymbolic)(fact,mat,row,col,info);CHKERRQ(ierr);
@@ -3077,6 +3082,7 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFacto
 @*/
 PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
 {
+  MatFactorInfo  tinfo;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3089,6 +3095,11 @@ PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
 
   if (!(fact)->ops->lufactornumeric) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s numeric LU",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,2);
+  if (!info) {
+    ierr = MatFactorInfoInitialize(&tinfo);CHKERRQ(ierr);
+    info = &tinfo;
+  }
+
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
@@ -3128,6 +3139,7 @@ PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
 PetscErrorCode MatCholeskyFactor(Mat mat,IS perm,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
+  MatFactorInfo  tinfo;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -3139,6 +3151,10 @@ PetscErrorCode MatCholeskyFactor(Mat mat,IS perm,const MatFactorInfo *info)
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->choleskyfactor) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"In-place factorization for Mat type %s is not supported, try out-of-place factorization. See MatCholeskyFactorSymbolic/Numeric",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
+  if (!info) {
+    ierr = MatFactorInfoInitialize(&tinfo);CHKERRQ(ierr);
+    info = &tinfo;
+  }
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->choleskyfactor)(mat,perm,info);CHKERRQ(ierr);
@@ -3182,6 +3198,7 @@ $                   Run with the option -info to determine an optimal value to u
 PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
+  MatFactorInfo  tinfo;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -3198,6 +3215,10 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFacto
     SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s symbolic factor Cholesky using solver package %s",((PetscObject)mat)->type_name,spackage);
   }
   MatCheckPreallocated(mat,2);
+  if (!info) {
+    ierr = MatFactorInfoInitialize(&tinfo);CHKERRQ(ierr);
+    info = &tinfo;
+  }
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->choleskyfactorsymbolic)(fact,mat,perm,info);CHKERRQ(ierr);
@@ -3235,6 +3256,7 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFacto
 @*/
 PetscErrorCode MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
 {
+  MatFactorInfo  tinfo;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3246,6 +3268,10 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *in
   if (!(fact)->ops->choleskyfactornumeric) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s numeric factor Cholesky",((PetscObject)mat)->type_name);
   if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) SETERRQ4(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dim %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
   MatCheckPreallocated(mat,2);
+  if (!info) {
+    ierr = MatFactorInfoInitialize(&tinfo);CHKERRQ(ierr);
+    info = &tinfo;
+  }
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->choleskyfactornumeric)(fact,mat,info);CHKERRQ(ierr);
