@@ -1,0 +1,33 @@
+DM Object: 6 MPI processes
+  type: stag
+Dimension: 2
+Global sizes: 6 x 9
+Parallel decomposition: 3 x 2 ranks
+Boundary ghosting: GHOSTED GHOSTED
+Elementwise ghost stencil: BOX, width 0
+Stratum dof: 0:1 1:1 2:1
+[0] Rank coordinates (0,0)
+[0] Local elements : 1 x 4 (1 x 4 with ghosts)
+[0] Local native entries: 16
+[0] Local entries total : 16
+[1] Rank coordinates (1,0)
+[1] Local elements : 2 x 4 (2 x 4 with ghosts)
+[1] Local native entries: 32
+[1] Local entries total : 32
+[2] Rank coordinates (2,0)
+[2] Local elements : 3 x 4 (4 x 4 with ghosts)
+[2] Local native entries: 56
+[2] Local entries total : 64
+[3] Rank coordinates (0,1)
+[3] Local elements : 1 x 5 (1 x 6 with ghosts)
+[3] Local native entries: 22
+[3] Local entries total : 24
+[4] Rank coordinates (1,1)
+[4] Local elements : 2 x 5 (2 x 6 with ghosts)
+[4] Local native entries: 44
+[4] Local entries total : 48
+[5] Rank coordinates (2,1)
+[5] Local elements : 3 x 5 (4 x 6 with ghosts)
+[5] Local native entries: 77
+[5] Local entries total : 96
+2 Norm of test vector: 31.4325

@@ -60,8 +60,9 @@ PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm,void* arrX,void* arrY,vo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim > DMSTAG_MAX_DIM) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
+  arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   ierr = DMGetCoordinateDM(dm,&dmCoord);CHKERRQ(ierr);
   if (!dmCoord) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM does not have a coordinate DM");
   {
@@ -178,10 +179,14 @@ PETSC_EXTERN PetscErrorCode DMStagGet1dCoordinateLocationSlot(DM dm,DMStagStenci
   Output Parameters:
 + x,y,z - starting element indices in each direction
 . m,n,p - element widths in each direction
-- nExtrax,nExtray,nExtraz - number of extra partial elements in each direction. The number is 1 on the right, top, and front boundaries of the grid, otherwise 0.
+- nExtrax,nExtray,nExtraz - number of extra partial elements in each direction.
 
   Notes:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+
+  The number of extra partial elements is either 1 or 0.
+  The value is 1 on right, top, and front non-periodic domain ("physical") boundaries,
+  in the x, y, and z directions respectively, and otherwise 0.
 
   Level: beginner
 
@@ -199,9 +204,9 @@ PetscErrorCode DMStagGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscI
   if (m) *m = stag->n[0];
   if (n) *n = stag->n[1];
   if (p) *p = stag->n[2];
-  if (nExtrax) *nExtrax = stag->lastRank[0] ? 1 : 0;
-  if (nExtray) *nExtray = stag->lastRank[1] ? 1 : 0;
-  if (nExtraz) *nExtraz = stag->lastRank[2] ? 1 : 0;
+  if (nExtrax) *nExtrax = stag->boundaryType[0] != DM_BOUNDARY_PERIODIC && stag->lastRank[0] ? 1 : 0;
+  if (nExtray) *nExtray = stag->boundaryType[1] != DM_BOUNDARY_PERIODIC && stag->lastRank[1] ? 1 : 0;
+  if (nExtraz) *nExtraz = stag->boundaryType[2] != DM_BOUNDARY_PERIODIC && stag->lastRank[2] ? 1 : 0;
   PetscFunctionReturn(0);
 }
 
@@ -215,9 +220,9 @@ PetscErrorCode DMStagGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscI
 
   Output Parameters:
 + dof0 - the number of points per 0-cell (vertex/node)
-. dof1 - the number of points per 1-cell (elementin 1D, edge in 2D and 3D)
+. dof1 - the number of points per 1-cell (element in 1D, edge in 2D and 3D)
 . dof2 - the number of points per 2-cell (element in 2D, face in 3D)
-- dof3 - the number of points per 3-cell (elementin 3D)
+- dof3 - the number of points per 3-cell (element in 3D)
 
   Level: beginner
 
@@ -746,6 +751,57 @@ PetscErrorCode DMStagMigrateVec(DM dm,Vec vec,DM dmTo,Vec vecTo)
 }
 
 /*@C
+  DMStagPopulateLocalToGlobalInjective - populate an internal 1-to-1 local-to-global map
+
+  Collective
+
+  Creates an internal object which explicitly maps a single local degree of
+  freedom to each global degree of freedom. This is used, if populated,
+  instead of SCATTER_REVERSE_LOCAL with the (1-to-many, in general)
+  global-to-local map, when DMLocalToGlobal() is called with INSERT_VALUES.
+  This allows usage, for example, even in the periodic, 1-rank case, where
+  the inverse of the global-to-local map, even when restricted to on-rank
+  communication, is non-injective. This is at the cost of storing an additional
+  VecScatter object inside each DMStag object.
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Notes:
+  In normal usage, library users shouldn't be concerned with this function,
+  as it is called during DMSetUp(), when required.
+
+  Returns immediately if the internal map is already populated.
+
+  Developer Notes:
+  This could, if desired, be moved up to a general DM routine. It would allow,
+  for example, DMDA to support DMLocalToGlobal() with INSERT_VALUES,
+  even in the single-rank periodic case.
+
+  Level: developer
+
+.seealso: DMSTAG, DMLocalToGlobal(), VecScatter
+@*/
+PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM dm)
+{
+  PetscErrorCode  ierr;
+  PetscInt        dim;
+  DM_Stag * const stag  = (DM_Stag*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (stag->ltog_injective) PetscFunctionReturn(0); /* Don't re-populate */
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  switch (dim) {
+    case 1: ierr = DMStagPopulateLocalToGlobalInjective_1d(dm);CHKERRQ(ierr); break;
+    case 2: ierr = DMStagPopulateLocalToGlobalInjective_2d(dm);CHKERRQ(ierr); break;
+    case 3: ierr = DMStagPopulateLocalToGlobalInjective_3d(dm);CHKERRQ(ierr); break;
+    default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %D",dim);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
   DMStagRestore1dCoordinateArraysDOFRead - restore local array access
 
   Logically Collective
@@ -770,6 +826,7 @@ PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *arrX,void *arr
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim > DMSTAG_MAX_DIM) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
   arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   ierr = DMGetCoordinateDM(dm,&dmCoord);CHKERRQ(ierr);
   for (d=0; d<dim; ++d) {

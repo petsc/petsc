@@ -167,4 +167,49 @@ static PetscErrorCode TestFields(DM dmstag)
       nsize: 8
       args:  -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_stencil_type none -stag_stencil_width 0
 
+   test:
+      suffix: ghosted_zerowidth_seq_1
+      nsize: 1
+      args:  -dm_view -dim 1 -stag_grid_x 4 -stag_boundary_type_x ghosted -stag_stencil_width 0
+
+   test:
+      suffix: ghosted_zerowidth_par_1
+      nsize: 3
+      args:  -dm_view -dim 1 -setsizes -stag_boundary_type_x ghosted -stag_stencil_width 0
+
+   test:
+      suffix: ghosted_zerowidth_seq_2
+      nsize: 1
+      args:  -dm_view -dim 2 -stag_grid_x 3 -stag_grid_y 5 -stag_boundary_type_x ghosted -stag_boundary_type_y ghosted -stag_stencil_width 0
+
+   test:
+      suffix: ghosted_zerowidth_par_2
+      nsize: 6
+      args:  -dm_view -dim 2 -setsizes -stag_boundary_type_x ghosted -stag_boundary_type_y ghosted -stag_stencil_width 0
+
+   test:
+      suffix: ghosted_zerowidth_seq_3
+      nsize: 1
+      args:  -dm_view -dim 3 -stag_grid_x 3 -stag_grid_y 5 -stag_grid_z 4 -stag_boundary_type_x ghosted -stag_boundary_type_y ghosted -stag_boundary_type_z ghosted -stag_stencil_width 0
+
+   test:
+      suffix: ghosted_zerowidth_par_3
+      nsize: 12
+      args:  -dm_view -dim 3 -setsizes -stag_boundary_type_x ghosted -stag_boundary_type_y ghosted -stag_boundary_type_z ghosted -stag_stencil_width 0
+
+   testset:
+      suffix: periodic_skinny_1
+      nsize: 1
+      args:  -dm_view -dim 1 -stag_grid_x 4 -stag_boundary_type_x periodic -stag_stencil_width {{0 1 2}separate output}
+
+   testset:
+      suffix: periodic_skinny_2
+      nsize: 1
+      args:  -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
+
+   testset:
+      suffix: periodic_skinny_3
+      nsize: 1
+      args:  -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
+
 TEST*/

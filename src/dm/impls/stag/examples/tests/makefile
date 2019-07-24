@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/stag/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.x ex11.c ex12.c
+EXAMPLESC       =
 EXAMPLESF       =
 MANSEC          = DM
 

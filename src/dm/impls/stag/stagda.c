@@ -147,6 +147,7 @@ static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm,DMStagStencilLocation locCa
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim > DMSTAG_MAX_DIM) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
   ierr = DMStagGetCorners(dm,NULL,NULL,NULL,NULL,NULL,NULL,&nExtra[0],&nExtra[1],&nExtra[2]);CHKERRQ(ierr);
   for(d=0; d<dim; ++d) extraPoint[d] = 0;
   switch (locCanonical) {
@@ -155,7 +156,7 @@ static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm,DMStagStencilLocation locCa
     case DMSTAG_LEFT:
       extraPoint[0] = nExtra[0]; break; /* only extra point in x */
     case DMSTAG_DOWN:
-      extraPoint[1] = nExtra[1];break; /* only extra point in y */
+      extraPoint[1] = nExtra[1]; break; /* only extra point in y */
     case DMSTAG_BACK:
       extraPoint[2] = nExtra[2]; break; /* only extra point in z */
     case DMSTAG_DOWN_LEFT:
