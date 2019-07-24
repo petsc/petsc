@@ -97,14 +97,12 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 
   if (Pcolumnperm) *Pcolumnperm = NULL;
 
-  if (!pc_gamg->repart && new_size==nactive) {
+  if (new_size==nactive) {
     *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
     /* we know that the grid structure can be reused in MatPtAP */
-  } else {
-    /* we know that the grid structure can NOT be reused in MatPtAP */
+  } else { /* reduce active processors - we know that the grid structure can NOT be reused in MatPtAP */
     PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_new,ncrs_eq_new,nloc_old;
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
-
     nloc_old = ncrs_eq/cr_bs;
     if (ncrs_eq % cr_bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
 #if defined PETSC_GAMG_USE_LOG
@@ -112,11 +110,11 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 #endif
     /* make 'is_eq_newproc' */
     ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
-    if (pc_gamg->repart && new_size!=nactive) {
+    if (pc_gamg->repart) {
       /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates of primal part accordingly */
       Mat adj;
 
-     ierr = PetscInfo3(pc,"Repartition: size (active): %D --> %D, %D local equations\n",*a_nactive_proc,new_size,ncrs_eq);CHKERRQ(ierr);
+      ierr = PetscInfo3(pc,"Repartition: size (active): %D --> %D, %D local equations\n",*a_nactive_proc,new_size,ncrs_eq);CHKERRQ(ierr);
 
       /* get 'adj' */
       if (cr_bs == 1) {
@@ -248,13 +246,13 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     } /* end simple 'is_eq_newproc' */
 
     /*
-     Create an index set from the is_eq_newproc index set to indicate the mapping TO
-     */
+      Create an index set from the is_eq_newproc index set to indicate the mapping TO
+    */
     ierr = ISPartitioningToNumbering(is_eq_newproc, &is_eq_num);CHKERRQ(ierr);
     is_eq_num_prim = is_eq_num;
     /*
       Determine how many equations/vertices are assigned to each processor
-     */
+    */
     ierr        = ISPartitioningCount(is_eq_newproc, size, counts);CHKERRQ(ierr);
     ncrs_eq_new = counts[rank];
     ierr        = ISDestroy(&is_eq_newproc);CHKERRQ(ierr);
@@ -266,82 +264,80 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 #endif
     /* data movement scope -- this could be moved to subclasses so that we don't try to cram all auxilary data into some complex abstracted thing */
     {
-    Vec            src_crd, dest_crd;
-    const PetscInt *idx,ndata_rows=pc_gamg->data_cell_rows,ndata_cols=pc_gamg->data_cell_cols,node_data_sz=ndata_rows*ndata_cols;
-    VecScatter     vecscat;
-    PetscScalar    *array;
-    IS isscat;
-
-    /* move data (for primal equations only) */
-    /* Create a vector to contain the newly ordered element information */
-    ierr = VecCreate(comm, &dest_crd);CHKERRQ(ierr);
-    ierr = VecSetSizes(dest_crd, node_data_sz*ncrs_new, PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetType(dest_crd,VECSTANDARD);CHKERRQ(ierr); /* this is needed! */
-    /*
-     There are 'ndata_rows*ndata_cols' data items per node, (one can think of the vectors of having
-     a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.
-     */
-    ierr = PetscMalloc1(ncrs*node_data_sz, &tidx);CHKERRQ(ierr);
-    ierr = ISGetIndices(is_eq_num_prim, &idx);CHKERRQ(ierr);
-    for (ii=0,jj=0; ii<ncrs; ii++) {
-      PetscInt id = idx[ii*cr_bs]/cr_bs; /* get node back */
-      for (kk=0; kk<node_data_sz; kk++, jj++) tidx[jj] = id*node_data_sz + kk;
-    }
-    ierr = ISRestoreIndices(is_eq_num_prim, &idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm, node_data_sz*ncrs, tidx, PETSC_COPY_VALUES, &isscat);CHKERRQ(ierr);
-    ierr = PetscFree(tidx);CHKERRQ(ierr);
-    /*
-     Create a vector to contain the original vertex information for each element
-     */
-    ierr = VecCreateSeq(PETSC_COMM_SELF, node_data_sz*ncrs, &src_crd);CHKERRQ(ierr);
-    for (jj=0; jj<ndata_cols; jj++) {
-      const PetscInt stride0=ncrs*pc_gamg->data_cell_rows;
-      for (ii=0; ii<ncrs; ii++) {
-        for (kk=0; kk<ndata_rows; kk++) {
-          PetscInt    ix = ii*ndata_rows + kk + jj*stride0, jx = ii*node_data_sz + kk*ndata_cols + jj;
-          PetscScalar tt = (PetscScalar)pc_gamg->data[ix];
-          ierr = VecSetValues(src_crd, 1, &jx, &tt, INSERT_VALUES);CHKERRQ(ierr);
-        }
+      Vec            src_crd, dest_crd;
+      const PetscInt *idx,ndata_rows=pc_gamg->data_cell_rows,ndata_cols=pc_gamg->data_cell_cols,node_data_sz=ndata_rows*ndata_cols;
+      VecScatter     vecscat;
+      PetscScalar    *array;
+      IS isscat;
+      /* move data (for primal equations only) */
+      /* Create a vector to contain the newly ordered element information */
+      ierr = VecCreate(comm, &dest_crd);CHKERRQ(ierr);
+      ierr = VecSetSizes(dest_crd, node_data_sz*ncrs_new, PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetType(dest_crd,VECSTANDARD);CHKERRQ(ierr); /* this is needed! */
+      /*
+	There are 'ndata_rows*ndata_cols' data items per node, (one can think of the vectors of having
+	a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.
+      */
+      ierr = PetscMalloc1(ncrs*node_data_sz, &tidx);CHKERRQ(ierr);
+      ierr = ISGetIndices(is_eq_num_prim, &idx);CHKERRQ(ierr);
+      for (ii=0,jj=0; ii<ncrs; ii++) {
+	PetscInt id = idx[ii*cr_bs]/cr_bs; /* get node back */
+	for (kk=0; kk<node_data_sz; kk++, jj++) tidx[jj] = id*node_data_sz + kk;
       }
-    }
-    ierr = VecAssemblyBegin(src_crd);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(src_crd);CHKERRQ(ierr);
-    /*
-      Scatter the element vertex information (still in the original vertex ordering)
-      to the correct processor
-    */
-    ierr = VecScatterCreate(src_crd, NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
-    ierr = ISDestroy(&isscat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
-    ierr = VecDestroy(&src_crd);CHKERRQ(ierr);
-    /*
-      Put the element vertex data into a new allocation of the gdata->ele
-    */
-    ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
-    ierr = PetscMalloc1(node_data_sz*ncrs_new, &pc_gamg->data);CHKERRQ(ierr);
-
-    pc_gamg->data_sz = node_data_sz*ncrs_new;
-    strideNew        = ncrs_new*ndata_rows;
-
-    ierr = VecGetArray(dest_crd, &array);CHKERRQ(ierr);
-    for (jj=0; jj<ndata_cols; jj++) {
-      for (ii=0; ii<ncrs_new; ii++) {
-        for (kk=0; kk<ndata_rows; kk++) {
-          PetscInt ix = ii*ndata_rows + kk + jj*strideNew, jx = ii*node_data_sz + kk*ndata_cols + jj;
-          pc_gamg->data[ix] = PetscRealPart(array[jx]);
-        }
+      ierr = ISRestoreIndices(is_eq_num_prim, &idx);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(comm, node_data_sz*ncrs, tidx, PETSC_COPY_VALUES, &isscat);CHKERRQ(ierr);
+      ierr = PetscFree(tidx);CHKERRQ(ierr);
+      /*
+	Create a vector to contain the original vertex information for each element
+      */
+      ierr = VecCreateSeq(PETSC_COMM_SELF, node_data_sz*ncrs, &src_crd);CHKERRQ(ierr);
+      for (jj=0; jj<ndata_cols; jj++) {
+	const PetscInt stride0=ncrs*pc_gamg->data_cell_rows;
+	for (ii=0; ii<ncrs; ii++) {
+	  for (kk=0; kk<ndata_rows; kk++) {
+	    PetscInt    ix = ii*ndata_rows + kk + jj*stride0, jx = ii*node_data_sz + kk*ndata_cols + jj;
+	    PetscScalar tt = (PetscScalar)pc_gamg->data[ix];
+	    ierr = VecSetValues(src_crd, 1, &jx, &tt, INSERT_VALUES);CHKERRQ(ierr);
+	  }
+	}
       }
-    }
-    ierr = VecRestoreArray(dest_crd, &array);CHKERRQ(ierr);
-    ierr = VecDestroy(&dest_crd);CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(src_crd);CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(src_crd);CHKERRQ(ierr);
+      /*
+	Scatter the element vertex information (still in the original vertex ordering)
+	to the correct processor
+      */
+      ierr = VecScatterCreate(src_crd, NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
+      ierr = ISDestroy(&isscat);CHKERRQ(ierr);
+      ierr = VecScatterBegin(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
+      ierr = VecDestroy(&src_crd);CHKERRQ(ierr);
+      /*
+	Put the element vertex data into a new allocation of the gdata->ele
+      */
+      ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
+      ierr = PetscMalloc1(node_data_sz*ncrs_new, &pc_gamg->data);CHKERRQ(ierr);
+      
+      pc_gamg->data_sz = node_data_sz*ncrs_new;
+      strideNew        = ncrs_new*ndata_rows;
+      
+      ierr = VecGetArray(dest_crd, &array);CHKERRQ(ierr);
+      for (jj=0; jj<ndata_cols; jj++) {
+	for (ii=0; ii<ncrs_new; ii++) {
+	  for (kk=0; kk<ndata_rows; kk++) {
+	    PetscInt ix = ii*ndata_rows + kk + jj*strideNew, jx = ii*node_data_sz + kk*ndata_cols + jj;
+	    pc_gamg->data[ix] = PetscRealPart(array[jx]);
+	  }
+	}
+      }
+      ierr = VecRestoreArray(dest_crd, &array);CHKERRQ(ierr);
+      ierr = VecDestroy(&dest_crd);CHKERRQ(ierr);
     }
     /* move A and P (columns) with new layout */
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
 #endif
-
     /*
       Invert for MatCreateSubMatrix
     */
@@ -612,7 +608,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         IS       *iss;
 
         sz   = nASMBlocksArr[level];
-        iss   = ASMLocalIDsArr[level];
+        iss  = ASMLocalIDsArr[level];
         ierr = PCSetType(subpc, PCASM);CHKERRQ(ierr);
         ierr = PCASMSetOverlap(subpc, 0);CHKERRQ(ierr);
         ierr = PCASMSetType(subpc,PC_ASM_BASIC);CHKERRQ(ierr);
