@@ -76,6 +76,8 @@ class Configure(config.package.Package):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
         line = 'RM = '+self.programs.RM+'\n'
+      if line.startswith('OMAKE  '):
+        line = 'OMAKE = '+self.make.make+'\n'
 
       if line.startswith('include'):
         line = '\n'

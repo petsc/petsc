@@ -55,8 +55,7 @@ class Configure(config.package.Package):
       if line.startswith('RANLIB  '):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
-        line = 'RM = '+self.programs.RM+'\n'
-
+        line = 'RM = '+self.programs.RM+'\nMAKE = '+self.make.make+'\n'
       if line.startswith('include'):
         line = '\n'
       if line.find("-no-prec-div") >= 0:
