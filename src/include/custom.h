@@ -162,11 +162,11 @@ PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 
 PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayReadWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec,PetscScalar**);
 
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayReadWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec,PetscScalar**);
 
 #else
 
@@ -182,7 +182,6 @@ VecCUDAGetArray(Vec v,PetscScalar **a)
 }
 #define VecCUDAGetArrayRead(v,a) VecCUDAGetArray(v,(PetscScalar**)(a))
 #define VecCUDAGetArrayWrite     VecCUDAGetArray
-#define VecCUDAGetArrayReadWrite VecCUDAGetArray
 
 PETSC_STATIC_INLINE PetscErrorCode
 VecCUDARestoreArray(Vec v,PetscScalar **a)
@@ -196,7 +195,6 @@ VecCUDARestoreArray(Vec v,PetscScalar **a)
 }
 #define VecCUDARestoreArrayRead(v,a) VecCUDARestoreArray(v,(PetscScalar**)(a))
 #define VecCUDARestoreArrayWrite     VecCUDARestoreArray
-#define VecCUDARestoreArrayReadWrite VecCUDARestoreArray
 
 #endif
 

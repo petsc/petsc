@@ -155,10 +155,10 @@ cdef extern from * nogil:
 
     int VecCUDAGetArrayRead(PetscVec,const_PetscScalar*[])
     int VecCUDAGetArrayWrite(PetscVec,PetscScalar*[])
-    int VecCUDAGetArrayReadWrite(PetscVec,PetscScalar*[])
+    int VecCUDAGetArray(PetscVec,PetscScalar*[])
     int VecCUDARestoreArrayRead(PetscVec,const_PetscScalar*[])
     int VecCUDARestoreArrayWrite(PetscVec,PetscScalar*[])
-    int VecCUDARestoreArrayReadWrite(PetscVec,PetscScalar*[])
+    int VecCUDARestoreArray(PetscVec,PetscScalar*[])
 
 # --------------------------------------------------------------------
 
