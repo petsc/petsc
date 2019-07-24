@@ -1414,15 +1414,21 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar                  *zarray,*dptr,*beta;
   PetscErrorCode               ierr;
   cusparseStatus_t             stat;
+  PetscBool                    cmpr; /* if the matrix has been compressed (zero rows) */
 
   PetscFunctionBegin;
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
   try {
+    cmpr = (PetscBool)(cusparsestruct->workVector->size() == (thrust::detail::vector_base<PetscScalar, thrust::device_malloc_allocator<PetscScalar> >::size_type)(A->rmap->n));
     ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);
-    dptr = cusparsestruct->workVector->size() == (thrust::detail::vector_base<PetscScalar, thrust::device_malloc_allocator<PetscScalar> >::size_type)(A->rmap->n) ? zarray : cusparsestruct->workVector->data().get();
+    if (yy && !cmpr) { /* MatMultAdd with noncompressed storage -> need uptodate zz vector */
+      ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);
+    } else {
+      ierr = VecCUDAGetArrayWrite(zz,&zarray);CHKERRQ(ierr);
+    }
+    dptr = cmpr ? zarray : cusparsestruct->workVector->data().get();
     beta = (yy == zz && dptr == zarray) ? matstruct->beta_one : matstruct->beta_zero;
 
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
@@ -1458,7 +1464,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
         ierr = VecAXPY_SeqCUDA(zz,1.0,yy);CHKERRQ(ierr);
       }
     } else if (dptr != zarray) {
-      ierr = VecSet(zz,0);CHKERRQ(ierr);
+      ierr = VecSet_SeqCUDA(zz,0);CHKERRQ(ierr);
     }
     /* scatter the data from the temporary into the full vector with a += operation */
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
@@ -1472,7 +1478,11 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
     }
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);
+    if (yy && !cmpr) {
+      ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);
+    } else {
+      ierr = VecCUDARestoreArrayWrite(zz,&zarray);CHKERRQ(ierr);
+    }
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
   }
