@@ -1,0 +1,54 @@
+Vec Object: yg_on_subcomms 7 MPI processes
+  type: mpi
+Process [0]
+0.
+1.
+2.
+3.
+4.
+Process [1]
+0.
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+Process [2]
+0.
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+Process [3]
+5.
+6.
+7.
+8.
+9.
+Process [4]
+8.
+9.
+10.
+11.
+12.
+13.
+14.
+Process [5]
+8.
+9.
+10.
+11.
+12.
+13.
+14.
+Process [6]
+10.
+11.
+12.
+13.
+14.
