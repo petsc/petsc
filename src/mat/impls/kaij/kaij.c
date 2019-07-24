@@ -141,9 +141,11 @@ PetscErrorCode MatKAIJGetSRead(Mat A,PetscInt *m,PetscInt *n,const PetscScalar *
 @*/
 PetscErrorCode MatKAIJRestoreS(Mat A,PetscScalar **S)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (S) *S = NULL;
-  PetscObjectStateIncrease((PetscObject)A);
+  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -248,9 +250,11 @@ PetscErrorCode MatKAIJGetTRead(Mat A,PetscInt *m,PetscInt *n,const PetscScalar *
 @*/
 PetscErrorCode MatKAIJRestoreT(Mat A,PetscScalar **T)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (T) *T = NULL;
-  PetscObjectStateIncrease((PetscObject)A);
+  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
