@@ -628,7 +628,6 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       jrow = ii[i];
       n    = ii[i+1] - jrow;
       sums = y + p*i;
-      bx   = x + q*i;
       for (j=0; j<n; j++) {
         for (k=0; k<p; k++) {
           for (l=0; l<q; l++) {
@@ -1014,8 +1013,6 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
           PetscKernel_w_gets_Ar_times_v(bs,bs,w,idiag,y);
           for (j=0; j<bs; j++) *(x+i2+j) = (1.0-omega) * *(x+i2+j) + omega * *(y+j);
         }
-        idiag -= bs2;
-        i2    -= bs;
       }
       ierr = PetscLogFlops(1.0*bs2*(a->nz));CHKERRQ(ierr);
     }
