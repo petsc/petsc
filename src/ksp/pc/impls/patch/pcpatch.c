@@ -223,7 +223,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
       PetscInt           nranks, j;
 
       ierr = PetscSFSetUp(sf[i]);CHKERRQ(ierr);
-      ierr = PetscSFGetRanks(sf[i], &nranks, &ranks, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscSFGetRootRanks(sf[i], &nranks, &ranks, NULL, NULL, NULL);CHKERRQ(ierr);
       /* These are all the ranks who communicate with me. */
       for (j = 0; j < nranks; ++j) {
         ierr = PetscHSetIAdd(ranksUniq, (PetscInt) ranks[j]);CHKERRQ(ierr);

@@ -89,7 +89,7 @@ static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], Petsc
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
+  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
   nleaves = roffset[nranks];
   ierr = PetscMalloc2(nleaves, rmine1, nleaves, rremote1);CHKERRQ(ierr);
   for (r=0; r<nranks; r++) {
@@ -115,7 +115,7 @@ static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF 
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocalSetUp(dm);CHKERRQ(ierr);
-  ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscMalloc1(nranks, coordinatesPerRank);CHKERRQ(ierr);
   for (r=0; r<nranks; r++) {
     o = roffset[r];
@@ -139,7 +139,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
 
   PetscFunctionBegin;
   ierr = PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetRanks(imsf, &niranks, NULL, &iroffset, &irmine, NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetRootRanks(imsf, &niranks, NULL, &iroffset, &irmine, NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   if (PetscUnlikely(nileaves != iroffset[niranks])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nileaves != iroffset[niranks])");
 #endif
@@ -206,7 +206,7 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   if (nroots < 0) PetscFunctionReturn(0);
   if (!dm->coordinates && !dm->coordinatesLocal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
+  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
 
   /* Expand sent cones per rank */
   ierr = SortByRemote_Private(sf, &rmine1, &rremote1);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   ierr = PetscSFCreateInverseSF(msf,&imsf);CHKERRQ(ierr);
   ierr = PetscSFSetUp(imsf);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetRanks(imsf, &niranks, &iranks, &iroffset, &irmine, &irremote);CHKERRQ(ierr);
+  ierr = PetscSFGetRootRanks(imsf, &niranks, &iranks, &iroffset, &irmine, &irremote);CHKERRQ(ierr);
 
   /* Compute original numbering of multi-roots (referenced points) */
   ierr = PetscSFComputeMultiRootOriginalNumberingByRank_Private(sf, imsf, &mine_orig_numbering);CHKERRQ(ierr);

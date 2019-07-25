@@ -126,11 +126,20 @@
           <li>VecCUDAGet/RestoreArrayReadWrite() changed to VecCUDAGet/RestoreArray()</li>
           <li>VecViennaCLGet/RestoreArrayReadWrite() changed to VecViennaCLGet/RestoreArray()</li>
         </ul>
-      <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
+      <h4>VecScatter:</h4>
+      <ul>
+        <li>The default VecScatter implementation is changed to PetscSF. In other words, the default VecScatter shares PetscSF's MPI communication code. One can use -vecscatter_type mpi1 to go back to the old implementation.</li>
+      </ul>
       <h4>PetscSF:</h4>
       <ul>
         <li>PetscSFComputeMultiRootOriginalNumbering: add output argument with the number of multiroots for convenience</li>
+        <li>Added an enum type PetscSFPattern for SF graph patterns. Valid values include PETSCSF_PATTERN_ALLGATHER, PETSCSF_PATTERN_GATHER and PETSCSF_PATTERN_ALLTOALL.</li>
+        <li>Added PetscSFSetGraphWithPattern() to set SF graphs with predefined patterns.</li>
+        <li>Added PetscSFComposeInverse() to compose a new SF by putting the inverse of an SF under the another SF.</li>
+        <li>Added MPI-3.0 neighborhood collectives support. One can use command line option -sf_type neighbor to let SF use MPI-3.0 neighborhood collectives for communication instead of the default MPI_Send/Recv.</li>
+        <li>Removed PetscSFCreateFromZero. Instead, users should use PetscSFCreate() to create an SF, and then set its graph with PetscSFSetGraphWithPattern(..,PETSCSF_PATTERN_GATHER).</li>
+        <li>Renamed PetscSFGetRanks() to PetscSFGetRootRanks().</li>
       </ul>
       <h4>Mat:</h4>
       <ul>

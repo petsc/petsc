@@ -202,7 +202,6 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
     {
       /* Send facets and IDs to a rendezvous partition that is based on the initial vertex partitioning. */
       PetscInt           p, r;
-      PetscSFNode       *remoteProc;
       DMLabel            lblFacetRendezvous, lblFacetMigration;
       PetscSection       facetSection, facetSectionRendezvous;
       PetscSF            sfProcess, sfFacetMigration;
@@ -219,14 +218,9 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
         }
       }
       /* Build a global process SF */
-      ierr = PetscMalloc1(size, &remoteProc);CHKERRQ(ierr);
-      for (p = 0; p < size; ++p) {
-        remoteProc[p].rank  = p;
-        remoteProc[p].index = rank;
-      }
-      ierr = PetscSFCreate(comm, &sfProcess);CHKERRQ(ierr);
+      ierr = PetscSFCreate(comm,&sfProcess);CHKERRQ(ierr);
+      ierr = PetscSFSetGraphWithPattern(sfProcess,NULL,PETSCSF_PATTERN_ALLTOALL);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) sfProcess, "Process SF");CHKERRQ(ierr);
-      ierr = PetscSFSetGraph(sfProcess, size, size, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
       /* Convert facet rendezvous label into SF for migration */
       ierr = DMPlexPartitionLabelInvert(*dm, lblFacetRendezvous, sfProcess, lblFacetMigration);CHKERRQ(ierr);
       ierr = DMPlexPartitionLabelCreateSF(*dm, lblFacetMigration, &sfFacetMigration);CHKERRQ(ierr);

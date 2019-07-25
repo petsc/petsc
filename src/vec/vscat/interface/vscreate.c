@@ -197,13 +197,14 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
    Output Parameter:
 .  newctx - location to store the new scatter context
 
-   Options Database Keys: (uses regular MPI_Sends by default)
-+  -vecscatter_view         - Prints detail of communications
+   Options Database Keys:
+.  -vecscatter_view         - Prints detail of communications
 .  -vecscatter_view ::ascii_info    - Print less details about communication
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
                               eliminates the chance for overlap of computation and communication
 -  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
                               will make the results of scatters deterministic when otherwise they are not (it may be slower also).
+.  -vecscatter_type sf      - Use the PetscSF implementation of vecscatter (Default). One can use PetscSF options to control the communication.
 
     Level: intermediate
 
@@ -225,14 +226,17 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 
    Both ix and iy cannot be NULL at the same time.
 
+   Use VecScatterCreateToAll() to create a vecscatter that copies an MPI vector to sequential vectors on all MPI ranks.
+   Use VecScatterCreateToZero() to create a vecscatter that copies an MPI vector to a sequential vector on MPI rank 0.
+   These special vecscatters have better performance than general ones.
 
-.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
+.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero(), PetscSFCreate()
 @*/
 PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter        ctx;
   PetscErrorCode    ierr;
-  PetscMPIInt       size,xsize,ysize,result;
+  PetscMPIInt       xsize,ysize,result;
   MPI_Comm          comm,xcomm,ycomm;
 
   PetscFunctionBegin;
@@ -252,8 +256,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     if (result == MPI_UNEQUAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"VecScatterCreate: parallel vectors xin and yin must have identical/congruent/similar communicators");
   }
 
-  comm = xsize > ysize ? xcomm : ycomm; /* If xsize==ysize, we use ycomm as comm of ctx, which does affect correctness */
-  size = xsize > ysize ? xsize : ysize;
+  /* If xsize==ysize, we use ycomm as comm of ctx, which does affect correctness of -vecscatter_type mpi1. But it does not
+     affect -vecscatter_type sf, since sf internally uses the roots' comm (equal to xcomm when x is parallel) as the sf
+     object's comm. One day when we degrade VecScatter from a petsc object to a simple wrapper around PetscSF, we can get
+     rid of this confusion.
+   */
+  comm = xsize > ysize ? xcomm : ycomm;
 
   ierr = VecScatterInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","Vector Scatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
@@ -266,8 +274,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = VecGetLocalSize(yin,&ctx->to_n);CHKERRQ(ierr);
 
   /* Set default scatter type */
-  if (size == 1) {ierr = VecScatterSetType(ctx,VECSCATTERSEQ);CHKERRQ(ierr);}
-  else {ierr = VecScatterSetType(ctx,VECSCATTERMPI1);CHKERRQ(ierr);}
+  ierr = VecScatterSetType(ctx,VECSCATTERSF);CHKERRQ(ierr);
 
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
   ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);

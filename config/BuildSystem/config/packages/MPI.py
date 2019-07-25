@@ -50,6 +50,8 @@ class Configure(config.package.Package):
     self.alternativedownload = 'mpich'
     # support MPI-3 process shared memory
     self.support_mpi3_shm = 0
+    # support MPI-3 non-blocking collectives
+    self.support_mpi3_nbc = 0
     self.mpi_pkg_version  = ''
     return
 
@@ -261,6 +263,24 @@ shared libraries and run with --known-mpi-shared-libraries=1')
         self.addDefine('HAVE_MPI_WIN_CREATE_FEATURE',1)
         self.addDefine('HAVE_MPI_PROCESS_SHARED_MEMORY',1)
         self.support_mpi3_shm = 1
+    if self.checkLink('#include <mpi.h>\n',
+                      'int send=0,recv,counts[2]={1,1},displs[2]={1,2}; MPI_Request req;\n\
+                       if (MPI_Iscatter(&send,1,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
+                       if (MPI_Iscatterv(&send,counts,displs,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
+                       if (MPI_Igather(&send,1,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
+                       if (MPI_Igatherv(&send,1,MPI_INT,&recv,counts,displs,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
+                       if (MPI_Iallgather(&send,1,MPI_INT,&recv,1,MPI_INT,MPI_COMM_WORLD,&req));\n \
+                       if (MPI_Iallgatherv(&send,1,MPI_INT,&recv,counts,displs,MPI_INT,MPI_COMM_WORLD,&req));\n \
+                       if (MPI_Ialltoall(&send,1,MPI_INT,&recv,1,MPI_INT,MPI_COMM_WORLD,&req));\n'):
+      self.addDefine('HAVE_MPI_NONBLOCKING_COLLECTIVES', 1)
+      self.support_mpi3_nbc = 1
+    if self.checkLink('#include <mpi.h>\n',
+                      'MPI_Comm distcomm; \n\
+                       MPI_Request req; \n\
+                       if (MPI_Dist_graph_create_adjacent(MPI_COMM_WORLD,0,0,MPI_WEIGHTS_EMPTY,0,0,MPI_WEIGHTS_EMPTY,MPI_INFO_NULL,0,&distcomm));\n\
+                       if (MPI_Neighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm));\n\
+                       if (MPI_Ineighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm,&req));\n'):
+      self.addDefine('HAVE_MPI_NEIGHBORHOOD_COLLECTIVES',1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())

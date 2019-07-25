@@ -108,6 +108,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   PetscSection   gSection, sectionDist, gLocSection;
   PetscInt      *spoints, *remoteOffsets;
   PetscInt       ssize, pStart, pEnd, p;
+  PetscLayout    map;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -144,7 +145,10 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
    ierr = PetscSFView(sfEmbed, 0);CHKERRQ(ierr); */
   /* Create the SF for seq to natural */
   ierr = DMGetGlobalVector(dm, &gv);CHKERRQ(ierr);
-  ierr = PetscSFCreateFromZero(comm, gv, &sfSeqToNatural);CHKERRQ(ierr);
+  ierr = VecGetLayout(gv,&map);CHKERRQ(ierr);
+  /* Note that entries of gv are leaves in sfSeqToNatural, entries of the seq vec are roots */
+  ierr = PetscSFCreate(comm, &sfSeqToNatural);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphWithPattern(sfSeqToNatural, map, PETSCSF_PATTERN_GATHER);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &gv);CHKERRQ(ierr);
   /* ierr = PetscPrintf(comm, "Seq-to-Natural SF\n");CHKERRQ(ierr);
    ierr = PetscSFView(sfSeqToNatural, 0);CHKERRQ(ierr); */
@@ -164,7 +168,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   /* ierr = PetscPrintf(comm, "Inverse Field SF\n");CHKERRQ(ierr);
    ierr = PetscSFView(sfFieldInv, 0);CHKERRQ(ierr); */
   /* Multiply the sfFieldInv with the */
-  ierr = PetscSFCompose(sfFieldInv, sfSeqToNatural, sfNatural);CHKERRQ(ierr);
+  ierr = PetscSFComposeInverse(sfFieldInv, sfSeqToNatural, sfNatural);CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject) *sfNatural, NULL, "-globaltonatural_sf_view");CHKERRQ(ierr);
   /* Clean up */
   ierr = PetscSFDestroy(&sfFieldInv);CHKERRQ(ierr);
