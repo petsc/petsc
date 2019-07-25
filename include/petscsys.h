@@ -1756,8 +1756,8 @@ M*/
    Not Collective
 
    Input Parameters:
-+  str1 - First array
-.  str2 - Second array
++  str1 - First array (destination)
+.  str2 - Second array (source)
 -  cnt  - Count of the array, not in bytes, but number of entries in the arrays
 
    Level: intermediate
