@@ -395,7 +395,7 @@ cdef class Vec(Object):
         cdef const_char *m = NULL
         if mode is not None: mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
-            CHKERR( VecCUDAGetArrayReadWrite(self.vec, &hdl) )
+            CHKERR( VecCUDAGetArray(self.vec, &hdl) )
         elif m[0] == c'r':
             CHKERR( VecCUDAGetArrayRead(self.vec, <const_PetscScalar**>&hdl) )
         elif m[0] == c'w':
@@ -409,7 +409,7 @@ cdef class Vec(Object):
         cdef const_char *m = NULL
         if mode is not None: mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
-            CHKERR( VecCUDARestoreArrayReadWrite(self.vec, &hdl) )
+            CHKERR( VecCUDARestoreArray(self.vec, &hdl) )
         elif m[0] == c'r':
             CHKERR( VecCUDARestoreArrayRead(self.vec, <const_PetscScalar**>&hdl) )
         elif m[0] == c'w':
