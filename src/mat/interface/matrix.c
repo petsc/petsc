@@ -3319,14 +3319,8 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
   Vec            b,x;
   PetscInt       m,N,i;
   PetscScalar    *bb,*xx;
-  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
-
   ierr = MatDenseGetArray(B,&bb);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);  /* number local rows */
