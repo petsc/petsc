@@ -890,7 +890,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
     matstructT->mat = matrixT;
     ierr = PetscLogCpuToGpu(((A->rmap->n+1)+(a->nz))*sizeof(int)+(3+a->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
   } else if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
-#if CUDA_VERSION>=5000
     /* First convert HYB to CSR */
     CsrMatrix *temp= new CsrMatrix;
     temp->num_rows = A->rmap->n;
@@ -954,9 +953,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
       if (temp->row_offsets) delete (THRUSTINTARRAY32*) temp->row_offsets;
       delete (CsrMatrix*) temp;
     }
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ELL (Ellpack) and HYB (Hybrid) storage format for the Matrix Transpose (in MatMultTranspose) require CUDA 5.0 or later.");
-#endif
   }
   /* assign the compressed row indices */
   matstructT->cprowIndices = new THRUSTINTARRAY;
