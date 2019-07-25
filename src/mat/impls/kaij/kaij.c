@@ -513,7 +513,7 @@ PetscErrorCode MatView_KAIJ(Mat A,PetscViewer viewer)
 
     /* Print appropriate details for S. */
     if (!a->S) {
-      ierr = PetscViewerASCIIPrintf(viewer,"S is NULL\n");
+      ierr = PetscViewerASCIIPrintf(viewer,"S is NULL\n");CHKERRQ(ierr);
     } else if (format == PETSC_VIEWER_ASCII_IMPL) {
       ierr = PetscViewerASCIIPrintf(viewer,"Entries of S are ");CHKERRQ(ierr);
       for (i=0; i<(a->p * a->q); i++) {
@@ -528,9 +528,9 @@ PetscErrorCode MatView_KAIJ(Mat A,PetscViewer viewer)
 
     /* Print appropriate details for T. */
     if (a->isTI) {
-      ierr = PetscViewerASCIIPrintf(viewer,"T is the identity matrix\n");
+      ierr = PetscViewerASCIIPrintf(viewer,"T is the identity matrix\n");CHKERRQ(ierr);
     } else if (!a->T) {
-      ierr = PetscViewerASCIIPrintf(viewer,"T is NULL\n");
+      ierr = PetscViewerASCIIPrintf(viewer,"T is NULL\n");CHKERRQ(ierr);
     } else if (format == PETSC_VIEWER_ASCII_IMPL) {
       ierr = PetscViewerASCIIPrintf(viewer,"Entries of T are ");CHKERRQ(ierr);
       for (i=0; i<(a->p * a->q); i++) {
@@ -788,7 +788,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         nz = diag[i] - ai[i];
 
         if (T) {                /* b - T (Arow * x) */
-          ierr = PetscMemzero(w,bs*sizeof(PetscScalar));
+          ierr = PetscMemzero(w,bs*sizeof(PetscScalar));CHKERRQ(ierr);
           for (j=0; j<nz; j++) {
             for (k=0; k<bs; k++) w[k] -= v[j] * x[vi[j]*bs+k];
           }
@@ -1177,7 +1177,7 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   s = lrow%p;
 
   if (T || b->isTI) {
-    ierr = MatMPIAIJGetSeqAIJ(AIJ,NULL,NULL,&garray);
+    ierr = MatMPIAIJGetSeqAIJ(AIJ,NULL,NULL,&garray);CHKERRQ(ierr);
     ierr = MatGetRow_SeqAIJ(MatAIJ,lrow/p,&ncolsaij,&colsaij,&vals);CHKERRQ(ierr);
     ierr = MatGetRow_SeqAIJ(MatOAIJ,lrow/p,&ncolsoaij,&colsoaij,&ovals);CHKERRQ(ierr);
 
@@ -1315,7 +1315,7 @@ PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],
   ierr = MatKAIJSetAIJ(*kaij,A);CHKERRQ(ierr);
   ierr = MatKAIJSetS(*kaij,p,q,S);CHKERRQ(ierr);
   ierr = MatKAIJSetT(*kaij,p,q,T);CHKERRQ(ierr);
-  ierr = MatSetUp(*kaij);
+  ierr = MatSetUp(*kaij);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
