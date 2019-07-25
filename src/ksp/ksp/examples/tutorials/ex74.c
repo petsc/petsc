@@ -207,7 +207,7 @@ int main(int argc, char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&z);CHKERRQ(ierr);
   ierr = VecSetFromOptions(z);CHKERRQ(ierr);
   ierr = VecSetSizes(z,PETSC_DECIDE,ctxt.imax*nstages);CHKERRQ(ierr);
-  ierr = VecDuplicate(z,&rhs);
+  ierr = VecDuplicate(z,&rhs);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(u,&is,&ie);CHKERRQ(ierr);
   ierr = PetscMalloc3(nstages,&ix,nstages,&zvals,ie-is,&ix2);CHKERRQ(ierr);
@@ -236,8 +236,8 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&rhs);CHKERRQ(ierr);
 
   /* Calculate error in final solution */
-  ierr = VecAYPX(uex,-1.0,u);
-  ierr = VecNorm(uex,NORM_2,&err);
+  ierr = VecAYPX(uex,-1.0,u);CHKERRQ(ierr);
+  ierr = VecNorm(uex,NORM_2,&err);CHKERRQ(ierr);
   err  = PetscSqrtReal(err*err/((PetscReal)ctxt.imax));
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L2 norm of the numerical error = %g (time=%g)\n",(double)err,(double)time);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of time steps: %D (%D Krylov iterations)\n",ctxt.niter,total_its);CHKERRQ(ierr);
