@@ -22,9 +22,9 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    make_target = 'single double'
-    if self.defaultPrecision == '__float128': make_target = 'quad'
-    if self.defaultPrecision == '__fp16': make_target     = 'half'
+    make_target = 'blas_lib lapack_lib'
+    if self.defaultPrecision == '__float128': make_target = 'blas_qlib lapack_qlib'
+    if self.defaultPrecision == '__fp16': make_target     = 'blas_hlib lapack_hlib'
 
     libdir = self.libDir
     confdir = self.confDir
@@ -55,8 +55,7 @@ class Configure(config.package.Package):
       if line.startswith('RANLIB  '):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
-        line = 'RM = '+self.programs.RM+'\n'
-
+        line = 'RM = '+self.programs.RM+'\nMAKE = '+self.make.make+'\n'
       if line.startswith('include'):
         line = '\n'
       if line.find("-no-prec-div") >= 0:
@@ -64,19 +63,33 @@ class Configure(config.package.Package):
       g.write(line)
       line = f.readline()
     f.close()
+    otherlibs = '''
+blas_hlib:\n\
+\t-@cd blas;   $(MAKE) hlib $(MAKE_OPTIONS_BLAS)\n\
+\t-@$(RANLIB) $(BLAS_LIB_NAME)\n\
+lapack_hlib:\n\
+\t-@cd lapack; $(MAKE) hlib $(MAKE_OPTIONS_LAPACK)\n\
+\t-@$(RANLIB) $(LAPACK_LIB_NAME)\n\
+blas_qlib:\n\
+\t-@cd blas;   $(MAKE) qlib $(MAKE_OPTIONS_BLAS)\n\
+\t-@$(RANLIB) $(BLAS_LIB_NAME)\n\
+lapack_qlib:\n\
+\t-@cd lapack; $(MAKE) qlib $(MAKE_OPTIONS_LAPACK)\n\
+\t-@$(RANLIB) $(LAPACK_LIB_NAME)\n'''
+    g.write(otherlibs)
     g.close()
 
     if not self.installNeeded('tmpmakefile'): return self.installDir
 
     try:
       self.logPrintBox('Compiling F2CBLASLAPACK; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+make_target, timeout=2500, log = self.log)
+      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && '+self.make.make_jnp+' -f tmpmakefile '+make_target, timeout=2500, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
       self.logPrintBox('Installing F2CBLASLAPACK')
       self.installDirProvider.printSudoPasswordMessage()
-      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'mkdir -p '+libdir+' && '+self.installSudo+'cp -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=3000, log = self.log)
+      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'mkdir -p '+libdir+' && '+self.installSudo+'cp -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
