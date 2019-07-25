@@ -1,8 +1,21 @@
-
 static char help[] = "Tests inclusion of petscsystypes.h.\n\n";
 
 #include <petscsystypes.h>
 #include <stddef.h> /* for NULL */
+
+#if defined(PETSC_HAVE_COMPLEX)
+#define TestComplexOperators(type,value)        \
+  do {                                          \
+    type x = value;                             \
+    PetscComplex z = value; (void)z;            \
+    z = x; z += x; z = z + x; z = x + z;        \
+    z = x; z -= x; z = z - x; z = x - z;        \
+    z = x; z *= x; z = z * x; z = x * z;        \
+    z = x; z /= x; z = z / x; z = x / z;        \
+    (void)(z==x); (void)(x==z);                 \
+    (void)(z!=x); (void)(x!=z);                 \
+  } while(0)
+#endif
 
 int main(int argc,char **argv)
 {
@@ -61,6 +74,15 @@ int main(int argc,char **argv)
   rvalue = 0.0;
 #if defined(PETSC_HAVE_COMPLEX)
   cvalue = 0.0;
+#endif
+
+#if defined(PETSC_HAVE_COMPLEX)
+  TestComplexOperators(signed char,1);
+  TestComplexOperators(signed short,1);
+  TestComplexOperators(signed int,1);
+  TestComplexOperators(signed long,1L);
+  TestComplexOperators(float,1.0f);
+  TestComplexOperators(double,1.0);
 #endif
 
   i64  = 0;

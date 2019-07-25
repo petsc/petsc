@@ -225,6 +225,9 @@ M*/
        typedef petsccomplexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 #    endif  /* PETSC_USE_REAL_ */
 #  endif  /* ! PETSC_SKIP_COMPLEX */
+#  if !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
+#    include <petsccxxcomplexfix.h>
+#  endif /* ! PETSC_SKIP_CXX_COMPLEX_FIX */
 #elif defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
 #  if !defined(PETSC_SKIP_COMPLEX)
 #    define PETSC_HAVE_COMPLEX 1

@@ -1,7 +1,3 @@
-#if !defined(PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND)
-#define PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND 1
-#endif
-
 #include <petscsys.h>
 
 static char help[] = "Test PetscComplex binary operators.\n";

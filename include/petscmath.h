@@ -278,36 +278,6 @@ PETSC_STATIC_INLINE PetscComplex PetscAtanhComplex(PetscComplex z)
 
 */
 
-#if defined(PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND)
-#if defined(PETSC_USE_REAL_SINGLE)
-static inline PetscComplex operator+(const PetscComplex& lhs, const double& rhs) { return lhs + float(rhs); }
-static inline PetscComplex operator+(const double& lhs, const PetscComplex& rhs) { return float(lhs) + rhs; }
-static inline PetscComplex operator-(const PetscComplex& lhs, const double& rhs) { return lhs - float(rhs); }
-static inline PetscComplex operator-(const double& lhs, const PetscComplex& rhs) { return float(lhs) - rhs; }
-static inline PetscComplex operator*(const PetscComplex& lhs, const double& rhs) { return lhs * float(rhs); }
-static inline PetscComplex operator*(const double& lhs, const PetscComplex& rhs) { return float(lhs) * rhs; }
-static inline PetscComplex operator/(const PetscComplex& lhs, const double& rhs) { return lhs / float(rhs); }
-static inline PetscComplex operator/(const double& lhs, const PetscComplex& rhs) { return float(lhs) / rhs; }
-static inline bool operator==(const PetscComplex& lhs, const double& rhs) { return lhs.imag() == float(0) && lhs.real() == float(rhs); }
-static inline bool operator==(const double& lhs, const PetscComplex& rhs) { return rhs.imag() == float(0) && rhs.real() == float(lhs); }
-static inline bool operator!=(const PetscComplex& lhs, const double& rhs) { return lhs.imag() != float(0) || lhs.real() != float(rhs); }
-static inline bool operator!=(const double& lhs, const PetscComplex& rhs) { return rhs.imag() != float(0) || rhs.real() != float(lhs); }
-#elif defined(PETSC_USE_REAL_DOUBLE)
-static inline PetscComplex operator+(const PetscComplex& lhs, const PetscInt& rhs) { return lhs + double(rhs); }
-static inline PetscComplex operator+(const PetscInt& lhs, const PetscComplex& rhs) { return double(lhs) + rhs; }
-static inline PetscComplex operator-(const PetscComplex& lhs, const PetscInt& rhs) { return lhs - double(rhs); }
-static inline PetscComplex operator-(const PetscInt& lhs, const PetscComplex& rhs) { return double(lhs) - rhs; }
-static inline PetscComplex operator*(const PetscComplex& lhs, const PetscInt& rhs) { return lhs * double(rhs); }
-static inline PetscComplex operator*(const PetscInt& lhs, const PetscComplex& rhs) { return double(lhs) * rhs; }
-static inline PetscComplex operator/(const PetscComplex& lhs, const PetscInt& rhs) { return lhs / double(rhs); }
-static inline PetscComplex operator/(const PetscInt& lhs, const PetscComplex& rhs) { return double(lhs) / rhs; }
-static inline bool operator==(const PetscComplex& lhs, const PetscInt& rhs) { return lhs.imag() == double(0) && lhs.real() == double(rhs); }
-static inline bool operator==(const PetscInt& lhs, const PetscComplex& rhs) { return rhs.imag() == double(0) && rhs.real() == double(lhs); }
-static inline bool operator!=(const PetscComplex& lhs, const PetscInt& rhs) { return lhs.imag() != double(0) || lhs.real() != double(rhs); }
-static inline bool operator!=(const PetscInt& lhs, const PetscComplex& rhs) { return rhs.imag() != double(0) || rhs.real() != double(lhs); }
-#endif  /* PETSC_USE_REAL_* */
-#endif  /* PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND */
-
 #elif defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
 /* C99 support of complex number */
 
