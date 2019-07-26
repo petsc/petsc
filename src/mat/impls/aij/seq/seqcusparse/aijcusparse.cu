@@ -124,7 +124,6 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARS
   Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
 
   PetscFunctionBegin;
-#if CUDA_VERSION>=4020
   switch (op) {
   case MAT_CUSPARSE_MULT:
     cusparsestruct->format = format;
@@ -135,9 +134,6 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARS
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPARSEFormatOperation. MAT_CUSPARSE_MULT and MAT_CUSPARSE_ALL are currently supported.",op);
   }
-#else
-  if (format==MAT_CUSPARSE_ELL || format==MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ELL (Ellpack) and HYB (Hybrid) storage format require CUDA 4.2 or later.");
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -894,7 +890,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
     matstructT->mat = matrixT;
     ierr = PetscLogCpuToGpu(((A->rmap->n+1)+(a->nz))*sizeof(int)+(3+a->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
   } else if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
-#if CUDA_VERSION>=5000
     /* First convert HYB to CSR */
     CsrMatrix *temp= new CsrMatrix;
     temp->num_rows = A->rmap->n;
@@ -958,9 +953,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
       if (temp->row_offsets) delete (THRUSTINTARRAY32*) temp->row_offsets;
       delete (CsrMatrix*) temp;
     }
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ELL (Ellpack) and HYB (Hybrid) storage format for the Matrix Transpose (in MatMultTranspose) require CUDA 5.0 or later.");
-#endif
   }
   /* assign the compressed row indices */
   matstructT->cprowIndices = new THRUSTINTARRAY;
@@ -1276,7 +1268,6 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
           matstruct->mat = matrix;
 
         } else if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
-#if CUDA_VERSION>=4020
           CsrMatrix *matrix= new CsrMatrix;
           matrix->num_rows = m;
           matrix->num_cols = A->cmap->n;
@@ -1308,7 +1299,6 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
             if (matrix->row_offsets) delete (THRUSTINTARRAY32*)matrix->row_offsets;
             delete (CsrMatrix*)matrix;
           }
-#endif
         }
 
         /* assign the compressed row indices */
@@ -1387,13 +1377,11 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
                              mat->column_indices->data().get(), xarray, matstructT->beta_zero,
                              yarray);CHKERRCUDA(stat);
   } else {
-#if CUDA_VERSION>=4020
     cusparseHybMat_t hybMat = (cusparseHybMat_t)matstructT->mat;
     stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                              matstructT->alpha, matstructT->descr, hybMat,
                              xarray, matstructT->beta_zero,
                              yarray);CHKERRCUDA(stat);
-#endif
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
@@ -1440,15 +1428,13 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
                                mat->column_indices->data().get(), xarray, beta,
                                dptr);CHKERRCUDA(stat);
     } else {
-#if CUDA_VERSION>=4020
-      cusparseHybMat_t hybMat = (cusparseHybMat_t)matstruct->mat;
       if (cusparsestruct->workVector->size()) {
+	cusparseHybMat_t hybMat = (cusparseHybMat_t)matstruct->mat;
         stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  matstruct->alpha, matstruct->descr, hybMat,
                                  xarray, beta,
                                  dptr);CHKERRCUDA(stat);
       }
-#endif
     }
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
@@ -1526,7 +1512,6 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
                                mat->column_indices->data().get(), xarray, matstructT->beta_zero,
                                cusparsestruct->workVector->data().get());CHKERRCUDA(stat);
     } else {
-#if CUDA_VERSION>=4020
       cusparseHybMat_t hybMat = (cusparseHybMat_t)matstructT->mat;
       if (cusparsestruct->workVector->size()) {
         stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
@@ -1534,7 +1519,6 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
             xarray, matstructT->beta_zero,
             cusparsestruct->workVector->data().get());CHKERRCUDA(stat);
       }
-#endif
     }
 
     /* scatter the data from the temporary into the full vector with a += operation */
