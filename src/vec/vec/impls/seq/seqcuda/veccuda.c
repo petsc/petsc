@@ -13,6 +13,46 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
+/*@
+  VecCUDASetPinnedMemoryMin - Set the minimum data size for which pinned memory on CPU will be allocated..
+
+  Collective on Vec
+
+  Input Parameters:
++  v    - the vector
+-  mbytes - minimum data size in bytes
+
+  Level: advanced
+.seealso: VecCUDAGetPinnedMemoryMin()
+@*/
+PetscErrorCode VecCUDASetPinnedMemoryMin(Vec v,PetscInt mbytes)
+{
+  Vec_CUDA *veccuda = (Vec_CUDA*)v->spptr;
+
+  PetscFunctionBegin;
+  veccuda->minimum_bytes_pinned_memory = mbytes;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  VecCUDAGetPinnedMemoryMin - Get the minimum data size for which pinned memory on CPU will be allocated.
+
+  Collective on Vec
+
+  Input Parameters:
++  v    - the vector
+-  mbytes - minimum data size in bytes
+.seealso: VecCUDASetPinnedMemoryMin()
+@*/
+PetscErrorCode VecCUDAGetPinnedMemoryMin(Vec v,PetscInt* mbytes)
+{
+  Vec_CUDA *veccuda = (Vec_CUDA*)v->spptr;
+
+  PetscFunctionBegin;
+  *mbytes = veccuda->minimum_bytes_pinned_memory;
+  PetscFunctionReturn(0);
+}
+
 /*
     Allocates space for the vector array on the Host if it does not exist.
     Does NOT change the PetscCUDAFlag for the vector
@@ -23,6 +63,7 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v)
   PetscErrorCode ierr;
   PetscScalar    *array;
   Vec_Seq        *s = (Vec_Seq*)v->data;
+  Vec_CUDA       *veccuda = (Vec_CUDA*)v->spptr;
   PetscInt       n = v->map->n;
 
   PetscFunctionBegin;
@@ -31,14 +72,14 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v)
     v->data = s;
   }
   if (!s->array) {
-    if (n*sizeof(PetscScalar)> 134217728) {
+    if (n*sizeof(PetscScalar)> veccuda->minimum_bytes_pinned_memory) {
       ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
     }
     ierr = PetscMalloc1(n,&array);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
-    if (n*sizeof(PetscScalar) > 134217728) {
+    if (n*sizeof(PetscScalar) > veccuda->minimum_bytes_pinned_memory) {
       ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
     }
     if (v->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
@@ -83,6 +124,7 @@ PetscErrorCode VecSetRandom_SeqCUDA_Private(Vec xin,PetscRandom r)
 PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v)
 {
   Vec_Seq        *vs = (Vec_Seq*)v->data;
+  Vec_CUDA       *veccuda = (Vec_CUDA*)v->spptr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -92,11 +134,11 @@ PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v)
 #endif
   if (vs) {
     if (vs->array_allocated) {
-      if (v->map->n*sizeof(PetscScalar) > 134217728) {
+      if ((v->map->n)*sizeof(PetscScalar) > veccuda->minimum_bytes_pinned_memory) {
         ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
       }
       ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
-      if (v->map->n*sizeof(PetscScalar) > 134217728) {
+      if ((v->map->n)*sizeof(PetscScalar) > veccuda->minimum_bytes_pinned_memory) {
         ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
       }
     }

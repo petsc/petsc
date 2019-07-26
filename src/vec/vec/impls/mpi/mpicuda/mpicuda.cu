@@ -351,6 +351,7 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
       veccuda->GPUarray_allocated = 0;
       veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
       vv->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
+      veccuda->minimum_bytes_pinned_memory = 134217728;
     }
     veccuda = (Vec_CUDA*)vv->spptr;
     veccuda->GPUarray = (PetscScalar*)array;
