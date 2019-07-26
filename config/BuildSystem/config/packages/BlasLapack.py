@@ -634,8 +634,7 @@ class Configure(config.package.Package):
       self.logPrintBox('***** WARNING: Cannot determine if BLAS/LAPACK uses 32 bit or 64 bit integers\n\
 in batch-mode! Assuming 32 bit integers. Run with --known-64-bit-blas-indices\n\
 if you know they are 64 bit. Run with --known-64-bit-blas-indices=0 to remove\n\
-this warning message.\n\
-warning message *****')
+this warning message *****')
       self.has64bitindices = 0
       self.log.write('In batch mode with unknown size of BLAS/LAPACK defaulting to 32 bit\n')
     else:
@@ -680,8 +679,7 @@ warning message *****')
       self.logPrintBox('***** WARNING: Cannot determine if BLAS sdot() returns a float or a double\n\
 in batch-mode! Assuming float. Run with --known-sdot-returns-double=1\n\
 if you know it returns a double (very unlikely). Run with\n\
---known-sdor-returns-double=0 to remove this warning message.\n\
-warning message *****')
+--known-sdor-returns-double=0 to remove this warning message *****')
     else:
       includes = '''#include <sys/types.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n'''
       body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(const int*,const float*,const int *,const float*,const int*);
@@ -713,8 +711,7 @@ warning message *****')
       self.logPrintBox('***** WARNING: Cannot determine if BLAS snrm2() returns a float or a double\n\
 in batch-mode! Assuming float. Run with --known-snrm2-returns-double=1\n\
 if you know it returns a double (very unlikely). Run with\n\
---known-snrm2-returns-double=0 to remove this warning message.\n\
-warning message *****')
+--known-snrm2-returns-double=0 to remove this warning message *****')
     else:
       includes = '''#include <sys/types.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n'''
       body     = '''extern float '''+self.mangleBlasNoPrefix('snrm2')+'''(const int*,const float*,const int*);
