@@ -27,6 +27,9 @@ typedef const char* MatType;
 #define MATMAIJ            "maij"
 #define MATSEQMAIJ         "seqmaij"
 #define MATMPIMAIJ         "mpimaij"
+#define MATKAIJ            "kaij"
+#define MATSEQKAIJ         "seqkaij"
+#define MATMPIKAIJ         "mpikaij"
 #define MATIS              "is"
 #define MATAIJ             "aij"
 #define MATSEQAIJ          "seqaij"
@@ -1641,6 +1644,20 @@ PETSC_EXTERN PetscErrorCode MatComputeOperatorTranspose(Mat,MatType,Mat*);
 
 PETSC_DEPRECATED_FUNCTION("Use MatComputeOperator() (since version 3.12)") PETSC_STATIC_INLINE PetscErrorCode MatComputeExplicitOperator(Mat A,Mat* B) { return MatComputeOperator(A,NULL,B); }
 PETSC_DEPRECATED_FUNCTION("Use MatComputeOperatorTranspose() (since version 3.12)") PETSC_STATIC_INLINE PetscErrorCode MatComputeExplicitOperatorTranspose(Mat A,Mat* B) { return MatComputeOperatorTranspose(A,NULL,B); }
+
+PETSC_EXTERN PetscErrorCode MatCreateKAIJ(Mat,PetscInt,PetscInt,const PetscScalar[],const PetscScalar[],Mat*);
+PETSC_EXTERN PetscErrorCode MatKAIJGetAIJ(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatKAIJGetS(Mat,PetscInt*,PetscInt*,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJGetSRead(Mat,PetscInt*,PetscInt*,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJRestoreS(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJRestoreSRead(Mat,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJGetT(Mat,PetscInt*,PetscInt*,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJGetTRead(Mat,PetscInt*,PetscInt*,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJRestoreT(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJRestoreTRead(Mat,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatKAIJSetAIJ(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatKAIJSetS(Mat,PetscInt,PetscInt,const PetscScalar []);
+PETSC_EXTERN PetscErrorCode MatKAIJSetT(Mat,PetscInt,PetscInt,const PetscScalar []);
 
 PETSC_EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat,Vec);
 
