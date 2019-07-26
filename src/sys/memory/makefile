@@ -4,6 +4,7 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 SOURCEC	  = mal.c   mem.c   mtr.c  mhbw.c
+SOURCECU  = mcudahost.cu
 SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Sys
