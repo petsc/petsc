@@ -319,8 +319,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
          self.logPrintBox('***** WARNING: Cannot determine if '+datatype+' works on your system\n\
 in batch-mode! Assuming it does work. Run with --known-mpi-'+name+'=0\n\
 if you know it does not work (very unlikely). Run with --known-mpi-'+name+'=1\n\
-to remove this warning message.\n\
-warning message *****')
+to remove this warning message *****')
          self.addDefine('HAVE_'+datatype, 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs

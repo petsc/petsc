@@ -502,7 +502,7 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    if not self.installwithbatch and self.argDB['with-batch']: raise RuntimeError('--download-'+self.name+' cannot be used on batch systems. You must either\n\
+    if self.argDB['with-batch'] and self.argDB['download-'+self.package] and not self.installwithbatch: raise RuntimeError('--download-'+self.name+' cannot be used on batch systems. You must either\n\
     1) load the appropriate module on your system and use --with-'+self.name+' or \n\
     2) locate its installation on your machine or install it yourself and use --with-'+self.name+'-dir=path\n')
 
