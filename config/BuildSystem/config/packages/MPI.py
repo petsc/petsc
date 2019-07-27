@@ -71,6 +71,7 @@ class Configure(config.package.Package):
 
   def __str__(self):
     output  = config.package.Package.__str__(self)
+    if self.mpiexec: output  += '  Mpiexec: '+self.mpiexec+'\n'
     return output+self.mpi_pkg_version
 
   def generateLibList(self, directory):
@@ -138,10 +139,9 @@ class Configure(config.package.Package):
             yield(os.path.join(root,drive,programFiles,packageDir))
     return
 
-  def checkSharedLibrary(self):
+  def checkSharedLibrary_ThisIsBroken(self):
     '''Sets flag indicating if MPI libraries are shared or not and
     determines if MPI libraries CANNOT be used by shared libraries'''
-    self.executeTest(self.configureMPIEXEC)
     if self.argDB['with-batch']:
       if self.argDB['with-shared-libraries']:
         if not 'known-mpi-shared-libraries' in self.argDB:
@@ -158,53 +158,88 @@ compiles go through - but one might get run-time errors.  Either\n\
 reconfigure PETSc with --with-shared-libraries=0 or provide MPI with\n\
 shared libraries and run with --known-mpi-shared-libraries=1')
       return
-    try:
-      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
-    except RuntimeError as e:
-      if self.argDB['with-shared-libraries']:
-        raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither reconfigure with --with-shared-libraries=0 or rebuild MPI with shared library support')
-      self.logPrint('MPI libraries cannot be used with shared libraries')
-      self.shared = 0
+    self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
+
+    # TODO: Turn this on once shared library checks are working again
+    #if self.argDB['with-shared-libraries'] and not self.shared:
+    #  self.logPrint('MPI libraries cannot be used with shared libraries')
+    #  raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither reconfigure with --with-shared-libraries=0 or rebuild MPI with shared library support')
     return
 
   def configureMPIEXEC(self):
-    '''Checking for mpiexec'''
+    '''Checking for location of mpiexec'''
+    self.mpiexec = None
     if 'with-mpiexec' in self.argDB:
       self.argDB['with-mpiexec'] = os.path.expanduser(self.argDB['with-mpiexec'])
       if not self.getExecutable(self.argDB['with-mpiexec'], resultName = 'mpiexec'):
         raise RuntimeError('Invalid mpiexec specified: '+str(self.argDB['with-mpiexec']))
-      return
-    if self.isPOE:
+      self.mpiexec = self.argDB['with-mpiexec']
+    elif self.isPOE:
       self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
-      return
-    if self.argDB['with-batch']:
+    elif self.argDB['with-batch']:
       self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
-      self.addMakeMacro('MPIEXEC',self.mpiexec)
-      return
-    mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
-    path    = []
-    if 'with-mpi-dir' in self.argDB:
-      path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'bin'))
-      # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/mpd/bin
-      path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'mpd','bin'))
-    for inc in self.include:
-      path.append(os.path.join(os.path.dirname(inc), 'bin'))
-      # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/SDK/include/../../mpd/bin
-      path.append(os.path.join(os.path.dirname(os.path.dirname(inc)),'mpd','bin'))
-    for lib in self.lib:
-      path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
-    self.pushLanguage('C')
-    if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
-      path.append(os.path.dirname(self.getCompiler()))
-    self.popLanguage()
-    if not self.getExecutable(mpiexecs, path = path, useDefaultPath = 1, resultName = 'mpiexec',setMakeMacro=0):
-      if not self.getExecutable('/bin/false', path = [], useDefaultPath = 0, resultName = 'mpiexec',setMakeMacro=0):
-        raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
-    self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)')
+    else:
+      mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
+      path    = []
+      if 'with-mpi-dir' in self.argDB:
+        path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'bin'))
+        # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/mpd/bin
+        path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'mpd','bin'))
+      for inc in self.include:
+        path.append(os.path.join(os.path.dirname(inc), 'bin'))
+        # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/SDK/include/../../mpd/bin
+        path.append(os.path.join(os.path.dirname(os.path.dirname(inc)),'mpd','bin'))
+      for lib in self.lib:
+        path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
+      self.pushLanguage('C')
+      if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
+        path.append(os.path.dirname(self.getCompiler()))
+      self.popLanguage()
+      if not self.getExecutable(mpiexecs, path = path, useDefaultPath = 1, resultName = 'mpiexec',setMakeMacro=0):
+        if not self.getExecutable('/bin/false', path = [], useDefaultPath = 0, resultName = 'mpiexec',setMakeMacro=0):
+          raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
+    # Support for spaces and () in executable names; also needs to handle optional arguments at the end
+    # TODO: This support for spaces and () should be moved to core BuildSystem
+    self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
     if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
       self.mpiexec = self.mpiexec + ' --oversubscribe'
     self.addMakeMacro('MPIEXEC', self.mpiexec)
-    return
+
+    # cannot use self.setCompilers.isWindows(self.setCompilers.getCompiler(),self.log) because it
+    # does not work when the compiler already has the win32fe wrapper on it and changing it to allow that
+    # breaks other code
+    if self.setCompilers.getCompiler().find('win32fe') > -1: return
+
+    # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
+    # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
+    # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
+    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = None, timeout = 10, log = self.log)
+    if ret: return
+    if out.find('MPIR_CVAR_CH3') > -1:
+      if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
+      self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPIR_CVAR_CH3')
+    elif  out.find('MPIR_CVAR_CH3') > -1:
+      if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
+      self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPICH')
+    elif  out.find('OMPI') > -1:
+      if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from OpenMPI");
+      self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'OMP')
+    if self.argDB['with-batch']: return
+
+    # check that mpiexec runs an MPI program correctly
+    includes = '#include <mpi.h>'
+    body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
+    try:
+      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 20)
+      if not ok: raise RuntimeError('Unable to run MPI program with '+self.mpiexec+' make sure this is the correct program to run MPI jobs')
+    except RuntimeError as e:
+      print(str(e))
+      if str(e).find('Runaway process exceeded time limit') > -1:
+        raise RuntimeError('Timeout: Unable to run MPI program with '+self.mpiexec+'\n\
+    (1) make sure this is the correct program to run MPI jobs\n\
+    (2) your network may be misconfigured; see https://www.mcs.anl.gov/petsc/documentation/faq.html#PetscOptionsInsertFile\n')
+
+
 
   def configureMPI2(self):
     '''Check for functions added to the interface in MPI-2'''
@@ -286,15 +321,6 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     self.logWrite(self.framework.restoreLog())
     return
 
-  def configureTypes(self):
-    '''Checking for MPI types'''
-    oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
-    self.framework.addBatchLib(self.lib)
-    self.compilers.CPPFLAGS = oldFlags
-    return
-
   def configureMPITypes(self):
     '''Checking for MPI Datatype handles'''
     oldFlags = self.compilers.CPPFLAGS
@@ -352,9 +378,8 @@ to remove this warning message *****')
     '''Check if we should download MPICH or OpenMPI'''
     if 'download-mpi' in self.argDB and self.argDB['download-mpi']:
       raise RuntimeError('Option --download-mpi does not exist! Use --download-mpich or --download-openmpi instead.')
-
     if self.argDB['download-mpich'] and self.argDB['download-openmpi']:
-      raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
+      raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
     return None
 
   def SGIMPICheck(self):
@@ -375,8 +400,6 @@ to remove this warning message *****')
     oldFlags = self.compilers.CXXPPFLAGS
     self.compilers.CXXPPFLAGS += ' '+self.headers.toString(self.include)
     self.log.write('Checking for header mpi.h\n')
-    if not self.libraries.checkCompile(includes = '#include <mpi.h>\n'):
-      raise RuntimeError('C++ error! mpi.h could not be located at: '+str(self.include))
     # check if MPI_Finalize from c++ exists
     self.log.write('Checking for C++ MPI_Finalize()\n')
     if not self.libraries.check(self.lib, 'MPI_Finalize', prototype = '#include <mpi.h>', call = 'int ierr;\nierr = MPI_Finalize();', cxxMangle = 1):
@@ -393,15 +416,12 @@ to remove this warning message *****')
     self.libraries.pushLanguage('FC')
     oldFlags = self.compilers.FPPFLAGS
     self.compilers.FPPFLAGS += ' '+self.headers.toString(self.include)
-    self.log.write('Checking for header mpif.h\n')
-    if not self.libraries.checkCompile(body = '#include "mpif.h"'):
-      raise RuntimeError('Fortran error! mpif.h could not be located at: '+str(self.include))
     # check if mpi_init form fortran works
     self.log.write('Checking for fortran mpi_init()\n')
     if not self.libraries.check(self.lib,'', call = '#include "mpif.h"\n       integer ierr\n       call mpi_init(ierr)'):
       raise RuntimeError('Fortran error! mpi_init() could not be located!')
     # check if mpi.mod exists
-    if self.compilers.fortranIsF90:
+    if self.fortran.fortranIsF90:
       self.log.write('Checking for mpi.mod\n')
       if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
         self.havef90module = 1
@@ -414,39 +434,24 @@ to remove this warning message *****')
     '''Check for the functions in MPI/IO
        - Define HAVE_MPIIO if they are present
        - Some older MPI 1 implementations are missing these'''
+    # MSWIN has buggy MPI IO
+    if 'HAVE_LIBMSMPI' in self.defines: return
     oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    if not self.checkLink('#include <mpi.h>\n', 'MPI_Aint lb, extent;\nif (MPI_Type_get_extent(MPI_INT, &lb, &extent));\n'):
-      self.compilers.CPPFLAGS = oldFlags
+    if not self.checkLink('#include <mpi.h>\n', '''MPI_Aint lb, extent;\nif (MPI_Type_get_extent(MPI_INT, &lb, &extent));\n
+                                                 MPI_File fh;\nvoid *buf;\nMPI_Status status;\nif (MPI_File_write_all(fh, buf, 1, MPI_INT, &status));\n
+                                                 if (MPI_File_read_all(fh, buf, 1, MPI_INT, &status));\n
+                                                 MPI_Offset disp;\nMPI_Info info;\nif (MPI_File_set_view(fh, disp, MPI_INT, MPI_INT, "", info));\n
+                                                 if (MPI_File_open(MPI_COMM_SELF, "", 0, info, &fh));\n
+                                                 if (MPI_File_close(&fh));\n'''):
       self.compilers.LIBS = oldLibs
-      return
-    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nvoid *buf;\nMPI_Status status;\nif (MPI_File_write_all(fh, buf, 1, MPI_INT, &status));\n'):
       self.compilers.CPPFLAGS = oldFlags
-      self.compilers.LIBS = oldLibs
       return
-    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nvoid *buf;\nMPI_Status status;\nif (MPI_File_read_all(fh, buf, 1, MPI_INT, &status));\n'):
-      self.compilers.CPPFLAGS = oldFlags
-      self.compilers.LIBS = oldLibs
-      return
-    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nMPI_Offset disp;\nMPI_Info info;\nif (MPI_File_set_view(fh, disp, MPI_INT, MPI_INT, "", info));\n'):
-      self.compilers.CPPFLAGS = oldFlags
-      self.compilers.LIBS = oldLibs
-      return
-    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nMPI_Info info;\nif (MPI_File_open(MPI_COMM_SELF, "", 0, info, &fh));\n'):
-      self.compilers.CPPFLAGS = oldFlags
-      self.compilers.LIBS = oldLibs
-      return
-    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nMPI_Info info;\nif (MPI_File_close(&fh));\n'):
-      self.compilers.CPPFLAGS = oldFlags
-      self.compilers.LIBS = oldLibs
-      return
-    # MSWIN has buggy MPI IO
-    if 'HAVE_LIBMSMPI' in self.defines: return
     self.addDefine('HAVE_MPIIO', 1)
-    self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
+    self.compilers.CPPFLAGS = oldFlags
     return
 
   def checkMPICHorOpenMPI(self):
@@ -456,6 +461,19 @@ to remove this warning message *****')
     HASHLINESPACE = ' *(?:\n#.*\n *)*'
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+
+    MPI_VER = ''
+    # I_MPI_NUMVERSION is broken on Windows and only has a value of 0 so test also for the named version
+    MPICHPKG = 'I_MPI'
+    mpich_test = '#include <mpi.h>\nconst char *mpich_ver = '+MPICHPKG+'_VERSION;\n'
+    if self.checkCompile(mpich_test):
+      buf = self.outputPreprocess(mpich_test)
+      try:
+        mpich_numversion = re.compile('\nconst char *mpich_ver ='+HASHLINESPACE+'"([\.0-9]+)"'+HASHLINESPACE+';').search(buf).group(1)
+        self.addDefine('HAVE_'+MPICHPKG+'_VERSION',mpich_numversion)
+        MPI_VER  = '  '+MPICHPKG+'_VERSION: '+mpich_numversion
+      except:
+        self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
     for mpichpkg in ['i_mpi','mvapich2','mpich']:
       MPICHPKG = mpichpkg.upper()
       mpich_test = '#include <mpi.h>\nint mpich_ver = '+MPICHPKG+'_NUMVERSION;\n'
@@ -464,12 +482,14 @@ to remove this warning message *****')
         try:
           mpich_numversion = re.compile('\nint mpich_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
           self.addDefine('HAVE_'+MPICHPKG+'_NUMVERSION',mpich_numversion)
-          self.mpi_pkg_version  = '  '+MPICHPKG+'_NUMVERSION: '+mpich_numversion+'\n'
+          MPI_VER += '  '+MPICHPKG+'_NUMVERSION: '+mpich_numversion
           if mpichpkg == 'mpich': self.mpich_numversion = mpich_numversion
         except:
           self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
-        self.compilers.CPPFLAGS = oldFlags
-        return
+    if MPI_VER:
+      self.compilers.CPPFLAGS = oldFlags
+      self.mpi_pkg_version = MPI_VER+'\n'
+      return
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
     if self.checkCompile(openmpi_test):
       buf = self.outputPreprocess(openmpi_test)
@@ -563,7 +583,6 @@ to remove this warning message *****')
 You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to prevent such hangs. warning message *****')
     self.executeTest(self.configureMPI2)
     self.executeTest(self.configureMPI3) #depends on checkMPICHorOpenMPI for self.mpich_numversion
-    self.executeTest(self.configureTypes)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)
@@ -571,8 +590,8 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.configureIO)
     self.executeTest(self.findMPIInc)
     self.executeTest(self.PetscArchMPICheck)
-    funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread
-      MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
+    self.executeTest(self.configureMPIEXEC)
+    funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)
@@ -582,14 +601,14 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
 
     oldFlags = self.compilers.CPPFLAGS # Disgusting save and restore
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    for combiner in ['MPI_COMBINER_DUP', 'MPI_COMBINER_CONTIGUOUS',
-                     'MPI_COMBINER_NAMED']:
+    for combiner in ['MPI_COMBINER_DUP', 'MPI_COMBINER_CONTIGUOUS', 'MPI_COMBINER_NAMED']:
       if self.checkCompile('#include <mpi.h>', 'int combiner = %s;' % (combiner,)):
         self.addDefine('HAVE_' + combiner,1)
     self.compilers.CPPFLAGS = oldFlags
 
-    if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_set"):
-      self.addDefine('HAVE_MPICH_CH3_SOCK', 1)
-    if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_fixed_nbc_progress"):
-      # Indicates that this bug was fixed: http://trac.mpich.org/projects/mpich/ticket/1785
-      self.addDefine('HAVE_MPICH_CH3_SOCK_FIXED_NBC_PROGRESS', 1)
+    if hasattr(self,'mpich_numversion'):
+      if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_set"):
+        self.addDefine('HAVE_MPICH_CH3_SOCK', 1)
+      if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_fixed_nbc_progress"):
+        # Indicates that this bug was fixed: http://trac.mpich.org/projects/mpich/ticket/1785
+        self.addDefine('HAVE_MPICH_CH3_SOCK_FIXED_NBC_PROGRESS', 1)

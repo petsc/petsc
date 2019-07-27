@@ -94,21 +94,19 @@ class Configure(config.package.Package):
     self.compilers.LIBS = oldLibs
     return found
 
-  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs', 'geev']):
+  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs']):
     oldLibs = self.compilers.LIBS
     if not isinstance(routinesIn, list): routinesIn = [routinesIn]
     routines = list(routinesIn)
     found   = 1
-    prototypes = ['','']
-    calls      = ['','']
+    prototypes = ['']
+    calls      = ['']
     routines   = map(self.mangleBlas, routines)
 
     if fortranMangle=='stdcall':
-      if routines == ['dgetrs','dgeev']:
-        prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);',
-                      'void __stdcall DGEEV(char*,int,char*,int,int*,double*,int*,double*,double*,double*,int*,double*,int*,double*,int*,int*);']
-        calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
-                      'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
+      if routines == ['dgetrs']:
+        prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);']
+        calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);']
     self.libraries.saveLog()
     for routine, prototype, call in zip(routines, prototypes, calls):
       found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
@@ -135,34 +133,37 @@ class Configure(config.package.Package):
     # allow a user-specified suffix to be appended to BLAS/LAPACK symbols
     self.suffix = self.argDB.get('with-blaslapack-suffix', '')
     mangleFunc = self.compilers.fortranMangling
+    self.logPrint('Checking for Fortran name mangling '+mangleFunc+' on BLAS/LAPACK')
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
     if foundBlas:
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
       if foundLapack:
         self.mangling = self.compilers.fortranMangling
-      self.logPrint('Found Fortran mangling on BLAS/LAPACK which is '+self.compilers.fortranMangling)
-    else:
+        self.logPrint('Found Fortran mangling on BLAS/LAPACK which is '+self.compilers.fortranMangling)
+        return (foundBlas, foundLapack)
+    if not self.compilers.fortranMangling == 'unchanged':
       self.logPrint('Checking for no name mangling on BLAS/LAPACK')
-      save_f2c = self.f2c
-      self.f2c = 1 # so that mangleBlas will do its job
       self.mangling = 'unchanged'
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
       if foundBlas:
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
-      if foundBlas and foundLapack:
-        self.logPrint('Found no name mangling on BLAS/LAPACK')
-      else:
-        self.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
-        self.mangling = 'underscore'
-        foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
-        if foundBlas:
-          foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
-        if foundBlas and foundLapack:
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'getrs')
+        if foundLapack:
+          self.logPrint('Found no name mangling on BLAS/LAPACK')
+          return (foundBlas, foundLapack)
+    if not self.compilers.fortranMangling == 'underscore':
+      save_f2c = self.f2c
+      self.f2c = 1 # so that mangleBlas will do its job
+      self.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
+      self.mangling = 'underscore'
+      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
+      if foundBlas:
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'getrs')
+        if foundLapack:
           self.logPrint('Found underscore name mangling on BLAS/LAPACK')
-        else:
-          self.logPrint('Unknown name mangling in BLAS/LAPACK')
-          self.f2c = save_f2c
-          self.mangling = 'unknown'
+          return (foundBlas, foundLapack)
+      self.f2c = save_f2c
+    self.logPrint('Unknown name mangling in BLAS/LAPACK')
+    self.mangling = 'unknown'
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -210,6 +211,22 @@ class Configure(config.package.Package):
         raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+'; suggest --download-f2cblaslapack\n')
       else:
         raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
+
+    if self.argDB['with-64-bit-blas-indices']:
+      ILP64 = '_ilp64'
+      known = '64'
+    else:
+      ILP64 = '_lp64'
+      known = '32'
+    if self.openmp.found:
+      ITHREAD='intel_thread'
+      ITHREADGNU='gnu_thread'
+      ompthread = 'yes'
+    else:
+      ITHREAD='sequential'
+      ITHREADGNU='sequential'
+      ompthread = 'no'
+
     # Try specified installation root
     if 'with-blaslapack-dir' in self.argDB:
       dir = self.argDB['with-blaslapack-dir']
@@ -219,7 +236,6 @@ class Configure(config.package.Package):
         raise RuntimeError('Bad option: '+'--with-blaslapack-dir='+self.argDB['with-blaslapack-dir']+'\n'+
                            fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
                            'Do not install software in this location nor use software in this directory.')
-
       if self.defaultPrecision == '__float128':
         yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'), '32','no')
         raise RuntimeError('__float128 precision requires f2c libraries; they are not available in '+dir+'; suggest --download-f2cblaslapack\n')
@@ -228,22 +244,6 @@ class Configure(config.package.Package):
         dir = os.path.abspath(dir)
       self.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
       self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
-
-      if self.argDB['with-64-bit-blas-indices']:
-        ILP64 = '_ilp64'
-        known = '64'
-      else:
-        ILP64 = '_lp64'
-        known = '32'
-
-      if self.openmp.found:
-        ITHREAD='intel_thread'
-        ITHREADGNU='gnu_thread'
-        ompthread = 'yes'
-      else:
-        ITHREAD='sequential'
-        ITHREADGNU='sequential'
-        ompthread = 'no'
 
       # Look for Multi-Threaded MKL for MKL_C/Pardiso
       useCPardiso=0
@@ -369,6 +369,24 @@ class Configure(config.package.Package):
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-f2cblaslapack\n')
+    # Try compiler defaults
+    yield ('Default compiler libraries', '', '','unknown','unknow')
+    yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknow')
+    # Intel on Mac
+    yield ('User specified MKL Mac-64', None, [os.path.join('/opt','intel','mkl','lib','libmkl_intel'+ILP64+'.a'),'mkl_'+ITHREAD,'mkl_core','pthread'],known,ompthread)
+    # Try Microsoft Windows location
+    for MKL_Version in [os.path.join('MKL','9.0'),os.path.join('MKL','8.1.1'),os.path.join('MKL','8.1'),os.path.join('MKL','8.0.1'),os.path.join('MKL','8.0'),'MKL72','MKL70','MKL61','MKL']:
+      mklpath = os.path.join('/cygdrive', 'c', 'Program Files', 'Intel', MKL_Version)
+      if not os.path.exists(mklpath):
+        self.logPrint('MKL Path not found.. skipping: '+mklpath)
+      else:
+        mkldir = os.path.join(mklpath, 'ia32', 'lib')
+        yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'),'32','no')
+        yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(mkldir,'mkl_s_dll.lib'),'32','no')
+        mkldir = os.path.join(mklpath, 'em64t', 'lib')
+        yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
+        mkldir = os.path.join(mklpath, 'ia64', 'lib')
+        yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
     # IRIX locations
     yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a','32','unknow')
     yield ('Another IRIX Mathematics library', None, 'libscs.a','32','unknow')
@@ -376,9 +394,6 @@ class Configure(config.package.Package):
     # IBM ESSL locations
     yield ('IBM ESSL Mathematics library', None, 'libessl.a','32','unknow')
     yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a','32','unknow')
-    # Try compiler defaults
-    yield ('Default compiler libraries', '', '','unknown','unknow')
-    yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknow')
     yield ('HPUX', 'libveclib.a', 'liblapack.a','unknown','unknow')
     # /usr/local/lib
     dir = os.path.join('/usr','local','lib')
@@ -391,7 +406,7 @@ class Configure(config.package.Package):
     dir = os.path.join('/Library', 'Frameworks', 'Intel_MKL.framework','Libraries','32')
     yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'],'32','no')
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'),'32','unknown')
-    # Sun locations
+    # Sun locations; this don't currently work
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'],'32','no')
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'],'32','no')
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libfui.a','libfsu.a','libsunmath.a'],'32','no')
@@ -430,7 +445,7 @@ class Configure(config.package.Package):
     self.functionalBlasLapack = []
     self.foundBlas   = 0
     self.foundLapack = 0
-    for (name, blasLibrary, lapackLibrary,self.known64,self.usesopenmp) in self.generateGuesses():
+    for (name, blasLibrary, lapackLibrary, self.known64, self.usesopenmp) in self.generateGuesses():
       self.log.write('================================================================================\n')
       self.log.write('Checking for a functional BLAS and LAPACK in '+name+'\n')
       (foundBlas, foundLapack) = self.executeTest(self.checkLib, [lapackLibrary, blasLibrary])
@@ -484,10 +499,12 @@ class Configure(config.package.Package):
         self.addDefine('BLASLAPACK_SUFFIX', self.suffix)
 
     self.found = 1
-    self.executeTest(self.checkESSL)
-    self.executeTest(self.checkPESSL)
-    self.executeTest(self.checkMKL)
-    self.executeTest(self.checkMissing)
+    if not self.f2cblaslapack.found and not self.fblaslapack.found:
+      self.executeTest(self.checkMKL)
+      if not self.mkl:
+        self.executeTest(self.checkESSL)
+        self.executeTest(self.checkPESSL)
+        self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
     if self.argDB['with-shared-libraries']:
       symbol = 'dgeev'+self.suffix
@@ -502,14 +519,6 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MKL_INTEL_ILP64',1)
     if self.argDB['with-64-bit-blas-indices'] and not self.has64bitindices:
       raise RuntimeError('You requested 64 bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
-
-  def checkESSL(self):
-    '''Check for the IBM ESSL library'''
-    self.libraries.saveLog()
-    if self.libraries.check(self.dlib, 'iessl'):
-      self.addDefine('HAVE_ESSL',1)
-    self.logWrite(self.libraries.restoreLog())
-    return
 
   def checkMKL(self):
     '''Check for Intel MKL library'''
@@ -545,6 +554,15 @@ class Configure(config.package.Package):
       self.versioninclude      = 'mkl_version.h'
       self.versiontitle        = 'Intel MKL Version'
       self.checkVersion()
+    self.logWrite(self.libraries.restoreLog())
+    return
+
+
+  def checkESSL(self):
+    '''Check for the IBM ESSL library'''
+    self.libraries.saveLog()
+    if self.libraries.check(self.dlib, 'iessl'):
+      self.addDefine('HAVE_ESSL',1)
     self.logWrite(self.libraries.restoreLog())
     return
 
@@ -592,7 +610,7 @@ class Configure(config.package.Package):
     self.logWrite(self.libraries.restoreLog())
 
   def checklsame(self):
-    ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correction binding. Lion and xcode 4.2 do not'''
+    ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correct binding.'''
     routine = 'lsame';
     if self.f2c:
       if self.mangling == 'underscore':

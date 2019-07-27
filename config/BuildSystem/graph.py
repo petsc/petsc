@@ -95,7 +95,7 @@ class DirectedGraph(object):
     print('I am a DirectedGraph with '+str(len(self.vertices))+' vertices')
     for vertex in DirectedGraph.breadthFirstSearch(self):
       self.printIndent(vertex.__level)
-      print('('+str(self.vertices.index(vertex))+') '+str(vertex)+' in: '+str(map(self.vertices.index, self.inEdges[vertex]))+' out: '+str(map(self.vertices.index, self.outEdges[vertex])))
+      print('('+str(self.vertices.index(vertex))+') '+str(vertex.__class__.__module__)+' in: '+str(map(self.vertices.index, self.inEdges[vertex]))+' out: '+str(map(self.vertices.index, self.outEdges[vertex])))
     return
 
   def appendGraph(self, graph):

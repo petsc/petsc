@@ -70,7 +70,6 @@ class Configure(config.base.Configure):
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
-    self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
     self.headers       = framework.require('config.headers',            self)
     self.functions     = framework.require('config.functions',          self)
@@ -78,8 +77,9 @@ class Configure(config.base.Configure):
     self.atomics       = framework.require('config.atomics',            self)
     self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
+    self.mpi           = framework.require('config.packages.MPI',       self)
+    self.fortran       = framework.require('config.compilersFortran',   self)
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
-    self.mpi           = framework.require('config.packages.MPI',self)
 
     for utility in sorted(os.listdir(os.path.join('config','PETSc','options'))):
       self.registerPythonFile(utility,'PETSc.options')
@@ -105,6 +105,7 @@ class Configure(config.base.Configure):
 
     self.programs.headerPrefix   = self.headerPrefix
     self.compilers.headerPrefix  = self.headerPrefix
+    self.fortran.headerPrefix    = self.headerPrefix
     self.types.headerPrefix      = self.headerPrefix
     self.headers.headerPrefix    = self.headerPrefix
     self.functions.headerPrefix  = self.headerPrefix
@@ -393,7 +394,7 @@ prepend-path PATH "%s"
     self.addMakeMacro('PETSC_CC_INCLUDES_INSTALL', self.PETSC_CC_INCLUDES_INSTALL)
     if hasattr(self.compilers, 'FC'):
       def modinc(includes):
-        return includes if self.compilers.fortranIsF90 else []
+        return includes if self.fortran.fortranIsF90 else []
       self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(allincludes,modinc(allincludes)))
       self.addMakeMacro('PETSC_FC_INCLUDES_INSTALL',self.headers.toStringNoDupes(allincludes_install,modinc(allincludes_install)))
 

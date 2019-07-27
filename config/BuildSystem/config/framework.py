@@ -45,6 +45,7 @@ import script
 import config.base
 import time
 import tempfile
+import graph
 
 import os
 import re
@@ -64,13 +65,13 @@ except ImportError:
 class Framework(config.base.Configure, script.LanguageProcessor):
   '''This needs to manage configure information in itself just as Builder manages it for configurations'''
   def __init__(self, clArgs = None, argDB = None, loadArgDB = 1, tmpDir = None):
-    import graph
     import nargs
 
     if argDB is None:
       import RDict
 
       argDB = RDict.RDict(load = loadArgDB)
+
     # Storage for intermediate test results
     self.tmpDir          = tmpDir
     script.LanguageProcessor.__init__(self, clArgs, argDB)
@@ -260,7 +261,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def printSummary(self):
-    # __str__(), __str1__(), __str2__() are used to crate 3 different groups of summary outputs.
+    # __str__(), __str1__(), __str2__() are used to create 3 different groups of summary outputs.
     for child in self.childGraph.vertices:
       self.logWrite(str(child), debugSection = 'screen', forceScroll = 1)
     for child in self.childGraph.vertices:
@@ -1012,8 +1013,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       sys.exit(0)
     return
 
+  #
+  #  There is a great deal of more refactorization before this code can be made parallel.
+  #  For example all the information about the current compile (including language) is contained
+  #  in self, thus each compile/link needs to be done within a lock (which would still require writing
+  #  careful locking code) and this ruins the whole purpose of threads with Python since
+  #  the only allow non-blocking IO operations etc, they don't provide real parallelism
+  #  Also changing values in LIBS is currently buggy for threads as are possible other variables
   def parallelQueueEvaluation(self, depGraph, numThreads = 1):
-    import graph
     import Queue
     from threading import Thread
 
@@ -1031,14 +1038,18 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       emsg = ''
       while 1:
         child = q.get() # Might have to indicate blocking
+        #self.logPrint('PROCESS %s' % child.__class__.__module__)
         ret = 1
         child.saveLog()
+        tbo = None
         try:
           if not hasattr(child, '_configured'):
             child.configure()
           else:
             child.no_configure()
           ret = 0
+        # the handling of logs, error messages, and tracebacks from errors in children
+        # does not work correctly.
         except (RuntimeError, config.base.ConfigureSetupError) as e:
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
@@ -1048,6 +1059,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +emsg+'*******************************************************************************\n'
           se = ''
         except (TypeError, ValueError) as e:
+          tbo = sys.exc_info()[2]
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -1089,11 +1101,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           try:
             import sys,traceback,io
             tb = io.StringIO()
-            traceback.print_tb(sys.exc_info()[2], file = tb)
+            if not tbo: tbo = sys.exc_info()[2]
+            traceback.print_tb(tbo, file = tb)
             out += tb.getvalue()
             tb.close()
           except: pass
         # Udpate queue
+        #self.logPrint('PUSH  %s to DONE ' % child.__class__.__module__)
         done.put((ret, out, emsg, child))
         q.task_done()
         if ret: break
@@ -1132,26 +1146,36 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def serialEvaluation(self, depGraph):
     import graph
 
-    for child in graph.DirectedGraph.topologicalSort(depGraph):
+    totaltime = 0
+    starttime = time.time()
+    depGraph = graph.DirectedGraph.topologicalSort(depGraph)
+    for child in depGraph:
+      start = time.time()
       if not hasattr(child, '_configured'):
         child.configure()
       else:
         child.no_configure()
       child._configured = 1
+      ctime = time.time()-start
+      totaltime = totaltime + ctime
+      self.logPrint('child %s %f' % (child.__class__.__module__,ctime))
+    self.logPrint('child sum %f' % (totaltime))
+    self.logPrint('child total %f' % (time.time()-starttime))
+    # use grep child configure.log | sort -k3 -g
     return
 
   def processChildren(self):
     import script
 
     useParallel = False
-    if script.useThreads:
+    if script.useParallel:
       try:
         import Queue
         from threading import Thread
         if hasattr(Queue.Queue(), 'join'): useParallel = True
       except: pass
     if useParallel:
-      self.parallelQueueEvaluation(self.childGraph, script.useThreads)
+      self.parallelQueueEvaluation(self.childGraph, script.useParallel)
     else:
       self.serialEvaluation(self.childGraph)
     return

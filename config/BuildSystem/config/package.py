@@ -122,6 +122,7 @@ class Package(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers    = framework.require('config.setCompilers', self)
     self.compilers       = framework.require('config.compilers', self)
+    self.fortran         = framework.require('config.compilersFortran', self)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.types           = framework.require('config.types', self)
     self.headers         = framework.require('config.headers', self)
@@ -1052,7 +1053,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       mpicxx = os.path.join(installDir,"bin",mpicxxName)
       if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
     if hasattr(self.compilers, 'FC'):
-      if self.compilers.fortranIsF90:
+      if self.fortran.fortranIsF90:
         mpifc = os.path.join(installDir,"bin",mpif90Name)
       else:
         mpifc = os.path.join(installDir,"bin",mpif77Name)
@@ -1439,7 +1440,7 @@ class GNUPackage(Package):
     if hasattr(self.compilers, 'FC'):
       self.pushLanguage('FC')
       fc = self.getCompiler()
-      if self.compilers.fortranIsF90:
+      if self.fortran.fortranIsF90:
         try:
           output, error, status = self.executeShellCommand(fc+' -v', log = self.log)
           output += error

@@ -21,6 +21,7 @@
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
 #endif
 
+!  This is currently not used in PETSc
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
       integer function PetscCommandArgumentCount()
       implicit none
