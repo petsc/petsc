@@ -55,10 +55,16 @@ class Configure(config.package.CMakePackage):
     args.append('-DTPL_ENABLE_MPI=ON')
     args.append('-DTPL_ENABLE_Pamgen=OFF')
     args.append('-DTPL_ENABLE_CGNS:BOOL=OFF')
-    args.append('-DNetCDF_DIR:PATH='+self.netcdf.directory)
+    if not self.netcdf.directory:
+      raise RuntimeError('NetCDF dir is not known! ExodusII requires explicit path to NetCDF. Suggest using --with-netcdf-dir or --download-netcdf')
+    else:
+      args.append('-DNetCDF_DIR:PATH='+self.netcdf.directory)
     args.append('-DHDF5_DIR:PATH='+self.hdf5.directory)
-    args.append('-DPnetcdf_LIBRARY_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'lib'))
-    args.append('-DPnetcdf_INCLUDE_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'include'))
+    if not self.pnetcdf.directory:
+      raise RuntimeError('PNetCDF dir is not known! ExodusII requires explicit path to PNetCDF. Suggest using --with-pnetcdf-dir or --download-pnetcdf')
+    else:
+      args.append('-DPnetcdf_LIBRARY_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'lib'))
+      args.append('-DPnetcdf_INCLUDE_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'include'))
     if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     if self.compilerFlags.debugging:
