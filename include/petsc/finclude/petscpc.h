@@ -23,11 +23,19 @@
 #define PCFieldSplitSchurFactType PetscEnum
 #define CoarseProblemType PetscEnum
 #define PCGAMGType character*(80)
+#define PCGAMGClassicalType character*(80)
 !
 ! GAMG types
 !
 #define PCGAMGAGG 'agg'
 #define PCGAMGGEO  'geo'
+#define PCGAMGCLASSICAL 'classical'
+!
+! GAMG classical types
+!
+#define PCGAMGCLASSICALDIRECT   'direct'
+#define PCGAMGCLASSICALSTANDARD 'standard'
+
 !
 !  Various preconditioners
 !

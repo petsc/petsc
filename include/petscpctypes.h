@@ -222,6 +222,10 @@ typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PAR
 
     Level: intermediate
 
+$   PCGAMGAGG - (the default) smoothed aggregation algorithm, robust, very well tested
+$   PCGAMGGEO - geometric coarsening, uses mesh generator to produce coarser meshes, limited to triangles, not well tested
+$   PCGAMGCLASSICAL - classical algebraic multigrid preconditioner, incomplete, poorly tested
+
 .seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseInterpolation()
 E*/
 typedef const char *PCGAMGType;
