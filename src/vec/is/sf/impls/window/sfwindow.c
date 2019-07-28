@@ -19,7 +19,7 @@ struct _n_PetscSFDataLink {
 struct _n_PetscSFWinLink {
   PetscBool      inuse;
   size_t         bytes;
-  void           *addr;
+  const void     *rkey,*lkey;
   MPI_Win        win;
   PetscBool      epoch;
   PetscSFWinLink next;
@@ -208,7 +208,7 @@ static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf,PetscSFWindowSy
 
 .seealso: PetscSFGetRanks(), PetscSFWindowGetDataTypes()
 @*/
-static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,PetscBool epoch,PetscMPIInt fenceassert,PetscMPIInt postassert,PetscMPIInt startassert,MPI_Win *win)
+static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey,PetscBool epoch,PetscMPIInt fenceassert,PetscMPIInt postassert,PetscMPIInt startassert,MPI_Win *win)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
@@ -220,12 +220,20 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
   ierr = MPI_Type_get_true_extent(unit,&lb_true,&bytes_true);CHKERRQ(ierr);
   if (lb != 0 || lb_true != 0) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
   if (bytes != bytes_true) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for unit type with modified extent, write petsc-maint@mcs.anl.gov if you want this feature");
+
+  if (rkey || lkey) {
+    for (link=w->wins; link; link=link->next) {
+      if (rkey == link->rkey && lkey == link->lkey) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for overlapped PetscSF communications with the same SF, rootdata and leafdatadata. You can undo the overlap to avoid the error.");
+    }
+  }
+
   ierr = PetscNew(&link);CHKERRQ(ierr);
 
   link->bytes = bytes;
-  link->addr  = array;
+  link->rkey  = rkey;
+  link->lkey  = lkey;
 
-  ierr = MPI_Win_create(array,(MPI_Aint)bytes*sf->nroots,(PetscMPIInt)bytes,MPI_INFO_NULL,PetscObjectComm((PetscObject)sf),&link->win);CHKERRQ(ierr);
+  ierr = MPI_Win_create((void *)rkey,(MPI_Aint)bytes*sf->nroots,(PetscMPIInt)bytes,MPI_INFO_NULL,PetscObjectComm((PetscObject)sf),&link->win);CHKERRQ(ierr);
 
   link->epoch = epoch;
   link->next  = w->wins;
@@ -269,7 +277,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
 
 .seealso: PetscSFGetWindow(), PetscSFRestoreWindow()
 @*/
-static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void *array,MPI_Win *win)
+static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey,MPI_Win *win)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscSFWinLink link;
@@ -277,7 +285,7 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void 
   PetscFunctionBegin;
   *win = MPI_WIN_NULL;
   for (link=w->wins; link; link=link->next) {
-    if (array == link->addr) {
+    if (rkey == link->rkey && lkey == link->lkey) {
       *win = link->win;
       PetscFunctionReturn(0);
     }
@@ -302,7 +310,7 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void 
 
 .seealso: PetscSFFindWindow()
 @*/
-static PetscErrorCode PetscSFRestoreWindow(PetscSF sf,MPI_Datatype unit,const void *array,PetscBool epoch,PetscMPIInt fenceassert,MPI_Win *win)
+static PetscErrorCode PetscSFRestoreWindow(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey,PetscBool epoch,PetscMPIInt fenceassert,MPI_Win *win)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
@@ -312,7 +320,7 @@ static PetscErrorCode PetscSFRestoreWindow(PetscSF sf,MPI_Datatype unit,const vo
   for (p=&w->wins; *p; p=&(*p)->next) {
     link = *p;
     if (*win == link->win) {
-      if (array != link->addr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matched window, but not array");
+      if (rkey != link->rkey || lkey != link->lkey) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matched window, but not keys");
       if (epoch != link->epoch) {
         if (epoch) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"No epoch to end");
         else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Restoring window without ending epoch");
@@ -396,7 +404,7 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
   w->link = NULL;
   for (wlink=w->wins; wlink; wlink=wnext) {
     wnext = wlink->next;
-    if (wlink->inuse) SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
+    if (wlink->inuse) SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->rkey);
     ierr = MPI_Win_free(&wlink->win);CHKERRQ(ierr);
     ierr = PetscFree(wlink);CHKERRQ(ierr);
   }
@@ -458,7 +466,7 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf,MPI_Datatype unit,cons
   PetscFunctionBegin;
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscSFGetWindow(sf,unit,(void*)rootdata,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(sf,unit,(void*)rootdata,leafdata,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
     ierr = MPI_Get(leafdata,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
@@ -473,8 +481,8 @@ PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf,MPI_Datatype unit,const void *r
   MPI_Win        win;
 
   PetscFunctionBegin;
-  ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
-  ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(sf,unit,rootdata,leafdata,&win);CHKERRQ(ierr);
+  ierr = PetscSFRestoreWindow(sf,unit,rootdata,leafdata,PETSC_TRUE,MPI_MODE_NOSTORE|MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -511,7 +519,7 @@ PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf,MPI_Datatype unit,const void
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFWindowOpTranslate(&op);CHKERRQ(ierr);
-  ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(sf,unit,rootdata,leafdata,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
     ierr = MPI_Accumulate((void*)leafdata,1,mine[i],ranks[i],0,1,remote[i],op,win);CHKERRQ(ierr);
@@ -528,9 +536,9 @@ static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf,MPI_Datatype unit,const
 
   PetscFunctionBegin;
   if (!w->wins) PetscFunctionReturn(0);
-  ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(sf,unit,rootdata,leafdata,&win);CHKERRQ(ierr);
   ierr = MPI_Win_fence(MPI_MODE_NOSUCCEED,win);CHKERRQ(ierr);
-  ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
+  ierr = PetscSFRestoreWindow(sf,unit,rootdata,leafdata,PETSC_TRUE,MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
@@ -545,7 +553,7 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFWindowOpTranslate(&op);CHKERRQ(ierr);
-  ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFGetWindow(sf,unit,rootdata,leafdata,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<sf->nranks; i++) {
     ierr = MPI_Win_lock(MPI_LOCK_EXCLUSIVE,sf->ranks[i],0,win);CHKERRQ(ierr);
     ierr = MPI_Get(leafupdate,1,mine[i],ranks[i],0,1,remote[i],win);CHKERRQ(ierr);
@@ -561,9 +569,9 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,v
   MPI_Win        win;
 
   PetscFunctionBegin;
-  ierr = PetscSFFindWindow(sf,unit,rootdata,&win);CHKERRQ(ierr);
+  ierr = PetscSFFindWindow(sf,unit,rootdata,leafdata,&win);CHKERRQ(ierr);
   /* Nothing to do currently because MPI_LOCK_EXCLUSIVE is used in PetscSFFetchAndOpBegin(), rendering this implementation synchronous. */
-  ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_FALSE,0,&win);CHKERRQ(ierr);
+  ierr = PetscSFRestoreWindow(sf,unit,rootdata,leafdata,PETSC_FALSE,0,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

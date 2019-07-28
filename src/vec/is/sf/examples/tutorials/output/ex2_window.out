@@ -23,3 +23,5 @@ Process [0]
 Process [1]
 11.
 10.
+On rank 1, aout=1, bout=10
+On rank 0, a   =2, b   =20
