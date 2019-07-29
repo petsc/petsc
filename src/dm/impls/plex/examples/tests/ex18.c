@@ -205,6 +205,7 @@ typedef struct {
   PetscInt   ncoords;
   PetscInt   pointsToExpand[128];
   PetscInt   nPointsToExpand;
+  PetscBool  testExpandPointsEmpty;
   char       filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
 } AppCtx;
 
@@ -224,6 +225,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate  = NONE;
   options->useGenerator = PETSC_FALSE;
   options->testOrientIF = PETSC_FALSE;
+  options->testExpandPointsEmpty = PETSC_FALSE;
   options->ornt[0]      = 0;
   options->ornt[1]      = 0;
   options->faces[0]     = 2;
@@ -251,6 +253,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-view_vertices_from_coords_tol", "Tolerance for -view_vertices_from_coords", "ex18.c", options->coordsTol, &options->coordsTol, NULL);CHKERRQ(ierr);
   options->nPointsToExpand = 128;
   ierr = PetscOptionsIntArray("-test_expand_points", "Expand given array of DAG point using DMPlexGetConeRecursive() and print results", "ex18.c", options->pointsToExpand, &options->nPointsToExpand, NULL);CHKERRQ(ierr);
+  if (options->nPointsToExpand) {
+    ierr = PetscOptionsBool("-test_expand_points_empty", "For -test_expand_points, rank 0 will have empty input array", "ex18.c", options->testExpandPointsEmpty, &options->testExpandPointsEmpty, NULL);CHKERRQ(ierr);
+  }
   if (options->testOrientIF) {
     PetscInt i;
     for (i=0; i<2; i++) {
@@ -763,7 +768,11 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, user->nPointsToExpand, user->pointsToExpand, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
+  if (user->testExpandPointsEmpty && !rank) {
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, user->nPointsToExpand, user->pointsToExpand, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
+  }
   ierr = DMPlexGetConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "[%d] ==========================\n",rank);CHKERRQ(ierr);
@@ -846,6 +855,9 @@ int main(int argc, char **argv)
     test:
       suffix: 2b
       args: -test_expand_points 0,1,2,5,6
+    test:
+      suffix: 2c
+      args: -test_expand_points 0,1,2,5,6 -test_expand_points_empty
 
   testset:
     # the same as 1% for 3D
