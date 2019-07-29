@@ -112,8 +112,8 @@ class Package(config.base.Configure):
         if self.version: output += '  Version:  '+self.version+'\n'
       if self.include: output += '  Includes: '+self.headers.toStringNoDupes(self.include)+'\n'
       if self.lib:     output += '  Library:  '+self.libraries.toStringNoDupes(self.lib)+'\n'
-      if self.executablename: output += ' '+getattr(self,self.executablename)+'\n'
-      if self.usesopenmp == 'yes': output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> or -omp_num_threads <p> To control the number of threads\n'
+      if self.executablename: output += '  '+getattr(self,self.executablename)+'\n'
+      if self.usesopenmp == 'yes': output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> or -omp_num_threads <p> to control the number of threads\n'
       if self.usesopenmp == 'unknown': output += '  Unkown if this uses OpenMP (try export OMP_NUM_THREADS=<1-4> yourprogram -log_view) \n'
     return output
 
@@ -324,7 +324,7 @@ class Package(config.base.Configure):
     if not self.packageDir: self.packageDir = self.downLoad()
     self.updateGitDir()
     self.updatehgDir()
-    if self.publicInstall:
+    if self.publicInstall or 'package-prefix-hash' in self.argDB:
       self.installDir = self.defaultInstallDir
       self.installSudo= self.installDirProvider.installSudo
     else:
@@ -506,6 +506,9 @@ class Package(config.base.Configure):
     1) load the appropriate module on your system and use --with-'+self.name+' or \n\
     2) locate its installation on your machine or install it yourself and use --with-'+self.name+'-dir=path\n')
 
+    if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse': # package already built in prefix hash location so reuse it
+      self.installDir = self.defaultInstallDir
+      return self.defaultInstallDir
     if self.argDB['download-'+self.package]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()

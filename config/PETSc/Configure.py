@@ -881,6 +881,17 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     return
 
   def configure(self):
+    if 'package-prefix-hash' in self.argDB:
+      # turn off prefix if it was only used to for installing external packages.
+      self.framework.argDB['prefix'] = ''
+      self.dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
+      self.installdir.dir = self.dir
+      self.installdir.petscDir = self.petscdir.dir
+      self.petscDir = self.petscdir.dir
+      self.petscArch = self.arch.arch
+      self.addMakeMacro('PREFIXDIR',self.dir)
+      self.confDir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
+
     if not os.path.samefile(self.petscdir.dir, os.getcwd()):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.petscdir.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
     if self.framework.argDB['prefix'] and os.path.isdir(self.framework.argDB['prefix']) and os.path.samefile(self.framework.argDB['prefix'],self.petscdir.dir):

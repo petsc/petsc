@@ -31,11 +31,15 @@ class Configure(config.package.GNUPackage):
         if self.argDB['with-shared-libraries']:
           raise RuntimeError('Sorry, --download-mpich does not work with shared-libraries. Suggest installing OpenMPI via cygwin or use --with-shared-libraries=0')
       else:
-        raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
+        raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest using MS-MPI or Intel-MPI (do not use MPICH2')
+    if self.argDB['download-'+self.downloadname.lower()] and  'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
+      self.logWrite('Reusing package prefix install of '+self.defaultInstallDir+' for MPICH')
+      self.installDir = self.defaultInstallDir
+      self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
+      return self.installDir
     if self.argDB['download-'+self.downloadname.lower()]:
       return self.getInstallDir()
     return ''
-
 
   def formGNUConfigureArgs(self):
     '''MPICH has many specific extra configure arguments'''
@@ -58,6 +62,8 @@ class Configure(config.package.GNUPackage):
 
   def Install(self):
     '''After downloading and installing MPICH we need to reset the compilers to use those defined by the MPICH install'''
+    if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
+      return self.defaultInstallDir
     installDir = config.package.GNUPackage.Install(self)
     self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
     return installDir
