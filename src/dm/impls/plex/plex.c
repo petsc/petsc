@@ -1798,7 +1798,6 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *exp
   if (sections) PetscValidPointer(sections, 5);
   ierr = ISGetLocalSize(points, &n);CHKERRQ(ierr);
   ierr = ISGetIndices(points, &arr0);CHKERRQ(ierr);
-  if (!n) PetscFunctionReturn(0);
   ierr = DMPlexGetDepth(dm, &depth_);CHKERRQ(ierr);
   ierr = PetscCalloc1(depth_, &expandedPoints_);CHKERRQ(ierr);
   ierr = PetscCalloc1(depth_, &sections_);CHKERRQ(ierr);
