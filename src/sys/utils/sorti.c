@@ -169,7 +169,7 @@
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode  PetscSortInt(PetscInt n,PetscInt *X)
+PetscErrorCode  PetscSortInt(PetscInt n,PetscInt X[])
 {
   PetscErrorCode ierr;
   PetscInt       pivot,t1;
@@ -319,7 +319,7 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt *X,PetscInt *Y)
+PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt X[],PetscInt Y[])
 {
   PetscErrorCode ierr;
   PetscInt       pivot,t1,t2;
@@ -345,7 +345,7 @@ PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt *X,PetscInt *Y)
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *X,PetscInt *Y,PetscInt *Z)
+PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt X[],PetscInt Y[],PetscInt Z[])
 {
   PetscErrorCode ierr;
   PetscInt       pivot,t1,t2,t3;
@@ -368,7 +368,7 @@ PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *X,PetscInt *Y,Pet
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt *X)
+PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt X[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    pivot,t1;
@@ -425,7 +425,7 @@ PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt X[])
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt *X,PetscMPIInt *Y)
+PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt X[],PetscMPIInt Y[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    pivot,t1,t2;
@@ -452,7 +452,7 @@ PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt *X,PetscMPIIn
 
 .seealso: PetscSortMPIIntWithArray()
 @*/
-PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n,PetscMPIInt *X,PetscInt *Y)
+PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n,PetscMPIInt X[],PetscInt Y[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    pivot,t1;
@@ -478,7 +478,7 @@ PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n,PetscMPIInt *X,PetscInt
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt *X,PetscScalar *Y)
+PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt X[],PetscScalar Y[])
 {
   PetscErrorCode ierr;
   PetscInt       pivot,t1;
@@ -507,7 +507,7 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt *X,PetscScalar *
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt *X,void *Y,size_t size,void *t2)
+PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt X[],void *Y,size_t size,void *t2)
 {
   PetscErrorCode ierr;
   char           *YY = (char*)Y;
