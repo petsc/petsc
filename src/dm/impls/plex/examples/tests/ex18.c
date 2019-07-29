@@ -812,24 +812,14 @@ int main(int argc, char **argv)
       suffix: 1_tri_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 1_tri_dist1
-      args: -distribute 1 -interpolate {{serial}separate output}
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 1_tri_dist1_ppu
-      args: -distribute 1 -interpolate {{none parallel}separate output}
+      args: -distribute 1 -interpolate {{none serial parallel}separate output}
     test:
       suffix: 1_quad_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 1_quad_dist1
-      args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 1_quad_dist1_ppu
-      args: -cell_simplex 0 -distribute 1 -interpolate {{none parallel}separate output}
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
     test:
       suffix: 1_1d_dist1
       args: -dim 1 -distribute 1
@@ -855,24 +845,14 @@ int main(int argc, char **argv)
       suffix: 4_tet_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 4_tet_dist1
-      args: -distribute 1 -interpolate {{serial}separate output}
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 4_tet_dist1_ppu
-      args: -distribute 1 -interpolate {{none parallel}separate output}
+      args: -distribute 1 -interpolate {{none serial parallel}separate output}
     test:
       suffix: 4_hex_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 4_hex_dist1
-      args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 4_hex_dist1_ppu
-      args: -cell_simplex 0 -distribute 1 -interpolate {{none parallel}separate output}
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
 
   test:
     # the same as 4_tet_dist0 but test different initial orientations
@@ -923,18 +903,10 @@ int main(int argc, char **argv)
       args: -interpolate {{none serial parallel}}
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 7_hdf5
       requires: hdf5 !complex
-      args: -interpolate serial
+      args: -interpolate {{none serial parallel}}
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 7_hdf5_ppu
-      requires: hdf5 !complex
-      args: -interpolate {{none parallel}}
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-
 
   test:
     suffix: 7_hdf5_hierarch
