@@ -159,6 +159,8 @@ typedef struct {
   PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
   PetscInt             hybridPointMax[8]; /* Allow segregation of some points, each dimension has a divider (used in VTK output and refinement) */
   PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
+  DMPlexInterpolatedFlag interpolated;
+  DMPlexInterpolatedFlag interpolatedCollective;
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
