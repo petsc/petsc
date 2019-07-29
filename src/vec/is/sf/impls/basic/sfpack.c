@@ -31,10 +31,10 @@
 
    Arguments of the Pack routine:
    +n         Number of entries to pack. Each entry is of type 'unit'. Here the unit is the arg used in calls like PetscSFBcastBegin(sf,unit,..).
-              If idx in not NULL, then n also indicates the number of indices in idx[]
+              If idx is not NULL, then n also indicates the number of indices in idx[]
    .bs        Number of basic types in an entry. Ex. if unit is MPI_2INT, then bs=2 and the basic type is int
    .idx       Indices of entries. NULL means contiguous indices [0,n)
-   .r         Do packing for the r-th target processor
+   .r         Do packing for the r-th destination process
    .opt       Pack optimization plans. NULL means no plan.
    .unpacked  Address of the unpacked data
    -packed    Address of the packed data
@@ -47,7 +47,7 @@
     PetscInt       i,j,k,l,step;                                                                           \
     PetscFunctionBegin;                                                                                    \
     if (!idx) {  /* idx[] is contiguous */                                                                 \
-      ierr = PetscArraycpy(p,u,bs*n);CHKERRQ(ierr);                                             \
+      ierr = PetscArraycpy(p,u,bs*n);CHKERRQ(ierr);                                                        \
     } else if (!opt || !opt->optimized[r]) { /* idx[] is not optimized*/                                   \
       for (i=0; i<n; i++)                                                                                  \
         for (j=0; j<bs; j+=BS)                                                                             \
@@ -58,7 +58,7 @@
         for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) {                                        \
           l    = opt->copy_length[i]*bs; /* length in types */                                             \
           u2   = u + opt->copy_start[i]*bs;                                                                \
-          ierr = PetscArraycpy(p,u2,l);CHKERRQ(ierr);                                           \
+          ierr = PetscArraycpy(p,u2,l);CHKERRQ(ierr);                                                      \
           p   += l;                                                                                        \
         }                                                                                                  \
       } else { /* idx[] is strided */                                                                      \
@@ -98,9 +98,9 @@
     if (!idx) {  /* idx[] is contiguous */                                                                 \
       FILTER(type *v);                                                                                     \
       FILTER(ierr = PetscMalloc1(bs*n,&v);CHKERRQ(ierr));                                                  \
-      FILTER(ierr = PetscArraycpy(v,u,bs*n);CHKERRQ(ierr));                                     \
-             ierr = PetscArraycpy(u,p,bs*n);CHKERRQ(ierr);                                      \
-      FILTER(ierr = PetscArraycpy(p,v,bs*n);CHKERRQ(ierr));                                     \
+      FILTER(ierr = PetscArraycpy(v,u,bs*n);CHKERRQ(ierr));                                                \
+             ierr = PetscArraycpy(u,p,bs*n);CHKERRQ(ierr);                                                 \
+      FILTER(ierr = PetscArraycpy(p,v,bs*n);CHKERRQ(ierr));                                                \
       FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                           \
     } else if (!opt || !opt->optimized[r]) { /* idx[] is not optimized*/                                   \
       for (i=0; i<n; i++) {                                                                                \
@@ -119,9 +119,9 @@
         for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
           l  = opt->copy_length[i]*bs; /* length in types */                                               \
           u2 = u + opt->copy_start[i]*bs;                                                                  \
-          FILTER(ierr = PetscArraycpy(v,u2,l);CHKERRQ(ierr));                                   \
-                 ierr = PetscArraycpy(u2,p,l);CHKERRQ(ierr);                                    \
-          FILTER(ierr = PetscArraycpy(p,v,l);CHKERRQ(ierr));                                    \
+          FILTER(ierr = PetscArraycpy(v,u2,l);CHKERRQ(ierr));                                              \
+                 ierr = PetscArraycpy(u2,p,l);CHKERRQ(ierr);                                               \
+          FILTER(ierr = PetscArraycpy(p,v,l);CHKERRQ(ierr));                                               \
           p += l;                                                                                          \
         }                                                                                                  \
         FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                         \
@@ -480,8 +480,8 @@ PetscErrorCode PetscSFPackSetupType(PetscSFPack link,MPI_Datatype unit)
   PetscInt       nPetscIntContig,nPetscRealContig;
   PetscMPIInt    ni,na,nd,combiner;
 #if defined(PETSC_HAVE_COMPLEX)
-  PetscBool isPetscComplex;
-  PetscInt nPetscComplexContig;
+  PetscBool      isPetscComplex;
+  PetscInt       nPetscComplexContig;
 #endif
 
   PetscFunctionBegin;
