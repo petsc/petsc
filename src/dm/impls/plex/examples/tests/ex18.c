@@ -203,6 +203,8 @@ typedef struct {
   PetscReal  coords[128];
   PetscReal  coordsTol;
   PetscInt   ncoords;
+  PetscInt   pointsToExpand[128];
+  PetscInt   nPointsToExpand;
   char       filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
 } AppCtx;
 
@@ -247,6 +249,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsRealArray("-view_vertices_from_coords", "Print DAG points corresponding to vertices with given coordinates", "ex18.c", options->coords, &options->ncoords, NULL);CHKERRQ(ierr);
   if (flg2 != options->testOrientIF) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
   ierr = PetscOptionsReal("-view_vertices_from_coords_tol", "Tolerance for -view_vertices_from_coords", "ex18.c", options->coordsTol, &options->coordsTol, NULL);CHKERRQ(ierr);
+  options->nPointsToExpand = 128;
+  ierr = PetscOptionsIntArray("-test_expand_points", "Expand given array of DAG point using DMPlexGetConeRecursive() and print results", "ex18.c", options->pointsToExpand, &options->nPointsToExpand, NULL);CHKERRQ(ierr);
   if (options->testOrientIF) {
     PetscInt i;
     for (i=0; i<2; i++) {
@@ -748,6 +752,32 @@ static PetscErrorCode ViewVerticesFromCoords(DM dm, PetscInt npoints, PetscReal 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
+{
+  IS                is;
+  PetscSection      *sects;
+  IS                *iss;
+  PetscInt          d,depth;
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, user->nPointsToExpand, user->pointsToExpand, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
+  ierr = DMPlexGetConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
+  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "[%d] ==========================\n",rank);CHKERRQ(ierr);
+  for (d=depth-1; d>=0; d--) {
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "depth %D ---------------\n",d);CHKERRQ(ierr);
+    ierr = PetscSectionView(sects[d], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = ISView(iss[d], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
+  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  ierr = DMPlexRestoreConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv)
 {
   DM             dm;
@@ -757,6 +787,9 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  if (user.nPointsToExpand) {
+    ierr = TestExpandPoints(dm, &user);CHKERRQ(ierr);
+  }
   if (user.ncoords) {
     ierr = ViewVerticesFromCoords(dm, user.ncoords/user.dim, user.coords, user.coordsTol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -801,15 +834,18 @@ int main(int argc, char **argv)
       suffix: 1_1d_dist1
       args: -dim 1 -distribute 1
 
-  test:
-    suffix: 2
+  testset:
     nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
-  test:
-    requires:
-    suffix: 2b
-    nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -testnum 1 -interpolate serial -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    test:
+      suffix: 2
+      args: -dm_view ascii::ascii_info_detail 
+    test:
+      suffix: 2a
+      args: -dm_plex_check_cones_conform_on_interfaces_verbose
+    test:
+      suffix: 2b
+      args: -test_expand_points 0,1,2,5,6
 
   testset:
     # the same as 1% for 3D

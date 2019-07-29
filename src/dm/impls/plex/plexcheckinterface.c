@@ -121,7 +121,7 @@ static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF 
     o = roffset[r];
     n = roffset[r+1] - o;
     ierr = ISCreateGeneral(PETSC_COMM_SELF, n, &rmine[o], PETSC_USE_POINTER, &pointsPerRank);CHKERRQ(ierr);
-    ierr = DMPlexGetConeRecursive(dm, pointsPerRank, &conesPerRank);CHKERRQ(ierr);
+    ierr = DMPlexGetConeRecursiveVertices(dm, pointsPerRank, &conesPerRank);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocalTuple(dm, conesPerRank, NULL, &(*coordinatesPerRank)[r]);CHKERRQ(ierr);
     ierr = ISDestroy(&pointsPerRank);CHKERRQ(ierr);
     ierr = ISDestroy(&conesPerRank);CHKERRQ(ierr);
@@ -191,6 +191,7 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   PetscInt            r;
   PetscMPIInt         commsize, myrank;
   PetscBool           same;
+  PetscBool           verbose=PETSC_FALSE;
   MPI_Comm            comm;
   PetscErrorCode      ierr;
 
@@ -227,6 +228,36 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
 
   /* Send the coordinates */
   ierr = ExchangeVecByRank_Private((PetscObject)sf, nranks, ranks, sntCoordinatesPerRank, niranks, iranks, &recCoordinatesPerRank);CHKERRQ(ierr);
+
+  /* verbose output */
+  ierr = PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_check_cones_conform_on_interfaces_verbose", &verbose, NULL);CHKERRQ(ierr);
+  if (verbose) {
+    PetscViewer v = PETSC_VIEWER_STDOUT_SELF;
+    ierr = PetscSequentialPhaseBegin(comm,1);CHKERRQ(ierr);
+    if (!myrank) {ierr = PetscViewerASCIIPrintf(v, "============\nDMPlexCheckConesConformOnInterfaces output\n============\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(v, "[%d] --------\n", myrank);CHKERRQ(ierr);
+    for (r=0; r<nranks; r++) {
+      ierr = PetscViewerASCIIPrintf(v, "  r=%D ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+      ierr = VecView(sntCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(v, "  ----------\n");CHKERRQ(ierr);
+    for (r=0; r<niranks; r++) {
+      ierr = PetscViewerASCIIPrintf(v, "  r=%D iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+      ierr = VecView(refCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(v, "  ----------\n");CHKERRQ(ierr);
+    for (r=0; r<niranks; r++) {
+      ierr = PetscViewerASCIIPrintf(v, "  r=%D iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+      ierr = VecView(recCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+    }
+    ierr = PetscSequentialPhaseEnd(comm,1);CHKERRQ(ierr);
+  }
 
   /* Compare recCoordinatesPerRank with refCoordinatesPerRank */
   for (r=0; r<niranks; r++) {
