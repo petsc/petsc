@@ -16,9 +16,7 @@ int main(int argc,char **argv)
   IS             perm;
   PetscReal      norm,tol=PETSC_SMALL;
   PetscMPIInt    size;
-  PetscScalar    *rhs_array,*solu_array;
   PetscRandom    rand;
-  PetscScalar    *array,rval;
   char           solver[64];
   PetscBool      inplace,full = PETSC_FALSE, ldl = PETSC_TRUE;
 
@@ -43,7 +41,6 @@ int main(int argc,char **argv)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatSetRandom(RHS,rand);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(RHS,&array);CHKERRQ(ierr);
 
   ierr = MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&SOLU);CHKERRQ(ierr);
 
