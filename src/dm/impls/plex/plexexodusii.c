@@ -409,7 +409,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
     PetscInt        numPoints, *points;
     PetscInt        elem_list_size = 0;
     PetscInt       *elem_list, *elem_ind, *side_list;
-    
+
     ierr = DMGetLabel(dm, "Face Sets", &fsLabel);CHKERRQ(ierr);
     /* Compute size of Node List and Element List */
     ierr = DMLabelGetValueIS(fsLabel, &fsIS);CHKERRQ(ierr);
@@ -434,14 +434,14 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
       if (fs<num_fs-1) {
         elem_ind[fs+1] = elem_ind[fs] + fsSize;
       }
-      
+
       for (i=0; i<fsSize; ++i) {
         /* Element List */
         points = NULL;
         ierr = DMPlexGetTransitiveClosure(dm, faces[i], PETSC_FALSE, &numPoints, &points);CHKERRQ(ierr);
         elem_list[elem_ind[fs] + i] = points[2] +1;
         ierr = DMPlexRestoreTransitiveClosure(dm, faces[i], PETSC_FALSE, &numPoints, &points);CHKERRQ(ierr);
-        
+
         /* Side List */
         points = NULL;
         ierr = DMPlexGetTransitiveClosure(dm, elem_list[elem_ind[fs] + i]-1, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
@@ -464,14 +464,14 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
         }
         side_list[elem_ind[fs] + i] = j;
         ierr = DMPlexRestoreTransitiveClosure(dm, elem_list[elem_ind[fs] + i]-1, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-        
+
       }
       ierr = ISRestoreIndices(stratumIS, &faces);CHKERRQ(ierr);
       ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(fsIS, &fsIdx);CHKERRQ(ierr);
     ierr = ISDestroy(&fsIS);CHKERRQ(ierr);
-    
+
     /* Put side sets */
     for (fs=0; fs<num_fs; ++fs) {
       PetscStackCallStandard(ex_put_set,(exoid, EX_SIDE_SET, fsIdx[fs], &elem_list[elem_ind[fs]], &side_list[elem_ind[fs]]));
@@ -908,7 +908,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   PetscErrorCode ierr;
   /* Read from ex_get_init() */
   char title[PETSC_MAX_PATH_LEN+1];
-  int  dim    = 0, numVertices = 0, numCells = 0;
+  int  dim    = 0, numVertices = 0, numCells = 0, numHybridCells = 0;
   int  num_cs = 0, num_vs = 0, num_fs = 0;
 #endif
 
@@ -933,29 +933,53 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   /* Read cell sets information */
   if (!rank) {
     PetscInt *cone;
-    int      c, cs, c_loc, v, v_loc;
+    int      c, cs, ncs, c_loc, v, v_loc;
     /* Read from ex_get_elem_blk_ids() */
-    int *cs_id;
+    int *cs_id, *cs_order;
     /* Read from ex_get_elem_block() */
     char buffer[PETSC_MAX_PATH_LEN+1];
-    int  num_cell_in_set, num_vertex_per_cell, num_attr;
+    int  num_cell_in_set, num_vertex_per_cell, num_hybrid, num_attr;
     /* Read from ex_get_elem_conn() */
     int *cs_connect;
 
     /* Get cell sets IDs */
-    ierr = PetscMalloc1(num_cs, &cs_id);CHKERRQ(ierr);
+    ierr = PetscMalloc2(num_cs, &cs_id, num_cs, &cs_order);CHKERRQ(ierr);
     PetscStackCallStandard(ex_get_ids,(exoid, EX_ELEM_BLOCK, cs_id));
     /* Read the cell set connectivity table and build mesh topology
        EXO standard requires that cells in cell sets be numbered sequentially and be pairwise disjoint. */
+    /* Check for a hybrid mesh */
+    for (cs = 0, num_hybrid = 0; cs < num_cs; ++cs) {
+      PetscStackCallStandard(ex_get_block,(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set,&num_vertex_per_cell, 0, 0, &num_attr));
+      switch (dim) {
+        case 3:
+        switch (num_vertex_per_cell) {
+          case 6:
+            cs_order[cs] = cs;
+            numHybridCells += num_cell_in_set;
+            ++num_hybrid;
+          break;
+          default:
+            for (c = cs; c > cs-num_hybrid; --c) cs_order[c] = cs_order[c-1];
+            cs_order[cs-num_hybrid] = cs;
+        }
+        break;
+      default:
+        for (c = cs; c > cs-num_hybrid; --c) cs_order[c] = cs_order[c-1];
+        cs_order[cs-num_hybrid] = cs;
+      }
+    }
+    if (num_hybrid) {ierr = DMPlexSetHybridBounds(*dm, numCells-numHybridCells, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);}
     /* First set sizes */
-    for (cs = 0, c = 0; cs < num_cs; cs++) {
+    for (ncs = 0, c = 0; ncs < num_cs; ++ncs) {
+      const PetscInt cs = cs_order[ncs];
       PetscStackCallStandard(ex_get_block,(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set,&num_vertex_per_cell, 0, 0, &num_attr));
       for (c_loc = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         ierr = DMPlexSetConeSize(*dm, c, num_vertex_per_cell);CHKERRQ(ierr);
       }
     }
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
-    for (cs = 0, c = 0; cs < num_cs; cs++) {
+    for (ncs = 0, c = 0; ncs < num_cs; ++ncs) {
+      const PetscInt cs = cs_order[ncs];
       PetscStackCallStandard(ex_get_block,(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, 0, 0, &num_attr));
       ierr = PetscMalloc2(num_vertex_per_cell*num_cell_in_set,&cs_connect,num_vertex_per_cell,&cone);CHKERRQ(ierr);
       PetscStackCallStandard(ex_get_conn,(exoid, EX_ELEM_BLOCK, cs_id[cs], cs_connect,NULL,NULL));
@@ -983,7 +1007,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       }
       ierr = PetscFree2(cs_connect,cone);CHKERRQ(ierr);
     }
-    ierr = PetscFree(cs_id);CHKERRQ(ierr);
+    ierr = PetscFree2(cs_id, cs_order);CHKERRQ(ierr);
   }
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
