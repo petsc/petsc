@@ -1336,7 +1336,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
 
   Collective on dm
