@@ -445,16 +445,18 @@ def getLogName(opts):
     return logName
   return None
 
-def run_DMDA(ex, name, opts, args, sizes, times, events, log=True):
+def run_DMDA(ex, name, opts, args, sizes, times, events, log=True, execute=True):
   for n in map(int, args.size):
     newopts = processOptions(opts, name, n)
-    ex.run(log=log, da_grid_x=n, da_grid_y=n, **newopts)
+    if execute:
+      ex.run(log=log, da_grid_x=n, da_grid_y=n, **newopts)
     processSummary(getLogName(newopts), args.stage, args.events, sizes[name], times[name], errors[name], events[name])
   return
 
-def run_DMPlex(ex, name, opts, args, sizes, times, events, log=True):
+def run_DMPlex(ex, name, opts, args, sizes, times, events, log=True, execute=True):
   newopts = processOptions(opts, name, args.refine)
-  ex.run(log=log, dim=args.dim, snes_convergence_estimate=None, convest_num_refine=args.refine, interpolate=1, **newopts)
+  if execute:
+    ex.run(log=log, dim=args.dim, snes_convergence_estimate=None, convest_num_refine=args.refine, interpolate=1, **newopts)
   for r in range(args.refine+1):
     stage = args.stage
     if stage.find('%') >= 0: stage = stage % (r)
@@ -487,6 +489,7 @@ if __name__ == '__main__':
   parser.add_argument('--module',  default='summary',                  help='The module for timing output')
   parser.add_argument('--stage',   default='Main Stage',               help='The default logging stage')
   parser.add_argument('--events',  nargs='+',                          help='Events to process')
+  parser.add_argument('--plotOnly',action='store_true', default=False, help='Flag to only plot existing data')
   parser.add_argument('--batch',   action='store_true', default=False, help='Generate batch files for the runs instead')
   parser.add_argument('--daemon',  action='store_true', default=False, help='Run as a daemon')
   parser.add_argument('--gpulang', default='OpenCL',                   help='GPU Language to use: Either CUDA or OpenCL (default)')
@@ -538,7 +541,7 @@ if __name__ == '__main__':
     times[name]   = []
     errors[name]  = []
     events[name]  = {}
-    getattr(__main__, 'run_'+args.dmType)(ex, name, opts, args, sizes, times, events, log=log)
+    getattr(__main__, 'run_'+args.dmType)(ex, name, opts, args, sizes, times, events, log=log, execute=(not args.plotOnly))
   outputData(sizes, times, events)
   if not args.batch and log:
     for plot in args.plots:
