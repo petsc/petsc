@@ -649,6 +649,7 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_hexwedge.msh -dm_view -interpolate
   test:
     suffix: exodus_17_hyb3d_interp_ascii
+    requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_hexwedge.exo -dm_view -interpolate
 
   # Legacy Gmsh v22/v40 ascii/binary reader tests
