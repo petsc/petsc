@@ -71,7 +71,7 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   if (vscale) {
     ierr = VecGetArray(vscale,&vscale_array);CHKERRQ(ierr);
   }
-  nz   = 0;
+  nz = 0;
   for (k=0; k<ncolors; k++) {
     coloring->currentcolor = k;
 
@@ -226,7 +226,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   if (vscale) {
     ierr = VecGetArray(vscale,&vscale_array);CHKERRQ(ierr);
   }
-  nz   = 0;
+  nz = 0;
 
   if (coloring->bcols > 1) { /* use blocked insertion of Jentry */
     PetscInt    i,m=J->rmap->n,nbcols,bcols=coloring->bcols;
@@ -352,6 +352,9 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
     }
   }
 
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (J->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) J->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (vscale) {
@@ -461,26 +464,26 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     }
   }
 
-  m         = mat->rmap->n/bs;
-  cstart    = mat->cmap->rstart/bs;
-  cend      = mat->cmap->rend/bs;
+  m      = mat->rmap->n/bs;
+  cstart = mat->cmap->rstart/bs;
+  cend   = mat->cmap->rend/bs;
 
-  ierr       = PetscMalloc2(nis,&c->ncolumns,nis,&c->columns);CHKERRQ(ierr);
-  ierr       = PetscMalloc1(nis,&c->nrows);CHKERRQ(ierr);
-  ierr       = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc2(nis,&c->ncolumns,nis,&c->columns);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nis,&c->nrows);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
 
   if (c->htype[0] == 'd') {
-    ierr       = PetscMalloc1(nz,&Jentry);CHKERRQ(ierr);
-    ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
+    ierr        = PetscMalloc1(nz,&Jentry);CHKERRQ(ierr);
+    ierr        = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
     c->matentry = Jentry;
   } else if (c->htype[0] == 'w') {
-    ierr       = PetscMalloc1(nz,&Jentry2);CHKERRQ(ierr);
-    ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry2));CHKERRQ(ierr);
+    ierr         = PetscMalloc1(nz,&Jentry2);CHKERRQ(ierr);
+    ierr         = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry2));CHKERRQ(ierr);
     c->matentry2 = Jentry2;
   } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"htype is not supported");
 
   ierr = PetscMalloc2(m+1,&rowhit,m+1,&valaddrhit);CHKERRQ(ierr);
-  nz = 0;
+  nz   = 0;
   ierr = ISColoringGetIS(iscoloring,PETSC_OWN_POINTER, PETSC_IGNORE,&c->isa);CHKERRQ(ierr);
 
   if (ctype == IS_COLORING_GLOBAL) {
@@ -606,7 +609,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   } else if (isSELL) {
     ierr = MatRestoreColumnIJ_SeqSELL_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatRestoreColumnIJ_SeqSELL_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
-  }else {
+  } else {
     ierr = MatRestoreColumnIJ_SeqAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatRestoreColumnIJ_SeqAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
   }

@@ -1299,6 +1299,9 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   F->assembled    = PETSC_TRUE;
   mumps->matstruc = SAME_NONZERO_PATTERN;
   if (F->schur) { /* reset Schur status to unfactored */
+#if defined(PETSC_HAVE_CUDA)
+    F->schur->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+#endif
     if (mumps->id.ICNTL(19) == 1) { /* stored by rows */
       mumps->id.ICNTL(19) = 2;
       ierr = MatTranspose(F->schur,MAT_INPLACE_MATRIX,&F->schur);CHKERRQ(ierr);

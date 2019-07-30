@@ -304,6 +304,7 @@ static PetscErrorCode ObjectiveRegularization(Tao tao, Vec x, PetscReal *J, void
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *J = 0;
   ierr = VecNorm (x, ctx->p, &norm);CHKERRQ(ierr);
   if (ctx->p == NORM_2) norm = 0.5 * norm * norm;
   *J = ctx->alpha * norm;

@@ -8,9 +8,9 @@ class Configure(config.package.Package):
     self.versionname      = 'CUDA_VERSION'
     self.versioninclude   = 'cuda.h'
     self.functions        = ['cublasInit', 'cufftDestroy']
-    self.includes         = ['cublas.h','cufft.h','cusparse.h','thrust/version.h']
-    self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a'],
-                             ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
+    self.includes         = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','thrust/version.h']
+    self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a'],
+                             ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib']]
     self.precisions       = ['single','double']
     self.cxx              = 0
     self.complex          = 1

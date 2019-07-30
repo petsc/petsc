@@ -58,6 +58,7 @@ typedef const char* MatType;
 #define MATSHELL           "shell"
 #define MATDENSE           "dense"
 #define MATSEQDENSE        "seqdense"
+#define MATSEQDENSECUDA    "seqdensecuda"
 #define MATMPIDENSE        "mpidense"
 #define MATELEMENTAL       "elemental"
 #define MATBAIJ            "baij"
@@ -131,6 +132,7 @@ typedef const char* MatSolverType;
 #define MATSOLVERPETSC            "petsc"
 #define MATSOLVERBAS              "bas"
 #define MATSOLVERCUSPARSE         "cusparse"
+#define MATSOLVERCUDA             "cuda"
 
 /*E
     MatFactorType - indicates what type of factorization is requested

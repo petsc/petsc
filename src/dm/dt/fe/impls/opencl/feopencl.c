@@ -498,7 +498,7 @@ PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscL
   PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *) fem->data;
   PetscStageLog     stageLog;
   PetscEventPerfLog eventLog = NULL;
-  PetscInt          stage;
+  int               stage;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
