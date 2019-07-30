@@ -1,5 +1,6 @@
 
-static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
+static char help[] = "Solves a tridiagonal linear system with KSP. \n\
+It illustrates how to do one symbolic factorization and multiple numeric factorizations using same matrix structure. \n\n";
 
 #include <petscksp.h>
 int main(int argc,char **args)
@@ -70,7 +71,9 @@ int main(int argc,char **args)
     ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+    if (norm > 1.e-14) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+    }
   }
 
   /* Free work space. */
@@ -81,3 +84,21 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+      args: -num_numfac 2 -pc_type lu
+
+    test:
+      suffix: 2
+      args: -num_numfac 2 -pc_type lu -pc_factor_mat_solver_type mumps
+      requires: mumps
+
+    test:
+      suffix: 3
+      nsize: 3
+      args: -num_numfac 2 -pc_type lu -pc_factor_mat_solver_type mumps
+      requires: mumps
+
+TEST*/
