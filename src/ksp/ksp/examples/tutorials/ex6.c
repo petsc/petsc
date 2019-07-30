@@ -37,6 +37,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Create vectors */
   ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
@@ -58,11 +59,13 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(NULL,NULL,"-num_numfac",&num_numfac,NULL);CHKERRQ(ierr);
   while (num_numfac--) {
     /* An example on how to update matrix A for repeated numerical factorization and solve. */
-    PetscScalar zero=0.0;
+    PetscScalar one=1.0;
     PetscInt    i = 0;
-    ierr = MatSetValues(A,1,&i,1,&i,&zero,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&i,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    /* Update b */
+    ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
     /* Solve the linear system */
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
