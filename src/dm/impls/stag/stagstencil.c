@@ -6,6 +6,98 @@ const char *const DMStagStencilTypes[] = {"NONE","STAR","BOX","DMStagStencilType
 
 /* Strings corresponding the positions in $PETSC_DIR/include/petscdmstag.h */
 const char * const DMStagStencilLocations[] = {"NONE","BACK_DOWN_LEFT","BACK_DOWN","BACK_DOWN_RIGHT","BACK_LEFT","BACK","BACK_RIGHT","BACK_UP_LEFT","BACK_UP","BACK_UP_RIGHT","DOWN_LEFT","DOWN","DOWN_RIGHT","LEFT","ELEMENT","RIGHT","UP_LEFT","UP","UP_RIGHT","FRONT_DOWN_LEFT","FRONT_DOWN","FRONT_DOWN_RIGHT","FRONT_LEFT","FRONT","FRONT_RIGHT","FRONT_UP_LEFT","FRONT_UP","FRONT_UP_RIGHT"};
+
+/*@C
+  DMStagCreateISFromStencils - Create an IS, using global numberings, for a subset of DOF in a DMStag object
+
+  Collective
+
+  Input Parameters:
++ dm - the DMStag object
+. nStencil - the number of stencils provided
+- stencils - an array of DMStagStencil objects (i,j, and k are ignored)
+
+  Output Parameter:
+. is - the global IS
+
+  Note:
+  Redundant entries in s are ignored
+
+  Level: advanced
+
+.seealso: DMSTAG, IS, DMStagStencil, DMCreateGlobalVector
+@*/
+PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt nStencil,DMStagStencil* stencils,IS *is)
+{
+  PetscErrorCode         ierr;
+  DMStagStencil          *ss;
+  PetscInt               *idx,*idxLocal;
+  const PetscInt         *ltogidx;
+  PetscInt               p,p2,pmax,i,j,k,d,dim,count,nidx;
+  ISLocalToGlobalMapping ltog;
+  PetscInt               start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM];
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim<1 || dim>3) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+
+  /* Only use non-redundant stencils */
+  ierr = PetscMalloc1(nStencil,&ss);CHKERRQ(ierr);
+  pmax = 0;
+  for (p=0; p<nStencil; ++p) {
+    PetscBool skip = PETSC_FALSE;
+    DMStagStencil stencilPotential = stencils[p];
+    ierr = DMStagStencilLocationCanonicalize(stencils[p].loc,&stencilPotential.loc);CHKERRQ(ierr);
+    for (p2=0; p2<pmax; ++p2) { /* Quadratic complexity algorithm in nStencil */
+      if (stencilPotential.loc == ss[p2].loc && stencilPotential.c == ss[p2].c) {
+        skip = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!skip) {
+      ss[pmax] = stencilPotential;
+      ++pmax;
+    }
+  }
+
+  ierr = PetscMalloc1(pmax,&idxLocal);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog,&ltogidx);CHKERRQ(ierr);
+  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&extraPoint[0],&extraPoint[1],&extraPoint[2]);CHKERRQ(ierr);
+  for (d=dim; d<DMSTAG_MAX_DIM; ++d) {
+    start[d]      = 0;
+    n[d]          = 1; /* To allow for a single loop nest below */
+    extraPoint[d] = 0;
+  }
+  nidx = pmax; for (d=0; d<dim; ++d) nidx *= (n[d]+1); /* Overestimate (always assumes extraPoint) */
+  ierr = PetscMalloc1(nidx,&idx);CHKERRQ(ierr);
+  count = 0;
+  /* Note that unused loop variables are not accessed, for lower dimensions */
+  for (k=start[2]; k<start[2]+n[2]+extraPoint[2]; ++k) {
+    for (j=start[1]; j<start[1]+n[1]+extraPoint[1]; ++j) {
+      for (i=start[0]; i<start[0]+n[0]+extraPoint[0]; ++i) {
+        for (p=0; p<pmax; ++p) {
+          ss[p].i = i; ss[p].j = j; ss[p].k = k;
+        }
+        ierr = DMStagStencilToIndexLocal(dm,pmax,ss,idxLocal);CHKERRQ(ierr);
+        for (p=0; p<pmax; ++p) {
+          const PetscInt gidx = ltogidx[idxLocal[p]];
+          if (gidx >= 0) {
+            idx[count] = gidx;
+            ++count;
+          }
+        }
+      }
+    }
+  }
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&ltogidx);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),count,idx,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+
+  ierr = PetscFree(ss);CHKERRQ(ierr);
+  ierr = PetscFree(idxLocal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMStagGetLocationDOF - Get number of DOF associated with a given point in a DMStag grid
 
