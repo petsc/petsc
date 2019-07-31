@@ -92,16 +92,19 @@ int main(int argc,char **args)
 
     test:
       args: -num_numfac 2 -pc_type lu
+      requires: !single
 
     test:
       suffix: 2
       args: -num_numfac 2 -pc_type lu -pc_factor_mat_solver_type mumps
       requires: mumps
+      requires: !single
 
     test:
       suffix: 3
       nsize: 3
       args: -num_numfac 2 -pc_type lu -pc_factor_mat_solver_type mumps
       requires: mumps
+      requires: !single
 
 TEST*/
