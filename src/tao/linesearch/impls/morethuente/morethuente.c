@@ -294,7 +294,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
 /*MC 
    TAOLINESEARCHMT - Line-search type with cubic interpolation that satisfies both the sufficient decrease and 
-   curvature conditions. This method can take step lenghts greater than 1.
+   curvature conditions. This method can take step lengths greater than 1.
 
    More-Thuente line-search can be selected with "-tao_ls_type more-thuente".
 
