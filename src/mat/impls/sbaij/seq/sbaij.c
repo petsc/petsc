@@ -1629,8 +1629,9 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
       for (i=0; i<mbs; i++) b->imax[i] = nz;
       nz = nz*mbs; /* total nz */
     } else {
-      nz = 0;
-      for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
+      PetscInt64 nz64 = 0;
+      for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz64 += nnz[i];}
+      ierr = PetscIntCast(nz64,&nz);CHKERRQ(ierr);
     }
     /* b->ilen will count nonzeros in each block row so far. */
     for (i=0; i<mbs; i++) b->ilen[i] = 0;
