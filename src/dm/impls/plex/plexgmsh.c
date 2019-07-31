@@ -1221,7 +1221,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell types %d and %d",n1, n2);
         }
         break;
-      case 3:
+      case 3: /* quadrilateral */
       case 10:
         switch (n2) {
         case 0: /* single type mesh */
@@ -1250,12 +1250,25 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell types %d and %d",n1, n2);
         }
         break;
-      case 6:
+      case 5: /* hexahedra */
+      case 12:
+        switch (n2) {
+        case 0: /* single type mesh */
+        case 6: /* wedges */
+        case 13:
+          break;
+        default:
+          SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell types %d and %d",n1, n2);
+        }
+        break;
+      case 6: /* wedge */
       case 13:
         switch (n2) {
         case 0: /* single type mesh */
-        case 4: /* swap since we list simplices first */
+        case 4: /* tetrahedra: swap since we list simplices first */
         case 11:
+        case 5: /* hexahedra */
+        case 12:
           tn  = hc1;
           hc1 = hc2;
           hc2 = tn;

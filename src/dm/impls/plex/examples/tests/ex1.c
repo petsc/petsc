@@ -641,6 +641,16 @@ int main(int argc, char **argv)
     suffix: gmsh_16_spheresurface_extruded_s2t
     nsize : 4
     args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -simplex2tensor -dm_plex_check_symmetry -dm_plex_check_faces -dm_plex_check_skeleton -dm_view -interpolate -test_shape -petscpartitioner_type simple
+  test:
+    suffix: gmsh_17_hyb3d_ascii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_hexwedge.msh -dm_view -dm_plex_gmsh_hybrid
+  test:
+    suffix: gmsh_17_hyb3d_interp_ascii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_hexwedge.msh -dm_view -interpolate
+  test:
+    suffix: exodus_17_hyb3d_interp_ascii
+    requires: exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_hexwedge.exo -dm_view -interpolate
 
   # Legacy Gmsh v22/v40 ascii/binary reader tests
   testset:
