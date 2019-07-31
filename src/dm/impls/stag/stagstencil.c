@@ -100,6 +100,63 @@ PetscErrorCode DMStagGetLocationDOF(DM dm,DMStagStencilLocation loc,PetscInt *do
   PetscFunctionReturn(0);
 }
 
+/*
+Convert to a location value with only BACK, DOWN, LEFT, and ELEMENT involved
+*/
+PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation loc,DMStagStencilLocation *locCanonical)
+{
+  PetscFunctionBegin;
+  switch (loc) {
+    case DMSTAG_ELEMENT:
+      *locCanonical = DMSTAG_ELEMENT;
+      break;
+    case DMSTAG_LEFT:
+    case DMSTAG_RIGHT:
+      *locCanonical = DMSTAG_LEFT;
+      break;
+    case DMSTAG_DOWN:
+    case DMSTAG_UP:
+      *locCanonical = DMSTAG_DOWN;
+      break;
+    case DMSTAG_BACK:
+    case DMSTAG_FRONT:
+      *locCanonical = DMSTAG_BACK;
+      break;
+    case DMSTAG_DOWN_LEFT :
+    case DMSTAG_DOWN_RIGHT :
+    case DMSTAG_UP_LEFT :
+    case DMSTAG_UP_RIGHT :
+      *locCanonical = DMSTAG_DOWN_LEFT;
+      break;
+    case DMSTAG_BACK_LEFT:
+    case DMSTAG_BACK_RIGHT:
+    case DMSTAG_FRONT_LEFT:
+    case DMSTAG_FRONT_RIGHT:
+      *locCanonical = DMSTAG_BACK_LEFT;
+      break;
+    case DMSTAG_BACK_DOWN:
+    case DMSTAG_BACK_UP:
+    case DMSTAG_FRONT_DOWN:
+    case DMSTAG_FRONT_UP:
+      *locCanonical = DMSTAG_BACK_DOWN;
+      break;
+    case DMSTAG_BACK_DOWN_LEFT:
+    case DMSTAG_BACK_DOWN_RIGHT:
+    case DMSTAG_BACK_UP_LEFT:
+    case DMSTAG_BACK_UP_RIGHT:
+    case DMSTAG_FRONT_DOWN_LEFT:
+    case DMSTAG_FRONT_DOWN_RIGHT:
+    case DMSTAG_FRONT_UP_LEFT:
+    case DMSTAG_FRONT_UP_RIGHT:
+      *locCanonical = DMSTAG_BACK_DOWN_LEFT;
+      break;
+    default :
+      *locCanonical = DMSTAG_NULL_LOCATION;
+      break;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMStagMatGetValuesStencil - retrieve local matrix entries using grid indexing
 
