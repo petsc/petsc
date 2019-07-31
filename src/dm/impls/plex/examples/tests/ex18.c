@@ -945,6 +945,7 @@ int main(int argc, char **argv)
       args: -interpolate {{serial}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     test:
+      TODO: Parallel partitioning of uninterpolated meshes not supported
       suffix: 7_hdf5_repart_ppu
       requires: hdf5 !complex parmetis
       args: -distribute -petscpartitioner_type parmetis
