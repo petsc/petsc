@@ -1938,6 +1938,36 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 #define PETSC_BLAS_INT_MIN -2147483647
 
 /*@C
+    PetscIntCast - casts a PetscInt64 (which is 64 bits in size) to a PetscInt (which may be 32 bits in size), generates an
+         error if the PetscInt is not large enough to hold the number.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the PetscInt64 value
+
+   Output Parameter:
+.     b - the resulting PetscInt value
+
+   Level: advanced
+
+   Notes: If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using --with-64-bit-indices to make PetscInt use 64 bit ints
+
+   Not available from Fortran
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscBLASIntCast()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
+{
+  PetscFunctionBegin;
+#if !defined(PETSC_USE_64BIT_INDICES)
+  if ((a) > PETSC_MAX_INT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Integer too long for PetscInt, you may need to ./configure using --with-64-bit-indices");
+#endif
+  *b =  (PetscInt)(a);
+  PetscFunctionReturn(0);
+}
+
+/*@C
     PetscBLASIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscBLASInt (which may be 32 bits in size), generates an
          error if the PetscBLASInt is not large enough to hold the number.
 
@@ -1953,15 +1983,15 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 
    Not available from Fortran
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscIntCast()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 {
   PetscFunctionBegin;
-  *b =  (PetscBLASInt)(a);
 #if defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_HAVE_64BIT_BLAS_INDICES)
   if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK");
 #endif
+  *b =  (PetscBLASInt)(a);
   PetscFunctionReturn(0);
 }
 
@@ -1981,15 +2011,15 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 
    Not available from Fortran
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntCast()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 {
   PetscFunctionBegin;
-  *b =  (PetscMPIInt)(a);
 #if defined(PETSC_USE_64BIT_INDICES)
   if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for MPI");
 #endif
+  *b =  (PetscMPIInt)(a);
   PetscFunctionReturn(0);
 }
 

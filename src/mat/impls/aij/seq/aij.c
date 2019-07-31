@@ -3852,8 +3852,9 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
       for (i=0; i<B->rmap->n; i++) b->imax[i] = nz;
       nz = nz*B->rmap->n;
     } else {
-      nz = 0;
-      for (i=0; i<B->rmap->n; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
+      PetscInt64 nz64 = 0;
+      for (i=0; i<B->rmap->n; i++) {b->imax[i] = nnz[i]; nz64 += nnz[i];}
+      ierr = PetscIntCast(nz64,&nz);CHKERRQ(ierr);
     }
 
     /* allocate the matrix space */

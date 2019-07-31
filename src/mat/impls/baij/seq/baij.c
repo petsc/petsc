@@ -2899,8 +2899,9 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
       for (i=0; i<mbs; i++) b->imax[i] = nz;
       nz = nz*mbs;
     } else {
-      nz = 0;
-      for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
+      PetscInt64 nz64 = 0;
+      for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz64 += nnz[i];}
+      ierr = PetscIntCast(nz64,&nz);CHKERRQ(ierr);
     }
 
     /* allocate the matrix space */

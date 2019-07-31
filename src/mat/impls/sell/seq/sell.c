@@ -136,7 +136,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
           b->sliidx[i] = PetscMax(b->sliidx[i],rlen[8*(i-1)+j]);
         }
         maxallocrow = PetscMax(b->sliidx[i],maxallocrow);
-        b->sliidx[i] = b->sliidx[i-1] + 8*b->sliidx[i];
+        ierr = PetscIntSumError(b->sliidx[i-1],8*b->sliidx[i],&b->sliidx[i]);CHKERRQ(ierr);
       }
       /* last slice */
       b->sliidx[totalslices] = 0;
