@@ -50,11 +50,12 @@
 ! SNESLineSearchType
 !
 
-#define SNESLINESEARCHBASIC 'basic'
-#define SNESLINESEARCHBT    'bt'
-#define SNESLINESEARCHL2    'l2'
-#define SNESLINESEARCHCP    'cp'
-#define SNESLINESEARCHSHELL 'shell'
+#define SNESLINESEARCHBASIC     'basic'
+#define SNESLINESEARCHBT        'bt'
+#define SNESLINESEARCHL2        'l2'
+#define SNESLINESEARCHCP        'cp'
+#define SNESLINESEARCHSHELL     'shell'
+#define SNESLINESEARCHNCGLINEAR 'ncglinear'
 
 !
 ! SNESLineSearchOrder

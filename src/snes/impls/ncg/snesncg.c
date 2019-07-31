@@ -1,13 +1,11 @@
 #include <../src/snes/impls/ncg/snesncgimpl.h> /*I "petscsnes.h" I*/
 const char *const SNESNCGTypes[] = {"FR","PRP","HS","DY","CD","SNESNCGType","SNES_NCG_",0};
 
-PetscErrorCode SNESReset_NCG(SNES snes)
+static PetscErrorCode SNESReset_NCG(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-
-#define SNESLINESEARCHNCGLINEAR "ncglinear"
 
 /*
   SNESDestroy_NCG - Destroys the private SNES_NCG context that was created with SNESCreate_NCG().
@@ -17,7 +15,7 @@ PetscErrorCode SNESReset_NCG(SNES snes)
 
   Application Interface Routine: SNESDestroy()
 */
-PetscErrorCode SNESDestroy_NCG(SNES snes)
+static PetscErrorCode SNESDestroy_NCG(SNES snes)
 {
   PetscErrorCode ierr;
 
@@ -37,9 +35,7 @@ PetscErrorCode SNESDestroy_NCG(SNES snes)
    Application Interface Routine: SNESSetUp()
  */
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
-
-PetscErrorCode SNESSetUp_NCG(SNES snes)
+static PetscErrorCode SNESSetUp_NCG(SNES snes)
 {
   PetscErrorCode ierr;
 
@@ -49,67 +45,8 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
-/*
-  SNESSetFromOptions_NCG - Sets various parameters for the SNESNCG method.
 
-  Input Parameter:
-. snes - the SNES context
-
-  Application Interface Routine: SNESSetFromOptions()
-*/
-static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObject,SNES snes)
-{
-  SNES_NCG       *ncg = (SNES_NCG*)snes->data;
-  PetscErrorCode ierr;
-  PetscBool      debug = PETSC_FALSE;
-  SNESNCGType    ncgtype=ncg->type;
-  SNESLineSearch linesearch;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"SNES NCG options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_ncg_monitor","Monitor NCG iterations","SNES",ncg->monitor ? PETSC_TRUE : PETSC_FALSE, &debug, NULL);CHKERRQ(ierr);
-  if (debug) {
-    ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsEnum("-snes_ncg_type","NCG Beta type used","SNESNCGSetType",SNESNCGTypes,(PetscEnum)ncg->type,(PetscEnum*)&ncgtype,NULL);CHKERRQ(ierr);
-  ierr = SNESNCGSetType(snes, ncgtype);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (!snes->linesearch) {
-    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    if (!snes->npc) {
-      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
-    } else {
-      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
-    }
-  }
-  ierr = SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-  SNESView_NCG - Prints info from the SNESNCG data structure.
-
-  Input Parameters:
-+ SNES - the SNES context
-- viewer - visualization context
-
-  Application Interface Routine: SNESView()
-*/
-static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
-{
-  SNES_NCG      *ncg = (SNES_NCG *) snes->data;
-  PetscBool      iascii;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, "  type: %s\n", SNESNCGTypes[ncg->type]);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
+static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
 {
   PetscScalar    alpha, ptAp;
   Vec            X, Y, F, W;
@@ -150,6 +87,21 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   SNESLINESEARCHNCGLINEAR - Special line search only for SNESNCG
+
+   This line search uses the length "as if" the problem is linear (that is what is computed by the linear CG method) using the Jacobian of the function.
+   alpha = (r, r) / (p, Ap) = (f, f) / (y, Jy) where r (f) is the current residual (function value), p (y) is the current search direction.
+
+   Notes: This requires a Jacobian-vector product but does not require the solution of a linear system with the Jacobian
+
+   This is a "odd-ball" line search, we don't know if it is in the literature or used in practice by anyone.
+
+   Level: advanced
+
+.seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
+M*/
+
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
@@ -163,8 +115,71 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linese
 }
 
 /*
+  SNESSetFromOptions_NCG - Sets various parameters for the SNESNCG method.
+
+  Input Parameter:
+. snes - the SNES context
+
+  Application Interface Routine: SNESSetFromOptions()
+*/
+static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObject,SNES snes)
+{
+  SNES_NCG       *ncg = (SNES_NCG*)snes->data;
+  PetscErrorCode ierr;
+  PetscBool      debug = PETSC_FALSE;
+  SNESNCGType    ncgtype=ncg->type;
+  SNESLineSearch linesearch;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES NCG options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ncg_monitor","Monitor the beta values used in the NCG iterations","SNES",ncg->monitor ? PETSC_TRUE : PETSC_FALSE, &debug, NULL);CHKERRQ(ierr);
+  if (debug) {
+    ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnum("-snes_ncg_type","NCG Beta type used","SNESNCGSetType",SNESNCGTypes,(PetscEnum)ncg->type,(PetscEnum*)&ncgtype,NULL);CHKERRQ(ierr);
+  ierr = SNESNCGSetType(snes, ncgtype);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  if (!snes->linesearch) {
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    if (!snes->npc) {
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
+    } else {
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  SNESView_NCG - Prints info from the SNESNCG data structure.
+
+  Input Parameters:
++ SNES - the SNES context
+- viewer - visualization context
+
+  Application Interface Routine: SNESView()
+*/
+static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
+{
+  SNES_NCG      *ncg = (SNES_NCG *) snes->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer, "  type: %s\n", SNESNCGTypes[ncg->type]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
 
  Assuming F = SNESComputeFunction(X) compute Y^tJ^tF using a simple secant approximation of the jacobian.
+
+ This routine is not currently used. I don't know what its intended purpose is.
+
+ Note it has a hardwired differencing parameter of 1e-5
 
  */
 PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar * ytJtf)
@@ -194,7 +209,7 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
 -   btype - update type
 
     Options Database:
-.   -snes_ncg_type<prp,fr,hs,dy,cd>
+.   -snes_ncg_type <prp,fr,hs,dy,cd> -strategy for selecting algorithm for computing beta
 
     Level: intermediate
 
@@ -206,7 +221,10 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
 -   SNES_NCG_CD - Conjugate Descent update
 
    Notes:
-   PRP is the default, and the only one that tolerates generalized search directions.
+   SNES_NCG_PRP is the default, and the only one that tolerates generalized search directions.
+
+   It is not clear what "generalized search directions" means, does it mean use with a nonlinear preconditioner,
+   that is using -npc_snes_type <type>, SNESSetNPC(), or SNESGetNPC()?
 
 @*/
 PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
@@ -219,7 +237,7 @@ PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
+static PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 {
   SNES_NCG *ncg = (SNES_NCG*)snes->data;
 
@@ -239,7 +257,7 @@ PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 
   Application Interface Routine: SNESSolve()
 */
-PetscErrorCode SNESSolve_NCG(SNES snes)
+static PetscErrorCode SNESSolve_NCG(SNES snes)
 {
   SNES_NCG             *ncg = (SNES_NCG*)snes->data;
   Vec                  X,dX,lX,F,dXold;
@@ -434,8 +452,6 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   PetscFunctionReturn(0);
 }
 
-
-
 /*MC
   SNESNCG - Nonlinear Conjugate-Gradient method for the solution of general nonlinear systems.
 
@@ -444,7 +460,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   Options Database:
 +   -snes_ncg_type <fr, prp, dy, hs, cd> - Choice of conjugate-gradient update parameter, default is prp.
 .   -snes_linesearch_type <cp,l2,basic> - Line search type.
--   -snes_ncg_monitor - Print relevant information about the ncg iteration.
+-   -snes_ncg_monitor - Print the beta values used in the ncg iteration, .
 
    Notes:
     This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
@@ -453,12 +469,15 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
           Only supports left non-linear preconditioning.
 
+    Default line search is SNESLINESEARCHCP, unless a nonlinear preconditioner is used with -npc_snes_type <type>, SNESSetNPC(), or SNESGetNPC() then
+    SNESLINESEARCHL2 is used. Also supports the special purpose line search SNESLINESEARCHNCGLINEAR
+
    References:
 .  1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN, SNESLINESEARCHNCGLINEAR, SNESNCGSetType(), SNESNCGGetType(), SNESLineSearchSetType()
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
 {
