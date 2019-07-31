@@ -1989,6 +1989,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_HAVE_64BIT_BLAS_INDICES)
+  *b = 0;
   if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK");
 #endif
   *b =  (PetscBLASInt)(a);
@@ -2017,6 +2018,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)
+  *b = 0;
   if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for MPI");
 #endif
   *b =  (PetscMPIInt)(a);
