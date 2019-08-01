@@ -4,15 +4,17 @@ static char help[] = "Illustrate how to do one symbolic factorization and multip
 
 int main(int argc,char **args)
 {
-  PetscInt       ipack=0,i,rstart,rend,N=10,num_numfac=5,col[3],k;
+  PetscInt       ipack,i,rstart,rend,N=10,num_numfac=5,col[3],k;
   Mat            A[5],F;
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscScalar    value[3];
-  PetscReal      norm,tol=1.e-12;
+  PetscReal      norm,tol=100*PETSC_MACHINE_EPSILON;
   IS             perm,iperm;
   MatFactorInfo  info;
+  char           solvertype[64]="petsc";
+  PetscBool      flg,flg_superlu,flg_mumps;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -49,17 +51,28 @@ int main(int argc,char **args)
   ierr = VecSet(b,1.0);CHKERRQ(ierr);
 
   /* Get a symbolic factor F from A[0] */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_type",&ipack,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, NULL, "-mat_solver_type",solvertype,64,&flg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(solvertype,"superlu",&flg_superlu);CHKERRQ(ierr);
+  ierr = PetscStrcmp(solvertype,"mumps",&flg_mumps);CHKERRQ(ierr);
+
+  ipack = 0;
+  if (flg_superlu) ipack = 1;
+  else {
+    if (flg_mumps) ipack = 2;
+  }
+
   switch (ipack) {
   case 1:
 #if defined(PETSC_HAVE_SUPERLU)
-    if (!rank) printf(" SUPERLU LU:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A[0],MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
+#else
+    ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU is not installed, use PETSC LU\n");CHKERRQ(ierr);
 #endif
   case 2:
 #if defined(PETSC_HAVE_MUMPS)
-    if (!rank) printf(" MUMPS LU:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," MUMPS LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A[0],MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
       /* test mumps options */
@@ -67,9 +80,11 @@ int main(int argc,char **args)
       ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
     }
     break;
+#else
+    ierr = PetscPrintf(PETSC_COMM_WORLD," MUMPS is not installed, use PETSC LU\n");CHKERRQ(ierr);
 #endif
   default:
-    if (!rank) printf(" PETSC LU:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," PETSC LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A[0],MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
 
@@ -99,7 +114,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
     if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%d-the LU numfact and solve: residual %g\n",k,norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the LU numfact and solve: residual %g\n",k,(double)norm);CHKERRQ(ierr);
     }
   }
 
@@ -120,18 +135,16 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      args: -mat_solver_type 0
-      requires: !single
 
    test:
       suffix: 2
-      args: -mat_solver_type 1
-      requires: superlu !single
+      args: -mat_solver_type superlu
+      requires: superlu
 
    test:
       suffix: 3
       nsize: 2
-      requires: mumps !single
-      args: -mat_solver_type 2
+      requires: mumps
+      args: -mat_solver_type mumps
 
 TEST*/

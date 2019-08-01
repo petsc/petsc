@@ -74,7 +74,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-    if (norm > 1.e-14) {
+    if (norm > 100*PETSC_MACHINE_EPSILON) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
     }
   }
@@ -92,19 +92,16 @@ int main(int argc,char **args)
 
     test:
       args: -num_numfac 2 -pc_type lu
-      requires: !single
 
     test:
       suffix: 2
       args: -num_numfac 2 -pc_type lu -pc_factor_mat_solver_type mumps
       requires: mumps
-      requires: !single
 
     test:
       suffix: 3
       nsize: 3
       args: -num_numfac 2 -pc_type lu -pc_factor_mat_solver_type mumps
       requires: mumps
-      requires: !single
 
 TEST*/
