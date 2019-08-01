@@ -2,7 +2,7 @@
    Implementation of DMStag, defining dimension-independent functions in the
    DM API. stag1d.c, stag2d.c, and stag3d.c may include dimension-specific
    implementations of DM API functions, and other files here contain additional
-   DMStag-specific API functions (and internal functions).
+   DMStag-specific API functions, as well as internal functions.
 */
 #include <petsc/private/dmstagimpl.h>
 #include <petscsf.h>
