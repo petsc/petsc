@@ -873,20 +873,19 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, Petsc
   Vec                cellgeom;
   const PetscScalar *cgeom;
   PetscScalar       *x;
-  PetscInt           dim, Nf, cStart, cEnd, cEndInterior, c;
+  PetscInt           dim, Nf, cStart, cEnd, c;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetInteriorCellStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = VecGetArray(X, &x);CHKERRQ(ierr);
-  for (c = cStart; c < cEndInterior; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     PetscFVCellGeom       *cg;
     PetscScalar           *xc;
 
@@ -909,7 +908,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   const PetscScalar *x;
   PetscScalar       *a;
   PetscReal         *xnorms;
-  PetscInt           pStart, pEnd, p, Nf, f, cEndInterior;
+  PetscInt           pStart, pEnd, p, Nf, f;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
@@ -969,11 +968,11 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       ierr = PetscObjectSetName((PetscObject) fv[f], name);CHKERRQ(ierr);
       ierr = VecGetArray(fv[f], &fx[f]);CHKERRQ(ierr);
     }
-    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetInteriorCellStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
-    for (c = cStart; c < cEndInterior; ++c) {
+    for (c = cStart; c < cEnd; ++c) {
       PetscFVCellGeom *cg;
       PetscScalar     *cx;
 

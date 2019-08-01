@@ -60,7 +60,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
   const PetscScalar *facegeom, *cellgeom, *x;
   PetscScalar       *gr;
   PetscReal         *cellPhi;
-  PetscInt           dim, face, cell, field, dof, cStart, cEnd, cEndInterior, nFields;
+  PetscInt           dim, face, cell, field, dof, cStart, cEnd, nFields;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -114,11 +114,9 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
     }
   }
   /* Limit interior gradients (using cell-based loop because it generalizes better to vector limiters) */
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, dof, MPIU_REAL, &cellPhi);CHKERRQ(ierr);
-  for (cell = (dmGrad && lim) ? cStart : cEnd; cell < cEndInterior; ++cell) {
+  for (cell = (dmGrad && lim) ? cStart : cEnd; cell < cEnd; ++cell) {
     const PetscInt        *faces;
     PetscScalar           *cx;
     PetscFVCellGeom       *cg;
@@ -200,4 +198,3 @@ PetscErrorCode DMPlexReconstructGradientsFVM(DM dm, Vec locX, Vec grad)
   ierr = DMPlexReconstructGradients_Internal(dm, fvm, fStart, fEnd, faceGeometryFVM, cellGeometryFVM, locX, grad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

@@ -338,7 +338,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   Vec                  coordinates,hovec;
   const PetscScalar    *array;
   PetscInt             bf,p,sdim,dim,depth,novl,minl;
-  PetscInt             cStart,cEnd,cEndInterior,vStart,vEnd,nvert;
+  PetscInt             cStart,cEnd,cMax,vStart,vEnd,nvert;
   PetscMPIInt          size;
   PetscBool            localized,isascii;
   PetscBool            enable_mfem,enable_boundary,enable_ncmesh,view_ovl = PETSC_FALSE;
@@ -373,9 +373,9 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
      DMPlex does not currently support HO meshes, so there's no API for this */
   ierr = PetscObjectQuery((PetscObject)dm,"_glvis_mesh_coords",(PetscObject*)&hovec);CHKERRQ(ierr);
 
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
+  cMax = cMax < 0 ? cEnd : cMax;
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm,&periodic,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
@@ -485,7 +485,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscScalar *array,*ptr;
 
       ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: L2_T1_%DD_P1",dim);CHKERRQ(ierr);
-      if (cEndInterior < cEnd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Support for hybrid meshed not currently implemented");
+      if (cMax < cEnd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Support for hybrid meshed not currently implemented");
       if (cEnd-cStart) {
         PetscInt fpc;
 
@@ -603,7 +603,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,minl,p,&mid,&cid);CHKERRQ(ierr);
     ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
     ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
-    if (p >= cEndInterior) {
+    if (p >= cMax) {
       ierr = DMPlexGlvisInvertHybrid(cid,vids);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
@@ -653,10 +653,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
     /* determine orientation of boundary mesh */
     if (cEnd-cStart) {
-      if (cEndInterior < cEnd) {
-        ierr = DMPlexGetConeSize(dm,cEndInterior,&fpcH);CHKERRQ(ierr);
+      if (cMax < cEnd) {
+        ierr = DMPlexGetConeSize(dm,cMax,&fpcH);CHKERRQ(ierr);
       }
-      if (cEndInterior > cStart) {
+      if (cMax > cStart) {
         ierr = DMPlexGetConeSize(dm,cStart,&fpc);CHKERRQ(ierr);
       }
       switch(dim) {
@@ -735,7 +735,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         if (dof) {
           PetscInt    v,csize,cellClosureSize,*cellClosure = NULL,*vidxs = NULL;
           PetscScalar *vals = NULL;
-          if (p < cEndInterior) uvpc = vpc;
+          if (p < cMax) uvpc = vpc;
           else uvpc = vpcH;
           if (dof%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
           if (dof/sdim != uvpc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible number of cell dofs %D, vertices %D and space dim %D",dof/sdim,uvpc,sdim);
@@ -931,7 +931,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
           /* vertex ids */
           ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,cell,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
-          if (cell >= cEndInterior) {
+          if (cell >= cMax) {
             PetscInt nv = vpfH, inc = vpfH;
             if (vpfH < 0) { /* Wedge */
               if (cl == 0 || cl == 1) nv = 3;

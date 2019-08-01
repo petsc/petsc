@@ -3851,7 +3851,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
     DM           base;
 
     ierr          = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
-    ierr          = DMPlexGetHybridBounds(plex,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr          = DMPlexGetGhostCellStratum(plex,&cEndInterior,NULL);CHKERRQ(ierr);
     cEnd          = cEndInterior < 0 ? cEnd : cEndInterior;
     ierr          = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
     ierr          = DMGetCoordinateSection(plex,&coordSec);CHKERRQ(ierr);
@@ -3912,7 +3912,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
     PetscInt cStart, cEnd, cEndInterior;
 
     ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(plex,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetGhostCellStratum(plex,&cEndInterior,NULL);CHKERRQ(ierr);
     cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
     if (cLocalStart > 0) {
       p4est_quadrant_t *ghosts = (p4est_quadrant_t*) pforest->ghost->ghosts.array;
@@ -4013,7 +4013,7 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
 
   cp = 0;
   ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(plex,&cEndInterior,NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = PetscMalloc1(cEnd-cStart,&coarsePoints);CHKERRQ(ierr);
   if (cLocalStart > 0) {

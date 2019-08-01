@@ -118,7 +118,7 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
     ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
     for (v = 0; v < numValues; ++v) {
       const PetscInt value = values[v];
-      
+
       ierr = DMLabelGetStratumIS(lblLeaves, value, &pointIS);CHKERRQ(ierr);
       ierr = DMLabelInsertIS(label, pointIS, value);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
@@ -133,7 +133,7 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
     ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
     for (v = 0; v < numValues; ++v) {
       const PetscInt value = values[v];
-      
+
       ierr = DMLabelGetStratumIS(lblRoots, value, &pointIS);CHKERRQ(ierr);
       ierr = DMLabelInsertIS(label, pointIS, value);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
@@ -188,13 +188,11 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
 {
   IS              valueIS;
   const PetscInt *values;
-  PetscInt        numValues, v, cStart, cEnd, cEndInterior;
+  PetscInt        numValues, v, cStart, cEnd;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
   ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
   ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
@@ -245,13 +243,11 @@ PetscErrorCode DMPlexLabelClearCells(DM dm, DMLabel label)
 {
   IS              valueIS;
   const PetscInt *values;
-  PetscInt        numValues, v, cStart, cEnd, cEndInterior;
+  PetscInt        numValues, v, cStart, cEnd;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
   ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
   ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
@@ -743,7 +739,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexShiftSizes_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   /* Step 3: Set cone/support sizes for new points */
   ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexSetHybridBounds(gdm, cEnd, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = DMPlexSetGhostCellStratum(gdm, cEnd, PETSC_DETERMINE);CHKERRQ(ierr);
   for (c = cEnd; c < cEnd + Ng; ++c) {
     ierr = DMPlexSetConeSize(gdm, c, 1);CHKERRQ(ierr);
   }
