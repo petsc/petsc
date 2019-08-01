@@ -3131,6 +3131,7 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce(Mat A,Mat P,
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+
   ierr = MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(A,maij->A,maij->dof,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3143,6 +3144,7 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce(Mat A,Mat P
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+
   ierr = MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(A,maij->A,maij->dof,fill,C);CHKERRQ(ierr);
   (*C)->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce;
   PetscFunctionReturn(0);
@@ -3150,15 +3152,23 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce(Mat A,Mat P
 
 PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ_allatonce(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
-  PetscErrorCode ierr;
-
+  PetscErrorCode   ierr;
+  Mat_MPIAIJ       *c;
+  Mat_APMPI        *ap;
   PetscFunctionBegin;
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIMAIJ_allatonce \n");CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce(A,P,fill,C);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
+
+  c  = (Mat_MPIAIJ*)(*C)->data;
+  ap = c->ap;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
+  ap->freestruct = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",ap->freestruct,&ap->freestruct, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
@@ -3173,6 +3183,7 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce_merged(Mat A
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+
   ierr = MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(A,maij->A,maij->dof,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3185,6 +3196,7 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce_merged(Mat 
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+
   ierr = MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(A,maij->A,maij->dof,fill,C);CHKERRQ(ierr);
   (*C)->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce_merged;
   PetscFunctionReturn(0);
@@ -3193,14 +3205,23 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce_merged(Mat 
 PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ_allatonce_merged(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
+  Mat_MPIAIJ     *c;
+  Mat_APMPI      *ap;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIMAIJ_allatonce_merged \n");CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce_merged(A,P,fill,C);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
+
+  c  = (Mat_MPIAIJ*)(*C)->data;
+  ap = c->ap;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
+  ap->freestruct = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",ap->freestruct,&ap->freestruct, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);

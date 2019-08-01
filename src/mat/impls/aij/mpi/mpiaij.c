@@ -5311,6 +5311,8 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
     /* Find a remote index and an owner for a row
      * The row could be local or remote
      * */
+    owner = 0;
+    lidx  = 0;
     ierr = PetscLayoutFindOwnerIndex(P->rmap,lrowindices[i],&owner,&lidx);CHKERRQ(ierr);
     iremote[i].index = lidx;
     iremote[i].rank  = owner;
@@ -5378,6 +5380,7 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
   ontotalcols = 0;
   ntotalcols  = 0;
   for (i=0;i<nrows;i++) {
+    owner = 0;
     ierr = PetscLayoutFindOwnerIndex(P->rmap,lrowindices[i],&owner,NULL);CHKERRQ(ierr);
     /* Set iremote for diag matrix */
     for (j=0;j<nlcols[i*2+0];j++) {

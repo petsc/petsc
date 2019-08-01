@@ -166,21 +166,18 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
     case 1:
       /* do R=P^T locally, then C=R*A*P -- nonscalable */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIAIJ \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
     case 2:
       /* compute C=P^T*A*P allatonce */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIAIJ_allatonce \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
     case 3:
       /* compute C=P^T*A*P allatonce */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIAIJ_allatonce_merged \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
@@ -188,7 +185,6 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
     case 4:
       /* Use boomerAMGBuildCoarseOperator */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_AIJ_AIJ_wHYPRE \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
@@ -196,7 +192,6 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
     default:
       /* do R=P^T locally, then C=R*A*P */
       ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MatPtAP_MPIAIJ_MPIAIJ_scalable \n");CHKERRQ(ierr);
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(A,P,fill,C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
       break;
@@ -997,9 +992,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof,
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+
   ierr = MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(A,P,1,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1146,9 +1142,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,PetscI
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,Mat C)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+
   ierr = MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(A,P,1,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1177,6 +1174,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+
   /* Create symbolic parallel matrix Cmpi */
   ierr = MatGetLocalSize(P,NULL,&pn);CHKERRQ(ierr);
   pn *= dof;
@@ -1386,7 +1384,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof
 
   /* local sizes and preallocation */
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,PetscAbs(A->rmap->bs),PetscAbs(A->cmap->bs));CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(Cmpi,dof>1? dof: P->cmap->bs,dof>1? dof: P->cmap->bs);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSetUp(Cmpi);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
@@ -1427,6 +1425,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+
   ierr = MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(A,P,1,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1455,6 +1454,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,Petsc
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+
   /* Create symbolic parallel matrix Cmpi */
   ierr = MatGetLocalSize(P,NULL,&pn);CHKERRQ(ierr);
   pn *= dof;
@@ -1653,7 +1653,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,Petsc
 
   /* local sizes and preallocation */
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,PetscAbs(A->rmap->bs),PetscAbs(A->cmap->bs));CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(Cmpi, dof>1? dof: P->cmap->bs,dof>1? dof: P->cmap->bs);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
@@ -1690,9 +1690,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,Petsc
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscReal fill,Mat *C)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+
   ierr = MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(A,P,1,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
