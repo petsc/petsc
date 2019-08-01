@@ -5695,7 +5695,15 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat A,Mat B,MatReuse scal
    Options Database Keys:
 . -mat_type mpiaij - sets the matrix type to "mpiaij" during a call to MatSetFromOptions()
 
-  Level: beginner
+   Level: beginner
+
+   Notes:
+    MatSetValues() may be called for this matrix type with a NULL argument for the numerical values,
+    in this case the values associated with the rows and columns one passes in are set to zero
+    in the matrix
+
+    MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
+    space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
 
 .seealso: MatCreateAIJ()
 M*/

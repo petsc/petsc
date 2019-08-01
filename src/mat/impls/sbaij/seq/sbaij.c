@@ -1674,10 +1674,11 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
 
 PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[], const PetscScalar V[])
 {
-  PetscInt       i,j,m,nz,nz_max=0,*nnz;
+  PetscInt       i,j,m,nz,anz, nz_max=0,*nnz;
   PetscScalar    *values=0;
   PetscBool      roworiented = ((Mat_SeqSBAIJ*)B->data)->roworiented;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
   ierr   = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
@@ -1692,8 +1693,16 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B,PetscInt bs,const P
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D has a negative number of columns %D",i,nz);
-    nz_max = PetscMax(nz_max,nz);
-    nnz[i] = nz;
+    anz = 0;
+    for (j=0; j<nz; j++) {
+      /* count only values on the diagonal or above */
+      if (jj[ii[i] + j] >= i) {
+        anz = nz - j;
+        break;
+      }
+    }
+    nz_max = PetscMax(nz_max,anz);
+    nnz[i] = anz;
   }
   ierr = MatSeqSBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
@@ -2044,7 +2053,10 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
    MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
    block column and the second index is over columns within a block.
 
-   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
+   Any entries below the diagaonl in are ignored
+
+   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
+   and usually the numerical values as well
 
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValuesBlocked(), MatSeqSBAIJSetPreallocation(), MATSEQSBAIJ
 @*/

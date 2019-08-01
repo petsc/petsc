@@ -2192,7 +2192,7 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
 PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[],const PetscScalar V[])
 {
   PetscInt       m,rstart,cstart,cend;
-  PetscInt       i,j,d,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
+  PetscInt       i,j,d,nz,bd, nz_max=0,*d_nnz=0,*o_nnz=0;
   const PetscInt *JJ    =0;
   PetscScalar    *values=0;
   PetscErrorCode ierr;
@@ -2214,19 +2214,23 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative number of columns %D",i,nz);
-    nz_max = PetscMax(nz_max,nz);
+    /* count the ones on the diagonal and above, split into diagonal and off diagonal portions. */
     JJ     = jj + ii[i];
+    bd     = 0;
     for (j=0; j<nz; j++) {
-      if (*JJ >= cstart) break;
+      if (*JJ >= i + rstart) break;
       JJ++;
+      bd++;
     }
-    d = 0;
+    d  = 0;
     for (; j<nz; j++) {
       if (*JJ++ >= cend) break;
       d++;
     }
     d_nnz[i] = d;
-    o_nnz[i] = nz - d;
+    o_nnz[i] = nz - d - bd;
+    nz       = nz - bd;
+    nz_max = PetscMax(nz_max,nz);
   }
   ierr = MatMPISBAIJSetPreallocation(B,bs,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
@@ -2240,7 +2244,14 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
     PetscInt          ncols  = ii[i+1] - ii[i];
     const PetscInt    *icols = jj + ii[i];
     const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
-    ierr = MatSetValuesBlocked_MPISBAIJ(B,1,&row,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
+    if (bs == 1) {
+      ierr = MatSetValuesBlocked_MPISBAIJ(B,1,&row,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
+    } else {
+      for (j=0; j<ncols; j++) {
+        const PetscScalar *svals = values + (V ? (bs*bs*(ii[i]+j)) : 0);
+        ierr = MatSetValuesBlocked_MPISBAIJ(B,1,&row,1,&icols[j],svals,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
   }
 
   if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
@@ -3289,7 +3300,10 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
    Level: advanced
 
    Notes:
-   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
+   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
+   and usually the numerical values as well
+
+   Any entries below the diagaonl in are ignored
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ
 @*/
