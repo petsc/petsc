@@ -310,6 +310,9 @@ PETSC_EXTERN PetscErrorCode DMPlexSetHybridBounds(DM, PetscInt, PetscInt, PetscI
 PETSC_EXTERN PetscErrorCode DMPlexGetVTKCellHeight(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSetVTKCellHeight(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll(PetscObject, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMPlexGetGhostCellStratum(DM, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexSetGhostCellStratum(DM, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexGetInteriorCellStratum(DM, PetscInt *, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetCellFields(DM, IS, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreCellFields(DM, IS, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);

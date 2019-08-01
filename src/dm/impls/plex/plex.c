@@ -6514,6 +6514,98 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexGetGhostCellStratum - Get the range of cells which are used to enforce FV boundary conditions
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameters:
++ gcStart - The first ghost cell
+- gcEnd   - The upper bound on ghost cells
+
+  Level: developer
+
+.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum(), DMPlexGetHybridBounds()
+@*/
+PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
+  if (gcStart) {PetscValidIntPointer(gcStart, 2); *gcStart = mesh->ghostCellStart;}
+  if (gcEnd)   {
+    PetscValidIntPointer(gcEnd, 3);
+    if (mesh->ghostCellStart >= 0) {ierr = DMPlexGetHeightStratum(dm, 0, NULL, gcEnd);CHKERRQ(ierr);}
+    else                           {*gcEnd = -1;}
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexSetGhostCellStratum - Set the range of cells which are used to enforce FV boundary conditions
+
+  Input Parameters:
++ dm      - The DMPlex object
+. gcStart - The first ghost cell
+- gcEnd   - The upper bound on ghost cells
+
+  Level: developer
+
+.seealso DMPlexConstructGhostCells(), DMPlexGetGhostCellStratum(), DMPlexSetHybridBounds()
+@*/
+PetscErrorCode DMPlexSetGhostCellStratum(DM dm, PetscInt gcStart, PetscInt gcEnd)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
+  mesh->ghostCellStart = gcStart;
+  if (gcEnd >= 0) {
+    PetscInt cEnd;
+    ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
+    if (gcEnd != cEnd) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Ghost cells must appear at the end of the cell range, but gcEnd %D is not equal to cEnd %D", gcEnd, cEnd);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetInteriorCellStratum - Get the range of cells which are neither hybrid nor ghost FV cells
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameters:
++ cStartInterior - The first ghost cell
+- cEndInterior   - The upper bound on ghost cells
+
+  Level: developer
+
+.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum(), DMPlexGetHybridBounds()
+@*/
+PetscErrorCode DMPlexGetInteriorCellStratum(DM dm, PetscInt *cStartInterior, PetscInt *cEndInterior)
+{
+  PetscInt       gcEnd, cMax;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, cStartInterior, cEndInterior);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &gcEnd, NULL);CHKERRQ(ierr);
+  *cEndInterior = gcEnd < 0 ? *cEndInterior : gcEnd;
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  *cEndInterior = cMax  < 0 ? *cEndInterior : cMax;
+  PetscFunctionReturn(0);
+}
+
 /* We can easily have a form that takes an IS instead */
 PetscErrorCode DMPlexCreateNumbering_Internal(DM dm, PetscInt pStart, PetscInt pEnd, PetscInt shift, PetscInt *globalSize, PetscSF sf, IS *numbering)
 {
