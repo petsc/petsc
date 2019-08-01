@@ -4,16 +4,15 @@ static char help[] = "Illustrate how to do one symbolic factorization and multip
 
 int main(int argc,char **args)
 {
-  PetscInt       m,n,nfact,ipack=0,i,rstart,rend,N=10,num_numfac=5,col[3],k;
+  PetscInt       ipack=0,i,rstart,rend,N=10,num_numfac=5,col[3],k;
   Mat            A[5],F;
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscScalar    value[3];
-  PetscReal      norm,tol=1.e-12,Anorm;
+  PetscReal      norm,tol=1.e-12;
   IS             perm,iperm;
   MatFactorInfo  info;
-  PetscBool      flg,testMatSolve=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
