@@ -24,7 +24,7 @@ MPIVersion: MPIVersion.o
 	@${RM} -f MPIVersion.o
 
 OpenMPVersion: OpenMPVersion.o 
-	-@${CLINKER} -o OpenMPVersion OpenMPVersion.o ${PETSC_LIB}
+	-@${CLINKER} -o OpenMPVersion OpenMPVersion.o
 	@${RM} -f OpenMPVersion.o
 
 SSEVersion: SSEVersion.o
@@ -36,20 +36,33 @@ PthreadVersion: PthreadVersion.o
 	@${RM} -f PthreadVersion.o
 
 # make streams [NPMAX=integer_number_of_MPI_processes_to_use] [MPI_BINDING='binding options']
-stream:  MPIVersion
+mpistream:  MPIVersion
 	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; printf " Run with [PETSC_OPTIONS=-process_view] make streams NPMAX=<integer number of MPI processes> [MPI_BINDING='-bind-to core -map-by numa']\n or       [I_MPI_PIN_PROCESSOR_LIST=:map=scatter] [PETSC_OPTIONS=-process_view] make streams NPMAX=<integer number of MPI processes>\n"; exit 1 ; fi
 	-@printf "" > scaling.log
-	-@printf "Running streams with '${MPIEXEC} ${MPI_BINDING}' using 'NPMAX=${NPMAX}' "
+	-@printf "Running streams with '${MPIEXEC} ${MPI_BINDING}' using 'NPMAX=${NPMAX}' \n"
 	-@i=0; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 1`; \
 	  ${MPIEXEC} ${MPI_BINDING} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done
 	-@echo "------------------------------------------------"
-	-@${PYTHON} process.py createfile
+	-@${PYTHON} process.py MPI fileoutput 
+
+openmpstream:  OpenMPVersion
+	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; printf " Run with make openmpstream NPMAX=<integer number of threads>\n"; exit 1 ; fi
+	-@printf "" > scaling.log
+	@-@printf "Running openmpstreams using 'NPMAX=${NPMAX}'\n"
+	-@i=0; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 1`; \
+	  OMP_NUM_THREADS=$${i} ./OpenMPVersion  | tee -a scaling.log;\
+        done
+	-@${PYTHON} process.py OpenMP fileoutput
 
 hwloc:
 	-@if [ "${LSTOPO}foo" != "foo" ]; then ${MPIEXEC} ${MPI_BINDING} -n 1 ${LSTOPO} --no-icaches --no-io --ignore PU ; fi
 
-streams: stream hwloc
-	-@${PYTHON} process.py
+mpistreams: mpistream hwloc
+	-@${PYTHON} process.py MPI
+
+
+openmpstreams: openmpstream hwloc
+	-@${PYTHON} process.py OpenMP
 
 
