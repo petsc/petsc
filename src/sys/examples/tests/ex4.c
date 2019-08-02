@@ -37,4 +37,6 @@ int main(int argc,char **argv)
    build:
       requires: complex
 
+   test:
+
 TEST*/
