@@ -20,14 +20,14 @@ Cones:
 [1]: 0 <---- 1 (0)
 [1]: 0 <---- 2 (0)
 coordinates with 1 fields
-  field 0 with 2 components
+  field 0 with 1 components
 Process 0:
-  (   2) dim  2 offset   0 0. 0.
-  (   3) dim  2 offset   2 0. 0.
-  (   4) dim  2 offset   4 0. 0.
+  (   2) dim  1 offset   0 0.
+  (   3) dim  1 offset   1 1.
+  (   4) dim  1 offset   2 2.
 Process 1:
-  (   1) dim  2 offset   0 0. 0.
-  (   2) dim  2 offset   2 1.99665e-314 8.14714e-321
+  (   1) dim  1 offset   0 2.
+  (   2) dim  1 offset   1 3.
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order

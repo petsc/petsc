@@ -280,7 +280,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   PetscInt       testNum = user->testNum;
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
-  PetscInt       spacedim=2,numCorners=2,i;
+  PetscInt       numCorners=2,i;
   PetscInt       numCells,numVertices,network;
   int            *cells;
   PetscReal      *coords;
@@ -303,7 +303,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
       dcoords[2*i] = i; dcoords[2*i+1] = i + 1;
     }
 
-    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, dcoords, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, user->dim, dcoords, dm);CHKERRQ(ierr);
     ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -359,7 +359,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
     default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
   }
-  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, spacedim, coords, NULL, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
   ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
