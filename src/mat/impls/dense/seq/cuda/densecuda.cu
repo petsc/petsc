@@ -305,9 +305,9 @@ static PetscErrorCode MatMatSolve_SeqDenseCUDA(Mat A,Mat B,Mat X)
   int                nrhs,n,lda,ldx;
 #if defined(PETSC_USE_DEBUG)
   int                info;
+  cudaError_t        ccer;
 #endif
   cusolverStatus_t   cerr;
-  cudaError_t        ccer;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -356,9 +356,9 @@ static PetscErrorCode MatSolve_SeqDenseCUDA_Private(Mat A,Vec xx,Vec yy,PetscBoo
   int                one = 1,n,lda;
 #if defined(PETSC_USE_DEBUG)
   int                info;
+  cudaError_t        ccer;
 #endif
   cusolverStatus_t   cerr;
-  cudaError_t        ccer;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
