@@ -268,6 +268,27 @@ def chkrhl9():
 ===============================================================================''')
   return 0
 
+def chktmpnoexec():
+  if not hasattr(os,'ST_NOEXEC'): return
+  if 'TMPDIR' in os.environ: tmpDir = os.environ['TMPDIR']
+  else: tmpDir = '/tmp'
+  if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC:
+    if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC:
+      print('************************************************************************')
+      print('* TMPDIR '+tmpDir+' has noexec attribute. Same with '+os.path.abspath('.')+' where petsc is built.')
+      print('* Suggest building PETSc in a location without this restriction!')
+      print('* Alternatively, set env variable TMPDIR to a location that is not restricted to run binaries.')
+      print('************************************************************************')
+      sys.exit(4)
+    else:
+      newTmp = os.path.abspath('tmp-petsc')
+      print('************************************************************************')
+      print('* TMPDIR '+tmpDir+' has noexec attribute. Using '+newTmp+' instead.')
+      print('************************************************************************')
+      if not os.path.isdir(newTmp): os.mkdir(os.path.abspath(newTmp))
+      os.environ['TMPDIR'] = newTmp
+  return
+
 def check_broken_configure_log_links():
   '''Sometime symlinks can get broken if the original files are deleted. Delete such broken links'''
   import os
@@ -368,6 +389,7 @@ def petsc_configure(configure_options):
   chkcygwinlink()
   chkdosfiles()
   chkcygwinwindowscompilers()
+  chktmpnoexec()
 
   # Should be run from the toplevel
   configDir = os.path.abspath('config')
