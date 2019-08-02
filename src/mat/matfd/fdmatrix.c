@@ -545,6 +545,8 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 
    Level: advanced
 
+   Note: IF the matrix type is BAIJ, then the block column indices are returned
+
    Fortran Note:
    This routine has a different interface for Fortran
 $     #include <petsc/finclude/petscmat.h>
