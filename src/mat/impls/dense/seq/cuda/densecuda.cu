@@ -243,7 +243,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
 #if PETSC_PKG_CUDA_VERSION_GE(10,1,0)
   Mat_SeqDense       *a = (Mat_SeqDense*)A->data;
   Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
-  const PetscScalar  *da;
+  PetscScalar        *da;
   PetscErrorCode     ierr;
   cudaError_t        ccer;
   cusolverStatus_t   cerr;
@@ -252,6 +252,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
 
   PetscFunctionBegin;
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(A->cmap->n,&n);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(a->lda,&lda);CHKERRQ(ierr);
   if (A->factortype == MAT_FACTOR_LU) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDngetri not implemented");
@@ -259,7 +260,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
     if (!dA->d_fact_ipiv) { /* spd */
       int il;
 
-      ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
+      ierr = MatDenseCUDAGetArray(A,&da);CHKERRQ(ierr);
       cerr = cusolverDnXpotri_bufferSize(handle,CUBLAS_FILL_MODE_LOWER,n,da,lda,&il);CHKERRCUSOLVER(cerr);
       if (il > dA->fact_lwork) {
         dA->fact_lwork = il;
@@ -271,7 +272,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
       cerr = cusolverDnXpotri(handle,CUBLAS_FILL_MODE_LOWER,n,da,lda,dA->d_fact_work,dA->fact_lwork,dA->d_fact_info);CHKERRCUSOLVER(cerr);
       ierr = WaitForGPU();CHKERRCUDA(ierr);
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-      ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
+      ierr = MatDenseCUDARestoreArray(A,&da);CHKERRQ(ierr);
       /* TODO (write cuda kernel) */
       ierr = MatSeqDenseSymmetrize_Private(A,PETSC_TRUE);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDnsytri not implemented");
