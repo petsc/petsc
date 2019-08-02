@@ -908,18 +908,50 @@ int main(int argc, char **argv)
 
   testset:
     nsize: {{1 2 4 5}}
-    args: -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
       suffix: 7_exo
       requires: exodusii
+      args: -distribute -petscpartitioner_type simple
       args: -interpolate {{none serial parallel}}
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     test:
+      TODO: This fails for nsize 5, but I already know why :-)
+      suffix: 7_exo_metis
+      requires: exodusii parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{serial parallel}}
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    test:
+      suffix: 7_hdf5_seqload
+      requires: hdf5 !complex
+      args: -distribute -petscpartitioner_type simple
+      args: -interpolate {{none serial parallel}}
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_force_sequential
+    test:
+      suffix: 7_hdf5_seqload_metis
+      requires: hdf5 !complex parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{serial parallel}}
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_force_sequential
+    test:
       suffix: 7_hdf5
       requires: hdf5 !complex
-      args: -interpolate {{none serial parallel}}
+      args: -interpolate {{none serial}}  #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-
+    test:
+      suffix: 7_hdf5_repart
+      requires: hdf5 !complex parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{serial}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    test:
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 7_hdf5_repart_ppu
+      requires: hdf5 !complex parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{none parallel}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
   test:
     suffix: 7_hdf5_hierarch
     requires: hdf5 ptscotch !complex
