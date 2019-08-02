@@ -3376,7 +3376,7 @@ PetscErrorCode MatSetFromOptions_MAIJ(PetscOptionItems *PetscOptionsObject,Mat A
   PetscErrorCode       ierr;
   /* By default, we convert MAIJ to MPIAIJ and then do PtAP.
    * If we convert it to MPIAIJ, it is better to use MPIAIJ at the first place.
-   * However, not sure other PETSc developers want to change it. So I
+   * However, not sure other PETSc developers want to change it or not. So I
    * still leave it as is.
    */
   const char          *algTypes[3] = {"mpiaij","allatonce","allatonce_merged"};

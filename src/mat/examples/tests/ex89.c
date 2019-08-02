@@ -1,6 +1,5 @@
 static char help[] ="Tests MatPtAP() for MPIMAIJ and MPIAIJ \n ";
 
-#include <petscdm.h>
 #include <petscdmda.h>
 
 int main(int argc,char **argv)
@@ -25,11 +24,13 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  M    = 100;
-  N    = 100;
-  Z    = 10;
+  M = 10; N = 10; Z = 10;
   dof  = 10;
 
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_3D",&Test_3D,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Z",&Z,NULL);CHKERRQ(ierr);
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&coarsedm);CHKERRQ(ierr);
@@ -84,7 +85,6 @@ int main(int argc,char **argv)
   /* Test P^T * A * P - MatPtAP() */
   /*------------------------------*/
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-  /*ierr = MatView(C,NULL);CHKERRQ(ierr);*/
   /* Test MAT_REUSE_MATRIX - reuse symbolic C */
   alpha=1.0;
   for (i=0; i<1; i++) {
@@ -138,73 +138,31 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      args: -Mx 10 -My 5 -Mz 10
+      args: -M 10 -N 10 -Z 10
+      output_file: output/ex89_1.out
+
+   test:
+      suffix: allatonce
+      nsize: 4
+      args: -M 10 -N 10 -Z 10 -matmaijptap_via allatonce
+      output_file: output/ex89_1.out
+
+   test:
+      suffix: allatonce_merged
+      nsize: 4
+      args: -M 10 -M 5 -M 10 -matmaijptap_via allatonce_merged
       output_file: output/ex96_1.out
 
    test:
-      suffix: nonscalable
-      nsize: 3
-      args: -Mx 10 -My 5 -Mz 10
+      suffix: allatonce_3D
+      nsize: 4
+      args: -M 10 -M 5 -M 10 -test_3D 1 -matmaijptap_via allatonce
       output_file: output/ex96_1.out
 
    test:
-      suffix: scalable
-      nsize: 3
-      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable
+      suffix: allatonce_merged_3D
+      nsize: 4
+      args: -M 10 -M 5 -M 10 -test_3D 1 -matmaijptap_via allatonce_merged
       output_file: output/ex96_1.out
-
-   test:
-     suffix: seq_scalable
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via scalable -inner_offdiag_matmatmult_via scalable
-     output_file: output/ex96_1.out
-
-   test:
-     suffix: seq_sorted
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via sorted -inner_offdiag_matmatmult_via sorted
-     output_file: output/ex96_1.out
-
-   test:
-     suffix: seq_scalable_fast
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via scalable_fast -inner_offdiag_matmatmult_via scalable_fast
-     output_file: output/ex96_1.out
-
-   test:
-     suffix: seq_heap
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via heap -inner_offdiag_matmatmult_via heap
-     output_file: output/ex96_1.out
-
-   test:
-     suffix: seq_btheap
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via btheap -inner_offdiag_matmatmult_via btheap
-     output_file: output/ex96_1.out
-
-   test:
-     suffix: seq_llcondensed
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via llcondensed -inner_offdiag_matmatmult_via llcondensed
-     output_file: output/ex96_1.out
-
-   test:
-     suffix: seq_rowmerge
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via rowmerge -inner_offdiag_matmatmult_via rowmerge
-     output_file: output/ex96_1.out
-
-   test:
-     suffix: allatonce
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via allatonce
-     output_file: output/ex96_1.out
-
-   test:
-     suffix: allatonce_merged
-     nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via allatonce_merged
-     output_file: output/ex96_1.out
 
 TEST*/
