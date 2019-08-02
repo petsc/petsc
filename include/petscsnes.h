@@ -537,6 +537,7 @@ typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHL2                 "l2"
 #define SNESLINESEARCHCP                 "cp"
 #define SNESLINESEARCHSHELL              "shell"
+#define SNESLINESEARCHNCGLINEAR          "ncglinear"
 
 PETSC_EXTERN PetscFunctionList SNESList;
 PETSC_EXTERN PetscClassId      SNESLINESEARCH_CLASSID;

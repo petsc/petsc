@@ -97,7 +97,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
             tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
             maximum iterations=1
         Up solver (post-smoother) same as down solver (pre-smoother)
-      maximum iterations=1, maximum function evaluations=10000
+      maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
       total number of function evaluations=0
       norm schedule FINALONLY

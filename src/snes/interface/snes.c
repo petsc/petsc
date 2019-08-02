@@ -833,7 +833,8 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
 .  -snes_fd_color - use finite differences with coloring to compute Jacobian
 .  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
--  -snes_converged_reason - print the reason for convergence/divergence after each solve
+.  -snes_converged_reason - print the reason for convergence/divergence after each solve
+-  -npc_snes_type <type> - the SNES type to use as a nonlinear preconditioner
 
     Options Database for Eisenstat-Walker method:
 +  -snes_ksp_ew - use Eisenstat-Walker method for determining linear system convergence
@@ -956,7 +957,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsString("-snes_monitor_python","Use Python function","SNESMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)snes,monfilename);CHKERRQ(ierr);}
 
-
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_monitor_lg_residualnorm","Plot function norm at each iteration","SNESMonitorLGResidualNorm",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
@@ -973,8 +973,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = SNESMonitorSet(snes,SNESMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
-
-
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESComputeJacobianDefault",flg,&flg,NULL);CHKERRQ(ierr);
@@ -1070,11 +1068,14 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
   }
 
-  /* if someone has set the SNES NPC type, create it. */
+  /* if user has set the SNES NPC type via options database, create it. */
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(((PetscObject)snes)->options,optionsprefix, "-npc_snes_type", &pcset);CHKERRQ(ierr);
   if (pcset && (!snes->npc)) {
     ierr = SNESGetNPC(snes, &snes->npc);CHKERRQ(ierr);
+  }
+  if (snes->npc) {
+    ierr = SNESSetFromOptions(snes->npc);CHKERRQ(ierr);
   }
   snes->setfromoptionscalled++;
   PetscFunctionReturn(0);
@@ -5341,8 +5342,11 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
   Output Parameter:
 . pc - preconditioner context
 
+  Options Database:
+. -npc_snes_type <type> - set the type of the SNES to use as the nonlinear preconditioner
+
   Notes:
-    If a SNES was previously set with SNESSetNPC() then that SNES is returned.
+    If a SNES was previously set with SNESSetNPC() then that SNES is returned, otherwise a new SNES object is created.
 
     The (preconditioner) SNES returned automatically inherits the same nonlinear function and Jacobian supplied to the original
     SNES during SNESSetUp()

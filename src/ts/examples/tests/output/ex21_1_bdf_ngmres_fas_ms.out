@@ -162,6 +162,6 @@ TS Object: 1 MPI processes
               total: nonzeros=1377, allocated nonzeros=1377
                 not using I-node routines
         Up solver (post-smoother) same as down solver (pre-smoother)
-      maximum iterations=1, maximum function evaluations=10000
+      maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
       norm schedule FINALONLY
