@@ -2981,8 +2981,8 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
   for (i=0; i<m; i++) {
     PetscInt          ncols  = ii[i+1] - ii[i];
     const PetscInt    *icols = jj + ii[i];
-    const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
-    if (!roworiented) {
+    if (bs == 1 || !roworiented) {
+      const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
       ierr = MatSetValuesBlocked_SeqBAIJ(B,1,&i,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
     } else {
       PetscInt j;
