@@ -17,12 +17,12 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_SELF,&ssbaij);CHKERRQ(ierr);
   ierr = MatSetType(ssbaij,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatSetBlockSize(ssbaij,2);CHKERRQ(ierr);
-  ierr = MatSetSizes(ssbaij,4,4,4,4);CHKERRQ(ierr);
+  ierr = MatSetSizes(ssbaij,4,8,4,8);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c);CHKERRQ(ierr);
   ierr = MatCreateMPIMatConcatenateSeqMat(PETSC_COMM_WORLD,ssbaij,PETSC_DECIDE,MAT_INITIAL_MATRIX,&msbaij);CHKERRQ(ierr);
   ierr = MatView(msbaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&msbaij);CHKERRQ(ierr);
-  ierr = MatCreateMPIMatConcatenateSeqMat(PETSC_COMM_WORLD,ssbaij,8,MAT_INITIAL_MATRIX,&msbaij);CHKERRQ(ierr);
+  ierr = MatCreateMPIMatConcatenateSeqMat(PETSC_COMM_WORLD,ssbaij,4,MAT_INITIAL_MATRIX,&msbaij);CHKERRQ(ierr);
   ierr = MatView(msbaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&msbaij);CHKERRQ(ierr);
   ierr = MatDestroy(&ssbaij);CHKERRQ(ierr);
