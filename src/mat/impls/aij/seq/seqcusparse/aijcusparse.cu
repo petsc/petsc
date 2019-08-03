@@ -870,7 +870,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
     matrixT->num_rows = A->cmap->n;
     matrixT->num_cols = A->rmap->n;
     matrixT->num_entries = a->nz;
-    matrixT->row_offsets = new THRUSTINTARRAY32(A->rmap->n+1);
+    matrixT->row_offsets = new THRUSTINTARRAY32(matrixT->num_rows+1);
     matrixT->column_indices = new THRUSTINTARRAY32(a->nz);
     matrixT->values = new THRUSTARRAY(a->nz);
 
