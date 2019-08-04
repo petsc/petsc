@@ -2055,7 +2055,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
    MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
    block column and the second index is over columns within a block.
 
-   Any entries below the diagaonl in are ignored
+   Any entries below the diagonal are ignored
 
    Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
    and usually the numerical values as well

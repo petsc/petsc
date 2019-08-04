@@ -3308,7 +3308,7 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
    Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
    and usually the numerical values as well
 
-   Any entries below the diagaonl in are ignored
+   Any entries below the diagonal are ignored
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ
 @*/
