@@ -18,7 +18,8 @@ class Configure(config.package.GNUPackage):
     self.mpi            = framework.require('config.packages.MPI', self)
     self.hdf5           = framework.require('config.packages.hdf5', self)
     self.netcdf         = framework.require('config.packages.netcdf', self)
-    self.deps           = [self.mpi]
+    self.pthread         = framework.require('config.packages.pthread', self)
+    self.deps           = [self.mpi,self.pthread]
     self.odeps          = [self.hdf5,self.netcdf,self.zlib]
     return
 

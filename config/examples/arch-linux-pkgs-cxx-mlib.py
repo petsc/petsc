@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+import os
+
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
 
 configure_options = [
   'COPTFLAGS=-g -O',
@@ -33,6 +37,7 @@ configure_options = [
   '--download-petsc4py=1',
   '--download-mpi4py=1',
   '--download-saws',
+  '--package-prefix-hash='+petsc_hash_pkgs,
   ]
 
 if __name__ == '__main__':
