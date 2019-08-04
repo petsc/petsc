@@ -1,4 +1,4 @@
-static char help[] = "Basic test of MatCreateMPIMatConcatenateSeqMat with SBAIJ matrices\n\n";
+static char help[] = "Basic test of various routines with SBAIJ matrices\n\n";
 
 #include <petscmat.h>
 
@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscScalar    c[16]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
   PetscMPIInt    size;
   Mat            ssbaij,msbaij;
+  Vec            x,y;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -24,6 +25,16 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&msbaij);CHKERRQ(ierr);
   ierr = MatCreateMPIMatConcatenateSeqMat(PETSC_COMM_WORLD,ssbaij,4,MAT_INITIAL_MATRIX,&msbaij);CHKERRQ(ierr);
   ierr = MatView(msbaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatCreateVecs(msbaij,&x,&y);CHKERRQ(ierr);
+  ierr = VecSet(x,1);CHKERRQ(ierr);
+  ierr = MatMult(msbaij,x,y);CHKERRQ(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatMultAdd(msbaij,x,x,y);CHKERRQ(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(msbaij,y);CHKERRQ(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = MatDestroy(&msbaij);CHKERRQ(ierr);
   ierr = MatDestroy(&ssbaij);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -34,5 +45,6 @@ int main(int argc,char **argv)
 
    test:
      nsize: 2
+     filter: sed "s?\.??g"
 
 TEST*/
