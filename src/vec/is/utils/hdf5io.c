@@ -1,5 +1,5 @@
 #include <petsc/private/viewerimpl.h>
-#include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
+#include <petsclayouthdf5.h>    /*I   "petsclayoutdf5.h"   I*/
 #include <petscis.h>    /*I   "petscis.h"   I*/
 
 #if defined(PETSC_HAVE_HDF5)
