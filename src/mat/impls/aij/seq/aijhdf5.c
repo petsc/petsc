@@ -2,7 +2,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
-#include <petscviewerhdf5.h>
+#include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)

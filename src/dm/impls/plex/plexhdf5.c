@@ -2,6 +2,7 @@
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
+#include <petsclayouthdf5.h>
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
