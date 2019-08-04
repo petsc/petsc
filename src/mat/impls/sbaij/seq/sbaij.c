@@ -1535,6 +1535,7 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
   ierr = MatSetBlockSize(B,PetscAbs(bs));CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+  if (B->rmap->N > B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"SEQSBAIJ matrix cannot have more rows %D than columns %D",B->rmap->N,B->cmap->N);
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
 
   B->preallocated = PETSC_TRUE;
@@ -1891,10 +1892,11 @@ PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
      stored and it is assumed they symmetric to the upper triangular). If you call MatSetOption(Mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_FALSE) or use
      the options database -mat_ignore_lower_triangular false it will generate an error if you try to set a value in the lower triangular portion.
 
+    The number of rows in the matrix must be less than or equal to the number of columns
 
   Level: beginner
 
-  .seealso: MatCreateSeqSBAIJ
+  .seealso: MatCreateSeqSBAIJ(), MatType, MATMPISBAIJ
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 {
