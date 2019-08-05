@@ -68,7 +68,7 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A[0],MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #else
-    ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU is not installed, use PETSC LU\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU is not installed, using PETSC LU\n");CHKERRQ(ierr);
 #endif
   case 2:
 #if defined(PETSC_HAVE_MUMPS)
@@ -94,7 +94,7 @@ int main(int argc,char **args)
 
   /* Compute numeric factors using same F, then solve */
   for (k = 0; k < num_numfac; k++) {
-    /* Update A[k] */
+    /* A[k] can be updated */
     if (!rank) {
       value[0]=(PetscScalar)(k);
       i = 0;
