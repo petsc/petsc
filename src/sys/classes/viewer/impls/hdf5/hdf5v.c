@@ -546,7 +546,7 @@ PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 
 .seealso: PetscViewerHDF5Open(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup(),PetscViewerHDF5OpenGroup()
 @*/
-PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
+PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
   PetscViewerHDF5GroupList *groupNode;
@@ -607,7 +607,7 @@ PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 
 .seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5OpenGroup()
 @*/
-PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
+PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char *name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
 
