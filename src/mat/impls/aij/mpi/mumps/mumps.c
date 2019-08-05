@@ -225,7 +225,7 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
   MatConvertToTriples_A_B - convert Petsc matrix to triples: row[nz], col[nz], val[nz]
 
   input:
-    A       - matrix in aij,baij or sbaij (bs=1) format
+    A       - matrix in aij,baij or sbaij format
     shift   - 0: C style output triple; 1: Fortran style output triple.
     reuse   - MAT_INITIAL_MATRIX: spaces are allocated and values are set for the triple
               MAT_REUSE_MATRIX:   only the values in v array are updated
@@ -335,11 +335,14 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
 
 PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r, int **c, PetscScalar **v)
 {
-  const PetscInt *ai, *aj,*ajj,M=A->rmap->n;
-  PetscInt       nz,rnz,i,j;
-  PetscErrorCode ierr;
-  PetscInt       *row,*col;
-  Mat_SeqSBAIJ   *aa=(Mat_SeqSBAIJ*)A->data;
+  const PetscInt *ai, *aj,*ajj;
+  PetscInt        nz,rnz,i,j,k,m,bs;
+  PetscErrorCode  ierr;
+  PetscInt        *row,*col;
+  PetscScalar     *val;
+  Mat_SeqSBAIJ    *aa=(Mat_SeqSBAIJ*)A->data;
+  const PetscInt  bs2=aa->bs2,mbs=aa->mbs;
+  const PetscBool roworiented=aa->roworiented;
 #if defined(PETSC_USE_COMPLEX)
   PetscBool      hermitian;
 #endif
@@ -349,26 +352,55 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
   ierr = MatGetOption(A,MAT_HERMITIAN,&hermitian);CHKERRQ(ierr);
   if (hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
-  *v = aa->a;
+  ai   = aa->i;
+  aj   = aa->j;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = aa->nz;
-    ai   = aa->i;
-    aj   = aa->j;
-    *v   = aa->a;
-    *nnz = nz;
-    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
-    col  = row + nz;
+    ierr = PetscMalloc((2*bs2*nz*sizeof(PetscInt)+bs2*nz*sizeof(PetscScalar)), &row);CHKERRQ(ierr);
+    col  = row + bs2*nz;
+    val  = (PetscScalar*)(col + bs2*nz);
 
-    nz = 0;
-    for (i=0; i<M; i++) {
-      rnz = ai[i+1] - ai[i];
-      ajj = aj + ai[i];
+    *r = row; *c = col; *v = val;
+  } else {
+    row = *r; col = *c; val = *v;
+  }
+
+  nz = 0;
+  for (i=0; i<mbs; i++) {
+    rnz = ai[i+1] - ai[i];
+    ajj = aj + ai[i];
+    if (roworiented) {
       for (j=0; j<rnz; j++) {
-        row[nz] = i+shift; col[nz++] = ajj[j] + shift;
+        for (k=0; k<bs; k++) {
+          for (m=0; m<bs; m++) {
+            if (ajj[j]>i || m>=k) {
+              if (reuse == MAT_INITIAL_MATRIX) {
+                row[nz] = i*bs + k + shift;
+                col[nz] = ajj[j]*bs + m + shift;
+              }
+              val[nz++] = aa->a[(ai[i]+j)*bs2 + m + k*bs];
+            }
+          }
+        }
+      }
+    } else {
+      for (j=0; j<rnz; j++) {
+        for (k=0; k<bs; k++) {
+          for (m=0; m<bs; m++) {
+            if (ajj[j]>i || m>=k) {
+              if (reuse == MAT_INITIAL_MATRIX) {
+                row[nz] = i*bs + m + shift;
+                col[nz] = ajj[j]*bs + k + shift;
+              }
+              val[nz++] = aa->a[(ai[i]+j)*bs2 + m + k*bs];
+            }
+          }
+        }
       }
     }
-    *r = row; *c = col;
   }
+  *nnz = nz;
   PetscFunctionReturn(0);
 }
 
@@ -2625,7 +2657,6 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
-  if (A->rmap->bs > 1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with block size > 1 with MUMPS Cholesky, use AIJ matrix instead");
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   /* Create the factorization matrix */
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
