@@ -267,9 +267,17 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   KSP            ksp;
   PetscReal      shift;
   PetscScalar    *xarr;
+  TSEquationType eqtype;
+  PetscBool      isexplicitode = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSGetEquationType(ts,&eqtype);CHKERRQ(ierr);
+  if (eqtype == TS_EQ_ODE_EXPLICIT) {
+    isexplicitode  = PETSC_TRUE;
+    VecsDeltaLam  = ts->vecs_sensi;
+    VecsDeltaLam2 = ts->vecs_sensi2;
+  }
   th->status = TS_STEP_INCOMPLETE;
   ierr = SNESGetKSP(ts->snes,&ksp);CHKERRQ(ierr);
   ierr = TSGetIJacobian(ts,&J,&Jpre,NULL,NULL);CHKERRQ(ierr);
@@ -345,18 +353,20 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   }
 
   /* Update sensitivities, and evaluate integrals if there is any */
-  shift = 0.0;
-  ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jpre,PETSC_FALSE);CHKERRQ(ierr); /* get -f_U */
-  ierr  = MatScale(J,-1.);CHKERRQ(ierr);
-  for (nadj=0; nadj<ts->numcost; nadj++) {
-    /* Add f_U \lambda_s to the original RHS */
-    ierr = MatMultTransposeAdd(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj],VecsSensiTemp[nadj]);CHKERRQ(ierr);
-    ierr = VecScale(VecsSensiTemp[nadj],th->time_step);CHKERRQ(ierr);
-    ierr = VecCopy(VecsSensiTemp[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);
-    if (ts->vecs_sensi2) {
-      ierr = MatMultTransposeAdd(J,VecsDeltaLam2[nadj],VecsSensi2Temp[nadj],VecsSensi2Temp[nadj]);CHKERRQ(ierr);
-      ierr = VecScale(VecsSensi2Temp[nadj],th->time_step);CHKERRQ(ierr);
-      ierr = VecCopy(VecsSensi2Temp[nadj],ts->vecs_sensi2[nadj]);CHKERRQ(ierr);
+  if (!isexplicitode) {
+    shift = 0.0;
+    ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jpre,PETSC_FALSE);CHKERRQ(ierr); /* get -f_U */
+    ierr  = MatScale(J,-1.);CHKERRQ(ierr);
+    for (nadj=0; nadj<ts->numcost; nadj++) {
+      /* Add f_U \lambda_s to the original RHS */
+      ierr = MatMultTransposeAdd(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj],VecsSensiTemp[nadj]);CHKERRQ(ierr);
+      ierr = VecScale(VecsSensiTemp[nadj],th->time_step);CHKERRQ(ierr);
+      ierr = VecCopy(VecsSensiTemp[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);
+      if (ts->vecs_sensi2) {
+        ierr = MatMultTransposeAdd(J,VecsDeltaLam2[nadj],VecsSensi2Temp[nadj],VecsSensi2Temp[nadj]);CHKERRQ(ierr);
+        ierr = VecScale(VecsSensi2Temp[nadj],th->time_step);CHKERRQ(ierr);
+        ierr = VecCopy(VecsSensi2Temp[nadj],ts->vecs_sensi2[nadj]);CHKERRQ(ierr);
+      }
     }
   }
   if (ts->vecs_sensip) {
