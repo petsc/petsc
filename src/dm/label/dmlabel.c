@@ -1148,6 +1148,10 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
 
   Level: intermediate
 
+  Notes:
+  The output IS should be destroyed when no longer needed.
+  Returns NULL if the stratum is empty.
+
 .seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
 @*/
 PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
