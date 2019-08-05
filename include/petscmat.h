@@ -705,12 +705,10 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-   Use MatPreallocateInitializeSymmetric() for symmetric matrices (MPISBAIJ matrices)
-
    This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
-          MatPreallocateInitializeSymmetric(), MatPreallocateSymmetricSetLocalBlock()
+          MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 do { \

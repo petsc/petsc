@@ -3907,12 +3907,9 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm,Mat inmat,
     ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
     mbs = m/bs; Nbs = N/cbs;
     if (n == PETSC_DECIDE) {
-      nbs  = n;
-      ierr = PetscSplitOwnership(comm,&nbs,&Nbs);CHKERRQ(ierr);
-      n    = nbs*cbs;
-    } else {
-      nbs = n/cbs;
+      ierr = PetscSplitOwnershipBlock(comm,cbs,&n,&N);
     }
+    nbs = n/cbs;
 
     ierr = PetscMalloc1(rmax,&bindx);CHKERRQ(ierr);
     ierr = MatPreallocateInitialize(comm,mbs,nbs,dnz,onz);CHKERRQ(ierr); /* inline function, output __end and __rstart are used below */

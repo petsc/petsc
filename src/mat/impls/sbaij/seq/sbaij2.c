@@ -297,6 +297,7 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -348,6 +349,7 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -402,6 +404,7 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -459,6 +462,7 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -520,6 +524,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -582,6 +587,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -650,6 +656,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);x_ptr = x;
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr); z_ptr=z;
 
@@ -714,6 +721,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   v    = a->a;
@@ -756,6 +764,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -807,6 +816,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -862,6 +872,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -920,6 +931,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -980,6 +992,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -1044,6 +1057,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -1111,6 +1125,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr); x_ptr=x;
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr); z_ptr=z;
 
@@ -1188,6 +1203,10 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   const PetscInt  *aj=a->j,*col;
 
   PetscFunctionBegin;
+  if (!a->nz) {
+    *norm = 0.0;
+    PetscFunctionReturn(0);
+  }
   if (type == NORM_FROBENIUS) {
     for (k=0; k<mbs; k++) {
       jmin = a->i[k]; jmax = a->i[k+1];
@@ -1319,6 +1338,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   aj   = a->j;
   bs2  = a->bs2;
   ierr = VecSet(v,zero);CHKERRQ(ierr);
+  if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<ambs; i++) {
     j=ai[i];

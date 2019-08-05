@@ -3313,23 +3313,28 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm,Mat inmat
   ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) { /* symbolic phase */
     Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inmat->data;
-    PetscInt       *dnz,*onz,sum,bs,cbs,mbs,Nbs;
+    PetscInt       *dnz,*onz,mbs,Nbs,nbs;
     PetscInt       *bindx,rmax=a->rmax,j;
+    PetscMPIInt    rank,size;
 
     ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
     mbs = m/bs; Nbs = N/cbs;
     if (n == PETSC_DECIDE) {
-      ierr = PetscSplitOwnership(comm,&n,&Nbs);CHKERRQ(ierr);
+      ierr = PetscSplitOwnershipBlock(comm,cbs,&n,&N);
     }
-    /* Check sum(n) = N */
-    ierr = MPIU_Allreduce(&n,&sum,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (sum != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns %D != global columns %D",sum,N);
-
-    ierr    = MPI_Scan(&mbs, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    rstart -= mbs;
+    nbs = n/cbs;
 
     ierr = PetscMalloc1(rmax,&bindx);CHKERRQ(ierr);
-    ierr = MatPreallocateInitialize(comm,mbs,n,dnz,onz);CHKERRQ(ierr);
+    ierr = MatPreallocateInitialize(comm,mbs,nbs,dnz,onz);CHKERRQ(ierr); /* inline function, output __end and __rstart are used below */
+
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&size);CHKERRQ(ierr);
+    if (rank == size-1) {
+      /* Check sum(nbs) = Nbs */
+      if (__end != Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local block columns %D != global block columns %D",__end,Nbs);
+    }
+
+    rstart = __rstart; /* block rstart of *outmat; see inline function MatPreallocateInitialize */
     ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = MatGetRow_SeqSBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr); /* non-blocked nnz and indx */
@@ -3342,7 +3347,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm,Mat inmat
     ierr = PetscFree(bindx);CHKERRQ(ierr);
 
     ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(*outmat,m,n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
     ierr = MatSetType(*outmat,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*outmat,bs,0,dnz);CHKERRQ(ierr);
