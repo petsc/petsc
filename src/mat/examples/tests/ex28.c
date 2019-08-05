@@ -94,15 +94,6 @@ int main(int argc,char **args)
 
   /* Compute numeric factors using same F, then solve */
   for (k = 0; k < num_numfac; k++) {
-    /* A[k] can be updated */
-    if (!rank) {
-      value[0]=(PetscScalar)(k);
-      i = 0;
-      ierr = MatSetValues(A[k],1,&i,1,&i,value,ADD_VALUES);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(A[k],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A[k],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
     /* Get numeric factor of A[k] */
     ierr = MatLUFactorNumeric(F,A[k],&info);CHKERRQ(ierr);
 
