@@ -494,7 +494,7 @@ PetscErrorCode  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC))
 +  pc - the preconditioner context
 -  view - the application-provided view routine
 
-   Calling sequence of apply:
+   Calling sequence of view:
 .vb
    PetscErrorCode view(PC pc,PetscViewer v)
 .ve
@@ -633,7 +633,7 @@ PetscErrorCode  PCShellSetApplySymmetricRight(PC pc,PetscErrorCode (*apply)(PC,V
 +  pc - the preconditioner context
 -  applyBA - the application-provided BA routine
 
-   Calling sequence of apply:
+   Calling sequence of applyBA:
 .vb
    PetscErrorCode applyBA (PC pc,Vec xin,Vec xout)
 .ve
