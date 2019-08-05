@@ -342,7 +342,6 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
   PetscScalar     *val;
   Mat_SeqSBAIJ    *aa=(Mat_SeqSBAIJ*)A->data;
   const PetscInt  bs2=aa->bs2,mbs=aa->mbs;
-  const PetscBool roworiented=aa->roworiented;
 #if defined(PETSC_USE_COMPLEX)
   PetscBool      hermitian;
 #endif
@@ -357,9 +356,12 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = aa->nz;
-    ierr = PetscMalloc((2*bs2*nz*sizeof(PetscInt)+bs2*nz*sizeof(PetscScalar)), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc((2*bs2*nz*sizeof(PetscInt)+(bs>1?bs2*nz*sizeof(PetscScalar):0)), &row);CHKERRQ(ierr);
     col  = row + bs2*nz;
-    val  = (PetscScalar*)(col + bs2*nz);
+    if (bs>1)
+      val = (PetscScalar*)(col + bs2*nz);
+    else
+      val = aa->a;
 
     *r = row; *c = col; *v = val;
   } else {
@@ -367,24 +369,10 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
   }
 
   nz = 0;
-  for (i=0; i<mbs; i++) {
-    rnz = ai[i+1] - ai[i];
-    ajj = aj + ai[i];
-    if (roworiented) {
-      for (j=0; j<rnz; j++) {
-        for (k=0; k<bs; k++) {
-          for (m=0; m<bs; m++) {
-            if (ajj[j]>i || m>=k) {
-              if (reuse == MAT_INITIAL_MATRIX) {
-                row[nz] = i*bs + k + shift;
-                col[nz] = ajj[j]*bs + m + shift;
-              }
-              val[nz++] = aa->a[(ai[i]+j)*bs2 + m + k*bs];
-            }
-          }
-        }
-      }
-    } else {
+  if (bs>1) {
+    for (i=0; i<mbs; i++) {
+      rnz = ai[i+1] - ai[i];
+      ajj = aj + ai[i];
       for (j=0; j<rnz; j++) {
         for (k=0; k<bs; k++) {
           for (m=0; m<bs; m++) {
@@ -399,6 +387,15 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
         }
       }
     }
+  } else if (reuse == MAT_INITIAL_MATRIX) {
+    for (i=0; i<mbs; i++) {
+      rnz = ai[i+1] - ai[i];
+      ajj = aj + ai[i];
+      for (j=0; j<rnz; j++) {
+        row[nz] = i+shift; col[nz++] = ajj[j] + shift;
+      }
+    }
+    if (nz != aa->nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Different numbers of nonzeros %D != %D",nz,aa->nz);
   }
   *nnz = nz;
   PetscFunctionReturn(0);
