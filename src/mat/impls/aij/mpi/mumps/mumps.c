@@ -333,7 +333,7 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r, int **c, PetscScalar **v)
+PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r,int **c,PetscScalar **v)
 {
   const PetscInt *ai, *aj,*ajj;
   PetscInt        nz,rnz,i,j,k,m,bs;
@@ -376,7 +376,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
       for (j=0; j<rnz; j++) {
         for (k=0; k<bs; k++) {
           for (m=0; m<bs; m++) {
-            if (ajj[j]>i || m>=k) {
+            if (ajj[j]>i || k>=m) {
               if (reuse == MAT_INITIAL_MATRIX) {
                 row[nz] = i*bs + m + shift;
                 col[nz] = ajj[j]*bs + k + shift;
@@ -507,17 +507,18 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r, int **c, PetscScalar **v)
+PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r,int **c, PetscScalar **v)
 {
-  const PetscInt    *ai, *aj, *bi, *bj,*garray,m=A->rmap->n,*ajj,*bjj;
+  const PetscInt    *ai,*aj,*bi,*bj,*garray,*ajj,*bjj;
   PetscErrorCode    ierr;
-  PetscInt          rstart,nz,i,j,jj,irow,countA,countB;
+  PetscInt          rstart,nz,bs,i,j,k,m,jj,irow,countA,countB;
   PetscInt          *row,*col;
-  const PetscScalar *av, *bv,*v1,*v2;
+  const PetscScalar *av,*bv,*v1,*v2;
   PetscScalar       *val;
   Mat_MPISBAIJ      *mat = (Mat_MPISBAIJ*)A->data;
   Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ*)(mat->A)->data;
   Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ*)(mat->B)->data;
+  const PetscInt    bs2=aa->bs2,mbs=aa->mbs;
 #if defined(PETSC_USE_COMPLEX)
   PetscBool         hermitian;
 #endif
@@ -527,6 +528,7 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse re
   ierr = MatGetOption(A,MAT_HERMITIAN,&hermitian);CHKERRQ(ierr);
   if (hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   rstart = A->rmap->rstart;
   ai = aa->i;
   aj = aa->j;
@@ -539,10 +541,9 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse re
 
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = aa->nz + bb->nz;
-    *nnz = nz;
-    ierr = PetscMalloc((2*nz*sizeof(PetscInt)+nz*sizeof(PetscScalar)), &row);CHKERRQ(ierr);
-    col  = row + nz;
-    val  = (PetscScalar*)(col + nz);
+    ierr = PetscMalloc((2*bs2*nz*sizeof(PetscInt)+bs2*nz*sizeof(PetscScalar)), &row);CHKERRQ(ierr);
+    col  = row + bs2*nz;
+    val  = (PetscScalar*)(col + bs2*nz);
 
     *r = row; *c = col; *v = val;
   } else {
@@ -550,31 +551,60 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse re
   }
 
   jj = 0; irow = rstart;
-  for (i=0; i<m; i++) {
+  for (i=0; i<mbs; i++) {
     ajj    = aj + ai[i];                 /* ptr to the beginning of this row */
     countA = ai[i+1] - ai[i];
     countB = bi[i+1] - bi[i];
     bjj    = bj + bi[i];
-    v1     = av + ai[i];
-    v2     = bv + bi[i];
+    v1     = av + ai[i]*bs2;
+    v2     = bv + bi[i]*bs2;
 
-    /* A-part */
-    for (j=0; j<countA; j++) {
-      if (reuse == MAT_INITIAL_MATRIX) {
-        row[jj] = irow + shift; col[jj] = rstart + ajj[j] + shift;
+    if (bs>1) {
+      /* A-part */
+      for (j=0; j<countA; j++) {
+        for (k=0; k<bs; k++) {
+          for (m=0; m<bs; m++) {
+            if (rstart + ajj[j]*bs>irow || k>=m) {
+              if (reuse == MAT_INITIAL_MATRIX) {
+                row[jj] = irow + m + shift; col[jj] = rstart + ajj[j]*bs + k + shift;
+              }
+              val[jj++] = v1[j*bs2 + m + k*bs];
+            }
+          }
+        }
       }
-      val[jj++] = v1[j];
-    }
 
-    /* B-part */
-    for (j=0; j < countB; j++) {
-      if (reuse == MAT_INITIAL_MATRIX) {
-        row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
+      /* B-part */
+      for (j=0; j < countB; j++) {
+        for (k=0; k<bs; k++) {
+          for (m=0; m<bs; m++) {
+            if (reuse == MAT_INITIAL_MATRIX) {
+              row[jj] = irow + m + shift; col[jj] = garray[bjj[j]]*bs + k + shift;
+            }
+            val[jj++] = v2[j*bs2 + m + k*bs];
+          }
+        }
       }
-      val[jj++] = v2[j];
+    } else {
+      /* A-part */
+      for (j=0; j<countA; j++) {
+        if (reuse == MAT_INITIAL_MATRIX) {
+          row[jj] = irow + shift; col[jj] = rstart + ajj[j] + shift;
+        }
+        val[jj++] = v1[j];
+      }
+
+      /* B-part */
+      for (j=0; j < countB; j++) {
+        if (reuse == MAT_INITIAL_MATRIX) {
+          row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
+        }
+        val[jj++] = v2[j];
+      }
     }
-    irow++;
+    irow+=bs;
   }
+  *nnz = jj;
   PetscFunctionReturn(0);
 }
 
