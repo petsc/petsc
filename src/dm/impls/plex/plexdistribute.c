@@ -1049,7 +1049,6 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   ierr = MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
   if (sendDepth) {
     ierr = DMRemoveLabel(dmParallel, "depth", &depthLabel);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&depthLabel);CHKERRQ(ierr);
   }
   /* Everyone must have either the same number of labels, or none */
   ierr = DMGetNumLabels(dm, &numLocalLabels);CHKERRQ(ierr);
