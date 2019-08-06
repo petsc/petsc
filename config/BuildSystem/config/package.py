@@ -84,7 +84,7 @@ class Package(config.base.Configure):
     self.usesopenmp             = 'no'  # yes, no, unknow package is built to use OpenMP
 
     # Outside coupling
-    self.defaultInstallDir      = os.path.abspath('externalpackages')
+    self.defaultInstallDir      = ''
     self.installSudo            = '' # if user does not have write access to prefix directory then this is set to sudo
 
     self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
@@ -288,13 +288,12 @@ class Package(config.base.Configure):
     return
   arch = property(getArch, setArch, doc = 'The architecture identifier')
 
+  # This construct should be removed and just have getInstallDir() handle the process
   def getDefaultInstallDir(self):
     '''The installation directroy of the library'''
     if hasattr(self, 'installDirProvider'):
       if hasattr(self.installDirProvider, 'dir'):
         return self.installDirProvider.dir
-    elif not self.framework.externalPackagesDir is None:
-      return self.framework.externalPackagesDir
     return self._defaultInstallDir
   def setDefaultInstallDir(self, defaultInstallDir):
     '''The installation directory of the library'''
@@ -321,6 +320,9 @@ class Package(config.base.Configure):
     return ['']
 
   def getInstallDir(self):
+    '''Returns --prefix (or the value computed from --package-prefix-hash) if provided otherwise $PETSC_DIR/$PETSC_ARCH'''
+    '''Special case for packages such as sowing that are have self.publicInstall == 0 it always locates them in $PETSC_DIR/$PETSC_ARCH'''
+    '''Special special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
     if not self.packageDir: self.packageDir = self.downLoad()
@@ -384,7 +386,60 @@ class Package(config.base.Configure):
       return [inc for inc in iDirs if os.path.exists(inc)]
     return os.path.join(prefix, includeDir)
 
+  def checkPackageInDefaultLocations(self,mess):
+    '''This does not work for the reasons below so is turned off; perhaps the simplier model of just use ls'''
+    '''to look for the offending library files and includes files would work'''
+    '''Errors if the package is found by the compiler in a default location, such as /usr/local'''
+    '''This will miss some cases with libraries, for example if --download-hdf5 --download-pnetcdf is used because'''
+    '''it has to remove the current install directory from the search path where hdf5 is stored, hence even if pnetcdf is in /usr/lib'''
+    '''the test will fail since its required dependency hdf5 cannot be found. If the include file is found it will still detect the problem'''
+    self.logPrint(self.PACKAGE+': Checking if package is already installed in default locations, will error if this is the case')
+
+    # need to remove the PETSc prefix library and include locations from the search otherwise it will find the packages
+    # own previous install and think it is in the default location. Note: The configure model for handling libs and include
+    # directories by simply shoving them into global variables is terrible, but we are stuck with it.
+    self.pushLanguage('Cxx')
+    flagsArg = self.getPreprocessorFlagsArg()
+    oldLibs = self.setCompilers.LIBS
+    oldincludes = getattr(self.compilers, flagsArg)
+    loc = self.defaultInstallDir
+    newLibs = ' '.join([x for x in oldLibs.split(' ') if not x == '-L'+loc])
+    newincludes = ' '.join([x for x in oldincludes.split(' ') if not x == '-I'+loc])
+    self.setCompilers.LIBS = newLibs
+    setattr(self.compilers, flagsArg, newincludes)
+
+    for lib in self.generateLibList(''):
+      if not lib: continue
+      self.logWrite('Checking for '+str(lib)+' in "default locations" '+newLibs+'\n')
+      self.logWrite('Checking for '+str(self.includes)+' in "default locations" '+newincludes+'\n')
+      self.libraries.saveLog()
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}) or (self.includes and self.checkInclude([], self.includes)):
+        self.logWrite(self.libraries.restoreLog())
+        raise RuntimeError('You requested that PETSc '+mess+' but configure has detected the package already installed in a compiler default location\n\
+(for example /usr/ or /usr/local) you must remove this installation to use the install you desire')
+      else:
+        self.logWrite(self.libraries.restoreLog())
+
+    self.logPrint(self.PACKAGE+': Not already installed in default locations')
+    # put back the old list of libs and includes
+    setattr(self.compilers, flagsArg, oldincludes)
+    self.setCompilers.LIBS = oldLibs
+    self.popLanguage()
+
+  def addToArgs(self,args,key,value):
+    found = 0
+    for i in range(0,len(args)):
+      if args[i].startswith(key+'='):
+        args[i] = args[i][0:-1] + ' '+ value +'"'
+        found = 1
+    if not found: args.append(key+'="'+value+'"')
+
   def generateGuesses(self):
+    #if 'download-'+self.package in self.argDB and self.argDB['download-'+self.package]:
+      #self.checkPackageInDefaultLocations('install '+self.package)
+    #if not self.package == 'mpi' and 'with-'+self.package+'-dir' in self.argDB and not self.argDB['with-'+self.package+'-dir'] == os.path.join('/usr','local'):
+      #self.checkPackageInDefaultLocations('use '+self.package+' installed at '+self.argDB['with-'+self.package+'-dir'])
+
     d = self.checkDownload()
     if d:
       if not self.liblist or not self.liblist[0] or self.builtafterpetsc :
@@ -504,7 +559,7 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    if self.argDB['with-batch'] and self.argDB['download-'+self.package] and not self.installwithbatch: raise RuntimeError('--download-'+self.name+' cannot be used on batch systems. You must either\n\
+    if self.argDB['with-batch'] and self.argDB['download-'+self.package] and not (hasattr(self.setCompilers,'cross_cc') or self.installwithbatch): raise RuntimeError('--download-'+self.name+' cannot be used on batch systems. You must either\n\
     1) load the appropriate module on your system and use --with-'+self.name+' or \n\
     2) locate its installation on your machine or install it yourself and use --with-'+self.name+'-dir=path\n')
 
@@ -832,7 +887,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 1800.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 40.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
@@ -1422,17 +1477,24 @@ class GNUPackage(Package):
     args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     ## compiler args
     self.pushLanguage('C')
-    compiler = self.getCompiler()
-    args.append('CC="'+self.getCompiler()+'"')
+    if not self.installwithbatch and hasattr(self.setCompilers,'cross_cc'):
+      args.append('CC="'+self.setCompilers.cross_cc+'"')
+    else:
+      args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
+    if not self.installwithbatch and hasattr(self.setCompilers,'cross_LIBS'):
+      args.append('LIBS="'+self.setCompilers.cross_LIBS+'"')
     if self.setCompilers.LDFLAGS:
       args.append('LDFLAGS="'+self.setCompilers.LDFLAGS+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
-      args.append('CXX="'+self.getCompiler()+'"')
+      if not self.installwithbatch and hasattr(self.setCompilers,'cross_CC'):
+        args.append('CXX="'+self.setCompilers.cross_CC+'"')
+      else:
+        args.append('CXX="'+self.getCompiler()+'"')
       args.append('CXXFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
       self.popLanguage()
     else:
@@ -1450,13 +1512,20 @@ class GNUPackage(Package):
           fc = os.path.join(os.path.dirname(fc), 'xlf')
           self.log.write('Using IBM f90 compiler, switching to xlf for compiling ' + self.PACKAGE + '\n')
         # now set F90
-        args.append('F90="'+fc+'"')
+        if not self.installwithbatch and hasattr(self.setCompilers,'cross_fc'):
+          args.append('F90="'+self.setCompilers.cross_fc+'"')
+        else:
+          args.append('F90="'+fc+'"')
         args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
       else:
         args.append('--disable-f90')
-      args.append('F77="'+fc+'"')
       args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
-      args.append('FC="'+fc+'"')
+      if not self.installwithbatch and hasattr(self.setCompilers,'cross_fc'):
+        args.append('FC="'+self.setCompilers.cross_fc+'"')
+        args.append('F77="'+self.setCompilers.cross_fc+'"')
+      else:
+        args.append('FC="'+fc+'"')
+        args.append('F77="'+fc+'"')
       args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
       self.popLanguage()
     else:
