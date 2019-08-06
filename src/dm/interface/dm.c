@@ -7095,9 +7095,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr   = DMHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
   *label = NULL;
-  if (!hasLabel) PetscFunctionReturn(0);
   while (next) {
     ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
