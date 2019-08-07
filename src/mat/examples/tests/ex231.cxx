@@ -9,6 +9,7 @@ static char help[] = "A test for MatAssembly that heavily relies on PetscSortInt
 
    Contributed-by: Fande Kong <fdkong.jd@gmail.com>, John Peterson <jwpeterson@gmail.com>
  */
+#define PETSC_SKIP_CXX_COMPLEX_FIX
 
 // PETSc includes
 #include <petscmat.h>
