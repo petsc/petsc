@@ -972,62 +972,106 @@ int main(int argc, char **argv)
       suffix: 6_parint_hex
       args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton
 
-  testset:
-    nsize: {{1 2 4 5}}
+  testset: # 7 EXODUS
+    requires: exodusii
     args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
-    test:
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    args: -distribute
+    test: # seq load, simple partitioner
       suffix: 7_exo
-      requires: exodusii
-      args: -distribute -petscpartitioner_type simple
-      args: -interpolate {{none serial parallel}}
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
-    test:
-      TODO: This fails for nsize 5, but I already know why :-)
-      suffix: 7_exo_metis
-      requires: exodusii parmetis
-      args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate {{serial parallel}}
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
-    test:
-      suffix: 7_hdf5_seqload
-      requires: hdf5 !complex
-      args: -distribute -petscpartitioner_type simple
-      args: -interpolate {{none serial parallel}}
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_force_sequential
-    test:
-      suffix: 7_hdf5_seqload_metis
-      requires: hdf5 !complex parmetis
-      args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate {{serial parallel}}
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_force_sequential
-    test:
-      suffix: 7_hdf5
-      requires: hdf5 !complex
-      args: -interpolate {{none serial}}  #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-    test:
-      suffix: 7_hdf5_repart
-      requires: hdf5 !complex parmetis
-      args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate {{serial}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 7_hdf5_repart_ppu
-      requires: hdf5 !complex parmetis
-      args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate {{none parallel}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-  test:
-    suffix: 7_hdf5_hierarch
-    requires: hdf5 ptscotch !complex
-    nsize: {{2 3 4}separate output}
-    args: -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
-    args: -interpolate serial
+      nsize: {{1 2 4 5}}
+      args: -interpolate none
+    test: # seq load, seq interpolation, simple partitioner
+      suffix: 7_exo_int_simple
+      nsize: {{1 2 4 5}}
+      args: -interpolate serial
+    test: # seq load, seq interpolation, metis partitioner
+      suffix: 7_exo_int_metis
+      requires: parmetis
+      nsize: {{2 4 5}}
+      args: -interpolate serial
+      args: -petscpartitioner_type parmetis
+    test: # seq load, simple partitioner, par interpolation
+      suffix: 7_exo_simple_int
+      nsize: {{2 4 5}}
+      args: -interpolate parallel
+    test: # seq load, metis partitioner, par interpolation
+      TODO: DMPlexCheckPointSF() fails for nsize 5
+      suffix: 7_exo_metis_int
+      requires: parmetis
+      nsize: {{2 4 5}}
+      args: -interpolate parallel
+      args: -petscpartitioner_type parmetis
+
+  testset: # 7 HDF5 SEQUANTIAL LOAD
+    requires: hdf5 !complex
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-    args: -petscpartitioner_type matpartitioning -petscpartitioner_view ::ascii_info
-    args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 2
-    args: -mat_partitioning_hierarchical_coarseparttype ptscotch -mat_partitioning_hierarchical_fineparttype ptscotch
+    args: -dm_plex_hdf5_force_sequential
+    args: -distribute
+    test: # seq load, simple partitioner
+      suffix: 7_seq_hdf5_simple
+      nsize: {{1 2 4 5}}
+      args: -interpolate none
+    test: # seq load, seq interpolation, simple partitioner
+      suffix: 7_seq_hdf5_int_simple
+      nsize: {{1 2 4 5}}
+      args: -interpolate serial
+    test: # seq load, seq interpolation, metis partitioner
+      nsize: {{2 4 5}}
+      suffix: 7_seq_hdf5_int_metis
+      requires: parmetis
+      args: -interpolate serial
+      args: -petscpartitioner_type parmetis
+    test: # seq load, simple partitioner, par interpolation
+      suffix: 7_seq_hdf5_simple_int
+      nsize: {{2 4 5}}
+      args: -interpolate parallel
+    test: # seq load, metis partitioner, par interpolation
+      nsize: {{2 4 5}}
+      suffix: 7_seq_hdf5_metis_int
+      requires: parmetis
+      args: -interpolate parallel
+      args: -petscpartitioner_type parmetis
+
+  testset: # 7 HDF5 PARALLEL LOAD
+    requires: hdf5 !complex
+    nsize: {{2 4 5}}
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    test: # par load
+      suffix: 7_par_hdf5
+      args: -interpolate none
+    test: # par load, par interpolation
+      suffix: 7_par_hdf5_int
+      args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+    test: # par load, parmetis repartitioner
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 7_par_hdf5_parmetis
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate none
+    test: # par load, par interpolation, parmetis repartitioner
+      suffix: 7_par_hdf5_int_parmetis
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+    test: # par load, parmetis partitioner, par interpolation
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 7_par_hdf5_parmetis_int
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate parallel           #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+
+    test:
+      suffix: 7_hdf5_hierarch
+      requires: hdf5 ptscotch !complex
+      nsize: {{2 3 4}separate output}
+      args: -distribute
+      args: -interpolate serial
+      args: -petscpartitioner_type matpartitioning -petscpartitioner_view ::ascii_info
+      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 2
+      args: -mat_partitioning_hierarchical_coarseparttype ptscotch -mat_partitioning_hierarchical_fineparttype ptscotch
 
   test:
     suffix: 8
@@ -1038,36 +1082,68 @@ int main(int argc, char **argv)
     args: -view_vertices_from_coords 0.,1.,0.,-0.5,1.,0.,0.583,-0.644,0.,-2.,-2.,-2. -view_vertices_from_coords_tol 1e-3
     args: -custom_view
 
-  testset:
+  testset: # 9 HDF5 SEQUANTIAL LOAD
     requires: hdf5 !complex datafilespath
-    #TODO DMPlexCheckPointSF() fails for nsize 4
-    nsize: {{1 2}}
     args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
-    test:
-      suffix: 9_hdf5_seqload
-      args: -distribute -petscpartitioner_type simple
-      args: -interpolate {{none serial parallel}}
-      args: -dm_plex_hdf5_force_sequential
-    test:
-      suffix: 9_hdf5_seqload_metis
+    args: -dm_plex_hdf5_force_sequential
+    args: -distribute
+    test: # seq load, simple partitioner
+      suffix: 9_seq_hdf5_simple
+      nsize: {{1 2 4 5}}
+      args: -interpolate none
+    test: # seq load, seq interpolation, simple partitioner
+      suffix: 9_seq_hdf5_int_simple
+      nsize: {{1 2 4 5}}
+      args: -interpolate serial
+    test: # seq load, seq interpolation, metis partitioner
+      nsize: {{2 4 5}}
+      suffix: 9_seq_hdf5_int_metis
       requires: parmetis
-      args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate {{serial parallel}}
-      args: -dm_plex_hdf5_force_sequential
-    test:
-      suffix: 9_hdf5
-      args: -interpolate {{none serial}}  #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
-    test:
-      suffix: 9_hdf5_repart
+      args: -interpolate serial
+      args: -petscpartitioner_type parmetis
+    test: # seq load, simple partitioner, par interpolation
+      TODO: DMPlexCheckPointSF() fails for nsize 4,5
+      suffix: 9_seq_hdf5_simple_int
+      nsize: {{2 4 5}}
+      args: -interpolate parallel
+    test: # seq load, metis partitioner, par interpolation
+      nsize: {{2 4 5}}
+      TODO: DMPlexCheckPointSF() fails for nsize 5
+      suffix: 9_seq_hdf5_metis_int
       requires: parmetis
-      args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate {{serial}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
-    test:
+      args: -interpolate parallel
+      args: -petscpartitioner_type parmetis
+
+  testset: # 9 HDF5 PARALLEL LOAD
+    requires: hdf5 !complex datafilespath
+    nsize: {{2 4 5}}
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
+    test: # par load
+      suffix: 9_par_hdf5
+      args: -interpolate none
+    test: # par load, par interpolation
+      TODO: DMPlexCheckPointSF() fails for nsize 4,5
+      suffix: 9_par_hdf5_int
+      args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+    test: # par load, parmetis repartitioner
       TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 9_hdf5_repart_ppu
+      suffix: 9_par_hdf5_parmetis
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate {{none parallel}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -interpolate none
+    test: # par load, par interpolation, parmetis repartitioner
+      TODO: DMPlexCheckPointSF() fails for nsize 4,5
+      suffix: 9_par_hdf5_int_parmetis
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+    test: # par load, parmetis partitioner, par interpolation
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 9_par_hdf5_parmetis_int
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate parallel           #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
 
 TEST*/
