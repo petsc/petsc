@@ -96,6 +96,5 @@ int main(int argc,char *argv[])
    test:
       nsize: 2
       args: -mat_ignore_lower_triangular -vecscatter_type sf
-      requires: double !complex
 
 TEST*/
