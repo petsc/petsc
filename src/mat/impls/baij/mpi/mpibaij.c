@@ -2984,7 +2984,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatR
 . -mat_block_size <bs> - set the blocksize used to store the matrix
 - -mat_use_hash_table <fact>
 
-  Level: beginner
+   Level: beginner
+
+   Notes:
+    MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
+    space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
 
 .seealso: MatCreateMPIBAIJ
 M*/

@@ -4142,7 +4142,18 @@ PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat A,Mat B,MatReuse scal
    Options Database Keys:
 . -mat_type seqaij - sets the matrix type to "seqaij" during a call to MatSetFromOptions()
 
-  Level: beginner
+   Level: beginner
+
+   Notes:
+    MatSetValues() may be called for this matrix type with a NULL argument for the numerical values,
+    in this case the values associated with the rows and columns one passes in are set to zero
+    in the matrix
+
+    MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
+    space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
+
+  Developer Notes:
+    It would be nice if all matrix formats supported passing NULL in for the numerical values
 
 .seealso: MatCreateSeqAIJ(), MatSetFromOptions(), MatSetType(), MatCreate(), MatType
 M*/
@@ -4152,7 +4163,7 @@ M*/
 
    This matrix type is identical to MATSEQAIJ when constructed with a single process communicator,
    and MATMPIAIJ otherwise.  As a result, for single process communicators,
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported
+  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation() is supported
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
