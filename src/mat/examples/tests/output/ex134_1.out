@@ -4,10 +4,10 @@ Mat Object: 2 MPI processes
   rows=8, cols=8, bs=2
   total: nonzeros=64, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 4 nz 32 nz alloced 32 bs 2 mem 6536.
+    [0] Local rows 4 nz 32 nz alloced 32 bs 2 mem.
     [0] on-diagonal part: nz 16 
     [0] off-diagonal part: nz 16 
-    [1] Local rows 4 nz 32 nz alloced 32 bs 2 mem 6536.
+    [1] Local rows 4 nz 32 nz alloced 32 bs 2 mem.
     [1] on-diagonal part: nz 16 
     [1] off-diagonal part: nz 16 
     Information on VecScatter used in matrix-vector product: 
@@ -30,10 +30,10 @@ Mat Object: 2 MPI processes
       [1]    1 <- 1
 Mat Object: 2 MPI processes
   type: mpibaij
-row 0: (0, 2.)  (1, 4.)  (2, 6.)  (3, 8.)  (4, 10.)  (5, 12.)  (6, 14.)  (7, 16.) 
-row 1: (0, 18.)  (1, 20.)  (2, 22.)  (3, 24.)  (4, 26.)  (5, 28.)  (6, 30.)  (7, 32.) 
+row 0: (0, 200.)  (1, 4.)  (2, 6.)  (3, 8.)  (4, 10.)  (5, 1200.)  (6, 14.)  (7, 16.) 
+row 1: (0, 18.)  (1, 200.)  (2, 22.)  (3, 2400.)  (4, 26.)  (5, 28.)  (6, 30.)  (7, 3200.) 
 row 2: (0, 34.)  (1, 36.)  (2, 38.)  (3, 40.)  (4, 42.)  (5, 44.)  (6, 46.)  (7, 48.) 
-row 3: (0, 50.)  (1, 52.)  (2, 54.)  (3, 56.)  (4, 58.)  (5, 60.)  (6, 62.)  (7, 64.) 
+row 3: (0, 50.)  (1, 52.)  (2, 54.)  (3, 5600.)  (4, 58.)  (5, 60.)  (6, 62.)  (7, 64.) 
 row 4: (0, 66.)  (1, 68.)  (2, 70.)  (3, 72.)  (4, 74.)  (5, 76.)  (6, 78.)  (7, 80.) 
 row 5: (0, 82.)  (1, 84.)  (2, 86.)  (3, 88.)  (4, 90.)  (5, 92.)  (6, 94.)  (7, 96.) 
 row 6: (0, 98.)  (1, 100.)  (2, 102.)  (3, 104.)  (4, 106.)  (5, 108.)  (6, 110.)  (7, 112.) 
@@ -44,10 +44,10 @@ Mat Object: 2 MPI processes
   rows=8, cols=8, bs=2
   total: nonzeros=40, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 4 nz 28 nz alloced 32 bs 2 mem 6688.
+    [0] Local rows 4 nz 28 nz alloced 32 bs 2 mem.
     [0] on-diagonal part: nz 12 
     [0] off-diagonal part: nz 16 
-    [1] Local rows 4 nz 12 nz alloced 32 bs 2 mem 6688.
+    [1] Local rows 4 nz 12 nz alloced 32 bs 2 mem.
     [1] on-diagonal part: nz 12 
     [1] off-diagonal part: nz 0 
     Information on VecScatter used in matrix-vector product: 
@@ -65,10 +65,10 @@ Mat Object: 2 MPI processes
       [1] Roots referenced by my leaves, by rank
 Mat Object: 2 MPI processes
   type: mpisbaij
-row 0: (0, 2.)  (1, 4.)  (2, 6.)  (3, 8.)  (4, 10.)  (5, 12.)  (6, 14.)  (7, 16.) 
-row 1: (0, 18.)  (1, 20.)  (2, 22.)  (3, 24.)  (4, 26.)  (5, 28.)  (6, 30.)  (7, 32.) 
+row 0: (0, 200.)  (1, 4.)  (2, 6.)  (3, 8.)  (4, 10.)  (5, 1200.)  (6, 14.)  (7, 16.) 
+row 1: (0, 18.)  (1, 200.)  (2, 22.)  (3, 2400.)  (4, 26.)  (5, 28.)  (6, 30.)  (7, 3200.) 
 row 2: (2, 38.)  (3, 40.)  (4, 42.)  (5, 44.)  (6, 46.)  (7, 48.) 
-row 3: (2, 54.)  (3, 56.)  (4, 58.)  (5, 60.)  (6, 62.)  (7, 64.) 
+row 3: (2, 54.)  (3, 5600.)  (4, 58.)  (5, 60.)  (6, 62.)  (7, 64.) 
 row 4: (4, 74.)  (5, 76.)  (6, 78.)  (7, 80.) 
 row 5: (4, 90.)  (5, 92.)  (6, 94.)  (7, 96.) 
 row 6: (6, 110.)  (7, 112.) 
@@ -79,10 +79,10 @@ Mat Object: 2 MPI processes
   rows=4, cols=4
   total: nonzeros=16, allocated nonzeros=16
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 2 nz 8 nz alloced 8 bs 1 mem 6328.
+    [0] Local rows 2 nz 8 nz alloced 8 bs 1 mem.
     [0] on-diagonal part: nz 4 
     [0] off-diagonal part: nz 4 
-    [1] Local rows 2 nz 8 nz alloced 8 bs 1 mem 6328.
+    [1] Local rows 2 nz 8 nz alloced 8 bs 1 mem.
     [1] on-diagonal part: nz 4 
     [1] off-diagonal part: nz 4 
     Information on VecScatter used in matrix-vector product: 
@@ -105,20 +105,20 @@ Mat Object: 2 MPI processes
       [1]    1 <- 1
 Mat Object: 2 MPI processes
   type: mpibaij
-row 0: (0, 2.)  (1, 4.)  (2, 6.)  (3, 8.) 
-row 1: (0, 10.)  (1, 12.)  (2, 14.)  (3, 16.) 
-row 2: (0, 18.)  (1, 20.)  (2, 22.)  (3, 24.) 
-row 3: (0, 26.)  (1, 28.)  (2, 30.)  (3, 32.) 
+row 0: (0, 200.)  (1, 4.)  (2, 6.)  (3, 8.) 
+row 1: (0, 10.)  (1, 1200.)  (2, 14.)  (3, 16.) 
+row 2: (0, 18.)  (1, 200.)  (2, 22.)  (3, 2400.) 
+row 3: (0, 26.)  (1, 28.)  (2, 30.)  (3, 3200.) 
 Matrix mpisbaij(1)
 Mat Object: 2 MPI processes
   type: mpisbaij
   rows=4, cols=4
   total: nonzeros=10, allocated nonzeros=16
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 2 nz 7 nz alloced 8 bs 1 mem 6486.
+    [0] Local rows 2 nz 7 nz alloced 8 bs 1 mem.
     [0] on-diagonal part: nz 3 
     [0] off-diagonal part: nz 4 
-    [1] Local rows 2 nz 3 nz alloced 8 bs 1 mem 6486.
+    [1] Local rows 2 nz 3 nz alloced 8 bs 1 mem.
     [1] on-diagonal part: nz 3 
     [1] off-diagonal part: nz 0 
     Information on VecScatter used in matrix-vector product: 
@@ -136,7 +136,7 @@ Mat Object: 2 MPI processes
       [1] Roots referenced by my leaves, by rank
 Mat Object: 2 MPI processes
   type: mpisbaij
-row 0: (0, 2.)  (1, 4.)  (2, 6.)  (3, 8.) 
-row 1: (1, 12.)  (2, 14.)  (3, 16.) 
-row 2: (2, 22.)  (3, 24.) 
-row 3: (3, 32.) 
+row 0: (0, 200.)  (1, 4.)  (2, 6.)  (3, 8.) 
+row 1: (1, 1200.)  (2, 14.)  (3, 16.) 
+row 2: (2, 22.)  (3, 2400.) 
+row 3: (3, 3200.) 
