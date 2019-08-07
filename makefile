@@ -264,13 +264,22 @@ install:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
 	+${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install petsc4py-install libmesh-install slepc-install mfem-install
 
-streams:
-	-@echo "running streams in src/benchmarks/streams"
-	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams
+mpistreams:
+	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} mpistreams
 
-stream:
-	-@echo "running stream in src/benchmarks/streams"
-	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} stream
+mpistream:
+	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} mpistream
+
+openmpstreams:
+	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} openmpstreams
+
+openmpstream:
+	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} openmpstream
+
+# for legacy reasons
+stream: mpistream
+
+streams: mpistreams
 
 # ------------------------------------------------------------------
 #
