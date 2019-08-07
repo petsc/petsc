@@ -4,10 +4,10 @@ Mat Object: 2 MPI processes
   rows=8, cols=8, bs=2
   total: nonzeros=64, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 4 nz 32 nz alloced 32 bs 2 mem 6568.
+    [0] Local rows 4 nz 32 nz alloced 32 bs 2 mem.
     [0] on-diagonal part: nz 16 
     [0] off-diagonal part: nz 16 
-    [1] Local rows 4 nz 32 nz alloced 32 bs 2 mem 6568.
+    [1] Local rows 4 nz 32 nz alloced 32 bs 2 mem.
     [1] on-diagonal part: nz 16 
     [1] off-diagonal part: nz 16 
     Information on VecScatter used in matrix-vector product: 
@@ -44,10 +44,10 @@ Mat Object: 2 MPI processes
   rows=8, cols=8, bs=2
   total: nonzeros=40, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 4 nz 28 nz alloced 32 bs 2 mem 6720.
+    [0] Local rows 4 nz 28 nz alloced 32 bs 2 mem.
     [0] on-diagonal part: nz 12 
     [0] off-diagonal part: nz 16 
-    [1] Local rows 4 nz 12 nz alloced 32 bs 2 mem 6720.
+    [1] Local rows 4 nz 12 nz alloced 32 bs 2 mem.
     [1] on-diagonal part: nz 12 
     [1] off-diagonal part: nz 0 
     Information on VecScatter used in matrix-vector product: 
@@ -79,10 +79,10 @@ Mat Object: 2 MPI processes
   rows=4, cols=4
   total: nonzeros=16, allocated nonzeros=16
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 2 nz 8 nz alloced 8 bs 1 mem 6360.
+    [0] Local rows 2 nz 8 nz alloced 8 bs 1 mem.
     [0] on-diagonal part: nz 4 
     [0] off-diagonal part: nz 4 
-    [1] Local rows 2 nz 8 nz alloced 8 bs 1 mem 6360.
+    [1] Local rows 2 nz 8 nz alloced 8 bs 1 mem.
     [1] on-diagonal part: nz 4 
     [1] off-diagonal part: nz 4 
     Information on VecScatter used in matrix-vector product: 
@@ -115,10 +115,10 @@ Mat Object: 2 MPI processes
   rows=4, cols=4
   total: nonzeros=10, allocated nonzeros=16
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 2 nz 7 nz alloced 8 bs 1 mem 6518.
+    [0] Local rows 2 nz 7 nz alloced 8 bs 1 mem.
     [0] on-diagonal part: nz 3 
     [0] off-diagonal part: nz 4 
-    [1] Local rows 2 nz 3 nz alloced 8 bs 1 mem 6518.
+    [1] Local rows 2 nz 3 nz alloced 8 bs 1 mem.
     [1] on-diagonal part: nz 3 
     [1] off-diagonal part: nz 0 
     Information on VecScatter used in matrix-vector product: 
