@@ -1,6 +1,3 @@
-#if !defined(PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND)
-#define PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND 1
-#endif
 /*
    Demonstrates using the HDF5 viewer with a DMDA Vec
  - create a global vector containing a gauss profile (exp(-x^2-y^2))

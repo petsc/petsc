@@ -78,6 +78,7 @@ branches:
     - maint
     - master
     - next
+    - /^pr\/.*$/
     - /^ci\/.*$/
 
 addons:
@@ -97,8 +98,8 @@ before_install:
   - export NBUILD=`getconf _NPROCESSORS_ONLN`
 install:
   - ./configure --with-cc=$CC --with-cxx=$CXX --with-fc=$FC --with-clanguage=${LANGUAGE:-C} --with-64-bit-indices=${INT64:-0} --with-scalar-type=${SCALAR:-real} --with-precision=${PRECISION:-double} --with-mpi=${MPI:-0} $BLASLAPACK COPTFLAGS="$OPTFLAGS" CXXOPTFLAGS="$OPTFLAGS" FOPTFLAGS="$OPTFLAGS" --with-cxx-dialect=0
-  - make -j$NBUILD CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+  - make -j$NBUILD
 
 script:
-  - make check    CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
-# - make alltests CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND ALLTESTS_CHECK_FAILURES=yes TIMEOUT=600
+  - make check
+# - make alltests ALLTESTS_CHECK_FAILURES=yes TIMEOUT=600
