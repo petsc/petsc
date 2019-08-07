@@ -96,6 +96,6 @@ int main(int argc,char *argv[])
    test:
       nsize: 2
       args: -mat_ignore_lower_triangular -vecscatter_type sf
-      filter: sed 's/mem [0-9]*/mem/g'
+      filter: sed 's?mem [0-9]*?mem?g'
 
 TEST*/
