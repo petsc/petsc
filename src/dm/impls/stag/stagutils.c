@@ -1273,8 +1273,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
 /*@C
   DMStagSetUniformCoordinatesProduct - create uniform coordinates, as a product of 1D arrays
 
-  Set the coordinate DM to be a DMProduct of 1D DMStag objects, each of which have a coordinate DM (also a 1d DMStag) holding uniform
-  coordinates.
+  Set the coordinate DM to be a DMProduct of 1D DMStag objects, each of which have a coordinate DM (also a 1d DMStag) holding uniform coordinates.
 
   Collective
 
@@ -1284,6 +1283,10 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
 
   Notes:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
+
+  The per-dimension 1-dimensional DMStag objects that comprise the product
+  always have active 0-cells (vertices, element boundaries) and 1-cells
+  (element centers).
 
   Level: intermediate
 
@@ -1306,16 +1309,10 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
   ierr = DMGetCoordinateDM(dm,&dmc);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
 
-  /* Create 1D sub-DMs, living on subcommunicators */
-
-  dof0 = 0;
-  for (d=0; d<dim; ++d) {          /* Include point dof in the sub-DMs if any non-element strata are active in the original DMStag */
-    if (stag->dof[d]) {
-      dof0 = 1;
-      break;
-    }
-  }
-  dof1 = stag->dof[dim] ? 1 : 0; /*  Include element dof in the sub-DMs if the elements are active in the original DMStag */
+  /* Create 1D sub-DMs, living on subcommunicators.
+     Always include both vertex and element dof, regardless of the active strata of the DMStag */
+  dof0 = 1;
+  dof1 = 1;
 
   for (d=0; d<dim; ++d) {
     DM                subdm;
