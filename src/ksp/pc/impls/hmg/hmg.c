@@ -9,6 +9,7 @@ typedef struct {
   char*            innerpctype;        /* PCGAMG or PCHYPRE */
   PetscBool        reuseinterp;        /* A flag indicates if or not to reuse the interpolations */
   PetscBool        subcoarsening;
+  PetscBool        usematmaij;
 } PC_HMG;
 
 PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems*,PC);
@@ -172,9 +173,14 @@ PetscErrorCode PCSetUp_HMG(PC pc)
     Mat P=0, pmat=0;
     Vec b, x,r;
     if (hmg->subcoarsening) {
-      /* Grow interpolation. In the future, we should use MAIJ */
-      ierr = PCHMGExpandInterpolation_Private(interpolations[level-1],&P,blocksize);CHKERRQ(ierr);
-      ierr = MatDestroy(&interpolations[level-1]);CHKERRQ(ierr);
+      if (hmg->usematmaij) {
+        ierr = MatCreateMAIJ(interpolations[level-1],blocksize,&P);CHKERRQ(ierr);
+        ierr = MatDestroy(&interpolations[level-1]);CHKERRQ(ierr);
+      } else {
+        /* Grow interpolation. In the future, we should use MAIJ */
+        ierr = PCHMGExpandInterpolation_Private(interpolations[level-1],&P,blocksize);CHKERRQ(ierr);
+        ierr = MatDestroy(&interpolations[level-1]);CHKERRQ(ierr);
+      }
     } else {
       P = interpolations[level-1];
     }
@@ -259,6 +265,7 @@ PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsHead(PetscOptionsObject,"HMG");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_hmg_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",hmg->reuseinterp,&hmg->reuseinterp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_hmg_use_subspace_coarsening","Use the subspace coarsening to compute the interpolations","None",hmg->subcoarsening,&hmg->subcoarsening,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hmg_use_matmaij","Use MatMAIJ store interpolation for saving memory","None",hmg->usematmaij,&hmg->usematmaij,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -387,6 +394,7 @@ PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
 +  -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
 .  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
 .  -hmg_inner_pc_type <hypre, gamg, ...> - What method is used to coarsen matrix
+-  -pc_hmg_use_matmaij <true | false> - Whether or not to use MatMAIJ for multicomponent problems for saving memory
 
 
    Notes:
@@ -422,12 +430,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
   ierr = PetscFree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
 
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)pc, PCHMG);CHKERRQ(ierr);
   ierr = PetscNew(&hmg);CHKERRQ(ierr);
 
   mg                      = (PC_MG*) pc->data;
   mg->innerctx            = hmg;
   hmg->reuseinterp        = PETSC_FALSE;
   hmg->subcoarsening      = PETSC_FALSE;
+  hmg->usematmaij         = PETSC_TRUE;
   hmg->innerpc            = NULL;
 
   pc->ops->setfromoptions = PCSetFromOptions_HMG;

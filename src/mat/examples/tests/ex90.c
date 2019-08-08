@@ -67,6 +67,10 @@ int main(int argc,char **argv)
   ierr = MatView(A,NULL);CHKERRQ(ierr);
   ierr = MatView(P,NULL);CHKERRQ(ierr);
   ierr = MatView(PtAP,NULL);CHKERRQ(ierr);
+  ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,1.1,&PtAP);CHKERRQ(ierr);
+  ierr = MatView(A,NULL);CHKERRQ(ierr);
+  ierr = MatView(P,NULL);CHKERRQ(ierr);
+  ierr = MatView(PtAP,NULL);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
@@ -78,6 +82,12 @@ int main(int argc,char **argv)
    test:
      nsize: 2
      args:   -matptap_via allatonce
+     output_file: output/ex90_1.out
+
+   test:
+     nsize: 2
+     suffix: merged
+     args:   -matptap_via allatonce_merged
      output_file: output/ex90_1.out
 
 TEST*/
