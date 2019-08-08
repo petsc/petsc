@@ -919,7 +919,7 @@ int main(int argc, char **argv)
   testset:
     nsize: {{1 2 4}}
     args: -use_generator -dm_plex_check_symmetry -dm_plex_check_geometry
-    args: -distribute -interpolate {{none serial parallel}}
+    args: -distribute -interpolate none
     test:
       suffix: 6_tri
       requires: triangle
@@ -928,12 +928,48 @@ int main(int argc, char **argv)
       suffix: 6_quad
       args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton
     test:
-      TODO: this is failing due to DMPlexCheckPointSF() and should be fixed
       suffix: 6_tet
       requires: ctetgen
       args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton
     test:
       suffix: 6_hex
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton
+  testset:
+    nsize: {{1 2 4}}
+    args: -use_generator -dm_plex_check_symmetry -dm_plex_check_geometry
+    args: -distribute -interpolate serial
+    test:
+      suffix: 6_int_tri
+      requires: triangle
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton
+    test:
+      suffix: 6_int_quad
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton
+    test:
+      suffix: 6_int_tet
+      requires: ctetgen
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton
+    test:
+      suffix: 6_int_hex
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton
+  testset:
+    nsize: {{2 4}}
+    args: -use_generator -dm_plex_check_symmetry -dm_plex_check_geometry
+    args: -distribute -interpolate parallel
+    test:
+      suffix: 6_parint_tri
+      requires: triangle
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton
+    test:
+      suffix: 6_parint_quad
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton
+    test:
+      TODO: DMPlexCheckPointSF() fails for nsize 4
+      suffix: 6_parint_tet
+      requires: ctetgen
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton
+    test:
+      suffix: 6_parint_hex
       args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton
 
   testset:
